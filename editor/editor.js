@@ -30,6 +30,7 @@ function applyContent() {
   Object.entries(content.texts || {}).forEach(([key, value]) => { const element = doc.querySelector(selectorFor('Text', key)); if (element && element !== editing) element.innerHTML = value.html; });
   Object.entries(content.images || {}).forEach(([key, value]) => applyImage(doc.querySelector(selectorFor('Image', key)), value));
   Object.entries(content.videos || {}).forEach(([key, value]) => applyVideo(doc.querySelector(selectorFor('Video', key)), value));
+  window.EditorStage2?.apply(doc, content);
 }
 function applyImage(element, value) { if (!element) return; element.src = value.src; element.alt = value.alt || ''; element.style.objectFit = value.objectFit || ''; element.style.objectPosition = value.objectPosition || ''; }
 function applyVideo(element, value) {
@@ -122,4 +123,11 @@ document.querySelector('#preview').onclick = () => { saveLocal('Abrindo prévia 
 document.querySelector('#undo').onclick = () => { if (historyIndex > 0) { content = clone(history[--historyIndex]); applyContent(); renderProperties(); updateHistoryControls(); } };
 document.querySelector('#redo').onclick = () => { if (historyIndex < history.length - 1) { content = clone(history[++historyIndex]); applyContent(); renderProperties(); updateHistoryControls(); } };
 document.querySelector('#close-media').onclick = closeMedia; modal.addEventListener('click', event => { if (event.target === modal) closeMedia(); });
+window.EditorCore = {
+  get content() { return content; },
+  apply: applyContent,
+  commit(message) { pushHistory(); if (message) announce(message); },
+  replace(next, message) { content = next; applyContent(); pushHistory(); renderProperties(); if (message) announce(message); },
+  renderProperties, announce, frame, select
+};
 frame.addEventListener('load', async () => { if (!content) { content = await loadDefault(); const saved = localStorage.getItem(STORAGE_KEY); if (saved && confirm('Há conteúdo salvo neste navegador. Restaurar agora?')) { try { content = JSON.parse(saved); } catch {} } pushHistory(); } applyContent(); hookFrame(); });

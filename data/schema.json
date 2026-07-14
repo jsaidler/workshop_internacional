@@ -2,8 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Controlled visual editor content",
   "type": "object",
-  "required": ["version", "template", "theme", "texts", "images", "videos"],
+  "required": ["schemaVersion", "version", "template", "theme", "texts", "images", "videos", "sections", "forms"],
   "properties": {
+    "schemaVersion": { "const": 1 },
     "version": { "const": 1 },
     "template": { "const": "direct-positive-workshop" },
     "theme": { "enum": ["auto", "light", "dark"] },

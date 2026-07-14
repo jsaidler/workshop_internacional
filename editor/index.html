@@ -23,6 +23,7 @@
     </div>
   </header>
   <main class="workspace">
+    <aside class="sections-panel" id="sections-panel"><p class="eyebrow">Estrutura</p><h2>Seções</h2><div id="sections-list"></div><div class="panel-actions"><button id="export-content">Exportar</button><button id="import-content">Importar</button></div></aside>
     <section class="canvas" aria-label="Página editável"><div class="frame-shell"><iframe id="page-frame" title="Página editável" src="../template/?editor=1"></iframe></div></section>
     <aside class="properties" id="properties" aria-live="polite"><div class="empty-state">Selecione um texto, uma imagem ou um vídeo na página.</div></aside>
   </main>
@@ -30,6 +31,7 @@
     <div class="modal-card"><header><div><p class="eyebrow">Biblioteca local</p><h2 id="media-title">Escolher mídia</h2></div><button class="icon-button" id="close-media" aria-label="Fechar">×</button></header><div class="media-grid" id="media-grid"></div></div>
   </div>
   <div class="toast" id="toast" role="status"></div>
-  <script src="media-library.js"></script><script src="editor.js"></script>
+  <input id="import-file" type="file" accept="application/json,.json" hidden>
+  <script src="media-library.js"></script><script src="editor.js"></script><script src="stage2.js"></script>
 </body>
 </html>
