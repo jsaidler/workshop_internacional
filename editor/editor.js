@@ -76,6 +76,8 @@ function enableTextEditing(element) {
 function hookFrame() {
   const doc = frame.contentDocument;
   doc.addEventListener('click', event => {
+    const form = event.target.closest('[data-editable-form]');
+    if (form) { event.preventDefault(); window.EditorStage2?.selectForm(form); return; }
     const element = event.target.closest('[data-editable-image], [data-editable-video], [data-editable-text]'); if (!element) { finishEditing(); selected = null; renderProperties(); return; }
     const type = element.hasAttribute('data-editable-image') ? 'Image' : element.hasAttribute('data-editable-video') ? 'Video' : 'Text';
     if (type !== 'Text') event.preventDefault(); select(type, element);
