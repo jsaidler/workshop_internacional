@@ -1,2 +1,7 @@
 .playwright-cli
 .vscode
+config/local.php
+storage/database.sqlite
+storage/logs/*
+!storage/logs/.gitkeep
+dist/workshop-public.zip
