@@ -1,0 +1,273 @@
+{
+  "version": 1,
+  "template": "direct-positive-workshop",
+  "theme": "auto",
+  "sections": [
+    {
+      "id": "hero",
+      "visible": true,
+      "order": 1
+    },
+    {
+      "id": "workshop",
+      "visible": true,
+      "order": 2
+    },
+    {
+      "id": "camera",
+      "visible": true,
+      "order": 3
+    },
+    {
+      "id": "process",
+      "visible": true,
+      "order": 4
+    },
+    {
+      "id": "format",
+      "visible": true,
+      "order": 5
+    },
+    {
+      "id": "about",
+      "visible": true,
+      "order": 6
+    },
+    {
+      "id": "interest-form",
+      "visible": true,
+      "order": 7
+    }
+  ],
+  "texts": {
+    "brand-title": {
+      "html": "Direct Positive X-Ray Film"
+    },
+    "hero-kicker": {
+      "html": "Interest survey · First international group"
+    },
+    "hero-title": {
+      "html": "<span>Direct</span><span>Positive</span><span>X-Ray Film</span>"
+    },
+    "hero-intro": {
+      "html": "A fully live online workshop on exposure, reversal processing and tonal control."
+    },
+    "hero-format": {
+      "html": "3 live sessions"
+    },
+    "hero-group-size": {
+      "html": "Maximum 10"
+    },
+    "hero-language": {
+      "html": "English"
+    },
+    "hero-price": {
+      "html": "US$195"
+    },
+    "hero-cta": {
+      "html": "Join the interest list <span aria-hidden=\"true\">↘</span>"
+    },
+    "hero-microcopy": {
+      "html": "No payment now. This is not a confirmed registration."
+    },
+    "hero-caption-primary": {
+      "html": "Medusa · Direct-positive X-ray film"
+    },
+    "hero-caption-secondary": {
+      "html": "Highly Commended · Siena Creative Photo Awards 2025"
+    },
+    "workshop-label": {
+      "html": "01 / The workshop"
+    },
+    "workshop-title": {
+      "html": "The photograph is made live, in front of you."
+    },
+    "workshop-body-1": {
+      "html": "This is not a prerecorded course and not a demonstration assembled after the fact. Camera operation, exposure decisions, chemistry and the physical transformation of the film will be presented live from the studio in Brazil."
+    },
+    "workshop-body-2": {
+      "html": "The workshop is designed for photographers interested in sheet film, large format, handmade apparatus and alternative photographic processes. Its purpose is not to hand out a universal recipe, but to make the process understandable and controllable."
+    },
+    "camera-label": {
+      "html": "02 / Apparatus"
+    },
+    "camera-title": {
+      "html": "A process built from the camera outward."
+    },
+    "camera-body": {
+      "html": "The NINA is a handmade large-format camera developed for direct-positive work on X-ray film. Its body, shutter, focusing system and daylight processing logic belong to the same photographic chain."
+    },
+    "camera-note": {
+      "html": "The workshop is about making images, not building this camera. The apparatus appears because it makes the process visible."
+    },
+    "process-label": {
+      "html": "03 / From exposure to positive"
+    },
+    "process-title": {
+      "html": "The workshop follows the entire chain of the image."
+    },
+    "format-label": {
+      "html": "04 / Planned format"
+    },
+    "format-title": {
+      "html": "Small enough for every result to matter."
+    },
+    "format-intro": {
+      "html": "The first group will be deliberately limited. Every participant should have enough space to ask questions and discuss a real result."
+    },
+    "about-label": {
+      "html": "05 / The photographer"
+    },
+    "about-title": {
+      "html": "João Saidler"
+    },
+    "about-lead": {
+      "html": "Photographer and independent researcher working with handmade large-format cameras, direct-positive X-ray film and accessible photographic chemistry since 2018."
+    },
+    "about-body": {
+      "html": "His practice is centered on the photographic image. Cameras, shutters, tanks and processing systems are developed as parts of a working chain that keeps exposure, chemistry and the final physical object under the photographer’s control."
+    },
+    "about-caption": {
+      "html": "João Saidler · Photographer and independent researcher"
+    },
+    "interest-label": {
+      "html": "06 / Interest survey"
+    },
+    "interest-title": {
+      "html": "Would you seriously consider joining?"
+    },
+    "interest-intro": {
+      "html": "This form does not reserve a place and no payment is required. It will be used to define dates, time zones and the first international group."
+    },
+    "footer-location": {
+      "html": "João Saidler · Petrópolis, Brazil"
+    },
+    "footer-description": {
+      "html": "Direct Positive X-Ray Film · Interest survey"
+    },
+    "footer-privacy": {
+      "html": "Privacy"
+    }
+  },
+  "images": {
+    "hero-image": {
+      "src": "../assets/media/hero-medusa.webp",
+      "alt": "Medusa, a black-and-white direct-positive portrait made on X-ray film",
+      "objectFit": "cover",
+      "objectPosition": "50% 50%"
+    },
+    "author-portrait": {
+      "src": "../assets/media/joao-portrait.webp",
+      "alt": "Photographer João Saidler",
+      "objectFit": "cover",
+      "objectPosition": "50% 50%"
+    }
+  },
+  "videos": {
+    "nina-video": {
+      "src": "../assets/media/nina-preview.mp4",
+      "poster": "../assets/media/nina-poster.webp",
+      "autoplay": false,
+      "muted": true,
+      "loop": true,
+      "controls": true,
+      "aspectRatio": "9/16"
+    },
+    "process-video": {
+      "src": "",
+      "poster": "",
+      "autoplay": false,
+      "muted": true,
+      "loop": false,
+      "controls": true,
+      "aspectRatio": "9/16"
+    }
+  },
+  "forms": {
+    "interest-form": {
+      "submitLabel": "Send my interest",
+      "fields": [
+        {
+          "id": "name",
+          "type": "text",
+          "label": "Name",
+          "required": true,
+          "autocomplete": "name"
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "label": "Email",
+          "required": true,
+          "autocomplete": "email"
+        },
+        {
+          "id": "country",
+          "type": "text",
+          "label": "Country",
+          "required": false,
+          "autocomplete": "country-name"
+        },
+        {
+          "id": "timezone",
+          "type": "text",
+          "label": "Time zone",
+          "required": false,
+          "placeholder": "e.g. UTC−5, Europe/London"
+        },
+        {
+          "id": "experience",
+          "type": "textarea",
+          "label": "Previous experience",
+          "required": false,
+          "rows": 3
+        },
+        {
+          "id": "preferred_days",
+          "type": "text",
+          "label": "Preferred days",
+          "required": false
+        },
+        {
+          "id": "preferred_time",
+          "type": "text",
+          "label": "Preferred time",
+          "required": false
+        },
+        {
+          "id": "price_response",
+          "type": "radio",
+          "label": "Would you seriously consider joining at US$195?",
+          "required": true,
+          "options": [
+            {
+              "value": "yes",
+              "label": "Yes — I would consider joining."
+            },
+            {
+              "value": "maybe",
+              "label": "Maybe — It depends on the dates."
+            },
+            {
+              "value": "no",
+              "label": "No — Not at this price."
+            }
+          ]
+        },
+        {
+          "id": "main_interest",
+          "type": "textarea",
+          "label": "What would you most like to learn or solve?",
+          "required": false,
+          "rows": 5
+        },
+        {
+          "id": "consent",
+          "type": "checkbox",
+          "label": "I agree to receive information about this workshop.",
+          "required": true
+        }
+      ]
+    }
+  }
+}

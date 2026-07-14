@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editor visual — Direct Positive Workshop</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <header class="editor-bar" aria-label="Ferramentas do editor">
+    <a class="tool back" href="../template/" title="Voltar à página"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5 7 12l7 7M8 12h10"/></svg><span>Voltar</span></a>
+    <div class="tool-group" aria-label="Dispositivo">
+      <button class="tool active" data-viewport="desktop">Desktop</button><button class="tool" data-viewport="tablet">Tablet</button><button class="tool" data-viewport="mobile">Mobile</button>
+    </div>
+    <div class="tool-group" aria-label="Tema">
+      <button class="tool active" data-editor-theme="auto">Automático</button><button class="tool" data-editor-theme="light">Claro</button><button class="tool" data-editor-theme="dark">Escuro</button>
+    </div>
+    <div class="tool-group actions">
+      <button class="tool" id="undo" title="Desfazer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M5 12h10a5 5 0 0 1 5 5"/></svg><span>Desfazer</span></button>
+      <button class="tool" id="redo" title="Refazer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7l5 5-5 5M19 12H9a5 5 0 0 0-5 5"/></svg><span>Refazer</span></button>
+      <button class="tool emphasis" id="save">Salvar</button><button class="tool" id="restore">Restaurar</button><button class="tool preview" id="preview">Prévia <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Zm7 2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg></button>
+    </div>
+  </header>
+  <main class="workspace">
+    <section class="canvas" aria-label="Página editável"><div class="frame-shell"><iframe id="page-frame" title="Página editável" src="../template/?editor=1"></iframe></div></section>
+    <aside class="properties" id="properties" aria-live="polite"><div class="empty-state">Selecione um texto, uma imagem ou um vídeo na página.</div></aside>
+  </main>
+  <div class="modal" id="media-modal" hidden role="dialog" aria-modal="true" aria-labelledby="media-title">
+    <div class="modal-card"><header><div><p class="eyebrow">Biblioteca local</p><h2 id="media-title">Escolher mídia</h2></div><button class="icon-button" id="close-media" aria-label="Fechar">×</button></header><div class="media-grid" id="media-grid"></div></div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="media-library.js"></script><script src="editor.js"></script>
+</body>
+</html>
