@@ -13,3 +13,5 @@ dist/storage/logs/*
 dist/uploads/*
 !dist/uploads/.htaccess
 dist/config/install.php
+output/*
+dist/*
