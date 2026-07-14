@@ -541,9 +541,9 @@
 
     @media (max-width: 700px) {
       body { font-size: 16px; }
-      .topbar { min-height: 58px; padding-inline: 14px; }
-      .brand { font-size: 20px; }
-      .theme-switch button { min-width: 42px; padding-inline: 6px; }
+      .topbar { min-height: 58px; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding-inline: 8px; }
+      .brand { overflow: hidden; font-size: 16px; text-overflow: ellipsis; }
+      .theme-switch button { min-width: 38px; padding-inline: 5px; }
       .hero-copy { min-height: auto; padding-top: 58px; }
       .hero-image { min-height: 72svh; }
       .hero h1 { font-size: clamp(64px, 22vw, 102px); }
@@ -563,6 +563,7 @@
       .two-columns,
       .radio-grid { grid-template-columns: 1fr; }
       .radio-grid label { min-height: 115px; }
+      .radio-grid input { width: auto; }
       .recognition div { grid-template-columns: 1fr; gap: 7px; }
       footer { grid-template-columns: 1fr; gap: 8px; }
     }

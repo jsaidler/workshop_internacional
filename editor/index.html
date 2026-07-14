@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Editor visual — Direct Positive Workshop</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
-  <link rel="stylesheet" href="editor.css">
-  <link rel="stylesheet" href="framing.css">
+  <link rel="stylesheet" href="editor.css?responsive-framing=1">
+  <link rel="stylesheet" href="framing.css?responsive-framing=1">
 </head>
 <body>
   <header class="editor-bar" aria-label="Ferramentas do editor">
@@ -25,7 +25,7 @@
   </header>
   <main class="workspace">
     <aside class="sections-panel" id="sections-panel"><p class="eyebrow">Estrutura</p><h2>Seções</h2><div id="sections-list"></div><div class="panel-actions"><button id="export-content">Exportar</button><button id="import-content">Importar</button></div></aside>
-    <section class="canvas" aria-label="Página editável"><div class="frame-shell"><iframe id="page-frame" title="Página editável" src="../template/?editor=1"></iframe></div></section>
+    <section class="canvas" aria-label="Página editável"><div class="frame-shell"><iframe id="page-frame" title="Página editável" src="../template/?editor=1&amp;responsive-framing=3"></iframe></div></section>
     <aside class="properties" id="properties" aria-live="polite"><button id="close-properties" class="icon-button" aria-label="Fechar propriedades">×</button><div class="empty-state">Selecione um elemento para ver propriedades.</div></aside>
   </main>
   <div id="editor-overlay-layer" aria-live="polite"></div>
@@ -35,6 +35,6 @@
   <div class="modal" id="import-modal" hidden role="dialog" aria-modal="true" aria-labelledby="import-title"><div class="modal-card"><header><div><p class="eyebrow">Importação</p><h2 id="import-title">Confirmar importação</h2></div></header><div id="import-summary" class="property-block"></div><div class="property-block"><button id="cancel-import">Cancelar</button><button id="confirm-import">Importar</button></div></div></div>
   <div class="toast" id="toast" role="status"></div>
   <input id="import-file" type="file" accept="application/json,.json" hidden>
-  <script src="media-library.js"></script><script src="editor.js"></script>
+  <script src="media-library.js"></script><script src="editor.js?responsive-framing=2"></script>
 </body>
 </html>
