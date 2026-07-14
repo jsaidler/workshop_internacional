@@ -1,1 +1,1 @@
-<?php header('Location: /admin/interests.php',true,303);
+<?php header('Location: /admin/activities.php',true,303);
