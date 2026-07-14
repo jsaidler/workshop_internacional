@@ -21,7 +21,7 @@
     <div class="tool-group actions">
       <button class="tool" id="undo" title="Desfazer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M5 12h10a5 5 0 0 1 5 5"/></svg><span>Desfazer</span></button>
       <button class="tool" id="redo" title="Refazer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7l5 5-5 5M19 12H9a5 5 0 0 0-5 5"/></svg><span>Refazer</span></button>
-      <button class="tool emphasis" id="save">Salvar</button><button class="tool emphasis" id="publish">Publicar</button><button class="tool" id="restore">Restaurar</button><button class="tool preview" id="preview">Prévia <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Zm7 2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg></button><span id="content-status" aria-live="polite"></span>
+      <button class="tool emphasis" id="save">Salvar</button><button class="tool emphasis" id="publish">Publicar</button><button class="tool" id="restore">Restaurar</button><button class="tool preview" id="preview">Prévia <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Zm7 2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg></button><span id="content-status" aria-live="polite"></span><button class="tool" id="load-latest" hidden>Carregar versão mais recente</button>
     </div>
   </header>
   <main class="workspace">
@@ -35,6 +35,7 @@
   </div>
   <div class="modal" id="import-modal" hidden role="dialog" aria-modal="true" aria-labelledby="import-title"><div class="modal-card"><header><div><p class="eyebrow">Importação</p><h2 id="import-title">Confirmar importação</h2></div></header><div id="import-summary" class="property-block"></div><div class="property-block"><button id="cancel-import">Cancelar</button><button id="confirm-import">Importar</button></div></div></div>
   <div class="modal" id="publish-modal" hidden role="dialog" aria-modal="true" aria-labelledby="publish-title"><div class="modal-card"><header><div><p class="eyebrow">Publicação</p><h2 id="publish-title">Publicar rascunho?</h2></div></header><p>O rascunho salvo substituirá imediatamente o conteúdo exibido ao público.</p><div class="property-block"><button id="cancel-publish">Cancelar</button><button id="confirm-publish">Publicar</button></div></div></div>
+  <div class="modal" id="conflict-modal" hidden role="dialog" aria-modal="true" aria-labelledby="conflict-title"><div class="modal-card"><header><div><p class="eyebrow">Conflito de revisão</p><h2 id="conflict-title">Carregar versão mais recente?</h2></div></header><p>As alterações locais não salvas serão descartadas.</p><div class="property-block"><button id="cancel-conflict">Cancelar</button><button id="confirm-conflict">Carregar versão mais recente</button></div></div></div>
   <div class="toast" id="toast" role="status"></div>
   <input id="import-file" type="file" accept="application/json,.json" hidden>
   <script src="media-library.js"></script><script src="editor.js?responsive-framing=7"></script>
