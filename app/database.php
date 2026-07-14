@@ -9,6 +9,10 @@ function run_migrations(PDO $db): void {
         $version=basename($file,'.php');
         $check=$db->prepare('SELECT 1 FROM schema_migrations WHERE version=?');$check->execute([$version]);
         if($check->fetchColumn()) continue;
+        if($version==='001_initial'&&$db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='admin_users'")->fetchColumn()){
+            $db->prepare('INSERT INTO schema_migrations(version,applied_at) VALUES(?,?)')->execute([$version,gmdate('c')]);
+            continue;
+        }
         $migration=require $file;
         if(!is_callable($migration)) throw new RuntimeException("Invalid migration: $version");
         $migration($db);
