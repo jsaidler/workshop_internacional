@@ -3,6 +3,7 @@ RewriteEngine On
 RewriteRule ^(app|config|storage|data|output|reference)/ - [F,L]
 RewriteRule ^preview/ - [F,L]
 RewriteRule ^\.git - [F,L]
+RewriteRule ^([a-z0-9-]+)/?$ index.php?activity=$1 [QSA,L]
 RewriteRule \.(sqlite|log|ini)$ - [F,L,NC]
 <FilesMatch "^(local\.php|\.env)$">
 Require all denied

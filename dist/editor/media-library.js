@@ -1,10 +1,1 @@
-window.MediaLibrary = {
-  images: [
-    { src: '../assets/media/hero-medusa.webp', label: 'Medusa — retrato' },
-    { src: '../assets/media/joao-portrait.webp', label: 'João Saidler — retrato' },
-    { src: '../assets/media/nina-poster.webp', label: 'NINA — poster' }
-  ],
-  videos: [
-    { src: '../assets/media/nina-preview.mp4', label: 'NINA — prévia', poster: '../assets/media/nina-poster.webp' }
-  ]
-};
+window.MediaLibrary={images:[],videos:[],csrf:'',async load(){const r=await fetch('/admin/api/media-list.php',{credentials:'same-origin'});if(!r.ok)throw new Error('media_load_failed');const d=await r.json();this.csrf=d.csrf;this.images=d.items.filter(i=>i.kind==='image'&&i.processing_status==='ready').map(i=>({id:i.id,src:i.derivatives?.[0]?'/uploads/media/'+i.derivatives[0].path:i.url,label:i.title,alt:i.default_alt||''}));this.videos=d.items.filter(i=>i.kind==='video'&&i.processing_status==='ready').map(i=>({id:i.id,src:i.url,label:i.title,poster:''}));return d.items;},async upload(file,replaceAsset=''){const f=new FormData();f.append('csrf',this.csrf);f.append('file',file);if(replaceAsset)f.append('replace_asset',replaceAsset);const r=await fetch('/admin/api/media-upload.php',{method:'POST',credentials:'same-origin',body:f});const d=await r.json();if(!r.ok)throw new Error(d.error||'upload_failed');await this.load();return d.item;}};
