@@ -91,6 +91,21 @@
           },
           "objectPosition": {
             "type": "string"
+          },
+          "positionX": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "positionY": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "zoom": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 3
           }
         }
       }

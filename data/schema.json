@@ -9,7 +9,7 @@
     "template": { "const": "direct-positive-workshop" },
     "theme": { "enum": ["auto", "light", "dark"] },
     "texts": { "type": "object", "additionalProperties": { "type": "object", "required": ["html"], "properties": { "html": { "type": "string" } } } },
-    "images": { "type": "object", "additionalProperties": { "type": "object", "required": ["src", "alt"], "properties": { "src": { "type": "string" }, "alt": { "type": "string" }, "objectFit": { "enum": ["cover", "contain", "fill", "none", "scale-down"] }, "objectPosition": { "type": "string" } } } },
+    "images": { "type": "object", "additionalProperties": { "type": "object", "required": ["src", "alt"], "properties": { "src": { "type": "string" }, "alt": { "type": "string" }, "objectFit": { "enum": ["cover", "contain", "fill", "none", "scale-down"] }, "objectPosition": { "type": "string" }, "positionX": { "type": "number", "minimum": 0, "maximum": 100 }, "positionY": { "type": "number", "minimum": 0, "maximum": 100 }, "zoom": { "type": "number", "minimum": 1, "maximum": 3 } } } },
     "videos": { "type": "object", "additionalProperties": { "type": "object", "required": ["src"], "properties": { "src": { "type": "string" }, "poster": { "type": "string" }, "controls": { "type": "boolean" }, "autoplay": { "type": "boolean" }, "muted": { "type": "boolean" }, "loop": { "type": "boolean" } } } }
   }
 }
