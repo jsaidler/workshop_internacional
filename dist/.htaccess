@@ -1,7 +1,7 @@
 Options -Indexes
 RewriteEngine On
 RewriteRule ^(app|config|storage|data|output|reference)/ - [F,L]
-RewriteRule ^(editor|preview)/ - [F,L]
+RewriteRule ^preview/ - [F,L]
 RewriteRule ^\.git - [F,L]
 RewriteRule \.(sqlite|log|ini)$ - [F,L,NC]
 <FilesMatch "^(local\.php|\.env)$">

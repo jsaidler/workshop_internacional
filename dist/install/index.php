@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/../app/database.php';
+require_once __DIR__.'/../app/content/content_validator.php';
+require_once __DIR__.'/../app/content/content_repository.php';
 
 header('Content-Type: text/html; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
@@ -70,7 +72,7 @@ try {
 try {
     $db=database_connection($database);$db->beginTransaction();run_migrations($db);
     $settings=$db->prepare('INSERT INTO site_settings(setting_key,setting_value) VALUES(?,?)');foreach(['site_name','public_url','timezone'] as $key)$settings->execute([$key,(string)$config[$key]]);$initialContent=file_get_contents(INSTALL_ROOT.'/data/public-content.json');if($initialContent===false||json_decode($initialContent,true)===null)throw new RuntimeException('Initial public content is invalid.');$settings->execute(['public_content_source','data/public-content.json']);$settings->execute(['initial_public_content',$initialContent]);
-    $insert=$db->prepare('INSERT INTO admin_users(email,password_hash,created_at,updated_at) VALUES(?,?,?,?)');$now=gmdate('c');$insert->execute([$admin['email'],$admin['password_hash'],$now,$now]);$db->commit();
+    $insert=$db->prepare('INSERT INTO admin_users(email,password_hash,created_at,updated_at) VALUES(?,?,?,?)');$now=gmdate('c');$insert->execute([$admin['email'],$admin['password_hash'],$now,$now]);content_seed($db);$db->commit();
 } catch(Throwable $e) { if(isset($db)&&$db->inTransaction())$db->rollBack();error_log('installer.database '.$e->getMessage());if(is_file($database))@unlink($database);if(is_file($local))@unlink($local);problem(str_contains($e->getMessage(),'migration')?'migration_failed':'database_initialization_failed',$e->getMessage(),500); }
 if(file_put_contents(INSTALL_ROOT.'/storage/installed.lock',json_encode(['installed_at'=>gmdate('c')])."\n",LOCK_EX)===false) problem('configuration_write_failed','Could not create installed lock.',500);
 unset($_SESSION['install_key_verified'],$_SESSION['install_configuration'],$_SESSION['install_administrator'],$_SESSION['install_csrf']);
