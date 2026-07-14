@@ -1,7 +1,15 @@
 .playwright-cli
 .vscode
 config/local.php
+config/install.php
 storage/database.sqlite
 storage/logs/*
 !storage/logs/.gitkeep
 dist/workshop-public.zip
+dist/config/local.php
+dist/storage/database.sqlite
+dist/storage/logs/*
+!dist/storage/logs/.gitkeep
+dist/uploads/*
+!dist/uploads/.htaccess
+dist/config/install.php
