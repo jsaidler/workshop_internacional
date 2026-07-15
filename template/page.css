@@ -84,17 +84,8 @@
     ::selection { color: var(--inverse); background: var(--inverse-bg); }
     :focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
 
-    .skip-link {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      z-index: 1000;
-      transform: translateY(-160%);
-      padding: 10px 14px;
-      background: var(--surface);
-      border: 1px solid var(--line-strong);
-    }
-    .skip-link:focus { transform: none; }
+    .skip-link { position:fixed; top:0; left:50%; z-index:1001; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+    .skip-link:focus { width:auto; height:auto; overflow:visible; clip-path:none; transform:translateX(-50%); padding:10px 14px; color:var(--text); background:var(--surface); border:1px solid var(--line-strong); }
 
     .topbar {
       position: sticky;
@@ -465,6 +456,7 @@
       background: var(--inverse-bg);
       color: var(--inverse);
       border-top: 1px solid var(--line-strong);
+      scroll-margin-top: 72px;
     }
     .interest-inner {
       width: min(100%, var(--max));
@@ -474,16 +466,14 @@
       gap: clamp(54px, 8vw, 140px);
       padding: var(--section) var(--gutter);
     }
-    .interest-intro { display:contents; }
-    .interest-intro .section-label,.interest-intro h2 { grid-column:1; }
-    .interest-intro > p:not(.section-label),.interest-intro .survey-summary { grid-column:2; }
+    .interest-intro { position: sticky; top: 100px; align-self: start; }
     .interest .section-label { color: color-mix(in srgb, var(--inverse) 62%, transparent); }
     .interest h2 { margin: 0; font-size: clamp(60px, 7vw, 112px); font-weight: 500; line-height: .8; }
     .interest-intro > p:not(.section-label) { font-size: 20px; color: color-mix(in srgb, var(--inverse) 75%, transparent); }
     .survey-summary { margin-top: 46px; border-top: 1px solid color-mix(in srgb, var(--inverse) 38%, transparent); }
     .survey-summary span { display: block; padding: 11px 0; border-bottom: 1px solid color-mix(in srgb, var(--inverse) 22%, transparent); font-family: var(--mono); font-size: 10px; text-transform: uppercase; }
 
-    .interest-form { grid-column:1 / -1; width:min(760px,100%); min-width:0; margin-top:8px; }
+    .interest-form { min-width: 0; }
     .interest-form fieldset { margin: 0 0 52px; padding: 0; border: 0; }
     .interest-form legend { width: 100%; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid color-mix(in srgb, var(--inverse) 42%, transparent); font-family: var(--title); font-size: 34px; text-transform: uppercase; }
     .form-grid { display: grid; gap: 22px; }
@@ -546,8 +536,7 @@
       .apparatus-copy { border-right: 0; border-bottom: 1px solid color-mix(in srgb, var(--inverse) 30%, transparent); }
       .format-heading { grid-template-columns: 1fr; }
       .format-grid { grid-template-columns: repeat(2, 1fr); }
-      .interest-intro { display:block; }
-      .interest-intro .section-label,.interest-intro h2,.interest-intro > p:not(.section-label),.interest-intro .survey-summary { grid-column:auto; }
+      .interest-intro { position: static; }
     }
 
     @media (max-width: 700px) {
@@ -583,3 +572,7 @@
       html { scroll-behavior: auto; }
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
     }
+    .interest-inner > .form-success { grid-column: 2; width: auto; margin: 0; align-self: start; }
+    .interest.has-success .interest-form { display: none; }
+    .interest .form-success { padding: 16px 0; border: 0; }
+    @media (max-width: 1040px) { .interest-inner > .form-success { grid-column: auto; } }
