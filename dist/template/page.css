@@ -84,17 +84,8 @@
     ::selection { color: var(--inverse); background: var(--inverse-bg); }
     :focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
 
-    .skip-link {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      z-index: 1000;
-      transform: translateY(-160%);
-      padding: 10px 14px;
-      background: var(--surface);
-      border: 1px solid var(--line-strong);
-    }
-    .skip-link:focus { transform: none; }
+    .skip-link { position:fixed; top:0; left:50%; z-index:1001; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+    .skip-link:focus { width:auto; height:auto; overflow:visible; clip-path:none; transform:translateX(-50%); padding:10px 14px; color:var(--text); background:var(--surface); border:1px solid var(--line-strong); }
 
     .topbar {
       position: sticky;
@@ -465,6 +456,7 @@
       background: var(--inverse-bg);
       color: var(--inverse);
       border-top: 1px solid var(--line-strong);
+      scroll-margin-top: 72px;
     }
     .interest-inner {
       width: min(100%, var(--max));
@@ -580,3 +572,7 @@
       html { scroll-behavior: auto; }
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
     }
+    .interest-inner > .form-success { grid-column: 2; width: auto; margin: 0; align-self: start; }
+    .interest.has-success .interest-form { display: none; }
+    .interest .form-success { padding: 16px 0; border: 0; }
+    @media (max-width: 1040px) { .interest-inner > .form-success { grid-column: auto; } }

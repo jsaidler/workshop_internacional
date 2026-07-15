@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/../app/database.php';
 require_once __DIR__.'/../app/content/content_validator.php';
+require_once __DIR__.'/../app/activity_repository.php';
 require_once __DIR__.'/../app/content/content_repository.php';
 
 header('Content-Type: text/html; charset=UTF-8');

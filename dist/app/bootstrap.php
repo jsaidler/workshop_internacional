@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-foreach(['installation','config','database','public_content','form_definition','form_validator','interest_repository','csrf','auth','response','content/content_validator','content/content_repository','content/content_service','content/content_response'] as $f)require_once __DIR__."/$f.php";
+foreach(['installation','config','database','public_content','form_definition','form_validator','interest_repository','csrf','auth','response','content/content_validator','content/content_repository','content/content_service','content/content_response','activity_repository','media_service'] as $f)require_once __DIR__."/$f.php";
 require_installed_application();
 $config=app_config();
 date_default_timezone_set($config['timezone']??'UTC');

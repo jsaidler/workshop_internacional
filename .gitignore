@@ -14,4 +14,7 @@ dist/uploads/*
 !dist/uploads/.htaccess
 dist/config/install.php
 output/*
+uploads/media/*
+!uploads/media/.htaccess
+!uploads/media/.gitkeep
 dist/*
