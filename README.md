@@ -2,6 +2,10 @@
 
 This package contains only the approved static landing page and the content contract that a future visual editor will manipulate.
 
+## Reconstruindo dist
+
+Pause qualquer sincronização que não respeite a configuração do projeto e execute `build-dist.cmd`. Aguarde a mensagem de sucesso; a sincronização configurada enviará apenas arquivos implantáveis alterados. Banco, configuração, lock e uploads permanecem preservados. Use `build-dist.cmd --dry-run` para inspecionar alterações e `build-dist.cmd --verify` para validar o `dist` atual. Em caso de erro, o `dist` anterior é mantido: corrija a causa e execute novamente. O manifesto fica em `.build/dist-managed-files.json`.
+
 ## Scope
 
 Included:
