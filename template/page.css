@@ -332,17 +332,19 @@
         linear-gradient(90deg, color-mix(in srgb, var(--inverse) 8%, transparent) 1px, transparent 1px);
       background-size: 48px 48px;
     }
+    .media-figure { position: relative; margin: 0; }
+    .media-area { overflow: clip; }
     .vertical-frame {
       position: relative;
       width: min(100%, 500px);
       aspect-ratio: 18 / 25;
-      overflow: hidden;
       border: 1px solid color-mix(in srgb, var(--inverse) 45%, transparent);
       box-shadow: 0 28px 90px rgba(0,0,0,.34);
       background: #000;
     }
+    .vertical-frame .media-area { height: 100%; }
     .vertical-frame video { height: 100%; object-fit: cover; }
-    .vertical-frame .frame-data {
+    .media-caption {
       position: absolute;
       inset: auto 0 0;
       display: flex;
@@ -378,6 +380,9 @@
       background-size: 12.5% 6.25%;
       overflow: hidden;
     }
+    .process-media .reel-placeholder { width: 100%; height: 100%; aspect-ratio: auto; }
+    .process-media .reel-placeholder[hidden] { display: none; }
+    .process-media video[hidden] { display: none; }
     .reel-placeholder::before {
       content: "";
       position: absolute;
@@ -447,9 +452,9 @@
     .recognition div { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--line); }
     .recognition dt { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; }
     .recognition dd { margin: 0; }
-    .about-image { margin: 0; border: 1px solid var(--line-strong); background: var(--surface); }
-    .about-image img { aspect-ratio: 4 / 5; object-fit: cover; object-position: center; filter: grayscale(1); }
-    .about-image figcaption { padding: 12px 14px; font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; }
+    .about-image { border: 1px solid var(--line-strong); background: var(--surface); }
+    .about-image .media-area { aspect-ratio: 4 / 5; }
+    .about-image img { height: 100%; object-fit: cover; object-position: center; filter: grayscale(1); }
 
     .interest {
       width: 100%;

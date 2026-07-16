@@ -172,6 +172,7 @@
       "muted": true,
       "loop": true,
       "controls": true,
+      "caption": "NINA · Handmade large-format camera",
       "aspectRatio": "9/16"
     },
     "process-video": {
@@ -181,6 +182,7 @@
       "muted": true,
       "loop": false,
       "controls": true,
+      "caption": "",
       "aspectRatio": "9/16"
     }
   },
