@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/../app/bootstrap.php';require __DIR__.'/../app/admin_shell.php';security_headers();require_admin();$state=admin_activity_resolution(database());admin_shell_start('media','Biblioteca de mídia',$state);
+?><section class="section-intro"><p>Arquivos disponíveis para uso na página. Envie imagens ou vídeos para adicioná-los à biblioteca.</p><label class="admin-button upload-button">Enviar arquivo<input id="library-upload" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" hidden></label></section><p class="library-status" id="library-status" aria-live="polite">Carregando biblioteca…</p><section class="library-grid" id="library-grid" aria-label="Arquivos de mídia"></section><script src="/editor/media-library.js"></script><script src="/assets/admin-media.js"></script><?php admin_shell_end();
