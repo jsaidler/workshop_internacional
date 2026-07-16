@@ -124,6 +124,9 @@
           "poster": {
             "type": "string"
           },
+          "caption": {
+            "type": "string"
+          },
           "autoplay": {
             "type": "boolean"
           },
