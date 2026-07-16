@@ -6,3 +6,13 @@ document.querySelectorAll('.submission-toggle').forEach((button) => {
     detail.hidden = open;
   });
 });
+
+const menuToggle = document.querySelector('.admin-menu-toggle');
+const navigation = document.querySelector('#admin-navigation');
+if (menuToggle && navigation) {
+  menuToggle.addEventListener('click', () => {
+    const open = menuToggle.getAttribute('aria-expanded') === 'true';
+    menuToggle.setAttribute('aria-expanded', String(!open));
+    navigation.classList.toggle('is-open', !open);
+  });
+}

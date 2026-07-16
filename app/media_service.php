@@ -14,6 +14,15 @@ function media_effective_upload_limit():int{$multipartMargin=1024*1024;return ma
 function media_capabilities():array{return ['imagick'=>extension_loaded('imagick'),'gd'=>extension_loaded('gd'),'webp'=>function_exists('imagewebp'),'upload_max'=>ini_get('upload_max_filesize'),'post_max'=>ini_get('post_max_size'),'memory_limit'=>ini_get('memory_limit'),'effective_upload_max_bytes'=>media_effective_upload_limit()];}
 function media_mime_extension(string $mime):?string{return ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp','video/mp4'=>'mp4','video/webm'=>'webm'][$mime]??null;}
 function media_mkdir(string $dir):void{if(!is_dir($dir)&&!mkdir($dir,0755,true)&&!is_dir($dir))throw new RuntimeException('storage_unavailable');}
+function media_storage_available(): bool {
+    try { media_mkdir(media_upload_root()); }
+    catch (Throwable) { return false; }
+    $probe=@tempnam(media_upload_root(),'health-');
+    if($probe===false)return false;
+    $ok=@file_put_contents($probe,'ok',LOCK_EX)!==false;
+    @unlink($probe);
+    return $ok;
+}
 function media_remove_tree(string $dir):void{if(!is_dir($dir))return;foreach(scandir($dir)?:[] as $item){if($item==='.'||$item==='..')continue;$path=$dir.'/'.$item;if(is_dir($path))media_remove_tree($path);else @unlink($path);}@rmdir($dir);}
 
 function media_image_dimensions(string $file):array{
