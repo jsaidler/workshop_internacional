@@ -9,6 +9,7 @@ on:
       - 'cms-v3-professional-3'
       - 'cms-v3-professional-4'
       - 'cms-v3-professional-5'
+      - 'cms-v3-professional-6'
   workflow_dispatch:
 
 permissions:
@@ -43,6 +44,7 @@ jobs:
           php tools/test-media-image-policy.php
           php tools/test-cms-professional-3.php
           php tools/test-update-service.php
+          php tools/test-cms-discovery.php
           php tools/test-build-dist.php
 
       - name: Build production artifact
