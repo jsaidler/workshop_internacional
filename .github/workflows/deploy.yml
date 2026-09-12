@@ -7,6 +7,7 @@ on:
       - 'cms-v3-professional'
       - 'cms-v3-professional-2'
       - 'cms-v3-professional-3'
+      - 'cms-v3-professional-4'
   workflow_dispatch:
 
 permissions:
