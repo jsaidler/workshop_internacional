@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Editor WYSIWYG — Workshop</title>
+<title>Editor visual — Workshop</title>
 <link rel="stylesheet" href="/editor/cms-editor.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
   </div>
   <div class="editor-toolbar">
     <button type="button" id="add-section">+ Seção</button>
-    <button type="button" id="page-settings">Configurações</button>
+    <button type="button" id="page-settings">Página</button>
     <button type="button" id="undo" disabled>Desfazer</button>
     <button type="button" id="redo" disabled>Refazer</button>
   </div>
@@ -43,6 +43,6 @@
 <dialog id="media-dialog" class="editor-dialog wide"><form method="dialog"><header><div><p>Biblioteca de mídia</p><h2>Escolher imagem</h2></div><button value="cancel" aria-label="Fechar">×</button></header><label class="upload-label">Enviar nova imagem <input id="media-upload" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="media-grid" id="media-grid"></div></form></dialog>
 <div class="editor-toast" id="toast" role="status"></div>
 <script src="/editor/media-library.js"></script>
-<script src="/editor/cms-editor.js"></script>
+<script src="/editor/cms-editor-v3.js"></script>
 </body>
 </html>
