@@ -5,6 +5,7 @@ on:
     branches:
       - 'wip/form-response-refinement-2026-07-16'
       - 'cms-v3-professional'
+      - 'cms-v3-professional-2'
   workflow_dispatch:
 
 permissions:
