@@ -12,7 +12,7 @@ function cms_page_seo_clean_url(string $value,bool $allowPath=true): string {
 }
 function cms_page_seo_validate(array $input): array {
     $robots=in_array($input['robots']??'index,follow',['index,follow','noindex,follow','index,nofollow','noindex,nofollow'],true)?(string)$input['robots']:'index,follow';
-    $trim=function(mixed $value,int $max):string{$v=trim((string)$value;if(function_exists('mb_substr'))return mb_substr($v,0,$max,'UTF-8');return substr($v,0,$max);};
+    $trim=function(mixed $value,int $max):string{$v=trim((string)$value);if(function_exists('mb_substr'))return mb_substr($v,0,$max,'UTF-8');return substr($v,0,$max);};
     return [
         'title'=>$trim($input['title']??'',180),
         'description'=>$trim($input['description']??'',500),
