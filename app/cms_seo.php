@@ -11,7 +11,7 @@ function cms_page_seo_clean_url(string $value,bool $allowPath=true): string {
     return '';
 }
 function cms_page_seo_validate(array $input): array {
-    $robots=in_array($input['robots']??'index,follow',['index,follow','noindex,follow','index,nofollow','noindex,nofollow'],true)?(string)$input['robots']:'index,follow';
+    $robotsInput=(string)($input['robots']??'index,follow');$robots=in_array($robotsInput,['index,follow','noindex,follow','index,nofollow','noindex,nofollow'],true)?$robotsInput:'index,follow';
     $trim=function(mixed $value,int $max):string{$v=trim((string)$value);if(function_exists('mb_substr'))return mb_substr($v,0,$max,'UTF-8');return substr($v,0,$max);};
     return [
         'title'=>$trim($input['title']??'',180),
