@@ -10,6 +10,7 @@ require __DIR__.'/../app/interest_repository.php';
 require __DIR__.'/../app/activity_repository.php';
 require __DIR__.'/../app/cms_forms.php';
 require __DIR__.'/../app/cms_pages.php';
+require __DIR__.'/../app/workshop_cms_setup.php';
 
 $db=new PDO('sqlite::memory:');
 $db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
@@ -19,19 +20,32 @@ $db->exec("CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT,admin_n
 $now=utc_now();$db->prepare('INSERT INTO activities(admin_name,public_title,slug,status,is_root,created_at,updated_at)VALUES(?,?,?,?,1,?,?)')->execute(['Workshop','Direct Positive X-Ray Film','workshop','active',$now,$now]);$activityId=(int)$db->lastInsertId();
 $migration=require __DIR__.'/../migrations/011_cms_pages_forms.php';$migration($db);
 
-cms_forms_seed($db,$activityId);cms_pages_seed($db,$activityId);
+cms_forms_seed($db,$activityId);cms_pages_seed($db,$activityId);workshop_cms_setup_activity($db,$activityId);
 $forms=cms_forms($db,$activityId);$pages=cms_pages($db,$activityId);
 expect(count($forms)===2,'expected two seeded forms');
-expect(count($pages)===2,'expected two seeded home pages');
+expect(count($pages)===3,'expected two localized home pages plus registration page');
 $ptForm=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_PT_BR,'registration');$enForm=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_EN,'interest');
 expect($ptForm!==null,'missing PT registration form');expect($enForm!==null,'missing EN interest form');
-$ptPage=cms_page_home($db,$activityId,PUBLIC_LOCALE_PT_BR);$enPage=cms_page_home($db,$activityId,PUBLIC_LOCALE_EN);
+$ptPage=cms_page_home($db,$activityId,PUBLIC_LOCALE_PT_BR);$enPage=cms_page_home($db,$activityId,PUBLIC_LOCALE_EN);$registrationPage=cms_page_by_slug($db,$activityId,PUBLIC_LOCALE_PT_BR,'inscricao');
 expect($ptPage!==null&&$enPage!==null,'missing localized home page');
-expect(str_contains(cms_page_doc($ptPage,true)['html'],'data-cms-form-key="registration"'),'PT page must embed registration form');
-expect(str_contains(cms_page_doc($ptPage,true)['html'],'Primeira turma'),'PT page must contain first-cohort evidence');
-expect(str_contains(cms_page_doc($ptPage,true)['html'],'suporte'),'PT page must contain processing support section');
+expect($registrationPage!==null,'missing dedicated PT registration page');
+$ptHomeHtml=cms_page_doc($ptPage,true)['html'];
+expect(!str_contains($ptHomeHtml,'data-cms-form-key="registration"'),'PT home should not embed the long registration form');
+expect(str_contains($ptHomeHtml,'/inscricao/?lang=pt-br'),'PT home must link to dedicated registration page');
+expect(str_contains($ptHomeHtml,'Primeira turma'),'PT page must contain first-cohort evidence');
+expect(str_contains($ptHomeHtml,'suporte'),'PT page must contain processing support section');
+$registrationHtml=cms_page_doc($registrationPage,true)['html'];
+expect(str_contains($registrationHtml,'data-cms-form-key="registration"'),'registration page must embed registration form');
+expect(str_contains($registrationHtml,'pelo menos 3 participantes'),'registration page must explain alternate-group minimum');
 expect(str_contains(cms_page_doc($enPage,true)['html'],'data-cms-form-key="interest"'),'EN page must embed interest survey');
 expect(str_contains(cms_page_doc($enPage,true)['html'],'first English-language cohort'),'EN page must position first English cohort');
+
+$ptSchema=cms_form_schema($ptForm,true);$ptFields=array_column($ptSchema['fields'],null,'id');
+expect(isset($ptFields['availability'])&&!empty($ptFields['availability']['required']),'registration availability must be required');
+expect(isset($ptFields['terms'])&&!empty($ptFields['terms']['required']),'registration terms consent must be required');
+expect(($ptFields['payment_preference']['required']??true)===false,'payment preference should not block registration');
+$availabilityHtml=cms_form_input_html($ptFields['availability'],[]);
+expect(!str_contains($availabilityHtml,'type="checkbox" name="availability[]" value="tuesday_19" required'),'checkbox group must not require every individual option');
 
 $created=cms_page_create($db,$activityId,PUBLIC_LOCALE_PT_BR,'Perguntas frequentes','faq');
 expect($created['slug']==='faq','page slug mismatch');
@@ -43,7 +57,7 @@ expect(!str_contains(cms_page_doc($saved,false)['html'],'<script'),'page sanitiz
 $published=cms_page_publish($db,(int)$created['id']);expect((int)$published['published_revision']===(int)$published['draft_revision'],'page publication revision mismatch');
 
 $schema=cms_form_schema($enForm,true);[$values,$errors]=cms_form_validate_submission($schema,[],PUBLIC_LOCALE_EN);expect(($errors['name']??'')==='This field is required.','EN validation message not localized');
-$ptSchema=cms_form_schema($ptForm,true);[$values,$errors]=cms_form_validate_submission($ptSchema,[],PUBLIC_LOCALE_PT_BR);expect(($errors['name']??'')==='Campo obrigatório.','PT validation message not localized');
+[$values,$errors]=cms_form_validate_submission($ptSchema,[],PUBLIC_LOCALE_PT_BR);expect(($errors['name']??'')==='Campo obrigatório.','PT validation message not localized');expect(($errors['availability']??'')==='Campo obrigatório.','PT availability validation missing');expect(($errors['terms']??'')==='Campo obrigatório.','PT terms validation missing');
 $newForm=cms_form_create($db,$activityId,PUBLIC_LOCALE_PT_BR,'Questionário','questionario','interest');$schema=cms_form_schema($newForm,false);$schema['fields'][]=['id'=>'custom_field','type'=>'text','label'=>'Campo customizado','required'=>false,'width'=>'full'];$newForm=cms_form_save($db,(int)$newForm['id'],$schema,(int)$newForm['draft_revision'],'Questionário atualizado');expect(count(cms_form_schema($newForm,false)['fields'])===count($schema['fields']),'form field save failed');$newForm=cms_form_publish($db,(int)$newForm['id']);expect((int)$newForm['published_revision']===(int)$newForm['draft_revision'],'form publication revision mismatch');
 
 echo "CMS smoke tests passed\n";
