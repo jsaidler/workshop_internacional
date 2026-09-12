@@ -1,4 +1,5 @@
 (()=>{'use strict';
+if(!document.querySelector('link[data-cms-responsive]')){const responsive=document.createElement('link');responsive.rel='stylesheet';responsive.href='/assets/cms-responsive.css';responsive.dataset.cmsResponsive='1';document.head.append(responsive)}
 const root=document.documentElement,buttons=[...document.querySelectorAll('[data-theme-value]')];
 const apply=theme=>{if(theme==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',theme);buttons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.themeValue===theme)));try{localStorage.setItem('workshop-theme',theme)}catch{}};
 let initial=root.getAttribute('data-theme')||'auto';try{const stored=localStorage.getItem('workshop-theme');if(stored&&['auto','light','dark'].includes(stored))initial=stored}catch{}
