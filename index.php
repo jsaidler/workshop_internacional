@@ -5,16 +5,20 @@ security_headers();
 
 try{
     $db=database();
+    $activity=activity_for_request($db);
+    $locale=public_locale();
     $pageSlug=is_string($_GET['page']??null)?trim((string)$_GET['page']):'';
-    if($pageSlug!==''){
-        $activity=activity_for_request($db);
-        $locale=public_locale();
-        $page=cms_page_by_slug($db,(int)$activity['id'],$locale,$pageSlug);
-        if(!$page||empty($page['published_document_json']))throw new RuntimeException('page_not_found');
+    $page=$pageSlug!==''
+        ? cms_page_by_slug($db,(int)$activity['id'],$locale,$pageSlug)
+        : cms_page_home($db,(int)$activity['id'],$locale);
+
+    if($page&&$page['status']!=='archived'&&!empty($page['published_document_json'])){
         cms_render_public_page($activity,$page,cms_page_doc($page,true),false);
         exit;
     }
 
+    // Compatibility fallback for installations that have not completed the CMS
+    // migration yet. Once a published CMS page exists it always takes precedence.
     require __DIR__.'/template/public.php';
     render_public_page([],[],isset($_GET['success']));
 }catch(RuntimeException $error){
