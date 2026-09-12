@@ -1,0 +1,67 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - 'wip/form-response-refinement-2026-07-16'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_FTP_URL: ${{ secrets.DEPLOY_FTP_URL }}
+      DEPLOY_FTP_USERNAME: ${{ secrets.DEPLOY_FTP_USERNAME }}
+      DEPLOY_FTP_PASSWORD: ${{ secrets.DEPLOY_FTP_PASSWORD }}
+      DEPLOY_FTP_PATH: ${{ secrets.DEPLOY_FTP_PATH }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_sqlite, sqlite3, dom, mbstring
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate source
+        run: |
+          find . -path './dist' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
+          find assets editor admin -name '*.js' -print0 | xargs -0 -n1 node --check
+          php tools/test-cms.php
+          php tools/test-build-dist.php
+
+      - name: Build production artifact
+        run: php tools/build-dist.php
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: workshop-dist-${{ github.sha }}
+          path: dist/
+          include-hidden-files: true
+          retention-days: 14
+
+      - name: Check FTP configuration
+        id: ftp
+        shell: bash
+        run: |
+          if [[ -n "$DEPLOY_FTP_URL" && -n "$DEPLOY_FTP_USERNAME" && -n "$DEPLOY_FTP_PASSWORD" && -n "$DEPLOY_FTP_PATH" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "FTP deploy skipped: configure DEPLOY_FTP_URL, DEPLOY_FTP_USERNAME, DEPLOY_FTP_PASSWORD and DEPLOY_FTP_PATH as repository secrets."
+          fi
+
+      - name: Install lftp
+        if: steps.ftp.outputs.configured == 'true'
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Deploy dist to hosting
+        if: steps.ftp.outputs.configured == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          lftp -c "set cmd:fail-exit yes; open -u \"$DEPLOY_FTP_USERNAME\",\"$DEPLOY_FTP_PASSWORD\" \"$DEPLOY_FTP_URL\"; mirror -R --verbose --parallel=4 --exclude-glob config/local.php --exclude-glob config/install.php --exclude-glob storage/database.sqlite --exclude-glob storage/installed.lock --exclude-glob storage/logs/** --exclude-glob uploads/** dist/ \"$DEPLOY_FTP_PATH\"; bye"
