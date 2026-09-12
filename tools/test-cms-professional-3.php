@@ -20,8 +20,8 @@ $conditional['settings']['conditions']=['question'=>['source'=>'has_question','o
 $conditions=cms_form_conditions($conditional);expect_p3(($conditions['question']['source']??'')==='has_question','conditional rule not normalized');
 [, $inactiveErrors]=cms_form_validate_conditional_submission($conditional,['has_question'=>'no','question'=>''],PUBLIC_LOCALE_PT_BR);expect_p3(!isset($inactiveErrors['question']),'hidden required field was still validated');
 [, $activeErrors]=cms_form_validate_conditional_submission($conditional,['has_question'=>'yes','question'=>''],PUBLIC_LOCALE_PT_BR);expect_p3(isset($activeErrors['question']),'active required field was not validated');
-$css=(string)file_get_contents(__DIR__.'/../assets/cms-responsive.css');expect_p3(str_contains($css,'data-cms-tablet-columns')&&str_contains($css,'data-cms-mobile-order'),'responsive breakpoint CSS missing');
-$editorJs=(string)file_get_contents(__DIR__.'/../editor/responsive-controls.js');expect_p3(str_contains($editorJs,'cmsTabletColumns')&&str_contains($editorJs,'cmsMobileColumns'),'responsive editor controls missing');
+$css=(string)file_get_contents(__DIR__.'/../assets/cms-responsive.css');expect_p3(str_contains($css,'data-cms-tablet-columns')&&str_contains($css,'data-cms-mobile-order'),'responsive section CSS missing');expect_p3(str_contains($css,'data-cms-tablet-width')&&str_contains($css,'data-cms-mobile-self-align'),'responsive element CSS missing');
+$editorJs=(string)file_get_contents(__DIR__.'/../editor/responsive-controls.js');expect_p3(str_contains($editorJs,'cmsTabletColumns')&&str_contains($editorJs,'cmsMobileColumns'),'responsive section editor controls missing');expect_p3(str_contains($editorJs,'cmsTabletWidth')&&str_contains($editorJs,'cmsMobileSelfAlign'),'responsive element editor controls missing');
 $publicJs=(string)file_get_contents(__DIR__.'/../assets/public.js');expect_p3(str_contains($publicJs,'/form-config.php')&&str_contains($publicJs,'dataset.cmsCondition'),'public conditional form loader missing');
 $build=(string)file_get_contents(__DIR__.'/../tools/build-dist.php');expect_p3(str_contains($build,"'form-config.php'"),'form condition endpoint missing from build');
-echo "Professional CMS v3.1 tests passed\n";
+echo "Professional CMS v3.2 tests passed\n";
