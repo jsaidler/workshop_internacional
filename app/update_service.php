@@ -6,6 +6,7 @@ const UPDATE_MAX_FILE_BYTES=16777216;
 
 function update_app_root(): string { return dirname(__DIR__); }
 function update_storage_root(): string { return update_app_root().'/storage/updates'; }
+function update_database_path(): string { return update_app_root().'/storage/database.sqlite'; }
 function update_persistent_path(string $relative): bool {
     $relative=str_replace('\\','/',$relative);
     return $relative==='config/local.php'||$relative==='config/install.php'||$relative==='storage/database.sqlite'||$relative==='storage/installed.lock'||str_starts_with($relative,'storage/logs/')||str_starts_with($relative,'storage/updates/')||str_starts_with($relative,'uploads/');
@@ -16,11 +17,11 @@ function update_safe_relative(string $relative): string {
     return $relative;
 }
 function update_http_get(string $url,int $maxBytes=UPDATE_MAX_FILE_BYTES): string {
-    $context=stream_context_create(['http'=>['timeout'=>20,'follow_location'=>1,'user_agent'=>'WorkshopCMS-Updater/1.0'],'https'=>['timeout'=>20]]);
+    $context=stream_context_create(['http'=>['timeout'=>20,'follow_location'=>1,'user_agent'=>'WorkshopCMS-Updater/1.1'],'https'=>['timeout'=>20]]);
     $data=@file_get_contents($url,false,$context,0,$maxBytes+1);
     if($data===false){
         if(function_exists('curl_init')){
-            $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_TIMEOUT=>20,CURLOPT_USERAGENT=>'WorkshopCMS-Updater/1.0',CURLOPT_MAXFILESIZE=>$maxBytes]);$data=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!is_string($data)||$code<200||$code>=300)throw new RuntimeException('update_download_failed'.($error?': '.$error:''));
+            $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_TIMEOUT=>20,CURLOPT_USERAGENT=>'WorkshopCMS-Updater/1.1',CURLOPT_MAXFILESIZE=>$maxBytes]);$data=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!is_string($data)||$code<200||$code>=300)throw new RuntimeException('update_download_failed'.($error?': '.$error:''));
         }else throw new RuntimeException('update_download_failed');
     }
     if(strlen($data)>$maxBytes)throw new RuntimeException('update_file_too_large');
@@ -51,24 +52,43 @@ function update_mkdir(string $dir): void {if(!is_dir($dir)&&!mkdir($dir,0755,tru
 function update_copy_atomic(string $source,string $destination): void {
     update_mkdir(dirname($destination));$tmp=$destination.'.update-'.bin2hex(random_bytes(4));if(!copy($source,$tmp)){@unlink($tmp);throw new RuntimeException('update_write_failed');}if(is_file($destination)&&!is_writable($destination)){@unlink($tmp);throw new RuntimeException('update_target_not_writable');}if(!@rename($tmp,$destination)){@unlink($tmp);throw new RuntimeException('update_write_failed');}
 }
+function update_write_atomic(string $destination,string $data): void {
+    update_mkdir(dirname($destination));$tmp=$destination.'.update-'.bin2hex(random_bytes(4));if(file_put_contents($tmp,$data,LOCK_EX)===false){@unlink($tmp);throw new RuntimeException('update_write_failed');}if(is_file($destination)&&!is_writable($destination)){@unlink($tmp);throw new RuntimeException('update_target_not_writable');}if(!@rename($tmp,$destination)){@unlink($tmp);throw new RuntimeException('update_write_failed');}
+}
+function update_backup_database(string $backupDir,?string $databasePath=null): ?string {
+    $databasePath=$databasePath??update_database_path();if(!is_file($databasePath))return null;update_mkdir($backupDir);$destination=$backupDir.'/database.sqlite';if(is_file($destination)&&!@unlink($destination))throw new RuntimeException('update_backup_failed');
+    try{
+        $db=new PDO('sqlite:'.$databasePath,null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);$db->exec('PRAGMA busy_timeout=5000');$quoted=$db->quote($destination);if($quoted===false)throw new RuntimeException('update_backup_failed');$db->exec('VACUUM INTO '.$quoted);$db=null;
+    }catch(Throwable $error){@unlink($destination);throw new RuntimeException('update_database_backup_failed: '.$error->getMessage(),0,$error);}
+    if(!is_file($destination)||(int)filesize($destination)<=0)throw new RuntimeException('update_database_backup_failed');return $destination;
+}
+function update_backup_file(string $root,string $backup,string $relative): void {
+    $source=$root.'/'.$relative;if(!is_file($source))return;$destination=$backup.'/'.$relative;update_mkdir(dirname($destination));if(!copy($source,$destination))throw new RuntimeException('update_backup_failed');
+}
+function update_restore_files(string $root,string $backup,array $touched,array $originallyExisted): void {
+    foreach($touched as $relative){$target=$root.'/'.$relative;$hadFile=!empty($originallyExisted[$relative]);$saved=$backup.'/'.$relative;if($hadFile&&is_file($saved)){try{update_copy_atomic($saved,$target);}catch(Throwable){}}elseif(!$hadFile&&is_file($target)){@unlink($target);}}
+}
+function update_backup_history(int $limit=8): array {
+    $root=update_storage_root();if(!is_dir($root))return [];$dirs=glob($root.'/backup-*',GLOB_ONLYDIR)?:[];rsort($dirs,SORT_STRING);$items=[];
+    foreach(array_slice($dirs,0,max(1,$limit)) as $dir){$meta=[];$file=$dir.'/update.json';if(is_file($file)){$decoded=json_decode((string)file_get_contents($file),true);if(is_array($decoded))$meta=$decoded;}$items[]=['path'=>$dir,'name'=>basename($dir),'sourceSha'=>(string)($meta['sourceSha']??''),'installedAt'=>$meta['installedAt']??null,'changed'=>is_array($meta['changed']??null)?$meta['changed']:[],'removed'=>is_array($meta['removed']??null)?$meta['removed']:[],'database'=>is_file($dir.'/database.sqlite')];}
+    return $items;
+}
 function update_apply(): array {
     $manifest=update_manifest_validate(update_remote_json('deploy-manifest.json'));$sourceSha=$manifest['sourceSha'];if($sourceSha==='unknown')throw new RuntimeException('invalid_update_manifest');
     $root=update_app_root();$storage=update_storage_root();update_mkdir($storage);$stamp=gmdate('Ymd-His').'-'.substr(preg_replace('/[^a-f0-9]/i','',$sourceSha),0,12);$stage=$storage.'/stage-'.$stamp;$backup=$storage.'/backup-'.$stamp;update_mkdir($stage);update_mkdir($backup);
-    $changed=[];$removed=[];$old=update_local_manifest_files();
+    $changed=[];$removed=[];$old=update_local_manifest_files();$touched=[];$originallyExisted=[];$databaseBackup=null;
     try{
         foreach($manifest['files'] as $relative=>$meta){$target=$root.'/'.$relative;$current=is_file($target)?strtolower((string)hash_file('sha256',$target)):'';if($current===$meta['sha256'])continue;$data=update_http_get(UPDATE_REPO_RAW.str_replace('%2F','/',rawurlencode($relative)),max(1024,$meta['bytes']+1024));if(strtolower(hash('sha256',$data))!==$meta['sha256'])throw new RuntimeException('update_checksum_mismatch: '.$relative);$stageFile=$stage.'/'.$relative;update_mkdir(dirname($stageFile));if(file_put_contents($stageFile,$data,LOCK_EX)===false)throw new RuntimeException('update_storage_unavailable');$changed[]=$relative;}
         foreach($old as $relative=>$meta)if(!isset($manifest['files'][$relative])&&!update_persistent_path($relative)&&is_file($root.'/'.$relative))$removed[]=$relative;
-        foreach(array_unique(array_merge($changed,$removed)) as $relative){$target=$root.'/'.$relative;if(!is_file($target))continue;$backupFile=$backup.'/'.$relative;update_mkdir(dirname($backupFile));if(!copy($target,$backupFile))throw new RuntimeException('update_backup_failed');}
+        $touched=array_values(array_unique(array_merge($changed,$removed,['deploy-manifest.json','deploy-info.json'])));foreach($touched as $relative){$originallyExisted[$relative]=is_file($root.'/'.$relative);if($originallyExisted[$relative])update_backup_file($root,$backup,$relative);}
+        $databaseBackup=update_backup_database($backup);
         foreach($changed as $relative)update_copy_atomic($stage.'/'.$relative,$root.'/'.$relative);
         foreach($removed as $relative)if(is_file($root.'/'.$relative)&&!@unlink($root.'/'.$relative))throw new RuntimeException('update_remove_failed');
-        $remoteManifest=update_http_get(UPDATE_REPO_RAW.'deploy-manifest.json',4194304);$remoteInfo=update_http_get(UPDATE_REPO_RAW.'deploy-info.json',1048576);if(file_put_contents($root.'/deploy-manifest.json',$remoteManifest,LOCK_EX)===false||file_put_contents($root.'/deploy-info.json',$remoteInfo,LOCK_EX)===false)throw new RuntimeException('update_write_failed');
-        file_put_contents($backup.'/update.json',json_encode(['sourceSha'=>$sourceSha,'installedAt'=>gmdate('c'),'changed'=>$changed,'removed'=>$removed],JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
-        return ['sourceSha'=>$sourceSha,'changed'=>$changed,'removed'=>$removed,'backup'=>$backup];
+        $remoteManifest=update_http_get(UPDATE_REPO_RAW.'deploy-manifest.json',4194304);$remoteInfo=update_http_get(UPDATE_REPO_RAW.'deploy-info.json',1048576);update_write_atomic($root.'/deploy-manifest.json',$remoteManifest);update_write_atomic($root.'/deploy-info.json',$remoteInfo);
+        $record=['sourceSha'=>$sourceSha,'installedAt'=>gmdate('c'),'changed'=>$changed,'removed'=>$removed,'databaseBackup'=>$databaseBackup?basename($databaseBackup):null];update_write_atomic($backup.'/update.json',json_encode($record,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n");
+        return ['sourceSha'=>$sourceSha,'changed'=>$changed,'removed'=>$removed,'backup'=>$backup,'databaseBackup'=>$databaseBackup];
     }catch(Throwable $error){
-        if(is_dir($backup)){
-            $it=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($backup,FilesystemIterator::SKIP_DOTS));foreach($it as $file){if(!$file->isFile()||$file->getFilename()==='update.json')continue;$relative=str_replace('\\','/',substr($file->getPathname(),strlen($backup)+1));try{update_copy_atomic($file->getPathname(),$root.'/'.$relative);}catch(Throwable){}}
-        }
-        throw $error;
+        update_restore_files($root,$backup,$touched,$originallyExisted);throw $error;
     }finally{
         if(is_dir($stage))media_remove_tree($stage);
     }
