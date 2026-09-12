@@ -50,9 +50,13 @@ function public_confirmation_markup(string $locale): string {
     return '<div class="interest-confirmation" role="status" aria-live="polite"><p class="section-label">'.h(public_message('registered',$locale)).'</p><h2 tabindex="-1">'.h(public_message('thanks',$locale)).'</h2><p>'.h(public_message('confirmation',$locale)).'</p><a class="button" href="#top">'.h(public_message('return',$locale)).' <span aria-hidden="true">↗</span></a></div>';
 }
 
+function public_registration_cta_markup(): string {
+    return '<div class="interest-confirmation"><p class="section-label">INSCRIÇÃO</p><h2>R$ 698 via Pix</h2><p>A inscrição da nova turma acontece em uma página própria. Lá você encontra as condições da turma, informa sua disponibilidade e envia os dados necessários para organizar os encontros.</p><p>Também é possível pagar no cartão, inclusive parcelado, com as taxas da plataforma.</p><a class="button" href="/inscricao/?lang=pt-br">Abrir formulário de inscrição <span aria-hidden="true">↗</span></a></div>';
+}
+
 function public_apply_workshop_price(string $html,string $locale,string $price): string {
-    $title=$locale===PUBLIC_LOCALE_PT_BR?'Preço previsto: '.$price:'Planned price: '.$price;
-    $summary=$locale===PUBLIC_LOCALE_PT_BR?'Valor previsto: '.$price:$price.' planned';
+    $title=$locale===PUBLIC_LOCALE_PT_BR?'Valor: '.$price:'Planned price: '.$price;
+    $summary=$locale===PUBLIC_LOCALE_PT_BR?$price.' via Pix':$price.' planned';
     $html=preg_replace_callback('~(<h3\b[^>]*data-workshop-price-title[^>]*>).*?(</h3>)~is',fn(array $match)=>$match[1].h($title).$match[2],$html,1)??$html;
     return preg_replace_callback('~(<span\b[^>]*data-workshop-price-summary[^>]*>).*?(</span>)~is',fn(array $match)=>$match[1].h($summary).$match[2],$html,1)??$html;
 }
@@ -100,7 +104,14 @@ function render_public_page(array $values=[],array $errors=[],bool $success=fals
     foreach($content['texts'] as $id=>$value){$pattern='~(<([a-z][a-z0-9]*)\b[^>]*data-editable-text="'.preg_quote((string)$id,'~').'"[^>]*>).*?(</\2>)~is';$localized=(string)$id==='hero-price'?$price:public_localized_html((string)$id,(string)$value['html'],$locale);$html=preg_replace_callback($pattern,fn(array $match)=>$match[1].$localized.$match[3],$html,1)??$html;}
     $html=public_apply_workshop_price($html,$locale,$price);
     $html=public_apply_videos($html,$content['videos']??[],$locale);
-    if($success){$html=preg_replace('/<form action="#" class="interest-form".*?<\/form>/s',public_confirmation_markup($locale),$html,1)??$html;$html=str_replace('class="interest" data-section="interest-form"','class="interest has-success" data-section="interest-form"',$html);}
-    else{$form=public_form_markup(interest_form_definition($locale),$values,$errors,$locale);$html=preg_replace_callback('/<form action="#" class="interest-form".*?<\/form>/s',fn()=>$form,$html,1)??$html;}
+    if($locale===PUBLIC_LOCALE_PT_BR){
+        $html=preg_replace('/<form action="#" class="interest-form".*?<\/form>/s',public_registration_cta_markup(),$html,1)??$html;
+    }elseif($success){
+        $html=preg_replace('/<form action="#" class="interest-form".*?<\/form>/s',public_confirmation_markup($locale),$html,1)??$html;
+        $html=str_replace('class="interest" data-section="interest-form"','class="interest has-success" data-section="interest-form"',$html);
+    }else{
+        $form=public_form_markup(interest_form_definition($locale),$values,$errors,$locale);
+        $html=preg_replace_callback('/<form action="#" class="interest-form".*?<\/form>/s',fn()=>$form,$html,1)??$html;
+    }
     echo $html;
 }
