@@ -37,6 +37,7 @@ jobs:
           find assets editor admin -name '*.js' -print0 | xargs -0 -n1 node --check
           php tools/test-cms.php
           php tools/test-cms-v3.php
+          php tools/test-media-image-policy.php
           php tools/test-build-dist.php
 
       - name: Build production artifact
