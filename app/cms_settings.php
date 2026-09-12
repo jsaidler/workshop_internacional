@@ -60,7 +60,7 @@ function cms_design_defaults(): array {
 
 function cms_settings_merge(array $defaults,array $value): array {
     foreach($value as $key=>$item){
-        if(is_array($item)&&isset($defaults[$key])&&is_array($defaults[$key]))$defaults[$key]=cms_settings_merge($defaults[$key],$item);
+        if(is_array($item)&&isset($defaults[$key])&&is_array($defaults[$key])&&!array_is_list($item)&&!array_is_list($defaults[$key]))$defaults[$key]=cms_settings_merge($defaults[$key],$item);
         else $defaults[$key]=$item;
     }
     return $defaults;
@@ -91,6 +91,7 @@ function cms_setting_scalar(mixed $value,mixed $fallback): mixed {
 }
 
 function cms_settings_validate(array $input,array $defaults): array {
+    if($defaults===[]||array_is_list($defaults))return array_values(array_filter($input,fn($row)=>is_array($row)||is_scalar($row)));
     $out=$defaults;
     foreach($defaults as $key=>$default){
         if(!array_key_exists($key,$input))continue;
@@ -105,6 +106,9 @@ function cms_settings_save(PDO $db,string $kind,int $activityId,string $locale,a
     $table=$kind==='design'?'cms_design_settings':'cms_site_settings';
     $defaults=$kind==='design'?cms_design_defaults():cms_site_defaults($locale);
     $clean=cms_settings_validate($settings,$defaults);
+    if($kind!=='design'&&isset($clean['footer']['links'])&&is_array($clean['footer']['links'])){
+        $links=[];foreach($clean['footer']['links'] as $link)if(is_array($link)&&trim((string)($link['label']??''))!==''&&trim((string)($link['url']??''))!=='')$links[]=['label'=>trim((string)$link['label']),'url'=>trim((string)$link['url'])];$clean['footer']['links']=$links;
+    }
     $json=json_encode($clean,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
     $q=$db->prepare("INSERT INTO $table(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(activity_id,locale) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at");
     $q->execute([$activityId,$locale,$json,gmdate('c')]);
@@ -137,8 +141,9 @@ function cms_design_css(array $design): string {
         '--cms-button-radius'=>max(0,min(40,(int)$b['radius'])).'px',
         '--cms-button-height'=>max(38,min(84,(int)$b['height'])).'px',
     ];
+    $dark='--bg:'.cms_css_color((string)$c['darkBg'],'#0c0d0e').';--surface:'.cms_css_color((string)$c['darkSurface'],'#141617').';--surface-2:'.cms_css_color((string)$c['darkSurface2'],'#1d1f20').';--text:'.cms_css_color((string)$c['darkText'],'#f0f0ec').';--muted:'.cms_css_color((string)$c['darkMuted'],'#a4a6a4').';--line:'.cms_css_color((string)$c['darkLine'],'#353839').';--focus:'.cms_css_color((string)$c['darkAccent'],'#79cba7').';';
     $css=':root{';foreach($vars as $key=>$value)$css.=$key.':'.$value.';';$css.='}';
-    $css.=':root[data-theme="dark"]{--bg:'.cms_css_color((string)$c['darkBg'],'#0c0d0e').';--surface:'.cms_css_color((string)$c['darkSurface'],'#141617').';--surface-2:'.cms_css_color((string)$c['darkSurface2'],'#1d1f20').';--text:'.cms_css_color((string)$c['darkText'],'#f0f0ec').';--muted:'.cms_css_color((string)$c['darkMuted'],'#a4a6a4').';--line:'.cms_css_color((string)$c['darkLine'],'#353839').';--focus:'.cms_css_color((string)$c['darkAccent'],'#79cba7').';}';
+    $css.=':root[data-theme="dark"]{'.$dark.'}@media(prefers-color-scheme:dark){:root:not([data-theme]){'.$dark.'}}';
     return $css;
 }
 
