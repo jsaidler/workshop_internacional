@@ -13,6 +13,9 @@ function cms_site_defaults(string $locale): array {
             'ctaLabel'=>'',
             'ctaUrl'=>'',
         ],
+        'navigation'=>[
+            'items'=>[],
+        ],
         'footer'=>[
             'line1'=>'João Saidler · Petrópolis, '.($pt?'Brasil':'Brazil'),
             'line2'=>$pt?'Fotografia experimental · positivo direto em filme de raios X':'Experimental photography · direct-positive X-ray film',
@@ -31,7 +34,9 @@ function cms_design_defaults(): array {
     return [
         'colors'=>[
             'bg'=>'#f2f2ef','surface'=>'#ffffff','surface2'=>'#e7e7e2','text'=>'#0b0c0d','muted'=>'#5f6264','line'=>'#bfc1be','accent'=>'#186f4d',
+            'buttonBg'=>'#0b0c0d','buttonText'=>'#ffffff','buttonBorder'=>'#0b0c0d',
             'darkBg'=>'#0c0d0e','darkSurface'=>'#141617','darkSurface2'=>'#1d1f20','darkText'=>'#f0f0ec','darkMuted'=>'#a4a6a4','darkLine'=>'#353839','darkAccent'=>'#79cba7',
+            'darkButtonBg'=>'#f0f0ec','darkButtonText'=>'#0b0c0d','darkButtonBorder'=>'#f0f0ec',
         ],
         'layout'=>[
             'maxWidth'=>1520,
@@ -44,17 +49,32 @@ function cms_design_defaults(): array {
             'contentNarrow'=>920,
         ],
         'type'=>[
+            'bodyFont'=>'Arial, Helvetica, sans-serif',
+            'displayFont'=>'"Arial Narrow", Arial, sans-serif',
+            'monoFont'=>'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
             'bodySize'=>17,
             'bodyLineHeight'=>1.55,
             'displayLineHeight'=>1.02,
+            'letterSpacing'=>0,
             'h1Min'=>70,
             'h1Vw'=>9.2,
             'h1Max'=>154,
             'h2Min'=>46,
             'h2Vw'=>6.4,
             'h2Max'=>108,
+            'h3Size'=>28,
+            'leadSize'=>24,
+            'smallSize'=>13,
         ],
-        'buttons'=>['radius'=>0,'height'=>54],
+        'buttons'=>[
+            'radius'=>0,
+            'height'=>54,
+            'borderWidth'=>1,
+            'paddingX'=>22,
+        ],
+        'advanced'=>[
+            'customCss'=>'',
+        ],
     ];
 }
 
@@ -101,13 +121,39 @@ function cms_settings_validate(array $input,array $defaults): array {
     return $out;
 }
 
+function cms_clean_nav_items(array $items): array {
+    $out=[];
+    foreach($items as $row){
+        if(!is_array($row))continue;
+        $type=($row['type']??'page')==='custom'?'custom':'page';
+        $label=trim((string)($row['label']??''));
+        if($type==='page'){
+            $pageId=(int)($row['pageId']??0);if($pageId<1)continue;
+            $out[]=['type'=>'page','pageId'=>$pageId,'label'=>$label,'newTab'=>!empty($row['newTab'])];
+        }else{
+            $url=trim((string)($row['url']??''));if($label===''||$url==='')continue;
+            $out[]=['type'=>'custom','label'=>$label,'url'=>$url,'newTab'=>!empty($row['newTab'])];
+        }
+        if(count($out)>=30)break;
+    }
+    return $out;
+}
+
 function cms_settings_save(PDO $db,string $kind,int $activityId,string $locale,array $settings): array {
     $locale=normalize_public_locale($locale)??PUBLIC_LOCALE_PT_BR;
     $table=$kind==='design'?'cms_design_settings':'cms_site_settings';
     $defaults=$kind==='design'?cms_design_defaults():cms_site_defaults($locale);
     $clean=cms_settings_validate($settings,$defaults);
-    if($kind!=='design'&&isset($clean['footer']['links'])&&is_array($clean['footer']['links'])){
-        $links=[];foreach($clean['footer']['links'] as $link)if(is_array($link)&&trim((string)($link['label']??''))!==''&&trim((string)($link['url']??''))!=='')$links[]=['label'=>trim((string)$link['label']),'url'=>trim((string)$link['url'])];$clean['footer']['links']=$links;
+    if($kind!=='design'){
+        if(isset($clean['footer']['links'])&&is_array($clean['footer']['links'])){
+            $links=[];foreach($clean['footer']['links'] as $link)if(is_array($link)&&trim((string)($link['label']??''))!==''&&trim((string)($link['url']??''))!=='')$links[]=['label'=>trim((string)$link['label']),'url'=>trim((string)$link['url'])];$clean['footer']['links']=$links;
+        }
+        $clean['navigation']['items']=cms_clean_nav_items(is_array($settings['navigation']['items']??null)?$settings['navigation']['items']:[]);
+    }else{
+        $css=(string)($clean['advanced']['customCss']??'');
+        $css=str_ireplace(['</style','<script','</script'],['','', ''],$css);
+        if(strlen($css)>30000)$css=substr($css,0,30000);
+        $clean['advanced']['customCss']=$css;
     }
     $json=json_encode($clean,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
     $q=$db->prepare("INSERT INTO $table(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(activity_id,locale) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at");
@@ -117,6 +163,9 @@ function cms_settings_save(PDO $db,string $kind,int $activityId,string $locale,a
 
 function cms_css_color(string $value,string $fallback): string {
     return preg_match('/^#[0-9a-f]{6}$/i',$value)?$value:$fallback;
+}
+function cms_css_font(string $value,string $fallback): string {
+    $value=trim($value);if($value===''||strlen($value)>220||preg_match('/[{};<>]/',$value))return $fallback;return $value;
 }
 
 function cms_design_css(array $design): string {
@@ -129,21 +178,34 @@ function cms_design_css(array $design): string {
         '--muted'=>cms_css_color((string)$c['muted'],'#5f6264'),
         '--line'=>cms_css_color((string)$c['line'],'#bfc1be'),
         '--focus'=>cms_css_color((string)$c['accent'],'#186f4d'),
+        '--cms-button-bg'=>cms_css_color((string)$c['buttonBg'],'#0b0c0d'),
+        '--cms-button-text'=>cms_css_color((string)$c['buttonText'],'#ffffff'),
+        '--cms-button-border'=>cms_css_color((string)$c['buttonBorder'],'#0b0c0d'),
         '--max'=>max(900,min(2200,(int)$l['maxWidth'])).'px',
         '--gutter'=>'clamp('.max(8,(int)$l['gutterMin']).'px,'.max(1,(float)$l['gutterVw']).'vw,'.max(16,(int)$l['gutterMax']).'px)',
         '--section'=>'clamp('.max(24,(int)$l['sectionMin']).'px,'.max(2,(float)$l['sectionVw']).'vw,'.max(40,(int)$l['sectionMax']).'px)',
         '--cms-narrow'=>max(560,min(1400,(int)$l['contentNarrow'])).'px',
+        '--cms-body-font'=>cms_css_font((string)$t['bodyFont'],'Arial, Helvetica, sans-serif'),
+        '--cms-display-font'=>cms_css_font((string)$t['displayFont'],'"Arial Narrow", Arial, sans-serif'),
+        '--cms-mono-font'=>cms_css_font((string)$t['monoFont'],'ui-monospace, monospace'),
         '--cms-body-size'=>max(12,min(28,(int)$t['bodySize'])).'px',
         '--cms-body-lh'=>max(1.1,min(2.2,(float)$t['bodyLineHeight'])),
         '--cms-display-lh'=>max(1,min(1.4,(float)$t['displayLineHeight'])),
+        '--cms-letter-spacing'=>max(-3,min(8,(float)$t['letterSpacing'])).'px',
         '--cms-h1'=>'clamp('.max(36,(int)$t['h1Min']).'px,'.max(4,(float)$t['h1Vw']).'vw,'.max(64,(int)$t['h1Max']).'px)',
         '--cms-h2'=>'clamp('.max(30,(int)$t['h2Min']).'px,'.max(3,(float)$t['h2Vw']).'vw,'.max(48,(int)$t['h2Max']).'px)',
+        '--cms-h3'=>max(18,min(64,(int)$t['h3Size'])).'px',
+        '--cms-lead'=>max(16,min(48,(int)$t['leadSize'])).'px',
+        '--cms-small'=>max(10,min(20,(int)$t['smallSize'])).'px',
         '--cms-button-radius'=>max(0,min(40,(int)$b['radius'])).'px',
         '--cms-button-height'=>max(38,min(84,(int)$b['height'])).'px',
+        '--cms-button-border-width'=>max(0,min(6,(int)$b['borderWidth'])).'px',
+        '--cms-button-padding-x'=>max(8,min(64,(int)$b['paddingX'])).'px',
     ];
-    $dark='--bg:'.cms_css_color((string)$c['darkBg'],'#0c0d0e').';--surface:'.cms_css_color((string)$c['darkSurface'],'#141617').';--surface-2:'.cms_css_color((string)$c['darkSurface2'],'#1d1f20').';--text:'.cms_css_color((string)$c['darkText'],'#f0f0ec').';--muted:'.cms_css_color((string)$c['darkMuted'],'#a4a6a4').';--line:'.cms_css_color((string)$c['darkLine'],'#353839').';--focus:'.cms_css_color((string)$c['darkAccent'],'#79cba7').';';
+    $dark='--bg:'.cms_css_color((string)$c['darkBg'],'#0c0d0e').';--surface:'.cms_css_color((string)$c['darkSurface'],'#141617').';--surface-2:'.cms_css_color((string)$c['darkSurface2'],'#1d1f20').';--text:'.cms_css_color((string)$c['darkText'],'#f0f0ec').';--muted:'.cms_css_color((string)$c['darkMuted'],'#a4a6a4').';--line:'.cms_css_color((string)$c['darkLine'],'#353839').';--focus:'.cms_css_color((string)$c['darkAccent'],'#79cba7').';--cms-button-bg:'.cms_css_color((string)$c['darkButtonBg'],'#f0f0ec').';--cms-button-text:'.cms_css_color((string)$c['darkButtonText'],'#0b0c0d').';--cms-button-border:'.cms_css_color((string)$c['darkButtonBorder'],'#f0f0ec').';';
     $css=':root{';foreach($vars as $key=>$value)$css.=$key.':'.$value.';';$css.='}';
     $css.=':root[data-theme="dark"]{'.$dark.'}@media(prefers-color-scheme:dark){:root:not([data-theme]){'.$dark.'}}';
+    $css.=(string)($design['advanced']['customCss']??'');
     return $css;
 }
 
