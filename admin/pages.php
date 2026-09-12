@@ -1,13 +1,24 @@
 <?php
 declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';require __DIR__.'/../app/admin_shell.php';security_headers();require_admin();
+function admin_set_cms_home(PDO $db,int $id): void {
+    $page=cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');
+    if((int)$page['is_home']===1)return;
+    $db->beginTransaction();
+    try{
+        $q=$db->prepare("SELECT * FROM cms_pages WHERE activity_id=? AND locale=? AND is_home=1 AND status!='archived' LIMIT 1");$q->execute([(int)$page['activity_id'],$page['locale']]);$old=$q->fetch()?:null;
+        if($old){$replacement=cms_page_unique_slug($db,(int)$old['activity_id'],(string)$old['locale'],(string)$old['title'],(int)$old['id']);$q=$db->prepare('UPDATE cms_pages SET is_home=0,slug=?,updated_at=? WHERE id=?');$q->execute([$replacement,utc_now(),(int)$old['id']]);}
+        $q=$db->prepare("UPDATE cms_pages SET is_home=1,slug='',show_in_nav=1,updated_at=? WHERE id=?");$q->execute([utc_now(),$id]);
+        $db->commit();
+    }catch(Throwable $error){if($db->inTransaction())$db->rollBack();throw $error;}
+}
 $db=database();$state=admin_activity_resolution($db);$activity=$state['activity'];if(!$activity){header('Location: /admin/activities.php');exit;}$activityId=(int)$activity['id'];cms_pages_seed($db,$activityId);
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('cms-pages',$_POST['_csrf']??null)){http_response_code(403);exit('Invalid request');}
     $action=(string)($_POST['action']??'');
     try{
         if($action==='create'){$page=cms_page_create($db,$activityId,(string)($_POST['locale']??PUBLIC_LOCALE_PT_BR),(string)($_POST['title']??'Nova página'),(string)($_POST['slug']??''),(int)($_POST['copy_id']??0)?:null);header('Location: /editor/?page='.(int)$page['id']);exit;}
-        if($action==='home'){cms_page_set_home($db,(int)($_POST['page_id']??0));}
+        if($action==='home'){admin_set_cms_home($db,(int)($_POST['page_id']??0));}
         if($action==='archive'){cms_page_archive($db,(int)($_POST['page_id']??0));}
     }catch(RuntimeException $error){$_SESSION['admin_notice']=$error->getMessage();}
     header('Location: /admin/pages.php?activity='.$activityId);exit;
