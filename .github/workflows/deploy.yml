@@ -6,6 +6,7 @@ on:
       - 'wip/form-response-refinement-2026-07-16'
       - 'cms-v3-professional'
       - 'cms-v3-professional-2'
+      - 'cms-v3-professional-3'
   workflow_dispatch:
 
 permissions:
@@ -38,6 +39,7 @@ jobs:
           php tools/test-cms.php
           php tools/test-cms-v3.php
           php tools/test-media-image-policy.php
+          php tools/test-cms-professional-3.php
           php tools/test-build-dist.php
 
       - name: Build production artifact
