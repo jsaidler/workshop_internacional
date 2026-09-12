@@ -7,7 +7,7 @@ if($root===false||!is_dir($root))fail_manifest('dist directory not found');
 $sourceSha=trim((string)(getenv('SOURCE_SHA')?:''));
 if($sourceSha===''){
     $repo=dirname(__DIR__);
-    $out=[];$rc=0;exec('git -C '.escapeshellarg($repo).' rev-parse HEAD 2>NUL',$out,$rc);
+    $out=[];$rc=0;exec('git -C '.escapeshellarg($repo).' rev-parse HEAD',$out,$rc);
     if($rc===0&&isset($out[0]))$sourceSha=trim($out[0]);
 }
 if($sourceSha==='')$sourceSha='unknown';
