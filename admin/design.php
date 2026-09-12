@@ -1,0 +1,27 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/../app/bootstrap.php';require __DIR__.'/../app/admin_shell.php';security_headers();require_admin();
+$db=database();$state=admin_activity_resolution($db);$activity=$state['activity'];if(!$activity){header('Location: /admin/activities.php');exit;}$activityId=(int)$activity['id'];$locale=normalize_public_locale($_GET['lang']??$_POST['locale']??PUBLIC_LOCALE_PT_BR)??PUBLIC_LOCALE_PT_BR;
+if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+    if(!verify_csrf('cms-design',$_POST['_csrf']??null)){http_response_code(403);exit('Invalid request');}
+    $settings=[
+        'colors'=>array_intersect_key($_POST['colors']??[],cms_design_defaults()['colors']),
+        'layout'=>array_intersect_key($_POST['layout']??[],cms_design_defaults()['layout']),
+        'type'=>array_intersect_key($_POST['type']??[],cms_design_defaults()['type']),
+        'buttons'=>array_intersect_key($_POST['buttons']??[],cms_design_defaults()['buttons']),
+    ];
+    cms_settings_save($db,'design',$activityId,$locale,$settings);$_SESSION['admin_notice']='Design atualizado.';header('Location: /admin/design.php?activity='.$activityId.'&lang='.rawurlencode(public_locale_query($locale)));exit;
+}
+$design=cms_design_settings($db,$activityId,$locale);$notice=$_SESSION['admin_notice']??null;unset($_SESSION['admin_notice']);
+function d_input(string $label,string $name,mixed $value,string $type='number',string $extra=''):void{?><label><?=$label?><input type="<?=$type?>" name="<?=$name?>" value="<?=h((string)$value)?>" <?=$extra?>></label><?php }
+admin_shell_start('design','Design',$state);?>
+<?php if($notice):?><div class="admin-notice"><?=h((string)$notice)?></div><?php endif;?>
+<section class="overview-hero"><div><p class="admin-kicker">Sistema visual</p><h2>Controle global sem editar CSS</h2><p>Estes valores alimentam as variáveis usadas por todas as páginas. Mudanças publicadas aqui entram imediatamente no site.</p></div><div class="hero-actions"><a class="admin-button" href="/admin/design.php?activity=<?=$activityId?>&lang=pt-br"<?=$locale===PUBLIC_LOCALE_PT_BR?' aria-current="page"':''?>>PT</a><a class="admin-button" href="/admin/design.php?activity=<?=$activityId?>&lang=en"<?=$locale===PUBLIC_LOCALE_EN?' aria-current="page"':''?>>EN</a></div></section>
+<form class="admin-editor-card cms-settings-form" method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('cms-design'))?>"><input type="hidden" name="locale" value="<?=h($locale)?>">
+<section><p class="admin-kicker">Cores · tema claro</p><div class="form-grid two-columns"><?php foreach(['bg'=>'Fundo','surface'=>'Superfície','surface2'=>'Superfície secundária','text'=>'Texto','muted'=>'Texto secundário','line'=>'Linhas','accent'=>'Foco / destaque'] as $key=>$label)d_input($label,"colors[$key]",$design['colors'][$key],'color');?></div></section>
+<section><p class="admin-kicker">Cores · tema escuro</p><div class="form-grid two-columns"><?php foreach(['darkBg'=>'Fundo','darkSurface'=>'Superfície','darkSurface2'=>'Superfície secundária','darkText'=>'Texto','darkMuted'=>'Texto secundário','darkLine'=>'Linhas','darkAccent'=>'Foco / destaque'] as $key=>$label)d_input($label,"colors[$key]",$design['colors'][$key],'color');?></div></section>
+<section><p class="admin-kicker">Layout global</p><div class="form-grid two-columns"><?php d_input('Largura máxima (px)','layout[maxWidth]',$design['layout']['maxWidth'],'number','min="900" max="2200"');d_input('Conteúdo estreito (px)','layout[contentNarrow]',$design['layout']['contentNarrow'],'number','min="560" max="1400"');d_input('Gutter mínimo (px)','layout[gutterMin]',$design['layout']['gutterMin']);d_input('Gutter fluido (vw)','layout[gutterVw]',$design['layout']['gutterVw'],'number','step="0.1"');d_input('Gutter máximo (px)','layout[gutterMax]',$design['layout']['gutterMax']);d_input('Seção mínima (px)','layout[sectionMin]',$design['layout']['sectionMin']);d_input('Seção fluida (vw)','layout[sectionVw]',$design['layout']['sectionVw'],'number','step="0.1"');d_input('Seção máxima (px)','layout[sectionMax]',$design['layout']['sectionMax']);?></div></section>
+<section><p class="admin-kicker">Tipografia</p><div class="form-grid two-columns"><?php d_input('Corpo (px)','type[bodySize]',$design['type']['bodySize']);d_input('Entrelinha do corpo','type[bodyLineHeight]',$design['type']['bodyLineHeight'],'number','step="0.01" min="1.1" max="2.2"');d_input('Entrelinha de títulos','type[displayLineHeight]',$design['type']['displayLineHeight'],'number','step="0.01" min="1" max="1.4"');d_input('H1 mínimo (px)','type[h1Min]',$design['type']['h1Min']);d_input('H1 fluido (vw)','type[h1Vw]',$design['type']['h1Vw'],'number','step="0.1"');d_input('H1 máximo (px)','type[h1Max]',$design['type']['h1Max']);d_input('H2 mínimo (px)','type[h2Min]',$design['type']['h2Min']);d_input('H2 fluido (vw)','type[h2Vw]',$design['type']['h2Vw'],'number','step="0.1"');d_input('H2 máximo (px)','type[h2Max]',$design['type']['h2Max']);?></div></section>
+<section><p class="admin-kicker">Botões</p><div class="form-grid two-columns"><?php d_input('Altura mínima (px)','buttons[height]',$design['buttons']['height']);d_input('Raio dos cantos (px)','buttons[radius]',$design['buttons']['radius']);?></div></section>
+<div class="dialog-actions"><button class="admin-button" type="submit">Salvar design</button><a class="link-button" href="<?=h(admin_public_activity_url($activity).'?lang='.public_locale_query($locale))?>" target="_blank" rel="noopener">Ver site</a></div></form>
+<?php admin_shell_end();
