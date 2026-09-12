@@ -358,6 +358,10 @@
       letter-spacing: .06em;
       text-transform: uppercase;
     }
+    .vertical-frame .media-caption {
+      inset: 0 0 auto;
+      background: linear-gradient(0deg, transparent, rgba(0,0,0,.82));
+    }
 
     .process {
       display: grid;
@@ -511,6 +515,13 @@
     .form-status { min-height: 24px; color: color-mix(in srgb, var(--inverse) 70%, transparent); }
     .public-field { display:block; margin: 0 0 22px; }
     .form-error { margin: -12px 0 18px; color: #ffb3a7; font-size: 13px; }
+    .form-error-summary { margin: 0 0 24px; padding: 12px 14px; border-left: 2px solid #ffb3a7; background: color-mix(in srgb, #ffb3a7 14%, transparent); }
+    .form-error-summary p { margin: 0; }
+    .day-question { margin: 0 0 22px !important; }
+    .day-question legend { margin-bottom: 10px !important; padding: 0 !important; border: 0 !important; font-family: var(--mono) !important; font-size: 10px !important; letter-spacing: .05em; }
+    .day-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .day-grid label { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--inverse) 45%, transparent); cursor: pointer; font: 11px var(--mono); text-transform: uppercase; }
+    .day-grid input { width: 16px; min-height: 16px; margin: 0; accent-color: var(--inverse); }
     .form-success { margin: 0 0 26px; padding: 14px; border: 1px solid currentColor; color: var(--inverse); }
     .honeypot { position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden; }
 
@@ -577,7 +588,8 @@
       html { scroll-behavior: auto; }
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
     }
-    .interest-inner > .form-success { grid-column: 2; width: auto; margin: 0; align-self: start; }
-    .interest.has-success .interest-form { display: none; }
-    .interest .form-success { padding: 16px 0; border: 0; }
-    @media (max-width: 1040px) { .interest-inner > .form-success { grid-column: auto; } }
+    .interest-confirmation { align-self: start; padding: clamp(28px,4vw,58px); border: 1px solid color-mix(in srgb, var(--inverse) 45%, transparent); }
+    .interest-confirmation .section-label { margin-bottom: 18px; }
+    .interest-confirmation h2 { margin: 0; font: 500 clamp(58px,7vw,105px)/.8 var(--title); text-transform: uppercase; }
+    .interest-confirmation > p:not(.section-label) { max-width:42ch; margin:26px 0 34px; font-size:19px; color:color-mix(in srgb,var(--inverse) 78%,transparent); }
+    .interest-confirmation .button { color: var(--inverse-bg); background: var(--inverse); }

@@ -195,6 +195,7 @@
           "type": "text",
           "label": "Name",
           "required": true,
+          "audience": "both",
           "autocomplete": "name"
         },
         {
@@ -202,6 +203,7 @@
           "type": "email",
           "label": "Email",
           "required": true,
+          "audience": "both",
           "autocomplete": "email"
         },
         {
@@ -209,13 +211,23 @@
           "type": "text",
           "label": "Country",
           "required": false,
+          "audience": "en",
           "autocomplete": "country-name"
+        },
+        {
+          "id": "city",
+          "type": "text",
+          "label": "City",
+          "required": true,
+          "audience": "pt-BR",
+          "autocomplete": "address-level2"
         },
         {
           "id": "timezone",
           "type": "text",
           "label": "Time zone",
           "required": false,
+          "audience": "en",
           "placeholder": "e.g. UTC−5, Europe/London"
         },
         {
@@ -223,25 +235,29 @@
           "type": "textarea",
           "label": "Previous experience",
           "required": false,
+          "audience": "both",
           "rows": 3
         },
         {
           "id": "preferred_days",
           "type": "text",
           "label": "Preferred days",
-          "required": false
+          "required": false,
+          "audience": "both"
         },
         {
           "id": "preferred_time",
           "type": "text",
           "label": "Preferred time",
-          "required": false
+          "required": false,
+          "audience": "both"
         },
         {
           "id": "price_response",
           "type": "radio",
           "label": "Would you seriously consider joining at US$195?",
           "required": true,
+          "audience": "both",
           "options": [
             {
               "value": "yes",
@@ -262,13 +278,15 @@
           "type": "textarea",
           "label": "What would you most like to learn or solve?",
           "required": false,
+          "audience": "both",
           "rows": 5
         },
         {
           "id": "consent",
           "type": "checkbox",
           "label": "I agree to receive information about this workshop.",
-          "required": true
+          "required": true,
+          "audience": "both"
         }
       ]
     }

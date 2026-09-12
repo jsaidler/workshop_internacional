@@ -186,6 +186,13 @@
                 "required": {
                   "type": "boolean"
                 },
+                "audience": {
+                  "enum": [
+                    "both",
+                    "en",
+                    "pt-BR"
+                  ]
+                },
                 "placeholder": {
                   "type": "string"
                 },
