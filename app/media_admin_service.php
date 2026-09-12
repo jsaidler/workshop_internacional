@@ -72,9 +72,7 @@ function media_find_asset_by_url(PDO $db,string $url): ?array {
 
 function media_usage_all(PDO $db,int $assetId): array {
     $uses=[];
-    try{
-        foreach(media_usage($db,$assetId) as $use)$uses[]=$use+['source'=>'legacy'];
-    }catch(Throwable){ }
+    try{foreach(media_usage($db,$assetId) as $use)$uses[]=$use+['source'=>'legacy'];}catch(Throwable){ }
     $q=$db->prepare("SELECT p.id,p.title,p.slug,p.locale,p.draft_document_json,p.published_document_json,a.admin_name,a.slug activity_slug FROM cms_pages p JOIN activities a ON a.id=p.activity_id WHERE p.status!='archived'");
     $q->execute();
     foreach($q->fetchAll() as $row){
@@ -99,9 +97,10 @@ function media_resolve_cms_html(PDO $db,string $html): string {
         $assetId=(int)$node->getAttribute('data-media-asset-id');
         if($assetId<1)continue;
         try{$asset=media_asset($db,$assetId);}catch(Throwable){continue;}
-        $versionId=(int)($node->getAttribute('data-media-version-id')?:($asset['active_version_id']??0));
+        $versionId=(int)($asset['active_version_id']??0);
+        if($node->getAttribute('data-media-version-mode')==='pinned'&&$node->hasAttribute('data-media-version-id'))$versionId=(int)$node->getAttribute('data-media-version-id');
         if(strtolower($node->tagName)==='img'&&$asset['kind']==='image'){
-            $sources=media_image_sources($db,$assetId,$versionId,(string)($node->getAttribute('src')));
+            $sources=media_image_sources($db,$assetId,$versionId,(string)$node->getAttribute('src'));
             $node->setAttribute('src',$sources['src']);
             if($sources['srcset']!==''){$node->setAttribute('srcset',$sources['srcset']);$node->setAttribute('sizes','(max-width: 720px) 100vw, 50vw');}
             $x=$node->hasAttribute('data-focal-x')?(float)$node->getAttribute('data-focal-x'):(float)($asset['focal_x']??50);
