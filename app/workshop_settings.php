@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 function workshop_price_default(string $locale): string {
-    return $locale===PUBLIC_LOCALE_PT_BR?'US$ 195':'US$195';
+    return $locale===PUBLIC_LOCALE_PT_BR?'R$ 698':'US$195';
 }
 
 function workshop_settings_seed(PDO $db,int $activityId): void {
