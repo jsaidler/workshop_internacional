@@ -15,7 +15,7 @@ if(!$form||!$page||(int)$form['activity_id']!==(int)$page['activity_id']){http_r
 $locale=normalize_public_locale((string)($_POST['_locale']??$page['locale']))??(string)$page['locale'];
 if($locale!==$form['locale']||$locale!==$page['locale']){http_response_code(400);exit('Invalid locale');}
 $schema=cms_form_schema($form,true);
-[$values,$errors]=cms_form_validate_submission($schema,$_POST);
+[$values,$errors]=cms_form_validate_submission($schema,$_POST,$locale);
 $return=(string)($_POST['_return']??'');
 if($return===''||!str_starts_with($return,'/')){$activity=activity_by_id($db,(int)$page['activity_id']);$return=$activity?cms_page_url($activity,$page,$locale):'/';}
 $parts=parse_url($return);$returnPath=is_array($parts)&&isset($parts['path'])?(string)$parts['path']:'/';$returnQuery=is_array($parts)&&isset($parts['query'])?'?'.(string)$parts['query']:'';$return=$returnPath.$returnQuery;
@@ -25,6 +25,6 @@ try{
     $_SESSION['cms_form_flash'][$form['form_uuid']]=['success'=>true];
     header('Location: '.$return.'#form-'.(int)$form['id'],true,303);exit;
 }catch(RuntimeException $error){
-    if(str_contains(strtolower($error->getMessage()),'too many')){http_response_code(429);exit('Too many attempts. Please try again later.');}
+    if(str_contains(strtolower($error->getMessage()),'too many')){http_response_code(429);exit($locale===PUBLIC_LOCALE_PT_BR?'Muitas tentativas. Tente novamente mais tarde.':'Too many attempts. Please try again later.');}
     throw $error;
 }
