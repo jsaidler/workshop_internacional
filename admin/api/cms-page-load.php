@@ -1,0 +1,7 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/../../app/bootstrap.php';
+security_headers();require_admin();
+$db=database();$id=(int)($_GET['page']??0);$page=cms_page_by_id($db,$id);if(!$page||$page['status']==='archived')content_json(['error'=>['code'=>'page_not_found']],404);$activity=activity_by_id($db,(int)$page['activity_id']);if(!$activity)content_json(['error'=>['code'=>'activity_not_found']],404);
+$forms=array_map(fn(array $form)=>['id'=>(int)$form['id'],'form_uuid'=>$form['form_uuid'],'key'=>$form['form_key'],'title'=>$form['title'],'locale'=>$form['locale'],'draftRevision'=>(int)$form['draft_revision'],'publishedRevision'=>$form['published_revision']===null?null:(int)$form['published_revision']],cms_forms($db,(int)$page['activity_id'],(string)$page['locale']));
+content_json(['csrf'=>csrf_token('cms-editor'),'page'=>['id'=>(int)$page['id'],'uuid'=>$page['page_uuid'],'activityId'=>(int)$page['activity_id'],'locale'=>$page['locale'],'slug'=>$page['slug'],'title'=>$page['title'],'navTitle'=>$page['nav_title'],'isHome'=>(bool)$page['is_home'],'showInNav'=>(bool)$page['show_in_nav'],'draftRevision'=>(int)$page['draft_revision'],'publishedRevision'=>$page['published_revision']===null?null:(int)$page['published_revision'],'document'=>cms_page_doc($page,false)],'activity'=>['id'=>(int)$activity['id'],'slug'=>$activity['slug'],'title'=>$activity['public_title']],'forms'=>$forms]);
