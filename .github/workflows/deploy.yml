@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'wip/form-response-refinement-2026-07-16'
+      - 'cms-v3-professional'
   workflow_dispatch:
 
 jobs:
@@ -48,7 +49,10 @@ jobs:
         id: ftp
         shell: bash
         run: |
-          if [[ -n "$DEPLOY_FTP_URL" && -n "$DEPLOY_FTP_USERNAME" && -n "$DEPLOY_FTP_PASSWORD" && -n "$DEPLOY_FTP_PATH" ]]; then
+          if [[ "${GITHUB_REF_NAME}" != "wip/form-response-refinement-2026-07-16" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "FTP deploy skipped on validation branch."
+          elif [[ -n "$DEPLOY_FTP_URL" && -n "$DEPLOY_FTP_USERNAME" && -n "$DEPLOY_FTP_PASSWORD" && -n "$DEPLOY_FTP_PATH" ]]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
