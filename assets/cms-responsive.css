@@ -18,8 +18,11 @@
   .cms-public [data-cms-tablet-space="xl"]{padding-top:128px!important;padding-bottom:128px!important}
   .cms-public [data-cms-tablet-order="reverse"] .cms-grid>:first-child,.cms-public [data-cms-tablet-order="reverse"] .cms-free-grid>:first-child{order:2}
   .cms-public [data-cms-tablet-order="reverse"] .cms-grid>:last-child,.cms-public [data-cms-tablet-order="reverse"] .cms-free-grid>:last-child{order:1}
+  .cms-public [data-cms-tablet-width="25"]{width:25%!important;max-width:25%!important}.cms-public [data-cms-tablet-width="33"]{width:33.333%!important;max-width:33.333%!important}.cms-public [data-cms-tablet-width="50"]{width:50%!important;max-width:50%!important}.cms-public [data-cms-tablet-width="66"]{width:66.667%!important;max-width:66.667%!important}.cms-public [data-cms-tablet-width="75"]{width:75%!important;max-width:75%!important}.cms-public [data-cms-tablet-width="100"]{width:100%!important;max-width:100%!important}
+  .cms-public [data-cms-tablet-self-align="left"]{text-align:left!important;margin-left:0!important;margin-right:auto!important}.cms-public [data-cms-tablet-self-align="center"]{text-align:center!important;margin-left:auto!important;margin-right:auto!important}.cms-public [data-cms-tablet-self-align="right"]{text-align:right!important;margin-left:auto!important;margin-right:0!important}
 }
 @media (max-width:720px){
+  .cms-public [data-cms-hidden-mobile="1"]{display:none!important}
   .cms-public [data-cms-mobile-columns="1"] .cms-grid,.cms-public [data-cms-mobile-columns="1"] .cms-free-grid{grid-template-columns:1fr!important}
   .cms-public [data-cms-mobile-columns="2"] .cms-grid,.cms-public [data-cms-mobile-columns="2"] .cms-free-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .cms-public [data-cms-mobile-gap="s"] .cms-grid,.cms-public [data-cms-mobile-gap="s"] .cms-free-grid{gap:12px!important}
@@ -35,4 +38,7 @@
   .cms-public [data-cms-mobile-space="xl"]{padding-top:96px!important;padding-bottom:96px!important}
   .cms-public [data-cms-mobile-order="reverse"] .cms-grid>:first-child,.cms-public [data-cms-mobile-order="reverse"] .cms-free-grid>:first-child{order:2}
   .cms-public [data-cms-mobile-order="reverse"] .cms-grid>:last-child,.cms-public [data-cms-mobile-order="reverse"] .cms-free-grid>:last-child{order:1}
+  .cms-public [data-cms-mobile-width="50"]{width:50%!important;max-width:50%!important}.cms-public [data-cms-mobile-width="75"]{width:75%!important;max-width:75%!important}.cms-public [data-cms-mobile-width="100"]{width:100%!important;max-width:100%!important}
+  .cms-public [data-cms-mobile-self-align="left"]{text-align:left!important;margin-left:0!important;margin-right:auto!important}.cms-public [data-cms-mobile-self-align="center"]{text-align:center!important;margin-left:auto!important;margin-right:auto!important}.cms-public [data-cms-mobile-self-align="right"]{text-align:right!important;margin-left:auto!important;margin-right:0!important}
 }
+@media (min-width:1025px){.cms-public [data-cms-hidden-desktop="1"]{display:none!important}}
