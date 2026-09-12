@@ -10,6 +10,7 @@ function admin_shell_start(string $section,string $title,array $state): void {
     $items=[
         'overview'=>['Visão geral','/admin/'],
         'pages'=>['Páginas',admin_shell_url('/admin/pages.php',$activity)],
+        'blocks'=>['Blocos reutilizáveis',admin_shell_url('/admin/blocks.php',$activity)],
         'design'=>['Design',admin_shell_url('/admin/design.php',$activity)],
         'site'=>['Site e navegação',admin_shell_url('/admin/site.php',$activity)],
         'forms'=>['Formulários',admin_shell_url('/admin/forms.php',$activity)],
