@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 const UPDATE_REPO_RAW='https://raw.githubusercontent.com/jsaidler/workshop_internacional/production-dist/';
 const UPDATE_MAX_FILE_BYTES=16777216;
+const UPDATE_BACKUP_RETENTION=8;
 
 function update_app_root(): string { return dirname(__DIR__); }
 function update_storage_root(): string { return update_app_root().'/storage/updates'; }
 function update_database_path(): string { return update_app_root().'/storage/database.sqlite'; }
+function update_lock_path(): string { return update_storage_root().'/update.lock'; }
 function update_persistent_path(string $relative): bool {
     $relative=str_replace('\\','/',$relative);
     return $relative==='config/local.php'||$relative==='config/install.php'||$relative==='storage/database.sqlite'||$relative==='storage/installed.lock'||str_starts_with($relative,'storage/logs/')||str_starts_with($relative,'storage/updates/')||str_starts_with($relative,'uploads/');
@@ -17,11 +19,11 @@ function update_safe_relative(string $relative): string {
     return $relative;
 }
 function update_http_get(string $url,int $maxBytes=UPDATE_MAX_FILE_BYTES): string {
-    $context=stream_context_create(['http'=>['timeout'=>20,'follow_location'=>1,'user_agent'=>'WorkshopCMS-Updater/1.1'],'https'=>['timeout'=>20]]);
+    $context=stream_context_create(['http'=>['timeout'=>20,'follow_location'=>1,'user_agent'=>'WorkshopCMS-Updater/1.2'],'https'=>['timeout'=>20]]);
     $data=@file_get_contents($url,false,$context,0,$maxBytes+1);
     if($data===false){
         if(function_exists('curl_init')){
-            $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_TIMEOUT=>20,CURLOPT_USERAGENT=>'WorkshopCMS-Updater/1.1',CURLOPT_MAXFILESIZE=>$maxBytes]);$data=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!is_string($data)||$code<200||$code>=300)throw new RuntimeException('update_download_failed'.($error?': '.$error:''));
+            $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_TIMEOUT=>20,CURLOPT_USERAGENT=>'WorkshopCMS-Updater/1.2',CURLOPT_MAXFILESIZE=>$maxBytes]);$data=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!is_string($data)||$code<200||$code>=300)throw new RuntimeException('update_download_failed'.($error?': '.$error:''));
         }else throw new RuntimeException('update_download_failed');
     }
     if(strlen($data)>$maxBytes)throw new RuntimeException('update_file_too_large');
@@ -49,6 +51,10 @@ function update_local_manifest_files(): array {
     $file=update_app_root().'/deploy-manifest.json';if(!is_file($file))return [];$data=json_decode((string)file_get_contents($file),true);if(!is_array($data))return [];try{return update_manifest_validate($data)['files'];}catch(Throwable){return [];}
 }
 function update_mkdir(string $dir): void {if(!is_dir($dir)&&!mkdir($dir,0755,true)&&!is_dir($dir))throw new RuntimeException('update_storage_unavailable');}
+function update_lock_acquire(?string $path=null) {
+    $path=$path??update_lock_path();update_mkdir(dirname($path));$handle=@fopen($path,'c+');if($handle===false)throw new RuntimeException('update_lock_unavailable');if(!@flock($handle,LOCK_EX|LOCK_NB)){fclose($handle);throw new RuntimeException('update_already_running');}@ftruncate($handle,0);@fwrite($handle,(string)getmypid().' '.gmdate('c')."\n");@fflush($handle);return $handle;
+}
+function update_lock_release($handle): void {if(is_resource($handle)){@flock($handle,LOCK_UN);@fclose($handle);}}
 function update_copy_atomic(string $source,string $destination): void {
     update_mkdir(dirname($destination));$tmp=$destination.'.update-'.bin2hex(random_bytes(4));if(!copy($source,$tmp)){@unlink($tmp);throw new RuntimeException('update_write_failed');}if(is_file($destination)&&!is_writable($destination)){@unlink($tmp);throw new RuntimeException('update_target_not_writable');}if(!@rename($tmp,$destination)){@unlink($tmp);throw new RuntimeException('update_write_failed');}
 }
@@ -68,12 +74,18 @@ function update_backup_file(string $root,string $backup,string $relative): void 
 function update_restore_files(string $root,string $backup,array $touched,array $originallyExisted): void {
     foreach($touched as $relative){$target=$root.'/'.$relative;$hadFile=!empty($originallyExisted[$relative]);$saved=$backup.'/'.$relative;if($hadFile&&is_file($saved)){try{update_copy_atomic($saved,$target);}catch(Throwable){}}elseif(!$hadFile&&is_file($target)){@unlink($target);}}
 }
+function update_remove_tree(string $dir): void {
+    if(!is_dir($dir))return;$it=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST);foreach($it as $entry){$path=$entry->getPathname();if($entry->isLink()||$entry->isFile()){@unlink($path);}elseif($entry->isDir()){@rmdir($path);}}@rmdir($dir);
+}
 function update_backup_history(int $limit=8): array {
     $root=update_storage_root();if(!is_dir($root))return [];$dirs=glob($root.'/backup-*',GLOB_ONLYDIR)?:[];rsort($dirs,SORT_STRING);$items=[];
     foreach(array_slice($dirs,0,max(1,$limit)) as $dir){$meta=[];$file=$dir.'/update.json';if(is_file($file)){$decoded=json_decode((string)file_get_contents($file),true);if(is_array($decoded))$meta=$decoded;}$items[]=['path'=>$dir,'name'=>basename($dir),'sourceSha'=>(string)($meta['sourceSha']??''),'installedAt'=>$meta['installedAt']??null,'changed'=>is_array($meta['changed']??null)?$meta['changed']:[],'removed'=>is_array($meta['removed']??null)?$meta['removed']:[],'database'=>is_file($dir.'/database.sqlite')];}
     return $items;
 }
-function update_apply(): array {
+function update_prune_backups(int $keep=UPDATE_BACKUP_RETENTION): int {
+    $root=update_storage_root();if(!is_dir($root))return 0;$dirs=glob($root.'/backup-*',GLOB_ONLYDIR)?:[];rsort($dirs,SORT_STRING);$removed=0;foreach(array_slice($dirs,max(1,$keep)) as $dir){update_remove_tree($dir);if(!is_dir($dir))$removed++;}return $removed;
+}
+function update_apply_unlocked(): array {
     $manifest=update_manifest_validate(update_remote_json('deploy-manifest.json'));$sourceSha=$manifest['sourceSha'];if($sourceSha==='unknown')throw new RuntimeException('invalid_update_manifest');
     $root=update_app_root();$storage=update_storage_root();update_mkdir($storage);$stamp=gmdate('Ymd-His').'-'.substr(preg_replace('/[^a-f0-9]/i','',$sourceSha),0,12);$stage=$storage.'/stage-'.$stamp;$backup=$storage.'/backup-'.$stamp;update_mkdir($stage);update_mkdir($backup);
     $changed=[];$removed=[];$old=update_local_manifest_files();$touched=[];$originallyExisted=[];$databaseBackup=null;
@@ -90,6 +102,9 @@ function update_apply(): array {
     }catch(Throwable $error){
         update_restore_files($root,$backup,$touched,$originallyExisted);throw $error;
     }finally{
-        if(is_dir($stage))media_remove_tree($stage);
+        if(is_dir($stage))update_remove_tree($stage);
     }
+}
+function update_apply(): array {
+    $lock=update_lock_acquire();try{$result=update_apply_unlocked();$result['prunedBackups']=update_prune_backups();return $result;}finally{update_lock_release($lock);}
 }
