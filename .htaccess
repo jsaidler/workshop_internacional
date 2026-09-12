@@ -2,6 +2,8 @@ Options -Indexes
 RewriteEngine On
 RewriteRule ^(app|config|storage|data|output|reference)/ - [F,L]
 RewriteRule ^\.git - [F,L]
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+RewriteRule ^robots\.txt$ robots.php [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([a-z0-9-]+)/([a-z0-9-]+)/?$ index.php?activity=$1&page=$2 [QSA,L]
