@@ -21,6 +21,8 @@ expect_update(!isset($manifest['files']['storage/database.sqlite']),'persistent 
 
 $tmp=sys_get_temp_dir().'/workshop-update-test-'.bin2hex(random_bytes(5));mkdir($tmp,0777,true);
 try{
+    $lockPath=$tmp.'/locks/update.lock';$first=update_lock_acquire($lockPath);expect_update(is_resource($first),'update lock was not acquired');$locked=false;try{$second=update_lock_acquire($lockPath);update_lock_release($second);}catch(RuntimeException $error){$locked=$error->getMessage()==='update_already_running';}expect_update($locked,'second updater was not rejected while lock was held');update_lock_release($first);$after=update_lock_acquire($lockPath);expect_update(is_resource($after),'update lock was not reusable after release');update_lock_release($after);
+
     $dbPath=$tmp.'/database.sqlite';$pdo=new PDO('sqlite:'.$dbPath,null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);$pdo->exec('CREATE TABLE sample(id INTEGER PRIMARY KEY,value TEXT NOT NULL)');$pdo->prepare('INSERT INTO sample(value) VALUES(?)')->execute(['positivo direto']);$pdo=null;
     $backupDir=$tmp.'/backup-db';$backupPath=update_backup_database($backupDir,$dbPath);expect_update(is_string($backupPath)&&is_file($backupPath),'database backup was not created');$copy=new PDO('sqlite:'.$backupPath);expect_update($copy->query('SELECT value FROM sample WHERE id=1')->fetchColumn()==='positivo direto','database backup is not readable or consistent');$copy=null;
 
