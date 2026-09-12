@@ -13,6 +13,7 @@ function admin_shell_start(string $section,string $title,array $state): void {
         'blocks'=>['Blocos reutilizáveis',admin_shell_url('/admin/blocks.php',$activity)],
         'design'=>['Design',admin_shell_url('/admin/design.php',$activity)],
         'site'=>['Site e navegação',admin_shell_url('/admin/site.php',$activity)],
+        'seo'=>['SEO e compartilhamento',admin_shell_url('/admin/seo.php',$activity)],
         'forms'=>['Formulários',admin_shell_url('/admin/forms.php',$activity)],
         'responses'=>['Respostas',admin_shell_url('/admin/submissions.php',$activity)],
         'media'=>['Mídia',admin_shell_url('/admin/media.php',$activity)],
