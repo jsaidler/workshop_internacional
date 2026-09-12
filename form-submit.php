@@ -14,7 +14,7 @@ $page=cms_page_by_id($db,(int)($_POST['_page_id']??0));
 if(!$form||!$page||(int)$form['activity_id']!==(int)$page['activity_id']){http_response_code(404);exit('Form not found');}
 $locale=normalize_public_locale((string)($_POST['_locale']??$page['locale']))??(string)$page['locale'];
 if($locale!==$form['locale']||$locale!==$page['locale']){http_response_code(400);exit('Invalid locale');}
-$schema=cms_form_schema($form,true);
+$schema=cms_form_schema($form,true);$workflow=cms_form_workflow($schema);
 [$values,$errors]=cms_form_validate_submission($schema,$_POST,$locale);
 $return=(string)($_POST['_return']??'');
 if($return===''||!str_starts_with($return,'/')){$activity=activity_by_id($db,(int)$page['activity_id']);$return=$activity?cms_page_url($activity,$page,$locale):'/';}
@@ -22,6 +22,8 @@ $parts=parse_url($return);$returnPath=is_array($parts)&&isset($parts['path'])?(s
 if($errors){$_SESSION['cms_form_flash'][$form['form_uuid']]=['values'=>$values,'errors'=>$errors];header('Location: '.$return.'#form-'.(int)$form['id'],true,303);exit;}
 try{
     cms_submission_save($db,$form,$schema,$values,(int)$page['id'],$locale,$return);
+    cms_form_notify($form,$schema,$values,$locale);
+    if($workflow['successMode']==='redirect'&&$workflow['redirectPath']!==''){header('Location: '.$workflow['redirectPath'],true,303);exit;}
     $_SESSION['cms_form_flash'][$form['form_uuid']]=['success'=>true];
     header('Location: '.$return.'#form-'.(int)$form['id'],true,303);exit;
 }catch(RuntimeException $error){
