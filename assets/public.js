@@ -164,6 +164,7 @@ document.querySelectorAll('.cms-form').forEach(form=>{
     applyConditions(form);
   });
   form.addEventListener('change',()=>applyConditions(form));
+  applyConditions(form);
   loadConditions(form);
 });
 })();
