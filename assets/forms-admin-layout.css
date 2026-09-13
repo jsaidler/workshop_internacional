@@ -1,4 +1,4 @@
-/* Full form editor: keep the primary field work legible and push advanced configuration out of the way. */
+/* Full form editor: keep primary field editing legible and push advanced configuration out of the way. */
 .admin-section-forms .admin-editor-card{margin-top:22px}
 .admin-section-forms .form-builder{display:block}
 .admin-section-forms .form-builder-settings{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 16px;padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid var(--admin-line,#dcded8)}
@@ -24,13 +24,11 @@
 .admin-section-forms .form-builder-preview .cms-choice-grid label,
 .admin-section-forms .form-builder-preview .cms-consent{gap:8px;line-height:1.35}
 .admin-section-forms .form-builder-option{grid-template-columns:auto minmax(100px,.8fr) minmax(140px,1.2fr) 28px}
-.admin-section-forms details.admin-editor-card{padding:0;overflow:hidden}
-.admin-section-forms details.admin-editor-card>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px}
-.admin-section-forms details.admin-editor-card>summary::-webkit-details-marker{display:none}
-.admin-section-forms details.admin-editor-card>summary::after{content:'Abrir';font:600 11px var(--admin-body,Arial,sans-serif);color:var(--admin-muted,#6d706a);border:1px solid var(--admin-line-strong,#b7bab2);border-radius:4px;padding:5px 8px;background:#fff}
-.admin-section-forms details.admin-editor-card[open]>summary::after{content:'Fechar'}
-.admin-section-forms details.admin-editor-card>.admin-disclosure-body{padding:0 17px 17px;border-top:1px solid var(--admin-line,#dcded8)}
-.admin-section-forms .admin-disclosure-summary p{margin:2px 0 0;color:var(--admin-muted,#6d706a);font-size:12px}
+.admin-section-forms .admin-collapsible-card{padding:15px 17px}
+.admin-section-forms .admin-collapsible-card>.admin-editor-header{margin:0;align-items:center}
+.admin-section-forms .admin-collapsible-card>.admin-editor-header>div{min-width:0}
+.admin-section-forms .admin-collapsible-card>.admin-collapsible-content{padding-top:15px;margin-top:15px;border-top:1px solid var(--admin-line,#dcded8)}
+.admin-section-forms .admin-collapsible-card>.admin-collapsible-content[hidden]{display:none}
 @media(max-width:1180px){
   .admin-section-forms .form-builder-workspace{grid-template-columns:1fr}
   .admin-section-forms .form-builder-preview{position:static;max-height:none}
