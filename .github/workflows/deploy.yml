@@ -57,6 +57,8 @@ jobs:
           php tools/test-refine-session-copy.php
           php tools/test-workshop-copy-refinements.php
           php tools/test-public-errors.php
+          php tools/test-task-centric-admin.php
+          php tools/test-media-list-service.php
           php tools/test-build-dist.php
 
       - name: Build production artifact
