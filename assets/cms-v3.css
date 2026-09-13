@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--sans:var(--body)}
 .cms-gallery-section{padding:var(--section) var(--gutter)}
 .cms-gallery-section>.section-label,.cms-gallery-section>h2{max-width:var(--max);margin-left:auto;margin-right:auto}
 .cms-gallery{max-width:var(--max);margin:clamp(28px,4vw,58px) auto 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.4vw,24px)}
