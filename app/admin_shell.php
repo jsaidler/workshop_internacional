@@ -7,11 +7,11 @@ function admin_media_summary(int $images,int $videos): string {return admin_quan
 function admin_public_activity_url(?array $activity): string {if(!$activity)return '/';return (int)($activity['is_root']??0)===1?'/':'/'.rawurlencode((string)$activity['slug']).'/';}
 function admin_workspace(string $section): string {
     return match($section){
-        'pages','blocks','design','site','seo'=>'site',
+        'pages','blocks','design','site','seo','overview'=>'site',
         'forms','responses'=>'registrations',
         'media'=>'media',
         'system','activities'=>'settings',
-        default=>'overview',
+        default=>'site',
     };
 }
 function admin_context_items(string $workspace,?array $activity): array {
@@ -38,8 +38,7 @@ function admin_shell_start(string $section,string $title,array $state): void {
     $activities=is_array($state['activities']??null)?$state['activities']:[];
     $workspace=admin_workspace($section);
     $items=[
-        'overview'=>['Início','/admin/'],
-        'site'=>['Site',admin_shell_url('/admin/pages.php',$activity)],
+        'site'=>['Site','/admin/'],
         'registrations'=>['Inscrições',admin_shell_url('/admin/submissions.php',$activity)],
         'media'=>['Mídia',admin_shell_url('/admin/media.php',$activity)],
         'settings'=>['Configurações','/admin/system.php'],
