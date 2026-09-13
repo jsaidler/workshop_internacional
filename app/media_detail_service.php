@@ -53,9 +53,11 @@ function media_detail_admin(PDO $db,int $assetId): array {
         }
     }catch(Throwable){ }
 
-    // CMS pages store structured media ids directly in their HTML. Let SQLite
-    // find only the matching rows instead of decoding every page on each click.
-    $needle='data-media-asset-id="'.$assetId.'"';
+    // cms_pages stores HTML inside JSON, so the quotes in the HTML attribute
+    // are escaped in the raw database value. Narrow on the encoded form, then
+    // decode only the matching rows and verify against the real HTML string.
+    $htmlNeedle='data-media-asset-id="'.$assetId.'"';
+    $encodedNeedle='data-media-asset-id=\\"'.$assetId.'\\"';
     $q=$db->prepare(
         "SELECT p.id,p.title,p.slug,p.locale,p.draft_document_json,p.published_document_json,
                 a.admin_name,a.slug activity_slug
@@ -65,11 +67,14 @@ function media_detail_admin(PDO $db,int $assetId): array {
            AND (instr(COALESCE(p.draft_document_json,''),?)>0
              OR instr(COALESCE(p.published_document_json,''),?)>0)"
     );
-    $q->execute([$needle,$needle]);
+    $q->execute([$encodedNeedle,$encodedNeedle]);
     foreach($q->fetchAll() as $row){
         foreach(['draft_document_json'=>'Rascunho','published_document_json'=>'Publicado'] as $column=>$state){
             $json=$row[$column]??null;
-            if(!is_string($json)||$json===''||!str_contains($json,$needle))continue;
+            if(!is_string($json)||$json==='')continue;
+            $document=json_decode($json,true);
+            $html=is_array($document)?(string)($document['html']??''):'';
+            if($html===''||!str_contains($html,$htmlNeedle))continue;
             $asset['uses'][]=[
                 'source'=>'cms',
                 'activity'=>$row['admin_name'],
