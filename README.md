@@ -12,10 +12,12 @@ O CMS possui quatro áreas principais:
 
 - **Dashboard administrativo**: `/admin/` é a entrada do sistema e apresenta publicação, alterações pendentes, inscrições, páginas, formulários, mídia, saúde/armazenamento, atividade recente e atalhos. A edição da home é uma ação do dashboard, não o destino automático.
 - **Páginas**: páginas independentes por idioma, com URL, menu, rascunho e publicação próprios.
-- **Editor WYSIWYG**: texto editado diretamente sobre a página real, biblioteca de seções, imagens, ordenação, duplicação e remoção de blocos, visualização desktop/tablet/mobile e edição visual dos formulários inseridos na página. Rótulos de campos, rótulos de opções, textos de ajuda, texto do botão e conteúdo editorial intercalado no formulário são editados clicando diretamente no que está renderizado; o formulário não é tratado como um único bloco textual nem exige selecionar o campo em um dropdown lateral.
-- **Formulários e respostas**: inscrições e pesquisas próprias do site, com campos adicionáveis, removíveis e reordenáveis; cada formulário possui rascunho/publicação e as respostas ficam armazenadas no SQLite com status, notas e CSV. O mesmo schema pode conter blocos editoriais posicionados entre campos, inclusive conteúdo condicional e imagens administradas pela biblioteca. Alterações estruturais continuam no editor completo de formulários.
+- **Editor WYSIWYG**: texto editado diretamente sobre a página real, biblioteca de seções, imagens, ordenação, duplicação e remoção de blocos, visualização desktop/tablet/mobile e edição visual dos formulários inseridos na página. Rótulos de campos, rótulos de opções, textos de ajuda, texto do botão e conteúdo editorial intercalado no formulário são editados clicando diretamente no que está renderizado; o formulário não é tratado como um único bloco textual nem exige selecionar o campo em um dropdown lateral. Formulários já expandidos pertencem ao controlador visual de formulário; o editor central só trata o placeholder ainda não renderizado como entidade de formulário.
+- **Formulários e respostas**: inscrições e pesquisas próprias do site, com campos adicionáveis, removíveis e reordenáveis; cada formulário possui rascunho/publicação e as respostas ficam armazenadas no SQLite com status, notas e CSV. O mesmo schema pode conter blocos editoriais posicionados entre campos, inclusive conteúdo condicional, áreas opcionais e imagens administradas pela biblioteca. Alterações estruturais continuam no editor completo de formulários.
 
-Na inscrição brasileira, programação, condições, pagamento Pix/cartão e QR Code pertencem ao conteúdo do formulário no CMS. Os estados condicionais ficam todos visíveis no editor, mas no site público obedecem à regra configurada. Assim, trocar o QR Code, o código Pix, o link do Mercado Pago ou o texto de um painel não exige alteração de código.
+Na inscrição brasileira, programação, condições, pagamento Pix/cartão e QR Code pertencem ao conteúdo do formulário no CMS. Os estados condicionais e áreas explicitamente ocultas continuam visíveis no editor, mas no site público obedecem à regra configurada e ao controle de exibição. Assim, trocar o QR Code, o código Pix, o link do Mercado Pago, o texto de um painel, sua condição ou se ele deve ser exibido não exige alteração de código.
+
+A migração desse conteúdo para o CMS deve preservar a apresentação pública que já estava aprovada. `migrations/023_repair_registration_editorial_blocks.php` corrige de forma não destrutiva instalações em que a migração anterior deixou o conjunto de blocos editoriais incompleto: blocos ausentes são repostos por identidade, enquanto conteúdo já editado é preservado.
 
 Português e inglês são documentos editoriais independentes. A versão brasileira pode operar como página de inscrição de uma nova turma enquanto a versão inglesa continua como pesquisa de interesse para a primeira turma em inglês.
 
@@ -38,7 +40,7 @@ Os conteúdos são apenas sementes. Depois disso o banco de dados passa a ser a 
 - `app/cms_forms.php`: schemas de formulário, blocos editoriais, validação, renderização e submissões.
 - `app/workshop_registration_content.php`: conteúdo inicial da inscrição brasileira que é migrado para o schema e depois administrado pelo CMS.
 - `app/cms_renderer.php`: renderização pública das páginas e inserção dos formulários.
-- `editor/cms-form-editor.js`: controlador único da edição visual de campos e conteúdo editorial dos formulários.
+- `editor/cms-form-editor.js`: controlador único da edição visual de campos e conteúdo editorial dos formulários expandidos.
 - `editor/`: editor visual WYSIWYG.
 - `admin/index.php`: dashboard administrativo.
 - `admin/pages.php`: gerenciamento de páginas.
@@ -47,6 +49,7 @@ Os conteúdos são apenas sementes. Depois disso o banco de dados passa a ser a 
 - `admin/system.php`: saúde, canal de produção, atualização e rollback de arquivos.
 - `migrations/011_cms_pages_forms.php`: tabelas do novo CMS.
 - `migrations/022_registration_native_editorial_content.php`: migração da inscrição híbrida para conteúdo editorial nativo do formulário.
+- `migrations/023_repair_registration_editorial_blocks.php`: reparo não destrutivo de blocos editoriais ausentes/incompletos da inscrição.
 - `template/page.css`: base visual aprovada que continua sendo reutilizada.
 - `assets/cms.css`: complementos visuais do CMS e dos formulários.
 
@@ -55,6 +58,8 @@ O sistema anterior (`content_documents`, `interest_submissions` e a tradução f
 ## Desenvolvimento
 
 A branch de produção atual é `wip/form-response-refinement-2026-07-16`. GitHub Actions valida sintaxe PHP e JavaScript, testes do CMS, interação crítica do editor em Chromium/Playwright, build e distribuição.
+
+A regressão de formulário inclui um cenário com `cms-form-editor.js` e `cms-editor-v3.js` carregados simultaneamente, porque a propriedade da interação no formulário só é validada corretamente quando os dois controladores reais estão ativos.
 
 Antes de integrar uma mudança, confirme que todos os checks estão verdes e atualize os documentos canônicos quando a mudança alterar comportamento, arquitetura, conteúdo estrutural ou operação.
 
@@ -97,4 +102,4 @@ Depois que o self-updater está instalado, o fluxo normal é:
 
 ## Atualizações editoriais
 
-Alterações normais de texto, páginas, formulários, imagens, navegação, design, conteúdos condicionais e dados de pagamento são feitas diretamente no CMS e não dependem de Git, FTP ou atualização da aplicação.
+Alterações normais de texto, páginas, formulários, imagens, navegação, design, conteúdos condicionais, áreas opcionais e dados de pagamento são feitas diretamente no CMS e não dependem de Git, FTP ou atualização da aplicação.
