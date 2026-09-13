@@ -128,7 +128,11 @@ function media_list_grid_items(PDO $db,string $status='active'): array {
         $versionId=(int)($row['active_version_id']??0);
         $row['id']=$id;
         $row['active_version_id']=$versionId?:null;
-        $row['derivatives']=$versionId?($derivatives[$versionId]??[]):[];
+        // PNG artwork is delivered from the untouched original. Older
+        // responsive PNG derivatives can be visually corrupt while keeping
+        // valid dimensions/checksums, so they must not drive library/editor
+        // previews. JPEG/WebP assets keep their responsive derivatives.
+        $row['derivatives']=(($row['kind']??'')==='image'&&($row['mime_type']??'')==='image/png')?[]:($versionId?($derivatives[$versionId]??[]):[]);
         $row['versions']=[];
         $row['tags']=$tags[$id]??[];
         $row['uses']=array_fill(0,(int)($usageCounts[$id]??0),true);
