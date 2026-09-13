@@ -58,7 +58,10 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 - o editor completo de formulários prioriza a tarefa de edição: configurações gerais ficam acima, lista de campos e propriedades recebem a área principal e a prévia fica em bloco separado, em vez de quatro áreas comprimidas lado a lado;
 - no editor visual da página, o formulário não é tratado como uma entidade textual única nem exige escolher um campo em um seletor lateral;
 - rótulos de campo, rótulos de opções, textos de ajuda e texto do botão são alvos editoriais independentes na própria prévia: o usuário clica exatamente no texto exibido e edita `contenteditable` no lugar, como nos demais textos da página;
-- a interação desses alvos é capturada antes do clique do bloco do formulário, para que o wrapper não roube a seleção do texto;
+- inputs, selects, textareas, checkboxes e radios também são subalvos selecionáveis como contexto do campo; clicar neles não deve transformar o interior do formulário em área morta;
+- todos os subalvos são preparados quando o documento do iframe é instalado, e o controlador também tenta instalar-se imediatamente quando o documento já existe, evitando depender exclusivamente de um próximo evento `load`;
+- a interação de um subalvo é capturada antes do clique do bloco do formulário, para que o wrapper não roube a seleção daquele elemento específico;
+- o wrapper do formulário não pode cancelar genericamente todo `pointerdown`/`click` de seus descendentes. Somente um subalvo reconhecido recebe interceptação; os demais eventos continuam para o editor normal;
 - o cursor é posicionado no ponto clicado; `Enter` conclui a edição e `Esc` cancela a alteração em curso;
 - alterações visuais são gravadas como rascunho do formulário pela API canônica `cms-form-save.php`; a publicação continua explícita por `cms-form-publish.php`;
 - propriedades que não aparecem na página continuam contextuais: ao clicar uma opção, por exemplo, o inspector pode mostrar o valor interno daquela opção, sem duplicar o rótulo visível em um segundo campo de texto;
