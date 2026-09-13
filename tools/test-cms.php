@@ -10,6 +10,7 @@ require __DIR__.'/../app/interest_repository.php';
 require __DIR__.'/../app/activity_repository.php';
 require __DIR__.'/../app/cms_forms.php';
 require __DIR__.'/../app/cms_pages.php';
+require __DIR__.'/../app/workshop_registration_content.php';
 require __DIR__.'/../app/workshop_cms_setup.php';
 
 $db=new PDO('sqlite::memory:');
@@ -37,7 +38,7 @@ expect(str_contains($ptHomeHtml,'suporte'),'PT page must contain processing supp
 $registrationHtml=cms_page_doc($registrationPage,true)['html'];
 expect(str_contains($registrationHtml,'data-cms-form-key="registration"'),'registration page must embed registration form');
 expect(str_contains($registrationHtml,'pelo menos 3 participantes'),'registration page must explain alternate-group minimum');
-expect(str_contains($registrationHtml,'data-registration-payment-source'),'registration page must contain payment instructions');
+expect(!str_contains($registrationHtml,'data-registration-payment-source'),'registration payment instructions must belong to the form schema, not page HTML');
 expect(str_contains(cms_page_doc($enPage,true)['html'],'data-cms-form-key="interest"'),'EN page must embed interest survey');
 expect(str_contains(cms_page_doc($enPage,true)['html'],'first English-language cohort'),'EN page must position first English cohort');
 
@@ -47,6 +48,7 @@ expect(isset($ptFields['terms'])&&!empty($ptFields['terms']['required']),'regist
 expect(isset($ptFields['payment_method'])&&!empty($ptFields['payment_method']['required']),'payment method must be required');
 expect(isset($ptFields['support_size'])&&!empty($ptFields['support_size']['required']),'support size must be required');
 expect(!isset($ptFields['experience'])&&!isset($ptFields['equipment'])&&!isset($ptFields['payment_preference']),'invented qualification fields must not exist');
+expect(count(cms_form_content_blocks($ptSchema))>=7,'registration editorial content blocks must be part of the form schema');
 $availabilityHtml=cms_form_input_html($ptFields['availability'],[]);
 expect(!str_contains($availabilityHtml,'type="checkbox" name="availability[]" value="tue_19_oct_6_13_20" required'),'checkbox group must not require every individual option');
 
