@@ -87,24 +87,15 @@ function markChanged(entry){entry.dirty=true;entry.changeSeq++;renderIfCurrent(e
 function queueSave(entry){
   entry.queue=entry.queue.then(async()=>{
     if(!entry.data||!entry.dirty)return;
-    const seq=entry.changeSeq;
-    const form=entry.data.form;
-    const revision=form.draftRevision;
-    const schema=JSON.parse(JSON.stringify(form.schema));
+    const seq=entry.changeSeq;const form=entry.data.form;const revision=form.draftRevision;const schema=JSON.parse(JSON.stringify(form.schema));
     entry.saving=true;renderIfCurrent(entry);
     try{
       const saved=await post('/admin/api/cms-form-save.php',{csrf:entry.data.csrf,formId:form.id,revision,title:form.title,schema});
       if(entry.changeSeq===seq){entry.data.form=saved.form;entry.dirty=false}
-      else{
-        entry.data.form.draftRevision=saved.form.draftRevision;
-        entry.data.form.draftUpdatedAt=saved.form.draftUpdatedAt;
-        entry.data.form.publishedRevision=saved.form.publishedRevision;
-      }
+      else{entry.data.form.draftRevision=saved.form.draftRevision;entry.data.form.draftUpdatedAt=saved.form.draftUpdatedAt;entry.data.form.publishedRevision=saved.form.publishedRevision}
       entry.error='';
-    }catch(error){
-      entry.error=error.code==='revision_conflict'?'O formulário foi alterado em outra sessão. Recarregue a página antes de continuar.':error.message;
-      entry.dirty=true;
-    }finally{entry.saving=false;renderIfCurrent(entry)}
+    }catch(error){entry.error=error.code==='revision_conflict'?'O formulário foi alterado em outra sessão. Recarregue a página antes de continuar.':error.message;entry.dirty=true}
+    finally{entry.saving=false;renderIfCurrent(entry)}
   });
   return entry.queue;
 }
@@ -113,16 +104,12 @@ async function publishEntry(entry){
   if(entry.dirty)await queueSave(entry);else await entry.queue;
   if(entry.dirty||entry.error)return;
   const button=inspector.querySelector('#fq-publish');if(button)button.disabled=true;
-  try{
-    const result=await post('/admin/api/cms-form-publish.php',{csrf:entry.data.csrf,formId:entry.data.form.id});
-    entry.data.form.publishedRevision=result.publishedRevision;entry.error='';
-  }catch(error){entry.error=error.message}
+  try{const result=await post('/admin/api/cms-form-publish.php',{csrf:entry.data.csrf,formId:entry.data.form.id});entry.data.form.publishedRevision=result.publishedRevision;entry.error=''}catch(error){entry.error=error.message}
   renderIfCurrent(entry);
 }
 function setMeta(el,{part,fieldId='',optionIndex=0}){
   if(!el)return null;
-  el.dataset.cmsFormInline=part;
-  el.dataset.cmsFormField=fieldId;
+  el.dataset.cmsFormInline=part;el.dataset.cmsFormField=fieldId;
   if(part==='option-label'||part==='field-control')el.dataset.cmsFormOptionIndex=String(optionIndex);else delete el.dataset.cmsFormOptionIndex;
   el.title=part==='field-control'?'Clique para selecionar o campo':'Clique para editar';
   return el;
@@ -130,11 +117,9 @@ function setMeta(el,{part,fieldId='',optionIndex=0}){
 function ensureDirectTextTarget(host,meta){
   if(!host)return null;
   const existing=host.querySelector(':scope > [data-cms-form-inline]');if(existing)return existing;
-  const nodes=[...host.childNodes].filter(node=>node.nodeType===3&&String(node.textContent||'').trim()!=='');
-  if(!nodes.length)return null;
+  const nodes=[...host.childNodes].filter(node=>node.nodeType===3&&String(node.textContent||'').trim()!=='');if(!nodes.length)return null;
   const span=host.ownerDocument.createElement('span');span.textContent=nodes.map(node=>node.textContent||'').join('').trim();
-  host.insertBefore(span,nodes[0]);nodes.forEach(node=>node.remove());
-  return setMeta(span,meta);
+  host.insertBefore(span,nodes[0]);nodes.forEach(node=>node.remove());return setMeta(span,meta);
 }
 function metaFrom(el){
   const block=formBlockFrom(el);if(!block)return null;
@@ -143,8 +128,7 @@ function metaFrom(el){
 function decorateBlock(block){
   const form=block.querySelector('form.cms-form');if(!form)return;
   form.querySelectorAll('.cms-field').forEach(container=>{
-    const control=container.querySelector('input[name],select[name],textarea[name]');
-    const fieldId=normalizeFieldName(control?.name);if(!fieldId)return;
+    const control=container.querySelector('input[name],select[name],textarea[name]');const fieldId=normalizeFieldName(control?.name);if(!fieldId)return;
     const label=container.querySelector(':scope > span');if(label)ensureDirectTextTarget(label,{part:'field-label',fieldId});
     const help=container.querySelector(':scope > small');if(help)setMeta(help,{part:'field-help',fieldId});
     if(control)setMeta(control,{part:'field-control',fieldId});
@@ -154,15 +138,13 @@ function decorateBlock(block){
     const legend=group.querySelector(':scope > legend');if(legend)ensureDirectTextTarget(legend,{part:'field-label',fieldId});
     [...group.querySelectorAll('.cms-choice-grid > label')].forEach((label,index)=>{
       const input=label.querySelector('input[name]');const text=label.querySelector(':scope > span');
-      if(input)setMeta(input,{part:'field-control',fieldId,optionIndex:index});
-      if(text)setMeta(text,{part:'option-label',fieldId,optionIndex:index});
+      if(input)setMeta(input,{part:'field-control',fieldId,optionIndex:index});if(text)setMeta(text,{part:'option-label',fieldId,optionIndex:index});
     });
     const help=group.querySelector(':scope > small');if(help)setMeta(help,{part:'field-help',fieldId});
   });
   form.querySelectorAll('.cms-consent').forEach(container=>{
     const control=container.querySelector('input[name]');const fieldId=normalizeFieldName(control?.name);if(!fieldId)return;
-    if(control)setMeta(control,{part:'field-control',fieldId});
-    const text=container.querySelector(':scope > span');if(text)ensureDirectTextTarget(text,{part:'field-label',fieldId});
+    if(control)setMeta(control,{part:'field-control',fieldId});const text=container.querySelector(':scope > span');if(text)ensureDirectTextTarget(text,{part:'field-label',fieldId});
   });
   const button=form.querySelector(':scope > button.button');if(button)ensureDirectTextTarget(button,{part:'submit-label'});
 }
@@ -177,8 +159,8 @@ function resolveTarget(raw){
   if(optionLabel){
     const grid=optionLabel.parentElement;const labels=[...grid.children].filter(node=>node.matches?.('label'));const index=Math.max(0,labels.indexOf(optionLabel));
     const input=optionLabel.querySelector('input[name]');const fieldId=normalizeFieldName(input?.name);
-    const text=optionLabel.querySelector(':scope > span')||ensureDirectTextTarget(optionLabel,{part:'option-label',fieldId,optionIndex:index});
     if(raw.closest('input'))return metaFrom(setMeta(input,{part:'field-control',fieldId,optionIndex:index}));
+    const text=optionLabel.querySelector(':scope > span')||ensureDirectTextTarget(optionLabel,{part:'option-label',fieldId,optionIndex:index});
     return text?metaFrom(setMeta(text,{part:'option-label',fieldId,optionIndex:index})):null;
   }
   const legend=raw.closest('.cms-choice-group > legend');
@@ -196,15 +178,13 @@ function resolveTarget(raw){
     if(raw.closest('input'))return metaFrom(setMeta(control,{part:'field-control',fieldId}));
     const label=consent.querySelector(':scope > span');const text=ensureDirectTextTarget(label,{part:'field-label',fieldId});return text?metaFrom(text):null;
   }
-  const button=raw.closest('form.cms-form > button.button');
-  if(button){const text=ensureDirectTextTarget(button,{part:'submit-label'});return text?metaFrom(text):null}
+  const button=raw.closest('form.cms-form > button.button');if(button){const text=ensureDirectTextTarget(button,{part:'submit-label'});return text?metaFrom(text):null}
   return null;
 }
 function selectMeta(meta){
   if(!meta?.formId||!meta.el)return;
   if(selected?.el&&selected.el!==meta.el)selected.el.classList.remove('cms-form-inline-selected');
-  selected=meta;meta.el.classList.add('cms-form-inline-selected');
-  renderContext();
+  selected=meta;meta.el.classList.add('cms-form-inline-selected');renderContext();
   ensureForm(meta.formId).then(()=>{if(selected?.el===meta.el)renderContext()}).catch(error=>{entryFor(meta.formId).error=error.message;if(selected?.el===meta.el)renderContext()});
 }
 function clearSelection(){if(selected?.el)selected.el.classList.remove('cms-form-inline-selected');selected=null}
@@ -222,8 +202,7 @@ function finishInline(cancel=false){
 function placeCaret(el,event){
   const d=el.ownerDocument;el.focus({preventScroll:true});let range=null;
   if(typeof d.caretPositionFromPoint==='function'){
-    const position=d.caretPositionFromPoint(event.clientX,event.clientY);
-    if(position&&el.contains(position.offsetNode)){range=d.createRange();range.setStart(position.offsetNode,position.offset);range.collapse(true)}
+    const position=d.caretPositionFromPoint(event.clientX,event.clientY);if(position&&el.contains(position.offsetNode)){range=d.createRange();range.setStart(position.offsetNode,position.offset);range.collapse(true)}
   }else if(typeof d.caretRangeFromPoint==='function'){
     const candidate=d.caretRangeFromPoint(event.clientX,event.clientY);if(candidate&&el.contains(candidate.startContainer))range=candidate;
   }
@@ -232,40 +211,29 @@ function placeCaret(el,event){
 function startInline(meta,event){
   if(!meta?.formId||!meta.el)return;
   if(editing?.el===meta.el){placeCaret(meta.el,event);return}
-  if(editing)finishInline(false);
-  selectMeta(meta);
-  editing={...meta,originalText:meta.el.textContent};
-  meta.el.setAttribute('contenteditable','true');meta.el.classList.add('cms-form-inline-editing');
-  placeCaret(meta.el,event);
+  if(editing)finishInline(false);selectMeta(meta);
+  editing={...meta,originalText:meta.el.textContent};meta.el.setAttribute('contenteditable','true');meta.el.classList.add('cms-form-inline-editing');placeCaret(meta.el,event);
 }
 function neutralizeLegacyWrapperSelection(d){
-  d.querySelectorAll('[data-cms-form-block]').forEach(block=>{
-    block.onclick=null;
-    block.removeAttribute('title');
-    block.dataset.cmsFormInlineOwned='1';
-  });
+  d.querySelectorAll('[data-cms-form-block]').forEach(block=>{block.onclick=null;block.removeAttribute('title');block.dataset.cmsFormInlineOwned='1'});
 }
 function injectFrameStyle(d){
   if(d.getElementById('cms-form-inline-editor-style'))return;
   const style=d.createElement('style');style.id='cms-form-inline-editor-style';
-  style.textContent='[data-cms-form-inline="field-label"],[data-cms-form-inline="option-label"],[data-cms-form-inline="field-help"],[data-cms-form-inline="submit-label"]{cursor:text}[data-cms-form-inline="field-control"]{cursor:pointer}.cms-form-inline-selected{outline:1px solid currentColor!important;outline-offset:3px}.cms-form-inline-editing{outline:2px solid currentColor!important;outline-offset:3px;cursor:text!important}';
-  d.head.append(style);
+  style.textContent='[data-cms-form-inline="field-label"],[data-cms-form-inline="option-label"],[data-cms-form-inline="field-help"],[data-cms-form-inline="submit-label"]{cursor:text}[data-cms-form-inline="field-control"]{cursor:pointer}.cms-form-inline-selected{outline:1px solid currentColor!important;outline-offset:3px}.cms-form-inline-editing{outline:2px solid currentColor!important;outline-offset:3px;cursor:text!important}';d.head.append(style);
 }
 function installFrameCapture(d=frameDoc()){
   if(!d||d.__cmsFormVisualEdit)return;
   d.__cmsFormVisualEdit=true;injectFrameStyle(d);decorateAll(d);
   d.addEventListener('pointerdown',event=>{
-    const block=formBlockFrom(event.target);if(!block){if(editing)finishInline(false);return}
     const meta=resolveTarget(event.target);
-    event.stopImmediatePropagation();
-    if(!meta){if(editing)finishInline(false);clearSelection();return}
-    if(meta.part==='field-control'){
-      event.preventDefault();if(editing)finishInline(false);selectMeta(meta);return;
-    }
-    event.preventDefault();startInline(meta,event);
+    if(!meta){if(editing&&formBlockFrom(event.target))finishInline(false);return}
+    event.preventDefault();event.stopImmediatePropagation();
+    if(meta.part==='field-control'){if(editing)finishInline(false);selectMeta(meta);return}
+    startInline(meta,event);
   },true);
   d.addEventListener('click',event=>{
-    const block=formBlockFrom(event.target);if(!block)return;
+    const meta=resolveTarget(event.target);if(!meta)return;
     event.preventDefault();event.stopImmediatePropagation();
   },true);
   d.addEventListener('keydown',event=>{
@@ -278,8 +246,7 @@ function installFrameCapture(d=frameDoc()){
 }
 function installCurrentDocument(){
   const d=frameDoc();if(!d)return;
-  if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',()=>installFrameCapture(d),{once:true});
-  else installFrameCapture(d);
+  if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',()=>installFrameCapture(d),{once:true});else installFrameCapture(d);
 }
 frame.addEventListener('load',()=>installCurrentDocument());
 installCurrentDocument();
