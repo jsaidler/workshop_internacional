@@ -49,7 +49,7 @@ function setupSiteSettings(){
 function polishMediaDetail(){
   const save=document.querySelector('#md-save');if(save)save.textContent='Salvar informações';
 }
-const activitySelect=document.querySelector('.admin-activity-box select[name="activity"]');
+const activitySelect=document.querySelector('.admin-site-current select[name="activity"],.admin-activity-box select[name="activity"]');
 activitySelect?.addEventListener('change',()=>activitySelect.form?.submit());
 if(document.body.classList.contains('admin-section-forms')){
   simplifyFormCards();
