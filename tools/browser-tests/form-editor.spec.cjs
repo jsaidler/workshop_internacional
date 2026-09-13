@@ -61,7 +61,7 @@ test('registration form content is edited directly and persists after reload',as
   await nameLabel.press('Enter');
   await expect.poll(()=>state.form.schema.fields.find(field=>field.id==='name')?.label).toBe('Nome do participante');
 
-  const pixOption=editor.locator('.cms-choice-grid label').filter({hasText:'PIX - R$698,00'}).locator('[data-cms-form-inline="option-label"]');
+  const pixOption=editor.locator('[data-cms-form-inline="option-label"][data-cms-form-field="payment_method"][data-cms-form-option-index="0"]');
   await pixOption.click();
   await pixOption.fill('PIX imediato');
   await pixOption.press('Enter');
