@@ -13,12 +13,23 @@ O fluxo é:
 1. alterações de código são integradas na branch de produção `wip/form-response-refinement-2026-07-16`;
 2. o GitHub Actions valida o código e constrói `dist/`;
 3. o workflow publica o pacote verificado na branch `production-dist`;
-4. o painel `Sistema e atualizações` detecta a nova versão;
+4. o painel `Sistema e atualizações` consulta o canal sem reutilizar uma resposta antiga de cache e detecta a nova versão;
 5. o usuário executa `Instalar atualização`;
 6. o updater baixa e valida os arquivos modificados, cria backup e substitui a aplicação preservando o estado persistente;
 7. a próxima requisição executa eventuais migrações pendentes.
 
 A publicação de `production-dist` **não significa que a hospedagem já foi atualizada**. Só considerar a versão remota instalada depois da aplicação pelo painel e da verificação da versão exibida em `Sistema e atualizações`.
+
+## Consistência do canal de atualização
+
+O canal remoto muda por branch (`production-dist`), portanto o updater não pode consultar arquivos por uma URL estável sujeita a cache intermediário.
+
+- A consulta de status usa token novo na URL e cabeçalhos `no-cache`.
+- Os arquivos de uma instalação usam o `sourceSha` do manifesto como token de URL.
+- `deploy-info.json` precisa confirmar o mesmo `sourceSha` antes da troca final.
+- Se o canal mudar no meio da instalação, o processo é abortado em vez de combinar arquivos de duas versões.
+
+Isso evita o caso em que o GitHub Actions já publicou uma versão nova, mas o admin ainda enxerga o `deploy-info.json` anterior por cache do `raw.githubusercontent.com`.
 
 ## O que o updater preserva
 

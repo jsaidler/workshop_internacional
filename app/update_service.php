@@ -18,26 +18,37 @@ function update_safe_relative(string $relative): string {
     if($relative===''||str_contains($relative,'..')||str_contains($relative,"\0")||preg_match('~^[a-z]+:~i',$relative))throw new RuntimeException('unsafe_update_path');
     return $relative;
 }
+function update_cache_token(): string {
+    try{return bin2hex(random_bytes(8));}catch(Throwable){return str_replace('.','',sprintf('%.6f',microtime(true)));}
+}
+function update_remote_url(string $relative,?string $token=null): string {
+    $relative=update_safe_relative($relative);$token=$token??update_cache_token();
+    return UPDATE_REPO_RAW.str_replace('%2F','/',rawurlencode($relative)).'?v='.rawurlencode($token);
+}
 function update_http_get(string $url,int $maxBytes=UPDATE_MAX_FILE_BYTES): string {
-    $context=stream_context_create(['http'=>['timeout'=>20,'follow_location'=>1,'user_agent'=>'WorkshopCMS-Updater/1.2'],'https'=>['timeout'=>20]]);
+    $headers="Cache-Control: no-cache\r\nPragma: no-cache\r\nAccept: application/octet-stream, application/json;q=0.9, */*;q=0.8\r\n";
+    $context=stream_context_create(['http'=>['timeout'=>20,'follow_location'=>1,'user_agent'=>'WorkshopCMS-Updater/1.3','header'=>$headers]]);
     $data=@file_get_contents($url,false,$context,0,$maxBytes+1);
     if($data===false){
         if(function_exists('curl_init')){
-            $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_TIMEOUT=>20,CURLOPT_USERAGENT=>'WorkshopCMS-Updater/1.2',CURLOPT_MAXFILESIZE=>$maxBytes]);$data=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!is_string($data)||$code<200||$code>=300)throw new RuntimeException('update_download_failed'.($error?': '.$error:''));
+            $ch=curl_init($url);curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_TIMEOUT=>20,CURLOPT_USERAGENT=>'WorkshopCMS-Updater/1.3',CURLOPT_MAXFILESIZE=>$maxBytes,CURLOPT_HTTPHEADER=>['Cache-Control: no-cache','Pragma: no-cache','Accept: application/octet-stream, application/json;q=0.9, */*;q=0.8']]);$data=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_RESPONSE_CODE);$error=curl_error($ch);curl_close($ch);if(!is_string($data)||$code<200||$code>=300)throw new RuntimeException('update_download_failed'.($error?': '.$error:''));
         }else throw new RuntimeException('update_download_failed');
     }
     if(strlen($data)>$maxBytes)throw new RuntimeException('update_file_too_large');
     return $data;
 }
-function update_remote_json(string $file): array {
-    $data=json_decode(update_http_get(UPDATE_REPO_RAW.rawurlencode($file),4194304),true);
+function update_remote_text(string $file,int $maxBytes=4194304,?string $token=null): string {
+    return update_http_get(update_remote_url($file,$token),$maxBytes);
+}
+function update_remote_json(string $file,?string $token=null): array {
+    $data=json_decode(update_remote_text($file,4194304,$token),true);
     if(!is_array($data))throw new RuntimeException('invalid_update_manifest');
     return $data;
 }
 function update_local_info(): array {
     $file=update_app_root().'/deploy-info.json';if(!is_file($file))return ['sourceSha'=>'unknown','generatedAt'=>null,'files'=>null];$data=json_decode((string)file_get_contents($file),true);return is_array($data)?$data:['sourceSha'=>'unknown','generatedAt'=>null,'files'=>null];
 }
-function update_remote_info(): array { return update_remote_json('deploy-info.json'); }
+function update_remote_info(): array { return update_remote_json('deploy-info.json',update_cache_token()); }
 function update_status(): array {
     $local=update_local_info();$remote=update_remote_info();$localSha=(string)($local['sourceSha']??'unknown');$remoteSha=(string)($remote['sourceSha']??'unknown');return ['local'=>$local,'remote'=>$remote,'available'=>$remoteSha!=='unknown'&&$remoteSha!==$localSha];
 }
@@ -86,17 +97,18 @@ function update_prune_backups(int $keep=UPDATE_BACKUP_RETENTION): int {
     $root=update_storage_root();if(!is_dir($root))return 0;$dirs=glob($root.'/backup-*',GLOB_ONLYDIR)?:[];rsort($dirs,SORT_STRING);$removed=0;foreach(array_slice($dirs,max(1,$keep)) as $dir){update_remove_tree($dir);if(!is_dir($dir))$removed++;}return $removed;
 }
 function update_apply_unlocked(): array {
-    $manifest=update_manifest_validate(update_remote_json('deploy-manifest.json'));$sourceSha=$manifest['sourceSha'];if($sourceSha==='unknown')throw new RuntimeException('invalid_update_manifest');
+    $manifestToken=update_cache_token();$remoteManifest=update_remote_text('deploy-manifest.json',4194304,$manifestToken);$manifestJson=json_decode($remoteManifest,true);if(!is_array($manifestJson))throw new RuntimeException('invalid_update_manifest');$manifest=update_manifest_validate($manifestJson);$sourceSha=$manifest['sourceSha'];if($sourceSha==='unknown')throw new RuntimeException('invalid_update_manifest');
     $root=update_app_root();$storage=update_storage_root();update_mkdir($storage);$stamp=gmdate('Ymd-His').'-'.substr(preg_replace('/[^a-f0-9]/i','',$sourceSha),0,12);$stage=$storage.'/stage-'.$stamp;$backup=$storage.'/backup-'.$stamp;update_mkdir($stage);update_mkdir($backup);
     $changed=[];$removed=[];$old=update_local_manifest_files();$touched=[];$originallyExisted=[];$databaseBackup=null;
     try{
-        foreach($manifest['files'] as $relative=>$meta){$target=$root.'/'.$relative;$current=is_file($target)?strtolower((string)hash_file('sha256',$target)):'';if($current===$meta['sha256'])continue;$data=update_http_get(UPDATE_REPO_RAW.str_replace('%2F','/',rawurlencode($relative)),max(1024,$meta['bytes']+1024));if(strtolower(hash('sha256',$data))!==$meta['sha256'])throw new RuntimeException('update_checksum_mismatch: '.$relative);$stageFile=$stage.'/'.$relative;update_mkdir(dirname($stageFile));if(file_put_contents($stageFile,$data,LOCK_EX)===false)throw new RuntimeException('update_storage_unavailable');$changed[]=$relative;}
+        foreach($manifest['files'] as $relative=>$meta){$target=$root.'/'.$relative;$current=is_file($target)?strtolower((string)hash_file('sha256',$target)):'';if($current===$meta['sha256'])continue;$data=update_remote_text($relative,max(1024,$meta['bytes']+1024),$sourceSha);if(strtolower(hash('sha256',$data))!==$meta['sha256'])throw new RuntimeException('update_checksum_mismatch: '.$relative);$stageFile=$stage.'/'.$relative;update_mkdir(dirname($stageFile));if(file_put_contents($stageFile,$data,LOCK_EX)===false)throw new RuntimeException('update_storage_unavailable');$changed[]=$relative;}
         foreach($old as $relative=>$meta)if(!isset($manifest['files'][$relative])&&!update_persistent_path($relative)&&is_file($root.'/'.$relative))$removed[]=$relative;
+        $remoteInfo=update_remote_text('deploy-info.json',1048576,$sourceSha);$infoJson=json_decode($remoteInfo,true);if(!is_array($infoJson)||(string)($infoJson['sourceSha']??'unknown')!==$sourceSha)throw new RuntimeException('update_channel_changed');
         $touched=array_values(array_unique(array_merge($changed,$removed,['deploy-manifest.json','deploy-info.json'])));foreach($touched as $relative){$originallyExisted[$relative]=is_file($root.'/'.$relative);if($originallyExisted[$relative])update_backup_file($root,$backup,$relative);}
         $databaseBackup=update_backup_database($backup);
         foreach($changed as $relative)update_copy_atomic($stage.'/'.$relative,$root.'/'.$relative);
         foreach($removed as $relative)if(is_file($root.'/'.$relative)&&!@unlink($root.'/'.$relative))throw new RuntimeException('update_remove_failed');
-        $remoteManifest=update_http_get(UPDATE_REPO_RAW.'deploy-manifest.json',4194304);$remoteInfo=update_http_get(UPDATE_REPO_RAW.'deploy-info.json',1048576);update_write_atomic($root.'/deploy-manifest.json',$remoteManifest);update_write_atomic($root.'/deploy-info.json',$remoteInfo);
+        update_write_atomic($root.'/deploy-manifest.json',$remoteManifest);update_write_atomic($root.'/deploy-info.json',$remoteInfo);
         $record=['sourceSha'=>$sourceSha,'installedAt'=>gmdate('c'),'changed'=>$changed,'removed'=>$removed,'databaseBackup'=>$databaseBackup?basename($databaseBackup):null];update_write_atomic($backup.'/update.json',json_encode($record,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n");
         return ['sourceSha'=>$sourceSha,'changed'=>$changed,'removed'=>$removed,'backup'=>$backup,'databaseBackup'=>$databaseBackup];
     }catch(Throwable $error){

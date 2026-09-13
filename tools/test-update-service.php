@@ -12,6 +12,14 @@ expect_update(update_persistent_path('storage/database.sqlite'),'database is not
 expect_update(update_persistent_path('uploads/photo.jpg'),'uploads are not protected');
 expect_update(!update_persistent_path('assets/public.js'),'normal application file marked persistent');
 
+$versionedUrl=update_remote_url('deploy-info.json','release-123');
+expect_update(str_contains($versionedUrl,'/production-dist/deploy-info.json?v=release-123'),'production channel URL is not cache-busted by release token');
+$nestedUrl=update_remote_url('assets/public.js','abc123');
+expect_update(str_contains($nestedUrl,'/production-dist/assets/public.js?v=abc123'),'nested update file URL lost path or release token');
+$updaterSource=(string)file_get_contents(__DIR__.'/../app/update_service.php');
+expect_update(str_contains($updaterSource,'Cache-Control: no-cache'),'updater requests do not explicitly bypass intermediary cache');
+expect_update(str_contains($updaterSource,"throw new RuntimeException('update_channel_changed')"),'updater does not reject a manifest/info channel race');
+
 $manifest=update_manifest_validate(['schema'=>1,'sourceSha'=>str_repeat('a',40),'files'=>[
     'assets/public.js'=>['sha256'=>str_repeat('b',64),'bytes'=>120],
     'storage/database.sqlite'=>['sha256'=>str_repeat('c',64),'bytes'=>500],

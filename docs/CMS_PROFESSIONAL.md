@@ -94,4 +94,6 @@ O fluxo operacional normal depois do bootstrap é:
 6. o updater preserva banco, uploads, configuração local e logs e cria backup antes da substituição;
 7. a próxima requisição executa migrações pendentes.
 
+A detecção de versão remota não pode depender de cache do `raw.githubusercontent.com`. O painel usa um token novo no URL de `deploy-info.json` e cabeçalhos `no-cache` a cada consulta. Durante uma instalação, o `sourceSha` do manifesto identifica os downloads daquela release e `deploy-info.json` precisa confirmar o mesmo SHA antes da troca final. Se o canal mudar durante o processo, a atualização é abortada em vez de misturar versões.
+
 `production-dist` atualizada não significa hospedagem atualizada. Só considerar a instalação remota atual depois que a atualização for aplicada pelo painel e a versão instalada for verificada.

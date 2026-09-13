@@ -51,6 +51,21 @@ O updater:
 7. nunca sobrescreve banco, uploads, configuração local, logs ou histórico de updates;
 8. deixa eventuais migrações para o bootstrap da próxima requisição.
 
+## Cache do canal `production-dist`
+
+A detecção de atualização não pode usar diretamente uma URL estável do `raw.githubusercontent.com` sem revalidação, porque uma resposta antiga de CDN pode fazer o painel concluir incorretamente que a instalação já está atualizada logo depois de uma publicação.
+
+Por isso:
+
+- cada consulta de `deploy-info.json` recebe um token de cache novo em `?v=...`;
+- as requisições enviam `Cache-Control: no-cache` e `Pragma: no-cache`;
+- ao iniciar uma instalação, o manifesto é baixado uma vez e seu `sourceSha` passa a identificar os downloads daquela atualização;
+- arquivos do pacote usam esse `sourceSha` como token de URL, evitando reutilizar conteúdo de uma versão anterior;
+- antes de gravar a nova versão local, `deploy-info.json` é conferido e precisa declarar o mesmo `sourceSha` do manifesto;
+- se `production-dist` mudar durante a atualização, o processo falha com `update_channel_changed` e não mistura arquivos de releases diferentes.
+
+Esse comportamento é coberto por `tools/test-update-service.php`, que deve rodar tanto no CI de pull request quanto na validação de produção.
+
 ## Cache de assets após atualização
 
 A aplicação não deve depender de o navegador descobrir sozinho que um CSS/JS mudou.
