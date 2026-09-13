@@ -38,15 +38,11 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 
 - qualquer elemento `<video>` da página é editável, inclusive vídeos antigos e o vídeo do processo, sem depender de um atributo editorial específico;
 - o próprio `<video>` é a superfície de seleção: o editor intercepta `pointerdown` e `click` em captura, executa `preventDefault()` e `stopImmediatePropagation()` e abre o inspector antes que os controles nativos ou a seção processem a interação;
-- não existe botão/overlay `Editar vídeo` inserido por cima do player; adicionar um segundo elemento editável sobre o vídeo é considerado regressão;
-- o inspector de vídeo controla a origem do vídeo, troca por asset da biblioteca, upload de vídeo, URL externa e reprodução (`controls`, autoplay, muted, loop, playsinline e preload);
+- não existe botão/overlay `Editar vídeo` inserido por cima do player;
+- o inspector de vídeo controla origem, asset da biblioteca, upload, URL externa e reprodução;
 - a biblioteca de troca mostra exclusivamente `MediaLibrary.videos`;
-- escolher um vídeo da biblioteca preserva o vínculo por `data-media-asset-id` e usa a versão mais recente resolvida pelo CMS;
-- escolher uma URL externa remove o vínculo com o asset gerenciado, evitando que o resolver substitua a URL posteriormente;
-- capa/poster aparece como propriedade separada do vídeo e é administrada como parte do asset de vídeo; editar a capa não significa editar ou substituir o arquivo de vídeo;
-- o mesmo controle atende todas as páginas, idiomas e componentes. Não há implementação especial para a seção de processo;
-- o controlador dedicado de vídeo é carregado antes dos hooks legados de `cms-pro-editor.js`, garantindo precedência da interceptação;
-- CSS e JavaScript do editor recebem `?v=<versão instalada>` na entrada autenticada `editor/index.php`, usando `sourceSha` de `deploy-info.json`, para impedir que uma versão antiga do editor permaneça ativa por cache após atualização.
+- capa/poster aparece como propriedade separada do vídeo;
+- o mesmo controle atende todas as páginas, idiomas e componentes.
 
 ## Formulários
 
@@ -54,14 +50,46 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 - editor de campos com drag-and-drop, duplicação, largura, obrigatoriedade, ajuda e opções;
 - prévia no painel;
 - rascunho/publicação;
-- respostas associadas ao formulário/página, status de acompanhamento, notas e CSV;
-- checkbox e radio têm dimensão visual normalizada em 18 × 18 px no site público, preview e admin;
-- no site público, largura, altura, mínimos, máximos e `flex-basis` desses controles são travados em 18 px para impedir que regras genéricas de `input` os façam ocupar a largura do grupo ou herdar a altura de campos de texto;
-- essa normalização pertence à camada compartilhada `.cms-public`, portanto vale para todas as páginas públicas e para o preview do editor, não para uma página, locale ou formulário específico;
-- o critério visual inclui a caixa efetiva do elemento, não apenas o círculo/quadrado nativo: marcador centralizado com texto distante significa que o `input` ainda está ocupando a linha e é regressão;
-- o renderer público mantém uma regra estrutural inline para checkbox/radio além do CSS externo, de modo que a geometria correta não dependa de uma cópia de stylesheet potencialmente antiga no navegador;
-- CSS e JavaScript públicos recebem `?v=<versão instalada>`, derivado de `deploy-info.json` (`sourceSha`) com `filemtime` como fallback, para garantir troca de URL após atualização da aplicação;
-- a revalidação HTTP em `.htaccess` continua como defesa adicional, não como único mecanismo contra cache antigo.
+- respostas associadas ao formulário/página, status de acompanhamento, notas e CSV.
+
+### Edição rápida no editor da página
+
+Selecionar um formulário inserido numa página abre, no próprio inspector do editor WYSIWYG, uma versão simplificada do editor de formulário.
+
+Essa edição rápida permite alterar sem sair da página:
+
+- texto do botão de envio;
+- rótulo de cada campo;
+- obrigatoriedade;
+- placeholder dos campos simples;
+- para lista, rádio e múltipla escolha: rótulo visível e valor interno de cada opção;
+- salvar como rascunho ou salvar e publicar.
+
+A edição rápida usa as mesmas APIs e o mesmo schema do editor completo. Não existe cópia local do formulário nem segunda fonte de verdade. Alterações estruturais — tipo, ordem, criação/remoção de campo, lógica condicional e fluxo após envio — continuam no editor completo, acessível a partir do inspector.
+
+### Editor completo de formulários
+
+O editor completo existe para trabalho estrutural, não para obrigar o usuário a sair da página quando precisa apenas corrigir texto ou valor de opção.
+
+- configuração geral fica no topo;
+- lista de campos e propriedades ocupam a área principal;
+- a prévia fica separada, sem esmagar lista e inspector em três colunas estreitas;
+- lógica condicional e fluxo após envio ficam recolhidos por padrão e são abertos somente quando necessários.
+
+### Controles nativos
+
+Checkbox e radio são tratados como controles nativos, não como inputs de texto.
+
+- no site público, largura, altura, mínimos, máximos e `flex-basis` ficam travados em 18 × 18 px na camada compartilhada `.cms-public`;
+- no admin, uma camada final compartilhada (`assets/admin-controls.css`) trava checkbox/radio em 16 × 16 px depois de todos os estilos administrativos normais;
+- isso vale para todas as páginas administrativas, inclusive a prévia do editor de formulários;
+- o critério visual inclui a caixa efetiva do elemento, não apenas o círculo/quadrado desenhado pelo navegador.
+
+## Cache e assets administrativos
+
+O shell administrativo versiona CSS/JS locais com `?v=<versão instalada>`, derivado de `deploy-info.json`. Assim, uma atualização de aplicação troca também os URLs dos assets administrativos e não depende de o navegador perceber sozinho que o CSS mudou.
+
+A mesma política já vale para o site público e para o editor de páginas. `Cache-Control: no-cache, must-revalidate` permanece como defesa adicional.
 
 ## Princípio de correção sistêmica
 
