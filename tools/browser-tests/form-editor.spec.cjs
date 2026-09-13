@@ -56,7 +56,7 @@ function renderedForm(form){
 }
 
 function previewHtml(form){
-  return `<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;padding:24px}.cms-form-grid{display:grid;gap:18px}.cms-form-content{padding:12px;border:1px solid #aaa}.registration-pix-layout{display:grid;grid-template-columns:120px 1fr;gap:12px}.registration-pix-layout img{width:100px;height:auto}</style></head><body class="cms-public cms-editor-preview"><main data-cms-page-main><section data-cms-section="registration" data-cms-section-name="Inscrição"><p data-cms-editable>Texto comum da página</p>${renderedForm(form)}</section></main></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/cms.css"><style>body{font-family:sans-serif;padding:24px}.cms-form-grid{display:grid;gap:18px}.cms-form-content{padding:12px;border:1px solid #aaa}.registration-pix-layout{display:grid;grid-template-columns:120px 1fr;gap:12px}.registration-pix-layout img{width:100px;height:auto}</style></head><body class="cms-public cms-editor-preview"><main data-cms-page-main><section data-cms-section="registration" data-cms-section-name="Inscrição"><p data-cms-editable>Texto comum da página</p>${renderedForm(form)}</section></main></body></html>`;
 }
 
 async function installFormRoutes(page,state){
@@ -143,7 +143,10 @@ test('expanded forms stay owned by the visual form editor when the full page edi
   await page.goto('http://127.0.0.1:8099/tools/browser-fixture/form-editor-integrated.html?page=1');
   const editor=page.frameLocator('#page-frame');
   const nameLabel=editor.locator('.cms-field > span [data-cms-form-inline="field-label"]');
+  const nameInput=editor.locator('.cms-field input[name="name"]');
   await expect(nameLabel).toBeVisible();
+  await expect.poll(()=>nameLabel.evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('auto');
+  await expect.poll(()=>nameInput.evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('auto');
   await nameLabel.click();
   await expect(nameLabel).toHaveAttribute('contenteditable','true');
   await expect(page.locator('#inspector')).toContainText('Rótulo do campo');
