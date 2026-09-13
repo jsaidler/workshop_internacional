@@ -1,37 +1,53 @@
 # Deploy on HostGator
 
-Requer Apache, PHP 8.2+, `pdo_sqlite`/`sqlite3`, extensão DOM e HTTPS. Sincronize o **conteúdo de `dist/`** diretamente com a raiz pública do domínio (`remotePath: "/"`).
+O estado operacional canônico do projeto está em `docs/PROJECT_STATE.md`. Requer Apache, PHP 8.2+, `pdo_sqlite`/`sqlite3`, extensão DOM e HTTPS.
 
-## Atualização de uma instalação existente
+## Fluxo normal vigente
 
-1. Faça uma cópia de segurança de `storage/database.sqlite` antes de publicar uma versão que contenha novas migrações.
-2. Execute `build-dist.cmd` na raiz do projeto. Não edite `dist/` manualmente.
-3. Sincronize `dist/` preservando os caminhos persistentes: nunca sobrescreva nem apague `config/local.php`, `config/install.php`, `storage/database.sqlite`, `storage/installed.lock`, `storage/logs/` ou `uploads/`.
-4. Abra primeiro o site/admin em uma janela de teste. O bootstrap executará as migrações pendentes no banco existente, incluindo a migração 011 do CMS.
-5. Entre em `/admin/` e confira **Páginas**, **Formulários** e **Respostas**.
-6. Teste a página em português e a inglesa, envie uma inscrição/pesquisa de teste e confirme o registro no painel e a exportação CSV.
-7. Só depois considere o deploy validado.
+Depois que o self-updater está instalado na hospedagem, **o usuário atualiza a aplicação pela área administrativa do próprio site**:
 
-A migração 011 **não apaga** `content_documents` nem `interest_submissions`. Os dados anteriores ficam preservados durante a transição.
+`Admin → Sistema e atualizações → Instalar atualização`
 
-## Deploy automático pelo GitHub
+O fluxo é:
 
-O workflow `.github/workflows/deploy.yml` sempre gera e valida um artefato `dist/` em cada push para a branch principal atual. Quando as credenciais FTP estiverem configuradas no repositório, o mesmo workflow envia esse artefato diretamente para a hospedagem.
+1. alterações de código são integradas na branch de produção `wip/form-response-refinement-2026-07-16`;
+2. o GitHub Actions valida o código e constrói `dist/`;
+3. o workflow publica o pacote verificado na branch `production-dist`;
+4. o painel `Sistema e atualizações` detecta a nova versão;
+5. o usuário executa `Instalar atualização`;
+6. o updater baixa e valida os arquivos modificados, cria backup e substitui a aplicação preservando o estado persistente;
+7. a próxima requisição executa eventuais migrações pendentes.
 
-Configure em **GitHub → Settings → Secrets and variables → Actions → Repository secrets**:
+A publicação de `production-dist` **não significa que a hospedagem já foi atualizada**. Só considerar a versão remota instalada depois da aplicação pelo painel e da verificação da versão exibida em `Sistema e atualizações`.
 
-- `DEPLOY_FTP_URL`: URL completa do servidor, por exemplo `ftp://ftp.seudominio.com` ou `ftps://ftp.seudominio.com`;
-- `DEPLOY_FTP_USERNAME`: usuário FTP;
-- `DEPLOY_FTP_PASSWORD`: senha FTP;
-- `DEPLOY_FTP_PATH`: diretório remoto que corresponde à raiz pública do site, por exemplo `/public_html/` ou `/` conforme a conta.
+## O que o updater preserva
 
-O deploy é deliberadamente não destrutivo: ele envia e substitui arquivos do artefato, mas não usa exclusão remota. Banco, configuração local, lock de instalação, logs e uploads são explicitamente excluídos.
+O updater não substitui:
 
-Enquanto os quatro secrets não existirem, o workflow **não tenta conectar ao FTP**. Ele apenas valida o código, constrói `dist/` e disponibiliza o artefato para download no GitHub Actions.
+- `config/local.php`;
+- `config/install.php`;
+- `storage/database.sqlite`;
+- `storage/installed.lock`;
+- `storage/logs/`;
+- `storage/updates/`;
+- `uploads/`.
 
-## Deploy pelo repositório local / VS Code
+Antes de substituir arquivos gerenciados, ele verifica SHA-256 e mantém backups locais. O banco pode ser copiado como segurança antes da atualização, mas não é restaurado automaticamente durante rollback de arquivos para evitar perda de inscrições ou edições posteriores.
 
-A pasta `.vscode/` é ignorada pelo Git e pode manter a configuração FTP/SFTP local sem expor credenciais no repositório. Para atualizar uma cópia local já configurada:
+## Bootstrap inicial ou contingência
+
+Uma instalação que ainda não possui o self-updater precisa de um deploy convencional do `dist/`. FTP/manual deploy também pode ser usado em recuperação excepcional se o updater estiver indisponível.
+
+Para bootstrap manual:
+
+1. faça uma cópia de segurança de `storage/database.sqlite`;
+2. execute `build-dist.cmd` na raiz do projeto;
+3. sincronize o **conteúdo de `dist/`** com a raiz pública;
+4. preserve todos os caminhos persistentes listados acima;
+5. abra o site/admin para que o bootstrap execute as migrações pendentes;
+6. confira `/admin/`, páginas PT/EN, formulários, respostas e mídia.
+
+No Windows:
 
 ```bat
 git switch wip/form-response-refinement-2026-07-16
@@ -39,33 +55,49 @@ git pull --ff-only
 build-dist.cmd
 ```
 
-Se a extensão do VS Code estiver configurada para sincronizar `dist/`, a alteração dos arquivos gerados dispara ou permite a sincronização normal. A origem remota deve ser o **conteúdo de `dist/`**, não a raiz inteira do repositório.
+A origem remota é o **conteúdo de `dist/`**, nunca a raiz inteira do repositório.
 
-## Atualizações editoriais depois do deploy
+## GitHub Actions
 
-Depois que esta versão do CMS estiver instalada na hospedagem, alterações normais de conteúdo **não dependem mais de Git, VS Code ou FTP**. O painel administrativo grava páginas, formulários, respostas e mídia diretamente na instalação hospedada.
+O workflow `.github/workflows/deploy.yml` valida a branch de produção, gera `dist/`, publica um artefato e atualiza `production-dist`, que é o canal consumido pelo updater administrativo.
 
-O fluxo editorial passa a ser:
+O workflow ainda suporta envio FTP quando os quatro secrets abaixo estiverem configurados:
+
+- `DEPLOY_FTP_URL`;
+- `DEPLOY_FTP_USERNAME`;
+- `DEPLOY_FTP_PASSWORD`;
+- `DEPLOY_FTP_PATH`.
+
+Esse FTP automático é **opcional** e não faz parte do fluxo operacional normal depois que o self-updater está instalado. A ausência desses secrets não impede o fluxo `production-dist → Admin → Sistema e atualizações`.
+
+Quando FTP estiver habilitado, o deploy continua não destrutivo e preserva banco, configuração, logs e uploads.
+
+## Atualizações editoriais
+
+Depois que o CMS está instalado, alterações normais de conteúdo não dependem de Git, VS Code, FTP nem self-update.
+
+O fluxo editorial é:
 
 1. entrar em `/admin/`;
-2. editar uma página ou formulário;
-3. salvar o rascunho;
+2. usar o dashboard para acessar a página, formulário, mídia ou configuração desejada;
+3. salvar o rascunho quando aplicável;
 4. publicar.
 
-A publicação passa a valer imediatamente no site. FTP/Git continua necessário apenas quando houver alteração no **código da aplicação**, não para atualizar textos, páginas, imagens, campos de formulários ou respostas.
+A publicação editorial vale imediatamente no site. Atualização de aplicação só é necessária quando há mudança de código/capacidade do CMS.
 
 ## Instalação nova
 
 1. Copie `dist/config/install.example.php` para `config/install.php` no servidor e configure um `install_key` longo e aleatório.
-2. Deixe `storage/` e `config/` graváveis pelo PHP durante a instalação (normalmente 775); depois apenas `storage/` precisa continuar gravável.
+2. Deixe `storage/` e `config/` graváveis pelo PHP durante a instalação; depois apenas os caminhos que precisam persistir devem continuar graváveis.
 3. Abra `/install/`, informe a chave, configure o site e crie o primeiro administrador.
 4. Apague `config/install.php` quando o instalador confirmar a conclusão.
-5. Entre em `/admin/`, abra as páginas iniciais PT/EN, revise e publique o conteúdo.
-6. Teste os formulários públicos e a exportação CSV.
-7. Ative HTTPS; os cookies seguros passam a ser usados automaticamente.
+5. Entre em `/admin/`, revise as páginas iniciais PT/EN e publique o conteúdo.
+6. Teste formulários públicos, painel de respostas e exportação CSV.
+7. Ative HTTPS.
+8. A partir daí, use `Admin → Sistema e atualizações` para futuras versões de código.
 
 ## Conteúdo do artefato
 
-`dist/` contém a aplicação necessária à produção, inclusive painel administrativo, editor visual, templates, assets e migrações. Ele não deve conter banco de desenvolvimento, credenciais locais, logs de desenvolvimento, capturas de teste nem arquivos do diretório `output/`.
+`dist/` contém a aplicação necessária à produção, inclusive painel administrativo, editor visual, templates, assets e migrações. Não deve conter banco de desenvolvimento, credenciais locais, logs de desenvolvimento, capturas de teste nem arquivos do diretório `output/`.
 
-O banco, os uploads e a configuração da instalação são persistentes e ficam fora do controle destrutivo do build.
+O banco, uploads e configuração da instalação são persistentes e ficam fora do controle destrutivo do build.
