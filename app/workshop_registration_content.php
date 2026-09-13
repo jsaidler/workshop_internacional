@@ -57,19 +57,21 @@ HTML,
             'afterField'=>'payment_method',
             'condition'=>['source'=>'payment_method','operator'=>'equals','value'=>'pix'],
             'html'=><<<'HTML'
-<section class="registration-payment-panel">
-  <p class="section-label" data-cms-editable>PIX</p>
-  <h3 data-cms-editable>R$ 698,00</h3>
-  <div class="registration-pix-layout">
-    <img src="/assets/media/pix-workshop.svg" alt="QR Code Pix para pagamento de R$ 698,00" data-cms-image>
-    <div>
-      <p><strong data-cms-editable>Chave Pix</strong><br><code data-cms-editable>20.179.548/0001-58</code></p>
-      <p><strong data-cms-editable>Copia e cola</strong></p>
-      <code class="registration-pix-code" data-pix-copy-value data-cms-editable>00020101021126690014br.gov.bcb.pix0114201795480001580229INSCRICAO MINI CURSO SETEMBRO5204000053039865406698.005802BR592020 1 5 J V T SAIDLER6010PETROPOLIS62070503***6304314B</code>
-      <button class="button button-secondary" type="button" data-copy-pix data-cms-editable>Copiar código Pix</button>
+<div class="registration-payment-source">
+  <section class="registration-payment-panel">
+    <p class="section-label" data-cms-editable>PIX</p>
+    <h3 data-cms-editable>R$ 698,00</h3>
+    <div class="registration-pix-layout">
+      <img src="/assets/media/pix-workshop.svg" alt="QR Code Pix para pagamento de R$ 698,00" data-cms-image>
+      <div>
+        <p><strong data-cms-editable>Chave Pix</strong><br><code data-cms-editable>20.179.548/0001-58</code></p>
+        <p><strong data-cms-editable>Copia e cola</strong></p>
+        <code class="registration-pix-code" data-pix-copy-value data-cms-editable>00020101021126690014br.gov.bcb.pix0114201795480001580229INSCRICAO MINI CURSO SETEMBRO5204000053039865406698.005802BR592020 1 5 J V T SAIDLER6010PETROPOLIS62070503***6304314B</code>
+        <button class="button button-secondary" type="button" data-copy-pix data-cms-editable>Copiar código Pix</button>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+</div>
 HTML,
         ],
         [
@@ -78,12 +80,14 @@ HTML,
             'afterField'=>'payment_method',
             'condition'=>['source'=>'payment_method','operator'=>'contains','value'=>'card_'],
             'html'=><<<'HTML'
-<section class="registration-payment-panel">
-  <p class="section-label" data-cms-editable>CARTÃO DE CRÉDITO · MERCADO PAGO</p>
-  <h3 data-cms-editable>Pagamento por cartão de crédito</h3>
-  <p data-cms-editable>Use o link do Mercado Pago para pagamento à vista ou parcelado. As taxas da plataforma são acrescentadas ao pagamento.</p>
-  <p><a class="button" href="https://mpago.la/1xvBsPV" target="_blank" rel="noopener" data-cms-editable>Pagar com cartão no Mercado Pago <span aria-hidden="true">↗</span></a></p>
-</section>
+<div class="registration-payment-source">
+  <section class="registration-payment-panel">
+    <p class="section-label" data-cms-editable>CARTÃO DE CRÉDITO · MERCADO PAGO</p>
+    <h3 data-cms-editable>Pagamento por cartão de crédito</h3>
+    <p data-cms-editable>Use o link do Mercado Pago para pagamento à vista ou parcelado. As taxas da plataforma são acrescentadas ao pagamento.</p>
+    <p><a class="button" href="https://mpago.la/1xvBsPV" target="_blank" rel="noopener" data-cms-editable>Pagar com cartão no Mercado Pago <span aria-hidden="true">↗</span></a></p>
+  </section>
+</div>
 HTML,
         ],
         [
