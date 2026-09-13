@@ -9,7 +9,8 @@ function media_maintenance_source_has_transparency(array $source): bool {
             $range=Imagick::getQuantumRange();
             $max=(float)($range['quantumRangeLong']??$range['quantumRangeString']??65535);
             $extrema=$source['image']->getImageChannelExtrema(Imagick::CHANNEL_ALPHA);
-            return isset($extrema['min']) && (float)$extrema['min'] < $max;
+            $min=(float)($extrema['minima']??$extrema['min']??$max);
+            return $min < $max;
         }catch(Throwable){return true;}
     }
     if($engine==='gd'){
