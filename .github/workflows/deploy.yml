@@ -60,6 +60,8 @@ jobs:
           php tools/test-task-centric-admin.php
           php tools/test-media-list-service.php
           php tools/test-media-detail-interactive.php
+          php tools/test-registration-google-form-parity.php
+          php tools/test-registration-payment-migration.php
           php tools/test-build-dist.php
 
       - name: Build production artifact

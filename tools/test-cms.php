@@ -37,15 +37,18 @@ expect(str_contains($ptHomeHtml,'suporte'),'PT page must contain processing supp
 $registrationHtml=cms_page_doc($registrationPage,true)['html'];
 expect(str_contains($registrationHtml,'data-cms-form-key="registration"'),'registration page must embed registration form');
 expect(str_contains($registrationHtml,'pelo menos 3 participantes'),'registration page must explain alternate-group minimum');
+expect(str_contains($registrationHtml,'data-registration-payment-source'),'registration page must contain payment instructions');
 expect(str_contains(cms_page_doc($enPage,true)['html'],'data-cms-form-key="interest"'),'EN page must embed interest survey');
 expect(str_contains(cms_page_doc($enPage,true)['html'],'first English-language cohort'),'EN page must position first English cohort');
 
 $ptSchema=cms_form_schema($ptForm,true);$ptFields=array_column($ptSchema['fields'],null,'id');
 expect(isset($ptFields['availability'])&&!empty($ptFields['availability']['required']),'registration availability must be required');
 expect(isset($ptFields['terms'])&&!empty($ptFields['terms']['required']),'registration terms consent must be required');
-expect(($ptFields['payment_preference']['required']??true)===false,'payment preference should not block registration');
+expect(isset($ptFields['payment_method'])&&!empty($ptFields['payment_method']['required']),'payment method must be required');
+expect(isset($ptFields['support_size'])&&!empty($ptFields['support_size']['required']),'support size must be required');
+expect(!isset($ptFields['experience'])&&!isset($ptFields['equipment'])&&!isset($ptFields['payment_preference']),'invented qualification fields must not exist');
 $availabilityHtml=cms_form_input_html($ptFields['availability'],[]);
-expect(!str_contains($availabilityHtml,'type="checkbox" name="availability[]" value="tuesday_19" required'),'checkbox group must not require every individual option');
+expect(!str_contains($availabilityHtml,'type="checkbox" name="availability[]" value="tue_19_oct_6_13_20" required'),'checkbox group must not require every individual option');
 
 $created=cms_page_create($db,$activityId,PUBLIC_LOCALE_PT_BR,'Perguntas frequentes','faq');
 expect($created['slug']==='faq','page slug mismatch');
@@ -57,7 +60,7 @@ expect(!str_contains(cms_page_doc($saved,false)['html'],'<script'),'page sanitiz
 $published=cms_page_publish($db,(int)$created['id']);expect((int)$published['published_revision']===(int)$published['draft_revision'],'page publication revision mismatch');
 
 $schema=cms_form_schema($enForm,true);[$values,$errors]=cms_form_validate_submission($schema,[],PUBLIC_LOCALE_EN);expect(($errors['name']??'')==='This field is required.','EN validation message not localized');
-[$values,$errors]=cms_form_validate_submission($ptSchema,[],PUBLIC_LOCALE_PT_BR);expect(($errors['name']??'')==='Campo obrigatório.','PT validation message not localized');expect(($errors['availability']??'')==='Campo obrigatório.','PT availability validation missing');expect(($errors['terms']??'')==='Campo obrigatório.','PT terms validation missing');
+[$values,$errors]=cms_form_validate_submission($ptSchema,[],PUBLIC_LOCALE_PT_BR);expect(($errors['name']??'')==='Campo obrigatório.','PT validation message not localized');expect(($errors['availability']??'')==='Campo obrigatório.','PT availability validation missing');expect(($errors['payment_method']??'')==='Campo obrigatório.','PT payment validation missing');expect(($errors['terms']??'')==='Campo obrigatório.','PT terms validation missing');
 $newForm=cms_form_create($db,$activityId,PUBLIC_LOCALE_PT_BR,'Questionário','questionario','interest');$schema=cms_form_schema($newForm,false);$schema['fields'][]=['id'=>'custom_field','type'=>'text','label'=>'Campo customizado','required'=>false,'width'=>'full'];$newForm=cms_form_save($db,(int)$newForm['id'],$schema,(int)$newForm['draft_revision'],'Questionário atualizado');expect(count(cms_form_schema($newForm,false)['fields'])===count($schema['fields']),'form field save failed');$newForm=cms_form_publish($db,(int)$newForm['id']);expect((int)$newForm['published_revision']===(int)$newForm['draft_revision'],'form publication revision mismatch');
 
 echo "CMS smoke tests passed\n";
