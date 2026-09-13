@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 function must(bool $ok,string $message): void {if(!$ok){fwrite(STDERR,"media-detail-interactive: $message\n");exit(1);}}
-function media_asset(PDO $db,int $id): array {return ['id'=>$id,'active_version_id'=>7,'kind'=>'image','title'=>'Asset'];}
+function media_asset(PDO $db,int $id): array {return ['id'=>$id,'active_version_id'=>7,'kind'=>'image','mime_type'=>'image/png','title'=>'Asset','url'=>'/uploads/original.png','derivatives'=>[['src'=>'/uploads/broken-768.png','format'=>'png']], 'versions'=>[['id'=>7,'mimeType'=>'image/png','url'=>'/uploads/original.png','derivatives'=>[['src'=>'/uploads/broken-768.png','format'=>'png']]]]];}
 function media_asset_tags(PDO $db,int $id): array {return ['workshop'];}
 require dirname(__DIR__).'/app/media_detail_service.php';
 
@@ -24,6 +24,9 @@ $q=$db->prepare("INSERT INTO cms_pages(activity_id,title,slug,locale,status,draf
 $started=microtime(true);$item=media_detail_admin($db,10);$elapsed=microtime(true)-$started;
 must($item['tags']===['workshop'],'detail must keep asset tags');
 must(count($item['uses'])===4,'detail must return only the matching draft/published legacy and CMS references');
+must($item['derivatives']===[],'PNG detail preview must ignore legacy responsive derivatives');
+must(($item['versions'][0]['derivatives']??null)===[],'PNG version detail must not expose legacy derivatives to preview UI');
+must($item['url']==='/uploads/original.png','PNG detail must keep the untouched original URL');
 must($elapsed<1.0,'targeted detail lookup must stay interactive on irrelevant document volume');
 
 $stream=(string)file_get_contents(dirname(__DIR__).'/media-stream.php');
