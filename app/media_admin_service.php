@@ -86,6 +86,18 @@ function media_usage_all(PDO $db,int $assetId): array {
     return $uses;
 }
 
+function media_original_version_source(array $asset,int $versionId): array {
+    $src=(string)($asset['url']??'');
+    $mime=(string)($asset['mime_type']??'');
+    foreach(($asset['versions']??[]) as $version){
+        if((int)($version['id']??0)!==$versionId)continue;
+        $src=(string)($version['url']??$src);
+        $mime=(string)($version['mimeType']??$mime);
+        break;
+    }
+    return ['src'=>$src,'mime'=>$mime];
+}
+
 function media_resolve_cms_html(PDO $db,string $html): string {
     if(!str_contains($html,'data-media-asset-id'))return $html;
     $previous=libxml_use_internal_errors(true);
@@ -100,9 +112,23 @@ function media_resolve_cms_html(PDO $db,string $html): string {
         $versionId=(int)($asset['active_version_id']??0);
         if($node->getAttribute('data-media-version-mode')==='pinned'&&$node->hasAttribute('data-media-version-id'))$versionId=(int)$node->getAttribute('data-media-version-id');
         if(strtolower($node->tagName)==='img'&&$asset['kind']==='image'){
-            $sources=media_image_sources($db,$assetId,$versionId,(string)$node->getAttribute('src'));
+            $original=media_original_version_source($asset,$versionId);
+            // PNG is commonly used here for QR codes, logos and line art. The
+            // original is already lossless and is the authoritative pixel
+            // source. Do not route it through legacy responsive derivatives:
+            // older ImageMagick builds could produce a transparent virtual
+            // canvas while the uploaded original remained perfectly valid.
+            $sources=$original['mime']==='image/png'
+                ?['src'=>$original['src'],'srcset'=>'']
+                :media_image_sources($db,$assetId,$versionId,(string)$node->getAttribute('src'));
             $node->setAttribute('src',$sources['src']);
-            if($sources['srcset']!==''){$node->setAttribute('srcset',$sources['srcset']);$node->setAttribute('sizes','(max-width: 720px) 100vw, 50vw');}
+            if($sources['srcset']!==''){
+                $node->setAttribute('srcset',$sources['srcset']);
+                $node->setAttribute('sizes','(max-width: 720px) 100vw, 50vw');
+            }else{
+                $node->removeAttribute('srcset');
+                $node->removeAttribute('sizes');
+            }
             $x=$node->hasAttribute('data-focal-x')?(float)$node->getAttribute('data-focal-x'):(float)($asset['focal_x']??50);
             $y=$node->hasAttribute('data-focal-y')?(float)$node->getAttribute('data-focal-y'):(float)($asset['focal_y']??50);
             $fit=$node->getAttribute('data-fit')==='contain'?'contain':'cover';
