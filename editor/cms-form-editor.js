@@ -10,7 +10,7 @@ if(!frame||!inspector)return;
 const forms=new Map();
 let selected=null;
 let editing=null;
-const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[char]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
 const normalizeFieldName=name=>String(name||'').replace(/\[\]$/,'');
 const frameDoc=()=>frame.contentDocument||null;
 const formBlockFrom=node=>node?.closest?.('[data-cms-form-block]')||null;
