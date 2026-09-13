@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Integrated form editor fixture</title></head>
+<body>
+<span id="editor-title"></span><span id="editor-locale"></span><span id="editor-site-name"></span>
+<div id="device-frame" class="device-frame desktop"><iframe id="page-frame" title="Página em edição"></iframe></div>
+<div id="sections-list"></div>
+<aside id="inspector"></aside>
+<span id="save-status"></span><div id="toast"></div>
+<div id="text-toolbar" hidden><button type="button" data-command="bold">B</button><button type="button" id="finish-text">Concluir</button></div>
+<button id="save-page" type="button">Salvar</button><button id="publish-page" type="button">Publicar</button><button id="page-settings" type="button">Configurar</button><button id="add-section" type="button">Adicionar</button><button id="add-section-side" type="button">Adicionar</button><button id="undo" type="button">Desfazer</button><button id="redo" type="button">Refazer</button><button type="button" data-viewport="desktop">Desktop</button>
+<dialog id="section-dialog"><div id="section-library"></div></dialog>
+<dialog id="media-dialog"><div id="media-grid"></div><input id="media-upload" type="file"></dialog>
+<script>
+window.MediaLibrary={
+  images:[{id:99,versionId:7,src:'/uploads/qr-new.svg',label:'Novo QR Pix',alt:'Novo QR Code Pix',focal_x:50,focal_y:50}],
+  async load(){return this.images;},
+  async upload(){return this.images[0];}
+};
+</script>
+<script src="/editor/cms-form-editor.js"></script>
+<script src="/editor/cms-editor-v3.js"></script>
+</body>
+</html>

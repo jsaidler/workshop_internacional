@@ -4,6 +4,7 @@ function must(bool $ok,string $message): void {if(!$ok){fwrite(STDERR,"form-edit
 $root=dirname(__DIR__);
 $editor=(string)file_get_contents($root.'/editor/index.html');
 $controller=(string)file_get_contents($root.'/editor/cms-form-editor.js');
+$core=(string)file_get_contents($root.'/editor/cms-editor-v3.js');
 $adminShell=(string)file_get_contents($root.'/app/admin_shell.php');
 $formCss=(string)file_get_contents($root.'/assets/admin-form-ux.css');
 $forms=(string)file_get_contents($root.'/admin/forms.php');
@@ -23,14 +24,14 @@ must(str_contains($controller,'syncContentBlockFromDom'),'changes inside editori
 must(str_contains($controller,'openImagePicker'),'images inside conditional/payment content must use the media library');
 must(str_contains($controller,'data-cms-image'),'form content image targets must be recognized directly');
 must(str_contains($controller,'conditionControls'),'conditional editorial blocks must expose their public visibility rule without hiding the block in the editor');
+must(str_contains($controller,'id="fc-visible"')&&str_contains($controller,'data-cms-public-hidden'),'editorial form areas must expose an explicit public show/hide control');
 must(str_contains($controller,'decorateAll(d)'),'all rendered form sub-targets must be prepared when the preview document is installed');
 must(str_contains($controller,'resolveTarget(event.target)'),'interaction must resolve the clicked descendant, not treat the form as one entity');
 must(str_contains($controller,'.cms-choice-grid > label')&&str_contains($controller,'.cms-choice-group > legend')&&str_contains($controller,'.cms-field')&&str_contains($controller,'.cms-consent'),'resolver must cover visible field and option structures even when the exact nested span is not the event target');
 must(str_contains($controller,"setAttribute('contenteditable','true')"),'visible form copy must become editable in place');
-must(str_contains($controller,"addEventListener('pointerdown'")&&str_contains($controller,'stopImmediatePropagation'),'recognized form descendants must win before legacy wrapper handlers');
-must(str_contains($controller,'neutralizeLegacyWrapperSelection'),'rendered forms must explicitly disable the obsolete whole-form selection fallback');
-must(str_contains($controller,'block.onclick=null'),'expanded form wrappers must not send clicks back to the legacy form inspector');
-must(str_contains($controller,'setTimeout(()=>neutralizeLegacyWrapperSelection(d),0)'),'legacy wrapper selection must be removed after the core load hook has had a chance to attach it');
+must(str_contains($controller,"addEventListener('pointerdown'")&&str_contains($controller,'stopImmediatePropagation'),'recognized form descendants must win before unrelated editor handlers');
+must(str_contains($controller,'neutralizeLegacyWrapperSelection'),'rendered forms must defensively clear obsolete whole-form selection if old markup carries it');
+must(str_contains($controller,'block.onclick=null'),'expanded form wrappers must not send clicks back to a whole-form inspector');
 must(str_contains($controller,'placeCaret'),'direct form text editing must place the caret at the clicked point');
 must(!str_contains($controller,'id="fq-field"'),'visual editor must not reduce the form to a field dropdown in the inspector');
 must(!str_contains($controller,'Rótulo<input id="fq-label"'),'visible field labels must not be edited through a duplicate inspector text box');
@@ -39,6 +40,12 @@ must(str_contains($controller,'Configuração estrutural do formulário'),'full 
 must(!str_contains($controller,'MutationObserver'),'form visual editing must not watch and rewrite the inspector recursively');
 must(!str_contains($controller,'renderFormHint'),'whole-form inspector hint recursion must not exist');
 must(!str_contains($controller,'bf-type')&&!str_contains($controller,'condition_source'),'visual editor must not duplicate the legacy structural form builder');
+
+must(str_contains($core,"[data-cms-form-key]:not([data-cms-form-block])"),'core page editor may select only unexpanded form placeholders as a whole form');
+must(str_contains($core,"if(el.closest('[data-cms-form-block]'))return"),'core text/image hooks must not claim descendants of an expanded form');
+must(str_contains($core,"if(e.target.closest('[data-cms-form-block]'))return"),'section selection must defer clicks from an expanded form to the form visual editor');
+must(!str_contains($core,"d.querySelectorAll('[data-cms-form-block],[data-cms-form-key]')"),'core editor must not reinstall whole-form selection on expanded forms');
+
 must(str_contains($adminShell,'admin_asset_version'),'admin shell must version its CSS/JS after application updates');
 must(str_contains($adminShell,'admin-system-choice-controls'),'admin shell must enforce native checkbox/radio geometry independently of cached styles');
 must(str_contains($adminShell,'/assets/admin-form-ux.css'),'admin shell must load the form-specific admin UX layer');

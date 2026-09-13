@@ -73,9 +73,10 @@ O editor completo de formulários continua existindo para operações estruturai
 - Rótulos de campo, rótulos de opções, textos de ajuda, controles de campo e texto do botão são subalvos independentes dentro do formulário.
 - O usuário clica exatamente no texto exibido e esse texto entra em `contenteditable` no próprio lugar, seguindo a mesma lógica de edição direta dos demais textos da página.
 - Inputs, selects, textareas, checkboxes e radios também são selecionáveis como contexto do campo; não podem virar áreas mortas só porque não são texto editável.
-- A captura de `pointerdown`/`click` dos subalvos ocorre antes do handler do bloco do formulário, para impedir que o wrapper roube a seleção do alvo específico.
 - O resolvedor não deve depender apenas do `span` interno recebido como `event.target`: ele precisa reconhecer também `label` de radio/checkbox, `legend`, `.cms-field`, `.cms-consent`, controles e botão.
-- Um formulário já expandido no preview (`data-cms-form-block`) não pode ser selecionado pelo mecanismo legado de “formulário inteiro”. O `onclick` legado do wrapper deve ser neutralizado depois que os hooks centrais do iframe forem instalados.
+- O editor central da página NÃO instala handlers de texto, imagem nem seleção de “formulário inteiro” dentro de `[data-cms-form-block]`. Formulários expandidos pertencem exclusivamente a `editor/cms-form-editor.js`.
+- O editor central só pode tratar como entidade de formulário um placeholder ainda não expandido: `[data-cms-form-key]:not([data-cms-form-block])`.
+- O handler de seção também deve ignorar cliques oriundos de um formulário expandido para não roubar a interação.
 - Clicar em texto ou controle visível de um formulário nunca deve encaminhar automaticamente para `/admin/forms.php`. O editor completo é apenas uma ação secundária explícita para mudanças estruturais.
 - É proibido cancelar genericamente todo clique ocorrido dentro de `[data-cms-form-block]`. Somente subalvos reconhecidos recebem interceptação; os demais eventos continuam para os mecanismos normais do editor.
 - Os subalvos do formulário devem ser preparados quando o documento do iframe é instalado. O controlador precisa funcionar tanto no `load` do iframe quanto quando o documento já existir no momento em que o script é carregado.
@@ -89,30 +90,44 @@ O editor completo de formulários continua existindo para operações estruturai
 
 ### Conteúdo editorial intercalado no formulário
 
-A página de inscrição possui conteúdo que não é um campo de resposta, mas faz parte do fluxo visual do formulário: cabeçalhos, programação, instruções de pagamento, QR Code, condições de participação e textos dependentes de uma opção. Esse conteúdo não pode ficar hardcoded em PHP ou ser montado/movido por JavaScript público.
+A página de inscrição possui conteúdo que não é um campo de resposta, mas faz parte do fluxo visual do formulário: cabeçalhos, programação, instruções de pagamento, QR Code, condições de participação e textos dependentes de uma opção. Esse conteúdo não pode ficar hardcoded em PHP operacional nem ser montado/movido por JavaScript público.
 
 - O conteúdo editorial do formulário é persistido no mesmo schema canônico, em `settings.contentBlocks`.
 - Cada bloco possui identidade própria, HTML sanitizado e posição relativa a um campo (`afterField`).
 - Um bloco pode ter regra de exibição pública (`condition`), com campo de origem, operador e valor.
-- No site público, a condição controla visibilidade. No editor, todos os estados condicionais permanecem visíveis para que possam ser selecionados e alterados sem simular respostas no formulário.
+- Cada bloco também precisa permitir controle editorial explícito de exibição pública. Um bloco oculto continua aparecendo no editor, identificado como oculto, mas não aparece para o visitante.
+- No site público, a condição e o estado de exibição controlam visibilidade. No editor, todos os estados condicionais e ocultos permanecem visíveis para que possam ser selecionados e alterados sem simular respostas no formulário.
 - Textos internos dos blocos marcados como editáveis são alterados diretamente no preview e serializados de volta ao schema do formulário.
 - Imagens internas marcadas como mídia do CMS usam a mesma biblioteca de mídia. O QR Code do Pix é uma imagem editorial comum: clicar nele no editor permite substituí-lo sem alterar código.
 - Links presentes nesses blocos expõem o destino como propriedade contextual; portanto a URL de pagamento por cartão também é editável sem deploy.
-- A condição e a posição do bloco são propriedades editoriais contextuais. Alterar a condição não exige abrir o código nem esconder o bloco do próprio editor.
+- A condição, o estado de exibição e a posição do bloco são propriedades editoriais contextuais. Alterar essas propriedades não exige abrir código nem esconder o bloco do próprio editor.
 - O documento da página contém apenas a estrutura da página e o placeholder do formulário. Programação, pagamento e termos não são duplicados no HTML da página.
 - O renderer pode substituir o formulário expandido pelo placeholder ao serializar a página sem perder programação, pagamentos ou termos, porque esses conteúdos pertencem ao schema do formulário.
 - `editor/cms-form-editor.js` é o controlador único dessa superfície visual. O controlador anterior em camadas não deve ser carregado em paralelo.
 
+### Preservação visual e reparo da inscrição
+
+Tornar conteúdo editável não autoriza redesenhar nem reorganizar uma página que já estava correta. A apresentação da página de inscrição anterior à refatoração é referência visual e funcional a preservar; a mudança de arquitetura deve trocar a fonte de verdade, não a aparência aprovada.
+
+- Programação, condições, Pix/cartão, QR Code e textos passam ao CMS mantendo a mesma posição e apresentação pública que possuíam antes.
+- A estrutura visual de pagamento mantém o wrapper `registration-payment-source` usado pela página aprovada.
+- A migração `023_repair_registration_editorial_blocks.php` existe para instalações que passaram pela migração 022 com `contentBlocks` parcialmente preenchidos. Ela repõe apenas blocos canônicos ausentes, preserva blocos e textos existentes e restaura o wrapper visual de pagamento quando necessário.
+- O reparo nunca deve substituir todo o schema do formulário por defaults nem apagar edição feita pelo usuário.
+- A operação editorial posterior ocorre no banco/CMS; os defaults em PHP servem apenas para seed/migração e não são fonte de verdade depois da instalação.
+
 ### Validação em navegador
 
-Interações críticas do editor visual não podem ser consideradas validadas apenas por `str_contains`, lint ou teste PHP. O CI mantém um teste real em Chromium/Playwright que deve provar, no mínimo: clique e edição de rótulo, edição de opção, acesso a todos os estados condicionais, edição de conteúdo condicional, troca do QR pela biblioteca, salvamento e persistência depois de recarregar a página.
+Interações críticas do editor visual não podem ser consideradas validadas apenas por `str_contains`, lint ou teste PHP. O CI mantém teste real em Chromium/Playwright que deve provar, no mínimo: clique e edição de rótulo, edição de opção, acesso a todos os estados condicionais, edição de conteúdo condicional, troca do QR pela biblioteca, controle de exibição pública, salvamento e persistência depois de recarregar a página.
+
+Além do teste isolado do controlador de formulário, existe regressão com `cms-form-editor.js` e `cms-editor-v3.js` carregados juntos. Esse teste é obrigatório porque a falha real ocorreu por disputa de propriedade entre o editor central e o editor do formulário e não aparecia no fixture isolado.
 
 ### Falhas já observadas e que não podem regredir
 
 - Um `MutationObserver` do inspector que re-renderizava o próprio inspector criou loop de microtasks e congelou o editor; esse padrão é proibido.
 - Um handler posterior tentou “proteger” o formulário cancelando todo `pointerdown`/`click` que ocorresse dentro do bloco quando o alvo textual não fosse reconhecido. O resultado foi exatamente o contrário: o formulário inteiro virou uma área não selecionável. O wrapper nunca deve bloquear genericamente seus descendentes.
-- O mecanismo legado do editor central ainda sabia selecionar `[data-cms-form-block]` como uma entidade única e mostrar o caminho para o editor completo. Em formulários já renderizados esse fallback deve ser desativado; só placeholders ainda não expandidos podem continuar usando a seleção de bloco inteiro.
+- O mecanismo legado do editor central selecionava `[data-cms-form-block]` como entidade única e podia ser reinstalado depois das tentativas de neutralização feitas pelo controlador do formulário. A correção canônica é de propriedade: o editor central não registra handlers em formulários expandidos; somente placeholders não expandidos podem usar o inspector de formulário inteiro.
 - Programação, condições e pagamento já foram montados fora do schema do formulário e reposicionados pelo JavaScript público. Esse modelo híbrido é proibido porque cria duas fontes de verdade e torna conteúdo visível impossível de administrar pelo CMS.
+- A migração 022 considerava qualquer array não vazio de `contentBlocks` como suficiente. Em uma instalação com blocos parcialmente existentes, isso podia remover o HTML legado da página sem repor blocos de pagamento ausentes. O reparo deve mesclar por `id`, não usar a existência de um único bloco como prova de completude.
 
 ## Regra de documentação obrigatória
 
@@ -168,9 +183,9 @@ A página inglesa não deve ser mera tradução da brasileira.
 - O shell administrativo carrega CSS/JS locais com `?v=<versão instalada>` e mantém a geometria crítica de checkbox/radio independentemente de cache de stylesheet.
 - O editor completo de formulários não deve comprimir configuração, lista de campos, propriedades e preview em colunas concorrentes. Configuração fica em faixa superior; lista de campos e propriedades recebem o espaço principal; preview fica em bloco separado abaixo.
 - No editor da página, textos visíveis do formulário e dos seus blocos editoriais são editados diretamente no preview, como elementos independentes; não há seletor de campo para reproduzir no inspector o conteúdo já visível.
-- Controles de formulário permanecem selecionáveis como contexto e nenhum handler do wrapper pode tornar os descendentes inertes nem devolver o clique ao inspector legado do formulário inteiro.
-- O inspector da edição visual fica reservado a estado/publicação e propriedades não visíveis, como valor interno de opção, destino de link, condição, posição de bloco e propriedades de mídia.
-- Conteúdo condicional permanece visível no editor mesmo quando não estaria visível para a resposta atualmente selecionada no site público.
+- Controles de formulário permanecem selecionáveis como contexto e o editor central não instala seleção de formulário inteiro em `data-cms-form-block`.
+- O inspector da edição visual fica reservado a estado/publicação e propriedades não visíveis, como valor interno de opção, destino de link, condição, posição de bloco, estado de exibição pública e propriedades de mídia.
+- Conteúdo condicional ou explicitamente oculto permanece visível no editor mesmo quando não aparece para o visitante.
 - Programação, termos, instruções de pagamento e QR Code da inscrição pertencem ao formulário no CMS, não a funções PHP operacionais nem a reposicionamento por JavaScript público.
 - Todos os CSS/JS públicos carregados pelo renderer recebem `?v=<versão instalada>`; a mesma política vale para editor e admin.
 - A configuração Apache continua usando `Cache-Control: no-cache, must-revalidate` para `.css` e `.js` como defesa adicional.

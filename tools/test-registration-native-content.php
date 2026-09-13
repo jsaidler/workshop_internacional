@@ -25,8 +25,6 @@ $activityId=(int)$db->lastInsertId();
 $migration=require __DIR__.'/../migrations/011_cms_pages_forms.php';$migration($db);
 cms_forms_seed($db,$activityId);cms_pages_seed($db,$activityId);workshop_cms_setup_activity($db,$activityId);
 
-// Recreate the production shape that migration 022 has to upgrade: fields in the
-// form schema, but editorial program/payment/terms still embedded in the page.
 $legacyForm=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_PT_BR,'registration');
 expect_native($legacyForm!==null,'registration form missing before migration');
 foreach(['draft_schema_json','published_schema_json'] as $column){
@@ -63,6 +61,7 @@ expect_native(($byId['payment_pix']['condition']['value']??'')==='pix','Pix cond
 expect_native(($byId['payment_card']['condition']['operator']??'')==='contains','card condition operator missing');
 expect_native(str_contains((string)$byId['payment_pix']['html'],'data-cms-image'),'Pix QR must be a CMS image target');
 expect_native(str_contains((string)$byId['payment_pix']['html'],'data-pix-copy-value'),'Pix copy code must remain editable content');
+expect_native(str_contains((string)$byId['payment_pix']['html'],'registration-payment-source'),'native Pix block must preserve the original payment presentation wrapper');
 
 $editorHtml=cms_render_form($form,$schema,1,PUBLIC_LOCALE_PT_BR,[],[],false,true);
 expect_native(str_contains($editorHtml,'data-cms-form-content-id="payment_pix"'),'Pix block missing from editor render');
@@ -88,5 +87,29 @@ $saved=cms_form_save($db,(int)$form['id'],$draft,(int)$form['draft_revision']);
 $reloaded=cms_form_schema($saved,false);
 $pix=array_values(array_filter(cms_form_content_blocks($reloaded),fn($block)=>($block['id']??'')==='payment_pix'))[0]??null;
 expect_native(is_array($pix)&&str_contains((string)$pix['html'],'R$ 700,00'),'editorial content did not persist through canonical form save');
+
+$form=cms_form_by_id($db,(int)$form['id']);
+foreach(['draft_schema_json','published_schema_json'] as $column){
+    $partial=json_decode((string)$form[$column],true);
+    $kept=[];
+    foreach($partial['settings']['contentBlocks']??[] as $block){
+        if(($block['id']??'')==='payment_card')continue;
+        if(($block['id']??'')==='payment_pix'){
+            $block['html']=str_replace(['R$ 700,00','R$ 698,00'],'PIX PERSONALIZADO',$block['html']);
+            $block['html']=preg_replace('~^<div class="registration-payment-source">(.*)</div>$~s','$1',$block['html'])??$block['html'];
+        }
+        $kept[]=$block;
+    }
+    $partial['settings']['contentBlocks']=$kept;
+    $db->prepare("UPDATE cms_forms SET $column=? WHERE id=?")->execute([json_encode($partial,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR),(int)$form['id']]);
+}
+$repair=require __DIR__.'/../migrations/023_repair_registration_editorial_blocks.php';$repair($db);
+$repaired=cms_form_by_id($db,(int)$form['id']);
+$repairedSchema=cms_form_schema($repaired,true);
+$repairedById=[];foreach(cms_form_content_blocks($repairedSchema) as $block)$repairedById[$block['id']]=$block;
+expect_native(isset($repairedById['payment_card']),'repair migration must restore a missing card payment block');
+expect_native(str_contains((string)$repairedById['payment_pix']['html'],'PIX PERSONALIZADO'),'repair migration must preserve existing user-edited Pix content');
+expect_native(str_contains((string)$repairedById['payment_pix']['html'],'registration-payment-source'),'repair migration must restore original payment wrapper around existing Pix content');
+expect_native(str_contains((string)$repairedById['payment_card']['html'],'Mercado Pago'),'restored card block must contain the payment data');
 
 echo "Registration native content tests passed\n";
