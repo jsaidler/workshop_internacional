@@ -14,7 +14,6 @@ function frameDoc(){return frame.contentDocument||null}
 function normalizeFieldName(name){return String(name||'').replace(/\[\]$/,'')}
 function selectedBlock(){return frameDoc()?.querySelector('[data-cms-form-block].cms-selection')||null}
 function formBlockFrom(node){return node?.closest?.('[data-cms-form-block]')||null}
-function formIdFrom(node){return Number(formBlockFrom(node)?.dataset.cmsFormBlock||0)}
 function statusText(entry){
   if(entry.saving)return 'Salvando rascunho…';
   if(entry.dirty)return 'Alterações ainda não salvas.';
@@ -115,7 +114,7 @@ function saveEntry(entry){
       entry.error=error.code==='revision_conflict'?'O formulário foi alterado em outra sessão. Recarregue a página antes de continuar.':error.message;
       entry.dirty=true;
     }finally{entry.saving=false;renderContext()}
-    if(entry.dirty&&entry.changeSeq>seq)return saveEntry(entry);
+    if(entry.dirty&&entry.changeSeq>seq)setTimeout(()=>saveEntry(entry),0);
   });
   return entry.saveQueue;
 }
@@ -133,6 +132,11 @@ async function publishEntry(entry){
 function metaFrom(el){
   const block=formBlockFrom(el);if(!block)return null;
   return {el,block,formId:Number(block.dataset.cmsFormBlock||0),part:el.dataset.cmsFormInline||'',fieldId:el.dataset.cmsFormField||'',optionIndex:Number(el.dataset.cmsFormOptionIndex||0)};
+}
+function clearInlineSelection(){
+  if(editing)finishInline(false);
+  if(selected?.el)selected.el.classList.remove('cms-form-inline-selected');
+  selected=null;
 }
 function selectInline(el){
   const next=metaFrom(el);if(!next?.formId)return;
@@ -152,13 +156,24 @@ function finishInline(cancel=false){
   if(!value&&current.part!=='field-help'){el.textContent=current.originalText;return}
   ensureForm(current.formId).then(entry=>{applyTextToSchema(entry,current,el.textContent);markChanged(entry);saveEntry(entry)}).catch(()=>renderContext());
 }
-function startInline(el){
-  if(editing?.el===el)return;
+function placeCaret(el,event){
+  const d=el.ownerDocument;el.focus({preventScroll:true});
+  let range=null;
+  if(typeof d.caretPositionFromPoint==='function'){
+    const position=d.caretPositionFromPoint(event.clientX,event.clientY);
+    if(position&&el.contains(position.offsetNode)){range=d.createRange();range.setStart(position.offsetNode,position.offset);range.collapse(true)}
+  }else if(typeof d.caretRangeFromPoint==='function'){
+    const candidate=d.caretRangeFromPoint(event.clientX,event.clientY);if(candidate&&el.contains(candidate.startContainer))range=candidate;
+  }
+  if(range){const selection=d.getSelection();selection.removeAllRanges();selection.addRange(range)}
+}
+function startInline(el,event){
+  if(editing?.el===el){placeCaret(el,event);return}
   if(editing)finishInline(false);
   selectInline(el);
   const meta=metaFrom(el);if(!meta)return;
   editing={...meta,originalText:el.textContent};
-  el.setAttribute('contenteditable','true');el.classList.add('cms-form-inline-editing');
+  el.setAttribute('contenteditable','true');el.classList.add('cms-form-inline-editing');placeCaret(el,event);
 }
 function decorateDirectText(host,meta){
   if(!host)return null;
@@ -205,8 +220,9 @@ function installFrameCapture(){
   d.__cmsFormVisualEdit=true;injectFrameStyle(d);
   d.querySelectorAll('[data-cms-form-block]').forEach(block=>{decorateBlock(block);const id=Number(block.dataset.cmsFormBlock||0);if(id)ensureForm(id).catch(()=>{})});
   d.addEventListener('pointerdown',event=>{
-    const target=event.target?.closest?.('[data-cms-form-inline]');if(!target)return;
-    event.stopImmediatePropagation();startInline(target);
+    const target=event.target?.closest?.('[data-cms-form-inline]');
+    if(!target){if(event.target?.closest?.('[data-cms-form-block]'))clearInlineSelection();return}
+    event.stopImmediatePropagation();startInline(target,event);
   },true);
   d.addEventListener('click',event=>{
     const target=event.target?.closest?.('[data-cms-form-inline]');if(!target)return;
