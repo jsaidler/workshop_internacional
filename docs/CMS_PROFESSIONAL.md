@@ -61,10 +61,10 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 - inputs, selects, textareas, checkboxes e radios também são subalvos selecionáveis como contexto do campo;
 - todos os subalvos são preparados quando o documento do iframe é instalado, e o controlador também tenta instalar-se imediatamente quando o documento já existe;
 - o resolvedor de clique considera a estrutura real do formulário, inclusive o `label` inteiro de radio/checkbox, `legend`, `.cms-field`, `.cms-consent`, controles e botão; não depende de o navegador devolver exatamente o `span` interno como `event.target`;
-- a interação de um subalvo é capturada antes do clique do bloco do formulário, para que o wrapper não roube a seleção daquele elemento específico;
-- um formulário já renderizado (`data-cms-form-block`) não pode cair no inspector legado de “formulário inteiro”. O `onclick` legado do wrapper é neutralizado depois que os hooks centrais do iframe são instalados;
+- um formulário expandido (`data-cms-form-block`) pertence exclusivamente a `editor/cms-form-editor.js`; o editor central de páginas não instala handlers próprios de texto, imagem, seção ou “formulário inteiro” dentro dele;
+- o editor central só trata como entidade de formulário o placeholder ainda não expandido (`[data-cms-form-key]:not([data-cms-form-block])`), necessário para escolher qual formulário inserir na página;
 - o editor completo permanece acessível apenas como ação secundária explícita para mudanças estruturais; clicar em conteúdo visível do formulário nunca deve encaminhar automaticamente para `/admin/forms.php`;
-- o wrapper do formulário não pode cancelar genericamente todo `pointerdown`/`click` de seus descendentes. Somente um subalvo reconhecido recebe interceptação; os demais eventos continuam para o editor normal;
+- o wrapper do formulário não pode cancelar genericamente todo `pointerdown`/`click` de seus descendentes. Somente um subalvo reconhecido recebe interceptação;
 - o cursor é posicionado no ponto clicado; `Enter` conclui a edição e `Esc` cancela a alteração em curso;
 - alterações visuais são gravadas como rascunho do formulário pela API canônica `cms-form-save.php`; a publicação continua explícita por `cms-form-publish.php`;
 - propriedades que não aparecem na página continuam contextuais: ao clicar uma opção, por exemplo, o inspector pode mostrar o valor interno daquela opção, sem duplicar o rótulo visível em um segundo campo de texto;
@@ -79,17 +79,31 @@ O formulário pode intercalar campos de resposta com blocos editoriais persistid
 
 - cada bloco possui `id`, rótulo interno, HTML sanitizado e uma posição `afterField`;
 - uma condição opcional define a visibilidade no site público a partir de outro campo do formulário;
-- o editor visual mostra todos os blocos condicionais ao mesmo tempo, mesmo quando a condição pública não estiver satisfeita, e identifica a regra no inspector;
+- cada bloco editorial também pode ser explicitamente exibido ou ocultado no site público pelo inspector;
+- o editor visual mostra todos os blocos condicionais e também os blocos explicitamente ocultos, mesmo quando não apareceriam para o visitante; blocos ocultos ficam identificados no preview para continuarem administráveis;
 - textos marcados como editáveis são alterados diretamente no ponto em que aparecem e são serializados de volta ao mesmo schema;
 - imagens marcadas como mídia são trocadas pela biblioteca; o QR Code do Pix é tratado exatamente dessa forma;
 - links expõem o `href` como propriedade contextual, permitindo alterar um link de pagamento sem código;
-- condição e posição do bloco são propriedades contextuais do próprio bloco;
+- condição, estado de exibição e posição do bloco são propriedades contextuais do próprio bloco;
 - a página não mantém uma segunda cópia desses conteúdos fora do formulário, e o JavaScript público não reposiciona programação, pagamento ou termos;
 - `editor/cms-form-editor.js` é o controlador único da edição visual do formulário. O controlador antigo em camadas não é carregado em paralelo.
 
+### Página de inscrição: preservação e reparo
+
+A página de inscrição já tinha uma apresentação pública aprovada antes de a programação, o pagamento e os termos serem transferidos para o schema do CMS. Tornar esse conteúdo administrável não autoriza alterar essa apresentação.
+
+- a arquitetura nova preserva a posição e a apresentação pública de programação, condições e formas de pagamento;
+- a estrutura visual de pagamento mantém `registration-payment-source` e `registration-payment-panel`, usadas pela página anterior;
+- o QR Code, a chave Pix, o código copia-e-cola, o texto e o link do cartão passam a ser conteúdo administrável pelo CMS, sem exigir deploy para alterações ordinárias;
+- os valores existentes no código servem apenas como seed/default de instalação ou fonte de reparo de migração; depois da instalação, o banco é a fonte de verdade editorial;
+- `migrations/023_repair_registration_editorial_blocks.php` corrige instalações em que a migração 022 encontrou um conjunto parcialmente preenchido de `contentBlocks`: repõe apenas blocos ausentes por `id`, preserva conteúdo já editado e restaura a estrutura visual de pagamento quando necessário;
+- o reparo não substitui o schema inteiro por defaults e não deve apagar alterações do usuário.
+
 ### Regressão de interação
 
-O CI inclui um teste real em Chromium/Playwright da superfície de edição visual. O teste cobre edição direta de rótulo e opção, acesso aos dois estados condicionais de pagamento, alteração de texto condicional, substituição do QR pela biblioteca, salvamento e persistência após recarregar. Lint e testes estáticos continuam existindo, mas não substituem essa validação de navegador.
+O CI inclui teste real em Chromium/Playwright da superfície de edição visual. A validação cobre edição direta de rótulo e opção, acesso aos estados condicionais de pagamento, alteração de conteúdo, substituição do QR pela biblioteca, controle explícito de exibição pública, salvamento e persistência.
+
+Há também uma regressão integrada que carrega `cms-form-editor.js` e `cms-editor-v3.js` ao mesmo tempo. Ela existe porque o defeito real era uma disputa de propriedade entre o editor central e o editor do formulário e não podia ser detectado de forma confiável por um fixture que carregasse apenas o controlador de formulário.
 
 ## Princípio de correção sistêmica
 
