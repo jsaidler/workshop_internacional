@@ -12,8 +12,8 @@ O CMS possui quatro áreas principais:
 
 - **Dashboard administrativo**: `/admin/` é a entrada do sistema e apresenta publicação, alterações pendentes, inscrições, páginas, formulários, mídia, saúde/armazenamento, atividade recente e atalhos. A edição da home é uma ação do dashboard, não o destino automático.
 - **Páginas**: páginas independentes por idioma, com URL, menu, rascunho e publicação próprios.
-- **Editor WYSIWYG**: texto editado diretamente sobre a página real, biblioteca de seções, imagens, ordenação, duplicação e remoção de blocos, visualização desktop/tablet/mobile e edição dos formulários inseridos na página.
-- **Formulários e respostas**: inscrições e pesquisas próprias do site, com campos adicionáveis, removíveis e reordenáveis; cada formulário possui rascunho/publicação e as respostas ficam armazenadas no SQLite com status, notas e CSV.
+- **Editor WYSIWYG**: texto editado diretamente sobre a página real, biblioteca de seções, imagens, vídeos, ordenação, duplicação e remoção de blocos, visualização desktop/tablet/mobile e edição rápida dos formulários inseridos na página. Rótulos, obrigatoriedade, placeholders, texto do botão e rótulos/valores de opções podem ser alterados sem sair do editor da página.
+- **Formulários e respostas**: inscrições e pesquisas próprias do site, com editor estrutural para campos, ordem, tipos, condições e fluxo após envio; cada formulário possui rascunho/publicação e as respostas ficam armazenadas no SQLite com status, notas e CSV.
 
 Português e inglês são documentos editoriais independentes. A versão brasileira pode operar como página de inscrição de uma nova turma enquanto a versão inglesa continua como pesquisa de interesse para a primeira turma em inglês.
 
@@ -35,10 +35,10 @@ Os conteúdos são apenas sementes. Depois disso o banco de dados passa a ser a 
 - `app/cms_pages.php`: páginas, rascunhos, publicação e conteúdo inicial.
 - `app/cms_forms.php`: schemas de formulário, validação, renderização e submissões.
 - `app/cms_renderer.php`: renderização pública das páginas e inserção dos formulários.
-- `editor/`: editor visual WYSIWYG.
+- `editor/`: editor visual WYSIWYG, incluindo edição rápida dos formulários inseridos na página.
 - `admin/index.php`: dashboard administrativo.
 - `admin/pages.php`: gerenciamento de páginas.
-- `admin/forms.php`: gerenciamento de formulários.
+- `admin/forms.php`: editor estrutural completo dos formulários.
 - `admin/submissions.php`: acompanhamento das respostas.
 - `admin/system.php`: saúde, canal de produção, atualização e rollback de arquivos.
 - `migrations/011_cms_pages_forms.php`: tabelas do novo CMS.
