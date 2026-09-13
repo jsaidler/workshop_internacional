@@ -56,12 +56,16 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 - checkbox e radio têm geometria global de 18 × 18 px em site público, preview e administração; nenhum stylesheet administrativo pode tratá-los como campos de texto;
 - a administração reforça largura, altura, mínimos e máximos de checkbox/radio no shell, além do CSS compartilhado, para não depender de cache antigo;
 - o editor completo de formulários prioriza a tarefa de edição: configurações gerais ficam acima, lista de campos e propriedades recebem a área principal e a prévia fica em bloco separado, em vez de quatro áreas comprimidas lado a lado;
-- o editor da página oferece edição rápida do formulário selecionado: rótulo do campo, texto do botão e, em listas/rádio/múltipla escolha, rótulo e valor interno das opções;
-- quando o clique ocorre sobre um campo renderizado, a integração tenta abrir diretamente esse campo no inspector usando o `name` do controle;
-- a edição rápida usa `cms-form-load.php`, `cms-form-save.php` e `cms-form-publish.php`; não existe um segundo formato ou banco de formulário;
+- no editor visual da página, o formulário não é tratado como uma entidade textual única nem exige escolher um campo em um seletor lateral;
+- rótulos de campo, rótulos de opções, textos de ajuda e texto do botão são alvos editoriais independentes na própria prévia: o usuário clica exatamente no texto exibido e edita `contenteditable` no lugar, como nos demais textos da página;
+- a interação desses alvos é capturada antes do clique do bloco do formulário, para que o wrapper não roube a seleção do texto;
+- o cursor é posicionado no ponto clicado; `Enter` conclui a edição e `Esc` cancela a alteração em curso;
+- alterações visuais são gravadas como rascunho do formulário pela API canônica `cms-form-save.php`; a publicação continua explícita por `cms-form-publish.php`;
+- propriedades que não aparecem na página continuam contextuais: ao clicar uma opção, por exemplo, o inspector pode mostrar o valor interno daquela opção, sem duplicar o rótulo visível em um segundo campo de texto;
+- o inspector não deve oferecer um dropdown para navegar pelos campos do formulário nem reproduzir os textos visíveis em caixas de edição paralelas;
 - alterações estruturais — tipo, identificador, ordem, criação/remoção, obrigatoriedade, lógica condicional e fluxo após envio — permanecem no editor completo, acessível por link direto no inspector;
 - alterar o valor interno de uma opção exibe aviso porque regras condicionais podem depender desse valor;
-- depois de salvar pelo editor da página, a prévia é recarregada usando o rascunho atualizado do formulário.
+- a edição visual usa o mesmo schema e as mesmas APIs do editor completo; não existe uma segunda estrutura ou banco de formulário.
 
 ## Princípio de correção sistêmica
 
