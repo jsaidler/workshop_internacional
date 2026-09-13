@@ -66,15 +66,20 @@ Imagem e vídeo são tipos de mídia diferentes e não devem compartilhar o mesm
 
 ## Regra de integração dos formulários com o editor da página
 
-O editor completo de formulários continua existindo para operações estruturais, mas ajustes editoriais cotidianos não devem obrigar o usuário a abandonar o editor da página.
+O editor completo de formulários continua existindo para operações estruturais, mas a edição cotidiana do conteúdo visível do formulário deve acontecer diretamente na página.
 
-- Ao selecionar um formulário renderizado na página, o inspector oferece uma edição rápida do formulário correspondente.
-- Quando o clique parte de um campo real renderizado, o editor tenta identificar esse campo pelo `name` e abre diretamente suas propriedades rápidas.
-- A edição rápida permite alterar o rótulo do campo, o texto do botão e, para listas/rádio/múltipla escolha, o rótulo e o valor interno de cada opção.
-- Alterar valor interno deve mostrar aviso porque condições existentes podem depender dele.
-- A edição rápida salva pelo mesmo `cms-form-save.php` usado pelo editor completo e pode publicar explicitamente pelo `cms-form-publish.php`; não deve criar uma segunda estrutura de armazenamento.
-- Tipo, identificador, ordem, criação/remoção de campos, obrigatoriedade, lógica condicional e fluxo após envio permanecem no editor completo. O inspector deve oferecer link direto para ele.
-- O preview do editor da página usa o rascunho do formulário; após salvar o formulário, o preview deve ser recarregado preservando, quando possível, o formulário/campo que estava sendo editado.
+- O formulário NÃO é tratado como uma única entidade textual dentro do WYSIWYG.
+- Não deve existir dropdown lateral para escolher “qual campo editar” quando o texto já está visível na página.
+- Rótulos de campo, rótulos de opções, textos de ajuda e texto do botão são alvos editoriais independentes.
+- O usuário clica exatamente no texto exibido e esse texto entra em `contenteditable` no próprio lugar, seguindo a mesma lógica de edição direta dos demais textos da página.
+- A captura de `pointerdown`/`click` desses alvos ocorre antes do handler do bloco do formulário, para impedir que o wrapper transforme o clique em seleção do formulário inteiro.
+- O cursor deve ser posicionado no ponto clicado. `Enter` conclui a edição; `Esc` cancela a alteração corrente.
+- Os alvos editoriais são decorados apenas no preview do editor; atributos e wrappers auxiliares não fazem parte do HTML público persistido da página.
+- As alterações são gravadas no rascunho do formulário pela API canônica `cms-form-save.php`; `cms-form-publish.php` continua sendo a publicação explícita do formulário.
+- Propriedades não visíveis podem aparecer no inspector de forma contextual. Exemplo: ao clicar o rótulo de uma opção, o inspector pode expor apenas o valor interno daquela opção, porque esse valor não aparece na página.
+- O inspector não deve duplicar o rótulo visível em outro campo de texto. O texto visível é editado exclusivamente no próprio preview.
+- Tipo, identificador, ordem, criação/remoção de campos, obrigatoriedade, lógica condicional e fluxo após envio permanecem no editor completo. O inspector mantém um link direto para esse editor.
+- A edição visual e o editor completo usam o mesmo schema e as mesmas APIs; não existe uma segunda estrutura de formulário.
 
 ## Regra de documentação obrigatória
 
@@ -129,7 +134,8 @@ A página inglesa não deve ser mera tradução da brasileira.
 - Checkbox e radio devem manter 18 × 18 px no site público, preview e em toda a administração.
 - O shell administrativo carrega CSS/JS locais com `?v=<versão instalada>` e mantém a geometria crítica de checkbox/radio independentemente de cache de stylesheet.
 - O editor completo de formulários não deve comprimir configuração, lista de campos, propriedades e preview em colunas concorrentes. Configuração fica em faixa superior; lista de campos e propriedades recebem o espaço principal; preview fica em bloco separado abaixo.
-- O editor da página possui edição rápida do formulário para rótulos, texto do botão e rótulo/valor de opções, usando as APIs canônicas do formulário.
+- No editor da página, textos visíveis do formulário são editados diretamente no preview, como elementos independentes; não há seletor de campo para reproduzir no inspector o conteúdo já visível.
+- O inspector da edição visual fica reservado a estado/publicação e propriedades não visíveis, como o valor interno de uma opção clicada.
 - Todos os CSS/JS públicos carregados pelo renderer recebem `?v=<versão instalada>`; a mesma política vale para editor e admin.
 - A configuração Apache continua usando `Cache-Control: no-cache, must-revalidate` para `.css` e `.js` como defesa adicional.
 - Alterações editoriais, visuais, estruturais e comerciais normais devem ser possíveis pelo CMS. Código deve ser necessário para novas capacidades, não para operação editorial cotidiana.

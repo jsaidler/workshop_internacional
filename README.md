@@ -12,8 +12,8 @@ O CMS possui quatro áreas principais:
 
 - **Dashboard administrativo**: `/admin/` é a entrada do sistema e apresenta publicação, alterações pendentes, inscrições, páginas, formulários, mídia, saúde/armazenamento, atividade recente e atalhos. A edição da home é uma ação do dashboard, não o destino automático.
 - **Páginas**: páginas independentes por idioma, com URL, menu, rascunho e publicação próprios.
-- **Editor WYSIWYG**: texto editado diretamente sobre a página real, biblioteca de seções, imagens, ordenação, duplicação e remoção de blocos, visualização desktop/tablet/mobile e edição dos formulários inseridos na página.
-- **Formulários e respostas**: inscrições e pesquisas próprias do site, com campos adicionáveis, removíveis e reordenáveis; cada formulário possui rascunho/publicação e as respostas ficam armazenadas no SQLite com status, notas e CSV.
+- **Editor WYSIWYG**: texto editado diretamente sobre a página real, biblioteca de seções, imagens, ordenação, duplicação e remoção de blocos, visualização desktop/tablet/mobile e edição visual dos formulários inseridos na página. Rótulos de campos, rótulos de opções, textos de ajuda e texto do botão são editados clicando diretamente no texto renderizado; o formulário não é tratado como um único bloco textual nem exige selecionar o campo em um dropdown lateral.
+- **Formulários e respostas**: inscrições e pesquisas próprias do site, com campos adicionáveis, removíveis e reordenáveis; cada formulário possui rascunho/publicação e as respostas ficam armazenadas no SQLite com status, notas e CSV. Alterações estruturais continuam no editor completo de formulários.
 
 Português e inglês são documentos editoriais independentes. A versão brasileira pode operar como página de inscrição de uma nova turma enquanto a versão inglesa continua como pesquisa de interesse para a primeira turma em inglês.
 
