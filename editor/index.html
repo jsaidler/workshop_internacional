@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/editor/cms-editor.css">
 <link rel="stylesheet" href="/editor/cms-pro-editor.css">
 <link rel="stylesheet" href="/editor/cms-ux-v2.css">
+<link rel="stylesheet" href="/editor/cms-ux-v3.css">
 </head>
 <body>
 <header class="cms-editor-bar">
@@ -22,7 +23,7 @@
   </div>
   <div class="editor-toolbar">
     <button type="button" id="add-section">+ Seção</button>
-    <button type="button" id="page-settings">Configurar página</button>
+    <button type="button" id="page-settings">Página</button>
     <button type="button" id="undo" disabled>Desfazer</button>
     <button type="button" id="redo" disabled>Refazer</button>
   </div>
@@ -34,18 +35,18 @@
 </header>
 <main class="cms-editor-workspace">
   <aside class="editor-panel sections-panel">
-    <div class="panel-heading"><p>Estrutura da página</p><h2>Seções</h2></div>
+    <div class="panel-heading"><p>Página</p><h2>Seções</h2></div>
     <div id="sections-list" class="sections-list"></div>
     <button type="button" id="add-section-side" class="panel-button">+ Adicionar seção</button>
   </aside>
   <section class="editor-canvas" aria-label="Página em edição"><div class="device-frame desktop" id="device-frame"><iframe id="page-frame" title="Página em edição"></iframe></div></section>
-  <aside class="editor-panel inspector" id="inspector"><div class="inspector-empty"><p>Clique em um texto, imagem, formulário, vídeo ou seção da página para editar suas propriedades.</p></div></aside>
+  <aside class="editor-panel inspector" id="inspector"><div class="inspector-empty"><p>Selecione um elemento diretamente na página para editar suas propriedades.</p></div></aside>
 </main>
 <div class="floating-format" id="text-toolbar" hidden>
   <button type="button" data-command="bold"><b>B</b></button><button type="button" data-command="italic"><i>I</i></button><button type="button" data-command="createLink">Link</button><button type="button" data-command="removeFormat">Limpar</button><button type="button" id="finish-text">Concluir</button>
 </div>
-<dialog id="section-dialog" class="editor-dialog"><form method="dialog"><header><div><p>Biblioteca</p><h2>Adicionar seção</h2></div><button value="cancel" aria-label="Fechar">×</button></header><div class="section-library" id="section-library"></div></form></dialog>
-<dialog id="media-dialog" class="editor-dialog wide"><form method="dialog"><header><div><p>Biblioteca de mídia</p><h2>Escolher imagem</h2></div><button value="cancel" aria-label="Fechar">×</button></header><label class="upload-label">Enviar nova imagem <input id="media-upload" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="media-grid" id="media-grid"></div></form></dialog>
+<dialog id="section-dialog" class="editor-dialog"><form method="dialog"><header><div><p>Componentes</p><h2>Adicionar seção</h2></div><button value="cancel" aria-label="Fechar">×</button></header><div class="section-library" id="section-library"></div></form></dialog>
+<dialog id="media-dialog" class="editor-dialog wide"><form method="dialog"><header><div><p>Mídia</p><h2>Escolher imagem</h2></div><button value="cancel" aria-label="Fechar">×</button></header><label class="upload-label">Enviar nova imagem <input id="media-upload" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="media-grid" id="media-grid"></div></form></dialog>
 <div class="editor-toast" id="toast" role="status"></div>
 <script src="/editor/media-library.js"></script>
 <script src="/editor/cms-editor-v3.js"></script>
