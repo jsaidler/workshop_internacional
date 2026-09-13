@@ -3,138 +3,154 @@ declare(strict_types=1);
 
 /**
  * Project-specific CMS defaults for the Direct Positive X-Ray Film workshop.
- *
- * The generic CMS seeds stay generic enough for the editor. This layer applies
- * the actual commercial structure used by this project: a dedicated Brazilian
- * registration page and the existing English interest survey.
+ * The Brazilian registration mirrors the canonical Google Form used for the
+ * workshop instead of collecting marketing or pedagogical profile data.
  */
+
+const WORKSHOP_PIX_KEY='20.179.548/0001-58';
+const WORKSHOP_PIX_COPY='00020101021126690014br.gov.bcb.pix0114201795480001580229INSCRICAO MINI CURSO SETEMBRO5204000053039865406698.005802BR592020 1 5 J V T SAIDLER6010PETROPOLIS62070503***6304314B';
+const WORKSHOP_CARD_URL='https://mpago.la/1xvBsPV';
 
 function workshop_registration_schema(): array {
     return cms_validate_form_schema([
         'version'=>1,
-        'submitLabel'=>'Enviar minha inscrição',
+        'submitLabel'=>'Enviar inscrição',
         'successTitle'=>'Inscrição recebida',
-        'successMessage'=>'Recebi sua inscrição. Vou cruzar as disponibilidades da turma e entrar em contato com a definição da data e as orientações de pagamento.',
+        'successMessage'=>'Sua inscrição foi recebida. A vaga é confirmada somente após a confirmação do pagamento.',
         'fields'=>[
+            ['id'=>'name','type'=>'text','label'=>'Nome Completo','required'=>true,'autocomplete'=>'name','width'=>'full'],
+            ['id'=>'cpf','type'=>'text','label'=>'CPF','required'=>true,'help'=>'Para emissão de NF','width'=>'half'],
+            ['id'=>'phone','type'=>'tel','label'=>'Whatsapp com DDD','required'=>true,'autocomplete'=>'tel','width'=>'half'],
+            ['id'=>'email','type'=>'email','label'=>'E-mail','required'=>true,'autocomplete'=>'email','width'=>'half'],
+            ['id'=>'instagram','type'=>'text','label'=>'Instagram','required'=>true,'width'=>'half'],
             [
-                'id'=>'name','type'=>'text','label'=>'Nome completo','required'=>true,
-                'autocomplete'=>'name','width'=>'half',
-            ],
-            [
-                'id'=>'email','type'=>'email','label'=>'E-mail','required'=>true,
-                'autocomplete'=>'email','width'=>'half',
-            ],
-            [
-                'id'=>'phone','type'=>'tel','label'=>'WhatsApp / telefone','required'=>true,
-                'autocomplete'=>'tel','width'=>'half',
-                'help'=>'Use um número em que eu consiga falar com você sobre a formação da turma.',
-            ],
-            [
-                'id'=>'city','type'=>'text','label'=>'Cidade / UF','required'=>true,
-                'autocomplete'=>'address-level2','width'=>'half',
-            ],
-            [
-                'id'=>'instagram','type'=>'text','label'=>'Instagram','required'=>false,
-                'placeholder'=>'@seuusuario','width'=>'half',
-            ],
-            [
-                'id'=>'experience','type'=>'textarea','label'=>'Qual é a sua experiência com fotografia analógica?','required'=>false,
-                'rows'=>3,'width'=>'full',
-            ],
-            [
-                'id'=>'equipment_format','type'=>'checkbox-group','label'=>'Que formato você pretende usar no workshop?','required'=>false,
-                'width'=>'full','help'=>'Marque todas as opções que fazem sentido para os seus testes.',
+                'id'=>'support_size','type'=>'radio','label'=>'Qual o tamanho do suporte que você quer receber?','required'=>true,'width'=>'full',
                 'options'=>[
-                    ['value'=>'35mm','label'=>'35 mm'],
-                    ['value'=>'medium','label'=>'Médio formato'],
-                    ['value'=>'large','label'=>'Grande formato'],
-                    ['value'=>'other','label'=>'Outro / ainda não definido'],
+                    ['value'=>'4x5','label'=>'4x5"'],
+                    ['value'=>'5x7','label'=>'5x7"'],
                 ],
             ],
+            ['id'=>'address','type'=>'text','label'=>'Endereço completo','required'=>true,'autocomplete'=>'street-address','width'=>'full'],
+            ['id'=>'city_state','type'=>'text','label'=>'Cidade/UF','required'=>true,'autocomplete'=>'address-level2','width'=>'half'],
+            ['id'=>'postal_code','type'=>'text','label'=>'CEP','required'=>true,'autocomplete'=>'postal-code','width'=>'half'],
             [
-                'id'=>'equipment','type'=>'textarea','label'=>'Que câmera, filme ou material você pretende usar?','required'=>false,
-                'rows'=>3,'width'=>'full',
-                'help'=>'Não é necessário usar o mesmo equipamento ou os mesmos materiais que eu uso.',
-            ],
-            [
-                'id'=>'availability','type'=>'checkbox-group','label'=>'Disponibilidade para os encontros','required'=>true,
-                'width'=>'full',
-                'help'=>'Marque todas as possibilidades em que você consegue participar. A ideia é reunir a turma no mesmo horário sempre que possível.',
+                'id'=>'availability','type'=>'checkbox-group','label'=>'Disponibilidade para a turma','required'=>true,'width'=>'full',
+                'help'=>'Marque todas as opções em que você poderia participar dos três encontros.',
                 'options'=>[
-                    ['value'=>'tuesday_19','label'=>'Terça-feira · 19h'],
-                    ['value'=>'thursday_19','label'=>'Quinta-feira · 19h'],
-                    ['value'=>'other','label'=>'Outro dia ou horário'],
+                    ['value'=>'tue_19_oct_6_13_20','label'=>'Terças, 19h — 6, 13 e 20 de outubro'],
+                    ['value'=>'thu_19_oct_8_15_22','label'=>'Quintas, 19h — 8, 15 e 22 de outubro'],
+                    ['value'=>'sat_09_oct_3_10_24','label'=>'Sábados, 9h — 3, 10 e 24 de outubro'],
+                    ['value'=>'sat_14_oct_3_10_24','label'=>'Sábados, 14h — 3, 10 e 24 de outubro'],
                 ],
             ],
             [
-                'id'=>'other_availability','type'=>'text','label'=>'Se marcou outro dia ou horário, qual?','required'=>false,
-                'width'=>'full','placeholder'=>'Ex.: quarta à noite, sábado pela manhã…',
-            ],
-            [
-                'id'=>'payment_preference','type'=>'radio','label'=>'Forma de pagamento que você provavelmente usaria','required'=>false,
-                'width'=>'full','options'=>[
-                    ['value'=>'pix','label'=>'Pix · R$ 698'],
-                    ['value'=>'card','label'=>'Cartão · inclusive parcelado, com as taxas da plataforma'],
-                    ['value'=>'undecided','label'=>'Ainda não decidi'],
+                'id'=>'payment_method','type'=>'radio','label'=>'Forma de pagamento','required'=>true,'width'=>'full',
+                'options'=>[
+                    ['value'=>'pix','label'=>'PIX - R$698,00'],
+                    ['value'=>'card_cash','label'=>'Cartão de Crédito à vista - R$698 + taxas Mercado Pago'],
+                    ['value'=>'card_installments','label'=>'Cartão de Crédito Parcelado - R$698 + taxas Mercado Pago'],
                 ],
             ],
             [
-                'id'=>'notes','type'=>'textarea','label'=>'Há alguma dúvida ou informação que eu deva considerar?','required'=>false,
-                'rows'=>4,'width'=>'full',
-            ],
-            [
-                'id'=>'terms','type'=>'consent',
-                'label'=>'Li as condições apresentadas nesta página e estou ciente do formato ao vivo, da dinâmica de definição das datas e do valor do workshop. Concordo em receber contato por e-mail ou WhatsApp sobre esta inscrição.',
-                'required'=>true,'width'=>'full',
+                'id'=>'terms','type'=>'consent','required'=>true,'width'=>'full',
+                'label'=>'Declaro que li e estou de acordo com a programação e com as condições de inscrição e participação apresentadas neste formulário.',
             ],
         ],
     ]);
 }
 
+function workshop_registration_terms_html(): string {
+    return <<<'HTML'
+<section class="registration-terms" data-registration-terms hidden>
+  <p class="section-label">CONDIÇÕES DE INSCRIÇÃO E PARTICIPAÇÃO</p>
+  <ol>
+    <li><strong>Inscrição e reserva de vaga</strong><p>A inscrição no site não confirma a reserva da vaga. A inscrição é confirmada somente após a realização e a confirmação do pagamento. O preenchimento deste formulário, sem pagamento, não reserva a vaga.</p></li>
+    <li><strong>Formação das turmas</strong><p>Os horários serão definidos conforme a disponibilidade e o número de inscritos com pagamento confirmado. Uma turma adicional poderá ser aberta quando houver pelo menos 3 participantes com pagamento confirmado e disponibilidade comum para o mesmo horário.</p></li>
+    <li><strong>Disponibilidade informada</strong><p>Ao marcar um horário como disponível, o participante declara possuir disponibilidade para os três encontros correspondentes àquele horário. É possível indicar mais de uma opção.</p></li>
+    <li><strong>Confirmação da turma</strong><p>A turma será considerada formada quando houver participantes com pagamento confirmado e disponibilidade compatível. Caso não seja possível formar a turma em nenhum dos horários indicados pelo participante, o valor pago será devolvido integralmente.</p></li>
+    <li><strong>Formato do curso</strong><p>O curso acontece on-line e ao vivo, em três encontros. Eventuais ajustes de horário serão comunicados aos participantes.</p></li>
+    <li><strong>Materiais e equipamentos</strong><p>O participante trabalha com o próprio equipamento e é responsável pelos materiais necessários para seus testes. O suporte indicado neste formulário será enviado para o endereço informado.</p></li>
+    <li><strong>Segurança</strong><p>O participante é responsável por seguir as orientações de segurança para manipulação de produtos e materiais utilizados durante os processos fotográficos.</p></li>
+    <li><strong>Conduta e material didático</strong><p>Os materiais disponibilizados durante o curso destinam-se ao uso pessoal do participante e não devem ser reproduzidos ou comercializados sem autorização.</p></li>
+    <li><strong>Dados pessoais</strong><p>Os dados fornecidos neste formulário serão utilizados para organizar a inscrição, o pagamento, a participação no workshop e o envio do suporte.</p></li>
+  </ol>
+  <p><strong>Cancelamento</strong></p>
+  <p>O participante poderá comunicar a desistência. Casos de cancelamento serão tratados conforme o estágio de formação da turma e as despesas já realizadas.</p>
+</section>
+HTML;
+}
+
+function workshop_registration_payment_html(): string {
+    $pix=h(WORKSHOP_PIX_COPY);$key=h(WORKSHOP_PIX_KEY);$card=h(WORKSHOP_CARD_URL);
+    return <<<HTML
+<div class="registration-payment-source" data-registration-payment-source hidden>
+  <section class="registration-payment-panel" data-registration-payment="pix" hidden>
+    <p class="section-label">PIX</p>
+    <h3>R$ 698,00</h3>
+    <div class="registration-pix-layout">
+      <img src="/assets/media/pix-workshop.svg" alt="QR Code Pix para pagamento de R$ 698,00">
+      <div>
+        <p><strong>Chave Pix</strong><br><code>{$key}</code></p>
+        <p><strong>Copia e cola</strong></p>
+        <code class="registration-pix-code" data-pix-copy-value>{$pix}</code>
+        <button class="button button-secondary" type="button" data-copy-pix>Copiar código Pix</button>
+      </div>
+    </div>
+  </section>
+  <section class="registration-payment-panel" data-registration-payment="card" hidden>
+    <p class="section-label">CARTÃO DE CRÉDITO · MERCADO PAGO</p>
+    <h3>Pagamento por cartão de crédito</h3>
+    <p>Use o link do Mercado Pago para pagamento à vista ou parcelado. As taxas da plataforma são acrescentadas ao pagamento.</p>
+    <p><a class="button" href="{$card}" target="_blank" rel="noopener">Pagar com cartão no Mercado Pago <span aria-hidden="true">↗</span></a></p>
+  </section>
+</div>
+HTML;
+}
+
+function workshop_registration_program_html(): string {
+    return <<<'HTML'
+<section class="registration-program" data-registration-program hidden>
+  <p class="section-label">PROGRAMAÇÃO</p>
+  <article><h3>Encontro 1 — Filme de raio-X, exposição e preparação para o processo</h3><p>Características do filme de raio-X, exposição pensando no positivo e decisões anteriores à revelação.</p></article>
+  <article><h3>Encontro 2 — Química, revelação e evolução do processo</h3><p>Fotografia e processamento ao vivo, com variação deliberada de exposição e parâmetros para comparar os resultados e compreender a formação do positivo.</p></article>
+  <article><h3>Encontro 3 — Análise dos resultados</h3><p>Depois dos dois primeiros encontros, os participantes produzem seus próprios testes. No terceiro encontro, analisamos os resultados, as escolhas feitas e o que cada imagem indica para o teste seguinte.</p></article>
+</section>
+HTML;
+}
+
 function workshop_registration_page_document(): array {
-    $html=<<<'HTML'
-<section class="section" data-cms-section="registration-intro" data-cms-section-name="Abertura da inscrição">
-  <p class="section-label" data-cms-editable>INSCRIÇÃO · NOVA TURMA</p>
-  <div class="statement-grid">
-    <h2 data-cms-editable>Positivo direto em filme de raios X</h2>
-    <div class="statement-copy">
-      <p data-cms-editable>Esta é a inscrição para a nova turma em português do workshop on-line e ao vivo. São três encontros: preparação e exposição; demonstração prática completa com comparação de resultados; e análise das imagens produzidas pelos participantes.</p>
-      <p data-cms-editable><strong>Valor: R$ 698 via Pix.</strong> Também é possível pagar no cartão, inclusive parcelado, com as taxas da plataforma.</p>
-      <p><a class="button button-secondary" href="/?lang=pt-br" data-cms-editable>Voltar ao workshop <span aria-hidden="true">↗</span></a></p>
+    $payment=workshop_registration_payment_html();
+    $program=workshop_registration_program_html();
+    $terms=workshop_registration_terms_html();
+    $html=<<<HTML
+<section class="registration-page" data-cms-section="registration-form" data-cms-section-name="Inscrição">
+  <div class="registration-page-inner">
+    <header class="registration-page-header">
+      <p class="section-label" data-cms-editable>WORKSHOP</p>
+      <h1 data-cms-editable>Positivo Direto em Filme de Raio-X</h1>
+      <div class="registration-intro-copy">
+        <p data-cms-editable>Mini workshop online e ao vivo sobre produção de positivos diretos em filme de raio-X.</p>
+        <p data-cms-editable>São três encontros. Nos dois primeiros percorremos as características do filme, exposição, química, revelação e produção do positivo direto. Depois, cada participante produz seus próprios testes e retorna para um terceiro encontro dedicado à análise dos resultados.</p>
+        <p data-cms-editable>Cada aluno recebe o suporte para chapas desenvolvido especificamente para o processo.</p>
+        <p data-cms-editable><strong>O valor da inscrição é de R$ 698,00 via Pix.</strong> Também é possível pagar por cartão de crédito, à vista ou parcelado, com as taxas do Mercado Pago.</p>
+        <p data-cms-editable><strong>O envio deste formulário não reserva a vaga. A inscrição é confirmada somente após a confirmação do pagamento.</strong></p>
+        <p data-cms-editable>A data da turma será definida de acordo com a disponibilidade dos participantes com pagamento confirmado. Uma segunda turma poderá ser aberta quando houver pelo menos 3 participantes com pagamento confirmado e disponibilidade comum.</p>
+      </div>
+    </header>
+    <div class="registration-form-shell" data-registration-form-shell>
+      <div data-cms-form-key="registration"></div>
+      {$program}
+      {$payment}
+      {$terms}
     </div>
-  </div>
-</section>
-<section class="format" data-cms-section="registration-conditions" data-cms-section-name="Condições da inscrição">
-  <div class="format-inner">
-    <p class="section-label" data-cms-editable>ANTES DE ENVIAR</p>
-    <div class="format-heading">
-      <h2 data-cms-editable>A inscrição também organiza a formação da turma.</h2>
-      <p data-cms-editable>Marque toda a sua disponibilidade real. Quanto mais opções você indicar, mais fácil é reunir os participantes no mesmo grupo.</p>
-    </div>
-    <div class="format-grid">
-      <article class="format-card"><span class="number">01</span><h3 data-cms-editable>3 encontros ao vivo</h3><p data-cms-editable>O workshop é on-line, acontece ao vivo e não é gravado.</p></article>
-      <article class="format-card"><span class="number">02</span><h3 data-cms-editable>Definição das datas</h3><p data-cms-editable>A turma acontece na opção que reunir mais participantes. Uma turma alternativa só é aberta quando houver pelo menos 3 participantes com disponibilidade comum em outra data.</p></article>
-      <article class="format-card"><span class="number">03</span><h3 data-cms-editable>Pagamento</h3><p data-cms-editable>R$ 698 via Pix. No cartão, é possível parcelar; as taxas da plataforma são acrescentadas ao pagamento.</p></article>
-      <article class="format-card"><span class="number">04</span><h3 data-cms-editable>Suporte incluído</h3><p data-cms-editable>Os participantes da turma em português recebem o suporte dobrável desenvolvido para reduzir o contato da dupla emulsão do filme de raios X com a bandeja durante o processamento.</p></article>
-    </div>
-  </div>
-</section>
-<section class="interest cms-form-section" id="formulario" data-cms-section="registration-form" data-cms-section-name="Formulário de inscrição">
-  <div class="interest-inner">
-    <div class="interest-intro">
-      <p class="section-label" data-cms-editable>FORMULÁRIO DE INSCRIÇÃO</p>
-      <h2 data-cms-editable>Se você quer entrar na nova turma, preencha aqui.</h2>
-      <p data-cms-editable>O envio do formulário não realiza cobrança. Depois de cruzar as disponibilidades, eu entro em contato para confirmar a formação da turma, a data e as orientações de pagamento.</p>
-    </div>
-    <div data-cms-form-key="registration"></div>
   </div>
 </section>
 HTML;
     return cms_page_document([
         'theme'=>'auto',
         'meta'=>[
-            'title'=>'Inscrição — Positivo Direto em Filme de Raios X',
-            'description'=>'Inscrição para a nova turma em português do workshop on-line e ao vivo de positivo direto em filme de raios X.',
+            'title'=>'Inscrição — Positivo Direto em Filme de Raio-X',
+            'description'=>'Inscrição para o workshop on-line e ao vivo de positivo direto em filme de raio-X.',
         ],
         'html'=>$html,
     ]);
@@ -148,12 +164,12 @@ function workshop_home_registration_cta(string $url): string {
     <div class="interest-intro">
       <p class="section-label" data-cms-editable>08 / Nova turma</p>
       <h2 data-cms-editable>Quer participar da próxima turma?</h2>
-      <p data-cms-editable>A inscrição agora acontece em uma página própria, com as condições da turma, disponibilidade e os dados necessários para organizar os encontros.</p>
+      <p data-cms-editable>A inscrição acontece em uma página própria. A vaga é confirmada após a confirmação do pagamento.</p>
     </div>
     <div class="interest-confirmation">
       <p class="section-label" data-cms-editable>INSCRIÇÃO</p>
       <h2 data-cms-editable>R$ 698 via Pix</h2>
-      <p data-cms-editable>Também é possível pagar no cartão, inclusive parcelado, com as taxas da plataforma.</p>
+      <p data-cms-editable>Cartão de crédito também disponível, à vista ou parcelado, com as taxas do Mercado Pago.</p>
       <a class="button" href="{$safe}">Abrir formulário de inscrição <span aria-hidden="true">↗</span></a>
     </div>
   </div>
@@ -172,8 +188,6 @@ function workshop_cms_setup_activity(PDO $db,int $activityId): void {
     $activity=activity_by_id($db,$activityId);
     if(!$activity)return;
 
-    // Ensure the generic tables have initial records, then project them onto the
-    // structure actually used by this workshop.
     cms_forms_seed($db,$activityId);
     cms_pages_seed($db,$activityId);
     $now=gmdate('c');
@@ -206,8 +220,6 @@ function workshop_cms_setup_activity(PDO $db,int $activityId): void {
     }
     if(!$registrationPage)return;
 
-    // The dedicated /inscricao/ endpoint is intentionally stable while the
-    // landing page renderer is being validated separately.
     $registrationUrl='/inscricao/?lang=pt-br';
     $cta=workshop_home_registration_cta($registrationUrl);
     $home=cms_page_home($db,$activityId,PUBLIC_LOCALE_PT_BR);
