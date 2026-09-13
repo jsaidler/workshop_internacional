@@ -38,7 +38,10 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 - checkbox e radio têm dimensão visual normalizada em 18 × 18 px no site público, preview e admin;
 - no site público, largura, altura, mínimos, máximos e `flex-basis` desses controles são travados em 18 px para impedir que regras genéricas de `input` os façam ocupar a largura do grupo ou herdar a altura de campos de texto;
 - essa normalização pertence à camada compartilhada `.cms-public`, portanto vale para todas as páginas públicas e para o preview do editor, não para uma página, locale ou formulário específico;
-- assets CSS/JS são revalidados após atualização da aplicação para evitar que cache antigo masque correções visuais recém-instaladas.
+- o critério visual inclui a caixa efetiva do elemento, não apenas o círculo/quadrado nativo: marcador centralizado com texto distante significa que o `input` ainda está ocupando a linha e é regressão;
+- o renderer público mantém uma regra estrutural inline para checkbox/radio além do CSS externo, de modo que a geometria correta não dependa de uma cópia de stylesheet potencialmente antiga no navegador;
+- CSS e JavaScript públicos recebem `?v=<versão instalada>`, derivado de `deploy-info.json` (`sourceSha`) com `filemtime` como fallback, para garantir troca de URL após atualização da aplicação;
+- a revalidação HTTP em `.htaccess` continua como defesa adicional, não como único mecanismo contra cache antigo.
 
 ## Princípio de correção sistêmica
 
