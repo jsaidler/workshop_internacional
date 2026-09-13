@@ -15,6 +15,7 @@ $media=(string)file_get_contents($root.'/admin/media.php');
 $mediaTask=(string)file_get_contents($root.'/assets/admin-media-task.js');
 $mediaLibrary=(string)file_get_contents($root.'/editor/media-library.js');
 $publicCss=(string)file_get_contents($root.'/assets/cms-v3.css');
+$renderer=(string)file_get_contents($root.'/app/cms_renderer.php');
 $adminCss=(string)file_get_contents($root.'/admin/pro-admin.css');
 
 must(!str_contains($admin,"Location: /editor/?page="),'admin entry point must not bypass the dashboard');
@@ -44,6 +45,10 @@ must(str_contains($mediaTask,'previewSrc(item,480)'),'media grid must use thumbn
 must(str_contains($mediaLibrary,'previewSrc(item,target=480)'),'media library must choose responsive previews');
 must(str_contains($publicCss,'.cms-public input[type="checkbox"],.cms-public input[type="radio"]'),'native public choice controls must be normalized at the shared page layer, not in one page or form instance');
 must(str_contains($publicCss,'min-height:18px'),'public choice controls must override legacy text-input height');
+must(str_contains($renderer,'cms_public_asset_version'),'public renderer must version shared assets after application updates');
+must(str_contains($renderer,'cms-system-choice-controls'),'public renderer must enforce choice-control geometry independently of cached external CSS');
+must(str_contains($renderer,'page.css?v=<?=$assetVersion?>'),'public base stylesheet must use the installed application version in its URL');
+must(str_contains($renderer,'public.js?v=<?=$assetVersion?>'),'public JavaScript must use the installed application version in its URL');
 must(str_contains($adminCss,'.admin-page input[type="checkbox"],.admin-page input[type="radio"]'),'admin must explicitly size native choice controls');
 must(str_contains($adminCss,'min-height:18px'),'admin choice controls must override generic admin input height');
 

@@ -51,7 +51,15 @@ O updater:
 7. nunca sobrescreve banco, uploads, configuração local, logs ou histórico de updates;
 8. deixa eventuais migrações para o bootstrap da próxima requisição.
 
-A configuração Apache do pacote publicado força revalidação de arquivos `.css` e `.js` com `Cache-Control: no-cache, must-revalidate`. Isso evita que uma atualização de aplicação seja instalada corretamente no servidor enquanto o navegador continue exibindo uma versão anterior dos estilos ou scripts.
+## Cache de assets após atualização
+
+A aplicação não deve depender de o navegador descobrir sozinho que um CSS/JS mudou.
+
+O renderer público lê `sourceSha` de `deploy-info.json` e acrescenta `?v=<versão instalada>` aos URLs dos CSS e do JavaScript público. Quando uma nova versão é instalada, o URL do asset muda e o navegador é obrigado a buscar a versão correspondente ao código instalado. Em ambiente sem `deploy-info.json`, o renderer usa `filemtime` do CSS como fallback.
+
+A configuração Apache do pacote publicado também força revalidação de arquivos `.css` e `.js` com `Cache-Control: no-cache, must-revalidate`. A query string versionada é o mecanismo principal para troca de versão; a revalidação HTTP é uma defesa adicional.
+
+Para invariantes visuais críticos de formulário, como a geometria de checkbox/radio, o renderer pode manter uma regra estrutural inline compartilhada. Isso evita que um cache externo antigo devolva uma página funcionalmente atual com um controle visualmente regressivo.
 
 ## Regra de estado
 
