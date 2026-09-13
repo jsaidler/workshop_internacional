@@ -36,11 +36,11 @@ Defeitos que aparecem em várias páginas, idiomas ou instâncias de um mesmo co
 - Adicionar teste/regressão no mesmo nível de escopo da correção para impedir que o problema reapareça em outra página.
 - Uma exceção só é aceitável quando o comportamento diferente daquela página for deliberado e documentado como tal.
 
-No caso de checkbox/radio públicos, a normalização é uma regra da camada compartilhada `.cms-public`, portanto vale para todas as páginas públicas e para o preview do editor, independentemente de qual formulário ou página contenha o controle.
+Checkbox/radio públicos são normalizados na camada compartilhada `.cms-public`. Checkbox/radio administrativos são normalizados numa camada final compartilhada do admin (`assets/admin-controls.css`), carregada depois dos estilos administrativos normais. Nenhuma tela administrativa deve voltar a depender da geometria genérica de `input` para controles nativos de escolha.
 
-A captura de 13/09 mostrou um detalhe importante: o círculo/quadrado nativo podia parecer pequeno, mas o elemento `input` continuava ocupando a largura inteira da linha por causa do CSS legado de campos de texto. O sintoma visual era o marcador centralizado e o texto empurrado para a direita. Portanto o critério de correção não é apenas o diâmetro visível; a caixa do próprio `input` precisa estar efetivamente limitada a 18 × 18 px.
+A captura de 13/09 mostrou um detalhe importante: o círculo/quadrado nativo podia parecer pequeno, mas o elemento `input` continuava ocupando a largura inteira da linha por causa do CSS legado de campos de texto. O critério de correção não é apenas o diâmetro visível; a caixa do próprio `input` precisa estar efetivamente limitada.
 
-Como uma atualização de CSS pode ficar mascarada por cache antigo do navegador, o renderer público também deve versionar os URLs de CSS/JS com a versão instalada (`deploy-info.json`) e manter uma regra estrutural inline para a geometria de checkbox/radio. Essa regra é global do renderer, não específica de página ou formulário.
+Como atualizações de CSS/JS podem ficar mascaradas por cache antigo, o renderer público, o editor de páginas e o shell administrativo versionam seus assets locais com a versão instalada lida de `deploy-info.json`.
 
 ## Regra de edição de mídia no editor de páginas
 
@@ -48,15 +48,23 @@ Imagem e vídeo são tipos de mídia diferentes e não devem compartilhar o mesm
 
 - Imagens continuam usando o inspector de imagem: texto alternativo, ajuste, ponto focal e biblioteca de imagens.
 - Qualquer elemento `<video>` dentro da página editável deve ser selecionável como vídeo, independentemente de ser um componente novo, o vídeo do processo, um vídeo legado ou possuir atributos editoriais antigos.
-- A seleção de vídeo deve acontecer sobre o próprio elemento `<video>`. O editor intercepta `pointerdown`/`click` em fase de captura, cancela a ação padrão dos controles nativos e interrompe a propagação antes que a seção ou o player processem a interação.
-- Não inserir botão, overlay ou outro elemento editável sobre o vídeo para simular seleção. Esses elementos criam uma segunda superfície editorial e podem ser selecionados como conteúdo da página, o que é incorreto.
-- O inspector de vídeo é próprio e controla a origem do vídeo, troca por outro asset de vídeo, upload de vídeo, URL externa e comportamento de reprodução (`controls`, autoplay, muted, loop, playsinline e preload).
-- A biblioteca aberta pelo controle de vídeo lista apenas vídeos; não deve reutilizar `MediaLibrary.images` nem o diálogo de troca de imagem.
-- A capa/poster é uma propriedade do asset de vídeo e deve aparecer no inspector como assunto separado da origem do vídeo. Editar capa não equivale a trocar o vídeo.
-- Quando o vídeo é escolhido na biblioteca, a página mantém `data-media-asset-id` e usa a versão ativa/mais recente pelo resolver. Quando o usuário opta por URL externa, o vínculo com o asset gerenciado deve ser removido para que o resolver não sobrescreva a URL.
-- O vídeo do processo usa exatamente esse mesmo mecanismo global; não existe correção específica para a página PT, EN ou para a seção de processo.
-- O controlador dedicado de vídeo deve ser carregado antes dos hooks legados do `cms-pro-editor.js`, para que sua captura cancele a interação antes de qualquer handler antigo de vídeo.
-- Os assets do editor (`/editor/*.css` e `/editor/*.js`) são versionados no `editor/index.php` com a versão instalada lida de `deploy-info.json`, evitando que uma atualização do editor seja mascarada por JavaScript/CSS antigo em cache.
+- A seleção de vídeo acontece sobre o próprio elemento `<video>`. O editor intercepta `pointerdown`/`click` em fase de captura, cancela a ação padrão dos controles nativos e interrompe a propagação antes que a seção ou o player processem a interação.
+- Não inserir botão, overlay ou outro elemento editável sobre o vídeo para simular seleção.
+- O inspector de vídeo é próprio e controla origem, troca por asset de vídeo, upload, URL externa e comportamento de reprodução.
+- A biblioteca do controle de vídeo lista apenas vídeos. Capa/poster é propriedade separada do vídeo.
+- O vídeo do processo usa exatamente o mesmo mecanismo global das demais páginas e componentes.
+
+## Regra de edição de formulários
+
+O formulário inserido numa página é conteúdo editorial da própria página e deve oferecer edição cotidiana sem obrigar o usuário a abandonar o editor WYSIWYG.
+
+- Ao selecionar um formulário no editor da página, o inspector oferece uma **edição rápida** do formulário associado.
+- A edição rápida cobre: texto do botão, rótulo dos campos, obrigatoriedade, placeholder nos tipos simples e, para listas/rádio/múltipla escolha, **rótulo visível e valor interno de cada opção**.
+- O inspector salva pelo mesmo `cms-form-save.php` usado pelo editor completo e também pode publicar pelo `cms-form-publish.php`; não existe uma segunda fonte de verdade.
+- Alterações estruturais — tipo, ordem, criação/remoção de campos, condições e fluxo após envio — continuam no editor completo, acessível como ação secundária a partir do inspector.
+- A integração vale para qualquer formulário inserido em qualquer página/idioma; não existe tratamento específico para o formulário de inscrição.
+- O editor completo de formulários deve priorizar a edição de campos. A antiga composição de três colunas apertadas é considerada regressão: configuração geral fica no topo, campos ocupam a área principal e a prévia fica separada.
+- Lógica condicional e fluxo após envio são configurações avançadas e ficam recolhidas por padrão no editor completo, podendo ser abertas quando necessário.
 
 ## Regra de documentação obrigatória
 
@@ -108,12 +116,9 @@ A página inglesa não deve ser mera tradução da brasileira.
 - `/admin/` é dashboard. Não deve redirecionar diretamente para o editor.
 - O editor da home é uma ação do dashboard, não a própria página inicial administrativa.
 - Dashboard atual: publicação, alterações pendentes, novas inscrições, páginas, formulários, mídia, armazenamento/saúde e atividade recente.
-- Checkbox e radio devem manter dimensão visual normalizada de 18 × 18 px no site público, preview e admin; regras genéricas de `input` não podem transformá-los em campos de texto nem fazê-los ocupar a largura disponível do grupo de opções.
-- A regra pública dos controles nativos é deliberadamente forte e global: largura, altura, mínimos, máximos e `flex-basis` ficam travados em 18 px sob `.cms-public`, cobrindo todas as páginas públicas e o preview, não uma página ou formulário específico.
-- O renderer público replica essa geometria em um bloco de estilo estrutural inline para que a aplicação não dependa de uma cópia antiga de CSS externa para manter a forma correta dos controles.
-- Todos os CSS/JS públicos carregados pelo renderer recebem `?v=<versão instalada>`, usando `sourceSha` de `deploy-info.json` e `filemtime` como fallback. Uma versão nova da aplicação, portanto, gera URLs novos para os assets e não reutiliza silenciosamente uma cópia antiga do navegador.
-- A mesma política de versionamento é aplicada aos assets do editor pela entrada autenticada `editor/index.php`.
-- A configuração Apache continua usando `Cache-Control: no-cache, must-revalidate` para `.css` e `.js` como defesa adicional.
+- Checkbox e radio públicos permanecem normalizados em 18 × 18 px; no admin, a camada compartilhada final usa 16 × 16 px e trava largura, altura, mínimos e máximos para impedir herança de campos de texto.
+- Todos os CSS/JS públicos carregados pelo renderer recebem `?v=<versão instalada>`; a mesma política é aplicada aos assets do editor e aos assets carregados pelo shell administrativo.
+- A configuração Apache continua usando `Cache-Control: no-cache, must-revalidate` como defesa adicional.
 - Alterações editoriais, visuais, estruturais e comerciais normais devem ser possíveis pelo CMS. Código deve ser necessário para novas capacidades, não para operação editorial cotidiana.
 
 ## Conteúdo e pesquisa que não devem regredir
