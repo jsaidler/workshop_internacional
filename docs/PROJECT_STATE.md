@@ -78,7 +78,9 @@ A página inglesa não deve ser mera tradução da brasileira.
 - `/admin/` é dashboard. Não deve redirecionar diretamente para o editor.
 - O editor da home é uma ação do dashboard, não a própria página inicial administrativa.
 - Dashboard atual: publicação, alterações pendentes, novas inscrições, páginas, formulários, mídia, armazenamento/saúde e atividade recente.
-- Checkbox e radio devem manter dimensão visual normalizada de 18 × 18 px no site público, preview e admin; regras genéricas de `input` não podem transformá-los em campos de texto.
+- Checkbox e radio devem manter dimensão visual normalizada de 18 × 18 px no site público, preview e admin; regras genéricas de `input` não podem transformá-los em campos de texto nem fazê-los ocupar a largura disponível do grupo de opções.
+- A regra pública dos controles nativos é deliberadamente forte: largura, altura, mínimos, máximos e `flex-basis` ficam travados em 18 px para impedir regressão por cascata de CSS.
+- CSS e JavaScript públicos devem ser revalidados pelo navegador após atualização da aplicação; a configuração Apache usa `Cache-Control: no-cache, must-revalidate` para `.css` e `.js`, evitando que uma versão anterior dos assets continue mascarando uma correção recém-instalada.
 - Alterações editoriais, visuais, estruturais e comerciais normais devem ser possíveis pelo CMS. Código deve ser necessário para novas capacidades, não para operação editorial cotidiana.
 
 ## Conteúdo e pesquisa que não devem regredir

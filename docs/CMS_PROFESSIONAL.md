@@ -35,7 +35,9 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 - prévia no painel;
 - rascunho/publicação;
 - respostas associadas ao formulário/página, status de acompanhamento, notas e CSV;
-- checkbox e radio têm dimensão visual normalizada em 18 × 18 px no site público, preview e admin; regras genéricas de `input` não podem fazê-los herdar largura/altura de campos de texto.
+- checkbox e radio têm dimensão visual normalizada em 18 × 18 px no site público, preview e admin;
+- no site público, largura, altura, mínimos, máximos e `flex-basis` desses controles são travados em 18 px para impedir que regras genéricas de `input` os façam ocupar a largura do grupo ou herdar a altura de campos de texto;
+- assets CSS/JS são revalidados após atualização da aplicação para evitar que cache antigo masque correções visuais recém-instaladas.
 
 ## Independência editorial PT/EN
 

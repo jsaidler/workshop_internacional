@@ -34,6 +34,8 @@ O updater não substitui:
 
 Antes de substituir arquivos gerenciados, ele verifica SHA-256 e mantém backups locais. O banco pode ser copiado como segurança antes da atualização, mas não é restaurado automaticamente durante rollback de arquivos para evitar perda de inscrições ou edições posteriores.
 
+Os assets `.css` e `.js` publicados pela aplicação são servidos com `Cache-Control: no-cache, must-revalidate`. Depois que uma nova versão é instalada, o navegador deve revalidar esses arquivos em vez de continuar usando silenciosamente uma cópia anterior.
+
 ## Bootstrap inicial ou contingência
 
 Uma instalação que ainda não possui o self-updater precisa de um deploy convencional do `dist/`. FTP/manual deploy também pode ser usado em recuperação excepcional se o updater estiver indisponível.
