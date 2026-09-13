@@ -21,7 +21,7 @@ function admin_context_items(string $workspace,?array $activity): array {
             'site'=>['Navegação',admin_shell_url('/admin/site.php',$activity)],
             'design'=>['Visual',admin_shell_url('/admin/design.php',$activity)],
             'seo'=>['SEO',admin_shell_url('/admin/seo.php',$activity)],
-            'blocks'=>['Blocos',admin_shell_url('/admin/blocks.php',$activity)],
+            'blocks'=>['Componentes',admin_shell_url('/admin/blocks.php',$activity)],
         ],
         'registrations'=>[
             'responses'=>['Respostas',admin_shell_url('/admin/submissions.php',$activity)],
