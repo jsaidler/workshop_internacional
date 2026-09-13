@@ -1,21 +1,38 @@
 <?php
 declare(strict_types=1);
-require __DIR__.'/../app/bootstrap.php';require __DIR__.'/../app/admin_shell.php';security_headers();require_admin();
-$db=database();$state=admin_activity_resolution($db);$activity=$state['activity'];
-if(!$activity){admin_shell_start('overview','Início',$state);?><section class="admin-empty"><h2>Crie o primeiro site</h2><p>Configure um site para começar a editar páginas, inscrições e mídia.</p><a class="admin-button" href="/admin/activities.php">Configurar site</a></section><?php admin_shell_end();exit;}
-$id=(int)$activity['id'];cms_pages_seed($db,$id);cms_forms_seed($db,$id);$pages=cms_pages($db,$id);$forms=cms_forms($db,$id);
-$q=$db->prepare('SELECT COUNT(*) FROM cms_form_submissions WHERE activity_id=?');$q->execute([$id]);$responses=(int)$q->fetchColumn();
-$q=$db->prepare("SELECT COUNT(*) FROM cms_form_submissions WHERE activity_id=? AND status='new'");$q->execute([$id]);$newResponses=(int)$q->fetchColumn();
-$q=$db->prepare('SELECT s.id,s.payload_json,s.created_at,s.status,f.title form_title FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.activity_id=? ORDER BY s.created_at DESC LIMIT 5');$q->execute([$id]);$recent=$q->fetchAll();
-$assets=$db->query("SELECT kind,COUNT(*) total FROM media_assets WHERE archived_at IS NULL GROUP BY kind")->fetchAll();$media=['image'=>0,'video'=>0];foreach($assets as $asset)$media[$asset['kind']]=(int)$asset['total'];
-$mediaErrors=(int)$db->query("SELECT COUNT(*) FROM media_assets WHERE archived_at IS NULL AND processing_status NOT IN ('ready','pending')")->fetchColumn();
-$unpublishedPages=count(array_filter($pages,fn(array $p)=>$p['published_revision']===null||(int)$p['draft_revision']!==(int)$p['published_revision']));$unpublishedForms=count(array_filter($forms,fn(array $f)=>$f['published_revision']===null||(int)$f['draft_revision']!==(int)$f['published_revision']));$pending=$unpublishedPages+$unpublishedForms;
-$homePt=null;foreach($pages as $page)if(($page['locale']??'')===PUBLIC_LOCALE_PT_BR&&(int)($page['is_home']??0)===1&&($page['status']??'')!=='archived'){$homePt=$page;break;}
-function admin_dashboard_person(array $row): string {$payload=json_decode((string)($row['payload_json']??''),true)?:[];foreach(['full_name','name','email','phone'] as $key){$value=$payload[$key]??null;if(is_string($value)&&trim($value)!=='')return trim($value);}return 'Resposta #'.(int)$row['id'];}
-function admin_dashboard_date(string $date): string {return date('d/m · H:i',strtotime($date));}
-$publicUrl=admin_public_activity_url($activity);
-admin_shell_start('overview','Início',$state);?>
-<section class="overview-hero"><div><h2><?=h($activity['admin_name'])?></h2><p><?= $pending?'Há alterações salvas que ainda não estão publicadas.':'O site está publicado e sem alterações pendentes.' ?></p></div><div class="hero-actions"><?php if($homePt):?><a class="admin-button" href="/editor/?page=<?=(int)$homePt['id']?>">Editar página inicial</a><?php else:?><a class="admin-button" href="/admin/pages.php?activity=<?=$id?>">Editar site</a><?php endif;?></div></section>
-<section class="admin-dashboard-status" aria-label="Estado do site"><article class="admin-status-card" data-tone="<?=$pending?'attention':'good'?>"><span>Publicação</span><strong><?=$pending?$pending.' pendência'.($pending===1?'':'s'):'Tudo publicado'?></strong></article><article class="admin-status-card" data-tone="<?=$newResponses?'attention':'good'?>"><span>Inscrições</span><strong><?=$newResponses?$newResponses.' nova'.($newResponses===1?'':'s'):'Nenhuma nova'?></strong></article><article class="admin-status-card" data-tone="<?=$mediaErrors?'danger':'good'?>"><span>Mídia</span><strong><?=$mediaErrors?$mediaErrors.' com problema':'Tudo normal'?></strong></article></section>
-<div class="admin-dashboard-grid"><section class="admin-panel-plain"><header><h3>Respostas recentes</h3><a href="/admin/submissions.php?activity=<?=$id?>">Ver todas</a></header><div class="admin-row-list"><?php if(!$recent):?><div class="admin-row-item"><div><strong>Nenhuma resposta ainda</strong><span>As novas inscrições aparecerão aqui.</span></div></div><?php endif;?><?php foreach($recent as $row):?><a href="/admin/submissions.php?activity=<?=$id?>&submission=<?=(int)$row['id']?>"><div><strong><?=h(admin_dashboard_person($row))?></strong><span><?=h((string)$row['form_title'])?> · <?=h(admin_dashboard_date((string)$row['created_at']))?></span></div><span class="admin-badge"><?=h((string)$row['status'])?></span></a><?php endforeach;?></div></section><section class="admin-panel-plain"><header><h3>Ações rápidas</h3></header><div class="admin-quick-grid"><?php if($homePt):?><a href="/editor/?page=<?=(int)$homePt['id']?>"><strong>Editar página inicial</strong><span>Texto, imagens e seções.</span></a><?php endif;?><a href="/admin/submissions.php?activity=<?=$id?>"><strong>Ver inscrições</strong><span><?=$responses?> <?= $responses===1?'resposta':'respostas' ?>.</span></a><a href="/admin/media.php?activity=<?=$id?>"><strong>Enviar mídia</strong><span><?=h(admin_media_summary($media['image'],$media['video']))?>.</span></a><a href="/admin/site.php?activity=<?=$id?>"><strong>Editar navegação</strong><span>Menu, cabeçalho e rodapé.</span></a></div></section></div>
-<?php admin_shell_end();
+require __DIR__.'/../app/bootstrap.php';
+require __DIR__.'/../app/admin_shell.php';
+security_headers();
+require_admin();
+
+$db=database();
+$state=admin_activity_resolution($db);
+$activity=$state['activity'];
+
+if(!$activity){
+    admin_shell_start('overview','Início',$state);
+    ?><section class="admin-empty"><h2>Crie o primeiro site</h2><p>Configure um site para começar a editar páginas, inscrições e mídia.</p><a class="admin-button" href="/admin/activities.php">Configurar site</a></section><?php
+    admin_shell_end();
+    exit;
+}
+
+$id=(int)$activity['id'];
+cms_pages_seed($db,$id);
+$pages=array_values(array_filter(cms_pages($db,$id),fn(array $page)=>(string)($page['status']??'')!=='archived'));
+
+$target=null;
+foreach($pages as $page){
+    if(($page['locale']??'')===PUBLIC_LOCALE_PT_BR && (int)($page['is_home']??0)===1){$target=$page;break;}
+}
+if(!$target){
+    foreach($pages as $page){if((int)($page['is_home']??0)===1){$target=$page;break;}}
+}
+if(!$target && $pages)$target=$pages[0];
+
+if($target){
+    header('Location: /editor/?page='.(int)$target['id'],true,302);
+    exit;
+}
+
+header('Location: /admin/pages.php?activity='.$id,true,302);
+exit;
