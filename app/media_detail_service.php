@@ -12,19 +12,6 @@ declare(strict_types=1);
  */
 function media_detail_admin(PDO $db,int $assetId): array {
     $asset=media_asset($db,$assetId);
-    if(($asset['kind']??'')==='image'&&($asset['mime_type']??'')==='image/png'){
-        // PNG artwork (QR codes, logos, line graphics) must be previewed from
-        // the untouched original. Legacy responsive PNG derivatives may have
-        // been produced by an older ImageMagick path that could introduce a
-        // transparent virtual canvas even while the original remained valid.
-        $asset['derivatives']=[];
-        if(is_array($asset['versions']??null)){
-            foreach($asset['versions'] as &$version){
-                if(($version['mimeType']??'')==='image/png')$version['derivatives']=[];
-            }
-            unset($version);
-        }
-    }
     $asset['tags']=media_asset_tags($db,$assetId);
     $asset['uses']=[];
     $activeVersion=(int)($asset['active_version_id']??0);
