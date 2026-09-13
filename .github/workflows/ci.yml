@@ -25,6 +25,7 @@ jobs:
           php tools/test-cms.php
           php tools/test-task-centric-admin.php
           php tools/test-media-list-service.php
+          php tools/test-media-detail-interactive.php
       - name: Build script tests
         run: php tools/test-build-dist.php
       - name: Distribution dry run
