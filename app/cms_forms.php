@@ -86,7 +86,37 @@ function cms_validate_form_schema(array $schema): array {
         $fields[]=$field;
     }
     $schema['fields']=$fields;
+    $fieldIds=array_fill_keys(array_column($fields,'id'),true);
+    $settings=is_array($schema['settings']??null)?$schema['settings']:[];
+    $blocks=[];$blockIds=[];
+    foreach(($settings['contentBlocks']??[]) as $raw){
+        if(!is_array($raw))continue;
+        $id=cms_form_field_id((string)($raw['id']??$raw['label']??'content'));
+        if(isset($blockIds[$id]))$id.='_'.(count($blocks)+1);
+        $blockIds[$id]=true;
+        $after=trim((string)($raw['afterField']??''));if($after!==''&&!isset($fieldIds[$after]))$after='';
+        $block=[
+            'id'=>$id,
+            'label'=>trim((string)($raw['label']??$id))?:$id,
+            'afterField'=>$after,
+            'html'=>cms_sanitize_html((string)($raw['html']??'')),
+        ];
+        $condition=is_array($raw['condition']??null)?$raw['condition']:[];
+        $source=trim((string)($condition['source']??''));
+        if($source!==''&&isset($fieldIds[$source])){
+            $operator=(string)($condition['operator']??'equals');
+            if(!in_array($operator,['equals','not_equals','contains','checked','not_checked'],true))$operator='equals';
+            $value=in_array($operator,['checked','not_checked'],true)?'':trim((string)($condition['value']??''));
+            $block['condition']=['source'=>$source,'operator'=>$operator,'value'=>$value];
+        }
+        $blocks[]=$block;
+    }
+    $settings['contentBlocks']=$blocks;
+    $schema['settings']=$settings;
     return $schema;
+}
+function cms_form_content_blocks(array $schema): array {
+    return is_array($schema['settings']['contentBlocks']??null)?$schema['settings']['contentBlocks']:[];
 }
 function cms_forms_seed(PDO $db,int $activityId): void {
     $q=$db->prepare("SELECT COUNT(*) FROM cms_forms WHERE activity_id=? AND status!='archived'");$q->execute([$activityId]);if((int)$q->fetchColumn()>0)return;
@@ -118,9 +148,22 @@ function cms_form_input_html(array $field,mixed $value=null): string {
     if(in_array($type,['checkbox','consent'],true))return '<label class="cms-consent'.$width.'"><input type="checkbox" name="'.$name.'" value="1"'.(!empty($value)?' checked':'').$req.'><span>'.$label.$star.'</span></label>';
     $htmlType=in_array($type,['email','tel','number','date','time'],true)?$type:'text';return '<label class="cms-field'.$width.'"><span>'.$label.$star.'</span><input type="'.$htmlType.'" name="'.$name.'" value="'.h((string)$value).'"'.$placeholder.$autocomplete.$req.'>'.$help.'</label>';
 }
+function cms_form_content_block_html(array $block,bool $editor=false): string {
+    $attrs=' class="cms-form-content" data-cms-form-content-id="'.h((string)$block['id']).'" data-cms-form-content-label="'.h((string)$block['label']).'"';
+    $condition=is_array($block['condition']??null)?$block['condition']:null;
+    if($condition){
+        $attrs.=' data-cms-content-condition-source="'.h((string)$condition['source']).'" data-cms-content-condition-operator="'.h((string)$condition['operator']).'" data-cms-content-condition-value="'.h((string)$condition['value']).'"';
+        if(!$editor)$attrs.=' data-cms-condition-field="'.h((string)$condition['source']).'" data-cms-condition-operator="'.h((string)$condition['operator']).'" data-cms-condition-value="'.h((string)$condition['value']).'"';
+    }
+    return '<div'.$attrs.'>'.cms_sanitize_html((string)($block['html']??'')).'</div>';
+}
 function cms_render_form(array $form,array $schema,int $pageId,string $locale,array $values=[],array $errors=[],bool $success=false,bool $editor=false): string {
     $schema=cms_validate_form_schema($schema);$formId=(int)$form['id'];$anchor='form-'.$formId;if($success)return '<div class="cms-form-success" id="'.$anchor.'"><p class="section-label">'.h($form['title']).'</p><h2>'.h($schema['successTitle']).'</h2><p>'.h($schema['successMessage']).'</p></div>';
     $html='<form class="cms-form" id="'.$anchor.'" action="/form-submit.php" method="post"'.($editor?' data-cms-form-preview="1"':'').'>';
     if(!$editor){$return=parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH)?:'/';$query=parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_QUERY);if(is_string($query)&&$query!=='')$return.='?'.$query;$html.='<input type="hidden" name="_csrf" value="'.h(csrf_token('cms-form')).'"><input type="hidden" name="_form_uuid" value="'.h($form['form_uuid']).'"><input type="hidden" name="_page_id" value="'.$pageId.'"><input type="hidden" name="_locale" value="'.h($locale).'"><input type="hidden" name="_return" value="'.h($return).'"><input type="hidden" name="_started_at" value="'.time().'"><label class="honeypot" aria-hidden="true">Leave blank<input name="_website" tabindex="-1" autocomplete="off"></label>';}
-    $html.='<div class="cms-form-grid">';foreach($schema['fields'] as $field){$html.=cms_form_input_html($field,$values[$field['id']]??null);if(isset($errors[$field['id']]))$html.='<p class="form-error">'.h($errors[$field['id']]).'</p>';}$html.='</div><button class="button" type="'.($editor?'button':'submit').'">'.h($schema['submitLabel']).' <span aria-hidden="true">↗</span></button></form>';return $html;
+    $blocks=cms_form_content_blocks($schema);$byAfter=[];foreach($blocks as $block)$byAfter[(string)($block['afterField']??'')][]=$block;
+    $html.='<div class="cms-form-grid">';
+    foreach($byAfter['']??[] as $block)$html.=cms_form_content_block_html($block,$editor);
+    foreach($schema['fields'] as $field){$html.=cms_form_input_html($field,$values[$field['id']]??null);if(isset($errors[$field['id']]))$html.='<p class="form-error">'.h($errors[$field['id']]).'</p>';foreach($byAfter[(string)$field['id']]??[] as $block)$html.=cms_form_content_block_html($block,$editor);}
+    $html.='</div><button class="button" type="'.($editor?'button':'submit').'">'.h($schema['submitLabel']).' <span aria-hidden="true">↗</span></button></form>';return $html;
 }
