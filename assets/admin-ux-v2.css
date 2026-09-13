@@ -78,7 +78,10 @@ body.admin-page h1,body.admin-page h2,body.admin-page h3{line-height:1.08;}
 .admin-quick-action strong{display:block;font-size:14px;}
 .admin-quick-action span{display:block;margin-top:3px;color:var(--admin-muted);font-size:12px;}
 .admin-editor-card{border-radius:4px;}
+.admin-editor-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;}
 .admin-editor-header h2{line-height:1.08;}
+.admin-panel-toggle{flex:0 0 auto;min-height:36px;padding:7px 11px;border:1px solid var(--admin-line-strong);border-radius:3px;background:#fff;color:var(--admin-ink);font:600 12px var(--admin-body);cursor:pointer;}
+.admin-panel-toggle:hover{border-color:var(--admin-ink);}
 .admin-disclosure{margin-top:14px;border:1px solid var(--admin-line);border-radius:4px;background:#fff;}
 .admin-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 18px;cursor:pointer;list-style:none;font-weight:600;}
 .admin-disclosure>summary::-webkit-details-marker{display:none;}
