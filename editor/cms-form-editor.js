@@ -341,7 +341,7 @@ function installFrameCapture(d){
       event.preventDefault();event.stopImmediatePropagation();selectMeta(meta);return;
     }
     if(['field-label','option-label','field-help','submit-label','content-text'].includes(meta.part)){
-      event.stopImmediatePropagation();selectMeta(meta);
+      event.preventDefault();event.stopImmediatePropagation();startInline(meta,event);
     }
   },true);
   d.addEventListener('click',event=>{
