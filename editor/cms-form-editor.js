@@ -10,7 +10,7 @@ if(!frame||!inspector)return;
 const forms=new Map();
 let selected=null;
 let editing=null;
-const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[char]));
 const normalizeFieldName=name=>String(name||'').replace(/\[\]$/,'');
 const frameDoc=()=>frame.contentDocument||null;
 const formBlockFrom=node=>node?.closest?.('[data-cms-form-block]')||null;
@@ -44,6 +44,7 @@ function contentBlocks(entry){
   return schema.settings.contentBlocks;
 }
 function contentFor(entry,contentId){return contentBlocks(entry).find(block=>block.id===contentId)||null;}
+function blockIsPubliclyHidden(block){return /data-cms-public-hidden\s*=\s*["']1["']/i.test(String(block?.html||''));}
 function statusText(entry){
   if(entry.saving)return 'Salvando rascunho…';
   if(entry.error)return entry.error;
@@ -94,6 +95,7 @@ function contextLabel(meta){
   return 'Formulário';
 }
 function conditionSummary(block,entry){
+  if(blockIsPubliclyHidden(block))return 'Oculto no site público. Continua visível aqui para edição.';
   const rule=block?.condition;
   if(!rule?.source)return 'Sempre visível no site público.';
   const field=fieldFor(entry,rule.source);
@@ -104,12 +106,14 @@ function conditionSummary(block,entry){
 function conditionControls(block,entry){
   const fields=entry.data?.form?.schema?.fields||[];
   const condition=block.condition||{source:'',operator:'equals',value:''};
+  const visible=!blockIsPubliclyHidden(block);
   return `<hr><p class="eyebrow">Exibição pública</p>
+    <label class="check-row"><input id="fc-visible" type="checkbox" ${visible?'checked':''}> Exibir este bloco no site público</label>
     <label>Mostrar quando<select id="fc-source"><option value="">Sempre mostrar</option>${fields.map(field=>`<option value="${esc(field.id)}" ${condition.source===field.id?'selected':''}>${esc(field.label)}</option>`).join('')}</select></label>
     <label>Operador<select id="fc-operator">${[['equals','é igual a'],['not_equals','é diferente de'],['contains','contém'],['checked','está marcado / preenchido'],['not_checked','não está marcado / está vazio']].map(([value,label])=>`<option value="${value}" ${condition.operator===value?'selected':''}>${label}</option>`).join('')}</select></label>
     <label>Valor<input id="fc-value" value="${esc(condition.value||'')}" ${['checked','not_checked'].includes(condition.operator)?'disabled':''}></label>
     <label>Posição no formulário<select id="fc-after"><option value="" ${!block.afterField?'selected':''}>Antes do primeiro campo</option>${fields.map(field=>`<option value="${esc(field.id)}" ${block.afterField===field.id?'selected':''}>Depois de: ${esc(field.label)}</option>`).join('')}</select></label>
-    <p class="inspector-note">Alterar a posição recarrega a prévia depois de salvar o rascunho.</p>`;
+    <p class="inspector-note">Blocos condicionais e blocos ocultos continuam visíveis no editor para que você possa alterá-los. Alterar a posição recarrega a prévia depois de salvar o rascunho.</p>`;
 }
 function renderContext(){
   if(!selected)return;
@@ -143,7 +147,15 @@ function renderContext(){
   inspector.querySelector('#fc-link-href')?.addEventListener('change',event=>{
     if(!link||!block)return;link.setAttribute('href',String(event.currentTarget.value||'').trim()||'#');syncContentBlockFromDom(entry,block.id);markChanged(entry);queueSave(entry);
   });
-  const source=inspector.querySelector('#fc-source'),operator=inspector.querySelector('#fc-operator'),value=inspector.querySelector('#fc-value'),after=inspector.querySelector('#fc-after');
+  const visible=inspector.querySelector('#fc-visible'),source=inspector.querySelector('#fc-source'),operator=inspector.querySelector('#fc-operator'),value=inspector.querySelector('#fc-value'),after=inspector.querySelector('#fc-after');
+  visible?.addEventListener('change',event=>{
+    if(!block)return;
+    const d=frameDoc(),content=d?.querySelector(`[data-cms-form-block="${entry.formId}"] [data-cms-form-content-id="${CSS.escape(block.id)}"]`),root=content?.firstElementChild;
+    if(!root)return;
+    if(event.currentTarget.checked){root.removeAttribute('hidden');delete root.dataset.cmsPublicHidden;content?.classList.remove('cms-form-content-public-hidden');}
+    else{root.setAttribute('hidden','');root.dataset.cmsPublicHidden='1';content?.classList.add('cms-form-content-public-hidden');}
+    syncContentBlockFromDom(entry,block.id);markChanged(entry);queueSave(entry);
+  });
   const saveBlockSettings=async reload=>{
     if(!block)return;
     const src=source?.value||'',op=operator?.value||'equals';
@@ -198,6 +210,7 @@ function decorateBlock(block){
   form.querySelectorAll('[data-cms-form-content-id]').forEach(content=>{
     const contentId=content.dataset.cmsFormContentId||'';
     setMeta(content,{part:'content-block',contentId});
+    const root=content.firstElementChild;content.classList.toggle('cms-form-content-public-hidden',root?.dataset.cmsPublicHidden==='1');
     content.querySelectorAll('[data-cms-editable]').forEach(el=>setMeta(el,{part:'content-text',contentId}));
     content.querySelectorAll('[data-cms-image]').forEach(el=>setMeta(el,{part:'content-image',contentId}));
   });
@@ -270,7 +283,7 @@ function cleanContentHtml(content){
   clone.querySelectorAll('[data-cms-form-inline]').forEach(el=>{
     el.removeAttribute('data-cms-form-inline');el.removeAttribute('data-cms-form-field');el.removeAttribute('data-cms-form-content-ref');el.removeAttribute('data-cms-form-option-index');el.removeAttribute('title');el.classList.remove('cms-form-inline-selected','cms-form-inline-editing');
   });
-  clone.removeAttribute('data-cms-form-inline');clone.removeAttribute('data-cms-form-content-ref');clone.removeAttribute('title');clone.classList.remove('cms-form-inline-selected','cms-form-inline-editing');
+  clone.removeAttribute('data-cms-form-inline');clone.removeAttribute('data-cms-form-content-ref');clone.removeAttribute('title');clone.classList.remove('cms-form-inline-selected','cms-form-inline-editing','cms-form-content-public-hidden');
   return clone.innerHTML.trim();
 }
 function syncContentBlockFromDom(entry,contentId){
@@ -330,6 +343,8 @@ function injectFrameStyle(d){
     [data-cms-form-content-id]{position:relative}
     .cms-editor-preview [data-cms-form-content-id]::before{content:attr(data-cms-form-content-label);display:none;position:absolute;right:0;top:0;z-index:4;padding:3px 6px;background:#111;color:#fff;font:10px/1.2 monospace}
     .cms-editor-preview [data-cms-form-content-id]:hover::before{display:block}
+    .cms-editor-preview [data-cms-public-hidden="1"][hidden]{display:block!important;opacity:.5}
+    .cms-editor-preview .cms-form-content-public-hidden::before{display:block;content:"OCULTO NO SITE · " attr(data-cms-form-content-label)}
   `;d.head.append(style);
 }
 function installFrameCapture(d){
@@ -355,7 +370,7 @@ function installFrameCapture(d){
     if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();target.blur();}
   },true);
   d.addEventListener('blur',event=>{const target=event.target?.closest?.('[data-cms-form-inline]');if(target&&editing?.el===target)finishInline(false);},true);
-  setTimeout(()=>neutralizeLegacyWrapperSelection(d),0);setTimeout(()=>neutralizeLegacyWrapperSelection(d),80);
+  neutralizeLegacyWrapperSelection(d);
 }
 function installCurrentDocument(){
   const d=frameDoc();if(!d)return;
