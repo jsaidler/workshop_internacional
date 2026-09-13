@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Form editor browser fixture</title></head>
+<body>
+  <aside id="inspector"></aside>
+  <iframe id="page-frame" title="fixture"></iframe>
+  <dialog id="media-dialog"><button type="button" onclick="this.closest('dialog').close()">Fechar</button><div id="media-grid"></div></dialog>
+  <script>
+  window.MediaLibrary={
+    images:[{id:99,versionId:7,src:'/uploads/qr-new.svg',label:'Novo QR Pix',alt:'Novo QR Code Pix',focal_x:50,focal_y:50}],
+    async load(){return this.images;}
+  };
+  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+  function fieldHtml(field){
+    const star=field.required?' <span aria-hidden="true">*</span>':'';
+    if(field.type==='radio'||field.type==='checkbox-group'){
+      const inputType=field.type==='radio'?'radio':'checkbox',name=field.type==='radio'?field.id:`${field.id}[]`;
+      return `<fieldset class="cms-choice-group"><legend>${esc(field.label)}${star}</legend><div class="cms-choice-grid">${(field.options||[]).map(option=>`<label><input type="${inputType}" name="${esc(name)}" value="${esc(option.value)}"><span>${esc(option.label)}</span></label>`).join('')}</div>${field.help?`<small>${esc(field.help)}</small>`:''}</fieldset>`;
+    }
+    if(field.type==='consent')return `<label class="cms-consent"><input type="checkbox" name="${esc(field.id)}" value="1"><span>${esc(field.label)}${star}</span></label>`;
+    return `<label class="cms-field"><span>${esc(field.label)}${star}</span><input type="text" name="${esc(field.id)}">${field.help?`<small>${esc(field.help)}</small>`:''}</label>`;
+  }
+  function renderForm(form){
+    const blocks=Array.isArray(form.schema?.settings?.contentBlocks)?form.schema.settings.contentBlocks:[];
+    const byAfter={};for(const block of blocks)(byAfter[block.afterField||'']??=[]).push(block);
+    const blockHtml=block=>`<div class="cms-form-content" data-cms-form-content-id="${esc(block.id)}" data-cms-form-content-label="${esc(block.label||block.id)}"${block.condition?` data-cms-content-condition-source="${esc(block.condition.source||'')}" data-cms-content-condition-operator="${esc(block.condition.operator||'equals')}" data-cms-content-condition-value="${esc(block.condition.value||'')}"`:''}>${block.html||''}</div>`;
+    let content=(byAfter['']||[]).map(blockHtml).join('');
+    for(const field of form.schema.fields||[]){content+=fieldHtml(field);content+=(byAfter[field.id]||[]).map(blockHtml).join('');}
+    return `<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;padding:24px}.cms-form-grid{display:grid;gap:18px}.cms-form-content{padding:12px;border:1px solid #aaa}.registration-pix-layout{display:grid;grid-template-columns:120px 1fr;gap:12px}.registration-pix-layout img{width:100px;height:auto}</style></head><body class="cms-editor-preview"><div data-cms-form-block="${form.id}"><form class="cms-form" data-cms-form-preview="1"><div class="cms-form-grid">${content}</div><button class="button" type="button">${esc(form.schema.submitLabel)} <span aria-hidden="true">↗</span></button></form></div></body></html>`;
+  }
+  async function boot(){
+    const data=await fetch('/admin/api/cms-form-load.php?form=1').then(response=>response.json());
+    const iframe=document.querySelector('#page-frame');
+    iframe.srcdoc=renderForm(data.form);
+    iframe.addEventListener('load',()=>{
+      setTimeout(()=>{
+        const block=iframe.contentDocument.querySelector('[data-cms-form-block]');
+        if(block)block.onclick=()=>document.body.dataset.legacy='hit';
+      },20);
+    },{once:true});
+    const script=document.createElement('script');script.src='/editor/cms-form-editor.js';document.body.append(script);
+  }
+  boot();
+  </script>
+</body>
+</html>
