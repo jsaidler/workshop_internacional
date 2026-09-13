@@ -1,6 +1,8 @@
 # CMS v3 — deployment and self-updates
 
-The public hosting keeps persistent state outside generated application code:
+O estado operacional canônico do projeto está em `docs/PROJECT_STATE.md`.
+
+A instalação pública mantém estado persistente fora do código gerado da aplicação:
 
 - `config/local.php`
 - `config/install.php`
@@ -10,11 +12,11 @@ The public hosting keeps persistent state outside generated application code:
 - `storage/updates/`
 - `uploads/`
 
-## Initial bootstrap
+## Bootstrap inicial
 
-A hosting installation that predates the self-updater needs one normal deployment of the generated `dist/` directory.
+Uma hospedagem que ainda não possui o self-updater precisa de um deploy normal do diretório `dist/`.
 
-On Windows:
+No Windows:
 
 ```bat
 git switch wip/form-response-refinement-2026-07-16
@@ -22,23 +24,49 @@ git pull --ff-only
 build-dist.cmd
 ```
 
-Sync the **contents** of `dist/` to the web root while preserving the paths listed above.
+Sincronize o **conteúdo** de `dist/` com a raiz pública preservando os caminhos persistentes listados acima.
 
-`build-dist.cmd` generates `deploy-info.json` and `deploy-manifest.json` together with the application.
+`build-dist.cmd` gera `deploy-info.json` e `deploy-manifest.json` junto com a aplicação.
 
-## Subsequent updates
+## Fluxo normal depois do bootstrap
 
-The default branch CI publishes a verified production build to the `production-dist` branch. Once the initial bootstrap has installed the updater, go to:
+Depois que o self-updater está instalado, o fluxo normal NÃO é FTP.
+
+A branch de produção `wip/form-response-refinement-2026-07-16` é validada pelo CI. Um push aprovado nessa branch gera um pacote verificado e publica esse pacote em `production-dist`.
+
+Depois disso, o usuário atualiza a hospedagem pelo próprio site em:
 
 `Admin → Sistema e atualizações`
 
-The updater:
+O painel compara a versão instalada com a versão publicada em `production-dist`. Quando houver versão nova, exibe `Instalar atualização`.
 
-1. reads the production manifest;
-2. downloads only changed managed files;
-3. verifies SHA-256 checksums;
-4. backs up files that will be replaced or removed;
-5. replaces application files atomically;
-6. never overwrites the database, uploads, local configuration or logs.
+O updater:
 
-Normal editorial changes (pages, design, forms, media, navigation) are written directly by the CMS and require no deployment.
+1. lê o manifesto de produção;
+2. baixa apenas os arquivos gerenciados que mudaram;
+3. verifica os checksums SHA-256;
+4. cria backup dos arquivos que serão substituídos ou removidos;
+5. cria uma cópia consistente do SQLite antes da troca quando aplicável;
+6. substitui os arquivos da aplicação;
+7. nunca sobrescreve banco, uploads, configuração local, logs ou histórico de updates;
+8. deixa eventuais migrações para o bootstrap da próxima requisição.
+
+## Regra de estado
+
+`production-dist` atualizada significa apenas que uma nova versão está disponível para instalação.
+
+Não afirmar que a hospedagem foi atualizada enquanto o usuário não tiver executado `Instalar atualização` no painel e a versão instalada não tiver sido confirmada.
+
+## FTP e deploy manual
+
+FTP/manual deploy fica reservado a:
+
+- bootstrap de uma instalação que ainda não possui self-updater;
+- recuperação/contingência quando o updater não puder ser utilizado;
+- manutenção excepcional explicitamente decidida.
+
+Não tratar ausência de secrets FTP como impedimento para o fluxo normal de atualização do projeto.
+
+## Alterações editoriais
+
+Alterações normais de páginas, design, formulários, mídia e navegação são gravadas diretamente pelo CMS e não exigem deploy nem atualização de código.
