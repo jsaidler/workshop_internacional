@@ -5,7 +5,6 @@ Este é o documento canônico de estado operacional do projeto. Leia antes de al
 ## Estado em 13/09/2026
 
 - Branch de produção: `wip/form-response-refinement-2026-07-16`.
-- Último merge estrutural: `cf8c3ce047efc64a3f04dcda75c8fbcd0c6e1cb3` — normalização global de checkbox/radio na camada pública compartilhada.
 - O CI gera e valida o pacote de produção e publica o resultado na branch `production-dist`.
 - A hospedagem NÃO é atualizada automaticamente pelo simples fato de `production-dist` ter sido publicada.
 - O fluxo normal de atualização da aplicação hospedada é feito pelo próprio usuário em `Admin → Sistema e atualizações → Instalar atualização`.
@@ -42,6 +41,18 @@ No caso de checkbox/radio públicos, a normalização é uma regra da camada com
 A captura de 13/09 mostrou um detalhe importante: o círculo/quadrado nativo podia parecer pequeno, mas o elemento `input` continuava ocupando a largura inteira da linha por causa do CSS legado de campos de texto. O sintoma visual era o marcador centralizado e o texto empurrado para a direita. Portanto o critério de correção não é apenas o diâmetro visível; a caixa do próprio `input` precisa estar efetivamente limitada a 18 × 18 px.
 
 Como uma atualização de CSS pode ficar mascarada por cache antigo do navegador, o renderer público também deve versionar os URLs de CSS/JS com a versão instalada (`deploy-info.json`) e manter uma regra estrutural inline para a geometria de checkbox/radio. Essa regra é global do renderer, não específica de página ou formulário.
+
+## Regra de edição de mídia no editor de páginas
+
+Imagem e vídeo são tipos de mídia diferentes e não devem compartilhar o mesmo controle editorial como se fossem equivalentes.
+
+- Imagens continuam usando o inspector de imagem: texto alternativo, ajuste, ponto focal e biblioteca de imagens.
+- Qualquer elemento `<video>` dentro da página editável deve ser selecionável como vídeo, independentemente de ser um componente novo, o vídeo do processo, um vídeo legado ou possuir atributos editoriais antigos.
+- O inspector de vídeo é próprio e controla a origem do vídeo, troca por outro asset de vídeo, upload de vídeo, URL externa e comportamento de reprodução (`controls`, autoplay, muted, loop, playsinline e preload).
+- A biblioteca aberta pelo controle de vídeo lista apenas vídeos; não deve reutilizar `MediaLibrary.images` nem o diálogo de troca de imagem.
+- A capa/poster é uma propriedade do asset de vídeo e deve aparecer no inspector como assunto separado da origem do vídeo. Editar capa não equivale a trocar o vídeo.
+- Quando o vídeo é escolhido na biblioteca, a página mantém `data-media-asset-id` e usa a versão ativa/mais recente pelo resolver. Quando o usuário opta por URL externa, o vínculo com o asset gerenciado deve ser removido para que o resolver não sobrescreva a URL.
+- O vídeo do processo usa exatamente esse mesmo mecanismo global; não existe correção específica para a página PT, EN ou para a seção de processo.
 
 ## Regra de documentação obrigatória
 
