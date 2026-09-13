@@ -33,6 +33,7 @@ if(str_contains($coreEditor,"$('#editor-title').textContent"))must(str_contains(
 if(str_contains($coreEditor,"$('#editor-locale').textContent"))must(str_contains($editor,'id="editor-locale"'),'editor core locale target must exist');
 must(str_contains($editorEntry,"deploy-info.json"),'editor entry point must derive an installed-version token for its assets');
 must(str_contains($editorEntry,"?v='.$version"),'editor entry point must append the installed version to editor CSS/JS URLs');
+must(strpos($editor,'/editor/cms-video-library.js')<strpos($editor,'/editor/cms-pro-editor.js'),'dedicated video interception must load before legacy pro-editor video hooks');
 must(str_contains($autosave,'MutationObserver'),'autosave must react to dirty-state changes');
 must(str_contains($autosave,'setTimeout(flush,3200)'),'autosave must debounce short editing pauses');
 must(!str_contains($autosave,'setInterval'),'autosave must not wait on a fixed polling interval');
@@ -47,12 +48,14 @@ must(str_contains($submissions,'Confirmar inscrição e pagamento'),'registratio
 must(str_contains($media,'id="media-selection-toggle"'),'bulk media actions must be an explicit mode');
 must(str_contains($mediaTask,'previewSrc(item,480)'),'media grid must use thumbnail-sized sources');
 must(str_contains($mediaLibrary,'previewSrc(item,target=480)'),'media library must choose responsive previews');
-must(str_contains($videoEditor,"root.querySelectorAll('video')"),'page editor must decorate every video element, including legacy/process videos without a special editor marker');
-must(str_contains($videoEditor,'data-cms-editor-video-selector'),'every page video must receive a reliable editor-only selection surface above native media controls');
-must(str_contains($videoEditor,"selector.innerHTML='<span>Editar vídeo</span>'"),'video selection surface must be explicit to the editor user');
-must(str_contains($videoEditor,'stripEditorDecorations'),'editor-only video selectors must be removed before page serialization');
-must(str_contains($videoEditor,"save.addEventListener('click'"),'video editor must strip transient selection UI before every save');
-must(str_contains($videoEditor,'MutationObserver'),'video selector coverage must survive dynamic editor DOM changes');
+must(str_contains($videoEditor,"querySelectorAll('video')"),'page editor must bind every video element, including legacy/process videos without a special editor marker');
+must(str_contains($videoEditor,"video.addEventListener('pointerdown'"),'video selection must intercept pointer interaction on the video element itself');
+must(str_contains($videoEditor,"video.addEventListener('click'"),'video selection must intercept click interaction on the video element itself');
+must(str_contains($videoEditor,'event.preventDefault()')&&str_contains($videoEditor,'event.stopImmediatePropagation()'),'video editor must override native player/default section interaction before selecting the video');
+must(str_contains($videoEditor,"frame.addEventListener('load',installFrameControls)"),'video interception must be installed synchronously on iframe load before later legacy hooks');
+must(!str_contains($videoEditor,'data-cms-editor-video-selector'),'video selection must not insert an editable overlay/button above the player');
+must(!str_contains($videoEditor,'Editar vídeo</span>'),'video selection must not create a fake editable control inside the page');
+must(str_contains($videoEditor,'MutationObserver'),'video binding must survive dynamic editor DOM changes');
 must(str_contains($videoEditor,'MediaLibrary.videos'),'video editor must use the video collection, not the image collection');
 must(!str_contains($videoEditor,'MediaLibrary.images'),'video editor must not reuse image-library controls');
 must(str_contains($videoEditor,'Biblioteca de vídeos'),'video replacement must have a dedicated video-only library');
