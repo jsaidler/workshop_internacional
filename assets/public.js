@@ -8,6 +8,13 @@ if(!document.querySelector('link[data-cms-responsive]')){
   responsive.dataset.cmsResponsive='1';
   document.head.append(responsive);
 }
+if(document.querySelector('.registration-page,.registration-canonical-form')&&!document.querySelector('link[data-registration-css]')){
+  const registration=document.createElement('link');
+  registration.rel='stylesheet';
+  registration.href='/assets/registration.css';
+  registration.dataset.registrationCss='1';
+  document.head.append(registration);
+}
 
 const root=document.documentElement;
 const themeButtons=[...document.querySelectorAll('[data-theme-value]')];
