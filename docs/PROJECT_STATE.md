@@ -5,7 +5,7 @@ Este é o documento canônico de estado operacional do projeto. Leia antes de al
 ## Estado em 13/09/2026
 
 - Branch de produção: `wip/form-response-refinement-2026-07-16`.
-- Último merge estrutural: `c3fb293340a11ed02b2cac569e66809511ea8cf3` — restauração da hierarquia editorial, controles de formulário e dashboard administrativo.
+- Último merge estrutural: `ea5b8b53cfc83b91f8dae6d59f2b9553ea1b1d14` — normalização forte de checkbox/radio públicos e revalidação de assets CSS/JS após atualização.
 - O CI gera e valida o pacote de produção e publica o resultado na branch `production-dist`.
 - A hospedagem NÃO é atualizada automaticamente pelo simples fato de `production-dist` ter sido publicada.
 - O fluxo normal de atualização da aplicação hospedada é feito pelo próprio usuário em `Admin → Sistema e atualizações → Instalar atualização`.
@@ -27,6 +27,17 @@ Para uma alteração de código:
 8. só considerar a hospedagem atualizada depois dessa aplicação e da verificação da versão instalada.
 
 Nunca confundir `production-dist` atualizada com hospedagem atualizada.
+
+## Regra de escopo das correções
+
+Defeitos que aparecem em várias páginas, idiomas ou instâncias de um mesmo componente são defeitos sistêmicos e devem ser corrigidos na camada compartilhada responsável pelo comportamento.
+
+- Não corrigir um problema sistêmico com CSS, HTML, JavaScript ou conteúdo específico de uma página, locale, formulário ou bloco individual.
+- Preferir regras globais de componente ou da aplicação que cubram todas as páginas que usam aquele elemento.
+- Adicionar teste/regressão no mesmo nível de escopo da correção para impedir que o problema reapareça em outra página.
+- Uma exceção só é aceitável quando o comportamento diferente daquela página for deliberado e documentado como tal.
+
+No caso de checkbox/radio públicos, a normalização é uma regra da camada compartilhada `.cms-public`, portanto vale para todas as páginas públicas e para o preview do editor, independentemente de qual formulário ou página contenha o controle.
 
 ## Regra de documentação obrigatória
 
@@ -79,7 +90,7 @@ A página inglesa não deve ser mera tradução da brasileira.
 - O editor da home é uma ação do dashboard, não a própria página inicial administrativa.
 - Dashboard atual: publicação, alterações pendentes, novas inscrições, páginas, formulários, mídia, armazenamento/saúde e atividade recente.
 - Checkbox e radio devem manter dimensão visual normalizada de 18 × 18 px no site público, preview e admin; regras genéricas de `input` não podem transformá-los em campos de texto nem fazê-los ocupar a largura disponível do grupo de opções.
-- A regra pública dos controles nativos é deliberadamente forte: largura, altura, mínimos, máximos e `flex-basis` ficam travados em 18 px para impedir regressão por cascata de CSS.
+- A regra pública dos controles nativos é deliberadamente forte e global: largura, altura, mínimos, máximos e `flex-basis` ficam travados em 18 px sob `.cms-public`, cobrindo todas as páginas públicas e o preview, não uma página ou formulário específico.
 - CSS e JavaScript públicos devem ser revalidados pelo navegador após atualização da aplicação; a configuração Apache usa `Cache-Control: no-cache, must-revalidate` para `.css` e `.js`, evitando que uma versão anterior dos assets continue mascarando uma correção recém-instalada.
 - Alterações editoriais, visuais, estruturais e comerciais normais devem ser possíveis pelo CMS. Código deve ser necessário para novas capacidades, não para operação editorial cotidiana.
 
