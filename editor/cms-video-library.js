@@ -119,10 +119,16 @@ function interceptVideoInteraction(event,video){
   event.stopImmediatePropagation();
   selectVideo(video);
 }
+function ensureFrameStyle(d){
+  if(d.getElementById('cms-video-editor-style'))return;
+  const style=d.createElement('style');
+  style.id='cms-video-editor-style';
+  style.textContent='[data-cms-page-main] video{cursor:pointer!important}video.cms-selection{outline:3px solid #1d8b60!important;outline-offset:3px!important}';
+  d.head.append(style);
+}
 function bindVideo(video){
   if(boundVideos.has(video))return;
   boundVideos.add(video);
-  video.style.cursor='pointer';
   video.addEventListener('pointerdown',event=>interceptVideoInteraction(event,video),true);
   video.addEventListener('click',event=>interceptVideoInteraction(event,video),true);
 }
@@ -133,6 +139,7 @@ function installFrameControls(){
   const d=frameDoc(),root=pageRoot();
   if(!d||!root)return;
   frameObserver?.disconnect();
+  ensureFrameStyle(d);
   bindVideos();
   d.addEventListener('pointerdown',event=>{
     const video=event.target?.closest?.('video');
@@ -206,5 +213,5 @@ async function uploadVideo(event){
   finally{event.currentTarget.value=''}
 }
 
-frame.addEventListener('load',()=>setTimeout(installFrameControls,0));
+frame.addEventListener('load',installFrameControls);
 })();
