@@ -12,7 +12,7 @@ function makeCollapsible(card){
   bodyNodes.forEach(node=>node.hidden=true);
   button.addEventListener('click',()=>{
     const open=button.getAttribute('aria-expanded')!=='true';
-    button.setAttribute('aria-expanded',open?'true':'false';);button.textContent=open?'Fechar':'Abrir';
+    button.setAttribute('aria-expanded',open?'true':'false');button.textContent=open?'Fechar':'Abrir';
     bodyNodes.forEach(node=>node.hidden=!open);
   });
 }
