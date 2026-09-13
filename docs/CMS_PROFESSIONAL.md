@@ -13,7 +13,8 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 - gerenciamento separado de navegação, header, footer e identidade;
 - sistema visual global com cores, tipografia, medidas, espaçamento e botões;
 - prévia ao vivo do design em desktop, tablet e celular;
-- CSS adicional como recurso avançado, sem ser necessário para a operação normal.
+- CSS adicional como recurso avançado, sem ser necessário para a operação normal;
+- CSS e JavaScript locais da administração usam a versão instalada no URL, evitando que uma atualização correta continue escondida por cache antigo.
 
 ## Mídia
 
@@ -38,30 +39,29 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 
 - qualquer elemento `<video>` da página é editável, inclusive vídeos antigos e o vídeo do processo, sem depender de um atributo editorial específico;
 - o próprio `<video>` é a superfície de seleção: o editor intercepta `pointerdown` e `click` em captura, executa `preventDefault()` e `stopImmediatePropagation()` e abre o inspector antes que os controles nativos ou a seção processem a interação;
-- não existe botão/overlay `Editar vídeo` inserido por cima do player; adicionar um segundo elemento editável sobre o vídeo é considerado regressão;
-- o inspector de vídeo controla a origem do vídeo, troca por asset da biblioteca, upload de vídeo, URL externa e reprodução (`controls`, autoplay, muted, loop, playsinline e preload);
-- a biblioteca de troca mostra exclusivamente `MediaLibrary.videos`;
-- escolher um vídeo da biblioteca preserva o vínculo por `data-media-asset-id` e usa a versão mais recente resolvida pelo CMS;
-- escolher uma URL externa remove o vínculo com o asset gerenciado, evitando que o resolver substitua a URL posteriormente;
-- capa/poster aparece como propriedade separada do vídeo e é administrada como parte do asset de vídeo; editar a capa não significa editar ou substituir o arquivo de vídeo;
-- o mesmo controle atende todas as páginas, idiomas e componentes. Não há implementação especial para a seção de processo;
-- o controlador dedicado de vídeo é carregado antes dos hooks legados de `cms-pro-editor.js`, garantindo precedência da interceptação;
-- CSS e JavaScript do editor recebem `?v=<versão instalada>` na entrada autenticada `editor/index.php`, usando `sourceSha` de `deploy-info.json`, para impedir que uma versão antiga do editor permaneça ativa por cache após atualização.
+- não existe botão/overlay `Editar vídeo` inserido por cima do player;
+- o inspector de vídeo controla origem, biblioteca, upload, URL externa e reprodução;
+- capa/poster aparece como propriedade separada do vídeo;
+- o mesmo controle atende todas as páginas, idiomas e componentes;
+- o controlador dedicado de vídeo é carregado antes dos hooks legados de `cms-pro-editor.js`;
+- CSS e JavaScript do editor recebem `?v=<versão instalada>` na entrada autenticada `editor/index.php`.
 
 ## Formulários
 
 - formulários próprios armazenados no site;
-- editor de campos com drag-and-drop, duplicação, largura, obrigatoriedade, ajuda e opções;
+- editor completo de campos com drag-and-drop, duplicação, largura, obrigatoriedade, ajuda e opções;
 - prévia no painel;
 - rascunho/publicação;
 - respostas associadas ao formulário/página, status de acompanhamento, notas e CSV;
-- checkbox e radio têm dimensão visual normalizada em 18 × 18 px no site público, preview e admin;
-- no site público, largura, altura, mínimos, máximos e `flex-basis` desses controles são travados em 18 px para impedir que regras genéricas de `input` os façam ocupar a largura do grupo ou herdar a altura de campos de texto;
-- essa normalização pertence à camada compartilhada `.cms-public`, portanto vale para todas as páginas públicas e para o preview do editor, não para uma página, locale ou formulário específico;
-- o critério visual inclui a caixa efetiva do elemento, não apenas o círculo/quadrado nativo: marcador centralizado com texto distante significa que o `input` ainda está ocupando a linha e é regressão;
-- o renderer público mantém uma regra estrutural inline para checkbox/radio além do CSS externo, de modo que a geometria correta não dependa de uma cópia de stylesheet potencialmente antiga no navegador;
-- CSS e JavaScript públicos recebem `?v=<versão instalada>`, derivado de `deploy-info.json` (`sourceSha`) com `filemtime` como fallback, para garantir troca de URL após atualização da aplicação;
-- a revalidação HTTP em `.htaccess` continua como defesa adicional, não como único mecanismo contra cache antigo.
+- checkbox e radio têm geometria global de 18 × 18 px em site público, preview e administração; nenhum stylesheet administrativo pode tratá-los como campos de texto;
+- a administração reforça largura, altura, mínimos e máximos de checkbox/radio no shell, além do CSS compartilhado, para não depender de cache antigo;
+- o editor completo de formulários prioriza a tarefa de edição: configurações gerais ficam acima, lista de campos e propriedades recebem a área principal e a prévia fica em bloco separado, em vez de quatro áreas comprimidas lado a lado;
+- o editor da página oferece edição rápida do formulário selecionado: rótulo do campo, texto do botão e, em listas/rádio/múltipla escolha, rótulo e valor interno das opções;
+- quando o clique ocorre sobre um campo renderizado, a integração tenta abrir diretamente esse campo no inspector usando o `name` do controle;
+- a edição rápida usa `cms-form-load.php`, `cms-form-save.php` e `cms-form-publish.php`; não existe um segundo formato ou banco de formulário;
+- alterações estruturais — tipo, identificador, ordem, criação/remoção, obrigatoriedade, lógica condicional e fluxo após envio — permanecem no editor completo, acessível por link direto no inspector;
+- alterar o valor interno de uma opção exibe aviso porque regras condicionais podem depender desse valor;
+- depois de salvar pelo editor da página, a prévia é recarregada usando o rascunho atualizado do formulário.
 
 ## Princípio de correção sistêmica
 

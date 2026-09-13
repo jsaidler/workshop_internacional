@@ -24,6 +24,7 @@ jobs:
         run: |
           php tools/test-cms.php
           php tools/test-task-centric-admin.php
+          php tools/test-form-editor-integration.php
           php tools/test-media-list-service.php
           php tools/test-media-detail-interactive.php
           php tools/test-registration-google-form-parity.php
