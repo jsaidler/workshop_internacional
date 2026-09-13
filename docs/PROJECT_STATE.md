@@ -48,13 +48,14 @@ Imagem e vídeo são tipos de mídia diferentes e não devem compartilhar o mesm
 
 - Imagens continuam usando o inspector de imagem: texto alternativo, ajuste, ponto focal e biblioteca de imagens.
 - Qualquer elemento `<video>` dentro da página editável deve ser selecionável como vídeo, independentemente de ser um componente novo, o vídeo do processo, um vídeo legado ou possuir atributos editoriais antigos.
-- A seleção de vídeo não pode depender de clicar diretamente nos controles nativos do player. Cada vídeo recebe, apenas no editor, uma superfície explícita `Editar vídeo` que cobre o player enquanto ele não está selecionado; ao selecionar, essa superfície desaparece e os controles nativos voltam a ficar acessíveis.
-- Essa superfície é UI transitória do editor: deve ser removida antes de qualquer serialização/salvamento e jamais pode entrar no HTML publicado da página.
+- A seleção de vídeo deve acontecer sobre o próprio elemento `<video>`. O editor intercepta `pointerdown`/`click` em fase de captura, cancela a ação padrão dos controles nativos e interrompe a propagação antes que a seção ou o player processem a interação.
+- Não inserir botão, overlay ou outro elemento editável sobre o vídeo para simular seleção. Esses elementos criam uma segunda superfície editorial e podem ser selecionados como conteúdo da página, o que é incorreto.
 - O inspector de vídeo é próprio e controla a origem do vídeo, troca por outro asset de vídeo, upload de vídeo, URL externa e comportamento de reprodução (`controls`, autoplay, muted, loop, playsinline e preload).
 - A biblioteca aberta pelo controle de vídeo lista apenas vídeos; não deve reutilizar `MediaLibrary.images` nem o diálogo de troca de imagem.
 - A capa/poster é uma propriedade do asset de vídeo e deve aparecer no inspector como assunto separado da origem do vídeo. Editar capa não equivale a trocar o vídeo.
 - Quando o vídeo é escolhido na biblioteca, a página mantém `data-media-asset-id` e usa a versão ativa/mais recente pelo resolver. Quando o usuário opta por URL externa, o vínculo com o asset gerenciado deve ser removido para que o resolver não sobrescreva a URL.
 - O vídeo do processo usa exatamente esse mesmo mecanismo global; não existe correção específica para a página PT, EN ou para a seção de processo.
+- O controlador dedicado de vídeo deve ser carregado antes dos hooks legados do `cms-pro-editor.js`, para que sua captura cancele a interação antes de qualquer handler antigo de vídeo.
 - Os assets do editor (`/editor/*.css` e `/editor/*.js`) são versionados no `editor/index.php` com a versão instalada lida de `deploy-info.json`, evitando que uma atualização do editor seja mascarada por JavaScript/CSS antigo em cache.
 
 ## Regra de documentação obrigatória
