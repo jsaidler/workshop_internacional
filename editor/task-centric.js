@@ -18,7 +18,11 @@ const activityLinks={
   '#editor-media-link':'/admin/media.php'
 };
 function dirty(){return ($('#save-status')?.textContent||'').toLowerCase().includes('não salvas')}
-function leaveTo(url){if(dirty()&&!confirm('Há alterações não salvas nesta página. Sair mesmo assim?'))return;location.href=url}
+function leaveTo(url){
+  if(dirty()&&!confirm('Há alterações não salvas nesta página. Sair mesmo assim?'))return false;
+  location.href=url;
+  return true;
+}
 async function loadContext(){
   try{
     const response=await fetch('/admin/api/editor-context.php?page='+pageId,{credentials:'same-origin'});
@@ -40,10 +44,14 @@ async function loadContext(){
         groups.get(locale).append(option);
       }
       switcher.disabled=false;
-      switcher.addEventListener('change',()=>{const id=Number(switcher.value);if(!id||id===pageId)return;leaveTo('/editor/?page='+id)});
+      switcher.addEventListener('change',()=>{
+        const id=Number(switcher.value);
+        if(!id||id===pageId)return;
+        if(!leaveTo('/editor/?page='+id))switcher.value=String(pageId);
+      });
     }
     const activityId=Number(activity.id)||0;
-    if(submissions){submissions.href='/admin/submissions.php?activity='+activityId}
+    if(submissions)submissions.href='/admin/submissions.php?activity='+activityId;
     if(newCount){const count=Number(data.newResponses)||0;newCount.hidden=count===0;newCount.textContent=String(count);submissions?.setAttribute('aria-label',count?`Inscrições, ${count} novas`:'Inscrições')}
     for(const [selector,path] of Object.entries(activityLinks)){const link=$(selector);if(link)link.href=path+'?activity='+activityId}
     if(publicLink)publicLink.href=activity.publicUrl||'/';
@@ -70,7 +78,13 @@ document.addEventListener('keydown',event=>{
   if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){
     event.preventDefault();$('#save-page')?.click();
   }
-  if(event.key==='Escape'){$('#editor-more')?.removeAttribute('open')}
+  if(event.key==='Escape')$('#editor-more')?.removeAttribute('open');
+});
+
+window.addEventListener('beforeunload',event=>{
+  if(!dirty())return;
+  event.preventDefault();
+  event.returnValue='';
 });
 
 document.querySelectorAll('.editor-more-menu a').forEach(link=>{
