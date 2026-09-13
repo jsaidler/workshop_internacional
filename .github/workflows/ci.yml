@@ -19,7 +19,7 @@ jobs:
       - name: PHP syntax
         run: find . -path './dist' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: JavaScript syntax
-        run: find assets editor admin -name '*.js' -print0 | xargs -0 -n1 node --check
+        run: find assets editor admin tools -name '*.js' -o -name '*.cjs' | xargs -r -n1 node --check
       - name: CMS smoke tests
         run: |
           php tools/test-cms.php
@@ -29,8 +29,20 @@ jobs:
           php tools/test-media-detail-interactive.php
           php tools/test-registration-google-form-parity.php
           php tools/test-registration-payment-migration.php
+          php tools/test-registration-native-content.php
           php tools/test-update-service.php
           php tools/test-update-restore.php
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Browser interaction regression
+        run: |
+          php -S 127.0.0.1:8099 -t . >/tmp/workshop-browser.log 2>&1 &
+          PHP_SERVER_PID=$!
+          trap 'kill $PHP_SERVER_PID' EXIT
+          sleep 1
+          npm run test:browser
       - name: Build script tests
         run: php tools/test-build-dist.php
       - name: Distribution dry run
