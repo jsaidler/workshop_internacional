@@ -10,6 +10,17 @@ function sync(){
   toggle.setAttribute('aria-pressed',selecting?'true':'false');
   toggle.textContent=selecting?'Concluir seleção':'Selecionar';
 }
+function optimizeThumbs(){
+  if(!window.MediaLibrary?.previewSrc)return;
+  grid.querySelectorAll('[data-asset]').forEach(card=>{
+    const id=Number(card.dataset.asset||0);
+    const item=MediaLibrary.items.find(candidate=>Number(candidate.id)===id);
+    const image=card.querySelector('.library-preview img');
+    if(!item||!image)return;
+    const src=MediaLibrary.previewSrc(item,480);
+    if(src&&image.getAttribute('src')!==src)image.setAttribute('src',src);
+  });
+}
 toggle.addEventListener('click',()=>{
   selecting=!selecting;
   if(!selecting)clear?.click();
@@ -25,5 +36,7 @@ grid.addEventListener('click',event=>{
   const checkbox=card?.querySelector('[data-select-asset]');
   checkbox?.click();
 },true);
+new MutationObserver(optimizeThumbs).observe(grid,{childList:true});
 sync();
+optimizeThumbs();
 })();
