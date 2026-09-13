@@ -17,17 +17,15 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
 .editor-context-link{height:32px;display:inline-flex;align-items:center;gap:5px;padding:0 8px;border-radius:6px;text-decoration:none;color:#3c3d37;font-size:12px;font-weight:500}
 .editor-context-link:hover{background:#ecece7}
 #editor-new-count{min-width:18px;height:18px;border-radius:999px;display:inline-grid;place-items:center;background:#1f4c3d;color:#fff;font-size:10px;padding:0 5px}
-#save-status{font-size:11px!important;color:#71726b!important;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#save-page,#publish-page{height:34px!important;padding:0 12px!important;border-radius:6px!important;font-size:12px!important;font-weight:600!important}
-#save-page{background:white!important;color:#292a26!important;border:1px solid #cbccc5!important}
-#publish-page{background:#1e4d3c!important;color:white!important;border:1px solid #1e4d3c!important}
+#save-status{font-size:11px!important;color:#71726b!important;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#publish-page{height:34px!important;padding:0 12px!important;border-radius:6px!important;font-size:12px!important;font-weight:600!important;background:#1e4d3c!important;color:white!important;border:1px solid #1e4d3c!important}
 .editor-more{position:relative}
 .editor-more>summary{list-style:none;cursor:pointer;width:34px;height:34px;display:grid;place-items:center;border:1px solid #cbccc5;border-radius:6px;background:white;color:#3e3f39;font-weight:700;letter-spacing:2px}
 .editor-more>summary::-webkit-details-marker{display:none}
 .editor-more-menu{position:absolute;right:0;top:40px;width:220px;padding:6px;background:white;border:1px solid #d1d2cc;border-radius:8px;box-shadow:0 12px 36px rgba(0,0,0,.16);display:grid;z-index:100}
-.editor-more-menu button,.editor-more-menu a{display:block;width:100%;text-align:left;padding:8px 9px;border:0;background:transparent;border-radius:5px;color:#262721;text-decoration:none;font:500 12px/1.3 "IBM Plex Sans",sans-serif;cursor:pointer}
-.editor-more-menu button:hover,.editor-more-menu a:hover{background:#f0f0eb}
-.editor-more-menu hr{border:0;border-top:1px solid #ededE8;width:100%;margin:5px 0}
+.editor-more-menu button,.editor-more-menu a,#editor-more #save-page{display:block!important;width:100%!important;height:auto!important;text-align:left!important;padding:8px 9px!important;border:0!important;background:transparent!important;border-radius:5px!important;color:#262721!important;text-decoration:none!important;font:500 12px/1.3 "IBM Plex Sans",sans-serif!important;cursor:pointer!important}
+.editor-more-menu button:hover,.editor-more-menu a:hover,#editor-more #save-page:hover{background:#f0f0eb!important}
+.editor-more-menu hr{border:0;border-top:1px solid #edede8;width:100%;margin:5px 0}
 .task-editor-workspace{height:calc(100vh - var(--task-bar-h))!important;grid-template-columns:var(--task-left) minmax(0,1fr) var(--task-right)!important;background:#e8e8e3!important}
 .task-editor-workspace .editor-panel{background:#f8f7f3!important;border-color:#d9dad3!important;overflow:auto!important}
 .task-editor-workspace .sections-panel{padding:14px 10px!important}
