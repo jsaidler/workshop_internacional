@@ -5,20 +5,48 @@ function admin_shell_url(string $path, ?array $activity): string {return $path.(
 function admin_quantity_label(int $quantity,string $singular,string $plural): string {return $quantity.' '.($quantity===1?$singular:$plural);}
 function admin_media_summary(int $images,int $videos): string {return admin_quantity_label($images,'imagem','imagens').' · '.admin_quantity_label($videos,'vídeo','vídeos');}
 function admin_public_activity_url(?array $activity): string {if(!$activity)return '/';return (int)($activity['is_root']??0)===1?'/':'/'.rawurlencode((string)$activity['slug']).'/';}
+function admin_workspace(string $section): string {
+    return match($section){
+        'pages','blocks','design','site','seo'=>'site',
+        'forms','responses'=>'registrations',
+        'media'=>'media',
+        'system'=>'settings',
+        default=>'overview',
+    };
+}
+function admin_context_items(string $workspace,?array $activity): array {
+    return match($workspace){
+        'site'=>[
+            'pages'=>['Páginas',admin_shell_url('/admin/pages.php',$activity)],
+            'site'=>['Navegação',admin_shell_url('/admin/site.php',$activity)],
+            'design'=>['Visual',admin_shell_url('/admin/design.php',$activity)],
+            'seo'=>['SEO',admin_shell_url('/admin/seo.php',$activity)],
+            'blocks'=>['Blocos',admin_shell_url('/admin/blocks.php',$activity)],
+        ],
+        'registrations'=>[
+            'responses'=>['Respostas',admin_shell_url('/admin/submissions.php',$activity)],
+            'forms'=>['Formulário',admin_shell_url('/admin/forms.php',$activity)],
+        ],
+        'settings'=>[
+            'system'=>['Sistema e atualizações','/admin/system.php'],
+            'activities'=>['Atividades','/admin/activities.php'],
+        ],
+        default=>[],
+    };
+}
 function admin_shell_start(string $section,string $title,array $state): void {
-    $activity=$state['activity'];
+    $activity=$state['activity']??null;
+    $activities=is_array($state['activities']??null)?$state['activities']:[];
+    $workspace=admin_workspace($section);
     $items=[
-        'overview'=>['Visão geral','/admin/'],
-        'pages'=>['Páginas',admin_shell_url('/admin/pages.php',$activity)],
-        'blocks'=>['Blocos reutilizáveis',admin_shell_url('/admin/blocks.php',$activity)],
-        'design'=>['Design',admin_shell_url('/admin/design.php',$activity)],
-        'site'=>['Site e navegação',admin_shell_url('/admin/site.php',$activity)],
-        'seo'=>['SEO e compartilhamento',admin_shell_url('/admin/seo.php',$activity)],
-        'forms'=>['Formulários',admin_shell_url('/admin/forms.php',$activity)],
-        'responses'=>['Respostas',admin_shell_url('/admin/submissions.php',$activity)],
+        'overview'=>['Início','/admin/'],
+        'site'=>['Site',admin_shell_url('/admin/pages.php',$activity)],
+        'registrations'=>['Inscrições',admin_shell_url('/admin/submissions.php',$activity)],
         'media'=>['Mídia',admin_shell_url('/admin/media.php',$activity)],
-        'system'=>['Sistema e atualizações','/admin/system.php'],
+        'settings'=>['Configurações','/admin/system.php'],
     ];
-    ?><!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/admin/admin.css"><link rel="stylesheet" href="/admin/cms-admin.css"><link rel="stylesheet" href="/admin/pro-admin.css"><link rel="stylesheet" href="/assets/admin-media-maintenance.css"><style>:root{--admin-body:"IBM Plex Sans",Arial,sans-serif}</style><title><?=h($title)?></title></head><body class="admin-page"><div class="admin-frame"><header class="admin-mobile-header"><a href="/admin/" class="admin-wordmark">Workshop</a><button class="admin-menu-toggle" type="button" aria-expanded="false" aria-controls="admin-navigation">Menu</button></header><aside class="admin-sidebar" id="admin-navigation"><a href="/admin/" class="admin-wordmark">Direct Positive<br><span>Workshop</span></a><nav class="admin-nav" aria-label="Navegação administrativa"><?php foreach($items as $key=>[$label,$href]):?><a href="<?=h($href)?>"<?=$key===$section?' aria-current="page"':''?>><?=h($label)?></a><?php endforeach;?></nav><div class="admin-secondary"><?php if($activity):?><a href="<?=h(admin_public_activity_url($activity))?>" target="_blank" rel="noopener">Abrir site público</a><?php endif;?><a href="/admin/activities.php">Atividades</a><form method="post" action="/admin/logout.php"><input type="hidden" name="_csrf" value="<?=h(csrf_token('logout'))?>"><button type="submit">Sair</button></form></div></aside><main class="admin-main"><header class="admin-page-header"><p class="admin-kicker">Administração<?=$activity?' · '.h($activity['admin_name']):''?></p><h1><?=h($title)?></h1></header><?php
+    $context=admin_context_items($workspace,$activity);
+    $self=(string)($_SERVER['PHP_SELF']??'/admin/');
+    ?><!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/admin/admin.css"><link rel="stylesheet" href="/admin/cms-admin.css"><link rel="stylesheet" href="/admin/pro-admin.css"><link rel="stylesheet" href="/assets/admin-media-maintenance.css"><link rel="stylesheet" href="/assets/admin-ux-v2.css"><style>:root{--admin-body:"IBM Plex Sans",Arial,sans-serif;--admin-mono:"IBM Plex Mono",Consolas,monospace}</style><title><?=h($title)?></title></head><body class="admin-page admin-section-<?=h($section)?> admin-workspace-<?=h($workspace)?>"><div class="admin-frame"><header class="admin-mobile-header"><a href="/admin/" class="admin-wordmark">Workshop</a><button class="admin-menu-toggle" type="button" aria-expanded="false" aria-controls="admin-navigation">Menu</button></header><aside class="admin-sidebar" id="admin-navigation"><a href="/admin/" class="admin-wordmark">Direct Positive<br><span>Workshop</span></a><?php if($activity):?><div class="admin-activity-box"><span>Site atual</span><?php if(count($activities)>1):?><form method="get" action="<?=h($self)?>"><select name="activity" aria-label="Selecionar atividade"><?php foreach($activities as $candidate):?><option value="<?=(int)$candidate['id']?>"<?=(int)$candidate['id']===(int)$activity['id']?' selected':''?>><?=h((string)$candidate['admin_name'])?></option><?php endforeach;?></select><button type="submit">Trocar site</button></form><?php else:?><strong><?=h((string)$activity['admin_name'])?></strong><?php endif;?><a href="/admin/activities.php">Gerenciar atividades</a></div><?php endif;?><nav class="admin-nav" aria-label="Navegação administrativa"><?php foreach($items as $key=>[$label,$href]):?><a href="<?=h($href)?>"<?=$key===$workspace?' aria-current="page"':''?>><?=h($label)?></a><?php endforeach;?></nav><div class="admin-secondary"><?php if($activity):?><a class="admin-open-site" href="<?=h(admin_public_activity_url($activity))?>" target="_blank" rel="noopener">Abrir site público ↗</a><?php endif;?><form method="post" action="/admin/logout.php"><input type="hidden" name="_csrf" value="<?=h(csrf_token('logout'))?>"><button type="submit">Sair</button></form></div></aside><main class="admin-main"><header class="admin-page-header"><div><p class="admin-kicker"><?=$activity?h((string)$activity['admin_name']):'Administração'?></p><h1><?=h($title)?></h1></div></header><?php if($context):?><nav class="admin-context-nav" aria-label="Ferramentas desta área"><?php foreach($context as $key=>[$label,$href]):?><a href="<?=h($href)?>"<?=$key===$section?' aria-current="page"':''?>><?=h($label)?></a><?php endforeach;?></nav><?php endif;?><?php
 }
 function admin_shell_end(): void {?></main></div><script src="/assets/admin.js"></script></body></html><?php }
