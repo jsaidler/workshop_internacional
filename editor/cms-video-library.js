@@ -19,12 +19,10 @@ function isManaged(video){return assetId(video)>0}
 function selectedVideo(){
   const d=frameDoc();
   if(currentVideo&&d?.contains(currentVideo))return currentVideo;
-  return d?.querySelector('video.cms-video-selected')||d?.querySelector('video.cms-pro-selected')||null;
+  return d?.querySelector('video.cms-selection')||null;
 }
-function clearEditorSelections(d,except=null){
-  d?.querySelectorAll('.cms-selection,.cms-section-selected,.cms-editing,.cms-pro-selected,.cms-video-selected').forEach(node=>{
-    if(node!==except)node.classList.remove('cms-selection','cms-section-selected','cms-editing','cms-pro-selected','cms-video-selected');
-  });
+function clearEditorSelections(d){
+  d?.querySelectorAll('.cms-selection,.cms-section-selected,.cms-editing,.cms-pro-selected,.cms-video-selected').forEach(node=>node.classList.remove('cms-selection','cms-section-selected','cms-editing','cms-pro-selected','cms-video-selected'));
 }
 function persist(message='Vídeo atualizado.'){
   save.click();
@@ -171,8 +169,8 @@ function installFrameControls(){
     if(!video||!d.querySelector('[data-cms-page-main]')?.contains(video))return;
     event.preventDefault();
     event.stopPropagation();
-    clearEditorSelections(d,video);
-    video.classList.add('cms-video-selected','cms-pro-selected');
+    clearEditorSelections(d);
+    video.classList.add('cms-selection');
     renderInspector(video);
   },true);
 }
