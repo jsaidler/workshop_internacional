@@ -58,15 +58,18 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 - o editor completo de formulários prioriza a tarefa de edição: configurações gerais ficam acima, lista de campos e propriedades recebem a área principal e a prévia fica em bloco separado, em vez de quatro áreas comprimidas lado a lado;
 - no editor visual da página, o formulário não é tratado como uma entidade textual única nem exige escolher um campo em um seletor lateral;
 - rótulos de campo, rótulos de opções, textos de ajuda e texto do botão são alvos editoriais independentes na própria prévia: o usuário clica exatamente no texto exibido e edita `contenteditable` no lugar, como nos demais textos da página;
-- inputs, selects, textareas, checkboxes e radios também são subalvos selecionáveis como contexto do campo; clicar neles não deve transformar o interior do formulário em área morta;
-- todos os subalvos são preparados quando o documento do iframe é instalado, e o controlador também tenta instalar-se imediatamente quando o documento já existe, evitando depender exclusivamente de um próximo evento `load`;
+- inputs, selects, textareas, checkboxes e radios também são subalvos selecionáveis como contexto do campo;
+- todos os subalvos são preparados quando o documento do iframe é instalado, e o controlador também tenta instalar-se imediatamente quando o documento já existe;
+- o resolvedor de clique considera a estrutura real do formulário, inclusive o `label` inteiro de radio/checkbox, `legend`, `.cms-field`, `.cms-consent`, controles e botão; não depende de o navegador devolver exatamente o `span` interno como `event.target`;
 - a interação de um subalvo é capturada antes do clique do bloco do formulário, para que o wrapper não roube a seleção daquele elemento específico;
+- um formulário já renderizado (`data-cms-form-block`) não pode cair no inspector legado de “formulário inteiro”. O `onclick` legado do wrapper é neutralizado depois que os hooks centrais do iframe são instalados;
+- o editor completo permanece acessível apenas como ação secundária explícita para mudanças estruturais; clicar em conteúdo visível do formulário nunca deve encaminhar automaticamente para `/admin/forms.php`;
 - o wrapper do formulário não pode cancelar genericamente todo `pointerdown`/`click` de seus descendentes. Somente um subalvo reconhecido recebe interceptação; os demais eventos continuam para o editor normal;
 - o cursor é posicionado no ponto clicado; `Enter` conclui a edição e `Esc` cancela a alteração em curso;
 - alterações visuais são gravadas como rascunho do formulário pela API canônica `cms-form-save.php`; a publicação continua explícita por `cms-form-publish.php`;
 - propriedades que não aparecem na página continuam contextuais: ao clicar uma opção, por exemplo, o inspector pode mostrar o valor interno daquela opção, sem duplicar o rótulo visível em um segundo campo de texto;
 - o inspector não deve oferecer um dropdown para navegar pelos campos do formulário nem reproduzir os textos visíveis em caixas de edição paralelas;
-- alterações estruturais — tipo, identificador, ordem, criação/remoção, obrigatoriedade, lógica condicional e fluxo após envio — permanecem no editor completo, acessível por link direto no inspector;
+- alterações estruturais — tipo, identificador, ordem, criação/remoção, obrigatoriedade, lógica condicional e fluxo após envio — permanecem no editor completo, acessível por ação secundária explícita;
 - alterar o valor interno de uma opção exibe aviso porque regras condicionais podem depender desse valor;
 - a edição visual usa o mesmo schema e as mesmas APIs do editor completo; não existe uma segunda estrutura ou banco de formulário.
 

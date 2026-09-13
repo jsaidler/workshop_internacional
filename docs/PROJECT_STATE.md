@@ -74,20 +74,24 @@ O editor completo de formulários continua existindo para operações estruturai
 - O usuário clica exatamente no texto exibido e esse texto entra em `contenteditable` no próprio lugar, seguindo a mesma lógica de edição direta dos demais textos da página.
 - Inputs, selects, textareas, checkboxes e radios também são selecionáveis como contexto do campo; não podem virar áreas mortas só porque não são texto editável.
 - A captura de `pointerdown`/`click` dos subalvos ocorre antes do handler do bloco do formulário, para impedir que o wrapper roube a seleção do alvo específico.
-- É proibido cancelar genericamente todo clique ocorrido dentro de `[data-cms-form-block]`. Se o clique não atingir um subalvo reconhecido, ele deve continuar para os mecanismos normais do editor em vez de ser descartado.
+- O resolvedor não deve depender apenas do `span` interno recebido como `event.target`: ele precisa reconhecer também `label` de radio/checkbox, `legend`, `.cms-field`, `.cms-consent`, controles e botão.
+- Um formulário já expandido no preview (`data-cms-form-block`) não pode ser selecionado pelo mecanismo legado de “formulário inteiro”. O `onclick` legado do wrapper deve ser neutralizado depois que os hooks centrais do iframe forem instalados.
+- Clicar em texto ou controle visível de um formulário nunca deve encaminhar automaticamente para `/admin/forms.php`. O editor completo é apenas uma ação secundária explícita para mudanças estruturais.
+- É proibido cancelar genericamente todo clique ocorrido dentro de `[data-cms-form-block]`. Somente subalvos reconhecidos recebem interceptação; os demais eventos continuam para os mecanismos normais do editor.
 - Os subalvos do formulário devem ser preparados quando o documento do iframe é instalado. O controlador precisa funcionar tanto no `load` do iframe quanto quando o documento já existir no momento em que o script é carregado.
 - O cursor deve ser posicionado no ponto clicado. `Enter` conclui a edição; `Esc` cancela a alteração corrente.
 - Os alvos editoriais são decorados apenas no preview do editor; atributos e wrappers auxiliares não fazem parte do HTML público persistido da página.
 - As alterações são gravadas no rascunho do formulário pela API canônica `cms-form-save.php`; `cms-form-publish.php` continua sendo a publicação explícita do formulário.
 - Propriedades não visíveis podem aparecer no inspector de forma contextual. Exemplo: ao clicar o rótulo de uma opção, o inspector pode expor apenas o valor interno daquela opção, porque esse valor não aparece na página.
 - O inspector não deve duplicar o rótulo visível em outro campo de texto. O texto visível é editado exclusivamente no próprio preview.
-- Tipo, identificador, ordem, criação/remoção de campos, obrigatoriedade, lógica condicional e fluxo após envio permanecem no editor completo. O inspector mantém um link direto para esse editor.
+- Tipo, identificador, ordem, criação/remoção de campos, obrigatoriedade, lógica condicional e fluxo após envio permanecem no editor completo. O inspector mantém uma ação secundária explícita para esse editor.
 - A edição visual e o editor completo usam o mesmo schema e as mesmas APIs; não existe uma segunda estrutura de formulário.
 
-### Falhas já observadas e que não podem regressar
+### Falhas já observadas e que não podem regredir
 
 - Um `MutationObserver` do inspector que re-renderizava o próprio inspector criou loop de microtasks e congelou o editor; esse padrão é proibido.
 - Um handler posterior tentou “proteger” o formulário cancelando todo `pointerdown`/`click` que ocorresse dentro do bloco quando o alvo textual não fosse reconhecido. O resultado foi exatamente o contrário: o formulário inteiro virou uma área não selecionável. O wrapper nunca deve bloquear genericamente seus descendentes.
+- O mecanismo legado do editor central ainda sabia selecionar `[data-cms-form-block]` como uma entidade única e mostrar o caminho para o editor completo. Em formulários já renderizados esse fallback deve ser desativado; só placeholders ainda não expandidos podem continuar usando a seleção de bloco inteiro.
 
 ## Regra de documentação obrigatória
 
@@ -143,7 +147,7 @@ A página inglesa não deve ser mera tradução da brasileira.
 - O shell administrativo carrega CSS/JS locais com `?v=<versão instalada>` e mantém a geometria crítica de checkbox/radio independentemente de cache de stylesheet.
 - O editor completo de formulários não deve comprimir configuração, lista de campos, propriedades e preview em colunas concorrentes. Configuração fica em faixa superior; lista de campos e propriedades recebem o espaço principal; preview fica em bloco separado abaixo.
 - No editor da página, textos visíveis do formulário são editados diretamente no preview, como elementos independentes; não há seletor de campo para reproduzir no inspector o conteúdo já visível.
-- Controles de formulário permanecem selecionáveis como contexto e nenhum handler do wrapper pode tornar os descendentes inertes.
+- Controles de formulário permanecem selecionáveis como contexto e nenhum handler do wrapper pode tornar os descendentes inertes nem devolver o clique ao inspector legado do formulário inteiro.
 - O inspector da edição visual fica reservado a estado/publicação e propriedades não visíveis, como o valor interno de uma opção clicada.
 - Todos os CSS/JS públicos carregados pelo renderer recebem `?v=<versão instalada>`; a mesma política vale para editor e admin.
 - A configuração Apache continua usando `Cache-Control: no-cache, must-revalidate` para `.css` e `.js` como defesa adicional.
