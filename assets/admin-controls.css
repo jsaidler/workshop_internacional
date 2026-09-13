@@ -1,0 +1,23 @@
+/* Shared native-control invariants for every admin screen. */
+body.admin-page input[type="checkbox"],
+body.admin-page input[type="radio"]{
+  box-sizing:border-box!important;
+  width:16px!important;
+  height:16px!important;
+  min-width:16px!important;
+  min-height:16px!important;
+  max-width:16px!important;
+  max-height:16px!important;
+  padding:0!important;
+  margin:0!important;
+  flex:0 0 16px!important;
+  box-shadow:none!important;
+  vertical-align:middle!important;
+  accent-color:var(--admin-focus,#186f4d);
+}
+body.admin-page label.check-row,
+body.admin-page label.check,
+body.admin-page .cms-choice-grid label,
+body.admin-page .cms-consent{
+  align-items:flex-start;
+}
