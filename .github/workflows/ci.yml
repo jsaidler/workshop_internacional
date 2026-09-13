@@ -27,6 +27,7 @@ jobs:
           php tools/test-media-list-service.php
           php tools/test-media-detail-interactive.php
           php tools/test-registration-google-form-parity.php
+          php tools/test-registration-payment-migration.php
       - name: Build script tests
         run: php tools/test-build-dist.php
       - name: Distribution dry run
