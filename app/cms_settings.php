@@ -122,7 +122,7 @@ function cms_settings_save(PDO $db,string $kind,int $activityId,string $locale,a
 function cms_css_color(string $value,string $fallback): string {return preg_match('/^#[0-9a-f]{6}$/i',$value)?$value:$fallback;}
 function cms_css_font(string $value,string $fallback): string {$value=trim($value);if($value===''||strlen($value)>220||preg_match('/[{};<>]/',$value))return $fallback;return $value;}
 
-function cms_design_css(array $design): string {
+function cms_design_system_css(array $design): string {
     $c=$design['colors'];$l=$design['layout'];$t=$design['type'];$b=$design['buttons'];
     $vars=[
         '--bg'=>cms_css_color((string)$c['bg'],'#f2f2ef'),'--surface'=>cms_css_color((string)$c['surface'],'#ffffff'),'--surface-2'=>cms_css_color((string)$c['surface2'],'#e7e7e2'),'--text'=>cms_css_color((string)$c['text'],'#0b0c0d'),'--muted'=>cms_css_color((string)$c['muted'],'#5f6264'),'--line'=>cms_css_color((string)$c['line'],'#bfc1be'),'--focus'=>cms_css_color((string)$c['accent'],'#186f4d'),
@@ -137,7 +137,15 @@ function cms_design_css(array $design): string {
     $css=':root{';foreach($vars as $key=>$value)$css.=$key.':'.$value.';';$css.='}';$css.=':root[data-theme="dark"]{'.$dark.'}@media(prefers-color-scheme:dark){:root:not([data-theme]){'.$dark.'}}';
     $css.='[data-cms-span="2"]{grid-column:span 2}[data-cms-span="3"]{grid-column:span 3}[data-cms-span="4"]{grid-column:span 4}[data-cms-self="start"]{align-self:start}[data-cms-self="center"]{align-self:center}[data-cms-self="end"]{align-self:end}[data-cms-self="stretch"]{align-self:stretch}';
     $css.='@media(min-width:901px){[data-cms-hidden-desktop="1"]{display:none!important}}@media(max-width:900px){[data-cms-hidden-mobile="1"]{display:none!important}[data-cms-span]{grid-column:auto}}';
-    $css.=(string)($design['advanced']['customCss']??'');return $css;
+    return $css;
+}
+
+function cms_design_custom_css(array $design): string {
+    return (string)($design['advanced']['customCss']??'');
+}
+
+function cms_design_css(array $design): string {
+    return cms_design_system_css($design).cms_design_custom_css($design);
 }
 
 function cms_revision_store(PDO $db,array $page,string $state): void {
