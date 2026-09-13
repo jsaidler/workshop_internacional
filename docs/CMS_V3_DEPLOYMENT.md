@@ -51,6 +51,8 @@ O updater:
 7. nunca sobrescreve banco, uploads, configuração local, logs ou histórico de updates;
 8. deixa eventuais migrações para o bootstrap da próxima requisição.
 
+A configuração Apache do pacote publicado força revalidação de arquivos `.css` e `.js` com `Cache-Control: no-cache, must-revalidate`. Isso evita que uma atualização de aplicação seja instalada corretamente no servidor enquanto o navegador continue exibindo uma versão anterior dos estilos ou scripts.
+
 ## Regra de estado
 
 `production-dist` atualizada significa apenas que uma nova versão está disponível para instalação.
