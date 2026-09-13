@@ -21,7 +21,9 @@ O editor WYSIWYG deve ser dirigido pela interação direta do usuário, não por
 - Não usar `MutationObserver` do inspector para reescrever o próprio inspector como mecanismo de seleção ou sincronização.
 - Não encadear `Promise.resolve(...).then(...)` ou callbacks de carregamento que chamem novamente a mesma função de renderização sem uma mudança explícita de estado; isso pode criar loop de microtasks e congelar a interface.
 - Um clique em texto editável deve ser resolvido diretamente a partir do elemento clicado, interceptando o evento antes do wrapper apenas quando necessário.
-- Formulários inseridos na página não devem ser convertidos em uma única entidade textual. Rótulos, opções, ajuda e texto do botão são alvos independentes.
+- Formulários inseridos na página não devem ser convertidos em uma única entidade textual. Rótulos, opções, ajuda, controles e texto do botão são subalvos independentes.
+- Nunca instalar um handler que bloqueie genericamente todo `pointerdown` ou `click` apenas porque ocorreu dentro de `[data-cms-form-block]`. Se um subalvo não for reconhecido, a interação deve continuar para os demais mecanismos do editor em vez de se tornar uma área morta.
+- Os alvos do formulário devem ser preparados quando o documento do iframe é instalado, e o controlador deve funcionar tanto em `load` futuro quanto quando o documento já estiver disponível.
 - Alterações no preview usadas apenas para edição não podem persistir no HTML público da página.
 
 A hospedagem é atualizada normalmente pelo usuário em `Admin → Sistema e atualizações`. O CI publica o pacote em `production-dist`; isso não significa, por si só, que a hospedagem já foi atualizada.
