@@ -19,7 +19,7 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 
 - imagens e vídeos em biblioteca própria;
 - metadata, texto alternativo, legenda, descrição e tags;
-- ponto focal visual;
+- ponto focal visual para imagens;
 - versões substituíveis e restauráveis sem quebrar referências estruturadas;
 - derivados responsivos para imagens;
 - poster de vídeo a partir de frame escolhido;
@@ -27,6 +27,22 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 - seleção e ações em lote;
 - arquivamento protegido quando o asset ainda está em uso;
 - o vídeo do processo/revelação é parte da hierarquia editorial pública e deve preservar a mídia gerenciada já associada sempre que possível.
+
+### Controles de imagem no editor de páginas
+
+Imagem usa um inspector próprio com texto alternativo, ajuste (`cover`/`contain`), ponto focal e biblioteca de imagens. Substituir uma imagem abre somente a coleção de imagens.
+
+### Controles de vídeo no editor de páginas
+
+Vídeo não reutiliza o inspector nem o seletor de imagem.
+
+- qualquer elemento `<video>` da página é selecionável no editor, inclusive vídeos antigos e o vídeo do processo, sem depender de um atributo editorial específico;
+- o inspector de vídeo controla a origem do vídeo, troca por asset da biblioteca, upload de vídeo, URL externa e reprodução (`controls`, autoplay, muted, loop, playsinline e preload);
+- a biblioteca de troca mostra exclusivamente `MediaLibrary.videos`;
+- escolher um vídeo da biblioteca preserva o vínculo por `data-media-asset-id` e usa a versão mais recente resolvida pelo CMS;
+- escolher uma URL externa remove o vínculo com o asset gerenciado, evitando que o resolver substitua a URL posteriormente;
+- capa/poster aparece como propriedade separada do vídeo e é administrada como parte do asset de vídeo; editar a capa não significa editar ou substituir o arquivo de vídeo;
+- o mesmo controle atende todas as páginas, idiomas e componentes. Não há implementação especial para a seção de processo.
 
 ## Formulários
 
