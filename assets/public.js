@@ -157,6 +157,7 @@ document.addEventListener('click',async event=>{
 });
 
 document.querySelectorAll('.cms-form').forEach(form=>{
+  if(fieldControls(form,'payment_method').length&&fieldControls(form,'support_size').length)form.classList.add('registration-canonical-form');
   form.addEventListener('invalid',event=>event.target.setAttribute('aria-invalid','true'),true);
   form.addEventListener('input',event=>{
     event.target.removeAttribute?.('aria-invalid');
