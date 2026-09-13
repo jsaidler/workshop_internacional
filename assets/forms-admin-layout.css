@@ -1,0 +1,41 @@
+/* Full form editor: keep primary field editing legible and push advanced configuration out of the way. */
+.admin-section-forms .admin-editor-card{margin-top:22px}
+.admin-section-forms .form-builder{display:block}
+.admin-section-forms .form-builder-settings{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 16px;padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid var(--admin-line,#dcded8)}
+.admin-section-forms .form-builder-settings>.form-builder-heading,
+.admin-section-forms .form-builder-settings>label:first-of-type,
+.admin-section-forms .form-builder-settings>.form-builder-actions{grid-column:1/-1}
+.admin-section-forms .form-builder-settings>.form-grid.two-columns{display:contents}
+.admin-section-forms .form-builder-settings>label textarea{min-height:88px}
+.admin-section-forms .form-builder-workspace{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,.65fr);gap:18px;align-items:start}
+.admin-section-forms .form-builder-fields{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(320px,1.28fr);gap:18px;min-width:0}
+.admin-section-forms .form-builder-row{grid-template-columns:auto minmax(0,1fr) repeat(4,26px);gap:3px}
+.admin-section-forms .form-builder-row button{padding:7px 5px;min-width:0}
+.admin-section-forms .form-builder-row [data-fi]{padding:9px 8px;text-align:left}
+.admin-section-forms .form-builder-field{padding-left:18px;min-width:0}
+.admin-section-forms .form-builder-preview{top:72px;max-height:calc(100vh - 96px);padding:14px}
+.admin-section-forms .form-builder-preview h2{margin:.1rem 0 .8rem;font-size:15px}
+.admin-section-forms .form-builder-preview .cms-form-grid{grid-template-columns:1fr;gap:10px}
+.admin-section-forms .form-builder-preview .half{grid-column:auto}
+.admin-section-forms .form-builder-preview input:not([type="checkbox"]):not([type="radio"]),
+.admin-section-forms .form-builder-preview textarea,
+.admin-section-forms .form-builder-preview select{padding:7px 8px;min-height:34px}
+.admin-section-forms .form-builder-preview .cms-choice-grid{gap:5px}
+.admin-section-forms .form-builder-preview .cms-choice-grid label,
+.admin-section-forms .form-builder-preview .cms-consent{gap:8px;line-height:1.35}
+.admin-section-forms .form-builder-option{grid-template-columns:auto minmax(100px,.8fr) minmax(140px,1.2fr) 28px}
+.admin-section-forms .admin-collapsible-card{padding:15px 17px}
+.admin-section-forms .admin-collapsible-card>.admin-editor-header{margin:0;align-items:center}
+.admin-section-forms .admin-collapsible-card>.admin-editor-header>div{min-width:0}
+.admin-section-forms .admin-collapsible-card>.admin-collapsible-content{padding-top:15px;margin-top:15px;border-top:1px solid var(--admin-line,#dcded8)}
+.admin-section-forms .admin-collapsible-card>.admin-collapsible-content[hidden]{display:none}
+@media(max-width:1180px){
+  .admin-section-forms .form-builder-workspace{grid-template-columns:1fr}
+  .admin-section-forms .form-builder-preview{position:static;max-height:none}
+}
+@media(max-width:900px){
+  .admin-section-forms .form-builder-settings,
+  .admin-section-forms .form-builder-fields{grid-template-columns:1fr}
+  .admin-section-forms .form-builder-settings>*{grid-column:1!important}
+  .admin-section-forms .form-builder-field{border-left:0;border-top:1px solid var(--admin-line,#dcded8);padding:16px 0 0}
+}

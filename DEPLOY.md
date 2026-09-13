@@ -34,7 +34,11 @@ O updater não substitui:
 
 Antes de substituir arquivos gerenciados, ele verifica SHA-256 e mantém backups locais. O banco pode ser copiado como segurança antes da atualização, mas não é restaurado automaticamente durante rollback de arquivos para evitar perda de inscrições ou edições posteriores.
 
-Os assets `.css` e `.js` publicados pela aplicação são servidos com `Cache-Control: no-cache, must-revalidate`. Depois que uma nova versão é instalada, o navegador deve revalidar esses arquivos em vez de continuar usando silenciosamente uma cópia anterior.
+## Cache de CSS e JavaScript
+
+Os assets `.css` e `.js` publicados pela aplicação são servidos com `Cache-Control: no-cache, must-revalidate`.
+
+Além disso, o site público, o editor de páginas e o shell administrativo usam a versão instalada (`sourceSha` de `deploy-info.json`) como query string nos assets locais. Assim, depois de instalar uma nova versão, os URLs de CSS/JS mudam junto com a aplicação e o navegador não deve continuar executando uma cópia antiga por cache.
 
 ## Bootstrap inicial ou contingência
 
