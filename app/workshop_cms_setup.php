@@ -2,17 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Project-specific CMS defaults for the Direct Positive X-Ray Film workshop.
- * The Brazilian registration mirrors the canonical Google Form used for the
- * workshop instead of collecting marketing or pedagogical profile data.
+ * Project-specific initial CMS defaults for the Direct Positive X-Ray Film workshop.
+ * These values only seed the canonical CMS records. After setup, the database is
+ * the source of truth and ordinary editorial changes are made through the CMS.
  */
 
-const WORKSHOP_PIX_KEY='20.179.548/0001-58';
-const WORKSHOP_PIX_COPY='00020101021126690014br.gov.bcb.pix0114201795480001580229INSCRICAO MINI CURSO SETEMBRO5204000053039865406698.005802BR592020 1 5 J V T SAIDLER6010PETROPOLIS62070503***6304314B';
-const WORKSHOP_CARD_URL='https://mpago.la/1xvBsPV';
-
 function workshop_registration_schema(): array {
-    return cms_validate_form_schema([
+    return workshop_registration_schema_with_content([
         'version'=>1,
         'submitLabel'=>'Enviar inscrição',
         'successTitle'=>'Inscrição recebida',
@@ -59,70 +55,8 @@ function workshop_registration_schema(): array {
     ]);
 }
 
-function workshop_registration_terms_html(): string {
-    return <<<'HTML'
-<section class="registration-terms" data-registration-terms hidden>
-  <p class="section-label">CONDIÇÕES DE INSCRIÇÃO E PARTICIPAÇÃO</p>
-  <ol>
-    <li><strong>Inscrição e reserva de vaga</strong><p>A inscrição no site não confirma a reserva da vaga. A inscrição é confirmada somente após a realização e a confirmação do pagamento. O preenchimento deste formulário, sem pagamento, não reserva a vaga.</p></li>
-    <li><strong>Formação das turmas</strong><p>Os horários serão definidos conforme a disponibilidade e o número de inscritos com pagamento confirmado. Uma turma adicional poderá ser aberta quando houver pelo menos 3 participantes com pagamento confirmado e disponibilidade comum para o mesmo horário.</p></li>
-    <li><strong>Disponibilidade informada</strong><p>Ao marcar um horário como disponível, o participante declara possuir disponibilidade para os três encontros correspondentes àquele horário. É possível indicar mais de uma opção.</p></li>
-    <li><strong>Confirmação da turma</strong><p>A turma será considerada formada quando houver participantes com pagamento confirmado e disponibilidade compatível. Caso não seja possível formar a turma em nenhum dos horários indicados pelo participante, o valor pago será devolvido integralmente.</p></li>
-    <li><strong>Formato do curso</strong><p>O curso acontece on-line e ao vivo, em três encontros. Eventuais ajustes de horário serão comunicados aos participantes.</p></li>
-    <li><strong>Materiais e equipamentos</strong><p>O participante trabalha com o próprio equipamento e é responsável pelos materiais necessários para seus testes. O suporte indicado neste formulário será enviado para o endereço informado.</p></li>
-    <li><strong>Segurança</strong><p>O participante é responsável por seguir as orientações de segurança para manipulação de produtos e materiais utilizados durante os processos fotográficos.</p></li>
-    <li><strong>Conduta e material didático</strong><p>Os materiais disponibilizados durante o curso destinam-se ao uso pessoal do participante e não devem ser reproduzidos ou comercializados sem autorização.</p></li>
-    <li><strong>Dados pessoais</strong><p>Os dados fornecidos neste formulário serão utilizados para organizar a inscrição, o pagamento, a participação no workshop e o envio do suporte.</p></li>
-  </ol>
-  <p><strong>Cancelamento</strong></p>
-  <p>O participante poderá comunicar a desistência. Casos de cancelamento serão tratados conforme o estágio de formação da turma e as despesas já realizadas.</p>
-</section>
-HTML;
-}
-
-function workshop_registration_payment_html(): string {
-    $pix=h(WORKSHOP_PIX_COPY);$key=h(WORKSHOP_PIX_KEY);$card=h(WORKSHOP_CARD_URL);
-    return <<<HTML
-<div class="registration-payment-source" data-registration-payment-source hidden>
-  <section class="registration-payment-panel" data-registration-payment="pix" hidden>
-    <p class="section-label">PIX</p>
-    <h3>R$ 698,00</h3>
-    <div class="registration-pix-layout">
-      <img src="/assets/media/pix-workshop.svg" alt="QR Code Pix para pagamento de R$ 698,00">
-      <div>
-        <p><strong>Chave Pix</strong><br><code>{$key}</code></p>
-        <p><strong>Copia e cola</strong></p>
-        <code class="registration-pix-code" data-pix-copy-value>{$pix}</code>
-        <button class="button button-secondary" type="button" data-copy-pix>Copiar código Pix</button>
-      </div>
-    </div>
-  </section>
-  <section class="registration-payment-panel" data-registration-payment="card" hidden>
-    <p class="section-label">CARTÃO DE CRÉDITO · MERCADO PAGO</p>
-    <h3>Pagamento por cartão de crédito</h3>
-    <p>Use o link do Mercado Pago para pagamento à vista ou parcelado. As taxas da plataforma são acrescentadas ao pagamento.</p>
-    <p><a class="button" href="{$card}" target="_blank" rel="noopener">Pagar com cartão no Mercado Pago <span aria-hidden="true">↗</span></a></p>
-  </section>
-</div>
-HTML;
-}
-
-function workshop_registration_program_html(): string {
-    return <<<'HTML'
-<section class="registration-program" data-registration-program hidden>
-  <p class="section-label">PROGRAMAÇÃO</p>
-  <article><h3>Encontro 1 — Filme de raio-X, exposição e preparação para o processo</h3><p>Características do filme de raio-X, exposição pensando no positivo e decisões anteriores à revelação.</p></article>
-  <article><h3>Encontro 2 — Química, revelação e evolução do processo</h3><p>Fotografia e processamento ao vivo, com variação deliberada de exposição e parâmetros para comparar os resultados e compreender a formação do positivo.</p></article>
-  <article><h3>Encontro 3 — Análise dos resultados</h3><p>Depois dos dois primeiros encontros, os participantes produzem seus próprios testes. No terceiro encontro, analisamos os resultados, as escolhas feitas e o que cada imagem indica para o teste seguinte.</p></article>
-</section>
-HTML;
-}
-
 function workshop_registration_page_document(): array {
-    $payment=workshop_registration_payment_html();
-    $program=workshop_registration_program_html();
-    $terms=workshop_registration_terms_html();
-    $html=<<<HTML
+    $html=<<<'HTML'
 <section class="registration-page" data-cms-section="registration-form" data-cms-section-name="Inscrição">
   <div class="registration-page-inner">
     <header class="registration-page-header">
@@ -139,9 +73,6 @@ function workshop_registration_page_document(): array {
     </header>
     <div class="registration-form-shell" data-registration-form-shell>
       <div data-cms-form-key="registration"></div>
-      {$program}
-      {$payment}
-      {$terms}
     </div>
   </div>
 </section>
