@@ -25,8 +25,6 @@ $activityId=(int)$db->lastInsertId();
 $migration=require __DIR__.'/../migrations/011_cms_pages_forms.php';$migration($db);
 cms_forms_seed($db,$activityId);cms_pages_seed($db,$activityId);workshop_cms_setup_activity($db,$activityId);
 
-// Recreate the production shape that migration 022 has to upgrade: fields in the
-// form schema, but editorial program/payment/terms still embedded in the page.
 $legacyForm=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_PT_BR,'registration');
 expect_native($legacyForm!==null,'registration form missing before migration');
 foreach(['draft_schema_json','published_schema_json'] as $column){
@@ -90,10 +88,6 @@ $reloaded=cms_form_schema($saved,false);
 $pix=array_values(array_filter(cms_form_content_blocks($reloaded),fn($block)=>($block['id']??'')==='payment_pix'))[0]??null;
 expect_native(is_array($pix)&&str_contains((string)$pix['html'],'R$ 700,00'),'editorial content did not persist through canonical form save');
 
-// Recreate the partial-schema failure seen in production: at least one content block
-// exists, so migration 022 would not repopulate the missing payment blocks. Migration
-// 023 must merge only what is missing, preserve user edits and restore the original
-// payment wrapper without resetting the rest of the form.
 $form=cms_form_by_id($db,(int)$form['id']);
 foreach(['draft_schema_json','published_schema_json'] as $column){
     $partial=json_decode((string)$form[$column],true);
@@ -101,7 +95,7 @@ foreach(['draft_schema_json','published_schema_json'] as $column){
     foreach($partial['settings']['contentBlocks']??[] as $block){
         if(($block['id']??'')==='payment_card')continue;
         if(($block['id']??'')==='payment_pix'){
-            $block['html']=str_replace('R$ 700,00','PIX PERSONALIZADO',$block['html']);
+            $block['html']=str_replace(['R$ 700,00','R$ 698,00'],'PIX PERSONALIZADO',$block['html']);
             $block['html']=preg_replace('~^<div class="registration-payment-source">(.*)</div>$~s','$1',$block['html'])??$block['html'];
         }
         $kept[]=$block;
