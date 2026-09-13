@@ -111,8 +111,21 @@ body.admin-page h1,body.admin-page h2,body.admin-page h3{line-height:1.08;}
 .admin-section-pages .overview-grid,.admin-section-forms .overview-grid{grid-template-columns:repeat(auto-fit,minmax(320px,1fr));}
 .admin-section-pages .overview-card,.admin-section-forms .overview-card{display:flex;flex-direction:column;}
 .admin-section-pages .overview-card>form,.admin-section-forms .overview-card>form{margin-top:auto;}
-.admin-section-site .cms-settings-form>section{padding:20px 0;border-bottom:1px solid var(--admin-line);}
-.admin-section-site .cms-settings-form>section:last-of-type{border-bottom:0;}
+.admin-section-site .cms-settings-form>section{padding:0;border:0;}
+.admin-section-site .cms-settings-form{gap:10px;}
+.admin-settings-section{border:1px solid var(--admin-line)!important;border-radius:4px;background:#fff;overflow:hidden;}
+.admin-settings-section>[hidden]{display:none!important;}
+.admin-settings-toggle{display:flex;width:100%;align-items:center;justify-content:space-between;gap:24px;padding:17px 18px;border:0;background:#fff;color:var(--admin-ink);text-align:left;cursor:pointer;}
+.admin-settings-toggle:hover{background:#f8f8f4;}
+.admin-settings-toggle span{font-size:15px;font-weight:600;}
+.admin-settings-toggle small{max-width:58%;color:var(--admin-muted);font:12px/1.35 var(--admin-body);text-align:right;}
+.admin-settings-toggle:after{content:"+";flex:0 0 auto;color:var(--admin-muted);font-size:20px;font-weight:300;}
+.admin-settings-toggle[aria-expanded="true"]{border-bottom:1px solid var(--admin-line);}
+.admin-settings-toggle[aria-expanded="true"]:after{content:"−";}
+.admin-settings-section>.admin-settings-toggle~*:not([hidden]){margin-left:18px;margin-right:18px;}
+.admin-settings-section>.admin-settings-toggle~*:last-child:not([hidden]){margin-bottom:18px;}
+.admin-settings-section>.nav-builder:not([hidden]){margin-top:16px;}
+.admin-settings-section>.button-row:not([hidden]){margin-top:12px;}
 code{font-family:var(--admin-mono);font-size:.92em;}
 @media(max-width:1000px){
   .admin-sidebar{width:220px;}
@@ -136,4 +149,6 @@ code{font-family:var(--admin-mono);font-size:.92em;}
   .hero-actions .admin-button{width:100%;}
   .overview-grid,.admin-section-pages .overview-grid,.admin-section-forms .overview-grid{grid-template-columns:1fr;}
   .recent-activity ol{grid-template-columns:1fr;}
+  .admin-settings-toggle{align-items:flex-start;flex-direction:column;gap:3px;}
+  .admin-settings-toggle small{max-width:none;text-align:left;}
 }
