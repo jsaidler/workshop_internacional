@@ -10,7 +10,7 @@ function admin_workspace(string $section): string {
         'pages','blocks','design','site','seo'=>'site',
         'forms','responses'=>'registrations',
         'media'=>'media',
-        'system'=>'settings',
+        'system','activities'=>'settings',
         default=>'overview',
     };
 }
