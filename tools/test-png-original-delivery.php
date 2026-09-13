@@ -41,4 +41,9 @@ must_png(str_contains($out,'src="/uploads/media/b/v/responsive/1024.webp"'),'JPE
 must_png(str_contains($out,'srcset="/uploads/media/b/v/responsive/480.webp 480w, /uploads/media/b/v/responsive/1024.webp 1024w"'),'JPEG should keep responsive srcset');
 must_png($derivativeCalls===1,'non-PNG image resolution should still use derivative selection');
 
+$renderer=(string)file_get_contents(dirname(__DIR__).'/app/cms_renderer.php');
+$expandPos=strpos($renderer,'$body=cms_expand_forms((string)$document[\'html\']');
+$imagePos=strpos($renderer,'$body=media_resolve_cms_html($db,$body)');
+must_png($expandPos!==false&&$imagePos!==false&&$expandPos<$imagePos,'form content must be expanded before media resolution so QR/media inside form contentBlocks is resolved');
+
 echo "PNG original delivery tests passed\n";
