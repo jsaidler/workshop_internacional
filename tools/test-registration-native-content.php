@@ -24,10 +24,26 @@ $activityId=(int)$db->lastInsertId();
 $migration=require __DIR__.'/../migrations/011_cms_pages_forms.php';$migration($db);
 cms_forms_seed($db,$activityId);cms_pages_seed($db,$activityId);workshop_cms_setup_activity($db,$activityId);
 
+// Recreate the production shape that migration 022 has to upgrade: fields in the
+// form schema, but editorial program/payment/terms still embedded in the page.
+$legacyForm=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_PT_BR,'registration');
+expect_native($legacyForm!==null,'registration form missing before migration');
+foreach(['draft_schema_json','published_schema_json'] as $column){
+    $schema=json_decode((string)$legacyForm[$column],true);unset($schema['settings']['contentBlocks']);
+    $db->prepare("UPDATE cms_forms SET $column=? WHERE id=?")->execute([json_encode($schema,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR),(int)$legacyForm['id']]);
+}
 $beforePage=cms_page_by_slug($db,$activityId,PUBLIC_LOCALE_PT_BR,'inscricao');
 expect_native($beforePage!==null,'registration page missing before migration');
+foreach(['draft_document_json','published_document_json'] as $column){
+    $doc=json_decode((string)$beforePage[$column],true);
+    $legacy='<section data-registration-program><p>Programa legado</p></section><div data-registration-payment-source><p>Pagamento legado</p></div><section data-registration-terms><p>Termos legados</p></section>';
+    $doc['html']=str_replace('<div data-cms-form-key="registration"></div>','<div data-cms-form-key="registration"></div>'.$legacy,(string)$doc['html']);
+    $db->prepare("UPDATE cms_pages SET $column=? WHERE id=?")->execute([json_encode(cms_page_document($doc),JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR),(int)$beforePage['id']]);
+}
+$beforePage=cms_page_by_id($db,(int)$beforePage['id']);
 $beforeHtml=cms_page_doc($beforePage,true)['html'];
 expect_native(str_contains($beforeHtml,'data-registration-payment-source'),'legacy payment source expected before migration');
+expect_native(cms_form_content_blocks(cms_form_schema(cms_form_by_id($db,(int)$legacyForm['id']),true))===[],'legacy form should not already contain native blocks');
 
 $upgrade=require __DIR__.'/../migrations/022_registration_native_editorial_content.php';$upgrade($db);
 
