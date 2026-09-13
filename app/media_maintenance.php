@@ -2,8 +2,9 @@
 declare(strict_types=1);
 
 function media_maintenance_source_has_transparency(array $source): bool {
-    if(empty($source['alpha'])) return false;
-    if(($source['engine']??'')==='imagick'){
+    $engine=(string)($source['engine']??'');
+    if($engine==='imagick'){
+        if(empty($source['alpha']))return false;
         try{
             $range=Imagick::getQuantumRange();
             $max=(float)($range['quantumRangeLong']??$range['quantumRangeString']??65535);
@@ -11,7 +12,22 @@ function media_maintenance_source_has_transparency(array $source): bool {
             return isset($extrema['min']) && (float)$extrema['min'] < $max;
         }catch(Throwable){return true;}
     }
-    if(($source['engine']??'')==='gd') return media_gd_has_alpha($source['image'],(int)$source['width'],(int)$source['height']);
+    if($engine==='gd'){
+        $image=$source['image'];$width=(int)$source['width'];$height=(int)$source['height'];
+        if(imagecolortransparent($image)>=0)return true;
+        $stepX=max(1,(int)floor($width/240));$stepY=max(1,(int)floor($height/240));
+        for($y=0;$y<$height;$y+=$stepY){
+            for($x=0;$x<$width;$x+=$stepX){
+                $rgba=imagecolorsforindex($image,imagecolorat($image,$x,$y));
+                if((int)($rgba['alpha']??0)>0)return true;
+            }
+        }
+        foreach([[0,0],[max(0,$width-1),0],[0,max(0,$height-1)],[max(0,$width-1),max(0,$height-1)]] as [$x,$y]){
+            $rgba=imagecolorsforindex($image,imagecolorat($image,$x,$y));
+            if((int)($rgba['alpha']??0)>0)return true;
+        }
+        return false;
+    }
     return false;
 }
 
@@ -58,6 +74,7 @@ function media_maintenance_write_image(array $source,int $width,int $height,stri
         imagefill($out,0,0,$transparentColor);
     }else imagefill($out,0,0,imagecolorallocate($out,255,255,255));
     imagecopyresampled($out,$source['image'],0,0,0,0,$width,$height,(int)$source['width'],(int)$source['height']);
+    if(in_array($format,['png','webp'],true)){imagealphablending($out,false);imagesavealpha($out,true);}
     $ok=match($format){
         'jpeg'=>imagejpeg($out,$path,86),
         'png'=>imagepng($out,$path,9),
