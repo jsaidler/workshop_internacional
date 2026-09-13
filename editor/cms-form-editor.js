@@ -10,7 +10,7 @@ if(!frame||!inspector)return;
 const forms=new Map();
 let selected=null;
 let editing=null;
-const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[char]));
 const normalizeFieldName=name=>String(name||'').replace(/\[\]$/,'');
 const frameDoc=()=>frame.contentDocument||null;
 const formBlockFrom=node=>node?.closest?.('[data-cms-form-block]')||null;
@@ -341,7 +341,7 @@ function installFrameCapture(d){
       event.preventDefault();event.stopImmediatePropagation();selectMeta(meta);return;
     }
     if(['field-label','option-label','field-help','submit-label','content-text'].includes(meta.part)){
-      event.preventDefault();event.stopImmediatePropagation();selectMeta(meta);
+      event.stopImmediatePropagation();selectMeta(meta);
     }
   },true);
   d.addEventListener('click',event=>{
