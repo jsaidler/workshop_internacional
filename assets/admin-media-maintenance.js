@@ -3,7 +3,7 @@
 const dialog=document.querySelector('#media-detail'),body=document.querySelector('#media-detail-body'),status=document.querySelector('#library-status');
 if(!dialog||!body)return;
 let currentAssetId=0,installing=false;
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 async function jsonFetch(url,options={}){const r=await fetch(url,{credentials:'same-origin',...options});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||`HTTP ${r.status}`);return data}
 function humanError(message){return ({asset_in_use:'Este arquivo ainda está sendo usado por uma página. Remova as referências antes de excluí-lo.',asset_not_image:'Somente imagens possuem tamanhos derivados para regenerar.',original_file_missing:'O arquivo original não foi encontrado no armazenamento.',alpha_channel_lost:'A regeneração foi interrompida porque a transparência não foi preservada.'})[message]||message}
 function derivativeInventory(item){
