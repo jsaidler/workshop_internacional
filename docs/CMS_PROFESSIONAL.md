@@ -36,13 +36,16 @@ Imagem usa um inspector próprio com texto alternativo, ajuste (`cover`/`contain
 
 Vídeo não reutiliza o inspector nem o seletor de imagem.
 
-- qualquer elemento `<video>` da página é selecionável no editor, inclusive vídeos antigos e o vídeo do processo, sem depender de um atributo editorial específico;
+- qualquer elemento `<video>` da página é editável, inclusive vídeos antigos e o vídeo do processo, sem depender de um atributo editorial específico;
+- a seleção não depende dos controles nativos do player: enquanto o vídeo não estiver selecionado, o editor insere uma superfície transitória `Editar vídeo` sobre o player; ao selecionar, essa superfície desaparece e o player volta a aceitar interação normal;
+- a superfície de seleção existe apenas no editor, é removida antes de salvar e nunca entra no HTML da página;
 - o inspector de vídeo controla a origem do vídeo, troca por asset da biblioteca, upload de vídeo, URL externa e reprodução (`controls`, autoplay, muted, loop, playsinline e preload);
 - a biblioteca de troca mostra exclusivamente `MediaLibrary.videos`;
 - escolher um vídeo da biblioteca preserva o vínculo por `data-media-asset-id` e usa a versão mais recente resolvida pelo CMS;
 - escolher uma URL externa remove o vínculo com o asset gerenciado, evitando que o resolver substitua a URL posteriormente;
 - capa/poster aparece como propriedade separada do vídeo e é administrada como parte do asset de vídeo; editar a capa não significa editar ou substituir o arquivo de vídeo;
-- o mesmo controle atende todas as páginas, idiomas e componentes. Não há implementação especial para a seção de processo.
+- o mesmo controle atende todas as páginas, idiomas e componentes. Não há implementação especial para a seção de processo;
+- CSS e JavaScript do editor recebem `?v=<versão instalada>` na entrada autenticada `editor/index.php`, usando `sourceSha` de `deploy-info.json`, para impedir que uma versão antiga do editor permaneça ativa por cache após atualização.
 
 ## Formulários
 

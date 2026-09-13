@@ -48,11 +48,14 @@ Imagem e vídeo são tipos de mídia diferentes e não devem compartilhar o mesm
 
 - Imagens continuam usando o inspector de imagem: texto alternativo, ajuste, ponto focal e biblioteca de imagens.
 - Qualquer elemento `<video>` dentro da página editável deve ser selecionável como vídeo, independentemente de ser um componente novo, o vídeo do processo, um vídeo legado ou possuir atributos editoriais antigos.
+- A seleção de vídeo não pode depender de clicar diretamente nos controles nativos do player. Cada vídeo recebe, apenas no editor, uma superfície explícita `Editar vídeo` que cobre o player enquanto ele não está selecionado; ao selecionar, essa superfície desaparece e os controles nativos voltam a ficar acessíveis.
+- Essa superfície é UI transitória do editor: deve ser removida antes de qualquer serialização/salvamento e jamais pode entrar no HTML publicado da página.
 - O inspector de vídeo é próprio e controla a origem do vídeo, troca por outro asset de vídeo, upload de vídeo, URL externa e comportamento de reprodução (`controls`, autoplay, muted, loop, playsinline e preload).
 - A biblioteca aberta pelo controle de vídeo lista apenas vídeos; não deve reutilizar `MediaLibrary.images` nem o diálogo de troca de imagem.
 - A capa/poster é uma propriedade do asset de vídeo e deve aparecer no inspector como assunto separado da origem do vídeo. Editar capa não equivale a trocar o vídeo.
 - Quando o vídeo é escolhido na biblioteca, a página mantém `data-media-asset-id` e usa a versão ativa/mais recente pelo resolver. Quando o usuário opta por URL externa, o vínculo com o asset gerenciado deve ser removido para que o resolver não sobrescreva a URL.
 - O vídeo do processo usa exatamente esse mesmo mecanismo global; não existe correção específica para a página PT, EN ou para a seção de processo.
+- Os assets do editor (`/editor/*.css` e `/editor/*.js`) são versionados no `editor/index.php` com a versão instalada lida de `deploy-info.json`, evitando que uma atualização do editor seja mascarada por JavaScript/CSS antigo em cache.
 
 ## Regra de documentação obrigatória
 
@@ -108,6 +111,7 @@ A página inglesa não deve ser mera tradução da brasileira.
 - A regra pública dos controles nativos é deliberadamente forte e global: largura, altura, mínimos, máximos e `flex-basis` ficam travados em 18 px sob `.cms-public`, cobrindo todas as páginas públicas e o preview, não uma página ou formulário específico.
 - O renderer público replica essa geometria em um bloco de estilo estrutural inline para que a aplicação não dependa de uma cópia antiga de CSS externa para manter a forma correta dos controles.
 - Todos os CSS/JS públicos carregados pelo renderer recebem `?v=<versão instalada>`, usando `sourceSha` de `deploy-info.json` e `filemtime` como fallback. Uma versão nova da aplicação, portanto, gera URLs novos para os assets e não reutiliza silenciosamente uma cópia antiga do navegador.
+- A mesma política de versionamento é aplicada aos assets do editor pela entrada autenticada `editor/index.php`.
 - A configuração Apache continua usando `Cache-Control: no-cache, must-revalidate` para `.css` e `.js` como defesa adicional.
 - Alterações editoriais, visuais, estruturais e comerciais normais devem ser possíveis pelo CMS. Código deve ser necessário para novas capacidades, não para operação editorial cotidiana.
 

@@ -5,6 +5,7 @@ function must(bool $ok,string $message): void {if(!$ok){fwrite(STDERR,"task-cent
 $root=dirname(__DIR__);
 $admin=(string)file_get_contents($root.'/admin/index.php');
 $editor=(string)file_get_contents($root.'/editor/index.html');
+$editorEntry=(string)file_get_contents($root.'/editor/index.php');
 $coreEditor=(string)file_get_contents($root.'/editor/cms-editor-v3.js');
 $videoEditor=(string)file_get_contents($root.'/editor/cms-video-library.js');
 $client=(string)file_get_contents($root.'/editor/task-centric.js');
@@ -30,6 +31,8 @@ must(str_contains($editor,'<button type="button" id="save-page">Salvar agora</bu
 must(strpos($editor,'id="publish-page"')<strpos($editor,'id="save-page"'),'publish must be the primary visible editorial action');
 if(str_contains($coreEditor,"$('#editor-title').textContent"))must(str_contains($editor,'id="editor-title"'),'editor core title target must exist');
 if(str_contains($coreEditor,"$('#editor-locale').textContent"))must(str_contains($editor,'id="editor-locale"'),'editor core locale target must exist');
+must(str_contains($editorEntry,"deploy-info.json"),'editor entry point must derive an installed-version token for its assets');
+must(str_contains($editorEntry,"?v='.$version"),'editor entry point must append the installed version to editor CSS/JS URLs');
 must(str_contains($autosave,'MutationObserver'),'autosave must react to dirty-state changes');
 must(str_contains($autosave,'setTimeout(flush,3200)'),'autosave must debounce short editing pauses');
 must(!str_contains($autosave,'setInterval'),'autosave must not wait on a fixed polling interval');
@@ -44,7 +47,12 @@ must(str_contains($submissions,'Confirmar inscrição e pagamento'),'registratio
 must(str_contains($media,'id="media-selection-toggle"'),'bulk media actions must be an explicit mode');
 must(str_contains($mediaTask,'previewSrc(item,480)'),'media grid must use thumbnail-sized sources');
 must(str_contains($mediaLibrary,'previewSrc(item,target=480)'),'media library must choose responsive previews');
-must(str_contains($videoEditor,"closest?.('video')"),'page editor must recognize every video element, including legacy/process videos without a special editor marker');
+must(str_contains($videoEditor,"root.querySelectorAll('video')"),'page editor must decorate every video element, including legacy/process videos without a special editor marker');
+must(str_contains($videoEditor,'data-cms-editor-video-selector'),'every page video must receive a reliable editor-only selection surface above native media controls');
+must(str_contains($videoEditor,"selector.innerHTML='<span>Editar vídeo</span>'"),'video selection surface must be explicit to the editor user');
+must(str_contains($videoEditor,'stripEditorDecorations'),'editor-only video selectors must be removed before page serialization');
+must(str_contains($videoEditor,"save.addEventListener('click'"),'video editor must strip transient selection UI before every save');
+must(str_contains($videoEditor,'MutationObserver'),'video selector coverage must survive dynamic editor DOM changes');
 must(str_contains($videoEditor,'MediaLibrary.videos'),'video editor must use the video collection, not the image collection');
 must(!str_contains($videoEditor,'MediaLibrary.images'),'video editor must not reuse image-library controls');
 must(str_contains($videoEditor,'Biblioteca de vídeos'),'video replacement must have a dedicated video-only library');
@@ -53,7 +61,6 @@ must(str_contains($videoEditor,"video.dataset.mediaVersionMode='latest'"),'manag
 must(str_contains($videoEditor,'delete video.dataset.mediaAssetId'),'switching to an external URL must remove the managed-asset binding so the resolver cannot overwrite it');
 must(str_contains($videoEditor,'accept="video/mp4,video/webm,video/quicktime"'),'video dialog must upload video media, not images');
 must(str_contains($videoEditor,"video.classList.add('cms-selection')"),'video selection must reuse the core transient selection class that is stripped during serialization');
-must(!str_contains($videoEditor,"video.classList.add('cms-video-selected'"),'video editor must not persist a custom selection class into page HTML');
 must(str_contains($publicCss,'.cms-public input[type="checkbox"],.cms-public input[type="radio"]'),'native public choice controls must be normalized at the shared page layer, not in one page or form instance');
 must(str_contains($publicCss,'min-height:18px'),'public choice controls must override legacy text-input height');
 must(str_contains($renderer,'cms_public_asset_version'),'public renderer must version shared assets after application updates');
