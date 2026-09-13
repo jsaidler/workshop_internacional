@@ -9,6 +9,10 @@ $client=(string)file_get_contents($root.'/editor/task-centric.js');
 $autosave=(string)file_get_contents($root.'/editor/autosave.js');
 $context=(string)file_get_contents($root.'/admin/api/editor-context.php');
 $shell=(string)file_get_contents($root.'/app/admin_shell.php');
+$submissions=(string)file_get_contents($root.'/admin/submissions.php');
+$media=(string)file_get_contents($root.'/admin/media.php');
+$mediaTask=(string)file_get_contents($root.'/assets/admin-media-task.js');
+$mediaLibrary=(string)file_get_contents($root.'/editor/media-library.js');
 
 must(str_contains($admin,"Location: /editor/?page="),'admin entry point must open the editor');
 must(str_contains($editor,'id="editor-page-switcher"'),'editor must expose page switching in context');
@@ -24,5 +28,10 @@ must(str_contains($client,"includes('não salvas')"),'page switching must protec
 must(str_contains($context,"status='new'"),'editor context must surface new inscriptions');
 must(!str_contains($shell,"'overview'=>['Início'"),'legacy dashboard must not remain in primary navigation');
 must(str_contains($shell,"'site'=>['Site','/admin/'"),'site must be the primary admin destination');
+must(str_contains($submissions,"['full_name','name','email','whatsapp','phone']"),'inbox must identify registrations by participant name before email');
+must(str_contains($submissions,'inbox-status-tabs'),'inscriptions must be an inbox with direct status filtering');
+must(str_contains($media,'id="media-selection-toggle"'),'bulk media actions must be an explicit mode');
+must(str_contains($mediaTask,'previewSrc(item,480)'),'media grid must use thumbnail-sized sources');
+must(str_contains($mediaLibrary,'previewSrc(item,target=480)'),'media library must choose responsive previews');
 
 echo "Task-centric admin tests passed\n";
