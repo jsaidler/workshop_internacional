@@ -55,11 +55,17 @@ O updater:
 
 A aplicação não deve depender de o navegador descobrir sozinho que um CSS/JS mudou.
 
-O renderer público lê `sourceSha` de `deploy-info.json` e acrescenta `?v=<versão instalada>` aos URLs dos CSS e do JavaScript público. Quando uma nova versão é instalada, o URL do asset muda e o navegador é obrigado a buscar a versão correspondente ao código instalado. Em ambiente sem `deploy-info.json`, o renderer usa `filemtime` do CSS como fallback.
+A versão instalada vem de `sourceSha` em `deploy-info.json` e é usada como query string nos assets gerenciados:
 
-A configuração Apache do pacote publicado também força revalidação de arquivos `.css` e `.js` com `Cache-Control: no-cache, must-revalidate`. A query string versionada é o mecanismo principal para troca de versão; a revalidação HTTP é uma defesa adicional.
+- o renderer público acrescenta `?v=<versão instalada>` aos CSS/JS públicos;
+- `editor/index.php` aplica a mesma política aos CSS/JS do editor de páginas;
+- `app/admin_shell.php` aplica a mesma política aos CSS/JS administrativos carregados pelo shell.
 
-Para invariantes visuais críticos de formulário, como a geometria de checkbox/radio, o renderer pode manter uma regra estrutural inline compartilhada. Isso evita que um cache externo antigo devolva uma página funcionalmente atual com um controle visualmente regressivo.
+Quando uma nova versão é instalada, os URLs desses assets mudam e o navegador é obrigado a buscar a versão correspondente ao código instalado. Em ambiente sem `deploy-info.json`, cada camada usa `filemtime` de um asset estável como fallback.
+
+A configuração Apache do pacote publicado também força revalidação de `.css` e `.js` com `Cache-Control: no-cache, must-revalidate`. A query string versionada é o mecanismo principal; a revalidação HTTP é defesa adicional.
+
+Para invariantes visuais críticos, a correção deve estar na camada compartilhada correspondente. Checkbox/radio públicos têm invariant no renderer/CSS público; checkbox/radio administrativos têm invariant final no CSS compartilhado do admin carregado depois das folhas normais.
 
 ## Regra de estado
 
