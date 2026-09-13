@@ -20,7 +20,7 @@ try{
     $png=$db->query("SELECT path FROM media_derivatives WHERE format='png' ORDER BY width DESC LIMIT 1")->fetchColumn();
     maintenance_expect(is_string($png)&&$png!=='','PNG derivative missing');
     $out=imagecreatefrompng(media_upload_root().'/'.$png);maintenance_expect($out instanceof GdImage,'PNG derivative unreadable');
-    $alpha=(imagecolorat($out,0,0)>>24)&0x7f;imagedestroy($out);
+    $pixel=imagecolorat($out,0,0);$rgba=imagecolorsforindex($out,$pixel);$alpha=(int)($rgba['alpha']??0);imagedestroy($out);
     maintenance_expect($alpha>0,'transparent pixel became opaque');
     maintenance_expect(!empty($result['transparencyPreserved']),'service did not detect source transparency');
     fwrite(STDOUT,"Media transparency regeneration test passed\n");
