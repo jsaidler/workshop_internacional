@@ -2,6 +2,13 @@
 declare(strict_types=1);
 require __DIR__.'/app/bootstrap.php';
 
+// Streaming a video while the PHP session is still open keeps the session file
+// locked for the whole response. Every concurrent admin/API request from the
+// same browser then blocks in session_start(), which made the media drawer sit
+// forever on "Carregando…" whenever another tab/page was reading a video.
+// This endpoint never mutates session state, so release the lock immediately.
+if(session_status()===PHP_SESSION_ACTIVE)session_write_close();
+
 function media_stream_error(int $status,string $message):never{http_response_code($status);header('Content-Type: text/plain; charset=UTF-8');echo $message;exit;}
 function media_stream_range(int $size):array{$range=$_SERVER['HTTP_RANGE']??'';if($range==='')return [0,$size-1,200];if(!preg_match('/^bytes=(\d*)-(\d*)$/',$range,$match))throw new RangeException();$start=$match[1]===''?null:(int)$match[1];$end=$match[2]===''?null:(int)$match[2];if($start===null){$length=$end??0;if($length<1)throw new RangeException();$start=max(0,$size-$length);$end=$size-1;}else{$end=$end??$size-1;}if($start<0||$start>=$size||$end<$start)throw new RangeException();return [$start,min($end,$size-1),206];}
 
