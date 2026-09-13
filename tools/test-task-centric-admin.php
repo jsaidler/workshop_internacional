@@ -42,7 +42,7 @@ must(str_contains($submissions,'Confirmar inscrição e pagamento'),'registratio
 must(str_contains($media,'id="media-selection-toggle"'),'bulk media actions must be an explicit mode');
 must(str_contains($mediaTask,'previewSrc(item,480)'),'media grid must use thumbnail-sized sources');
 must(str_contains($mediaLibrary,'previewSrc(item,target=480)'),'media library must choose responsive previews');
-must(str_contains($publicCss,'.cms-form input[type="checkbox"],.cms-form input[type="radio"]'),'public forms must explicitly size native choice controls');
+must(str_contains($publicCss,'.cms-public input[type="checkbox"],.cms-public input[type="radio"]'),'native public choice controls must be normalized at the shared page layer, not in one page or form instance');
 must(str_contains($publicCss,'min-height:18px'),'public choice controls must override legacy text-input height');
 must(str_contains($adminCss,'.admin-page input[type="checkbox"],.admin-page input[type="radio"]'),'admin must explicitly size native choice controls');
 must(str_contains($adminCss,'min-height:18px'),'admin choice controls must override generic admin input height');
