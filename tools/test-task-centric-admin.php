@@ -52,6 +52,8 @@ must(str_contains($videoEditor,'Arquivo de vídeo')&&str_contains($videoEditor,'
 must(str_contains($videoEditor,"video.dataset.mediaVersionMode='latest'"),'managed video replacement must preserve the media-asset relationship');
 must(str_contains($videoEditor,'delete video.dataset.mediaAssetId'),'switching to an external URL must remove the managed-asset binding so the resolver cannot overwrite it');
 must(str_contains($videoEditor,'accept="video/mp4,video/webm,video/quicktime"'),'video dialog must upload video media, not images');
+must(str_contains($videoEditor,"video.classList.add('cms-selection')"),'video selection must reuse the core transient selection class that is stripped during serialization');
+must(!str_contains($videoEditor,"video.classList.add('cms-video-selected'"),'video editor must not persist a custom selection class into page HTML');
 must(str_contains($publicCss,'.cms-public input[type="checkbox"],.cms-public input[type="radio"]'),'native public choice controls must be normalized at the shared page layer, not in one page or form instance');
 must(str_contains($publicCss,'min-height:18px'),'public choice controls must override legacy text-input height');
 must(str_contains($renderer,'cms_public_asset_version'),'public renderer must version shared assets after application updates');
