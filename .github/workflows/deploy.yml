@@ -13,6 +13,7 @@ on:
       - 'cms-v3-professional-7'
       - 'cms-v3-professional-8'
       - 'cms-v3-professional-9'
+      - 'cms-v3-professional-10'
   workflow_dispatch:
 
 permissions:
@@ -47,6 +48,7 @@ jobs:
           php tools/test-media-image-policy.php
           php tools/test-cms-professional-3.php
           php tools/test-update-service.php
+          php tools/test-update-restore.php
           php tools/test-cms-discovery.php
           php tools/test-refine-session-copy.php
           php tools/test-workshop-copy-refinements.php
