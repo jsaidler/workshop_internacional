@@ -4,6 +4,7 @@ declare(strict_types=1);
 function fail_native(string $message): never { fwrite(STDERR,"registration-native-content: $message\n"); exit(1); }
 function expect_native(bool $condition,string $message): void { if(!$condition) fail_native($message); }
 if(!function_exists('h')){function h(mixed $value): string {return htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}}
+if(!function_exists('csrf_token')){function csrf_token(string $scope): string {return 'test-csrf';}}
 
 require __DIR__.'/../app/public_locale.php';
 require __DIR__.'/../app/interest_repository.php';
