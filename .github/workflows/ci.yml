@@ -27,6 +27,7 @@ jobs:
           php tools/test-form-editor-integration.php
           php tools/test-media-list-service.php
           php tools/test-media-detail-interactive.php
+          php tools/test-png-original-delivery.php
           php tools/test-registration-google-form-parity.php
           php tools/test-registration-payment-migration.php
           php tools/test-registration-native-content.php
