@@ -37,7 +37,12 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 - respostas associadas ao formulário/página, status de acompanhamento, notas e CSV;
 - checkbox e radio têm dimensão visual normalizada em 18 × 18 px no site público, preview e admin;
 - no site público, largura, altura, mínimos, máximos e `flex-basis` desses controles são travados em 18 px para impedir que regras genéricas de `input` os façam ocupar a largura do grupo ou herdar a altura de campos de texto;
+- essa normalização pertence à camada compartilhada `.cms-public`, portanto vale para todas as páginas públicas e para o preview do editor, não para uma página, locale ou formulário específico;
 - assets CSS/JS são revalidados após atualização da aplicação para evitar que cache antigo masque correções visuais recém-instaladas.
+
+## Princípio de correção sistêmica
+
+Quando um defeito aparece em várias páginas, idiomas ou instâncias de um componente, a correção deve ser feita na camada compartilhada correspondente. Não usar exceções pontuais por página, ID, locale ou formulário para mascarar um problema de base. A regressão também deve ser testada no mesmo nível global da correção.
 
 ## Independência editorial PT/EN
 

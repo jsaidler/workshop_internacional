@@ -12,6 +12,8 @@ Antes de alterar código, conteúdo, CMS, deploy ou fluxo administrativo, ler ne
 
 Não reconstruir decisões pela memória quando os documentos vigentes disserem algo diferente. Quando uma decisão estrutural, editorial ou operacional mudar, atualizar os documentos canônicos no mesmo trabalho; não deixar a documentação para uma etapa futura.
 
+Quando um defeito se reproduzir em várias páginas, idiomas ou instâncias de um componente, tratar como problema sistêmico. Corrigir a camada compartilhada responsável e adicionar regressão nesse mesmo nível. Não usar CSS, HTML, JavaScript ou conteúdo específico de página, locale, formulário, ID ou bloco para mascarar um problema global, salvo quando a exceção for deliberada e documentada.
+
 A hospedagem é atualizada normalmente pelo usuário em `Admin → Sistema e atualizações`. O CI publica o pacote em `production-dist`; isso não significa, por si só, que a hospedagem já foi atualizada.
 
 ## Ambiente Windows e codificação
