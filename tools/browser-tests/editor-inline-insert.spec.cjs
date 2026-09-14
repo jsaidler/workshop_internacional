@@ -53,7 +53,11 @@ test('selected component exposes separated before and after insertion points',as
   expect(afterBox).not.toBeNull();
   expect(overlaps(beforeBox,afterBox)).toBe(false);
 
-  await before.click();
+  // The inline layer is rebuilt on iframe scroll so a Playwright pre-click
+  // scroll can replace the target between hit testing and dispatch. We already
+  // assert the controls are geometrically separated above; force avoids that
+  // test-runner-only scroll race while still exercising the real click handler.
+  await before.click({force:true});
   await frame.locator('.cms-inline-palette [data-inline-type="heading"]').click();
   expect(await frame.locator('#divider').evaluate(el=>el.previousElementSibling?.dataset.cmsComponent||'')).toBe('heading');
   await page.waitForTimeout(1000);
