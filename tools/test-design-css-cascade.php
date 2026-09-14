@@ -31,8 +31,15 @@ $choiceCss=$choiceStart!==false&&$choiceEnd!==false?substr($renderer,$choiceStar
 design_css_expect(!str_contains($choiceCss,'!important'),'system choice geometry must not block a later intentional additional-CSS override');
 
 $adminJs=(string)file_get_contents(dirname(__DIR__).'/assets/design-admin.js');
-$textPos=strpos($adminJs,'style.textContent=');
-$appendPos=strpos($adminJs,'d.head.append(style)');
-design_css_expect($textPos!==false&&$appendPos!==false&&$textPos<$appendPos,'live preview must move its additional CSS style to the end on every update');
+design_css_expect(str_contains($adminJs,"id='cms-live-design-vars'")||str_contains($adminJs,"id=\'cms-live-design-vars\'")||str_contains($adminJs,"generated.id='cms-live-design-vars'"),'live preview must render generated tokens in a stylesheet');
+design_css_expect(str_contains($adminJs,"custom.id='cms-live-custom'"),'live preview must keep additional CSS in its own stylesheet');
+design_css_expect(!str_contains($adminJs,'root.style.setProperty('),'generated design tokens must not be written as inline styles that outrank additional CSS');
+$generatedAppend=strpos($adminJs,'d.head.append(generated)');
+$customAppend=strpos($adminJs,'d.head.append(custom)');
+design_css_expect($generatedAppend!==false&&$customAppend!==false&&$generatedAppend<$customAppend,'live preview must append generated tokens before additional CSS');
+design_css_expect(str_contains($adminJs,'root.style.removeProperty(key)'),'live preview must remove stale inline token declarations left by older code');
+
+$package=json_decode((string)file_get_contents(dirname(__DIR__).'/package.json'),true);
+design_css_expect(($package['scripts']['test:browser']??'')==='playwright test tools/browser-tests','browser suite must include the design cascade regression, not only the form editor');
 
 echo "Design additional CSS cascade tests passed\n";
