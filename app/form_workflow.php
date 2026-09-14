@@ -43,16 +43,6 @@ function cms_form_conditions_update(array $schema,array $input): array {
     foreach($schema['fields']??[] as $field){if(!is_array($field)||!isset($field['id']))continue;$target=(string)$field['id'];$source=trim((string)($sources[$target]??''));if($source==='')continue;$conditions[$target]=['source'=>$source,'operator'=>(string)($operators[$target]??'equals'),'value'=>(string)($values[$target]??'')];}
     $candidate=$schema;$candidate['settings']['conditions']=$conditions;$schema['settings']['conditions']=cms_form_conditions($candidate);return $schema;
 }
-function cms_form_condition_matches(array $rule,array $values): bool {
-    $raw=$values[$rule['source']]??'';$items=is_array($raw)?array_map('strval',$raw):[(string)$raw];$nonEmpty=array_values(array_filter($items,fn($v)=>$v!==''));
-    return match($rule['operator']){
-        'checked'=>count($nonEmpty)>0&&$nonEmpty!==['0'],
-        'not_checked'=>count($nonEmpty)===0||$nonEmpty===['0'],
-        'not_equals'=>!in_array((string)$rule['value'],$items,true),
-        'contains'=>array_reduce($items,fn($carry,$item)=>$carry||str_contains($item,(string)$rule['value']),false),
-        default=>in_array((string)$rule['value'],$items,true),
-    };
-}
 function cms_form_validate_conditional_submission(array $schema,array $input,string $locale): array {
     [$values,$errors]=cms_form_validate_submission($schema,$input,$locale);foreach(cms_form_conditions($schema) as $target=>$rule)if(!cms_form_condition_matches($rule,$values)){unset($errors[$target]);$values[$target]=is_array($values[$target]??null)?[]:'';}return [$values,$errors];
 }
