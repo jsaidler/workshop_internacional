@@ -68,7 +68,6 @@ function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): ar
             }
         }
         media_release_image($source);$source=null;
-        if(!$prepared)throw new RuntimeException('no_derivatives_generated');
 
         $db->beginTransaction();
         $db->prepare('DELETE FROM media_derivatives WHERE version_id=?')->execute([$versionId]);
@@ -81,15 +80,17 @@ function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): ar
         $db->prepare('UPDATE media_assets SET processing_status="ready",updated_at=? WHERE id=?')->execute([gmdate('c'),$assetId]);
         $db->commit();
 
-        // Regeneration is cache-safe: the database is switched to a brand-new
-        // immutable URL before obsolete derivative directories are removed.
-        // A browser/CDN can therefore never confuse corrected bytes with a
-        // previously cached response that used the same URL.
-        foreach(media_regenerated_derivative_dirs($oldPaths,$base,$relativeDir) as $oldDir){
+        // Regeneration is cache-safe: when derivatives exist, the database is
+        // switched to brand-new immutable URLs before obsolete directories are
+        // removed. Small images that need no derivative simply fall back to
+        // their immutable original and old derivative rows are discarded.
+        $keep=$prepared?$relativeDir:'';
+        if(!$prepared&&is_dir($newDir))media_remove_tree($newDir);
+        foreach(media_regenerated_derivative_dirs($oldPaths,$base,$keep) as $oldDir){
             $absolute=media_upload_root().'/'.$oldDir;
             if(is_dir($absolute))media_remove_tree($absolute);
         }
-        return ['assetId'=>$assetId,'versionId'=>$versionId,'derivatives'=>count($prepared),'transparencyPreserved'=>$requiresTransparency,'derivativeDirectory'=>$relativeDir];
+        return ['assetId'=>$assetId,'versionId'=>$versionId,'derivatives'=>count($prepared),'transparencyPreserved'=>$requiresTransparency,'derivativeDirectory'=>$prepared?$relativeDir:null];
     }catch(Throwable $e){
         if(isset($source)&&is_array($source))media_release_image($source);
         if($db->inTransaction())$db->rollBack();
