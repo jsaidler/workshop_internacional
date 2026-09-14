@@ -35,5 +35,9 @@ try{
     maintenance_expect(is_file(media_upload_root().'/'.$secondPng),'second generated derivative missing on disk');
     maintenance_expect(!is_file($firstAbsolute),'obsolete derivative directory must be removed after database commit');
     maintenance_expect($db->query("SELECT COUNT(*) FROM media_derivatives WHERE path LIKE '%/responsive-%'")->fetchColumn()>0,'database must point at immutable regenerated derivative URLs');
+
+    $repair=(string)file_get_contents(__DIR__.'/../migrations/025_republish_png_derivatives_with_new_urls.php');
+    maintenance_expect(str_contains($repair,'media_regenerate_image_version'),'migration 025 must republish existing PNG derivatives through the cache-safe canonical regenerator');
+    maintenance_expect(str_contains($repair,'DELETE FROM media_derivatives WHERE version_id=?'),'failed migration repair must invalidate old derivative references and fall back to the original');
     fwrite(STDOUT,"Media regeneration cache identity test passed\n");
 }finally{media_remove_tree(media_upload_root().'/'.$uuid);}
