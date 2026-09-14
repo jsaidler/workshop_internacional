@@ -55,6 +55,7 @@ HTML,
             'id'=>'payment_pix',
             'label'=>'Pagamento — Pix',
             'afterField'=>'payment_method',
+            'showOnSuccess'=>true,
             'condition'=>['source'=>'payment_method','operator'=>'equals','value'=>'pix'],
             'html'=><<<'HTML'
 <div class="registration-payment-source">
@@ -78,6 +79,7 @@ HTML,
             'id'=>'payment_card',
             'label'=>'Pagamento — cartão',
             'afterField'=>'payment_method',
+            'showOnSuccess'=>true,
             'condition'=>['source'=>'payment_method','operator'=>'contains','value'=>'card_'],
             'html'=><<<'HTML'
 <div class="registration-payment-source">
