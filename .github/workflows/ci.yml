@@ -23,6 +23,8 @@ jobs:
       - name: CMS smoke tests
         run: |
           php tools/test-cms.php
+          php tools/test-cms-v3.php
+          php tools/test-cms-professional-3.php
           php tools/test-task-centric-admin.php
           php tools/test-form-editor-integration.php
           php tools/test-media-image-policy.php
