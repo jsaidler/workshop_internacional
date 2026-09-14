@@ -15,6 +15,7 @@
 /* Reset properties that older first-class-container rules may have assigned outside
    the canonical viewport. Explicit values are then applied only inside that viewport. */
 @media (min-width:1025px){
+  .cms-public .cms-container{--cms-container-gap:24px}
   .cms-public .cms-container-columns{grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--cms-container-gap,24px);align-items:start}
   .cms-public .cms-container-columns[data-cms-columns="1"]{grid-template-columns:minmax(0,1fr)}
   .cms-public .cms-container-columns[data-cms-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -38,7 +39,8 @@
 }
 
 @media (min-width:721px) and (max-width:1024px){
-  .cms-public .cms-container-columns{grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+  .cms-public .cms-container{--cms-container-gap:24px}
+  .cms-public .cms-container-columns{grid-template-columns:minmax(0,1fr);gap:var(--cms-container-gap,24px);align-items:start}
   .cms-public .cms-container-columns[data-cms-tablet-columns="1"]{grid-template-columns:minmax(0,1fr)}
   .cms-public .cms-container-columns[data-cms-tablet-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cms-public .cms-container-columns[data-cms-tablet-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -62,7 +64,8 @@
 }
 
 @media (max-width:720px){
-  .cms-public .cms-container-columns{grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+  .cms-public .cms-container{--cms-container-gap:24px}
+  .cms-public .cms-container-columns{grid-template-columns:minmax(0,1fr);gap:var(--cms-container-gap,24px);align-items:start}
   .cms-public .cms-container-columns[data-cms-mobile-columns="1"]{grid-template-columns:minmax(0,1fr)}
   .cms-public .cms-container-columns[data-cms-mobile-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cms-public .cms-container-columns[data-cms-mobile-columns="2"][data-cms-mobile-ratio="30-70"]{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}
