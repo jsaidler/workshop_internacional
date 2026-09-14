@@ -79,3 +79,44 @@ test('structure sidebar exposes the page hierarchy and selects nested components
   await page.locator('#page-structure-tree [data-page-tree-toggle="0"]').click();
   await expect(page.locator('#page-structure-tree [data-tree-level="node"]')).toHaveCount(5);
 });
+
+test('rich component palette inserts list quote video and gallery as first-class nodes',async({page})=>{
+  for(const [type,label] of [['list','Lista'],['quote','Citação'],['video','Vídeo'],['gallery','Galeria']]){
+    const frame=await fixture(page);
+    await frame.locator('#column-b').click({position:{x:20,y:20}});
+    await frame.locator('.cms-inline-add', {hasText:'+ Adicionar'}).click();
+    const palette=frame.locator('.cms-inline-palette');
+    await expect(palette).toBeVisible();
+    for(const [buttonType,buttonLabel] of [['list','Lista'],['quote','Citação'],['video','Vídeo'],['gallery','Galeria']]){
+      await expect(palette.locator(`[data-rich-inline-type="${buttonType}"]`)).toHaveText(buttonLabel);
+    }
+    await palette.locator(`[data-rich-inline-type="${type}"]`).click();
+    await expect(frame.locator(`#column-b [data-cms-component="${type}"]`)).toHaveCount(1);
+    await page.waitForTimeout(850);
+    await expect(frame.locator(`#column-b [data-cms-component="${type}"]`)).toHaveCount(1);
+    if(type==='list')await expect(frame.locator('#column-b [data-cms-component="list"] li[data-cms-editable]')).toHaveCount(3);
+    if(type==='quote')await expect(frame.locator('#column-b [data-cms-component="quote"] [data-cms-editable]')).toHaveCount(2);
+    if(type==='video')await expect(frame.locator('#column-b [data-cms-component="video"] video')).toHaveAttribute('controls','');
+    if(type==='gallery')await expect(frame.locator('#column-b [data-cms-component="gallery"] [data-cms-image-placeholder]')).toHaveCount(3);
+  }
+});
+
+test('rich components persist, are named in the tree and expose their own controls',async({page})=>{
+  const frame=await fixture(page);
+  await frame.locator('#column-b').click({position:{x:20,y:20}});
+  await frame.locator('.cms-inline-add', {hasText:'+ Adicionar'}).click();
+  await frame.locator('.cms-inline-palette [data-rich-inline-type="list"]').click();
+  await page.waitForTimeout(950);
+
+  await page.locator('[data-structure-view="tree"]').click();
+  await expect(page.locator('#page-structure-tree')).toContainText('Lista');
+
+  await frame.locator('[data-cms-component="list"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
+  await expect(frame.locator('[data-cms-component="list"]')).toHaveClass(/cms-structure-selected/);
+  await expect(page.locator('#inspector')).toContainText('Lista');
+  await expect(page.locator('#inspector [data-rich-list-add]')).toHaveCount(1);
+  await page.locator('#inspector').evaluate(el=>{el.style.display='block'});
+  await page.locator('#inspector [data-rich-list-add]').click();
+  await page.waitForTimeout(950);
+  await expect(frame.locator('[data-cms-component="list"] li[data-cms-editable]')).toHaveCount(4);
+});
