@@ -14,6 +14,34 @@ Não reconstruir decisões pela memória quando os documentos vigentes disserem 
 
 Quando um defeito se reproduzir em várias páginas, idiomas ou instâncias de um componente, tratar como problema sistêmico. Corrigir a camada compartilhada responsável e adicionar regressão nesse mesmo nível. Não usar CSS, HTML, JavaScript ou conteúdo específico de página, locale, formulário, ID ou bloco para mascarar um problema global, salvo quando a exceção for deliberada e documentada.
 
+## Regra obrigatória: correção definitiva
+
+Não encerrar um defeito com uma contenção quando a causa raiz estiver no próprio sistema.
+
+- Um workaround pode ser usado temporariamente apenas para proteger produção enquanto a causa raiz é investigada.
+- A correção final deve remover ou tornar desnecessário o workaround, corrigir a camada responsável, reparar o estado legado afetado quando necessário e adicionar regressão que reproduza a classe real da falha.
+- Não considerar um problema resolvido apenas porque o sintoma deixou de aparecer em uma página específica.
+- Quando existirem dois caminhos diferentes para produzir o mesmo artefato, consolidar o comportamento em uma implementação canônica em vez de manter algoritmos paralelos que possam divergir.
+- Migrações corretivas devem ser não destrutivas: preservar originais e dados editoriais, reconstruir somente artefatos derivados e invalidar derivados defeituosos quando a reconstrução falhar.
+
+### Pipeline de imagens
+
+- O arquivo original enviado é a fonte de verdade imutável de uma versão de mídia.
+- Derivadas responsivas são artefatos descartáveis e devem ser reconstruíveis a partir do original.
+- ImageMagick deve normalizar `page/virtual canvas` antes e depois do redimensionamento; metadados de canvas virtual nunca podem alterar a geometria raster da derivada.
+- Toda derivada deve ser verificada após a gravação quanto a dimensões raster, geometria de página virtual e preservação de transparência quando aplicável antes de ser registrada como válida.
+- O caminho de upload e o caminho de regeneração manual/automática devem usar o mesmo writer e as mesmas validações.
+
+### CSS adicional de Design
+
+O campo `Design → CSS adicional` é a última camada editorial de CSS do site.
+
+- O CSS gerado pelo sistema e o CSS adicional devem ser emitidos em elementos `<style>` separados.
+- `#cms-custom-css` deve ser o último estilo autoral renderizado no `<head>` público e no preview normal.
+- A prévia ao vivo de Design deve reaplicar seu estilo adicional no fim do `<head>` em cada atualização.
+- Regras estruturais do sistema não devem usar `!important` sem necessidade quando isso impedir uma sobrescrita deliberada pelo CSS adicional.
+- Qualquer novo estilo inline ou dinâmico do CMS deve respeitar essa precedência ou ser inserido antes da camada de CSS adicional.
+
 ## Segurança de interação no editor visual
 
 O editor WYSIWYG deve ser dirigido pela interação direta do usuário, não por ciclos automáticos de re-renderização do inspector.
