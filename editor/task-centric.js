@@ -83,7 +83,7 @@ structureClose?.addEventListener('click',closeStructureDrawer);
 structureBackdrop?.addEventListener('click',closeStructureDrawer);
 structurePanel?.addEventListener('click',event=>{
   if(!matchMedia('(max-width: 820px)').matches)return;
-  const actionable=event.target.closest('.section-row-main,.cms-structure-tree-row,[data-structure-node],[data-tree-node]');
+  const actionable=event.target.closest('.section-row-main,.cms-page-tree-main,.cms-structure-tree-row,[data-structure-node],[data-tree-node]');
   if(actionable)setTimeout(closeStructureDrawer,0);
 });
 matchMedia('(max-width: 820px)').addEventListener?.('change',event=>{if(!event.matches)closeStructureDrawer()});
