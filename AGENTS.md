@@ -6,9 +6,10 @@ Antes de alterar código, conteúdo, CMS, deploy ou fluxo administrativo, ler ne
 
 1. `docs/PROJECT_STATE.md`;
 2. `docs/CMS_PROFESSIONAL.md`;
-3. `docs/CMS_V3_DEPLOYMENT.md`;
-4. `README.md`;
-5. `DEPLOY.md`.
+3. `docs/DESIGN_TYPOGRAPHY.md`;
+4. `docs/CMS_V3_DEPLOYMENT.md`;
+5. `README.md`;
+6. `DEPLOY.md`.
 
 Não reconstruir decisões pela memória quando os documentos vigentes disserem algo diferente. Quando uma decisão estrutural, editorial ou operacional mudar, atualizar os documentos canônicos no mesmo trabalho; não deixar a documentação para uma etapa futura.
 
@@ -47,6 +48,17 @@ O campo `Design → CSS adicional` é a última camada editorial de CSS do site.
 - Regras visuais do sistema não devem usar `!important` quando isso impedir uma sobrescrita deliberada pelo CSS adicional. `!important` fica reservado a invariantes funcionais, de segurança ou acessibilidade que deliberadamente não são controles editoriais.
 - Propriedades visuais calculadas pelo renderer, inclusive `object-fit` e ponto focal de mídia, não devem ser gravadas como propriedades CSS inline que bloqueiem o CSS adicional. Quando precisarem viajar no elemento, usar custom properties consumidas pelo CSS da camada de sistema.
 - Qualquer novo estilo inline ou dinâmico do CMS deve respeitar essa precedência ou ser inserido na camada inferior do sistema.
+
+### Tipografia de Design
+
+Os controles de tipografia do painel representam valores editoriais reais, não nomes de variáveis internas.
+
+- `Design → Tipografia` deve mostrar e persistir pilhas CSS concretas, com fallbacks, nunca `var(--title)`, `var(--mono)`, `var(--sans)` ou outro detalhe de implementação.
+- Uma fonte usada pelo visual público precisa estar disponível ao visitante por asset local ou carregamento web explícito; não pode depender silenciosamente de estar instalada no computador do usuário ou do visitante.
+- O valor salvo no painel deve dirigir os tokens efetivamente consumidos pelo template tanto no site público quanto na prévia ao vivo.
+- Mudanças de nomes internos de custom properties não podem alterar o significado do valor editorial armazenado.
+- Estado legado que contenha referências internas deve ser normalizado/migrado para valores portáveis sem apagar outras configurações de Design.
+- A especificação completa dessa superfície está em `docs/DESIGN_TYPOGRAPHY.md`.
 
 ## Segurança de interação no editor visual
 
