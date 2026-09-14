@@ -154,13 +154,13 @@ function enhanceInspector(){
     const actions=panel.querySelector('.cms-block-actions');
     const wrapper=document.createElement('div');wrapper.innerHTML=specialMarkup(node);const controls=wrapper.firstElementChild;if(controls)actions?.after(controls);
   }
-  panel.querySelector('[data-rich-list-add]')?.addEventListener('click',()=>addListItem(node));
-  panel.querySelector('[data-rich-list-remove]')?.addEventListener('click',()=>removeListItem(node));
-  panel.querySelector('[data-rich-list-type]')?.addEventListener('change',event=>changeListType(node,event.currentTarget.value));
-  panel.querySelector('[data-rich-gallery-add]')?.addEventListener('click',()=>addGalleryItem(node));
-  panel.querySelector('[data-rich-gallery-remove]')?.addEventListener('click',()=>removeGalleryItem(node));
-  panel.querySelector('[data-rich-gallery-size]')?.addEventListener('change',event=>changeGallerySize(node,event.currentTarget.value));
-  panel.querySelector('[data-rich-video-edit]')?.addEventListener('click',()=>openVideoEditor(node));
+  const listAdd=panel.querySelector('[data-rich-list-add]');if(listAdd)listAdd.onclick=()=>addListItem(node);
+  const listRemove=panel.querySelector('[data-rich-list-remove]');if(listRemove)listRemove.onclick=()=>removeListItem(node);
+  const listType=panel.querySelector('[data-rich-list-type]');if(listType)listType.onchange=event=>changeListType(node,event.currentTarget.value);
+  const galleryAdd=panel.querySelector('[data-rich-gallery-add]');if(galleryAdd)galleryAdd.onclick=()=>addGalleryItem(node);
+  const galleryRemove=panel.querySelector('[data-rich-gallery-remove]');if(galleryRemove)galleryRemove.onclick=()=>removeGalleryItem(node);
+  const gallerySize=panel.querySelector('[data-rich-gallery-size]');if(gallerySize)gallerySize.onchange=event=>changeGallerySize(node,event.currentTarget.value);
+  const videoEdit=panel.querySelector('[data-rich-video-edit]');if(videoEdit)videoEdit.onclick=()=>openVideoEditor(node);
   enhanceInspectorTree(node.closest('[data-cms-section]'));
 }
 function collect(parent,depth=0,out=[]){
