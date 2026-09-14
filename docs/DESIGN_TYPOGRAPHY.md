@@ -43,7 +43,7 @@ Instalações anteriores podiam ter salvo `var(--sans)`, `var(--title)` ou `var(
 
 - `cms_design_settings()` normaliza esses valores em leitura para impedir ciclos de custom properties e para apresentar valores úteis no formulário.
 - `cms_settings_save()` normaliza antes de persistir.
-- `migrations/028_normalize_design_font_values.php` reescreve os registros legados sem alterar as demais propriedades de Design.
+- `migrations/029_normalize_design_font_values.php` reescreve os registros legados sem alterar as demais propriedades de Design.
 
 ## Regra para novos controles visuais
 
