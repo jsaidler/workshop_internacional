@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require dirname(__DIR__).'/app/public_locale.php';
 require dirname(__DIR__).'/app/cms_settings.php';
 
 function design_css_expect(bool $ok,string $message): void {
@@ -17,6 +18,31 @@ design_css_expect(!str_contains($system,$custom),'system CSS must not contain ad
 design_css_expect($additional===$custom,'additional CSS must be preserved as its own payload');
 design_css_expect(str_ends_with($combined,$custom),'legacy combined helper must still end with additional CSS');
 design_css_expect(!str_contains($system,'!important'),'generated visual design controls must not outrank additional CSS with !important');
+
+$db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+$db->exec('CREATE TABLE cms_design_settings (activity_id INTEGER NOT NULL, locale TEXT NOT NULL, settings_json TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(activity_id,locale));');
+$pt=cms_design_defaults();$pt['advanced']['customCss']=$custom;
+cms_settings_save($db,'design',7,PUBLIC_LOCALE_PT_BR,$pt);
+$enRead=cms_design_settings($db,7,PUBLIC_LOCALE_EN);
+design_css_expect(($enRead['advanced']['customCss']??'')===$custom,'Additional CSS saved in PT must apply to every page/locale of the same site');
+$en=cms_design_defaults();$en['advanced']['customCss']='.site-wide{display:block}';
+cms_settings_save($db,'design',7,PUBLIC_LOCALE_EN,$en);
+$ptRead=cms_design_settings($db,7,PUBLIC_LOCALE_PT_BR);
+design_css_expect(($ptRead['advanced']['customCss']??'')==='.site-wide{display:block}','Additional CSS saved in EN must replace the site-wide payload seen by PT pages');
+$other=cms_design_settings($db,8,PUBLIC_LOCALE_PT_BR);
+design_css_expect(($other['advanced']['customCss']??'')==='','Additional CSS must not leak to another site/activity');
+$shared=$db->query("SELECT settings_json FROM cms_design_settings WHERE activity_id=7 AND locale='__site__'")->fetchColumn();
+design_css_expect(is_string($shared)&&str_contains($shared,'.site-wide{display:block}'),'site-wide Additional CSS must be persisted in a dedicated site scope');
+
+$migrationDb=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+$migrationDb->exec('CREATE TABLE cms_design_settings (activity_id INTEGER NOT NULL, locale TEXT NOT NULL, settings_json TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(activity_id,locale));');
+$legacyPt=json_encode(['advanced'=>['customCss'=>'.legacy-global{color:red}']],JSON_UNESCAPED_SLASHES);
+$legacyEn=json_encode(['advanced'=>['customCss'=>'']],JSON_UNESCAPED_SLASHES);
+$migrationDb->prepare('INSERT INTO cms_design_settings(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?)')->execute([3,PUBLIC_LOCALE_PT_BR,$legacyPt,'2026-09-12T12:00:00Z']);
+$migrationDb->prepare('INSERT INTO cms_design_settings(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?)')->execute([3,PUBLIC_LOCALE_EN,$legacyEn,'2026-09-13T12:00:00Z']);
+$siteCssMigration=require dirname(__DIR__).'/migrations/027_site_wide_additional_css.php';$siteCssMigration($migrationDb);
+$migrated=$migrationDb->query("SELECT settings_json FROM cms_design_settings WHERE activity_id=3 AND locale='__site__'")->fetchColumn();
+design_css_expect(is_string($migrated)&&str_contains($migrated,'.legacy-global{color:red}'),'migration must preserve an existing non-empty legacy Additional CSS payload when creating site scope');
 
 $renderer=(string)file_get_contents(dirname(__DIR__).'/app/cms_renderer.php');
 $systemStyles=strpos($renderer,'id="cms-system-styles"');
@@ -55,4 +81,4 @@ design_css_expect(str_contains($adminJs,'root.style.removeProperty(key)'),'live 
 $package=json_decode((string)file_get_contents(dirname(__DIR__).'/package.json'),true);
 design_css_expect(($package['scripts']['test:browser']??'')==='playwright test tools/browser-tests','browser suite must include the design cascade regression, not only the form editor');
 
-echo "Design additional CSS cascade tests passed\n";
+echo "Design additional CSS cascade and site-scope tests passed\n";
