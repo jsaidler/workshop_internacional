@@ -16,6 +16,16 @@ function media_maintenance_verify_transparency(string $path,string $mime,bool $r
     finally{media_release_image($check);}
 }
 
+function media_regenerated_derivative_dirs(array $paths,string $base,string $keep=''): array {
+    $dirs=[];$prefix=$base.'/responsive';
+    foreach($paths as $path){
+        $dir=str_replace('\\','/',dirname((string)$path));
+        if($dir===$keep||($dir!==$prefix&&!str_starts_with($dir,$prefix.'-')))continue;
+        $dirs[$dir]=true;
+    }
+    return array_keys($dirs);
+}
+
 function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): array {
     $q=$db->prepare('SELECT a.kind,a.asset_uuid,v.id,v.version_uuid,v.original_path,v.mime_type,v.processing_status FROM media_assets a JOIN media_versions v ON v.asset_id=a.id WHERE a.id=? AND v.id=?');
     $q->execute([$assetId,$versionId]);$row=$q->fetch();
@@ -29,14 +39,16 @@ function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): ar
     $requiresTransparency=media_source_has_transparency($source);
     $base=dirname(dirname((string)$row['original_path']));
     $versionRoot=media_upload_root().'/'.$base;
-    $liveDir=$versionRoot.'/responsive';
-    $token=bin2hex(random_bytes(5));
-    $tempDir=$versionRoot.'/responsive-build-'.$token;
-    $backupDir=$versionRoot.'/responsive-backup-'.$token;
-    $prepared=[];$swapped=false;$hadLive=is_dir($liveDir);
+    $token=bin2hex(random_bytes(8));
+    $directoryName='responsive-'.$token;
+    $relativeDir=$base.'/'.$directoryName;
+    $newDir=$versionRoot.'/'.$directoryName;
+    $oldQuery=$db->prepare('SELECT path FROM media_derivatives WHERE version_id=?');$oldQuery->execute([$versionId]);
+    $oldPaths=array_values(array_map('strval',$oldQuery->fetchAll(PDO::FETCH_COLUMN)));
+    $prepared=[];
 
     try{
-        media_mkdir($tempDir);
+        media_mkdir($newDir);
         $formats=media_image_derivative_formats((string)$row['mime_type'],$requiresTransparency,media_webp_supported());
         if(!$formats)throw new RuntimeException('image_format_not_supported');
         foreach(MEDIA_IMAGE_WIDTHS as $target){
@@ -44,44 +56,44 @@ function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): ar
             $height=(int)round((int)$source['height']*$target/(int)$source['width']);
             foreach($formats as $format){
                 $extension=$format==='jpeg'?'jpg':$format;
-                $tempPath=$tempDir.'/'.$target.'.'.$extension;
+                $file=$target.'.'.$extension;
+                $absolute=$newDir.'/'.$file;
                 $mimeType=$format==='jpeg'?'image/jpeg':'image/'.$format;
-                media_write_image($source,$target,$height,$format,$tempPath);
-                media_verify_image_derivative($tempPath,$mimeType,$target,$height,$requiresTransparency&&in_array($format,['png','webp'],true));
+                media_write_image($source,$target,$height,$format,$absolute);
+                media_verify_image_derivative($absolute,$mimeType,$target,$height,$requiresTransparency&&in_array($format,['png','webp'],true));
                 $prepared[]=[
                     'kind'=>'responsive','width'=>$target,'height'=>$height,'format'=>$format,'mime'=>$mimeType,
-                    'relative'=>$base.'/responsive/'.$target.'.'.$extension,
-                    'file'=>$target.'.'.$extension,
+                    'relative'=>$relativeDir.'/'.$file,'file'=>$file,
                 ];
             }
         }
         media_release_image($source);$source=null;
-
-        if($hadLive&&!@rename($liveDir,$backupDir))throw new RuntimeException('derivative_backup_failed');
-        if(!@rename($tempDir,$liveDir)){
-            if($hadLive&&is_dir($backupDir))@rename($backupDir,$liveDir);
-            throw new RuntimeException('derivative_swap_failed');
-        }
-        $swapped=true;
+        if(!$prepared)throw new RuntimeException('no_derivatives_generated');
 
         $db->beginTransaction();
         $db->prepare('DELETE FROM media_derivatives WHERE version_id=?')->execute([$versionId]);
         $insert=$db->prepare('INSERT INTO media_derivatives(version_id,derivative_kind,width,height,format,mime_type,path,byte_size,checksum,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)');
         foreach($prepared as $item){
-            $absolute=$liveDir.'/'.$item['file'];
+            $absolute=$newDir.'/'.$item['file'];
             $insert->execute([$versionId,$item['kind'],$item['width'],$item['height'],$item['format'],$item['mime'],$item['relative'],filesize($absolute),hash_file('sha256',$absolute),gmdate('c')]);
         }
         $db->prepare('UPDATE media_versions SET processing_status="ready",error_message=NULL WHERE id=?')->execute([$versionId]);
         $db->prepare('UPDATE media_assets SET processing_status="ready",updated_at=? WHERE id=?')->execute([gmdate('c'),$assetId]);
         $db->commit();
-        if(is_dir($backupDir))media_remove_tree($backupDir);
-        return ['assetId'=>$assetId,'versionId'=>$versionId,'derivatives'=>count($prepared),'transparencyPreserved'=>$requiresTransparency];
+
+        // Regeneration is cache-safe: the database is switched to a brand-new
+        // immutable URL before obsolete derivative directories are removed.
+        // A browser/CDN can therefore never confuse corrected bytes with a
+        // previously cached response that used the same URL.
+        foreach(media_regenerated_derivative_dirs($oldPaths,$base,$relativeDir) as $oldDir){
+            $absolute=media_upload_root().'/'.$oldDir;
+            if(is_dir($absolute))media_remove_tree($absolute);
+        }
+        return ['assetId'=>$assetId,'versionId'=>$versionId,'derivatives'=>count($prepared),'transparencyPreserved'=>$requiresTransparency,'derivativeDirectory'=>$relativeDir];
     }catch(Throwable $e){
         if(isset($source)&&is_array($source))media_release_image($source);
         if($db->inTransaction())$db->rollBack();
-        if($swapped&&is_dir($liveDir))media_remove_tree($liveDir);
-        if(is_dir($backupDir))@rename($backupDir,$liveDir);
-        if(is_dir($tempDir))media_remove_tree($tempDir);
+        if(is_dir($newDir))media_remove_tree($newDir);
         throw $e;
     }
 }
