@@ -4,7 +4,7 @@ O estado operacional canônico do projeto está em `docs/PROJECT_STATE.md`. Requ
 
 ## Fluxo normal vigente
 
-Depois que o self-updater está instalado na hospedagem, **o usuário atualiza a aplicação pela área administrativa do próprio site**:
+Depois que o self-updater está instalado na hospedagem, **toda atualização de código da aplicação é feita pela área administrativa do próprio site**:
 
 `Admin → Sistema e atualizações → Instalar atualização`
 
@@ -19,6 +19,8 @@ O fluxo é:
 7. a próxima requisição executa eventuais migrações pendentes.
 
 A publicação de `production-dist` **não significa que a hospedagem já foi atualizada**. Só considerar a versão remota instalada depois da aplicação pelo painel e da verificação da versão exibida em `Sistema e atualizações`.
+
+Não existe etapa de FTP no fluxo de atualização. O workflow de produção não possui credenciais, verificação nem envio FTP.
 
 ## Consistência do canal de atualização
 
@@ -47,20 +49,23 @@ Antes de substituir arquivos gerenciados, ele verifica SHA-256 e mantém backups
 
 Os assets `.css` e `.js` publicados pela aplicação são servidos com `Cache-Control: no-cache, must-revalidate`. Depois que uma nova versão é instalada, o navegador deve revalidar esses arquivos em vez de continuar usando silenciosamente uma cópia anterior.
 
-## Bootstrap inicial ou contingência
+## Bootstrap inicial
 
-Uma instalação que ainda não possui o self-updater precisa de um deploy convencional do `dist/`. FTP/manual deploy também pode ser usado em recuperação excepcional se o updater estiver indisponível.
+Uma instalação completamente nova ainda precisa receber o primeiro `dist/` por algum mecanismo de hospedagem antes que o self-updater exista. Isso é bootstrap, não fluxo de atualização.
 
-Para bootstrap manual:
+Depois que `Admin → Sistema e atualizações` estiver operacional, versões futuras de código passam exclusivamente pelo canal `production-dist` e pelo instalador administrativo.
 
-1. faça uma cópia de segurança de `storage/database.sqlite`;
+Para preparar um bootstrap manual:
+
+1. faça uma cópia de segurança de qualquer estado persistente existente;
 2. execute `build-dist.cmd` na raiz do projeto;
-3. sincronize o **conteúdo de `dist/`** com a raiz pública;
+3. instale o **conteúdo de `dist/`** na raiz pública pelo mecanismo inicial disponível na hospedagem;
 4. preserve todos os caminhos persistentes listados acima;
 5. abra o site/admin para que o bootstrap execute as migrações pendentes;
-6. confira `/admin/`, páginas PT/EN, formulários, respostas e mídia.
+6. confira `/admin/`, páginas PT/EN, formulários, respostas e mídia;
+7. a partir daí, não use sincronização manual para atualizações de código: use o painel.
 
-No Windows:
+No Windows, para apenas gerar e inspecionar o artefato:
 
 ```bat
 git switch wip/form-response-refinement-2026-07-16
@@ -68,26 +73,17 @@ git pull --ff-only
 build-dist.cmd
 ```
 
-A origem remota é o **conteúdo de `dist/`**, nunca a raiz inteira do repositório.
+A origem do bootstrap é o **conteúdo de `dist/`**, nunca a raiz inteira do repositório.
 
 ## GitHub Actions
 
-O workflow `.github/workflows/deploy.yml` valida a branch de produção, gera `dist/`, publica um artefato e atualiza `production-dist`, que é o canal consumido pelo updater administrativo.
+O workflow `.github/workflows/deploy.yml` valida a branch de produção, gera `dist/`, publica um artefato e atualiza `production-dist`, que é o único canal de versões consumido pelo updater administrativo.
 
-O workflow ainda suporta envio FTP quando os quatro secrets abaixo estiverem configurados:
-
-- `DEPLOY_FTP_URL`;
-- `DEPLOY_FTP_USERNAME`;
-- `DEPLOY_FTP_PASSWORD`;
-- `DEPLOY_FTP_PATH`.
-
-Esse FTP automático é **opcional** e não faz parte do fluxo operacional normal depois que o self-updater está instalado. A ausência desses secrets não impede o fluxo `production-dist → Admin → Sistema e atualizações`.
-
-Quando FTP estiver habilitado, o deploy continua não destrutivo e preserva banco, configuração, logs e uploads.
+O workflow não envia arquivos diretamente para a hospedagem. Sua responsabilidade termina quando o pacote validado é publicado em `production-dist`.
 
 ## Atualizações editoriais
 
-Depois que o CMS está instalado, alterações normais de conteúdo não dependem de Git, VS Code, FTP nem self-update.
+Depois que o CMS está instalado, alterações normais de conteúdo não dependem de Git nem de self-update.
 
 O fluxo editorial é:
 
@@ -107,7 +103,7 @@ A publicação editorial vale imediatamente no site. Atualização de aplicaçã
 5. Entre em `/admin/`, revise as páginas iniciais PT/EN e publique o conteúdo.
 6. Teste formulários públicos, painel de respostas e exportação CSV.
 7. Ative HTTPS.
-8. A partir daí, use `Admin → Sistema e atualizações` para futuras versões de código.
+8. A partir daí, use `Admin → Sistema e atualizações` para todas as futuras versões de código.
 
 ## Conteúdo do artefato
 

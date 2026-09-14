@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/assets/style.css">
 <link rel="stylesheet" href="/assets/cms-pro.css">
+<link rel="stylesheet" href="/assets/cms-content-layout.css">
 <style>body{margin:0}.fixture{padding:20px}.cms-column{min-height:40px}.cms-column:nth-child(1){background:#eee}.cms-column:nth-child(2){background:#ddd}</style>
 </head>
 <body class="cms-public">
@@ -16,6 +17,11 @@
     <div class="cms-column" data-cms-column></div><div class="cms-column" data-cms-column></div><div class="cms-column" data-cms-column></div><div class="cms-column" data-cms-column></div>
   </div>
   <div id="stack" class="cms-container cms-container-stack" data-cms-container="stack" data-cms-gap="l" data-cms-tablet-gap="s" data-cms-mobile-gap="m"><div>A</div><div>B</div></div>
+  <div id="stack-auto" class="cms-container cms-container-stack" data-cms-container="stack" data-cms-gap="l"><div>A</div><div>B</div></div>
+  <div id="properties" class="cms-container cms-container-columns" data-cms-container="columns" data-cms-columns="2" data-cms-box-width="narrow" data-cms-box-tone="muted" data-cms-padding="xl" data-cms-tablet-padding="m" data-cms-mobile-padding="s" data-cms-items="end" data-cms-tablet-items="center" data-cms-mobile-items="stretch">
+    <div id="property-a" class="cms-column" data-cms-column data-cms-order="2" data-cms-tablet-order="1" data-cms-mobile-order="2" data-cms-text-align="right" data-cms-tablet-text-align="center" data-cms-mobile-text-align="left">A</div>
+    <div id="property-b" class="cms-column" data-cms-column data-cms-order="1" data-cms-tablet-order="2" data-cms-mobile-order="1" data-cms-hide-mobile="1">B</div>
+  </div>
 </div>
 </body>
 </html>
