@@ -11,8 +11,8 @@ $needles=[
     "data-cms-column",
     "cmsContainer='columns'",
     "cms-structure-tree",
-    "data-cms-tablet-columns",
-    "data-cms-mobile-columns",
+    "cmsTabletColumns",
+    "cmsMobileColumns",
     "ondragstart",
     "data-add-component",
 ];
