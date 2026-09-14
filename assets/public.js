@@ -1,18 +1,24 @@
 (()=>{
 'use strict';
 
-if(!document.querySelector('link[data-cms-responsive]')){
-  const responsive=document.createElement('link');
-  responsive.rel='stylesheet';
-  responsive.href='/assets/cms-responsive.css';
+// Public CMS styles are authored inside the lower `cms-system` cascade layer.
+// The renderer already marks its responsive loader with data-cms-responsive;
+// do not append a second unlayered stylesheet after Additional CSS.
+if(!document.querySelector('[data-cms-responsive]')){
+  const responsive=document.createElement('style');
   responsive.dataset.cmsResponsive='1';
+  responsive.textContent='@import url("/assets/cms-responsive.css") layer(cms-system);';
   document.head.append(responsive);
 }
-if(document.querySelector('.registration-page,.registration-canonical-form')&&!document.querySelector('link[data-registration-css]')){
-  const registration=document.createElement('link');
-  registration.rel='stylesheet';
-  registration.href='/assets/registration.css';
+// Registration styles are loaded only when the registration surface exists,
+// but they are still system styles. Loading registration.css as a plain <link>
+// here used to place it after #cms-custom-css and made rules such as
+// `.registration-terms{border:none}` lose even though Additional CSS is meant
+// to be the final editorial style layer.
+if(document.querySelector('.registration-page,.registration-canonical-form')&&!document.querySelector('[data-registration-css]')){
+  const registration=document.createElement('style');
   registration.dataset.registrationCss='1';
+  registration.textContent='@import url("/assets/registration.css") layer(cms-system);';
   document.head.append(registration);
 }
 
@@ -109,7 +115,7 @@ function annotateConditions(form,conditions){
     const wrapper=control.closest('.cms-field,.cms-choice-group,.cms-consent');
     if(!wrapper)continue;
     wrapper.dataset.cmsConditionField=String(rule.source||'');
-    wrapper.dataset.cmsConditionOperator=String(rule.operator||'equals');
+    wrapper.dataset.cmsConditionOperator=String(rule.operator||'equals';
     wrapper.dataset.cmsConditionValue=String(rule.value||'');
   }
 }
