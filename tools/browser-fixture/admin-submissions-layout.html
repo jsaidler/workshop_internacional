@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/admin/admin.css">
+<link rel="stylesheet" href="/admin/cms-admin.css">
+<link rel="stylesheet" href="/admin/pro-admin.css">
+<link rel="stylesheet" href="/assets/admin-ux-v2.css">
+<link rel="stylesheet" href="/assets/admin-ux-v3.css">
+<link rel="stylesheet" href="/assets/admin-inbox.css">
+<link rel="stylesheet" href="/assets/admin-registration.css">
+<style>.admin-sidebar .admin-wordmark-context{display:block;margin-top:1px}</style>
+<title>Admin submissions layout fixture</title>
+</head>
+<body class="admin-page admin-section-responses admin-workspace-registrations">
+<div class="admin-frame">
+  <aside class="admin-sidebar">
+    <a class="admin-wordmark" href="#">Direct Positive Workshop<span class="admin-wordmark-context">Administração</span></a>
+    <div class="admin-site-current"><span>Site atual</span><strong>Direct Positive Workshop</strong></div>
+    <nav class="admin-nav"><a href="#">Site</a><a href="#" aria-current="page">Inscrições</a><a href="#">Mídia</a><a href="#">Configurações</a></nav>
+  </aside>
+  <main class="admin-main">
+    <header class="admin-toolbar"><div class="admin-toolbar-title"><h1>Inscrições</h1><p>Direct Positive Workshop</p></div></header>
+    <nav class="admin-context-nav"><a id="context-first" href="#" aria-current="page">Respostas</a><a href="#">Formulário</a></nav>
+    <div class="admin-content">
+      <section class="inbox-toolbar"><div class="inbox-toolbar-summary"><strong>1 aguardando</strong><span>· 0 confirmadas</span></div><div class="inbox-toolbar-controls"><div class="inbox-toolbar-actions"><a href="#">Editar formulário</a><a href="#">Exportar CSV</a></div></div></section>
+      <div class="submissions-layout inbox-layout">
+        <section class="submission-list inbox-list">
+          <a class="submission-row selected is-new" href="#"><div class="submission-row-main"><strong>João</strong><span>(24) 99259-3195</span></div><div class="submission-row-meta"><time>14/09 · 00:21</time><small data-status="new">Aguardando pagamento</small></div></a>
+          <a class="submission-row" href="#"><div class="submission-row-main"><strong>Maria</strong><span>maria@example.com</span></div><div class="submission-row-meta"><time>13/09 · 18:10</time><small data-status="converted">Confirmada</small></div></a>
+        </section>
+        <aside class="submission-detail inbox-detail">
+          <header class="inbox-detail-header"><div><p>Inscrição — nova turma</p><h2>João</h2><span>14/09/2026 · 00:21</span></div></header>
+          <section class="registration-admin-status is-pending"><div><span>Status</span><strong>Aguardando pagamento</strong></div><form class="registration-status-action"><button type="button">Confirmar pagamento</button></form></section>
+          <section class="registration-admin-group" id="contact-group"><h3>Contato</h3><dl class="inbox-fields">
+            <div data-field="cpf"><dt>CPF</dt><dd>090.072.087-56</dd></div>
+            <div data-field="phone"><dt>WhatsApp</dt><dd>(24) 99259-3195</dd></div>
+            <div data-field="email"><dt>E-mail</dt><dd>jsaidler@gmail.com</dd></div>
+            <div data-field="instagram"><dt>Instagram</dt><dd>@jsaidlerfotografia</dd></div>
+          </dl></section>
+          <section class="registration-admin-group"><h3>Presente e envio</h3><dl class="inbox-fields">
+            <div data-field="support_size"><dt>Tamanho do suporte</dt><dd>5x7&quot;</dd></div>
+            <div data-field="address"><dt>Endereço</dt><dd>Rua Bernardo Tosta 344a</dd></div>
+            <div data-field="city_state"><dt>Cidade/UF</dt><dd>Petrópolis/RJ</dd></div>
+            <div data-field="postal_code"><dt>CEP</dt><dd>25710-230</dd></div>
+          </dl></section>
+        </aside>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
