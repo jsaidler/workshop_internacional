@@ -59,10 +59,19 @@
 .cms-public img[data-cms-radius="s"]{border-radius:6px}.cms-public img[data-cms-radius="m"]{border-radius:16px}.cms-public img[data-cms-radius="round"]{border-radius:999px}
 .cms-public [data-cms-hidden-desktop="1"]{display:none}
 
+/* Reusable components inserted inside existing sections. */
+.cms-public [data-cms-component="paragraph"],.cms-public [data-cms-component="heading"],.cms-public [data-cms-component="button"],.cms-public [data-cms-component="image"],.cms-public [data-cms-component="carousel"]{max-width:100%}
+.cms-public .cms-component-image{margin:clamp(18px,3vw,36px) 0}.cms-public .cms-component-image img{display:block;width:100%;height:auto}
+.cms-public .cms-component-divider{margin:clamp(24px,4vw,56px) 0}.cms-public .cms-component-divider hr{border:0;border-top:1px solid var(--line);margin:0}
+.cms-public .cms-component-spacer{height:var(--cms-component-space,48px)}
+.cms-public .cms-carousel{width:100%;min-width:0;margin:clamp(24px,4vw,56px) 0}.cms-public .cms-carousel-track{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(72%,1fr);gap:clamp(12px,2vw,24px);overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;scroll-behavior:smooth;padding:0 0 12px;scrollbar-width:thin;scrollbar-color:var(--line-strong,var(--line)) transparent}.cms-public .cms-carousel-item{scroll-snap-align:start;margin:0;min-width:0;background:var(--surface-2);aspect-ratio:4/5;overflow:hidden}.cms-public .cms-carousel-item img{display:block;width:100%;height:100%;object-fit:cover}.cms-editor-preview .cms-carousel-track{scroll-behavior:auto}
+
 @media(max-width:900px){
   .cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats{grid-template-columns:1fr}
   .cms-card,.cms-stat{border-right:0;border-bottom:1px solid var(--line)}.cms-card:last-child,.cms-stat:last-child{border-bottom:0}
   .cms-public [data-cms-mobile-columns="2"] .cms-grid,.cms-public [data-cms-mobile-columns="2"] .cms-free-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cms-public [data-cms-hidden-desktop="1"]{display:initial}
   .cms-public [data-cms-hidden-mobile="1"]{display:none}
+  .cms-public .cms-carousel-track{grid-auto-columns:minmax(88%,1fr)}
 }
+@media(min-width:901px){.cms-public .cms-carousel-track{grid-auto-columns:minmax(42%,1fr)}}
