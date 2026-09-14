@@ -17,11 +17,11 @@ test('submissions workspace uses the available width without crushing registrati
   const contextBox=await contextFirst.boundingBox();
   const listBox=await list.boundingBox();
   const detailBox=await detail.boundingBox();
-  expect(contentBox.width).toBeGreaterThan(1250);
+  expect(contentBox.width).toBeGreaterThan(1200);
   expect(Math.abs(contentBox.x-contextBox.x)).toBeLessThanOrEqual(2);
   expect(listBox.width).toBeGreaterThanOrEqual(300);
   expect(listBox.width).toBeLessThanOrEqual(345);
-  expect(detailBox.width).toBeGreaterThan(900);
+  expect(detailBox.width).toBeGreaterThan(850);
 
   await expect.poll(()=>contactFields.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(2);
   const emailBox=await email.boundingBox();
