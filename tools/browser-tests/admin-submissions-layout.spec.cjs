@@ -22,6 +22,10 @@ test('submissions workspace uses the available width without crushing registrati
   expect(listBox.width).toBeGreaterThanOrEqual(300);
   expect(listBox.width).toBeLessThanOrEqual(345);
   expect(detailBox.width).toBeGreaterThan(850);
+  expect(listBox.height).toBeLessThan(200);
+  expect(detailBox.height).toBeGreaterThan(listBox.height*2);
+  await expect(detail).toHaveCSS('overflow-y','visible');
+  await expect(detail).toHaveCSS('max-height','none');
 
   await expect.poll(()=>contactFields.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(2);
   const emailBox=await email.boundingBox();
@@ -48,4 +52,5 @@ test('registration fields and master-detail collapse before values become unread
 
   await page.setViewportSize({width:800,height:900});
   await expect.poll(()=>page.locator('.inbox-layout').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(1);
+  await expect(page.locator('.inbox-list')).toHaveCSS('position','static');
 });
