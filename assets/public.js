@@ -62,6 +62,104 @@ document.addEventListener('click',event=>{
   target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
 });
 
+function normalizedConversionUrl(value){
+  try{
+    const url=new URL(value,location.href);
+    if(url.origin!==location.origin)return '';
+    const path=url.pathname.replace(/\/+$/,'')||'/';
+    return `${path}${url.search}`;
+  }catch{return ''}
+}
+function conversionPriceNear(link,main){
+  const money=/\b(?:R\$|US\$|USD|BRL|EUR|GBP)\s*\d|[$€£]\s*\d/i;
+  let node=link.parentElement;
+  while(node&&node!==main){
+    for(const heading of node.querySelectorAll(':scope > h1,:scope > h2,:scope > h3')){
+      const text=heading.textContent?.trim()||'';
+      if(money.test(text))return text;
+    }
+    node=node.parentElement;
+  }
+  for(const value of main.querySelectorAll('.hero-facts dd')){
+    const text=value.textContent?.trim()||'';
+    if(money.test(text))return text;
+  }
+  return '';
+}
+function setupPersistentConversionBar(){
+  if(document.body.classList.contains('cms-editor-preview'))return;
+  const main=document.querySelector('[data-cms-page-main]');
+  const heroCta=main?.querySelector('.hero a.button[href]');
+  if(!main||!heroCta)return;
+  const destination=normalizedConversionUrl(heroCta.href);
+  if(!destination||heroCta.getAttribute('href')?.startsWith('#'))return;
+  const matches=[...main.querySelectorAll('a.button[href]')].filter(link=>normalizedConversionUrl(link.href)===destination);
+  if(matches.length<2)return;
+  const endCta=matches[matches.length-1];
+  const price=conversionPriceNear(endCta,main)||conversionPriceNear(heroCta,main);
+  if(!price)return;
+
+  if(!document.querySelector('[data-conversion-bar-css]')){
+    const styles=document.createElement('style');
+    styles.dataset.conversionBarCss='1';
+    styles.textContent='@import url("/assets/conversion-bar.css") layer(cms-system);';
+    document.head.append(styles);
+  }
+
+  const pt=(document.documentElement.lang||'').toLowerCase().startsWith('pt');
+  const bar=document.createElement('aside');
+  bar.className='cms-conversion-bar';
+  bar.dataset.cmsConversionBar='1';
+  bar.dataset.visible='false';
+  bar.setAttribute('aria-hidden','true');
+  bar.setAttribute('inert','');
+  bar.setAttribute('aria-label',pt?'Inscrição no workshop':'Workshop registration');
+
+  const inner=document.createElement('div');
+  inner.className='cms-conversion-bar-inner';
+  const copy=document.createElement('div');
+  copy.className='cms-conversion-bar-copy';
+  const context=document.createElement('span');
+  context.className='cms-conversion-bar-context';
+  context.textContent=pt?'Workshop online e ao vivo · 3 encontros':'Live online workshop · 3 sessions';
+  const priceElement=document.createElement('strong');
+  priceElement.className='cms-conversion-bar-price';
+  priceElement.textContent=price;
+  copy.append(context,priceElement);
+
+  const action=document.createElement('a');
+  action.className='button cms-conversion-bar-action';
+  action.href=heroCta.href;
+  action.textContent=pt?'Fazer inscrição':'Join the interest list';
+  inner.append(copy,action);
+  bar.append(inner);
+  document.body.append(bar);
+
+  let visible=false,ticking=false;
+  function setVisible(next){
+    if(next===visible)return;
+    visible=next;
+    bar.dataset.visible=next?'true':'false';
+    bar.setAttribute('aria-hidden',String(!next));
+    if(next)bar.removeAttribute('inert');else bar.setAttribute('inert','');
+  }
+  function update(){
+    ticking=false;
+    const start=heroCta.getBoundingClientRect();
+    const end=endCta.getBoundingClientRect();
+    const headerHeight=header?.getBoundingClientRect().height||0;
+    const barHeight=bar.getBoundingClientRect().height||72;
+    const startPassed=start.bottom<=headerHeight+8;
+    const endReached=end.top<=window.innerHeight-barHeight-12;
+    setVisible(startPassed&&!endReached);
+  }
+  function schedule(){if(ticking)return;ticking=true;requestAnimationFrame(update)}
+  addEventListener('scroll',schedule,{passive:true});
+  addEventListener('resize',schedule,{passive:true});
+  update();
+}
+setupPersistentConversionBar();
+
 function fieldControls(form,name){
   return [...form.querySelectorAll(`[name="${CSS.escape(name)}"],[name="${CSS.escape(name)}[]"]`)];
 }
