@@ -39,7 +39,7 @@ function bind(){
   const doc=frame.contentDocument;
   if(!doc?.body)return;
   observer=new MutationObserver(schedule);
-  observer.observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','aria-expanded']});
+  observer.observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
   doc.defaultView?.addEventListener('scroll',schedule,{passive:true});
   doc.defaultView?.addEventListener('resize',schedule,{passive:true});
   schedule();
