@@ -136,7 +136,7 @@ function cms_design_system_css(array $design): string {
     $dark='--bg:'.cms_css_color((string)$c['darkBg'],'#0c0d0e').';--surface:'.cms_css_color((string)$c['darkSurface'],'#141617').';--surface-2:'.cms_css_color((string)$c['darkSurface2'],'#1d1f20').';--text:'.cms_css_color((string)$c['darkText'],'#f0f0ec').';--muted:'.cms_css_color((string)$c['darkMuted'],'#a4a6a4').';--line:'.cms_css_color((string)$c['darkLine'],'#353839').';--focus:'.cms_css_color((string)$c['darkAccent'],'#79cba7').';--cms-button-bg:'.cms_css_color((string)$c['darkButtonBg'],'#f0f0ec').';--cms-button-text:'.cms_css_color((string)$c['darkButtonText'],'#0b0c0d').';--cms-button-border:'.cms_css_color((string)$c['darkButtonBorder'],'#f0f0ec').';';
     $css=':root{';foreach($vars as $key=>$value)$css.=$key.':'.$value.';';$css.='}';$css.=':root[data-theme="dark"]{'.$dark.'}@media(prefers-color-scheme:dark){:root:not([data-theme]){'.$dark.'}}';
     $css.='[data-cms-span="2"]{grid-column:span 2}[data-cms-span="3"]{grid-column:span 3}[data-cms-span="4"]{grid-column:span 4}[data-cms-self="start"]{align-self:start}[data-cms-self="center"]{align-self:center}[data-cms-self="end"]{align-self:end}[data-cms-self="stretch"]{align-self:stretch}';
-    $css.='@media(min-width:901px){[data-cms-hidden-desktop="1"]{display:none!important}}@media(max-width:900px){[data-cms-hidden-mobile="1"]{display:none!important}[data-cms-span]{grid-column:auto}}';
+    $css.='@media(min-width:901px){[data-cms-hidden-desktop="1"]{display:none}}@media(max-width:900px){[data-cms-hidden-mobile="1"]{display:none}[data-cms-span]{grid-column:auto}}';
     return $css;
 }
 

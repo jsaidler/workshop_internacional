@@ -112,8 +112,9 @@ function media_resolve_cms_html(PDO $db,string $html): string {
             $x=$node->hasAttribute('data-focal-x')?(float)$node->getAttribute('data-focal-x'):(float)($asset['focal_x']??50);
             $y=$node->hasAttribute('data-focal-y')?(float)$node->getAttribute('data-focal-y'):(float)($asset['focal_y']??50);
             $fit=$node->getAttribute('data-fit')==='contain'?'contain':'cover';
-            $existing=trim($node->getAttribute('style'));$existing=preg_replace('/(?:object-fit|object-position)\s*:[^;]+;?/i','',$existing)??$existing;
-            $node->setAttribute('style',trim($existing.';object-fit:'.$fit.';object-position:'.$x.'% '.$y.'%;',';'));
+            $existing=trim($node->getAttribute('style'));
+            $existing=preg_replace('/(?:object-fit|object-position|--cms-media-fit|--cms-media-position)\s*:[^;]+;?/i','',$existing)??$existing;
+            $node->setAttribute('style',trim($existing.';--cms-media-fit:'.$fit.';--cms-media-position:'.$x.'% '.$y.'%;',';'));
             if(trim($node->getAttribute('alt'))===''&&trim((string)($asset['default_alt']??''))!=='')$node->setAttribute('alt',(string)$asset['default_alt']);
         }
     }

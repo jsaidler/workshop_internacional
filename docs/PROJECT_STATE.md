@@ -52,6 +52,28 @@ A captura de 13/09 mostrou um detalhe importante: o círculo/quadrado nativo pod
 
 Como uma atualização de CSS pode ficar mascarada por cache antigo do navegador, os renderers público, editor e admin versionam seus assets com a versão instalada (`deploy-info.json`). Invariantes visuais críticos podem ter uma regra estrutural inline no shell correspondente, sempre em escopo global da aplicação e nunca por página específica.
 
+### Identidade de cache das derivadas de imagem
+
+O original enviado é imutável e as derivadas responsivas são reconstruíveis. Corrigir uma derivada não pode significar sobrescrever bytes diferentes sob o mesmo URL, porque navegador ou CDN podem continuar entregando a resposta antiga mesmo depois de o arquivo no servidor ter sido substituído.
+
+- Toda regeneração bem-sucedida publica as derivadas em um diretório final novo `responsive-<token>`.
+- O banco só passa a referenciar esse diretório depois que todas as novas derivadas foram gravadas e verificadas.
+- Diretórios antigos são removidos apenas depois do commit da troca de referências.
+- Imagens pequenas que não exigem derivadas voltam ao original imutável.
+- Quando uma reconstrução de reparo falha, as referências de derivadas daquela versão são invalidadas para que o renderer use o original em vez de manter um URL possivelmente defeituoso.
+- A migração `025_republish_png_derivatives_with_new_urls.php` repassa PNGs existentes por esse fluxo, inclusive instalações em que a migração 024 já havia sido executada.
+
+### Autoridade do CSS adicional
+
+`Design → CSS adicional` é a camada editorial final de estilo. Essa precedência é semântica, não apenas ordem física de tags no `<head>`.
+
+- CSS visual do template, do CMS, responsividade e tokens gerados pelo painel pertencem à camada CSS inferior `cms-system`.
+- O CSS adicional permanece sem camada e é emitido por último; portanto uma declaração normal do usuário vence uma declaração normal do sistema mesmo quando o seletor do sistema é mais específico.
+- A prévia ao vivo não escreve tokens de Design com `root.style.setProperty()`, porque estilo inline ultrapassa um stylesheet normal. Tokens ao vivo são emitidos em stylesheet dentro de `cms-system` e resíduos inline de versões antigas são removidos.
+- Regras visuais controláveis pelo usuário não usam `!important`. O uso de `!important` fica restrito a invariantes funcionais deliberados, como o honeypot.
+- Ajuste e ponto focal de mídia gerenciada viajam como custom properties no elemento e são consumidos por CSS em `cms-system`; `object-fit` e `object-position` não são gravados como propriedades inline que bloqueiem o CSS adicional.
+- A regressão dessa precedência é validada em Chromium com `getComputedStyle()`, tanto na prévia de Design quanto em uma página pública.
+
 ## Regra de edição de mídia no editor de páginas
 
 Imagem e vídeo são tipos de mídia diferentes e não devem compartilhar o mesmo controle editorial como se fossem equivalentes.

@@ -20,10 +20,13 @@ function media_image_sources(PDO $db,?int $assetId,?int $versionId,string $fallb
 require dirname(__DIR__).'/app/media_admin_service.php';
 
 $db=new PDO('sqlite::memory:');
-$png='<img src="/uploads/media/a/v/original/file.png" data-media-asset-id="10" data-media-version-id="7" data-media-version-mode="pinned" alt="QR">';
+$png='<img src="/uploads/media/a/v/original/file.png" data-media-asset-id="10" data-media-version-id="7" data-media-version-mode="pinned" data-fit="contain" data-focal-x="42" data-focal-y="61" alt="QR">';
 $out=media_resolve_cms_html($db,$png);
 must_png_delivery(str_contains($out,'src="/uploads/media/a/v/responsive/1024.png"'),'PNG must use its validated responsive derivative');
 must_png_delivery(str_contains($out,'srcset="/uploads/media/a/v/responsive/480.png 480w, /uploads/media/a/v/responsive/1024.png 1024w"'),'PNG must expose responsive srcset');
+must_png_delivery(str_contains($out,'--cms-media-fit:contain'),'media fit must be expressed as an overridable CSS custom property');
+must_png_delivery(str_contains($out,'--cms-media-position:42% 61%'),'media focal point must be expressed as an overridable CSS custom property');
+must_png_delivery(!preg_match('/(?:^|[;\s])object-(?:fit|position)\s*:/i',$out),'renderer must not write object-fit/object-position as inline declarations that outrank additional CSS');
 must_png_delivery($derivativeCalls===1,'PNG resolution must use the canonical responsive source selector');
 
 $fixtureKind='jpeg';
@@ -37,5 +40,7 @@ $renderer=(string)file_get_contents(dirname(__DIR__).'/app/cms_renderer.php');
 $expandPos=strpos($renderer,'$body=cms_expand_forms((string)$document[\'html\']');
 $imagePos=strpos($renderer,'$body=media_resolve_cms_html($db,$body)');
 must_png_delivery($expandPos!==false&&$imagePos!==false&&$expandPos<$imagePos,'form content must be expanded before media resolution so QR/media inside form contentBlocks is resolved');
+$proCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms-pro.css');
+must_png_delivery(str_contains($proCss,'img[data-media-asset-id]{object-fit:var(--cms-media-fit,cover);object-position:var(--cms-media-position,50% 50%)}'),'system media CSS must consume overridable fit/focal custom properties');
 
 echo "PNG derivative delivery tests passed\n";

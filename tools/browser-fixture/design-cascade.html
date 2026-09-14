@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Design cascade fixture</title></head>
+<body>
+<form id="cms-design-form">
+  <input name="type[bodySize]" value="17">
+  <textarea name="advanced[customCss]">:root{--cms-body-size:31px}div{font-weight:400}</textarea>
+</form>
+<div id="design-preview-device">
+  <iframe id="design-preview-frame" title="Prévia" srcdoc='<!doctype html><html><head><style id="fixture-base">@layer cms-system{body{font-size:var(--cms-body-size,13px)}html body #probe{font-weight:900}}</style></head><body><div id="probe">probe</div></body></html>'></iframe>
+</div>
+<script src="/assets/design-admin.js"></script>
+</body>
+</html>

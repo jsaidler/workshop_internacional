@@ -68,8 +68,10 @@ must(str_contains($publicCss,'.cms-public input[type="checkbox"],.cms-public inp
 must(str_contains($publicCss,'min-height:18px'),'public choice controls must override legacy text-input height');
 must(str_contains($renderer,'cms_public_asset_version'),'public renderer must version shared assets after application updates');
 must(str_contains($renderer,'cms-system-choice-controls'),'public renderer must enforce choice-control geometry independently of cached external CSS');
-must(str_contains($renderer,'page.css?v=<?=$assetVersion?>'),'public base stylesheet must use the installed application version in its URL');
-must(str_contains($renderer,'public.js?v=<?=$assetVersion?>'),'public JavaScript must use the installed application version in its URL');
+must(str_contains($renderer,'cms_public_system_css_imports($assetVersion)'),'public stylesheets must be rendered through the versioned system import helper');
+must(str_contains($renderer,"'/template/page.css'")&&str_contains($renderer,'rawurlencode($assetVersion)'),'public base stylesheet must use the installed application version in its layered import URL');
+must(str_contains($renderer,'layer(cms-system)'),'public stylesheets must remain in the lower system cascade layer');
+must(str_contains($renderer,'public.js?v=<?=$assetVersionHtml?>'),'public JavaScript must use the escaped installed application version in its URL');
 must(str_contains($adminCss,'.admin-page input[type="checkbox"],.admin-page input[type="radio"]'),'admin must explicitly size native choice controls');
 must(str_contains($adminCss,'min-height:18px'),'admin choice controls must override generic admin input height');
 
