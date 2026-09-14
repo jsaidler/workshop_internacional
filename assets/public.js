@@ -10,6 +10,15 @@ if(!document.querySelector('[data-cms-responsive]')){
   responsive.textContent='@import url("/assets/cms-responsive.css") layer(cms-system);';
   document.head.append(responsive);
 }
+// First-class containers and columns use the same lower system layer. This file
+// intentionally loads after cms-pro.css so its canonical breakpoint contract
+// can replace older transitional rules without outranking Additional CSS.
+if(!document.querySelector('[data-cms-content-layout]')){
+  const contentLayout=document.createElement('style');
+  contentLayout.dataset.cmsContentLayout='1';
+  contentLayout.textContent='@import url("/assets/cms-content-layout.css") layer(cms-system);';
+  document.head.append(contentLayout);
+}
 // Registration styles are loaded only when the registration surface exists,
 // but they are still system styles. Loading registration.css as a plain <link>
 // here used to place it after #cms-custom-css and made rules such as
