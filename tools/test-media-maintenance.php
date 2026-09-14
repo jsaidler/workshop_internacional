@@ -15,13 +15,25 @@ $now=gmdate('c');$relative=$uuid.'/'.$version.'/original/file.png';
 $db->prepare('INSERT INTO media_assets(id,asset_uuid,kind,title,original_name,mime_type,byte_size,width,height,checksum,processing_status,active_version_id,created_at,updated_at) VALUES(1,?,"image","alpha","alpha.png","image/png",?,400,240,?,"ready",1,?,?)')->execute([$uuid,filesize($file),hash_file('sha256',$file),$now,$now]);
 $db->prepare('INSERT INTO media_versions(id,asset_id,version_uuid,original_path,mime_type,byte_size,width,height,checksum,processing_status,created_at) VALUES(1,1,?,?,?,?,?,?,?,"ready",?)')->execute([$version,$relative,'image/png',filesize($file),400,240,hash_file('sha256',$file),$now]);
 try{
-    $result=media_regenerate_image_version($db,1,1);
-    maintenance_expect(($result['derivatives']??0)>0,'no derivatives were generated');
-    maintenance_expect(!empty($result['transparencyPreserved']),'service did not detect source transparency');
-    $png=$db->query("SELECT path FROM media_derivatives WHERE format='png' ORDER BY width DESC LIMIT 1")->fetchColumn();
-    maintenance_expect(is_string($png)&&$png!=='','PNG derivative missing');
-    $out=imagecreatefrompng(media_upload_root().'/'.$png);maintenance_expect($out instanceof GdImage,'PNG derivative unreadable');
+    $first=media_regenerate_image_version($db,1,1);
+    maintenance_expect(($first['derivatives']??0)>0,'no derivatives were generated');
+    maintenance_expect(!empty($first['transparencyPreserved']),'service did not detect source transparency');
+    $firstPng=$db->query("SELECT path FROM media_derivatives WHERE format='png' ORDER BY width DESC LIMIT 1")->fetchColumn();
+    maintenance_expect(is_string($firstPng)&&$firstPng!=='','PNG derivative missing');
+    maintenance_expect(str_contains($firstPng,'/responsive-'),'regeneration must publish into a unique responsive directory');
+    $firstAbsolute=media_upload_root().'/'.$firstPng;
+    maintenance_expect(is_file($firstAbsolute),'first generated derivative missing on disk');
+    $out=imagecreatefrompng($firstAbsolute);maintenance_expect($out instanceof GdImage,'PNG derivative unreadable');
     $pixel=imagecolorat($out,0,0);$rgba=imagecolorsforindex($out,$pixel);$alpha=(int)($rgba['alpha']??0);imagedestroy($out);
     maintenance_expect($alpha>0,'transparent pixel became opaque');
-    fwrite(STDOUT,"Media transparency regeneration test passed\n");
+
+    $second=media_regenerate_image_version($db,1,1);
+    $secondPng=$db->query("SELECT path FROM media_derivatives WHERE format='png' ORDER BY width DESC LIMIT 1")->fetchColumn();
+    maintenance_expect(is_string($secondPng)&&$secondPng!=='','second PNG derivative missing');
+    maintenance_expect($secondPng!==$firstPng,'successive regenerations must change derivative URL identity');
+    maintenance_expect(($second['derivativeDirectory']??'')!==($first['derivativeDirectory']??''),'successive regenerations must use different derivative directories');
+    maintenance_expect(is_file(media_upload_root().'/'.$secondPng),'second generated derivative missing on disk');
+    maintenance_expect(!is_file($firstAbsolute),'obsolete derivative directory must be removed after database commit');
+    maintenance_expect($db->query("SELECT COUNT(*) FROM media_derivatives WHERE path LIKE '%/responsive-%'")->fetchColumn()>0,'database must point at immutable regenerated derivative URLs');
+    fwrite(STDOUT,"Media regeneration cache identity test passed\n");
 }finally{media_remove_tree(media_upload_root().'/'.$uuid);}
