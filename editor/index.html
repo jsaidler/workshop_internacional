@@ -33,6 +33,7 @@
     <button type="button" data-viewport="mobile" title="Celular">Celular</button>
   </div>
   <div class="editor-toolbar editor-actions">
+    <button type="button" id="editor-structure-mobile" class="editor-structure-mobile-toggle" aria-controls="editor-structure-panel" aria-expanded="false">Estrutura</button>
     <a id="editor-submissions" class="editor-context-link" href="/admin/submissions.php">Inscrições<span id="editor-new-count" hidden></span></a>
     <span id="save-status" aria-live="polite"></span>
     <button type="button" id="publish-page" class="publish">Publicar</button>
@@ -57,8 +58,8 @@
   </div>
 </header>
 <main class="cms-editor-workspace task-editor-workspace">
-  <aside class="editor-panel sections-panel">
-    <div class="panel-heading"><p>Estrutura</p><h2 id="structure-panel-title">Seções</h2></div>
+  <aside class="editor-panel sections-panel" id="editor-structure-panel" aria-label="Estrutura da página">
+    <div class="panel-heading"><div><p>Estrutura</p><h2 id="structure-panel-title">Seções</h2></div><button type="button" id="editor-structure-mobile-close" class="structure-mobile-close" aria-label="Fechar estrutura">×</button></div>
     <div class="cms-structure-view-tabs" role="tablist" aria-label="Navegação da página">
       <button type="button" role="tab" data-structure-view="sections" class="is-active" aria-selected="true">Seções</button>
       <button type="button" role="tab" data-structure-view="tree" aria-selected="false" tabindex="-1">Estrutura</button>
@@ -70,6 +71,7 @@
   <section class="editor-canvas" aria-label="Página em edição"><div class="device-frame desktop" id="device-frame"><iframe id="page-frame" title="Página em edição"></iframe></div></section>
   <aside class="editor-panel inspector" id="inspector"><div class="inspector-empty"><p>Selecione diretamente na página o texto, imagem, vídeo, formulário ou seção que deseja alterar.</p></div></aside>
 </main>
+<button type="button" id="editor-structure-backdrop" class="editor-structure-backdrop" aria-label="Fechar estrutura" tabindex="-1"></button>
 <div class="floating-format" id="text-toolbar" hidden>
   <button type="button" data-command="bold"><b>B</b></button><button type="button" data-command="italic"><i>I</i></button><button type="button" data-command="createLink">Link</button><button type="button" data-command="removeFormat">Limpar</button><button type="button" id="finish-text">Concluir</button>
 </div>

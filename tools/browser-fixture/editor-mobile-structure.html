@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mobile editor structure fixture</title>
+<link rel="stylesheet" href="/editor/task-centric.css">
+<style>
+body{margin:0}.task-editor-workspace{display:grid}.editor-canvas{min-height:600px}.sections-panel{min-height:400px}.cms-structure-view-tabs{display:flex;gap:4px}.section-row-main{display:block;padding:8px;border:1px solid #ddd}
+</style>
+</head>
+<body class="task-centric-editor">
+<header class="cms-editor-bar task-editor-bar">
+  <a class="editor-wordmark" href="#">Site</a>
+  <div class="editor-page-switcher-wrap"><span id="editor-site-name">Site</span><label class="editor-page-switcher"><span>Página</span><select id="editor-page-switcher"><option>Página</option></select></label></div>
+  <div class="editor-toolbar viewport-toolbar"></div>
+  <div class="editor-toolbar editor-actions">
+    <button type="button" id="editor-structure-mobile" class="editor-structure-mobile-toggle" aria-controls="editor-structure-panel" aria-expanded="false">Estrutura</button>
+    <span id="save-status"></span>
+    <button type="button" id="publish-page">Publicar</button>
+    <details id="editor-more"><summary>•••</summary><div class="editor-more-menu"></div></details>
+  </div>
+</header>
+<main class="cms-editor-workspace task-editor-workspace">
+  <aside class="editor-panel sections-panel" id="editor-structure-panel" aria-label="Estrutura da página">
+    <div class="panel-heading"><div><p>Estrutura</p><h2>Seções</h2></div><button type="button" id="editor-structure-mobile-close" class="structure-mobile-close" aria-label="Fechar estrutura">×</button></div>
+    <div class="cms-structure-view-tabs"><button type="button">Seções</button><button type="button">Estrutura</button></div>
+    <div id="sections-list"><div class="section-row"><button type="button" class="section-row-main">Hero</button></div></div>
+  </aside>
+  <section class="editor-canvas">Canvas</section>
+  <aside class="editor-panel inspector" id="inspector"></aside>
+</main>
+<button type="button" id="editor-structure-backdrop" class="editor-structure-backdrop" aria-label="Fechar estrutura" tabindex="-1"></button>
+<div id="media-grid"></div><dialog id="media-dialog"></dialog><input id="media-library-search"><a id="editor-submissions"></a><span id="editor-new-count"></span><a id="editor-public-link"></a><a id="media-maintenance-link"></a>
+<script src="/editor/task-centric.js"></script>
+</body>
+</html>
