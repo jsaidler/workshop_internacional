@@ -21,7 +21,22 @@ if($return===''||!str_starts_with($return,'/')){$activity=activity_by_id($db,(in
 $parts=parse_url($return);$returnPath=is_array($parts)&&isset($parts['path'])?(string)$parts['path']:'/';$returnQuery=is_array($parts)&&isset($parts['query'])?'?'.(string)$parts['query']:'';$return=$returnPath.$returnQuery;
 if($errors){$_SESSION['cms_form_flash'][$form['form_uuid']]=['values'=>$values,'errors'=>$errors];header('Location: '.$return.'#form-'.(int)$form['id'],true,303);exit;}
 try{
-    cms_submission_save($db,$form,$schema,$values,(int)$page['id'],$locale,$return);
+    $submissionUuid=cms_submission_save($db,$form,$schema,$values,(int)$page['id'],$locale,$return);
+    try{
+        $submissionIdQuery=$db->prepare('SELECT id FROM cms_form_submissions WHERE submission_uuid=?');
+        $submissionIdQuery->execute([$submissionUuid]);
+        $submissionId=(int)$submissionIdQuery->fetchColumn();
+        analytics_record_event($db,[
+            'activity_id'=>(int)$form['activity_id'],
+            'page_id'=>(int)$page['id'],
+            'form_id'=>(int)$form['id'],
+            'submission_id'=>$submissionId>0?$submissionId:null,
+            'event_type'=>'form_submit',
+            'locale'=>$locale,
+            'path'=>$returnPath,
+            'meta'=>['form'=>(string)$form['title']],
+        ]);
+    }catch(Throwable $analyticsError){error_log('Analytics form submission failed: '.$analyticsError->getMessage());}
     cms_form_notify($form,$schema,$values,$locale);
     if($workflow['successMode']==='redirect'&&$workflow['redirectPath']!==''){header('Location: '.$workflow['redirectPath'],true,303);exit;}
     $_SESSION['cms_form_flash'][$form['form_uuid']]=['success'=>true,'values'=>cms_form_success_context($schema,$values)];

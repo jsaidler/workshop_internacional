@@ -13,6 +13,7 @@ try{
         : cms_page_home($db,(int)$activity['id'],$locale);
 
     if($page&&$page['status']!=='archived'&&!empty($page['published_document_json'])){
+        try{analytics_record_pageview($db,$activity,$page,$locale);}catch(Throwable $analyticsError){error_log('Analytics pageview failed: '.$analyticsError->getMessage());}
         cms_render_public_page($activity,$page,cms_page_doc($page,true),false);
         exit;
     }
