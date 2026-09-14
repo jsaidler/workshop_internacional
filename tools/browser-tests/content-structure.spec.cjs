@@ -8,24 +8,29 @@ test('container desktop choices do not leak into automatic tablet or phone layou
   await page.setViewportSize({width:1440,height:900});
   await page.goto(url);
   const automatic=page.locator('#automatic');
+  const stackAuto=page.locator('#stack-auto');
   expect(await columnCount(automatic)).toBe(2);
   const [deskA,deskB]=await widths(automatic);
   expect(deskB/deskA).toBeGreaterThan(2.1);
   expect(await automatic.evaluate(el=>getComputedStyle(el).gap)).toBe('48px');
+  expect(await stackAuto.evaluate(el=>getComputedStyle(el).gap)).toBe('48px');
 
   // 950px belongs to the canonical tablet range. This catches the old
   // transitional 900px breakpoint used by the first-class container CSS.
   await page.setViewportSize({width:950,height:900});
   expect(await columnCount(automatic)).toBe(1);
   expect(await automatic.evaluate(el=>getComputedStyle(el).gap)).toBe('24px');
+  expect(await stackAuto.evaluate(el=>getComputedStyle(el).gap)).toBe('24px');
 
   await page.setViewportSize({width:800,height:900});
   expect(await columnCount(automatic)).toBe(1);
   expect(await automatic.evaluate(el=>getComputedStyle(el).gap)).toBe('24px');
+  expect(await stackAuto.evaluate(el=>getComputedStyle(el).gap)).toBe('24px');
 
   await page.setViewportSize({width:390,height:844});
   expect(await columnCount(automatic)).toBe(1);
   expect(await automatic.evaluate(el=>getComputedStyle(el).gap)).toBe('24px');
+  expect(await stackAuto.evaluate(el=>getComputedStyle(el).gap)).toBe('24px');
 });
 
 test('tablet and mobile container overrides are independent',async({page})=>{
