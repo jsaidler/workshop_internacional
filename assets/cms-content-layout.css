@@ -3,6 +3,7 @@
    desktop >= 1025px, tablet 721-1024px, phone <= 720px.
    Device-specific attributes are intentionally isolated by media query. */
 
+.cms-public .cms-container{box-sizing:border-box}
 .cms-public .cms-container[data-cms-box-width="full"]{width:100%;max-width:none}
 .cms-public .cms-container[data-cms-box-width="contained"]{width:min(100%,var(--max));max-width:var(--max);margin-inline:auto}
 .cms-public .cms-container[data-cms-box-width="narrow"]{width:min(100%,var(--cms-narrow,760px));max-width:var(--cms-narrow,760px);margin-inline:auto}
@@ -40,7 +41,9 @@
 
 @media (min-width:721px) and (max-width:1024px){
   .cms-public .cms-container{--cms-container-gap:24px}
+  .cms-public .cms-container[data-cms-gap]{--cms-container-gap:24px}
   .cms-public .cms-container-columns{grid-template-columns:minmax(0,1fr);gap:var(--cms-container-gap,24px);align-items:start}
+  .cms-public .cms-container-columns[data-cms-columns],.cms-public .cms-container-columns[data-cms-columns][data-cms-ratio]{grid-template-columns:minmax(0,1fr)}
   .cms-public .cms-container-columns[data-cms-tablet-columns="1"]{grid-template-columns:minmax(0,1fr)}
   .cms-public .cms-container-columns[data-cms-tablet-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cms-public .cms-container-columns[data-cms-tablet-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -65,7 +68,9 @@
 
 @media (max-width:720px){
   .cms-public .cms-container{--cms-container-gap:24px}
+  .cms-public .cms-container[data-cms-gap],.cms-public .cms-container[data-cms-tablet-gap]{--cms-container-gap:24px}
   .cms-public .cms-container-columns{grid-template-columns:minmax(0,1fr);gap:var(--cms-container-gap,24px);align-items:start}
+  .cms-public .cms-container-columns[data-cms-columns],.cms-public .cms-container-columns[data-cms-columns][data-cms-ratio],.cms-public .cms-container-columns[data-cms-tablet-columns],.cms-public .cms-container-columns[data-cms-tablet-columns][data-cms-tablet-ratio]{grid-template-columns:minmax(0,1fr)}
   .cms-public .cms-container-columns[data-cms-mobile-columns="1"]{grid-template-columns:minmax(0,1fr)}
   .cms-public .cms-container-columns[data-cms-mobile-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cms-public .cms-container-columns[data-cms-mobile-columns="2"][data-cms-mobile-ratio="30-70"]{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}
