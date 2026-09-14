@@ -9,8 +9,8 @@ $registration=(string)file_get_contents($root.'/assets/admin-registration.css');
 $shell=(string)file_get_contents($root.'/app/admin_shell.php');
 
 submissions_ui_expect(str_contains($page,'function submission_display_value('),'registration values must have a presentation formatter');
-submissions_ui_expect(str_contains($page,"$key==='cpf'")&&str_contains($page,"$key==='postal_code'")&&str_contains($page,"$key==='phone'"),'CPF, CEP and phone formatting must remain explicit');
-submissions_ui_expect(str_contains($page,"array_key_exists('payment_note',$_POST)"),'quick status actions must preserve an existing payment note');
+submissions_ui_expect(str_contains($page,"\$key==='cpf'")&&str_contains($page,"\$key==='postal_code'")&&str_contains($page,"\$key==='phone'"),'CPF, CEP and phone formatting must remain explicit');
+submissions_ui_expect(str_contains($page,"array_key_exists('payment_note',\$_POST)"),'quick status actions must preserve an existing payment note');
 submissions_ui_expect(str_contains($page,'<span>Status</span>'),'registration summary must identify the state as Status, not repeat Inscrição');
 submissions_ui_expect(str_contains($page,'registration-status-action'),'registration state must expose the payment action in context');
 submissions_ui_expect(str_contains($page,'data-field="<?=h($key)?>"'),'registration field units must expose semantic field keys to the layout');
