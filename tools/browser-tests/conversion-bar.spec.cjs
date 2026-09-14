@@ -17,9 +17,10 @@ test('persistent conversion bar appears only between the primary and final CTAs'
   await page.evaluate(()=>window.scrollTo(0,1000));
   await expect.poll(()=>barState(page)).toBe('true');
   await expect(bar).not.toHaveAttribute('inert','');
-  const box=await bar.boundingBox();
-  expect(box).not.toBeNull();
-  expect(Math.abs((box.y+box.height)-800)).toBeLessThanOrEqual(2);
+  await expect.poll(async()=>{
+    const box=await bar.boundingBox();
+    return box?Math.abs((box.y+box.height)-800):999;
+  }).toBeLessThanOrEqual(2);
 
   await page.locator('#final-cta').scrollIntoViewIfNeeded();
   await expect.poll(()=>barState(page)).toBe('false');
