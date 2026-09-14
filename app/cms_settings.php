@@ -3,22 +3,55 @@ declare(strict_types=1);
 
 const CMS_DESIGN_SITE_SCOPE='__site__';
 
-function cms_design_font_defaults(): array {
+function cms_design_google_fonts(): array {
     return [
-        'body'=>'"IBM Plex Sans", Arial, sans-serif',
-        'display'=>'"Saira Extra Condensed", "Arial Narrow", sans-serif',
-        'mono'=>'"IBM Plex Mono", Consolas, monospace',
+        'body'=>[
+            'IBM Plex Sans'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600'],
+            'Inter'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Source Sans 3'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Noto Sans'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Work Sans'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Manrope'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Roboto'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;700'],
+            'Open Sans'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Lato'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;700'],
+        ],
+        'display'=>[
+            'Saira Extra Condensed'=>['fallback'=>'"Arial Narrow", Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Oswald'=>['fallback'=>'"Arial Narrow", Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Roboto Condensed'=>['fallback'=>'"Arial Narrow", Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Barlow Condensed'=>['fallback'=>'"Arial Narrow", Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Archivo Narrow'=>['fallback'=>'"Arial Narrow", Arial, sans-serif','weights'=>'400;500;600;700'],
+            'Space Grotesk'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Montserrat'=>['fallback'=>'Arial, sans-serif','weights'=>'300;400;500;600;700'],
+            'Bebas Neue'=>['fallback'=>'"Arial Narrow", Arial, sans-serif','weights'=>'400'],
+            'Anton'=>['fallback'=>'"Arial Narrow", Arial, sans-serif','weights'=>'400'],
+            'Fjalla One'=>['fallback'=>'"Arial Narrow", Arial, sans-serif','weights'=>'400'],
+        ],
+        'mono'=>[
+            'IBM Plex Mono'=>['fallback'=>'Consolas, monospace','weights'=>'300;400;500;600'],
+            'Roboto Mono'=>['fallback'=>'Consolas, monospace','weights'=>'300;400;500;600;700'],
+            'Source Code Pro'=>['fallback'=>'Consolas, monospace','weights'=>'300;400;500;600;700'],
+            'JetBrains Mono'=>['fallback'=>'Consolas, monospace','weights'=>'300;400;500;600;700'],
+            'Space Mono'=>['fallback'=>'Consolas, monospace','weights'=>'400;700'],
+            'Inconsolata'=>['fallback'=>'Consolas, monospace','weights'=>'300;400;500;600;700'],
+        ],
     ];
 }
 
+function cms_design_font_defaults(): array {
+    return ['body'=>'IBM Plex Sans','display'=>'Saira Extra Condensed','mono'=>'IBM Plex Mono'];
+}
+
 function cms_design_normalize_font_value(string $value,string $role): string {
-    $fonts=cms_design_font_defaults();$value=trim($value);
+    $fonts=cms_design_font_defaults();$catalog=cms_design_google_fonts();$value=trim($value);
     $legacy=[
-        'body'=>['var(--sans)','var(--body)'],
-        'display'=>['var(--title)','var(--font-display)'],
-        'mono'=>['var(--mono)'],
+        'body'=>['var(--sans)','var(--body)','"IBM Plex Sans", Arial, sans-serif','IBM Plex Sans, Arial, sans-serif'],
+        'display'=>['var(--title)','var(--font-display)','"Saira Extra Condensed", "Arial Narrow", sans-serif','Saira Extra Condensed, "Arial Narrow", sans-serif'],
+        'mono'=>['var(--mono)','"IBM Plex Mono", Consolas, monospace','IBM Plex Mono, Consolas, monospace'],
     ];
-    return in_array($value,$legacy[$role]??[],true)?$fonts[$role]:$value;
+    if(in_array($value,$legacy[$role]??[],true))return $fonts[$role];
+    return isset($catalog[$role][$value])?$value:$fonts[$role];
 }
 
 function cms_design_normalize_fonts(array $design): array {
@@ -29,8 +62,24 @@ function cms_design_normalize_fonts(array $design): array {
     return $design;
 }
 
-function cms_design_font_import_css(): string {
-    return '@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap") layer(cms-system);';
+function cms_design_font_stack(string $family,string $role): string {
+    $catalog=cms_design_google_fonts();$family=cms_design_normalize_font_value($family,$role);$meta=$catalog[$role][$family];
+    return '"'.str_replace('"','',$family).'", '.$meta['fallback'];
+}
+
+function cms_design_google_fonts_url(array $design): string {
+    $design=cms_design_normalize_fonts($design);$catalog=cms_design_google_fonts();$families=[];
+    foreach(['bodyFont'=>'body','displayFont'=>'display','monoFont'=>'mono'] as $key=>$role){
+        $family=(string)$design['type'][$key];$meta=$catalog[$role][$family];
+        if(isset($families[$family]))continue;
+        $encoded=str_replace('%20','+',rawurlencode($family));
+        $families[$family]='family='.$encoded.':wght@'.$meta['weights'];
+    }
+    return 'https://fonts.googleapis.com/css2?'.implode('&',$families).'&display=swap';
+}
+
+function cms_design_font_import_css(array $design): string {
+    return '@import url("'.cms_design_google_fonts_url($design).'") layer(cms-system);';
 }
 
 function cms_site_defaults(string $locale): array {
@@ -166,9 +215,6 @@ function cms_settings_save(PDO $db,string $kind,int $activityId,string $locale,a
     }
     $json=json_encode($clean,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);$q=$db->prepare("INSERT INTO $table(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(activity_id,locale) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at");$q->execute([$activityId,$locale,$json,gmdate('c')]);
     if($kind==='design'){
-        // Additional CSS belongs to the site/activity, not to one page or one
-        // language document. Keep locale-specific design tokens intact, but
-        // persist one canonical CSS payload that every page of the site reads.
         $sharedJson=json_encode(['advanced'=>['customCss'=>(string)$clean['advanced']['customCss']]],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
         $shared=$db->prepare("INSERT INTO cms_design_settings(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(activity_id,locale) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at");
         $shared->execute([$activityId,CMS_DESIGN_SITE_SCOPE,$sharedJson,gmdate('c')]);
@@ -177,11 +223,10 @@ function cms_settings_save(PDO $db,string $kind,int $activityId,string $locale,a
 }
 
 function cms_css_color(string $value,string $fallback): string {return preg_match('/^#[0-9a-f]{6}$/i',$value)?$value:$fallback;}
-function cms_css_font(string $value,string $fallback): string {$value=trim($value);if($value===''||strlen($value)>220||preg_match('/[{};<>]/',$value))return $fallback;return $value;}
 
 function cms_design_system_css(array $design): string {
-    $design=cms_design_normalize_fonts($design);$c=$design['colors'];$l=$design['layout'];$t=$design['type'];$b=$design['buttons'];$fonts=cms_design_font_defaults();
-    $bodyFont=cms_css_font((string)$t['bodyFont'],$fonts['body']);$displayFont=cms_css_font((string)$t['displayFont'],$fonts['display']);$monoFont=cms_css_font((string)$t['monoFont'],$fonts['mono']);
+    $design=cms_design_normalize_fonts($design);$c=$design['colors'];$l=$design['layout'];$t=$design['type'];$b=$design['buttons'];
+    $bodyFont=cms_design_font_stack((string)$t['bodyFont'],'body');$displayFont=cms_design_font_stack((string)$t['displayFont'],'display');$monoFont=cms_design_font_stack((string)$t['monoFont'],'mono');
     $vars=[
         '--bg'=>cms_css_color((string)$c['bg'],'#f2f2ef'),'--surface'=>cms_css_color((string)$c['surface'],'#ffffff'),'--surface-2'=>cms_css_color((string)$c['surface2'],'#e7e7e2'),'--text'=>cms_css_color((string)$c['text'],'#0b0c0d'),'--muted'=>cms_css_color((string)$c['muted'],'#5f6264'),'--line'=>cms_css_color((string)$c['line'],'#bfc1be'),'--focus'=>cms_css_color((string)$c['accent'],'#186f4d'),
         '--cms-button-bg'=>cms_css_color((string)$c['buttonBg'],'#0b0c0d'),'--cms-button-text'=>cms_css_color((string)$c['buttonText'],'#ffffff'),'--cms-button-border'=>cms_css_color((string)$c['buttonBorder'],'#0b0c0d'),
