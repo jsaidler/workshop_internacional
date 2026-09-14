@@ -22,6 +22,6 @@ responsive_contract_expect(str_contains($css,'data-cms-tablet-ratio="30-70"')&&s
 responsive_contract_expect(str_contains($css,'.cms-card-grid')&&str_contains($css,'.cms-stats')&&str_contains($css,'.cms-gallery'),'responsive column controls must cover builder collection grids, not only generic grids');
 responsive_contract_expect(str_contains($css,'data-cms-tablet-text-align')&&str_contains($css,'data-cms-mobile-text-align'),'device-specific text alignment must be rendered by CSS');
 responsive_contract_expect(!str_contains($css,'!important'),'responsive system rules must remain overridable without !important');
-responsive_contract_expect(str_contains($core,'data-layout-ratio'),'desktop ratio remains stored as the base/desktop setting for backward compatibility');
+responsive_contract_expect(str_contains($core,'layoutRatio'),'desktop ratio remains stored as the base/desktop setting for backward compatibility');
 
 echo "Responsive layout contract tests passed\n";
