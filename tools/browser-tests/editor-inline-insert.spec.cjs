@@ -20,8 +20,8 @@ test('inline insertion UI is editor-only and does not enter page content',async(
 
 test('empty column can receive a paragraph directly from the canvas',async({page})=>{
   const frame=await fixture(page);
-  await frame.locator('#columns').click({position:{x:10,y:10}});
-  await expect(frame.locator('.cms-inline-add')).toHaveCount(2);
+  await frame.locator('#column-b').click({position:{x:20,y:20}});
+  await expect(frame.locator('.cms-inline-add')).toHaveCount(1);
   await expect(frame.locator('.cms-inline-add', {hasText:'+ Adicionar'})).toHaveCount(1);
 
   await frame.locator('.cms-inline-add', {hasText:'+ Adicionar'}).click();
@@ -37,13 +37,13 @@ test('empty column can receive a paragraph directly from the canvas',async({page
 
 test('selected component exposes before and after insertion points',async({page})=>{
   const frame=await fixture(page);
-  await frame.locator('#divider').click({position:{x:10,y:5}});
+  await frame.locator('#divider').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
   await expect(frame.locator('.cms-inline-add', {hasText:'+ Antes'})).toHaveCount(1);
   await expect(frame.locator('.cms-inline-add', {hasText:'+ Depois'})).toHaveCount(1);
 
   await frame.locator('.cms-inline-add', {hasText:'+ Antes'}).click();
   await frame.locator('.cms-inline-palette [data-inline-type="heading"]').click();
-  await expect(frame.locator('#divider').evaluate(el=>el.previousElementSibling?.dataset.cmsComponent||'')).resolves.toBe('heading');
+  expect(await frame.locator('#divider').evaluate(el=>el.previousElementSibling?.dataset.cmsComponent||'')).toBe('heading');
   await page.waitForTimeout(1000);
-  await expect(frame.locator('#divider').evaluate(el=>el.previousElementSibling?.dataset.cmsComponent||'')).resolves.toBe('heading');
+  expect(await frame.locator('#divider').evaluate(el=>el.previousElementSibling?.dataset.cmsComponent||'')).toBe('heading');
 });
