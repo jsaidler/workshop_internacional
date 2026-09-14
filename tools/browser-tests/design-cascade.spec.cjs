@@ -18,3 +18,12 @@ test('Design additional CSS wins over generated tokens and system specificity',a
   await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).fontWeight)).toBe('350');
   await expect.poll(()=>frame.locator('head').evaluate(head=>head.lastElementChild?.id||'')).toBe('cms-live-custom');
 });
+
+test('public additional CSS outranks more specific system selectors',async({page})=>{
+  await page.goto('http://127.0.0.1:8099/tools/browser-fixture/public-css-cascade.html');
+  const probe=page.locator('#probe');
+  await expect(probe).toBeVisible();
+  await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(7, 8, 9)');
+  await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).color)).toBe('rgb(1, 2, 3)');
+  await expect.poll(()=>page.locator('head').evaluate(head=>head.lastElementChild?.id||'')).toBe('cms-custom-css');
+});
