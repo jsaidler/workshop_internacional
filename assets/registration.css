@@ -40,6 +40,12 @@
 .registration-canonical-form>.button,.registration-canonical-form button[type=submit]{min-width:min(100%,300px);justify-content:center}
 .registration-canonical-form [aria-invalid=true]{border-color:#b22929!important}
 .registration-canonical-form .form-error{margin-top:-8px;margin-bottom:6px}
+.registration-page .cms-form-success-state{display:grid;gap:24px}
+.registration-page .cms-form-success{padding:26px;border:1px solid var(--line-strong);background:var(--surface)}
+.registration-page .cms-form-success h2{font-family:var(--title);font-size:clamp(38px,4.5vw,62px);font-weight:500;line-height:1.02;text-transform:uppercase;margin:7px 0 12px}
+.registration-page .cms-form-success>p:last-child{max-width:720px;margin:0;font-size:16px;line-height:1.55}
+.registration-page .cms-form-success-content{display:grid;gap:20px}
+.registration-page .cms-form-success-content>.cms-form-content,.registration-page .cms-form-success-content .registration-payment-source,.registration-page .cms-form-success-content .registration-payment-panel{margin:0}
 @media(max-width:760px){
   .registration-page{padding:38px var(--gutter)}
   .registration-page-header h1{font-size:clamp(44px,15vw,70px)}
@@ -49,4 +55,5 @@
   .registration-pix-layout{grid-template-columns:1fr}
   .registration-pix-layout img{width:min(240px,100%)}
   .registration-canonical-form>.button,.registration-canonical-form button[type=submit]{width:100%}
+  .registration-page .cms-form-success{padding:20px}
 }
