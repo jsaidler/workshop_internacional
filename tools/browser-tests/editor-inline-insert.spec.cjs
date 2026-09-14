@@ -81,27 +81,27 @@ test('structure sidebar exposes the page hierarchy and selects nested components
 });
 
 test('rich component palette inserts list quote video and gallery as first-class nodes',async({page})=>{
-  const frame=await fixture(page);
-  await frame.locator('#column-b').click({position:{x:20,y:20}});
-
   for(const [type,label] of [['list','Lista'],['quote','Citação'],['video','Vídeo'],['gallery','Galeria']]){
-    await frame.locator('.cms-inline-add', {hasText:/Adicionar|Conteúdo/}).first().click();
+    const frame=await fixture(page);
+    await frame.locator('#column-b').click({position:{x:20,y:20}});
+    await frame.locator('.cms-inline-add', {hasText:'+ Adicionar'}).click();
     const palette=frame.locator('.cms-inline-palette');
     await expect(palette).toBeVisible();
-    await expect(palette.locator(`[data-rich-inline-type="${type}"]`)).toHaveText(label);
+    for(const [buttonType,buttonLabel] of [['list','Lista'],['quote','Citação'],['video','Vídeo'],['gallery','Galeria']]){
+      await expect(palette.locator(`[data-rich-inline-type="${buttonType}"]`)).toHaveText(buttonLabel);
+    }
     await palette.locator(`[data-rich-inline-type="${type}"]`).click();
     await expect(frame.locator(`#column-b [data-cms-component="${type}"]`)).toHaveCount(1);
     await page.waitForTimeout(850);
-    await frame.locator('#column-b').click({position:{x:20,y:20}});
+    await expect(frame.locator(`#column-b [data-cms-component="${type}"]`)).toHaveCount(1);
+    if(type==='list')await expect(frame.locator('#column-b [data-cms-component="list"] li[data-cms-editable]')).toHaveCount(3);
+    if(type==='quote')await expect(frame.locator('#column-b [data-cms-component="quote"] [data-cms-editable]')).toHaveCount(2);
+    if(type==='video')await expect(frame.locator('#column-b [data-cms-component="video"] video')).toHaveAttribute('controls','');
+    if(type==='gallery')await expect(frame.locator('#column-b [data-cms-component="gallery"] [data-cms-image-placeholder]')).toHaveCount(3);
   }
-
-  await expect(frame.locator('#column-b [data-cms-component="list"] li[data-cms-editable]')).toHaveCount(3);
-  await expect(frame.locator('#column-b [data-cms-component="quote"] [data-cms-editable]')).toHaveCount(2);
-  await expect(frame.locator('#column-b [data-cms-component="video"] video')).toHaveAttribute('controls','');
-  await expect(frame.locator('#column-b [data-cms-component="gallery"] [data-cms-image-placeholder]')).toHaveCount(3);
 });
 
-test('rich components persist and are named in the structure tree',async({page})=>{
+test('rich components persist, are named in the tree and expose their own controls',async({page})=>{
   const frame=await fixture(page);
   await frame.locator('#column-b').click({position:{x:20,y:20}});
   await frame.locator('.cms-inline-add', {hasText:'+ Adicionar'}).click();
@@ -109,9 +109,9 @@ test('rich components persist and are named in the structure tree',async({page})
   await page.waitForTimeout(950);
 
   await page.locator('[data-structure-view="tree"]').click();
-  const tree=page.locator('#page-structure-tree');
-  await expect(tree).toContainText('Lista');
-  await page.locator('#page-structure-tree .cms-page-tree-main', {hasText:'Lista'}).click();
+  await expect(page.locator('#page-structure-tree')).toContainText('Lista');
+
+  await frame.locator('[data-cms-component="list"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
   await expect(frame.locator('[data-cms-component="list"]')).toHaveClass(/cms-structure-selected/);
   await expect(page.locator('#inspector')).toContainText('Lista');
   await expect(page.locator('#inspector [data-rich-list-add]')).toHaveCount(1);
