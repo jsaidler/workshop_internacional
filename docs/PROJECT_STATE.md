@@ -61,7 +61,10 @@ O original enviado é imutável e as derivadas responsivas são reconstruíveis.
 - Diretórios antigos são removidos apenas depois do commit da troca de referências.
 - Imagens pequenas que não exigem derivadas voltam ao original imutável.
 - Quando uma reconstrução de reparo falha, as referências de derivadas daquela versão são invalidadas para que o renderer use o original em vez de manter um URL possivelmente defeituoso.
-- A migração `025_republish_png_derivatives_with_new_urls.php` repassa PNGs existentes por esse fluxo, inclusive instalações em que a migração 024 já havia sido executada.
+- Para PNGs transparentes, preservar a existência do canal alpha não é validação suficiente: se o original possui pixels visíveis, cada derivada precisa continuar contendo pixels com opacidade maior que zero. Uma derivada totalmente transparente é considerada corrompida e nunca pode substituir as referências válidas no banco.
+- Se o writer genérico do ImageMagick produzir uma derivada totalmente transparente, a regeneração tenta novamente sem reativar nem reescrever o canal alpha. Se o conteúdo visível continuar perdido, a operação falha antes da troca de referências.
+- A migração `025_republish_png_derivatives_with_new_urls.php` repassa PNGs existentes pelo fluxo de URLs imutáveis.
+- A migração `026_repair_transparent_png_regeneration.php` repassa novamente PNGs existentes pelo regenerador com verificação de conteúdo visível; se um arquivo não puder ser reconstruído com segurança, suas derivadas são invalidadas e a entrega volta ao original preservado.
 
 ### Autoridade do CSS adicional
 
@@ -69,10 +72,13 @@ O original enviado é imutável e as derivadas responsivas são reconstruíveis.
 
 - CSS visual do template, do CMS, responsividade e tokens gerados pelo painel pertencem à camada CSS inferior `cms-system`.
 - O CSS adicional permanece sem camada e é emitido por último; portanto uma declaração normal do usuário vence uma declaração normal do sistema mesmo quando o seletor do sistema é mais específico.
+- O CSS adicional pertence ao site/atividade inteira. Não é configuração de uma página e não é configuração separada por idioma: qualquer página e qualquer locale do mesmo site lê o mesmo payload canônico.
+- Tokens de design como cores, tipografia e layout podem continuar específicos por locale, mas `advanced.customCss` é persistido em um escopo compartilhado do site (`cms_design_settings.locale = '__site__'`). Salvar o CSS adicional a partir de PT ou EN atualiza esse mesmo valor global.
+- A migração `027_site_wide_additional_css.php` promove para o escopo compartilhado um CSS adicional legado já existente, priorizando conteúdo não vazio para não apagar uma personalização válida durante a atualização.
 - A prévia ao vivo não escreve tokens de Design com `root.style.setProperty()`, porque estilo inline ultrapassa um stylesheet normal. Tokens ao vivo são emitidos em stylesheet dentro de `cms-system` e resíduos inline de versões antigas são removidos.
 - Regras visuais controláveis pelo usuário não usam `!important`. O uso de `!important` fica restrito a invariantes funcionais deliberados, como o honeypot.
 - Ajuste e ponto focal de mídia gerenciada viajam como custom properties no elemento e são consumidos por CSS em `cms-system`; `object-fit` e `object-position` não são gravados como propriedades inline que bloqueiem o CSS adicional.
-- A regressão dessa precedência é validada em Chromium com `getComputedStyle()`, tanto na prévia de Design quanto em uma página pública.
+- A regressão dessa precedência é validada em Chromium com `getComputedStyle()`, tanto na prévia de Design quanto em uma página pública. O escopo global do CSS adicional é validado também entre PT/EN e entre atividades distintas para impedir vazamento entre sites.
 
 ## Regra de edição de mídia no editor de páginas
 
@@ -150,6 +156,8 @@ Além do teste isolado do controlador de formulário, existe regressão com `cms
 - O mecanismo legado do editor central selecionava `[data-cms-form-block]` como entidade única e podia ser reinstalado depois das tentativas de neutralização feitas pelo controlador do formulário. A correção canônica é de propriedade: o editor central não registra handlers em formulários expandidos; somente placeholders não expandidos podem usar o inspector de formulário inteiro.
 - Programação, condições e pagamento já foram montados fora do schema do formulário e reposicionados pelo JavaScript público. Esse modelo híbrido é proibido porque cria duas fontes de verdade e torna conteúdo visível impossível de administrar pelo CMS.
 - A migração 022 considerava qualquer array não vazio de `contentBlocks` como suficiente. Em uma instalação com blocos parcialmente existentes, isso podia remover o HTML legado da página sem repor blocos de pagamento ausentes. O reparo deve mesclar por `id`, não usar a existência de um único bloco como prova de completude.
+- Uma regeneração de PNG transparente já produziu arquivos que tecnicamente mantinham canal alpha, mas ficaram visualmente vazios porque todos os pixels terminaram transparentes. Verificar somente “há transparência” é insuficiente; é obrigatório verificar também “há conteúdo visível”.
+- `CSS adicional` já foi tratado como configuração associada ao locale. Isso contraria seu papel de escape hatch global do site. A regra vigente é escopo por site/atividade, compartilhado por todas as páginas e idiomas.
 
 ## Regra de documentação obrigatória
 
@@ -210,6 +218,7 @@ A página inglesa não deve ser mera tradução da brasileira.
 - Conteúdo condicional ou explicitamente oculto permanece visível no editor mesmo quando não aparece para o visitante.
 - Programação, termos, instruções de pagamento e QR Code da inscrição pertencem ao formulário no CMS, não a funções PHP operacionais nem a reposicionamento por JavaScript público.
 - Todos os CSS/JS públicos carregados pelo renderer recebem `?v=<versão instalada>`; a mesma política vale para editor e admin.
+- `Design → CSS adicional` é configuração global do site/atividade e deve produzir o mesmo CSS em todas as páginas e idiomas desse site.
 - A configuração Apache continua usando `Cache-Control: no-cache, must-revalidate` para `.css` e `.js` como defesa adicional.
 - Alterações editoriais, visuais, estruturais e comerciais normais devem ser possíveis pelo CMS. Código deve ser necessário para novas capacidades, não para operação editorial cotidiana.
 

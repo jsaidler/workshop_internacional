@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+const CMS_DESIGN_SITE_SCOPE='__site__';
+
 function cms_site_defaults(string $locale): array {
     $pt=$locale===PUBLIC_LOCALE_PT_BR;
     return [
@@ -71,8 +73,16 @@ function cms_setting_row(PDO $db,string $table,int $activityId,string $locale): 
 function cms_site_settings(PDO $db,int $activityId,string $locale): array {
     return cms_settings_merge(cms_site_defaults($locale),cms_setting_row($db,'cms_site_settings',$activityId,$locale)??[]);
 }
+function cms_design_site_custom_css(PDO $db,int $activityId): ?string {
+    $shared=cms_setting_row($db,'cms_design_settings',$activityId,CMS_DESIGN_SITE_SCOPE);
+    if(!is_array($shared)||!is_array($shared['advanced']??null)||!array_key_exists('customCss',$shared['advanced']))return null;
+    return (string)$shared['advanced']['customCss'];
+}
 function cms_design_settings(PDO $db,int $activityId,string $locale): array {
-    return cms_settings_merge(cms_design_defaults(),cms_setting_row($db,'cms_design_settings',$activityId,$locale)??[]);
+    $design=cms_settings_merge(cms_design_defaults(),cms_setting_row($db,'cms_design_settings',$activityId,$locale)??[]);
+    $sharedCss=cms_design_site_custom_css($db,$activityId);
+    if($sharedCss!==null)$design['advanced']['customCss']=$sharedCss;
+    return $design;
 }
 function cms_setting_scalar(mixed $value,mixed $fallback): mixed {
     if(is_bool($fallback))return filter_var($value,FILTER_VALIDATE_BOOL,FILTER_NULL_ON_FAILURE)??$fallback;
@@ -108,15 +118,30 @@ function cms_clean_nav_items(array $items): array {
     return $out;
 }
 
+function cms_design_sanitize_custom_css(string $css): string {
+    $css=str_ireplace(['</style','<script','</script'],['','',''],$css);
+    if(strlen($css)>30000)$css=substr($css,0,30000);
+    return $css;
+}
+
 function cms_settings_save(PDO $db,string $kind,int $activityId,string $locale,array $settings): array {
     $locale=normalize_public_locale($locale)??PUBLIC_LOCALE_PT_BR;$table=$kind==='design'?'cms_design_settings':'cms_site_settings';$defaults=$kind==='design'?cms_design_defaults():cms_site_defaults($locale);$clean=cms_settings_validate($settings,$defaults);
     if($kind!=='design'){
         if(isset($clean['footer']['links'])&&is_array($clean['footer']['links'])){$links=[];foreach($clean['footer']['links'] as $link)if(is_array($link)&&trim((string)($link['label']??''))!==''&&trim((string)($link['url']??''))!=='')$links[]=['label'=>trim((string)$link['label']),'url'=>trim((string)$link['url'])];$clean['footer']['links']=$links;}
         $clean['navigation']['items']=cms_clean_nav_items(is_array($settings['navigation']['items']??null)?$settings['navigation']['items']:[]);
     }else{
-        $css=(string)($clean['advanced']['customCss']??'');$css=str_ireplace(['</style','<script','</script'],['','',''],$css);if(strlen($css)>30000)$css=substr($css,0,30000);$clean['advanced']['customCss']=$css;
+        $clean['advanced']['customCss']=cms_design_sanitize_custom_css((string)($clean['advanced']['customCss']??''));
     }
-    $json=json_encode($clean,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);$q=$db->prepare("INSERT INTO $table(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(activity_id,locale) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at");$q->execute([$activityId,$locale,$json,gmdate('c')]);return $clean;
+    $json=json_encode($clean,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);$q=$db->prepare("INSERT INTO $table(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(activity_id,locale) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at");$q->execute([$activityId,$locale,$json,gmdate('c')]);
+    if($kind==='design'){
+        // Additional CSS belongs to the site/activity, not to one page or one
+        // language document. Keep locale-specific design tokens intact, but
+        // persist one canonical CSS payload that every page of the site reads.
+        $sharedJson=json_encode(['advanced'=>['customCss'=>(string)$clean['advanced']['customCss']]],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
+        $shared=$db->prepare("INSERT INTO cms_design_settings(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?) ON CONFLICT(activity_id,locale) DO UPDATE SET settings_json=excluded.settings_json,updated_at=excluded.updated_at");
+        $shared->execute([$activityId,CMS_DESIGN_SITE_SCOPE,$sharedJson,gmdate('c')]);
+    }
+    return $clean;
 }
 
 function cms_css_color(string $value,string $fallback): string {return preg_match('/^#[0-9a-f]{6}$/i',$value)?$value:$fallback;}

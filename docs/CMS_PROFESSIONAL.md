@@ -38,7 +38,11 @@ O original de cada versão de imagem é a fonte de verdade imutável. Derivadas 
 - diretórios antigos são eliminados depois do commit, nunca antes;
 - imagens que não precisam de derivadas responsivas usam o original;
 - se um reparo não conseguir reconstruir uma versão, suas referências de derivadas são invalidadas e o renderer recua para o original em vez de continuar apontando para um arquivo potencialmente defeituoso;
-- `migrations/025_republish_png_derivatives_with_new_urls.php` reaplica esse modelo aos PNGs legados, inclusive quando a reconstrução anterior já havia sido marcada como executada.
+- em PNG transparente, a validação precisa provar duas coisas distintas: que a transparência necessária foi preservada e que conteúdo originalmente visível continua tendo pixels com opacidade maior que zero;
+- uma derivada totalmente transparente é inválida mesmo que tecnicamente possua canal alpha e dimensões corretas;
+- a regeneração de PNG transparente tenta um caminho conservador do ImageMagick sem reativar o canal alpha quando o writer genérico elimina o conteúdo visível. Se a segunda tentativa também ficar vazia, a nova família não é publicada;
+- `migrations/025_republish_png_derivatives_with_new_urls.php` reaplica o modelo de URL imutável aos PNGs legados;
+- `migrations/026_repair_transparent_png_regeneration.php` reconstrói novamente PNGs existentes com a verificação de conteúdo visível e, em caso de falha, remove as referências de derivadas para que o original preservado seja usado.
 
 ### Controles de imagem no editor de páginas
 
@@ -65,10 +69,15 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 
 - estilos visuais do template/CMS, responsividade, controles de layout e tokens gerados pelo painel são carregados na camada CSS inferior `cms-system`;
 - `#cms-custom-css` permanece sem camada e é o último estilo autoral, de modo que declarações normais do CSS adicional prevalecem sobre declarações normais do sistema independentemente da especificidade do seletor;
+- o CSS adicional é propriedade do site/atividade inteira. Não é salvo por página e não possui versões independentes para PT e EN;
+- o payload canônico de `advanced.customCss` é persistido em `cms_design_settings` no escopo reservado `locale='__site__'`. Todas as páginas e todos os idiomas da mesma atividade leem esse valor;
+- salvar o CSS adicional a partir da tela PT ou EN atualiza o mesmo payload compartilhado. Os demais tokens de Design podem continuar específicos por locale;
+- `migrations/027_site_wide_additional_css.php` promove um CSS adicional legado existente para esse escopo compartilhado sem apagar uma personalização não vazia;
 - a prévia ao vivo usa a mesma regra: tokens gerados entram em `cms-system` e o CSS adicional é reaplicado por último;
 - a prévia não pode escrever tokens com `style.setProperty()` no `<html>`, porque estilos inline venceriam stylesheet normal; resíduos inline deixados por versões antigas são removidos ao aplicar a prévia;
 - regras visuais do CMS não usam `!important` quando a propriedade deve permanecer editável; `!important` fica reservado a invariantes funcionais deliberados;
-- a precedência é validada por testes reais em Chromium que conferem `getComputedStyle()` tanto na prévia de Design quanto numa superfície pública com seletor do sistema mais específico.
+- a precedência é validada por testes reais em Chromium que conferem `getComputedStyle()` tanto na prévia de Design quanto numa superfície pública com seletor do sistema mais específico;
+- o escopo é testado entre PT e EN do mesmo site e também contra outra atividade, para garantir simultaneamente compartilhamento interno e ausência de vazamento entre sites.
 
 ## Formulários
 

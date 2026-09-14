@@ -5,8 +5,63 @@ function media_maintenance_source_has_transparency(array $source): bool {
     return media_source_has_transparency($source);
 }
 
+function media_maintenance_source_has_visible_pixels(array $source): bool {
+    if(($source['engine']??'')==='imagick'){
+        try{
+            $image=$source['image'];
+            if(!$image->getImageAlphaChannel())return true;
+            $extrema=$image->getImageChannelExtrema(Imagick::CHANNEL_ALPHA);
+            $max=(float)($extrema['maxima']??$extrema['max']??0);
+            return $max>0;
+        }catch(Throwable){return true;}
+    }
+    if(($source['engine']??'')==='gd'){
+        $image=$source['image'];$width=(int)$source['width'];$height=(int)$source['height'];
+        for($y=0;$y<$height;$y++)for($x=0;$x<$width;$x++){
+            $rgba=imagecolorsforindex($image,imagecolorat($image,$x,$y));
+            if((int)($rgba['alpha']??0)<127)return true;
+        }
+        return false;
+    }
+    return true;
+}
+
+function media_maintenance_file_has_visible_pixels(string $path,string $mime): bool {
+    $check=media_decode_image($path,$mime);
+    try{return media_maintenance_source_has_visible_pixels($check);}
+    finally{media_release_image($check);}
+}
+
 function media_maintenance_write_image(array $source,int $width,int $height,string $format,string $path): void {
+    $sourceVisible=media_maintenance_source_has_visible_pixels($source);
     media_write_image($source,$width,$height,$format,$path);
+    if(!$sourceVisible||media_maintenance_file_has_visible_pixels($path,$format==='jpeg'?'image/jpeg':'image/'.$format))return;
+
+    // Some ImageMagick builds can turn palette-based transparent PNGs into a
+    // fully transparent derivative when the generic writer re-activates the
+    // alpha channel. Regeneration gets one conservative retry that leaves the
+    // source alpha channel untouched. A blank retry is rejected rather than
+    // being committed to the database.
+    if(($source['engine']??'')==='imagick'){
+        $image=clone $source['image'];
+        try{
+            $image->setImagePage(0,0,0,0);
+            $image->resizeImage($width,$height,Imagick::FILTER_LANCZOS,1,false);
+            $image->setImagePage(0,0,0,0);
+            if($format==='jpeg'){
+                $image->setImageFormat('jpeg');$image->setImageCompressionQuality(86);
+            }elseif($format==='png'){
+                $image->setImageFormat('png');$image->setOption('png:compression-level','9');
+            }elseif($format==='webp'){
+                $image->setImageFormat('webp');$image->setOption('webp:lossless','true');$image->setOption('webp:alpha-quality','100');$image->setImageCompressionQuality(100);
+            }else throw new RuntimeException('unsupported_derivative_format');
+            if(!$image->writeImage($path))throw new RuntimeException('derivative_write_failed');
+        }finally{$image->clear();}
+        if(media_maintenance_file_has_visible_pixels($path,$format==='jpeg'?'image/jpeg':'image/'.$format))return;
+    }
+
+    @unlink($path);
+    throw new RuntimeException('derivative_became_fully_transparent');
 }
 
 function media_maintenance_verify_transparency(string $path,string $mime,bool $required): void {
@@ -59,7 +114,7 @@ function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): ar
                 $file=$target.'.'.$extension;
                 $absolute=$newDir.'/'.$file;
                 $mimeType=$format==='jpeg'?'image/jpeg':'image/'.$format;
-                media_write_image($source,$target,$height,$format,$absolute);
+                media_maintenance_write_image($source,$target,$height,$format,$absolute);
                 media_verify_image_derivative($absolute,$mimeType,$target,$height,$requiresTransparency&&in_array($format,['png','webp'],true));
                 $prepared[]=[
                     'kind'=>'responsive','width'=>$target,'height'=>$height,'format'=>$format,'mime'=>$mimeType,
