@@ -12,7 +12,7 @@ function workshop_registration_schema(): array {
         'version'=>1,
         'submitLabel'=>'Enviar inscrição',
         'successTitle'=>'Inscrição recebida',
-        'successMessage'=>'Sua inscrição foi recebida. A vaga é confirmada somente após a confirmação do pagamento.',
+        'successMessage'=>'Recebi seus dados. Se ainda não concluiu o pagamento, use abaixo a forma escolhida. Se já pagou, basta aguardar a confirmação.',
         'fields'=>[
             ['id'=>'name','type'=>'text','label'=>'Nome Completo','required'=>true,'autocomplete'=>'name','width'=>'full'],
             ['id'=>'cpf','type'=>'text','label'=>'CPF','required'=>true,'help'=>'Para emissão de NF','width'=>'half'],
