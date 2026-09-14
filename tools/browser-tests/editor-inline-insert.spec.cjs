@@ -67,7 +67,8 @@ test('structure sidebar exposes the page hierarchy and selects nested components
   await expect(page.locator('#page-structure-tree')).toBeVisible();
   await expect(page.locator('#page-structure-tree [data-tree-level="section"] .cms-page-tree-main strong')).toHaveText('Fixture');
   await expect(page.locator('#page-structure-tree [data-tree-level="node"]')).toHaveCount(5);
-  await expect(page.locator('#page-structure-tree')).toContainText(['Grupo de colunas','Coluna 1','Texto existente','Coluna 2','Divisor']);
+  const tree=page.locator('#page-structure-tree');
+  for(const label of ['Grupo de colunas','Coluna 1','Texto existente','Coluna 2','Divisor'])await expect(tree).toContainText(label);
 
   await page.locator('#page-structure-tree [data-tree-level="node"] .cms-page-tree-main', {hasText:'Texto existente'}).click();
   await expect(frame.locator('#column-a [data-cms-component="paragraph"]')).toHaveClass(/cms-structure-selected/);
