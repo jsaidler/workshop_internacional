@@ -7,6 +7,7 @@ async function fixture(page){
   await page.goto(url);
   const frame=page.frameLocator('#page-frame');
   await expect(frame.locator('#legacy-paragraph')).toBeVisible();
+  await expect(frame.locator('body')).toHaveAttribute('data-cms-legacy-promotion-bound','1');
   return frame;
 }
 
@@ -48,6 +49,7 @@ test('promotion supports semantic legacy nodes and excludes form content',async(
 test('promoted attributes persist through save and existing nodes are untouched',async({page})=>{
   const frame=await fixture(page);
   await frame.locator('#legacy-paragraph').dispatchEvent('pointerdown');
+  await expect(frame.locator('#legacy-paragraph')).toHaveAttribute('data-cms-node-id',/legacy-paragraph-/);
   const nodeId=await frame.locator('#legacy-paragraph').getAttribute('data-cms-node-id');
   expect(nodeId).toMatch(/^legacy-paragraph-/);
   await page.locator('#save-page').click();
