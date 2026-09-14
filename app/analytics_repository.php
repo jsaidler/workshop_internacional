@@ -110,11 +110,15 @@ function analytics_dashboard(PDO $db,int $activityId,int $days=30): array {
         FROM analytics_events e LEFT JOIN cms_pages p ON p.id=e.page_id
         WHERE e.activity_id=? AND e.created_at>=? GROUP BY e.page_id,p.title ORDER BY views DESC,submissions DESC LIMIT 12");$q->execute([$activityId,$from]);$pages=$q->fetchAll();
 
-    $sources=[];$q=$db->prepare("SELECT CASE WHEN COALESCE(e.utm_source,'')<>'' THEN e.utm_source WHEN COALESCE(e.referrer_host,'')<>'' THEN e.referrer_host ELSE 'Direto' END source,
-        COALESCE(e.utm_medium,'') medium,COALESCE(e.utm_campaign,'') campaign,COUNT(*) sessions
-        FROM analytics_events e JOIN (
-            SELECT session_hash,MIN(id) first_id FROM analytics_events WHERE activity_id=? AND created_at>=? AND event_type='pageview' GROUP BY session_hash
-        ) first ON first.first_id=e.id GROUP BY source,medium,campaign ORDER BY sessions DESC LIMIT 12");$q->execute([$activityId,$from]);$sources=$q->fetchAll();
+    $sources=[];$q=$db->prepare("SELECT
+        CASE WHEN COALESCE(e.utm_source,'')<>'' THEN e.utm_source WHEN COALESCE(e.referrer_host,'')<>'' THEN e.referrer_host ELSE 'Direto' END source,
+        COALESCE(e.utm_medium,'') medium,COALESCE(e.utm_campaign,'') campaign,
+        COUNT(*) sessions,COALESCE(SUM(conversions.submissions),0) submissions
+        FROM analytics_events e
+        JOIN (SELECT session_hash,MIN(id) first_id FROM analytics_events WHERE activity_id=? AND created_at>=? AND event_type='pageview' GROUP BY session_hash) first ON first.first_id=e.id
+        LEFT JOIN (SELECT session_hash,COUNT(*) submissions FROM analytics_events WHERE activity_id=? AND created_at>=? AND event_type='form_submit' GROUP BY session_hash) conversions ON conversions.session_hash=e.session_hash
+        GROUP BY source,medium,campaign ORDER BY sessions DESC,submissions DESC LIMIT 12");
+    $q->execute([$activityId,$from,$activityId,$from]);$sources=$q->fetchAll();
 
     $devices=[];$q=$db->prepare("SELECT COALESCE(NULLIF(e.device_type,''),'desktop') device,COUNT(*) sessions FROM analytics_events e JOIN (
         SELECT session_hash,MIN(id) first_id FROM analytics_events WHERE activity_id=? AND created_at>=? AND event_type='pageview' GROUP BY session_hash
