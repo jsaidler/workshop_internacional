@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Legacy promotion fixture</title></head>
+<body>
+<button id="save-page" type="button">Salvar</button>
+<div id="inspector"></div>
+<div class="cms-structure-view-tabs">
+  <button type="button" data-structure-view="sections" class="is-active">Seções</button>
+  <button type="button" data-structure-view="tree">Estrutura</button>
+</div>
+<h2 id="structure-panel-title">Seções</h2>
+<div id="sections-list"></div>
+<div id="page-structure-tree" hidden></div>
+<iframe id="page-frame" title="Página em edição"></iframe>
+<script>
+(()=>{
+  const frame=document.querySelector('#page-frame');
+  const save=document.querySelector('#save-page');
+  const shell=main=>`<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif}section{padding:24px}p,blockquote,ul,h2,figure{margin:18px 0;padding:8px}</style></head><body>${main}</body></html>`;
+  const initial=`<main data-cms-page-main><section data-cms-section="legacy" data-cms-section-name="Conteúdo antigo"><h2 id="legacy-heading" data-cms-editable>Título antigo</h2><p id="legacy-paragraph" data-cms-editable>Parágrafo antigo ainda editável.</p><blockquote id="legacy-quote">Uma citação antiga.</blockquote><ul id="legacy-list"><li>Primeiro item</li><li>Segundo item</li></ul><figure id="legacy-image" data-cms-image-block><img alt="Imagem antiga"></figure><p id="first-class" data-cms-component="paragraph" data-cms-node-id="existing-node" data-cms-editable>Já estrutural.</p><form><p id="form-copy">Texto do formulário</p></form></section></main>`;
+  save.addEventListener('click',()=>{
+    const main=frame.contentDocument?.querySelector('[data-cms-page-main]');
+    if(main)frame.srcdoc=shell(main.outerHTML);
+  });
+  frame.srcdoc=shell(initial);
+})();
+</script>
+<script src="/editor/cms-legacy-node-promotion.js"></script>
+<script src="/editor/cms-structure-sidebar.js"></script>
+</body>
+</html>
