@@ -115,7 +115,7 @@ function annotateConditions(form,conditions){
     const wrapper=control.closest('.cms-field,.cms-choice-group,.cms-consent');
     if(!wrapper)continue;
     wrapper.dataset.cmsConditionField=String(rule.source||'');
-    wrapper.dataset.cmsConditionOperator=String(rule.operator||'equals';
+    wrapper.dataset.cmsConditionOperator=String(rule.operator||'equals');
     wrapper.dataset.cmsConditionValue=String(rule.value||'');
   }
 }
