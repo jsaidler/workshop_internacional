@@ -3,11 +3,14 @@
 <head><meta charset="utf-8"><title>Design cascade fixture</title></head>
 <body>
 <form id="cms-design-form">
+  <input name="type[bodyFont]" value='"Trebuchet MS", sans-serif'>
+  <input name="type[displayFont]" value="Georgia, serif">
+  <input name="type[monoFont]" value='"Courier New", monospace'>
   <input name="type[bodySize]" value="17">
   <textarea name="advanced[customCss]">:root{--cms-body-size:31px}div{font-weight:400}</textarea>
 </form>
 <div id="design-preview-device">
-  <iframe id="design-preview-frame" title="Prévia" srcdoc='<!doctype html><html><head><style id="fixture-base">@layer cms-system{body{font-size:var(--cms-body-size,13px)}html body #probe{font-weight:900}}</style></head><body><div id="probe">probe</div></body></html>'></iframe>
+  <iframe id="design-preview-frame" title="Prévia" srcdoc='<!doctype html><html><head><style id="fixture-base">@layer cms-system{:root{--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:monospace}body{font-family:var(--body);font-size:var(--cms-body-size,13px)}html body #probe{font-family:var(--title);font-weight:900}#mono{font-family:var(--mono)}}</style></head><body><div id="probe">probe</div><span id="mono">mono</span></body></html>'></iframe>
 </div>
 <script src="/assets/design-admin.js"></script>
 </body>
