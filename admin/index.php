@@ -36,14 +36,14 @@ $pendingCount=count($pendingPages)+count($pendingForms);
 $submissionStats=['total'=>0,'new_count'=>0,'converted_count'=>0,'latest'=>null];
 $q=$db->prepare("SELECT COUNT(*) total,COALESCE(SUM(CASE WHEN status='new' THEN 1 ELSE 0 END),0) new_count,COALESCE(SUM(CASE WHEN status='converted' THEN 1 ELSE 0 END),0) converted_count,MAX(created_at) latest FROM cms_form_submissions WHERE activity_id=? AND status!='archived'");
 $q->execute([$id]);$row=$q->fetch();if(is_array($row))$submissionStats=$row;
+$analytics=analytics_dashboard($db,$id,30);
+$analyticsCounts=$analytics['counts'];$analyticsRates=$analytics['rates'];
 
 $mediaStats=['images'=>0,'videos'=>0,'latest'=>null];
 $q=$db->query("SELECT COALESCE(SUM(CASE WHEN kind='image' THEN 1 ELSE 0 END),0) images,COALESCE(SUM(CASE WHEN kind='video' THEN 1 ELSE 0 END),0) videos,MAX(updated_at) latest FROM media_assets WHERE archived_at IS NULL");
 $row=$q->fetch();if(is_array($row))$mediaStats=$row;
 
 $q=$db->prepare("SELECT MAX(draft_updated_at) draft_latest,MAX(published_at) published_latest FROM cms_pages WHERE activity_id=? AND status!='archived'");$q->execute([$id]);$pageDates=$q->fetch()?:[];
-$storageOk=media_storage_available();
-$uploadLimit=(int)floor(media_effective_upload_limit()/1024/1024);
 $publicUrl=admin_public_activity_url($activity);
 $homeUrl=$home?'/editor/?page='.(int)$home['id']:'/admin/pages.php?activity='.$id;
 $formatDate=static function(?string $value): string {if(!$value)return 'Ainda não há registro';$time=strtotime($value);return $time?date('d/m/Y · H:i',$time):$value;};
@@ -62,13 +62,13 @@ $recent=array_slice($recent,0,4);
 admin_shell_start('overview','Visão geral',$state);
 ?>
 <section class="overview-hero">
-  <div><p class="admin-kicker">Painel</p><h2><?=h((string)$activity['public_title'])?></h2><p>Estado do site, conteúdo publicado, inscrições e mídia em um único lugar. A edição continua disponível como ação direta, mas deixa de ser a página inicial do admin.</p></div>
+  <div><p class="admin-kicker">Painel</p><h2><?=h((string)$activity['public_title'])?></h2><p>O que precisa de atenção, como o site está convertendo e os atalhos para trabalhar no conteúdo.</p></div>
   <div class="hero-actions"><a class="admin-button" href="<?=h($homeUrl)?>">Editar página inicial</a><a class="admin-button secondary" href="<?=h($publicUrl)?>" target="_blank" rel="noopener">Abrir site ↗</a></div>
 </section>
 <section class="admin-dashboard-status" aria-label="Resumo do site">
   <article class="admin-status-card" data-tone="<?=$pendingCount>0?'attention':'good'?>"><span>Publicação</span><strong><?=$pendingCount>0?h(admin_quantity_label($pendingCount,'alteração pendente','alterações pendentes')):'Tudo publicado'?></strong></article>
   <article class="admin-status-card" data-tone="<?=(int)$submissionStats['new_count']>0?'attention':'good'?>"><span>Inscrições</span><strong><?=h(admin_quantity_label((int)$submissionStats['new_count'],'nova resposta','novas respostas'))?></strong></article>
-  <article class="admin-status-card" data-tone="<?=$storageOk?'good':'danger'?>"><span>Sistema</span><strong><?=$storageOk?'Mídia operacional':'Armazenamento indisponível'?></strong></article>
+  <article class="admin-status-card"><span>Conversão · 30 dias</span><strong><?=number_format((float)$analyticsRates['visitToSubmit'],1,',','.')?>% acesso → resposta</strong></article>
 </section>
 <section class="admin-dashboard-grid">
   <div class="admin-panel-plain">
@@ -84,8 +84,16 @@ admin_shell_start('overview','Visão geral',$state);
     <div class="admin-quick-grid">
       <a href="<?=h($homeUrl)?>"><strong>Editar site</strong><span>Abrir diretamente a página inicial no editor.</span></a>
       <a href="/admin/submissions.php?activity=<?=$id?>"><strong>Inscrições</strong><span><?=h(admin_quantity_label((int)$submissionStats['total'],'resposta recebida','respostas recebidas'))?>.</span></a>
-      <a href="/admin/forms.php?activity=<?=$id?>"><strong>Formulários</strong><span><?=h(admin_quantity_label(count($forms),'formulário ativo','formulários ativos'))?>.</span></a>
+      <a href="/admin/analytics.php?activity=<?=$id?>"><strong>Métricas</strong><span><?=number_format((int)$analyticsCounts['sessions'],0,',','.')?> sessões nos últimos 30 dias.</span></a>
       <a href="/admin/media.php?activity=<?=$id?>"><strong>Mídia</strong><span><?=h(admin_media_summary((int)$mediaStats['images'],(int)$mediaStats['videos']))?>.</span></a>
+    </div>
+  </div>
+  <div class="admin-panel-plain">
+    <header><h3>Desempenho · 30 dias</h3><a href="/admin/analytics.php?activity=<?=$id?>">Abrir métricas</a></header>
+    <div class="admin-row-list">
+      <div class="admin-row-item"><div><strong><?=number_format((int)$analyticsCounts['sessions'],0,',','.')?> sessões</strong><span><?=number_format((int)$analyticsCounts['views'],0,',','.')?> visualizações de página</span></div></div>
+      <div class="admin-row-item"><div><strong><?=number_format((int)$analyticsCounts['submissions'],0,',','.')?> respostas</strong><span><?=number_format((float)$analyticsRates['visitToSubmit'],1,',','.')?>% das sessões chegaram ao envio</span></div></div>
+      <div class="admin-row-item"><div><strong><?=number_format((int)$analyticsCounts['converted'],0,',','.')?> convertidas</strong><span><?=number_format((float)$analyticsRates['submitToConverted'],1,',','.')?>% das respostas marcadas como convertidas</span></div></div>
     </div>
   </div>
   <div class="admin-panel-plain">
@@ -93,14 +101,6 @@ admin_shell_start('overview','Visão geral',$state);
     <div class="admin-row-list">
       <?php if(!$recent):?><div class="admin-row-item"><div><strong>Nenhuma atividade registrada</strong><span>As alterações recentes aparecerão aqui.</span></div></div><?php endif;?>
       <?php foreach($recent as $event):?><div class="admin-row-item"><div><strong><?=h($event['label'])?></strong><span><?=h($formatDate($event['date']))?></span></div></div><?php endforeach;?>
-    </div>
-  </div>
-  <div class="admin-panel-plain">
-    <header><h3>Estado técnico</h3><a href="/admin/system.php">Ver sistema</a></header>
-    <div class="admin-row-list">
-      <div class="admin-row-item"><div><strong>Armazenamento de mídia</strong><span><?=$storageOk?'Leitura e gravação disponíveis':'Falha de escrita detectada'?></span></div><span class="admin-badge"><?=$storageOk?'OK':'Atenção'?></span></div>
-      <div class="admin-row-item"><div><strong>Limite efetivo de upload</strong><span><?=$uploadLimit?> MB por arquivo</span></div></div>
-      <div class="admin-row-item"><div><strong>Conteúdo</strong><span><?=h(admin_quantity_label(count($pages),'página ativa','páginas ativas'))?> · <?=h(admin_quantity_label(count($forms),'formulário','formulários'))?></span></div></div>
     </div>
   </div>
 </section>
