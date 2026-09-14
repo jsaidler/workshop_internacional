@@ -6,10 +6,11 @@ Antes de alterar código, conteúdo, CMS, deploy ou fluxo administrativo, ler ne
 
 1. `docs/PROJECT_STATE.md`;
 2. `docs/CMS_PROFESSIONAL.md`;
-3. `docs/DESIGN_TYPOGRAPHY.md`;
-4. `docs/CMS_V3_DEPLOYMENT.md`;
-5. `README.md`;
-6. `DEPLOY.md`.
+3. `docs/UI_CONTENT_RULES.md`;
+4. `docs/DESIGN_TYPOGRAPHY.md`;
+5. `docs/CMS_V3_DEPLOYMENT.md`;
+6. `README.md`;
+7. `DEPLOY.md`.
 
 Não reconstruir decisões pela memória quando os documentos vigentes disserem algo diferente. Quando uma decisão estrutural, editorial ou operacional mudar, atualizar os documentos canônicos no mesmo trabalho; não deixar a documentação para uma etapa futura.
 
@@ -51,14 +52,24 @@ O campo `Design → CSS adicional` é a última camada editorial de CSS do site.
 
 ### Tipografia de Design
 
-Os controles de tipografia do painel representam valores editoriais reais, não nomes de variáveis internas.
+Os controles de tipografia do painel representam decisões editoriais reais e usam somente famílias oferecidas pelo catálogo controlado de Google Fonts.
 
-- `Design → Tipografia` deve mostrar e persistir pilhas CSS concretas, com fallbacks, nunca `var(--title)`, `var(--mono)`, `var(--sans)` ou outro detalhe de implementação.
-- Uma fonte usada pelo visual público precisa estar disponível ao visitante por asset local ou carregamento web explícito; não pode depender silenciosamente de estar instalada no computador do usuário ou do visitante.
+- `Design → Tipografia` deve usar seletores de famílias, nunca campo de texto livre com pilha CSS, `var(--title)`, `var(--mono)`, `var(--sans)` ou outro detalhe de implementação.
+- O valor persistido é o nome da família; fallback, pesos e URL do Google Fonts são derivados internamente pelo sistema.
+- O site público carrega somente as famílias atualmente selecionadas, e a prévia ao vivo precisa carregar a nova família ao alterar o seletor.
 - O valor salvo no painel deve dirigir os tokens efetivamente consumidos pelo template tanto no site público quanto na prévia ao vivo.
 - Mudanças de nomes internos de custom properties não podem alterar o significado do valor editorial armazenado.
-- Estado legado que contenha referências internas deve ser normalizado/migrado para valores portáveis sem apagar outras configurações de Design.
+- Estado legado que contenha referências internas ou pilhas CSS deve ser normalizado/migrado para nomes válidos do catálogo sem apagar outras configurações de Design.
 - A especificação completa dessa superfície está em `docs/DESIGN_TYPOGRAPHY.md`.
+
+### Conteúdo da interface administrativa
+
+Instruções destinadas ao desenvolvimento não podem virar conteúdo de interface apenas porque foram usadas para orientar a implementação.
+
+- Não exibir ao usuário explicações de arquitetura, variáveis internas, fallbacks técnicos, carregamento de assets, sintaxe CSS ou justificativas de código quando isso não for necessário para operar a tela.
+- Se uma escolha puder ser validada e estruturada pelo sistema, preferir um controle explícito a pedir que o usuário digite sintaxe técnica.
+- Detalhes internos podem existir em atributos, schema, testes e documentação, mas não devem aparecer como ajuda editorial sem necessidade real.
+- As regras completas estão em `docs/UI_CONTENT_RULES.md`.
 
 ## Segurança de interação no editor visual
 
