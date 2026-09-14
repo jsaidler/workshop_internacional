@@ -42,10 +42,6 @@ test('persistent conversion bar remains usable on a narrow mobile viewport',asyn
 });
 
 test('editor previews do not receive the public conversion footer',async({page})=>{
-  await page.goto('http://127.0.0.1:8099/tools/browser-fixture/conversion-bar.html');
-  await page.evaluate(()=>{document.body.classList.add('cms-editor-preview');location.reload()});
-  await page.waitForLoadState('domcontentloaded');
-  // Reload clears runtime class changes, so assert the implementation guard directly as a regression contract.
-  const source=await page.evaluate(async()=>await (await fetch('/assets/public.js')).text());
-  expect(source).toContain("document.body.classList.contains('cms-editor-preview')");
+  await page.goto('http://127.0.0.1:8099/tools/browser-fixture/conversion-bar-editor.html');
+  await expect(page.locator('[data-cms-conversion-bar]')).toHaveCount(0);
 });
