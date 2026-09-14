@@ -19,11 +19,16 @@ test('Design additional CSS wins over generated tokens and system specificity',a
   await expect.poll(()=>frame.locator('head').evaluate(head=>head.lastElementChild?.id||'')).toBe('cms-live-custom');
 });
 
-test('public additional CSS outranks more specific system selectors',async({page})=>{
+test('public additional CSS outranks system and dynamically loaded registration CSS',async({page})=>{
   await page.goto('http://127.0.0.1:8099/tools/browser-fixture/public-css-cascade.html');
   const probe=page.locator('#probe');
+  const registration=page.locator('#registration-probe');
   await expect(probe).toBeVisible();
+  await expect(registration).toBeVisible();
   await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(7, 8, 9)');
   await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).color)).toBe('rgb(1, 2, 3)');
-  await expect.poll(()=>page.locator('head').evaluate(head=>head.lastElementChild?.id||'')).toBe('cms-custom-css');
+  await expect.poll(()=>registration.evaluate(el=>getComputedStyle(el).borderTopWidth)).toBe('0px');
+  await expect.poll(()=>page.locator('[data-registration-css]').evaluate(el=>el.textContent)).toContain('layer(cms-system)');
+  await expect(page.locator('link[data-registration-css]')).toHaveCount(0);
+  await expect(page.locator('link[data-cms-responsive]')).toHaveCount(0);
 });

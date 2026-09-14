@@ -68,6 +68,12 @@ design_css_expect(!str_contains($responsive,'!important'),'responsive visual con
 $cmsWithoutHoneypot=preg_replace('/\.honeypot\{[^}]+\}/','',$cmsCss)??$cmsCss;
 design_css_expect(!str_contains($cmsWithoutHoneypot,'!important'),'layout/design rules must not use !important; only the honeypot invariant may retain it here');
 
+$publicJs=(string)file_get_contents(dirname(__DIR__).'/assets/public.js');
+design_css_expect(str_contains($publicJs,'@import url("/assets/registration.css") layer(cms-system);'),'registration.css must be dynamically loaded inside the lower cms-system layer');
+design_css_expect(str_contains($publicJs,'@import url("/assets/cms-responsive.css") layer(cms-system);'),'responsive fallback CSS must also stay inside cms-system');
+design_css_expect(str_contains($publicJs,"document.querySelector('[data-cms-responsive]')"),'public JS must recognize the renderer style marker instead of appending a duplicate stylesheet');
+design_css_expect(!str_contains($publicJs,"registration.rel='stylesheet'"),'registration.css must never be appended as an unlayered link after Additional CSS');
+
 $adminJs=(string)file_get_contents(dirname(__DIR__).'/assets/design-admin.js');
 design_css_expect(str_contains($adminJs,"generated.id='cms-live-design-vars'"),'live preview must render generated tokens in a stylesheet');
 design_css_expect(str_contains($adminJs,"custom.id='cms-live-custom'"),'live preview must keep additional CSS in its own stylesheet');

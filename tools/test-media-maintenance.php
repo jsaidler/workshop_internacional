@@ -19,6 +19,10 @@ $now=gmdate('c');$relative=$uuid.'/'.$version.'/original/file.png';
 $db->prepare('INSERT INTO media_assets(id,asset_uuid,kind,title,original_name,mime_type,byte_size,width,height,checksum,processing_status,active_version_id,created_at,updated_at) VALUES(1,?,"image","alpha","alpha.png","image/png",?,400,240,?,"ready",1,?,?)')->execute([$uuid,filesize($file),hash_file('sha256',$file),$now,$now]);
 $db->prepare('INSERT INTO media_versions(id,asset_id,version_uuid,original_path,mime_type,byte_size,width,height,checksum,processing_status,created_at) VALUES(1,1,?,?,?,?,?,?,?,"ready",?)')->execute([$version,$relative,'image/png',filesize($file),400,240,hash_file('sha256',$file),$now]);
 try{
+    $decoded=media_maintenance_decode_source($file,'image/png');
+    maintenance_expect(($decoded['engine']??'')==='gd','PNG maintenance must prefer GD instead of ImageMagick when GD is available');
+    media_release_image($decoded);
+
     $first=media_regenerate_image_version($db,1,1);
     maintenance_expect(($first['derivatives']??0)>0,'no derivatives were generated');
     maintenance_expect(!empty($first['transparencyPreserved']),'service did not detect source transparency');
@@ -46,8 +50,8 @@ try{
     maintenance_expect(!is_file($firstAbsolute),'obsolete derivative directory must be removed after database commit');
     maintenance_expect($db->query("SELECT COUNT(*) FROM media_derivatives WHERE path LIKE '%/responsive-%'")->fetchColumn()>0,'database must point at immutable regenerated derivative URLs');
 
-    $repair=(string)file_get_contents(__DIR__.'/../migrations/026_repair_transparent_png_regeneration.php');
-    maintenance_expect(str_contains($repair,'media_regenerate_image_version'),'migration 026 must republish existing PNG derivatives through the guarded regenerator');
+    $repair=(string)file_get_contents(__DIR__.'/../migrations/028_repair_png_regeneration_with_gd.php');
+    maintenance_expect(str_contains($repair,'media_regenerate_image_version'),'migration 028 must republish existing PNG derivatives through the GD-preferred regenerator');
     maintenance_expect(str_contains($repair,'DELETE FROM media_derivatives WHERE version_id=?'),'failed migration repair must invalidate bad derivative references and fall back to the original');
     fwrite(STDOUT,"Media regeneration visible-content test passed\n");
 }finally{media_remove_tree(media_upload_root().'/'.$uuid);}
