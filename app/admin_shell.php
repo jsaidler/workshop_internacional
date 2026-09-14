@@ -18,6 +18,7 @@ function admin_workspace(string $section): string {
     return match($section){
         'pages','blocks','design','site','seo','overview'=>'site',
         'forms','responses'=>'registrations',
+        'analytics'=>'analytics',
         'media'=>'media',
         'system','activities'=>'settings',
         default=>'site',
@@ -49,6 +50,7 @@ function admin_shell_start(string $section,string $title,array $state): void {
     $items=[
         'site'=>['Site','/admin/'],
         'registrations'=>['Inscrições',admin_shell_url('/admin/submissions.php',$activity)],
+        'analytics'=>['Métricas',admin_shell_url('/admin/analytics.php',$activity)],
         'media'=>['Mídia',admin_shell_url('/admin/media.php',$activity)],
         'settings'=>['Configurações','/admin/system.php'],
     ];
