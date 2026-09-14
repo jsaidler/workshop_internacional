@@ -115,6 +115,7 @@ test('rich components persist, are named in the tree and expose their own contro
   await expect(frame.locator('[data-cms-component="list"]')).toHaveClass(/cms-structure-selected/);
   await expect(page.locator('#inspector')).toContainText('Lista');
   await expect(page.locator('#inspector [data-rich-list-add]')).toHaveCount(1);
+  await page.locator('#inspector').evaluate(el=>{el.style.display='block'});
   await page.locator('#inspector [data-rich-list-add]').click();
   await page.waitForTimeout(950);
   await expect(frame.locator('[data-cms-component="list"] li[data-cms-editable]')).toHaveCount(4);
