@@ -1,0 +1,84 @@
+/* First-class content structure properties.
+   Canonical breakpoints match the rest of the CMS:
+   desktop >= 1025px, tablet 721-1024px, phone <= 720px.
+   Device-specific attributes are intentionally isolated by media query. */
+
+.cms-public .cms-container[data-cms-box-width="full"]{width:100%;max-width:none}
+.cms-public .cms-container[data-cms-box-width="contained"]{width:min(100%,var(--max));max-width:var(--max);margin-inline:auto}
+.cms-public .cms-container[data-cms-box-width="narrow"]{width:min(100%,var(--cms-narrow,760px));max-width:var(--cms-narrow,760px);margin-inline:auto}
+.cms-public .cms-container[data-cms-box-tone="surface"]{background:var(--surface);color:var(--text)}
+.cms-public .cms-container[data-cms-box-tone="muted"]{background:var(--surface-2);color:var(--text)}
+.cms-public .cms-container[data-cms-box-tone="inverse"]{background:var(--text);color:var(--bg)}
+.cms-public .cms-container[data-cms-box-border="top"],.cms-public .cms-container[data-cms-box-border="both"]{border-top:1px solid var(--line)}
+.cms-public .cms-container[data-cms-box-border="bottom"],.cms-public .cms-container[data-cms-box-border="both"]{border-bottom:1px solid var(--line)}
+
+/* Reset properties that older first-class-container rules may have assigned outside
+   the canonical viewport. Explicit values are then applied only inside that viewport. */
+@media (min-width:1025px){
+  .cms-public .cms-container-columns{grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--cms-container-gap,24px);align-items:start}
+  .cms-public .cms-container-columns[data-cms-columns="1"]{grid-template-columns:minmax(0,1fr)}
+  .cms-public .cms-container-columns[data-cms-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-columns="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-columns="2"][data-cms-ratio="30-70"]{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}
+  .cms-public .cms-container-columns[data-cms-columns="2"][data-cms-ratio="40-60"]{grid-template-columns:minmax(0,4fr) minmax(0,6fr)}
+  .cms-public .cms-container-columns[data-cms-columns="2"][data-cms-ratio="50-50"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-columns="2"][data-cms-ratio="60-40"]{grid-template-columns:minmax(0,6fr) minmax(0,4fr)}
+  .cms-public .cms-container-columns[data-cms-columns="2"][data-cms-ratio="70-30"]{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}
+  .cms-public [data-cms-gap="none"]{--cms-container-gap:0}.cms-public [data-cms-gap="s"]{--cms-container-gap:12px}.cms-public [data-cms-gap="m"]{--cms-container-gap:24px}.cms-public [data-cms-gap="l"]{--cms-container-gap:48px}
+  .cms-public .cms-container[data-cms-padding="none"]{padding:0}.cms-public .cms-container[data-cms-padding="s"]{padding:16px}.cms-public .cms-container[data-cms-padding="m"]{padding:32px}.cms-public .cms-container[data-cms-padding="l"]{padding:56px}.cms-public .cms-container[data-cms-padding="xl"]{padding:88px}
+  .cms-public .cms-container[data-cms-items="start"]{align-items:start}.cms-public .cms-container[data-cms-items="center"]{align-items:center}.cms-public .cms-container[data-cms-items="end"]{align-items:end}.cms-public .cms-container[data-cms-items="stretch"]{align-items:stretch}
+  .cms-public .cms-column[data-cms-justify="start"]{justify-content:flex-start}.cms-public .cms-column[data-cms-justify="center"]{justify-content:center}.cms-public .cms-column[data-cms-justify="end"]{justify-content:flex-end}
+  .cms-public .cms-column[data-cms-column-align="start"]{align-items:flex-start}.cms-public .cms-column[data-cms-column-align="center"]{align-items:center}.cms-public .cms-column[data-cms-column-align="end"]{align-items:flex-end}.cms-public .cms-column[data-cms-column-align="stretch"]{align-items:stretch}
+  .cms-public .cms-column[data-cms-text-align="left"]{text-align:left}.cms-public .cms-column[data-cms-text-align="center"]{text-align:center}.cms-public .cms-column[data-cms-text-align="right"]{text-align:right}
+  .cms-public .cms-column[data-cms-order="1"]{order:1}.cms-public .cms-column[data-cms-order="2"]{order:2}.cms-public .cms-column[data-cms-order="3"]{order:3}.cms-public .cms-column[data-cms-order="4"]{order:4}
+  .cms-public:not(.cms-editor-preview) .cms-column[data-cms-hide-desktop="1"]{display:none}
+  .cms-public.cms-editor-preview .cms-column[data-cms-hide-desktop="1"]{opacity:.35}
+  .cms-public .cms-component-spacer[data-cms-space="s"]{height:24px}.cms-public .cms-component-spacer[data-cms-space="m"]{height:48px}.cms-public .cms-component-spacer[data-cms-space="l"]{height:80px}.cms-public .cms-component-spacer[data-cms-space="xl"]{height:120px}
+}
+
+@media (min-width:721px) and (max-width:1024px){
+  .cms-public .cms-container-columns{grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="1"]{grid-template-columns:minmax(0,1fr)}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="2"][data-cms-tablet-ratio="30-70"]{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="2"][data-cms-tablet-ratio="40-60"]{grid-template-columns:minmax(0,4fr) minmax(0,6fr)}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="2"][data-cms-tablet-ratio="50-50"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="2"][data-cms-tablet-ratio="60-40"]{grid-template-columns:minmax(0,6fr) minmax(0,4fr)}
+  .cms-public .cms-container-columns[data-cms-tablet-columns="2"][data-cms-tablet-ratio="70-30"]{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}
+  .cms-public [data-cms-tablet-gap="none"]{--cms-container-gap:0}.cms-public [data-cms-tablet-gap="s"]{--cms-container-gap:12px}.cms-public [data-cms-tablet-gap="m"]{--cms-container-gap:24px}.cms-public [data-cms-tablet-gap="l"]{--cms-container-gap:48px}
+  .cms-public .cms-container[data-cms-tablet-padding="none"]{padding:0}.cms-public .cms-container[data-cms-tablet-padding="s"]{padding:12px}.cms-public .cms-container[data-cms-tablet-padding="m"]{padding:24px}.cms-public .cms-container[data-cms-tablet-padding="l"]{padding:40px}.cms-public .cms-container[data-cms-tablet-padding="xl"]{padding:64px}
+  .cms-public .cms-container[data-cms-tablet-items="start"]{align-items:start}.cms-public .cms-container[data-cms-tablet-items="center"]{align-items:center}.cms-public .cms-container[data-cms-tablet-items="end"]{align-items:end}.cms-public .cms-container[data-cms-tablet-items="stretch"]{align-items:stretch}
+  .cms-public .cms-column{justify-content:flex-start;align-items:stretch;text-align:inherit;order:0}
+  .cms-public .cms-column[data-cms-tablet-justify="start"]{justify-content:flex-start}.cms-public .cms-column[data-cms-tablet-justify="center"]{justify-content:center}.cms-public .cms-column[data-cms-tablet-justify="end"]{justify-content:flex-end}
+  .cms-public .cms-column[data-cms-tablet-column-align="start"]{align-items:flex-start}.cms-public .cms-column[data-cms-tablet-column-align="center"]{align-items:center}.cms-public .cms-column[data-cms-tablet-column-align="end"]{align-items:flex-end}.cms-public .cms-column[data-cms-tablet-column-align="stretch"]{align-items:stretch}
+  .cms-public .cms-column[data-cms-tablet-text-align="left"]{text-align:left}.cms-public .cms-column[data-cms-tablet-text-align="center"]{text-align:center}.cms-public .cms-column[data-cms-tablet-text-align="right"]{text-align:right}
+  .cms-public .cms-column[data-cms-tablet-order="1"]{order:1}.cms-public .cms-column[data-cms-tablet-order="2"]{order:2}.cms-public .cms-column[data-cms-tablet-order="3"]{order:3}.cms-public .cms-column[data-cms-tablet-order="4"]{order:4}
+  .cms-public:not(.cms-editor-preview) .cms-column[data-cms-hide-tablet="1"]{display:none}
+  .cms-public.cms-editor-preview .cms-column[data-cms-hide-tablet="1"]{opacity:.35}
+  .cms-public .cms-component-spacer{height:48px}.cms-public .cms-component-spacer[data-cms-tablet-space="s"]{height:24px}.cms-public .cms-component-spacer[data-cms-tablet-space="m"]{height:48px}.cms-public .cms-component-spacer[data-cms-tablet-space="l"]{height:80px}.cms-public .cms-component-spacer[data-cms-tablet-space="xl"]{height:120px}
+}
+
+@media (max-width:720px){
+  .cms-public .cms-container-columns{grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+  .cms-public .cms-container-columns[data-cms-mobile-columns="1"]{grid-template-columns:minmax(0,1fr)}
+  .cms-public .cms-container-columns[data-cms-mobile-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-mobile-columns="2"][data-cms-mobile-ratio="30-70"]{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}
+  .cms-public .cms-container-columns[data-cms-mobile-columns="2"][data-cms-mobile-ratio="40-60"]{grid-template-columns:minmax(0,4fr) minmax(0,6fr)}
+  .cms-public .cms-container-columns[data-cms-mobile-columns="2"][data-cms-mobile-ratio="50-50"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public .cms-container-columns[data-cms-mobile-columns="2"][data-cms-mobile-ratio="60-40"]{grid-template-columns:minmax(0,6fr) minmax(0,4fr)}
+  .cms-public .cms-container-columns[data-cms-mobile-columns="2"][data-cms-mobile-ratio="70-30"]{grid-template-columns:minmax(0,7fr) minmax(0,3fr)}
+  .cms-public [data-cms-mobile-gap="none"]{--cms-container-gap:0}.cms-public [data-cms-mobile-gap="s"]{--cms-container-gap:12px}.cms-public [data-cms-mobile-gap="m"]{--cms-container-gap:24px}.cms-public [data-cms-mobile-gap="l"]{--cms-container-gap:40px}
+  .cms-public .cms-container[data-cms-mobile-padding="none"]{padding:0}.cms-public .cms-container[data-cms-mobile-padding="s"]{padding:10px}.cms-public .cms-container[data-cms-mobile-padding="m"]{padding:18px}.cms-public .cms-container[data-cms-mobile-padding="l"]{padding:28px}.cms-public .cms-container[data-cms-mobile-padding="xl"]{padding:40px}
+  .cms-public .cms-container[data-cms-mobile-items="start"]{align-items:start}.cms-public .cms-container[data-cms-mobile-items="center"]{align-items:center}.cms-public .cms-container[data-cms-mobile-items="end"]{align-items:end}.cms-public .cms-container[data-cms-mobile-items="stretch"]{align-items:stretch}
+  .cms-public .cms-column{justify-content:flex-start;align-items:stretch;text-align:inherit;order:0}
+  .cms-public .cms-column[data-cms-mobile-justify="start"]{justify-content:flex-start}.cms-public .cms-column[data-cms-mobile-justify="center"]{justify-content:center}.cms-public .cms-column[data-cms-mobile-justify="end"]{justify-content:flex-end}
+  .cms-public .cms-column[data-cms-mobile-column-align="start"]{align-items:flex-start}.cms-public .cms-column[data-cms-mobile-column-align="center"]{align-items:center}.cms-public .cms-column[data-cms-mobile-column-align="end"]{align-items:flex-end}.cms-public .cms-column[data-cms-mobile-column-align="stretch"]{align-items:stretch}
+  .cms-public .cms-column[data-cms-mobile-text-align="left"]{text-align:left}.cms-public .cms-column[data-cms-mobile-text-align="center"]{text-align:center}.cms-public .cms-column[data-cms-mobile-text-align="right"]{text-align:right}
+  .cms-public .cms-column[data-cms-mobile-order="1"]{order:1}.cms-public .cms-column[data-cms-mobile-order="2"]{order:2}.cms-public .cms-column[data-cms-mobile-order="3"]{order:3}.cms-public .cms-column[data-cms-mobile-order="4"]{order:4}
+  .cms-public:not(.cms-editor-preview) .cms-column[data-cms-hide-mobile="1"]{display:none}
+  .cms-public.cms-editor-preview .cms-column[data-cms-hide-mobile="1"]{opacity:.35}
+  .cms-public .cms-component-spacer{height:48px}.cms-public .cms-component-spacer[data-cms-mobile-space="s"]{height:24px}.cms-public .cms-component-spacer[data-cms-mobile-space="m"]{height:48px}.cms-public .cms-component-spacer[data-cms-mobile-space="l"]{height:80px}.cms-public .cms-component-spacer[data-cms-mobile-space="xl"]{height:120px}
+}
