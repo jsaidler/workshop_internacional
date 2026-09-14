@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="/editor/task-centric.css">
 <link rel="stylesheet" href="/editor/cms-form-quick-edit.css">
 <link rel="stylesheet" href="/editor/cms-component-editor.css">
+<link rel="stylesheet" href="/editor/cms-structure-sidebar.css">
 <link rel="stylesheet" href="/editor/cms-layout-properties.css">
 </head>
 <body class="task-centric-editor">
@@ -57,9 +58,14 @@
 </header>
 <main class="cms-editor-workspace task-editor-workspace">
   <aside class="editor-panel sections-panel">
-    <div class="panel-heading"><p>Estrutura</p><h2>Seções</h2></div>
+    <div class="panel-heading"><p>Estrutura</p><h2 id="structure-panel-title">Seções</h2></div>
+    <div class="cms-structure-view-tabs" role="tablist" aria-label="Navegação da página">
+      <button type="button" role="tab" data-structure-view="sections" class="is-active" aria-selected="true">Seções</button>
+      <button type="button" role="tab" data-structure-view="tree" aria-selected="false" tabindex="-1">Estrutura</button>
+    </div>
     <button type="button" id="add-section-side" class="panel-button primary-panel-action">+ Adicionar seção</button>
     <div id="sections-list" class="sections-list"></div>
+    <div id="page-structure-tree" class="cms-page-structure-tree" hidden></div>
   </aside>
   <section class="editor-canvas" aria-label="Página em edição"><div class="device-frame desktop" id="device-frame"><iframe id="page-frame" title="Página em edição"></iframe></div></section>
   <aside class="editor-panel inspector" id="inspector"><div class="inspector-empty"><p>Selecione diretamente na página o texto, imagem, vídeo, formulário ou seção que deseja alterar.</p></div></aside>
@@ -83,6 +89,7 @@
 <script src="/editor/task-centric.js"></script>
 <script src="/editor/cms-component-editor.js"></script>
 <script src="/editor/cms-inline-geometry.js"></script>
+<script src="/editor/cms-structure-sidebar.js"></script>
 <script src="/editor/cms-layout-properties.js"></script>
 </body>
 </html>

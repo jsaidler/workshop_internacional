@@ -59,3 +59,23 @@ test('selected component exposes separated before and after insertion points',as
   await page.waitForTimeout(1000);
   expect(await frame.locator('#divider').evaluate(el=>el.previousElementSibling?.dataset.cmsComponent||'')).toBe('heading');
 });
+
+test('structure sidebar exposes the page hierarchy and selects nested components',async({page})=>{
+  const frame=await fixture(page);
+  await page.locator('[data-structure-view="tree"]').click();
+  await expect(page.locator('#structure-panel-title')).toHaveText('Estrutura da página');
+  await expect(page.locator('#page-structure-tree')).toBeVisible();
+  await expect(page.locator('#page-structure-tree [data-tree-level="section"] .cms-page-tree-main strong')).toHaveText('Fixture');
+  await expect(page.locator('#page-structure-tree [data-tree-level="node"]')).toHaveCount(5);
+  const tree=page.locator('#page-structure-tree');
+  for(const label of ['Grupo de colunas','Coluna 1','Texto existente','Coluna 2','Divisor'])await expect(tree).toContainText(label);
+
+  await page.locator('#page-structure-tree [data-tree-level="node"] .cms-page-tree-main', {hasText:'Texto existente'}).click();
+  await expect(frame.locator('#column-a [data-cms-component="paragraph"]')).toHaveClass(/cms-structure-selected/);
+  await expect(page.locator('#page-structure-tree [data-tree-level="node"].is-selected .cms-page-tree-main')).toContainText('Texto existente');
+
+  await page.locator('#page-structure-tree [data-page-tree-toggle="0"]').click();
+  await expect(page.locator('#page-structure-tree [data-tree-level="node"]')).toHaveCount(0);
+  await page.locator('#page-structure-tree [data-page-tree-toggle="0"]').click();
+  await expect(page.locator('#page-structure-tree [data-tree-level="node"]')).toHaveCount(5);
+});
