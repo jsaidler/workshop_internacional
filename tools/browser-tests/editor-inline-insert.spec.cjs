@@ -11,6 +11,10 @@ async function fixture(page){
   return frame;
 }
 
+function overlaps(a,b){
+  return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;
+}
+
 test('inline insertion UI is editor-only and does not enter page content',async({page})=>{
   const frame=await fixture(page);
   await expect(frame.locator('[data-cms-page-main] .cms-inline-layer')).toHaveCount(0);
@@ -35,13 +39,21 @@ test('empty column can receive a paragraph directly from the canvas',async({page
   await expect(frame.locator('[data-cms-page-main] .cms-inline-layer')).toHaveCount(0);
 });
 
-test('selected component exposes before and after insertion points',async({page})=>{
+test('selected component exposes separated before and after insertion points',async({page})=>{
   const frame=await fixture(page);
   await frame.locator('#divider').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
-  await expect(frame.locator('.cms-inline-add', {hasText:'+ Antes'})).toHaveCount(1);
-  await expect(frame.locator('.cms-inline-add', {hasText:'+ Depois'})).toHaveCount(1);
+  const before=frame.locator('.cms-inline-add', {hasText:'+ Antes'});
+  const after=frame.locator('.cms-inline-add', {hasText:'+ Depois'});
+  await expect(before).toHaveCount(1);
+  await expect(after).toHaveCount(1);
+  await page.waitForTimeout(180);
+  const beforeBox=await before.boundingBox();
+  const afterBox=await after.boundingBox();
+  expect(beforeBox).not.toBeNull();
+  expect(afterBox).not.toBeNull();
+  expect(overlaps(beforeBox,afterBox)).toBe(false);
 
-  await frame.locator('.cms-inline-add', {hasText:'+ Antes'}).click();
+  await before.click();
   await frame.locator('.cms-inline-palette [data-inline-type="heading"]').click();
   expect(await frame.locator('#divider').evaluate(el=>el.previousElementSibling?.dataset.cmsComponent||'')).toBe('heading');
   await page.waitForTimeout(1000);
