@@ -29,9 +29,22 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 - arquivamento protegido quando o asset ainda está em uso;
 - o vídeo do processo/revelação é parte da hierarquia editorial pública e deve preservar a mídia gerenciada já associada sempre que possível.
 
+### Derivadas de imagem e cache
+
+O original de cada versão de imagem é a fonte de verdade imutável. Derivadas responsivas são artefatos reconstruíveis e não podem depender da substituição de bytes sob um URL já publicado.
+
+- uma regeneração publica a nova família de derivadas em um diretório final novo `responsive-<token>`;
+- somente depois de todas as derivadas serem gravadas e verificadas o banco troca as referências para os URLs novos;
+- diretórios antigos são eliminados depois do commit, nunca antes;
+- imagens que não precisam de derivadas responsivas usam o original;
+- se um reparo não conseguir reconstruir uma versão, suas referências de derivadas são invalidadas e o renderer recua para o original em vez de continuar apontando para um arquivo potencialmente defeituoso;
+- `migrations/025_republish_png_derivatives_with_new_urls.php` reaplica esse modelo aos PNGs legados, inclusive quando a reconstrução anterior já havia sido marcada como executada.
+
 ### Controles de imagem no editor de páginas
 
 Imagem usa um inspector próprio com texto alternativo, ajuste (`cover`/`contain`), ponto focal e biblioteca de imagens. Substituir uma imagem abre somente a coleção de imagens.
+
+Ajuste e ponto focal não são escritos como `object-fit`/`object-position` inline. O renderer transporta esses valores em custom properties e a camada CSS do sistema os consome. Assim a configuração visual do CMS funciona normalmente, mas `Design → CSS adicional` continua podendo sobrescrever essas propriedades quando o usuário deliberadamente fizer isso.
 
 ### Controles de vídeo no editor de páginas
 
@@ -45,6 +58,17 @@ Vídeo não reutiliza o inspector nem o seletor de imagem.
 - o mesmo controle atende todas as páginas, idiomas e componentes;
 - o controlador dedicado de vídeo é carregado antes dos hooks legados de `cms-pro-editor.js`;
 - CSS e JavaScript do editor recebem `?v=<versão instalada>` na entrada autenticada `editor/index.php`.
+
+## Design e autoridade do CSS adicional
+
+`Design → CSS adicional` é a última camada editorial de estilo do site; essa autoridade não depende apenas de o `<style>` aparecer depois de outro elemento no `<head>`.
+
+- estilos visuais do template/CMS, responsividade, controles de layout e tokens gerados pelo painel são carregados na camada CSS inferior `cms-system`;
+- `#cms-custom-css` permanece sem camada e é o último estilo autoral, de modo que declarações normais do CSS adicional prevalecem sobre declarações normais do sistema independentemente da especificidade do seletor;
+- a prévia ao vivo usa a mesma regra: tokens gerados entram em `cms-system` e o CSS adicional é reaplicado por último;
+- a prévia não pode escrever tokens com `style.setProperty()` no `<html>`, porque estilos inline venceriam stylesheet normal; resíduos inline deixados por versões antigas são removidos ao aplicar a prévia;
+- regras visuais do CMS não usam `!important` quando a propriedade deve permanecer editável; `!important` fica reservado a invariantes funcionais deliberados;
+- a precedência é validada por testes reais em Chromium que conferem `getComputedStyle()` tanto na prévia de Design quanto numa superfície pública com seletor do sistema mais específico.
 
 ## Formulários
 
