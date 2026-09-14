@@ -3,9 +3,18 @@
 <head><meta charset="utf-8"><title>Design cascade fixture</title></head>
 <body>
 <form id="cms-design-form">
-  <input name="type[bodyFont]" value='"Trebuchet MS", sans-serif'>
-  <input name="type[displayFont]" value="Georgia, serif">
-  <input name="type[monoFont]" value='"Courier New", monospace'>
+  <select name="type[bodyFont]" data-design-font-role="body">
+    <option value="IBM Plex Sans" data-font-stack='"IBM Plex Sans", Arial, sans-serif' data-font-weights="300;400;500;600" selected>IBM Plex Sans</option>
+    <option value="Inter" data-font-stack='"Inter", Arial, sans-serif' data-font-weights="300;400;500;600;700">Inter</option>
+  </select>
+  <select name="type[displayFont]" data-design-font-role="display">
+    <option value="Saira Extra Condensed" data-font-stack='"Saira Extra Condensed", "Arial Narrow", Arial, sans-serif' data-font-weights="300;400;500;600;700" selected>Saira Extra Condensed</option>
+    <option value="Oswald" data-font-stack='"Oswald", "Arial Narrow", Arial, sans-serif' data-font-weights="300;400;500;600;700">Oswald</option>
+  </select>
+  <select name="type[monoFont]" data-design-font-role="mono">
+    <option value="IBM Plex Mono" data-font-stack='"IBM Plex Mono", Consolas, monospace' data-font-weights="300;400;500;600" selected>IBM Plex Mono</option>
+    <option value="Roboto Mono" data-font-stack='"Roboto Mono", Consolas, monospace' data-font-weights="300;400;500;600;700">Roboto Mono</option>
+  </select>
   <input name="type[bodySize]" value="17">
   <textarea name="advanced[customCss]">:root{--cms-body-size:31px}div{font-weight:400}</textarea>
 </form>
