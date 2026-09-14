@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Persistent conversion bar fixture</title>
+  <style>
+    :root{--surface:#f4f4f0;--text:#111;--muted:#656565;--line:#bbb;--line-strong:#888;--max:1180px;--gutter:24px;--sans:Arial,sans-serif;--mono:monospace;--cms-button-height:44px;--cms-button-radius:0;--cms-button-bg:#111;--cms-button-text:#fff;--cms-button-border:#111}
+    *{box-sizing:border-box}body{margin:0;font-family:var(--sans)}[data-cms-public-header]{height:56px;position:fixed;inset:0 0 auto;z-index:50;background:#fff;border-bottom:1px solid #ddd}.button{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;background:#111;color:#fff;text-decoration:none}.hero{min-height:920px;padding:160px 40px 40px}.hero .button{margin-top:420px}.middle{height:1100px;padding:80px 40px}.interest{min-height:620px;padding:100px 40px;background:#eee}.interest-confirmation{max-width:460px;margin-left:auto}.interest-confirmation h2{font-size:42px;margin:0 0 28px}.cms-footer{height:240px;padding:40px}
+  </style>
+  <link rel="stylesheet" href="/assets/conversion-bar.css" data-conversion-bar-css>
+</head>
+<body class="cms-public">
+  <header data-cms-public-header></header>
+  <main data-cms-page-main>
+    <section class="hero">
+      <h1>Positivo direto em filme de raios X</h1>
+      <a id="hero-cta" class="button" href="/inscricao/?lang=pt-br">Quero participar</a>
+    </section>
+    <section class="middle"><p>Conteúdo intermediário</p></section>
+    <section class="interest" data-cms-section="registration">
+      <div class="interest-confirmation">
+        <h2>R$ 698 via Pix</h2>
+        <a id="final-cta" class="button" href="/inscricao/?lang=pt-br">Abrir formulário</a>
+      </div>
+    </section>
+  </main>
+  <footer class="cms-footer">Footer</footer>
+  <script src="/assets/public.js"></script>
+</body>
+</html>
