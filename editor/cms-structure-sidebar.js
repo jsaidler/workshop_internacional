@@ -23,10 +23,12 @@ function componentType(node){
   if(node.hasAttribute('data-cms-column'))return'Coluna';
   if(node.dataset.cmsContainer==='columns')return`${node.querySelectorAll(':scope > [data-cms-column]').length} colunas`;
   if(node.dataset.cmsContainer==='stack')return'Contêiner';
-  const labels={paragraph:'Parágrafo',heading:'Título',image:'Imagem',carousel:'Carrossel',button:'Botão',divider:'Divisor',spacer:'Espaço',container:'Contêiner'};
+  const labels={paragraph:'Parágrafo',heading:'Título',image:'Imagem',carousel:'Carrossel',button:'Botão',divider:'Divisor',spacer:'Espaço',container:'Contêiner',list:'Lista',quote:'Citação'};
   if(labels[node.dataset.cmsComponent])return labels[node.dataset.cmsComponent];
   if(node.matches('p'))return'Parágrafo';
-  if(node.matches('h1,h2,h3,h4'))return'Título';
+  if(node.matches('h1,h2,h3,h4,h5,h6'))return'Título';
+  if(node.matches('ul,ol'))return'Lista';
+  if(node.matches('blockquote'))return'Citação';
   return'Bloco';
 }
 function componentLabel(node,meta={}){
@@ -148,6 +150,7 @@ function bindFrame(){
   frameObserver=new MutationObserver(schedule);
   frameObserver.observe(r,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','data-cms-section-name','data-cms-section','data-cms-component','data-cms-container']});
   d.addEventListener('click',()=>setTimeout(schedule,0),true);
+  d.addEventListener('cms:structure-changed',schedule,true);
   schedule();
 }
 
