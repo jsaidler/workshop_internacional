@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "test:browser": "playwright test tools/browser-tests/form-editor.spec.cjs"
+    "test:browser": "playwright test tools/browser-tests"
   },
   "devDependencies": {
     "@playwright/test": "1.55.0"
