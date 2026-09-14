@@ -17,7 +17,7 @@ test('mobile editor keeps page structure reachable without covering the canvas p
   await expect(toggle).toHaveAttribute('aria-expanded','true');
   await expect(page.locator('body')).toHaveClass(/structure-mobile-open/);
   await expect(backdrop).toBeVisible();
-  expect((await panel.boundingBox()).x).toBeGreaterThanOrEqual(0);
+  await expect.poll(async()=>Math.round((await panel.boundingBox()).x)).toBeGreaterThanOrEqual(0);
 
   await page.locator('.section-row-main').click();
   await expect(page.locator('body')).not.toHaveClass(/structure-mobile-open/);
@@ -35,5 +35,5 @@ test('mobile structure drawer closes with escape and desktop layout stays unchan
   await page.setViewportSize({width:1280,height:900});
   await expect(toggle).toBeHidden();
   await expect(page.locator('#editor-structure-panel')).toBeVisible();
-  expect((await page.locator('#editor-structure-panel').boundingBox()).x).toBeGreaterThanOrEqual(0);
+  await expect.poll(async()=>Math.round((await page.locator('#editor-structure-panel').boundingBox()).x)).toBeGreaterThanOrEqual(0);
 });
