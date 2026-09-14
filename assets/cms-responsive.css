@@ -1,44 +1,104 @@
-/* Responsive overrides authored by the visual editor. Loaded inside the cms-system cascade layer. */
+/* Responsive layout contract.
+   Desktop/base choices never disable adaptation on smaller screens.
+   Blank device controls mean automatic, not blind inheritance.
+   Explicit tablet/mobile controls override the automatic rule for that viewport. */
+
+/* The legacy desktop ratio control also applies to modern two-column builder grids. */
+@media (min-width:1025px){
+  .cms-public [data-layout-ratio="30-70"] :is(.cms-grid,.cms-free-grid){grid-template-columns:minmax(0,.3fr) minmax(0,.7fr)}
+  .cms-public [data-layout-ratio="40-60"] :is(.cms-grid,.cms-free-grid){grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
+  .cms-public [data-layout-ratio="50-50"] :is(.cms-grid,.cms-free-grid){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public [data-layout-ratio="60-40"] :is(.cms-grid,.cms-free-grid){grid-template-columns:minmax(0,.6fr) minmax(0,.4fr)}
+  .cms-public [data-layout-ratio="70-30"] :is(.cms-grid,.cms-free-grid){grid-template-columns:minmax(0,.7fr) minmax(0,.3fr)}
+  .cms-public [data-cms-hidden-desktop="1"]{display:none}
+}
+
 @media (min-width:721px) and (max-width:1024px){
   .cms-public [data-cms-hidden-tablet="1"]{display:none}
-  .cms-public [data-cms-tablet-columns="1"] .cms-grid,.cms-public [data-cms-tablet-columns="1"] .cms-free-grid{grid-template-columns:1fr}
-  .cms-public [data-cms-tablet-columns="2"] .cms-grid,.cms-public [data-cms-tablet-columns="2"] .cms-free-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .cms-public [data-cms-tablet-columns="3"] .cms-grid,.cms-public [data-cms-tablet-columns="3"] .cms-free-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .cms-public [data-cms-tablet-columns="4"] .cms-grid,.cms-public [data-cms-tablet-columns="4"] .cms-free-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .cms-public [data-cms-tablet-gap="s"] .cms-grid,.cms-public [data-cms-tablet-gap="s"] .cms-free-grid{gap:16px}
-  .cms-public [data-cms-tablet-gap="m"] .cms-grid,.cms-public [data-cms-tablet-gap="m"] .cms-free-grid{gap:32px}
-  .cms-public [data-cms-tablet-gap="l"] .cms-grid,.cms-public [data-cms-tablet-gap="l"] .cms-free-grid{gap:56px}
-  .cms-public [data-cms-tablet-align="start"] .cms-grid,.cms-public [data-cms-tablet-align="start"] .cms-free-grid{align-items:start}
-  .cms-public [data-cms-tablet-align="center"] .cms-grid,.cms-public [data-cms-tablet-align="center"] .cms-free-grid{align-items:center}
-  .cms-public [data-cms-tablet-align="end"] .cms-grid,.cms-public [data-cms-tablet-align="end"] .cms-free-grid{align-items:end}
+
+  /* Automatic tablet layout: every section-level grid becomes one readable column.
+     These selectors deliberately match explicit desktop ratios/column counts too, so
+     choosing a desktop option cannot suppress responsive behavior. */
+  .cms-public :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),
+  .cms-public [data-layout-ratio] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),
+  .cms-public [data-cms-columns] :is(.cms-grid,.cms-free-grid){grid-template-columns:1fr}
+  .cms-public .apparatus,
+  .cms-public [data-layout-ratio].apparatus,
+  .cms-public [data-cms-columns].apparatus{grid-template-columns:1fr}
+
+  /* Explicit tablet column count. */
+  .cms-public [data-cms-tablet-columns="1"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner){grid-template-columns:1fr}
+  .cms-public [data-cms-tablet-columns="2"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public [data-cms-tablet-columns="3"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner){grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cms-public [data-cms-tablet-columns="4"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner){grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cms-public [data-cms-tablet-columns="1"].apparatus{grid-template-columns:1fr}
+  .cms-public [data-cms-tablet-columns="2"].apparatus{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public [data-cms-tablet-columns="3"].apparatus{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cms-public [data-cms-tablet-columns="4"].apparatus{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+  /* A ratio is meaningful only when the tablet layout is explicitly two columns. */
+  .cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="30-70"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="30-70"].apparatus{grid-template-columns:minmax(0,.3fr) minmax(0,.7fr)}
+  .cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="40-60"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="40-60"].apparatus{grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
+  .cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="50-50"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="50-50"].apparatus{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="60-40"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="60-40"].apparatus{grid-template-columns:minmax(0,.6fr) minmax(0,.4fr)}
+  .cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="70-30"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-columns="2"][data-cms-tablet-ratio="70-30"].apparatus{grid-template-columns:minmax(0,.7fr) minmax(0,.3fr)}
+
+  .cms-public [data-cms-tablet-gap="s"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-gap="s"].apparatus{gap:16px}
+  .cms-public [data-cms-tablet-gap="m"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-gap="m"].apparatus{gap:32px}
+  .cms-public [data-cms-tablet-gap="l"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-gap="l"].apparatus{gap:56px}
+  .cms-public [data-cms-tablet-align="start"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-align="start"].apparatus{align-items:start}
+  .cms-public [data-cms-tablet-align="center"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-align="center"].apparatus{align-items:center}
+  .cms-public [data-cms-tablet-align="end"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-tablet-align="end"].apparatus{align-items:end}
+  .cms-public [data-cms-tablet-text-align="left"]{text-align:left}.cms-public [data-cms-tablet-text-align="center"]{text-align:center}.cms-public [data-cms-tablet-text-align="right"]{text-align:right}
   .cms-public [data-cms-tablet-space="none"]{padding-top:0;padding-bottom:0}
   .cms-public [data-cms-tablet-space="s"]{padding-top:32px;padding-bottom:32px}
   .cms-public [data-cms-tablet-space="m"]{padding-top:56px;padding-bottom:56px}
   .cms-public [data-cms-tablet-space="l"]{padding-top:88px;padding-bottom:88px}
   .cms-public [data-cms-tablet-space="xl"]{padding-top:128px;padding-bottom:128px}
-  .cms-public [data-cms-tablet-order="reverse"] .cms-grid>:first-child,.cms-public [data-cms-tablet-order="reverse"] .cms-free-grid>:first-child{order:2}
-  .cms-public [data-cms-tablet-order="reverse"] .cms-grid>:last-child,.cms-public [data-cms-tablet-order="reverse"] .cms-free-grid>:last-child{order:1}
+  .cms-public [data-cms-tablet-order="reverse"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner)>:first-child{order:2}
+  .cms-public [data-cms-tablet-order="reverse"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner)>:last-child{order:1}
+  .cms-public [data-cms-tablet-order="reverse"].apparatus>:first-child{order:2}.cms-public [data-cms-tablet-order="reverse"].apparatus>:last-child{order:1}
   .cms-public [data-cms-tablet-width="25"]{width:25%;max-width:25%}.cms-public [data-cms-tablet-width="33"]{width:33.333%;max-width:33.333%}.cms-public [data-cms-tablet-width="50"]{width:50%;max-width:50%}.cms-public [data-cms-tablet-width="66"]{width:66.667%;max-width:66.667%}.cms-public [data-cms-tablet-width="75"]{width:75%;max-width:75%}.cms-public [data-cms-tablet-width="100"]{width:100%;max-width:100%}
   .cms-public [data-cms-tablet-self-align="left"]{text-align:left;margin-left:0;margin-right:auto}.cms-public [data-cms-tablet-self-align="center"]{text-align:center;margin-left:auto;margin-right:auto}.cms-public [data-cms-tablet-self-align="right"]{text-align:right;margin-left:auto;margin-right:0}
 }
+
 @media (max-width:720px){
   .cms-public [data-cms-hidden-mobile="1"]{display:none}
-  .cms-public [data-cms-mobile-columns="1"] .cms-grid,.cms-public [data-cms-mobile-columns="1"] .cms-free-grid{grid-template-columns:1fr}
-  .cms-public [data-cms-mobile-columns="2"] .cms-grid,.cms-public [data-cms-mobile-columns="2"] .cms-free-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .cms-public [data-cms-mobile-gap="s"] .cms-grid,.cms-public [data-cms-mobile-gap="s"] .cms-free-grid{gap:12px}
-  .cms-public [data-cms-mobile-gap="m"] .cms-grid,.cms-public [data-cms-mobile-gap="m"] .cms-free-grid{gap:24px}
-  .cms-public [data-cms-mobile-gap="l"] .cms-grid,.cms-public [data-cms-mobile-gap="l"] .cms-free-grid{gap:40px}
-  .cms-public [data-cms-mobile-align="start"] .cms-grid,.cms-public [data-cms-mobile-align="start"] .cms-free-grid{align-items:start}
-  .cms-public [data-cms-mobile-align="center"] .cms-grid,.cms-public [data-cms-mobile-align="center"] .cms-free-grid{align-items:center}
-  .cms-public [data-cms-mobile-align="end"] .cms-grid,.cms-public [data-cms-mobile-align="end"] .cms-free-grid{align-items:end}
+
+  /* Automatic phone layout is always a single column, regardless of desktop ratio. */
+  .cms-public :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),
+  .cms-public [data-layout-ratio] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),
+  .cms-public [data-cms-columns] :is(.cms-grid,.cms-free-grid){grid-template-columns:1fr}
+  .cms-public .apparatus,
+  .cms-public [data-layout-ratio].apparatus,
+  .cms-public [data-cms-columns].apparatus{grid-template-columns:1fr}
+
+  .cms-public [data-cms-mobile-columns="1"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner){grid-template-columns:1fr}
+  .cms-public [data-cms-mobile-columns="2"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public [data-cms-mobile-columns="1"].apparatus{grid-template-columns:1fr}
+  .cms-public [data-cms-mobile-columns="2"].apparatus{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+  .cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="30-70"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="30-70"].apparatus{grid-template-columns:minmax(0,.3fr) minmax(0,.7fr)}
+  .cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="40-60"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="40-60"].apparatus{grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
+  .cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="50-50"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="50-50"].apparatus{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="60-40"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="60-40"].apparatus{grid-template-columns:minmax(0,.6fr) minmax(0,.4fr)}
+  .cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="70-30"] :is(.cms-grid,.cms-free-grid,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-columns="2"][data-cms-mobile-ratio="70-30"].apparatus{grid-template-columns:minmax(0,.7fr) minmax(0,.3fr)}
+
+  .cms-public [data-cms-mobile-gap="s"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-gap="s"].apparatus{gap:12px}
+  .cms-public [data-cms-mobile-gap="m"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-gap="m"].apparatus{gap:24px}
+  .cms-public [data-cms-mobile-gap="l"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-gap="l"].apparatus{gap:40px}
+  .cms-public [data-cms-mobile-align="start"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-align="start"].apparatus{align-items:start}
+  .cms-public [data-cms-mobile-align="center"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-align="center"].apparatus{align-items:center}
+  .cms-public [data-cms-mobile-align="end"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner),.cms-public [data-cms-mobile-align="end"].apparatus{align-items:end}
+  .cms-public [data-cms-mobile-text-align="left"]{text-align:left}.cms-public [data-cms-mobile-text-align="center"]{text-align:center}.cms-public [data-cms-mobile-text-align="right"]{text-align:right}
   .cms-public [data-cms-mobile-space="none"]{padding-top:0;padding-bottom:0}
   .cms-public [data-cms-mobile-space="s"]{padding-top:24px;padding-bottom:24px}
   .cms-public [data-cms-mobile-space="m"]{padding-top:40px;padding-bottom:40px}
   .cms-public [data-cms-mobile-space="l"]{padding-top:64px;padding-bottom:64px}
   .cms-public [data-cms-mobile-space="xl"]{padding-top:96px;padding-bottom:96px}
-  .cms-public [data-cms-mobile-order="reverse"] .cms-grid>:first-child,.cms-public [data-cms-mobile-order="reverse"] .cms-free-grid>:first-child{order:2}
-  .cms-public [data-cms-mobile-order="reverse"] .cms-grid>:last-child,.cms-public [data-cms-mobile-order="reverse"] .cms-free-grid>:last-child{order:1}
+  .cms-public [data-cms-mobile-order="reverse"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner)>:first-child{order:2}
+  .cms-public [data-cms-mobile-order="reverse"] :is(.cms-grid,.cms-free-grid,.cms-card-grid,.cms-stats,.cms-gallery,.statement-grid,.cms-proof-grid,.cms-support-inner,.interest-inner)>:last-child{order:1}
+  .cms-public [data-cms-mobile-order="reverse"].apparatus>:first-child{order:2}.cms-public [data-cms-mobile-order="reverse"].apparatus>:last-child{order:1}
   .cms-public [data-cms-mobile-width="50"]{width:50%;max-width:50%}.cms-public [data-cms-mobile-width="75"]{width:75%;max-width:75%}.cms-public [data-cms-mobile-width="100"]{width:100%;max-width:100%}
   .cms-public [data-cms-mobile-self-align="left"]{text-align:left;margin-left:0;margin-right:auto}.cms-public [data-cms-mobile-self-align="center"]{text-align:center;margin-left:auto;margin-right:auto}.cms-public [data-cms-mobile-self-align="right"]{text-align:right;margin-left:auto;margin-right:0}
 }
-@media (min-width:1025px){.cms-public [data-cms-hidden-desktop="1"]{display:none}}

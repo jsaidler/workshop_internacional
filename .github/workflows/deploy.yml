@@ -63,6 +63,7 @@ jobs:
           php tools/test-public-errors.php
           php tools/test-task-centric-admin.php
           php tools/test-admin-submissions-layout.php
+          php tools/test-responsive-layout-contract.php
           php tools/test-form-editor-integration.php
           php tools/test-media-list-service.php
           php tools/test-media-detail-interactive.php

@@ -15,9 +15,10 @@ body.admin-section-responses .admin-content{width:auto;max-width:none;margin:0 2
 .inbox-form-filter{margin:0}
 .inbox-form-filter label{display:flex;align-items:center;gap:7px;font-size:11px;color:#73746d}
 .inbox-form-filter select{height:32px;max-width:300px;border:1px solid #d1d2cb;border-radius:6px;background:#fff;padding:0 28px 0 8px;font:400 12px "IBM Plex Sans",sans-serif}
-.inbox-layout{display:grid;grid-template-columns:minmax(300px,340px) minmax(0,1fr);gap:0;border:1px solid #dcdcd5;border-radius:8px;overflow:hidden;background:#fff;min-height:560px}
-.inbox-list{border-right:1px solid #e1e1db;background:#fbfaf7;max-height:calc(100vh - 188px);overflow:auto}
+.inbox-layout{display:grid;grid-template-columns:minmax(300px,340px) minmax(0,1fr);gap:14px;align-items:start;border:0;border-radius:0;overflow:visible;background:transparent;min-height:0}
+.inbox-list{position:sticky;top:122px;align-self:start;border:1px solid #dcdcd5;border-radius:8px;background:#fbfaf7;max-height:calc(100vh - 144px);overflow:auto}
 .inbox-list .submission-row{display:flex!important;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px!important;border:0!important;border-bottom:1px solid #eeeee8!important;border-radius:0!important;background:transparent!important;text-decoration:none!important;color:#22231f!important;min-height:66px}
+.inbox-list .submission-row:last-child{border-bottom:0!important}
 .inbox-list .submission-row:hover{background:#f1f2ed!important}
 .inbox-list .submission-row.selected{background:#efefe9!important;box-shadow:inset 3px 0 0 #23241f!important}
 .inbox-list .submission-row.is-new .submission-row-main strong:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#a56818;margin:0 7px 1px 0}
@@ -31,8 +32,8 @@ body.admin-section-responses .admin-content{width:auto;max-width:none;margin:0 2
 .submission-row-meta small[data-status="contacted"]{background:#e9e8df;color:#646056}
 .submission-row-meta small[data-status="converted"]{background:#e1ece5;color:#28533f}
 .submission-row-meta small[data-status="archived"]{background:#eee;color:#777}
-.inbox-detail{padding:0 28px 26px!important;overflow:auto;max-height:calc(100vh - 188px);background:#fff;min-width:0}
-.inbox-detail-header{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;gap:14px;padding:20px 0 17px;border-bottom:1px solid #e5e5df;margin-bottom:14px;background:#fff}
+.inbox-detail{min-width:0;padding:0 28px 28px!important;border:1px solid #dcdcd5;border-radius:8px;background:#fff;overflow:visible;max-height:none}
+.inbox-detail-header{position:sticky;top:56px;z-index:3;display:flex;justify-content:space-between;gap:14px;padding:20px 0 17px;border-bottom:1px solid #e5e5df;margin-bottom:14px;background:#fff}
 .inbox-detail-header p{margin:0 0 3px;color:#777870;font-size:11px}
 .inbox-detail-header h2{margin:0 0 5px;font-size:22px;line-height:1.2;font-weight:600}
 .inbox-detail-header span{font-size:11px;color:#85867f}
@@ -48,5 +49,5 @@ body.admin-section-responses .admin-content{width:auto;max-width:none;margin:0 2
 .inbox-status-actions button:hover{background:#f0f1ec}
 .inbox-status-actions button[aria-current="true"]{border-color:#1e4d3c;background:#e5ece8;color:#1e4d3c}
 @media(max-width:1150px){body.admin-section-responses .admin-content{margin:0 20px}.inbox-layout{grid-template-columns:minmax(270px,31%) minmax(0,1fr)}.inbox-detail{padding-left:22px!important;padding-right:22px!important}}
-@media(max-width:900px){body.admin-section-responses .admin-content{margin:0 18px}.inbox-toolbar{align-items:flex-start;flex-direction:column}.inbox-toolbar-controls{width:100%;justify-content:space-between;flex-wrap:wrap}.inbox-layout{grid-template-columns:1fr}.inbox-list{max-height:300px;border-right:0;border-bottom:1px solid #e1e1db}.inbox-detail{max-height:none}.inbox-detail-header{position:static}.inbox-fields>div{grid-template-columns:1fr;gap:4px}.inbox-toolbar-actions{margin-left:auto}}
+@media(max-width:900px){body.admin-section-responses .admin-content{margin:0 18px}.inbox-toolbar{align-items:flex-start;flex-direction:column}.inbox-toolbar-controls{width:100%;justify-content:space-between;flex-wrap:wrap}.inbox-layout{grid-template-columns:1fr;gap:12px}.inbox-list{position:static;max-height:300px}.inbox-detail{max-height:none}.inbox-detail-header{position:static}.inbox-fields>div{grid-template-columns:1fr;gap:4px}.inbox-toolbar-actions{margin-left:auto}}
 @media(max-width:640px){body.admin-section-responses .admin-content{margin:0 14px}.inbox-toolbar-controls{align-items:stretch;flex-direction:column}.inbox-form-filter label{justify-content:space-between}.inbox-form-filter select{max-width:none;flex:1}.inbox-toolbar-actions{width:100%;margin:0}.inbox-toolbar-actions a{flex:1;text-align:center}.inbox-detail{padding-left:16px!important;padding-right:16px!important}}
