@@ -31,16 +31,22 @@ Não encerrar um defeito com uma contenção quando a causa raiz estiver no pró
 - ImageMagick deve normalizar `page/virtual canvas` antes e depois do redimensionamento; metadados de canvas virtual nunca podem alterar a geometria raster da derivada.
 - Toda derivada deve ser verificada após a gravação quanto a dimensões raster, geometria de página virtual e preservação de transparência quando aplicável antes de ser registrada como válida.
 - O caminho de upload e o caminho de regeneração manual/automática devem usar o mesmo writer e as mesmas validações.
+- Regenerar uma derivada nunca pode substituir bytes sob o mesmo URL público. Cada regeneração publica em um novo caminho final imutável, troca as referências no banco em transação e só depois remove artefatos antigos. Isso impede que cache de navegador/CDN continue entregando uma derivada defeituosa já corrigida no servidor.
+- Se uma imagem não exigir derivadas responsivas ou se uma reconstrução falhar, remover as referências inválidas e usar o original como fallback; nunca manter uma URL de derivada possivelmente incorreta apenas para preservar compatibilidade.
 
 ### CSS adicional de Design
 
 O campo `Design → CSS adicional` é a última camada editorial de CSS do site.
 
+- CSS visual do template/CMS, CSS gerado pelo Design e controles visuais do sistema pertencem a uma camada de cascata inferior (`cms-system`).
+- O CSS adicional permanece sem camada e é emitido depois da camada do sistema, para que declarações normais do usuário prevaleçam sobre declarações normais do sistema independentemente da especificidade do seletor.
 - O CSS gerado pelo sistema e o CSS adicional devem ser emitidos em elementos `<style>` separados.
 - `#cms-custom-css` deve ser o último estilo autoral renderizado no `<head>` público e no preview normal.
 - A prévia ao vivo de Design deve reaplicar seu estilo adicional no fim do `<head>` em cada atualização.
-- Regras estruturais do sistema não devem usar `!important` sem necessidade quando isso impedir uma sobrescrita deliberada pelo CSS adicional.
-- Qualquer novo estilo inline ou dinâmico do CMS deve respeitar essa precedência ou ser inserido antes da camada de CSS adicional.
+- Tokens de Design em prévia não podem ser escritos como estilo inline no `<html>`/`:root`, pois estilo inline ultrapassa a precedência de um stylesheet normal. Devem ser aplicados pela camada `cms-system`, e resíduos inline de implementações antigas precisam ser removidos.
+- Regras visuais do sistema não devem usar `!important` quando isso impedir uma sobrescrita deliberada pelo CSS adicional. `!important` fica reservado a invariantes funcionais, de segurança ou acessibilidade que deliberadamente não são controles editoriais.
+- Propriedades visuais calculadas pelo renderer, inclusive `object-fit` e ponto focal de mídia, não devem ser gravadas como propriedades CSS inline que bloqueiem o CSS adicional. Quando precisarem viajar no elemento, usar custom properties consumidas pelo CSS da camada de sistema.
+- Qualquer novo estilo inline ou dinâmico do CMS deve respeitar essa precedência ou ser inserido na camada inferior do sistema.
 
 ## Segurança de interação no editor visual
 
