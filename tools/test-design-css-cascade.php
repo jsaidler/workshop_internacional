@@ -62,7 +62,7 @@ $fontMigrationDb=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ER
 $fontMigrationDb->exec('CREATE TABLE cms_design_settings (activity_id INTEGER NOT NULL, locale TEXT NOT NULL, settings_json TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(activity_id,locale));');
 $legacyFonts=json_encode(['type'=>['bodyFont'=>'var(--sans)','displayFont'=>'var(--title)','monoFont'=>'var(--mono)'],'advanced'=>['customCss'=>'.keep-me{display:block}']],JSON_UNESCAPED_SLASHES);
 $fontMigrationDb->prepare('INSERT INTO cms_design_settings(activity_id,locale,settings_json,updated_at) VALUES(?,?,?,?)')->execute([9,PUBLIC_LOCALE_PT_BR,$legacyFonts,'2026-09-13T12:00:00Z']);
-$fontMigration=require dirname(__DIR__).'/migrations/028_normalize_design_font_values.php';$fontMigration($fontMigrationDb);
+$fontMigration=require dirname(__DIR__).'/migrations/029_normalize_design_font_values.php';$fontMigration($fontMigrationDb);
 $fontRow=$fontMigrationDb->query("SELECT settings_json FROM cms_design_settings WHERE activity_id=9 AND locale='pt-BR'")->fetchColumn();$fontSettings=json_decode((string)$fontRow,true);
 design_css_expect(($fontSettings['type']['bodyFont']??'')===$fonts['body']&&($fontSettings['type']['displayFont']??'')===$fonts['display']&&($fontSettings['type']['monoFont']??'')===$fonts['mono'],'font migration must replace legacy variable references with portable stacks');
 design_css_expect(($fontSettings['advanced']['customCss']??'')==='.keep-me{display:block}','font migration must preserve unrelated design settings');
