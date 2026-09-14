@@ -34,6 +34,7 @@ function columnPanel(node){
   box.innerHTML=`<hr><p class="eyebrow">Coluna</p><h3>Desktop</h3><div class="cms-layout-property-grid">${field('Conteúdo vertical','cmsJustify',node.dataset.cmsJustify||'',justify)}${field('Conteúdo horizontal','cmsColumnAlign',node.dataset.cmsColumnAlign||'',items)}${field('Texto','cmsTextAlign',node.dataset.cmsTextAlign||'',textAlign)}${field('Ordem','cmsOrder',node.dataset.cmsOrder||'',order)}</div>${checkbox('Ocultar no desktop','cmsHideDesktop',node.dataset.cmsHideDesktop==='1')}<h3>Tablet</h3><div class="cms-layout-property-grid">${field('Conteúdo vertical','cmsTabletJustify',node.dataset.cmsTabletJustify||'',justify)}${field('Conteúdo horizontal','cmsTabletColumnAlign',node.dataset.cmsTabletColumnAlign||'',items)}${field('Texto','cmsTabletTextAlign',node.dataset.cmsTabletTextAlign||'',textAlign)}${field('Ordem','cmsTabletOrder',node.dataset.cmsTabletOrder||'',order)}</div>${checkbox('Ocultar no tablet','cmsHideTablet',node.dataset.cmsHideTablet==='1')}<h3>Celular</h3><div class="cms-layout-property-grid">${field('Conteúdo vertical','cmsMobileJustify',node.dataset.cmsMobileJustify||'',justify)}${field('Conteúdo horizontal','cmsMobileColumnAlign',node.dataset.cmsMobileColumnAlign||'',items)}${field('Texto','cmsMobileTextAlign',node.dataset.cmsMobileTextAlign||'',textAlign)}${field('Ordem','cmsMobileOrder',node.dataset.cmsMobileOrder||'',order)}</div>${checkbox('Ocultar no celular','cmsHideMobile',node.dataset.cmsHideMobile==='1')}<p class="inspector-note">Ordem e visibilidade são independentes em desktop, tablet e celular.</p>`;
   bind(box,node);return box;
 }
+function insertBeforeTree(panel,box){const tree=panel.querySelector('.cms-structure-tree');tree?panel.insertBefore(box,tree):panel.append(box)}
 function install(){
   const panel=inspector.querySelector('.cms-structure-inspector');
   const node=selectedStructure();
@@ -41,8 +42,8 @@ function install(){
   if(panel&&node&&existing&&lastNode===node)return;
   inspector.querySelector('.cms-layout-properties')?.remove();
   if(!panel||!node){lastNode=null;return}
-  if(node.dataset.cmsContainer==='stack'||node.dataset.cmsContainer==='columns')panel.append(containerPanel(node));
-  else if(node.hasAttribute('data-cms-column'))panel.append(columnPanel(node));
+  if(node.dataset.cmsContainer==='stack'||node.dataset.cmsContainer==='columns')insertBeforeTree(panel,containerPanel(node));
+  else if(node.hasAttribute('data-cms-column'))insertBeforeTree(panel,columnPanel(node));
   lastNode=node;
 }
 new MutationObserver(()=>queueMicrotask(install)).observe(inspector,{childList:true,subtree:true});
