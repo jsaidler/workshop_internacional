@@ -24,7 +24,7 @@ try{
     cms_submission_save($db,$form,$schema,$values,(int)$page['id'],$locale,$return);
     cms_form_notify($form,$schema,$values,$locale);
     if($workflow['successMode']==='redirect'&&$workflow['redirectPath']!==''){header('Location: '.$workflow['redirectPath'],true,303);exit;}
-    $_SESSION['cms_form_flash'][$form['form_uuid']]=['success'=>true];
+    $_SESSION['cms_form_flash'][$form['form_uuid']]=['success'=>true,'values'=>cms_form_success_context($schema,$values)];
     header('Location: '.$return.'#form-'.(int)$form['id'],true,303);exit;
 }catch(RuntimeException $error){
     if(str_contains(strtolower($error->getMessage()),'too many')){http_response_code(429);exit($locale===PUBLIC_LOCALE_PT_BR?'Muitas tentativas. Tente novamente mais tarde.':'Too many attempts. Please try again later.');}
