@@ -24,7 +24,7 @@ function isSafe(node){
   return !!componentType(node);
 }
 function candidateFrom(target){
-  if(!(target instanceof Element))return null;
+  if(!target||target.nodeType!==1||typeof target.closest!=='function')return null;
   const node=target.closest(candidateSelector);
   return isSafe(node)?node:null;
 }
@@ -37,7 +37,8 @@ function promote(node){
   const type=componentType(node);
   node.dataset.cmsComponent=type;
   if(!node.dataset.cmsNodeId)node.dataset.cmsNodeId=uid(`legacy-${type}`);
-  node.dispatchEvent(new CustomEvent('cms:structure-changed',{bubbles:true,detail:{nodeId:node.dataset.cmsNodeId,type}}));
+  const EventCtor=node.ownerDocument?.defaultView?.CustomEvent||CustomEvent;
+  node.dispatchEvent(new EventCtor('cms:structure-changed',{bubbles:true,detail:{nodeId:node.dataset.cmsNodeId,type}}));
   scheduleSave();
   return node;
 }
