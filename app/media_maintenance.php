@@ -2,94 +2,17 @@
 declare(strict_types=1);
 
 function media_maintenance_source_has_transparency(array $source): bool {
-    $engine=(string)($source['engine']??'');
-    if($engine==='imagick'){
-        if(empty($source['alpha']))return false;
-        try{
-            $range=Imagick::getQuantumRange();
-            $max=(float)($range['quantumRangeLong']??$range['quantumRangeString']??65535);
-            $extrema=$source['image']->getImageChannelExtrema(Imagick::CHANNEL_ALPHA);
-            $min=(float)($extrema['minima']??$extrema['min']??$max);
-            return $min < $max;
-        }catch(Throwable){return true;}
-    }
-    if($engine==='gd'){
-        $image=$source['image'];$width=(int)$source['width'];$height=(int)$source['height'];
-        if(imagecolortransparent($image)>=0)return true;
-        $stepX=max(1,(int)floor($width/240));$stepY=max(1,(int)floor($height/240));
-        for($y=0;$y<$height;$y+=$stepY){
-            for($x=0;$x<$width;$x+=$stepX){
-                $rgba=imagecolorsforindex($image,imagecolorat($image,$x,$y));
-                if((int)($rgba['alpha']??0)>0)return true;
-            }
-        }
-        foreach([[0,0],[max(0,$width-1),0],[0,max(0,$height-1)],[max(0,$width-1),max(0,$height-1)]] as [$x,$y]){
-            $rgba=imagecolorsforindex($image,imagecolorat($image,$x,$y));
-            if((int)($rgba['alpha']??0)>0)return true;
-        }
-        return false;
-    }
-    return false;
+    return media_source_has_transparency($source);
 }
 
 function media_maintenance_write_image(array $source,int $width,int $height,string $format,string $path): void {
-    $transparent=media_maintenance_source_has_transparency($source);
-    $preserve=media_preserve_lossless((string)($source['mime']??''),$transparent);
-    if($format==='jpeg'&&$preserve) throw new RuntimeException('lossy_format_not_allowed');
-
-    if(($source['engine']??'')==='imagick'){
-        $image=clone $source['image'];
-        try{
-            if($preserve){
-                $image->setImageBackgroundColor(new ImagickPixel('transparent'));
-                if(method_exists($image,'setImageAlphaChannel'))$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
-            }
-            $image->resizeImage($width,$height,Imagick::FILTER_LANCZOS,1,true);
-            if($format==='jpeg'){
-                $image->setImageFormat('jpeg');
-                $image->setImageCompressionQuality(86);
-            }elseif($format==='png'){
-                $image->setImageFormat('png');
-                if(method_exists($image,'setImageAlphaChannel'))$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
-                $image->setOption('png:compression-level','9');
-            }elseif($format==='webp'){
-                $image->setImageFormat('webp');
-                if($preserve){
-                    if(method_exists($image,'setImageAlphaChannel'))$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
-                    $image->setOption('webp:lossless','true');
-                    $image->setOption('webp:alpha-quality','100');
-                    $image->setImageCompressionQuality(100);
-                }else $image->setImageCompressionQuality(84);
-            }else throw new RuntimeException('unsupported_derivative_format');
-            if(!$image->writeImage($path))throw new RuntimeException('derivative_write_failed');
-        }finally{$image->clear();}
-        return;
-    }
-
-    if(($source['engine']??'')!=='gd')throw new RuntimeException('image_engine_unavailable');
-    $out=imagecreatetruecolor($width,$height);
-    if(in_array($format,['png','webp'],true)){
-        imagealphablending($out,false);
-        imagesavealpha($out,true);
-        $transparentColor=imagecolorallocatealpha($out,0,0,0,127);
-        imagefill($out,0,0,$transparentColor);
-    }else imagefill($out,0,0,imagecolorallocate($out,255,255,255));
-    imagecopyresampled($out,$source['image'],0,0,0,0,$width,$height,(int)$source['width'],(int)$source['height']);
-    if(in_array($format,['png','webp'],true)){imagealphablending($out,false);imagesavealpha($out,true);}
-    $ok=match($format){
-        'jpeg'=>imagejpeg($out,$path,86),
-        'png'=>imagepng($out,$path,9),
-        'webp'=>function_exists('imagewebp')&&imagewebp($out,$path,$preserve?100:84),
-        default=>false,
-    };
-    imagedestroy($out);
-    if(!$ok)throw new RuntimeException('derivative_write_failed');
+    media_write_image($source,$width,$height,$format,$path);
 }
 
 function media_maintenance_verify_transparency(string $path,string $mime,bool $required): void {
     if(!$required)return;
     $check=media_decode_image($path,$mime);
-    try{if(!media_maintenance_source_has_transparency($check))throw new RuntimeException('alpha_channel_lost');}
+    try{if(!media_source_has_transparency($check))throw new RuntimeException('alpha_channel_lost');}
     finally{media_release_image($check);}
 }
 
@@ -103,7 +26,7 @@ function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): ar
     $original=media_upload_root().'/'.$row['original_path'];
     if(!is_file($original))throw new RuntimeException('original_file_missing');
     $source=media_decode_image($original,(string)$row['mime_type']);
-    $requiresTransparency=media_maintenance_source_has_transparency($source);
+    $requiresTransparency=media_source_has_transparency($source);
     $base=dirname(dirname((string)$row['original_path']));
     $versionRoot=media_upload_root().'/'.$base;
     $liveDir=$versionRoot.'/responsive';
@@ -122,10 +45,9 @@ function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): ar
             foreach($formats as $format){
                 $extension=$format==='jpeg'?'jpg':$format;
                 $tempPath=$tempDir.'/'.$target.'.'.$extension;
-                media_maintenance_write_image($source,$target,$height,$format,$tempPath);
-                if(!is_file($tempPath)||filesize($tempPath)<1)throw new RuntimeException('derivative_write_failed');
                 $mimeType=$format==='jpeg'?'image/jpeg':'image/'.$format;
-                media_maintenance_verify_transparency($tempPath,$mimeType,$requiresTransparency&&in_array($format,['png','webp'],true));
+                media_write_image($source,$target,$height,$format,$tempPath);
+                media_verify_image_derivative($tempPath,$mimeType,$target,$height,$requiresTransparency&&in_array($format,['png','webp'],true));
                 $prepared[]=[
                     'kind'=>'responsive','width'=>$target,'height'=>$height,'format'=>$format,'mime'=>$mimeType,
                     'relative'=>$base.'/responsive/'.$target.'.'.$extension,

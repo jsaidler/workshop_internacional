@@ -48,9 +48,18 @@ function media_decode_image(string $file,string $mime):array{
     [$width,$height]=media_image_dimensions($file);
     if(extension_loaded('imagick')){
         try{
-            $image=new Imagick($file);
+            $sequence=new Imagick($file);
+            if($sequence->getNumberImages()>1){
+                $sequence->setIteratorIndex(0);
+                $image=$sequence->getImage();
+                $sequence->clear();
+            }else $image=$sequence;
             if(method_exists($image,'autoOrientImage'))$image->autoOrientImage();
             $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
+            // Virtual canvas/page metadata must never survive into the CMS
+            // derivative pipeline. It can make a valid raster render as a
+            // narrow strip inside a much larger transparent canvas.
+            $image->setImagePage(0,0,0,0);
             return ['engine'=>'imagick','image'=>$image,'width'=>$image->getImageWidth(),'height'=>$image->getImageHeight(),'alpha'=>(bool)$image->getImageAlphaChannel(),'mime'=>$mime];
         }catch(Throwable){throw new RuntimeException('image_decode_failed');}
     }
@@ -63,6 +72,18 @@ function media_decode_image(string $file,string $mime):array{
 function media_gd_has_alpha(GdImage $image,int $width,int $height):bool{
     if(imagecolortransparent($image)>=0)return true;
     for($y=0;$y<$height;$y+=max(1,(int)floor($height/240)))for($x=0;$x<$width;$x+=max(1,(int)floor($width/240))){if(((imagecolorat($image,$x,$y)>>24)&0x7f)>0)return true;}
+    return false;
+}
+function media_source_has_transparency(array $source):bool{
+    if(($source['engine']??'')==='imagick'){
+        if(empty($source['alpha']))return false;
+        try{
+            $range=Imagick::getQuantumRange();$max=(float)($range['quantumRangeLong']??$range['quantumRangeString']??65535);
+            $extrema=$source['image']->getImageChannelExtrema(Imagick::CHANNEL_ALPHA);$min=(float)($extrema['minima']??$extrema['min']??$max);
+            return $min<$max;
+        }catch(Throwable){return true;}
+    }
+    if(($source['engine']??'')==='gd')return media_gd_has_alpha($source['image'],(int)$source['width'],(int)$source['height']);
     return false;
 }
 function media_release_image(?array $source):void{if(!$source)return;if($source['engine']==='imagick')$source['image']->clear();else imagedestroy($source['image']);}
@@ -89,45 +110,73 @@ function media_safe_file(array $file):array{
     return [$mime,$kind,$extension];
 }
 function media_write_image(array $source,int $width,int $height,string $format,string $path):void{
-    $preserve=media_preserve_lossless((string)($source['mime']??''),!empty($source['alpha']));
+    $transparent=media_source_has_transparency($source);
+    $preserve=media_preserve_lossless((string)($source['mime']??''),$transparent);
     if($format==='jpeg'&&$preserve)throw new RuntimeException('lossy_format_not_allowed');
     if($source['engine']==='imagick'){
         $image=clone $source['image'];
         try{
-            $image->thumbnailImage($width,$height,true,true);
+            $image->setImagePage(0,0,0,0);
+            if($preserve){
+                $image->setImageBackgroundColor(new ImagickPixel('transparent'));
+                if(method_exists($image,'setImageAlphaChannel'))$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
+            }
+            // The target dimensions have already been calculated from the
+            // source aspect ratio. Resize to that exact raster and reset page
+            // geometry again so no ImageMagick virtual canvas can leak out.
+            $image->resizeImage($width,$height,Imagick::FILTER_LANCZOS,1,false);
+            $image->setImagePage(0,0,0,0);
+            if($image->getImageWidth()!==$width||$image->getImageHeight()!==$height)throw new RuntimeException('derivative_dimension_mismatch');
             if($format==='jpeg'){
                 $image->setImageFormat('jpeg');$image->setImageCompressionQuality(86);
             }elseif($format==='png'){
-                $image->setImageFormat('png');$image->setOption('png:compression-level','9');
+                $image->setImageFormat('png');
+                if(method_exists($image,'setImageAlphaChannel')&&$preserve)$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
+                $image->setOption('png:compression-level','9');
             }elseif($format==='webp'){
                 $image->setImageFormat('webp');
-                if($preserve){$image->setOption('webp:lossless','true');$image->setOption('webp:alpha-quality','100');$image->setImageCompressionQuality(100);}
-                else $image->setImageCompressionQuality(84);
+                if($preserve){if(method_exists($image,'setImageAlphaChannel'))$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);$image->setOption('webp:lossless','true');$image->setOption('webp:alpha-quality','100');$image->setImageCompressionQuality(100);}else $image->setImageCompressionQuality(84);
             }else throw new RuntimeException('unsupported_derivative_format');
-            $image->writeImage($path);
+            if(!$image->writeImage($path))throw new RuntimeException('derivative_write_failed');
         }finally{$image->clear();}
         return;
     }
+    if(($source['engine']??'')!=='gd')throw new RuntimeException('image_engine_unavailable');
     $out=imagecreatetruecolor($width,$height);
     if(in_array($format,['png','webp'],true)){
-        imagealphablending($out,false);imagesavealpha($out,true);$transparent=imagecolorallocatealpha($out,0,0,0,127);imagefill($out,0,0,$transparent);
+        imagealphablending($out,false);imagesavealpha($out,true);$transparentColor=imagecolorallocatealpha($out,0,0,0,127);imagefill($out,0,0,$transparentColor);
     }else imagefill($out,0,0,imagecolorallocate($out,255,255,255));
     imagecopyresampled($out,$source['image'],0,0,0,0,$width,$height,$source['width'],$source['height']);
+    if(in_array($format,['png','webp'],true)){imagealphablending($out,false);imagesavealpha($out,true);}
     $ok=match($format){'jpeg'=>imagejpeg($out,$path,86),'png'=>imagepng($out,$path,9),'webp'=>function_exists('imagewebp')&&imagewebp($out,$path,$preserve?100:84),default=>false};
     imagedestroy($out);if(!$ok)throw new RuntimeException('derivative_write_failed');
+}
+function media_verify_image_derivative(string $path,string $mime,int $width,int $height,bool $requireTransparency=false):void{
+    if(!is_file($path)||filesize($path)<1)throw new RuntimeException('derivative_write_failed');
+    [$actualWidth,$actualHeight]=media_image_dimensions($path);
+    if($actualWidth!==$width||$actualHeight!==$height)throw new RuntimeException('derivative_dimension_mismatch');
+    if(extension_loaded('imagick')){
+        try{
+            $probe=new Imagick($path);if($probe->getNumberImages()>1)$probe->setIteratorIndex(0);$page=$probe->getImagePage();
+            $pageWidth=(int)($page['width']??0);$pageHeight=(int)($page['height']??0);$pageX=(int)($page['x']??0);$pageY=(int)($page['y']??0);
+            $probe->clear();
+            if(($pageWidth!==0&&$pageWidth!==$width)||($pageHeight!==0&&$pageHeight!==$height)||$pageX!==0||$pageY!==0)throw new RuntimeException('derivative_virtual_canvas_mismatch');
+        }catch(RuntimeException $e){throw $e;}catch(Throwable){throw new RuntimeException('derivative_decode_failed');}
+    }
+    if($requireTransparency){$check=media_decode_image($path,$mime);try{if(!media_source_has_transparency($check))throw new RuntimeException('alpha_channel_lost');}finally{media_release_image($check);}}
 }
 function media_generate_images(PDO $db,int $versionId,string $relative,string $mime):void{
     $source=media_decode_image(media_upload_root().'/'.$relative,$mime);$base=dirname(dirname($relative));$dir=media_upload_root().'/'.$base.'/responsive';$created=[];
     try{
-        media_mkdir($dir);$formats=media_image_derivative_formats($mime,!empty($source['alpha']),media_webp_supported());
+        media_mkdir($dir);$transparent=media_source_has_transparency($source);$formats=media_image_derivative_formats($mime,$transparent,media_webp_supported());
         if(!$formats)throw new RuntimeException('image_format_not_supported');
         foreach(MEDIA_IMAGE_WIDTHS as $target){
             if($target>$source['width'])continue;$height=(int)round($source['height']*$target/$source['width']);
             foreach($formats as $format){
-                $extension=$format==='jpeg'?'jpg':$format;$relativePath=$base.'/responsive/'.$target.'.'.$extension;$absolute=media_upload_root().'/'.$relativePath;
+                $extension=$format==='jpeg'?'jpg':$format;$relativePath=$base.'/responsive/'.$target.'.'.$extension;$absolute=media_upload_root().'/'.$relativePath;$mimeType=$format==='jpeg'?'image/jpeg':'image/'.$format;
                 media_write_image($source,$target,$height,$format,$absolute);
-                if(!is_file($absolute)||filesize($absolute)<1)throw new RuntimeException('derivative_write_failed');
-                $db->prepare('INSERT INTO media_derivatives(version_id,derivative_kind,width,height,format,mime_type,path,byte_size,checksum,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)')->execute([$versionId,'responsive',$target,$height,$format,$format==='jpeg'?'image/jpeg':'image/'.$format,$relativePath,filesize($absolute),hash_file('sha256',$absolute),gmdate('c')]);
+                media_verify_image_derivative($absolute,$mimeType,$target,$height,$transparent&&in_array($format,['png','webp'],true));
+                $db->prepare('INSERT INTO media_derivatives(version_id,derivative_kind,width,height,format,mime_type,path,byte_size,checksum,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)')->execute([$versionId,'responsive',$target,$height,$format,$mimeType,$relativePath,filesize($absolute),hash_file('sha256',$absolute),gmdate('c')]);
                 $created[]=$absolute;
             }
         }

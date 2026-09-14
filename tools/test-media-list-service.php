@@ -22,8 +22,8 @@ $db->exec("INSERT INTO media_assets(id,active_version_id,kind,title,original_nam
 $grid=media_list_grid_items($db,'active');
 must(count($grid)===1,'grid should return the active asset');
 must($grid[0]['title']==='QR','grid should keep asset metadata');
-must($grid[0]['derivatives']===[],'PNG grid/editor previews must ignore legacy responsive derivatives and use the untouched original');
+must(count($grid[0]['derivatives'])===2,'PNG grid/editor previews must expose validated responsive derivatives');
 must(count($grid[0]['uses'])===4,'grid should expose usage count without detailed usage rows');
 must($grid[0]['versions']===[],'grid must not load version history');
-must($grid[0]['url']==='/media/a/original.png','grid should expose original URL');
+must($grid[0]['url']==='/media/a/original.png','grid should expose original URL as fallback');
 echo "Media list service tests passed\n";
