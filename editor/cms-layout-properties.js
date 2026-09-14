@@ -37,6 +37,8 @@ function columnPanel(node){
 function install(){
   const panel=inspector.querySelector('.cms-structure-inspector');
   const node=selectedStructure();
+  const existing=panel?.querySelector('.cms-layout-properties')||null;
+  if(panel&&node&&existing&&lastNode===node)return;
   inspector.querySelector('.cms-layout-properties')?.remove();
   if(!panel||!node){lastNode=null;return}
   if(node.dataset.cmsContainer==='stack'||node.dataset.cmsContainer==='columns')panel.append(containerPanel(node));
