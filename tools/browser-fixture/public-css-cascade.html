@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <title>Public cascade fixture</title>
-  <style id="cms-system-styles">@import url("/assets/cms-pro.css") layer(cms-system);</style>
-  <style id="cms-design-vars">@layer cms-system{:root{--cms-button-bg:rgb(20,30,40);--cms-button-text:rgb(255,255,255);--cms-button-border:rgb(20,30,40)}}</style>
-  <style id="cms-custom-css">.button{background:rgb(7,8,9);color:rgb(1,2,3)}</style>
+  <style id="cms-system-styles" data-cms-responsive>@import url("/assets/cms-pro.css") layer(cms-system);@import url("/assets/cms-responsive.css") layer(cms-system);</style>
+  <style id="cms-design-vars">@layer cms-system{:root{--cms-button-bg:rgb(20,30,40);--cms-button-text:rgb(255,255,255);--cms-button-border:rgb(20,30,40);--line-strong:rgb(90,90,90);--surface-2:rgb(230,230,230)}}</style>
+  <style id="cms-custom-css">.button{background:rgb(7,8,9);color:rgb(1,2,3)}.registration-terms{border:none}</style>
 </head>
-<body class="cms-public">
+<body class="cms-public registration-page">
   <a id="probe" class="button">probe</a>
+  <div id="registration-probe" class="registration-terms">terms</div>
+  <script src="/assets/public.js"></script>
 </body>
 </html>
