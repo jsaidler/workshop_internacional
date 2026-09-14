@@ -57,7 +57,7 @@ function cms_public_asset_version(): string {
 function cms_public_system_css_imports(string $assetVersion): string {
     $version=rawurlencode($assetVersion);
     $paths=['/template/page.css','/assets/cms.css','/assets/cms-v3.css','/assets/cms-pro.css','/assets/cms-responsive.css','/assets/cms-header.css'];
-    $css='';foreach($paths as $path)$css.='@import url("'.$path.'?v='.$version.'") layer(cms-system);';
+    $css=cms_design_font_import_css();foreach($paths as $path)$css.='@import url("'.$path.'?v='.$version.'") layer(cms-system);';
     return $css;
 }
 function cms_dom_set_inner_html(DOMDocument $targetDocument,DOMElement $target,string $html): void {

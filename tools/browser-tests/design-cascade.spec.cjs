@@ -1,16 +1,27 @@
 const {test,expect}=require('@playwright/test');
 
-test('Design additional CSS wins over generated tokens and system specificity',async({page})=>{
+test('Design additional CSS wins over generated tokens and typography uses real editable stacks',async({page})=>{
   await page.goto('http://127.0.0.1:8099/tools/browser-fixture/design-cascade.html');
   const frame=page.frameLocator('#design-preview-frame');
   const probe=frame.locator('#probe');
+  const mono=frame.locator('#mono');
 
   await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).fontSize)).toBe('31px');
   await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).fontWeight)).toBe('400');
+  await expect.poll(()=>frame.locator('body').evaluate(el=>getComputedStyle(el).fontFamily)).toContain('Trebuchet MS');
+  await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).fontFamily)).toContain('Georgia');
+  await expect.poll(()=>mono.evaluate(el=>getComputedStyle(el).fontFamily)).toContain('Courier New');
   await expect.poll(()=>frame.locator('html').evaluate(el=>el.style.getPropertyValue('--cms-body-size'))).toBe('');
   await expect.poll(()=>frame.locator('head').evaluate(head=>head.lastElementChild?.id||'')).toBe('cms-live-custom');
   await expect.poll(()=>frame.locator('#cms-live-design-vars').evaluate(el=>el.textContent)).toContain('@layer cms-system');
   await expect.poll(()=>frame.locator('#cms-live-design-vars').evaluate(el=>el.textContent)).toContain('--cms-body-size:17px');
+  await expect.poll(()=>frame.locator('#cms-live-design-vars').evaluate(el=>el.textContent)).toContain('--body:"Trebuchet MS", sans-serif');
+  await expect.poll(()=>frame.locator('#cms-live-design-vars').evaluate(el=>el.textContent)).toContain('--title:Georgia, serif');
+  await expect.poll(()=>frame.locator('#cms-live-design-vars').evaluate(el=>el.textContent)).toContain('--mono:"Courier New", monospace');
+
+  const displayFont=page.locator('input[name="type[displayFont]"]');
+  await displayFont.fill('Impact, sans-serif');
+  await expect.poll(()=>probe.evaluate(el=>getComputedStyle(el).fontFamily)).toContain('Impact');
 
   const custom=page.locator('textarea[name="advanced[customCss]"]');
   await custom.fill(':root{--cms-body-size:29px}div{font-weight:350}');
