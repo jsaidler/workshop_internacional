@@ -52,6 +52,7 @@ jobs:
           php tools/test-media-derivative-integrity.php
           php tools/test-png-derivative-delivery.php
           php tools/test-design-css-cascade.php
+          php tools/test-page-seo-seed.php
           php tools/test-cms-professional-3.php
           php tools/test-update-service.php
           php tools/test-update-restore.php
