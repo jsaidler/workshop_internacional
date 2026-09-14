@@ -5,6 +5,24 @@ function media_maintenance_source_has_transparency(array $source): bool {
     return media_source_has_transparency($source);
 }
 
+function media_maintenance_decode_source(string $path,string $mime): array {
+    // PNG regeneration deliberately prefers GD when it is available. The QR
+    // asset exposed a host-specific ImageMagick alpha/palette conversion bug:
+    // the preserved original remained valid while a regenerated derivative
+    // could become fully transparent. GD decodes the PNG raster directly and
+    // keeps both palette transparency and ordinary alpha stable during resize.
+    if($mime==='image/png'&&extension_loaded('gd')){
+        [$width,$height]=media_image_dimensions($path);
+        $image=@imagecreatefrompng($path);
+        if(!$image)throw new RuntimeException('image_decode_failed');
+        return [
+            'engine'=>'gd','image'=>$image,'width'=>$width,'height'=>$height,
+            'alpha'=>media_gd_has_alpha($image,$width,$height),'mime'=>$mime,
+        ];
+    }
+    return media_decode_image($path,$mime);
+}
+
 function media_maintenance_source_has_visible_pixels(array $source): bool {
     if(($source['engine']??'')==='imagick'){
         try{
@@ -27,7 +45,7 @@ function media_maintenance_source_has_visible_pixels(array $source): bool {
 }
 
 function media_maintenance_file_has_visible_pixels(string $path,string $mime): bool {
-    $check=media_decode_image($path,$mime);
+    $check=media_maintenance_decode_source($path,$mime);
     try{return media_maintenance_source_has_visible_pixels($check);}
     finally{media_release_image($check);}
 }
@@ -37,11 +55,9 @@ function media_maintenance_write_image(array $source,int $width,int $height,stri
     media_write_image($source,$width,$height,$format,$path);
     if(!$sourceVisible||media_maintenance_file_has_visible_pixels($path,$format==='jpeg'?'image/jpeg':'image/'.$format))return;
 
-    // Some ImageMagick builds can turn palette-based transparent PNGs into a
-    // fully transparent derivative when the generic writer re-activates the
-    // alpha channel. Regeneration gets one conservative retry that leaves the
-    // source alpha channel untouched. A blank retry is rejected rather than
-    // being committed to the database.
+    // Keep a conservative ImageMagick fallback for installations without GD.
+    // It leaves the source alpha channel untouched. A blank retry is rejected
+    // rather than being committed to the database.
     if(($source['engine']??'')==='imagick'){
         $image=clone $source['image'];
         try{
@@ -66,7 +82,7 @@ function media_maintenance_write_image(array $source,int $width,int $height,stri
 
 function media_maintenance_verify_transparency(string $path,string $mime,bool $required): void {
     if(!$required)return;
-    $check=media_decode_image($path,$mime);
+    $check=media_maintenance_decode_source($path,$mime);
     try{if(!media_source_has_transparency($check))throw new RuntimeException('alpha_channel_lost');}
     finally{media_release_image($check);}
 }
@@ -90,7 +106,7 @@ function media_regenerate_image_version(PDO $db,int $assetId,int $versionId): ar
 
     $original=media_upload_root().'/'.$row['original_path'];
     if(!is_file($original))throw new RuntimeException('original_file_missing');
-    $source=media_decode_image($original,(string)$row['mime_type']);
+    $source=media_maintenance_decode_source($original,(string)$row['mime_type']);
     $requiresTransparency=media_source_has_transparency($source);
     $base=dirname(dirname((string)$row['original_path']));
     $versionRoot=media_upload_root().'/'.$base;
