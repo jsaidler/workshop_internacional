@@ -36,6 +36,8 @@ function save(input,node){
   const value=clean(input.value);
   if(input.dataset.savedValue===value)return;
   input.dataset.savedValue=value;
+  const nodeId=clean(node.dataset.cmsNodeId||'');
+  if(nodeId)sessionStorage.setItem('cms-editor-reselect',nodeId);
   saveButton.click();
 }
 function sync(){
