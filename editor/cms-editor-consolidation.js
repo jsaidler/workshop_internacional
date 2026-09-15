@@ -131,7 +131,8 @@ function upgradeFreeGrid(section,grid){
     cell.classList.add('cms-column');
     cell.dataset.cmsColumn='';
     cell.dataset.cmsNodeId=cell.dataset.cmsNodeId||uid('column');
-    if(['1','2','3','4'].includes(cell.dataset.cmsSpan||''))cell.dataset.cmsSpan=cell.dataset.cmsSpan;
+    const legacySpan=cell.dataset.cmsSpan||'';
+    if(legacySpan&&!['1','2','3','4'].includes(legacySpan))delete cell.dataset.cmsSpan;
     if(['start','center','end'].includes(cell.dataset.cmsSelf||''))cell.dataset.cmsJustify=cell.dataset.cmsSelf;
     delete cell.dataset.cmsSelf;
     if(section.dataset.layoutMobile==='reverse')cell.dataset.cmsMobileOrder=String(cells.length-index);
