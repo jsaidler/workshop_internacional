@@ -115,6 +115,8 @@ function componentType(node){
   return labels[node.dataset.cmsComponent]||'Bloco';
 }
 function componentLabel(node){
+  const custom=clean(node?.dataset?.cmsEditorLabel||'');
+  if(custom)return custom;
   const type=componentType(node);
   if(node?.hasAttribute('data-cms-column')||node?.dataset?.cmsContainer)return type;
   const hidden=node?.querySelector?.('[data-cms-component-label]')?.textContent||'';
@@ -188,8 +190,9 @@ function bindFrame(){
   const doc=d(),page=root();
   if(!doc||!page)return;
   frameObserver=new MutationObserver(schedule);
-  frameObserver.observe(page,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','data-cms-section-name','data-cms-section','data-cms-component','data-cms-container']});
+  frameObserver.observe(page,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','data-cms-section-name','data-cms-section','data-cms-component','data-cms-container','data-cms-editor-label']});
   doc.addEventListener('click',()=>setTimeout(schedule,0),true);
+  doc.addEventListener('cms:structure-changed',schedule,true);
   schedule();
 }
 
