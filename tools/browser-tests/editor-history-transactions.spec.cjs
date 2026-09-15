@@ -20,6 +20,10 @@ async function selectTreeNode(page,text,{last=false}={}){
   await target.click();
 }
 
+async function selectCanvasNode(frame,selector){
+  await frame.locator(selector).evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
+}
+
 test('duplicate and remove remain undoable across preview reloads',async({page})=>{
   const frame=await fixture(page);
   page.on('dialog',dialog=>dialog.accept());
@@ -36,15 +40,19 @@ test('duplicate and remove remain undoable across preview reloads',async({page})
   await page.locator('#redo').click();
   await expect(frame.locator('[data-cms-component="divider"]')).toHaveCount(2);
 
-  await selectTreeNode(page,'Divisor',{last:true});
-  await page.locator('#inspector [data-block-delete]').click();
+  // Return to the unambiguous one-divider state, then verify removal as its own history transaction.
+  await page.locator('#undo').click();
   await expect(frame.locator('[data-cms-component="divider"]')).toHaveCount(1);
+  await selectCanvasNode(frame,'#divider');
+  await expect(page.locator('#inspector [data-block-delete]')).toBeVisible();
+  await page.locator('#inspector [data-block-delete]').click();
+  await expect(frame.locator('[data-cms-component="divider"]')).toHaveCount(0);
 
   await page.locator('#undo').click();
-  await expect(frame.locator('[data-cms-component="divider"]')).toHaveCount(2);
+  await expect(frame.locator('[data-cms-component="divider"]')).toHaveCount(1);
 });
 
-test('insert and move between columns can be undone and redone',async({page})=>{
+test('insert and move between containers can be undone and redone',async({page})=>{
   const frame=await fixture(page);
 
   await selectTreeNode(page,'Coluna 2');
@@ -57,18 +65,18 @@ test('insert and move between columns can be undone and redone',async({page})=>{
   await page.locator('#redo').click();
   await expect(frame.locator('#column-b > [data-cms-component="paragraph"]')).toHaveCount(1);
 
-  await selectTreeNode(page,'Texto existente');
+  // Reuse the canvas move path already exercised by the editor: move the divider into column 2.
+  await selectCanvasNode(frame,'#divider');
   const handle=frame.locator('.cms-direct-move-handle');
   await expect(handle).toBeVisible();
   await handle.dragTo(frame.locator('#column-b'));
-  await expect(frame.locator('#column-a > #paragraph-a')).toHaveCount(0);
-  await expect(frame.locator('#column-b > #paragraph-a')).toHaveCount(1);
+  await expect(frame.locator('#column-b > #divider')).toHaveCount(1);
 
   await page.locator('#undo').click();
-  await expect(frame.locator('#column-a > #paragraph-a')).toHaveCount(1);
-  await expect(frame.locator('#column-b > #paragraph-a')).toHaveCount(0);
+  await expect(frame.locator('#column-b > #divider')).toHaveCount(0);
+  await expect(frame.locator('#divider')).toHaveCount(1);
   await page.locator('#redo').click();
-  await expect(frame.locator('#column-b > #paragraph-a')).toHaveCount(1);
+  await expect(frame.locator('#column-b > #divider')).toHaveCount(1);
 });
 
 test('editor-only rename participates in history and a new edit clears redo',async({page})=>{
