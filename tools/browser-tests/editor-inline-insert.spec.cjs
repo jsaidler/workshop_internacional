@@ -120,3 +120,27 @@ test('rich components persist, are named in the tree and expose their own contro
   await page.waitForTimeout(950);
   await expect(frame.locator('[data-cms-component="list"] li[data-cms-editable]')).toHaveCount(4);
 });
+
+test('structure tree drag moves a component into another column and persists',async({page})=>{
+  const frame=await fixture(page);
+  await page.locator('[data-structure-view="tree"]').click();
+  const paragraphRow=page.locator('#page-structure-tree .cms-page-tree-row[data-tree-level="node"]',{hasText:'Texto existente'});
+  const columnBRow=page.locator('#page-structure-tree .cms-page-tree-row[data-tree-level="node"]',{hasText:'Coluna 2'});
+  await expect(paragraphRow.locator('.cms-page-tree-grip')).toBeVisible();
+  await paragraphRow.locator('.cms-page-tree-grip').dragTo(columnBRow);
+  await page.waitForTimeout(1050);
+  await expect(frame.locator('#column-a > [data-cms-component="paragraph"]')).toHaveCount(0);
+  await expect(frame.locator('#column-b > [data-cms-component="paragraph"]')).toHaveCount(1);
+});
+
+test('canvas move handle transfers a selected component directly between containers',async({page})=>{
+  const frame=await fixture(page);
+  await frame.locator('#divider').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
+  const handle=frame.locator('.cms-direct-move-handle');
+  await expect(handle).toBeVisible();
+  await expect(frame.locator('[data-cms-page-main] .cms-direct-move-handle')).toHaveCount(0);
+  await handle.dragTo(frame.locator('#column-b'));
+  await page.waitForTimeout(1050);
+  await expect(frame.locator('#column-b > #divider')).toHaveCount(1);
+  await expect(frame.locator('section > #divider')).toHaveCount(0);
+});
