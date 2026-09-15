@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><title>Editor inline insert fixture</title><link rel="stylesheet" href="/editor/cms-structure-sidebar.css"><style>body{margin:0;padding:12px;font-family:Arial,sans-serif}#inspector{display:none}#page-frame{display:block;width:1100px;height:760px;margin-top:8px;border:1px solid #aaa}.fixture-sidebar{width:240px;margin-bottom:8px}</style></head>
+<head><meta charset="utf-8"><title>Editor inline insert fixture</title><link rel="stylesheet" href="/editor/cms-structure-sidebar.css"><link rel="stylesheet" href="/editor/cms-structure-navigation.css"><style>body{margin:0;padding:12px;font-family:Arial,sans-serif}#inspector{display:none}#page-frame{display:block;width:1100px;height:760px;margin-top:8px;border:1px solid #aaa}.fixture-sidebar{width:240px;margin-bottom:8px}</style></head>
 <body>
-<div class="fixture-sidebar">
+<div class="fixture-sidebar" id="editor-structure-panel">
   <h2 id="structure-panel-title">Seções</h2>
   <div class="cms-structure-view-tabs"><button type="button" data-structure-view="sections" class="is-active">Seções</button><button type="button" data-structure-view="tree">Estrutura</button></div>
   <div id="sections-list" class="sections-list"></div>
@@ -16,6 +16,7 @@
 <script src="/editor/cms-inline-geometry.js"></script>
 <script src="/editor/cms-structure-sidebar.js"></script>
 <script src="/editor/cms-direct-structure-dnd.js"></script>
+<script src="/editor/cms-structure-navigation.js"></script>
 <script>
 (()=>{
   const frame=document.querySelector('#page-frame');
