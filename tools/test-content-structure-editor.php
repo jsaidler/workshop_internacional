@@ -4,6 +4,7 @@ declare(strict_types=1);
 $root=dirname(__DIR__);
 $js=(string)file_get_contents($root.'/editor/cms-component-editor.js');
 $layoutJs=(string)file_get_contents($root.'/editor/cms-layout-properties.js');
+$consolidationJs=(string)file_get_contents($root.'/editor/cms-editor-consolidation.js');
 $css=(string)file_get_contents($root.'/assets/cms-pro.css');
 $layoutCss=(string)file_get_contents($root.'/assets/cms-content-layout.css');
 $publicJs=(string)file_get_contents($root.'/assets/public.js');
@@ -42,6 +43,9 @@ foreach([
     'cmsBoxWidth',
     'cmsTabletPadding',
     'cmsMobilePadding',
+    'cmsSpan',
+    'cmsTabletSpan',
+    'cmsMobileSpan',
     'cmsTabletOrder',
     'cmsMobileOrder',
     'cmsHideDesktop',
@@ -61,9 +65,22 @@ foreach([
     '[data-cms-tablet-padding="m"]',
     '[data-cms-mobile-order="1"]',
     '[data-cms-hide-mobile="1"]',
+    '[data-cms-span="3"]',
+    '[data-cms-tablet-span="2"]',
+    '[data-cms-mobile-span="2"]',
 ] as $needle){
     if(!str_contains($layoutCss,$needle)){
         fwrite(STDERR,"Missing first-class responsive layout CSS: {$needle}\n");
+        exit(1);
+    }
+}
+foreach([
+    'cell.dataset.cmsSpan',
+    'larguras personalizadas',
+    'data-upgrade-free-grid',
+] as $needle){
+    if(!str_contains($consolidationJs,$needle)){
+        fwrite(STDERR,"Legacy grid conversion does not preserve individual widths: {$needle}\n");
         exit(1);
     }
 }
