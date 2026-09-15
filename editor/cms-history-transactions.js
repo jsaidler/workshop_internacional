@@ -18,7 +18,7 @@ let frameObserver=null;
 let commitTimer=0;
 let settingsTimer=0;
 let settingsDraft=null;
-let suppressUntil=0;
+let restoring=false;
 let pendingSelection=null;
 let syncingButtons=false;
 
@@ -76,7 +76,7 @@ function syncButtons(){
 function commitNow(selectionOverride=null){
   clearTimeout(commitTimer);commitTimer=0;
   clearTimeout(settingsTimer);settingsTimer=0;
-  if(Date.now()<suppressUntil||!root())return false;
+  if(restoring||!root())return false;
   const next=snapshot(selectionOverride);
   const current=history[historyIndex];
   if(current&&current.html===next.html&&same(current.settings,next.settings)){
@@ -166,7 +166,7 @@ function observeFrame(){
   const page=root();
   if(!page)return;
   frameObserver=new MutationObserver(mutations=>{
-    if(Date.now()<suppressUntil)return;
+    if(restoring)return;
     const relevant=mutations.filter(relevantMutation);
     if(!relevant.length)return;
     const slower=relevant.every(textualMutation);
@@ -226,18 +226,19 @@ function persistRestoredState(selection){
 }
 function restoreAt(nextIndex){
   if(nextIndex<0||nextIndex>=history.length||nextIndex===historyIndex)return;
+  const page=root();
+  if(!page)return;
   const target=history[nextIndex];
   const currentSettings=clone(settingsDraft);
   historyIndex=nextIndex;
-  suppressUntil=Date.now()+500;
+  restoring=true;
   frameObserver?.disconnect();
-  const page=root();
-  if(!page)return;
   page.innerHTML=target.html;
   pendingSelection=clone(target.selection);
   if(!same(currentSettings,target.settings))applySettings(target.settings);
   settingsDraft=clone(target.settings);
   observeFrame();
+  restoring=false;
   syncButtons();
   persistRestoredState(target.selection);
 }
@@ -264,7 +265,7 @@ new MutationObserver(()=>{if(!syncingButtons)queueMicrotask(syncButtons)}).obser
 new MutationObserver(()=>{if(!syncingButtons)queueMicrotask(syncButtons)}).observe(redoButton,{attributes:true,attributeFilter:['disabled']});
 
 document.addEventListener('input',event=>{
-  if(Date.now()<suppressUntil)return;
+  if(restoring)return;
   if(event.target?.matches?.('#p-title,#p-nav,#p-slug,#p-show,#p-seo-title,#p-seo-description,#p-theme')){
     settingsDraft=settingsFromPanel()||settingsDraft;
     clearTimeout(settingsTimer);
@@ -272,7 +273,7 @@ document.addEventListener('input',event=>{
   }
 },true);
 document.addEventListener('change',event=>{
-  if(Date.now()<suppressUntil)return;
+  if(restoring)return;
   if(event.target?.matches?.('#p-title,#p-nav,#p-slug,#p-show,#p-seo-title,#p-seo-description,#p-theme')){
     settingsDraft=settingsFromPanel()||settingsDraft;
     commitNow();
@@ -280,7 +281,7 @@ document.addEventListener('change',event=>{
   if(event.target?.matches?.('[data-cms-editor-label-input]'))commitNow();
 },true);
 document.addEventListener('keydown',event=>{
-  if(event.target?.matches?.('[data-cms-editor-label-input]')&&event.key==='Enter'&&Date.now()>=suppressUntil)commitNow();
+  if(event.target?.matches?.('[data-cms-editor-label-input]')&&event.key==='Enter'&&!restoring)commitNow();
   const target=event.target;
   const typing=target?.matches?.('input,textarea,select')||target?.isContentEditable;
   if(typing||event.altKey)return;
