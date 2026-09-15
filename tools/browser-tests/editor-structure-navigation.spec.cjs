@@ -52,3 +52,31 @@ test('inspector breadcrumb exposes structural location and navigates to parents'
   await expect(frame.locator('#columns')).toHaveClass(/cms-structure-selected/);
   await expect(page.locator('#inspector .cms-editor-breadcrumb [aria-current="page"]')).toHaveText('Grupo de colunas');
 });
+
+test('structural elements can receive editor-only names used by tree search and breadcrumbs',async({page})=>{
+  const frame=await fixture(page);
+  await page.locator('#page-structure-tree [data-tree-level="node"] .cms-page-tree-main',{hasText:'Divisor'}).click();
+  await expect(frame.locator('#divider')).toHaveClass(/cms-structure-selected/);
+
+  const input=page.locator('#inspector [data-cms-editor-label-input]');
+  await expect(input).toBeVisible();
+  await expect(page.locator('#inspector')).toContainText('não aparece no site');
+  await input.fill('Separador antes da inscrição');
+  await input.press('Enter');
+
+  await page.waitForTimeout(900);
+  await expect(frame.locator('#divider')).toHaveAttribute('data-cms-editor-label','Separador antes da inscrição');
+  await expect(frame.locator('#divider')).not.toContainText('Separador antes da inscrição');
+
+  await page.locator('[data-structure-view="tree"]').click();
+  await page.locator('[data-structure-view="tree"]').click();
+  const tree=page.locator('#page-structure-tree');
+  await expect(tree).toContainText('Separador antes da inscrição');
+
+  const search=page.locator('.cms-structure-search input');
+  await search.fill('separador antes');
+  await expect(tree.locator('[data-tree-level="node"] .cms-page-tree-main',{hasText:'Separador antes da inscrição'})).toBeVisible();
+  await search.press('Enter');
+  await expect(frame.locator('#divider')).toHaveClass(/cms-structure-selected/);
+  await expect(page.locator('#inspector .cms-editor-breadcrumb [aria-current="page"]')).toHaveText('Separador antes da inscrição');
+});
