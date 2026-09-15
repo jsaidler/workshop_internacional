@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Editor structure consolidation fixture</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:16px}.shell{display:grid;grid-template-columns:260px 1fr;gap:16px}.cms-structure-view-tabs{display:flex;gap:6px}.is-active{font-weight:700}#page-structure-tree[hidden],#sections-list[hidden]{display:none}#inspector{border:1px solid #ccc;padding:12px;min-height:180px}.section-library{display:grid;gap:6px}.section-template{display:block;text-align:left;padding:8px}#page-frame{width:900px;height:420px;border:1px solid #aaa;margin-top:16px}.editor-more-menu{display:grid;gap:4px;width:240px}
+</style>
+</head>
+<body data-open-count="0" data-save-count="0">
+<div class="cms-structure-view-tabs">
+  <button type="button" data-structure-view="sections" class="is-active">Seções</button>
+  <button type="button" data-structure-view="tree">Estrutura</button>
+</div>
+<div id="sections-list">Lista antiga</div>
+<div id="page-structure-tree" hidden>Árvore estrutural</div>
+<p><button id="add-section" type="button">Adicionar seção</button> <button id="add-section-side" type="button">+ Adicionar seção</button></p>
+<button id="save-page" type="button">Salvar</button>
+<button id="pro-add-component" type="button">+ Componentes</button>
+<button id="pro-save-block" type="button">Salvar bloco</button>
+<details id="editor-more"><summary>Mais</summary><div class="editor-more-menu"><a id="editor-pages-link" href="#">Páginas</a></div></details>
+<dialog id="pro-components-dialog">
+  <form method="dialog">
+    <header><div><p>Construtor</p><h2>Componentes e blocos</h2></div><button value="cancel">×</button></header>
+    <div class="pro-tabs"><button type="button" class="active" data-pro-tab="components">Componentes</button><button type="button" data-pro-tab="blocks">Blocos salvos</button></div>
+    <div id="pro-components" class="section-library">
+      <button type="button" class="section-template" data-pro-component="hero"><strong>Hero editorial</strong><span>Pronto</span></button>
+      <button type="button" class="section-template" data-pro-component="free2"><strong>Grade livre · 2 colunas</strong><span>Antiga</span></button>
+      <button type="button" class="section-template" data-pro-component="free3"><strong>Grade livre · 3 colunas</strong><span>Antiga</span></button>
+      <button type="button" class="section-template" data-pro-component="free4"><strong>Grade livre · 4 colunas</strong><span>Antiga</span></button>
+    </div>
+    <div id="pro-blocks" class="section-library" hidden></div>
+  </form>
+</dialog>
+<div class="shell">
+  <aside id="inspector"><div class="inspector-section"><div class="cms-layout-children"><hr><p class="eyebrow">Grade interna</p><h3>Blocos e colunas</h3><p>Controles antigos.</p></div></div></aside>
+  <div><iframe id="page-frame" title="Página em edição"></iframe></div>
+</div>
+<script>
+(()=>{
+  const tabs=[...document.querySelectorAll('[data-structure-view]')];
+  tabs.forEach(button=>button.addEventListener('click',()=>{
+    tabs.forEach(item=>item.classList.toggle('is-active',item===button));
+    const tree=button.dataset.structureView==='tree';
+    document.querySelector('#page-structure-tree').hidden=!tree;
+    document.querySelector('#sections-list').hidden=tree;
+    sessionStorage.setItem('cms-structure-sidebar-view',tree?'tree':'sections');
+  }));
+  document.querySelector('#pro-add-component').onclick=()=>{
+    document.body.dataset.openCount=String(Number(document.body.dataset.openCount||0)+1);
+    const dialog=document.querySelector('#pro-components-dialog');
+    if(!dialog.open)dialog.showModal();
+  };
+  document.querySelectorAll('[data-pro-tab]').forEach(tab=>tab.onclick=()=>{
+    const blocks=tab.dataset.proTab==='blocks';
+    document.querySelector('#pro-components').hidden=blocks;
+    document.querySelector('#pro-blocks').hidden=!blocks;
+  });
+  document.querySelector('#save-page').onclick=()=>document.body.dataset.saveCount=String(Number(document.body.dataset.saveCount||0)+1);
+  const frame=document.querySelector('#page-frame');
+  frame.srcdoc=`<!doctype html><html><body><main data-cms-page-main><section class="cms-section-selected" data-cms-section="legacy" data-cms-section-name="Legacy" data-cms-columns="2" data-layout-ratio="40-60" data-layout-mobile="reverse"><div id="legacy-grid" class="cms-free-grid" style="display:grid;grid-template-columns:1fr 1fr;column-gap:32px"><div id="legacy-a" class="cms-free-cell"><h2 data-cms-editable>Título mantido</h2><p data-cms-editable>Texto A</p></div><div id="legacy-b" class="cms-free-cell"><p data-cms-editable>Texto B</p></div></div></section></main></body></html>`;
+})();
+</script>
+<script src="/editor/cms-layout-properties.js"></script>
+</body>
+</html>
