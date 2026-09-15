@@ -34,7 +34,10 @@ function ensureSearch(){
   searchInput.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&searchInput.value){event.preventDefault();searchInput.value='';filterTree('');return}
     if(event.key==='Enter'){
-      const target=[...tree.querySelectorAll('.cms-page-tree-row:not([hidden]) .cms-page-tree-main')].find(button=>button.offsetParent!==null);
+      const directNode=tree.querySelector('.cms-page-tree-row[data-tree-level="node"][data-search-match="1"]:not([hidden]) .cms-page-tree-main');
+      const directSection=tree.querySelector('.cms-page-tree-row[data-tree-level="section"][data-search-match="1"]:not([hidden]) .cms-page-tree-main');
+      const visibleFallback=[...tree.querySelectorAll('.cms-page-tree-row:not([hidden]) .cms-page-tree-main')].find(button=>button.offsetParent!==null);
+      const target=directNode||directSection||visibleFallback;
       if(target){event.preventDefault();target.click()}
     }
   });
@@ -48,6 +51,10 @@ function revealAncestors(rows,index){
     if(depth<wanted){rows[i].hidden=false;wanted=depth}
   }
 }
+function setMatch(row,match){
+  if(!row)return;
+  match?row.dataset.searchMatch='1':delete row.dataset.searchMatch;
+}
 function filterTree(query=''){
   ensureSearch();
   lastQuery=query;
@@ -59,19 +66,22 @@ function filterTree(query=''){
     const childRows=[...group.querySelectorAll(':scope > .cms-page-tree-row[data-tree-level="node"]')];
     if(!needle){
       group.hidden=false;
-      if(sectionRow)sectionRow.hidden=false;
-      childRows.forEach(row=>row.hidden=false);
+      if(sectionRow){sectionRow.hidden=false;setMatch(sectionRow,false)}
+      childRows.forEach(row=>{row.hidden=false;setMatch(row,false)});
       visible++;
       continue;
     }
     const sectionMatch=normalize(sectionRow?.textContent).includes(needle);
-    childRows.forEach(row=>row.hidden=true);
+    setMatch(sectionRow,sectionMatch);
+    childRows.forEach(row=>{row.hidden=true;setMatch(row,false)});
     let childMatches=0;
     if(sectionMatch){
       childRows.forEach(row=>row.hidden=false);
     }else{
       childRows.forEach((row,index)=>{
-        if(!normalize(row.textContent).includes(needle))return;
+        const match=normalize(row.textContent).includes(needle);
+        setMatch(row,match);
+        if(!match)return;
         row.hidden=false;
         revealAncestors(childRows,index);
         childMatches++;
