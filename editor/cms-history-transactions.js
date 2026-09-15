@@ -67,8 +67,10 @@ function snapshot(selectionOverride=null){
 function syncButtons(){
   if(syncingButtons)return;
   syncingButtons=true;
-  undoButton.disabled=historyIndex<=0;
-  redoButton.disabled=historyIndex<0||historyIndex>=history.length-1;
+  const undoDisabled=historyIndex<=0;
+  const redoDisabled=historyIndex<0||historyIndex>=history.length-1;
+  if(undoButton.disabled!==undoDisabled)undoButton.disabled=undoDisabled;
+  if(redoButton.disabled!==redoDisabled)redoButton.disabled=redoDisabled;
   syncingButtons=false;
 }
 function commitNow(selectionOverride=null){
