@@ -8,7 +8,7 @@ O editor distingue três níveis:
 
 1. **Seção** — unidade editorial de alto nível da página.
 2. **Contêiner / grupo de colunas** — estrutura interna reutilizável.
-3. **Componente** — conteúdo: parágrafo, título, imagem, carrossel, botão, divisor ou espaço.
+3. **Componente** — conteúdo: parágrafo, título, imagem, carrossel, botão, divisor, espaço, lista, citação, vídeo ou galeria.
 
 A estrutura pode ser aninhada, por exemplo:
 
@@ -28,11 +28,15 @@ ou
 
 ## Edição
 
+A árvore **Estrutura** é o navegador principal do conteúdo. A visão **Seções** permanece disponível como atalho simplificado.
+
 Ao selecionar uma seção, o inspetor permite adicionar componentes e estruturas internas.
 
 Ao selecionar um texto ou imagem existente, o usuário pode inserir novos componentes antes ou depois daquele ponto.
 
-Contêineres, colunas e componentes criados no editor aparecem numa árvore estrutural. Os nós podem ser selecionados, movidos, duplicados e removidos. Drag-and-drop permite mover componentes entre colunas ou reordená-los.
+Contêineres, colunas e componentes criados no editor aparecem na árvore estrutural. Os nós podem ser selecionados, nomeados para uso interno, pesquisados, movidos, duplicados e removidos. Drag-and-drop permite mover componentes entre colunas ou reordená-los. O breadcrumb do inspetor mostra a posição do elemento dentro da hierarquia.
+
+A ação **Adicionar seção** abre uma única biblioteca com **Seções prontas** e **Blocos salvos**. O editor não apresenta um segundo comando global chamado “Componentes” para criar seções inteiras. Para conteúdo interno, a inserção acontece no canvas ou no inspetor do próprio elemento.
 
 ## Propriedades dos contêineres
 
@@ -82,14 +86,26 @@ Exemplo: um grupo de `2 colunas / 30–70` no desktop cai para uma coluna no tab
 
 A mesma regra vale para padding, alinhamento, ordem, visibilidade e futuras propriedades que possam variar conforme o dispositivo.
 
-## Compatibilidade
+## Compatibilidade e adoção progressiva
 
-As seções legadas continuam válidas e não são convertidas automaticamente. Novos componentes podem ser inseridos ao redor do conteúdo existente. A estrutura de primeira classe é aplicada somente aos nós criados ou reorganizados pelo editor.
+As seções legadas continuam válidas e não são convertidas automaticamente. Novos componentes podem ser inseridos ao redor do conteúdo existente. Elementos antigos tocados pelo usuário podem ser promovidos individualmente a nós estruturais.
+
+Grades antigas baseadas em `cms-free-grid` recebem um caminho explícito de adoção. Quando não existem larguras personalizadas por `data-cms-span`, o usuário pode escolher **Usar estrutura atual**. Nesse caso, a grade passa a ser um grupo de colunas de primeira classe e suas células passam a ser colunas de primeira classe, preservando o conteúdo e mapeando as propriedades compatíveis.
+
+Se uma grade antiga usa `data-cms-span`, a conversão automática não é oferecida. O objetivo é preservar o desenho existente até que o modelo atual tenha largura individual de coluna equivalente. Os ajustes originais continuam acessíveis de forma recolhida no inspetor.
+
+Novas seções livres já nascem com o modelo estrutural atual. O editor deixa de oferecer novas “grades livres” no formato antigo, reduzindo progressivamente a quantidade de conteúdo dependente do editor legado sem forçar uma migração global.
 
 Formulários continuam isolados do construtor de conteúdo: os campos e validações são gerenciados no editor de formulários.
+
+## Histórico
+
+Inserir, remover, duplicar, mover, reorganizar e renomear nós estruturais participa do histórico transacional de **Desfazer/Refazer**. O histórico permanece no documento principal do editor e não é perdido quando apenas o preview é recarregado.
 
 ## Regra de produto
 
 Novas capacidades de layout não devem ser introduzidas com comportamento responsivo implícito dependente de uma escolha feita em outro viewport. Se uma propriedade puder variar por dispositivo e essa variação for relevante, ela deve ter regra automática explícita ou controle específico por viewport.
 
 Também não devem existir dois conjuntos concorrentes de breakpoints dentro do CMS. O preview, o CSS público e os controles do editor precisam representar o mesmo contrato de desktop, tablet e celular.
+
+Quando existir um editor antigo e um modelo estrutural novo para a mesma capacidade, o novo modelo deve ser a interface principal. O editor antigo permanece apenas como compatibilidade recolhida até existir uma conversão segura e sem perda de layout.
