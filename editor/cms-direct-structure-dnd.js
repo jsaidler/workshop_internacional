@@ -9,6 +9,7 @@ const uid=prefix=>`${prefix}-${Date.now().toString(36)}-${Math.random().toString
 const d=()=>frame.contentDocument;
 const pageRoot=()=>d()?.querySelector('[data-cms-page-main]')||d()?.querySelector('main')||null;
 const sections=()=>pageRoot()?[...pageRoot().children].filter(node=>node.matches('[data-cms-section]')):[];
+const boundDocuments=new WeakSet();
 let dragNode=null;
 let frameObserver=null;
 let treeObserver=null;
@@ -25,6 +26,7 @@ function remember(node){const id=ensureNodeId(node);if(id)sessionStorage.setItem
 function clearCanvasMarks(){
   d()?.querySelectorAll('.cms-direct-drop-before,.cms-direct-drop-after,.cms-direct-drop-inside,.cms-direct-dragging').forEach(node=>node.classList.remove('cms-direct-drop-before','cms-direct-drop-after','cms-direct-drop-inside','cms-direct-dragging'));
 }
+function clearTreeDropMarks(){treeHost.querySelectorAll('.is-direct-drop-before,.is-direct-drop-after,.is-direct-drop-inside').forEach(row=>row.classList.remove('is-direct-drop-before','is-direct-drop-after','is-direct-drop-inside'))}
 function clearTreeMarks(){treeHost.querySelectorAll('.is-direct-drop-before,.is-direct-drop-after,.is-direct-drop-inside,.is-direct-dragging').forEach(row=>row.classList.remove('is-direct-drop-before','is-direct-drop-after','is-direct-drop-inside','is-direct-dragging'))}
 function clearDrag(){clearCanvasMarks();clearTreeMarks();dragNode=null}
 function saveAndReload(node){
@@ -82,6 +84,8 @@ function selectedMovable(){
 function ensureCanvasUi(){
   const doc=d();
   if(!doc?.body)return null;
+  const existingStyle=doc.querySelector('style[data-cms-direct-structure-style="1"]');
+  if(existingStyle)canvasStyle=existingStyle;
   if(!canvasStyle||!doc.contains(canvasStyle)){
     canvasStyle=doc.createElement('style');
     canvasStyle.dataset.cmsDirectStructureStyle='1';
@@ -96,12 +100,15 @@ function ensureCanvasUi(){
 `;
     doc.head.append(canvasStyle);
   }
+  const existingLayer=doc.querySelector('body > .cms-direct-move-layer[data-cms-editor-ui="1"]');
+  if(existingLayer)canvasLayer=existingLayer;
   if(!canvasLayer||!doc.contains(canvasLayer)){
     canvasLayer=doc.createElement('div');
     canvasLayer.className='cms-direct-move-layer';
     canvasLayer.dataset.cmsEditorUi='1';
     doc.body.append(canvasLayer);
   }
+  doc.querySelectorAll('body > .cms-direct-move-layer[data-cms-editor-ui="1"]').forEach((layer,index)=>{if(index>0)layer.remove()});
   return canvasLayer;
 }
 function renderCanvasHandle(){
@@ -140,9 +147,7 @@ function scheduleCanvasHandle(){
   rafPending=true;
   (frame.contentWindow||window).requestAnimationFrame(renderCanvasHandle);
 }
-function bindCanvasDnD(){
-  const doc=d();
-  if(!doc)return;
+function bindCanvasDnD(doc){
   ensureCanvasUi();
   doc.addEventListener('dragover',event=>{
     if(!dragNode)return;
@@ -186,8 +191,9 @@ function collect(parent,depth=0,out=[]){
   return out;
 }
 function treeNodeForRow(row){
-  const section=sections()[Number(row.querySelector('[data-page-tree-node]')?.dataset.pageTreeSection)];
-  const index=Number(row.querySelector('[data-page-tree-node]')?.dataset.pageTreeNode);
+  const button=row.querySelector('[data-page-tree-node]');
+  const section=sections()[Number(button?.dataset.pageTreeSection)];
+  const index=Number(button?.dataset.pageTreeNode);
   if(!section||Number.isNaN(index))return null;
   return collect(section)[index]?.node||null;
 }
@@ -226,8 +232,7 @@ function enhanceTree(){
       if(!canDrop(dragNode,target))return;
       event.preventDefault();
       event.dataTransfer.dropEffect='move';
-      clearTreeMarks();
-      row.classList.add('is-direct-dragging');
+      clearTreeDropMarks();
       const mode=treeMode(dragNode,target,row,event);
       row.classList.add(mode==='inside'?'is-direct-drop-inside':mode==='after'?'is-direct-drop-after':'is-direct-drop-before');
     });
@@ -247,13 +252,20 @@ function enhanceTree(){
   });
 }
 function bindFrame(){
-  frameObserver?.disconnect();
-  clearDrag();
-  canvasLayer=null;
-  canvasStyle=null;
   const doc=d(),root=pageRoot();
   if(!doc||!root)return;
-  bindCanvasDnD();
+  canvasStyle=doc.querySelector('style[data-cms-direct-structure-style="1"]');
+  canvasLayer=doc.querySelector('body > .cms-direct-move-layer[data-cms-editor-ui="1"]');
+  if(boundDocuments.has(doc)){
+    ensureCanvasUi();
+    scheduleCanvasHandle();
+    setTimeout(enhanceTree,0);
+    return;
+  }
+  boundDocuments.add(doc);
+  frameObserver?.disconnect();
+  clearDrag();
+  bindCanvasDnD(doc);
   frameObserver=new MutationObserver(()=>scheduleCanvasHandle());
   frameObserver.observe(root,{subtree:true,childList:true,attributes:true,attributeFilter:['class','data-cms-node-id']});
   doc.addEventListener('click',()=>setTimeout(scheduleCanvasHandle,0),true);
