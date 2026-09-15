@@ -1,15 +1,17 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><title>Editor inline insert fixture</title><link rel="stylesheet" href="/editor/cms-structure-sidebar.css"><link rel="stylesheet" href="/editor/cms-structure-navigation.css"><style>body{margin:0;padding:12px;font-family:Arial,sans-serif}#inspector{display:none}#page-frame{display:block;width:1100px;height:760px;margin-top:8px;border:1px solid #aaa}.fixture-sidebar{width:240px;margin-bottom:8px}</style></head>
+<head><meta charset="utf-8"><title>Editor inline insert fixture</title><link rel="stylesheet" href="/editor/cms-structure-sidebar.css"><link rel="stylesheet" href="/editor/cms-structure-navigation.css"><style>body{margin:0;padding:12px;font-family:Arial,sans-serif}.fixture-shell{display:grid;grid-template-columns:240px 280px;gap:12px;align-items:start}#inspector{display:block;min-height:80px;max-height:230px;overflow:auto;padding:8px;border:1px solid #ddd;background:#fff}#page-frame{display:block;width:1100px;height:760px;margin-top:8px;border:1px solid #aaa}.fixture-sidebar{width:240px;margin-bottom:8px}</style></head>
 <body>
-<div class="fixture-sidebar" id="editor-structure-panel">
-  <h2 id="structure-panel-title">Seções</h2>
-  <div class="cms-structure-view-tabs"><button type="button" data-structure-view="sections" class="is-active">Seções</button><button type="button" data-structure-view="tree">Estrutura</button></div>
-  <div id="sections-list" class="sections-list"></div>
-  <div id="page-structure-tree" class="cms-page-structure-tree" hidden></div>
+<div class="fixture-shell">
+  <div class="fixture-sidebar" id="editor-structure-panel">
+    <h2 id="structure-panel-title">Seções</h2>
+    <div class="cms-structure-view-tabs"><button type="button" data-structure-view="sections" class="is-active">Seções</button><button type="button" data-structure-view="tree">Estrutura</button></div>
+    <div id="sections-list" class="sections-list"></div>
+    <div id="page-structure-tree" class="cms-page-structure-tree" hidden></div>
+  </div>
+  <aside id="inspector"><div class="inspector-section"></div></aside>
 </div>
 <button id="save-page" type="button">Salvar</button>
-<aside id="inspector"><div class="inspector-section"></div></aside>
 <iframe id="page-frame" title="Página em edição"></iframe>
 <script src="/editor/cms-component-editor.js"></script>
 <script src="/editor/cms-rich-components.js"></script>
