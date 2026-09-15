@@ -15,6 +15,7 @@
 <script src="/editor/cms-rich-components.js"></script>
 <script src="/editor/cms-inline-geometry.js"></script>
 <script src="/editor/cms-structure-sidebar.js"></script>
+<script src="/editor/cms-direct-structure-dnd.js"></script>
 <script>
 (()=>{
   const frame=document.querySelector('#page-frame');
@@ -26,7 +27,7 @@
     const main=doc?.querySelector('[data-cms-page-main]');
     if(!main)return;
     const clone=main.cloneNode(true);
-    clone.querySelectorAll('.cms-structure-selected,.cms-section-selected,.cms-selection,.cms-editing').forEach(node=>node.classList.remove('cms-structure-selected','cms-section-selected','cms-selection','cms-editing'));
+    clone.querySelectorAll('.cms-structure-selected,.cms-section-selected,.cms-selection,.cms-editing,.cms-direct-drop-before,.cms-direct-drop-after,.cms-direct-drop-inside,.cms-direct-dragging').forEach(node=>node.classList.remove('cms-structure-selected','cms-section-selected','cms-selection','cms-editing','cms-direct-drop-before','cms-direct-drop-after','cms-direct-drop-inside','cms-direct-dragging'));
     clone.querySelector('section[data-cms-section]')?.classList.add('cms-section-selected');
     frame.srcdoc=shell(clone.outerHTML);
   });
