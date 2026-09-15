@@ -23,7 +23,7 @@ function componentType(node){
   if(node.hasAttribute('data-cms-column'))return'Coluna';
   if(node.dataset.cmsContainer==='columns')return`${node.querySelectorAll(':scope > [data-cms-column]').length} colunas`;
   if(node.dataset.cmsContainer==='stack')return'Contêiner';
-  const labels={paragraph:'Parágrafo',heading:'Título',image:'Imagem',carousel:'Carrossel',button:'Botão',divider:'Divisor',spacer:'Espaço',container:'Contêiner',list:'Lista',quote:'Citação'};
+  const labels={paragraph:'Parágrafo',heading:'Título',image:'Imagem',carousel:'Carrossel',button:'Botão',divider:'Divisor',spacer:'Espaço',container:'Contêiner',list:'Lista',quote:'Citação',video:'Vídeo',gallery:'Galeria'};
   if(labels[node.dataset.cmsComponent])return labels[node.dataset.cmsComponent];
   if(node.matches('p'))return'Parágrafo';
   if(node.matches('h1,h2,h3,h4,h5,h6'))return'Título';
@@ -32,6 +32,8 @@ function componentType(node){
   return'Bloco';
 }
 function componentLabel(node,meta={}){
+  const custom=cleanText(node.dataset.cmsEditorLabel||'');
+  if(custom)return custom;
   if(node.hasAttribute('data-cms-column'))return`Coluna ${Number(meta.columnIndex||0)+1}`;
   if(node.dataset.cmsContainer==='columns')return'Grupo de colunas';
   if(node.dataset.cmsContainer==='stack')return'Contêiner';
@@ -39,6 +41,8 @@ function componentLabel(node,meta={}){
   if(node.dataset.cmsComponent==='spacer')return'Espaço';
   if(node.dataset.cmsComponent==='image')return'Imagem';
   if(node.dataset.cmsComponent==='carousel')return'Carrossel';
+  if(node.dataset.cmsComponent==='video')return'Vídeo';
+  if(node.dataset.cmsComponent==='gallery')return'Galeria';
   const text=cleanText(node.textContent||'');
   return text?text.slice(0,38):componentType(node);
 }
@@ -148,7 +152,7 @@ function bindFrame(){
   const d=doc(),r=root();
   if(!d||!r)return;
   frameObserver=new MutationObserver(schedule);
-  frameObserver.observe(r,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','data-cms-section-name','data-cms-section','data-cms-component','data-cms-container']});
+  frameObserver.observe(r,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','data-cms-section-name','data-cms-section','data-cms-component','data-cms-container','data-cms-editor-label']});
   d.addEventListener('click',()=>setTimeout(schedule,0),true);
   d.addEventListener('cms:structure-changed',schedule,true);
   schedule();
