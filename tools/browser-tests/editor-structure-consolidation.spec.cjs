@@ -2,8 +2,8 @@ const {test,expect}=require('@playwright/test');
 
 const url='http://127.0.0.1:8099/tools/browser-fixture/editor-structure-consolidation.html';
 
-async function openFixture(page){
-  await page.goto(url);
+async function openFixture(page,suffix=''){
+  await page.goto(url+suffix);
   const frame=page.frameLocator('#page-frame');
   await expect(frame.locator('[data-cms-page-main]')).toBeVisible();
   return frame;
@@ -55,6 +55,25 @@ test('legacy free grid is folded away and can be upgraded without losing content
   await expect(grid).toContainText('Texto A');
   await expect(grid).toContainText('Texto B');
   await expect(frame.locator('section[data-cms-section="legacy"]')).not.toHaveAttribute('data-cms-columns','2');
+  await expect(page.locator('body')).toHaveAttribute('data-save-count','1');
+});
+
+test('legacy custom column widths can be upgraded and preserved',async({page})=>{
+  const frame=await openFixture(page,'?spans=1');
+
+  await expect(page.locator('[data-upgrade-free-grid]')).toBeVisible();
+  await expect(page.locator('.cms-layout-consolidation-card')).toContainText('larguras personalizadas');
+  await page.locator('[data-upgrade-free-grid]').click();
+
+  const grid=frame.locator('#legacy-grid');
+  await expect(grid).toHaveClass(/cms-container-columns/);
+  await expect(grid).toHaveAttribute('data-cms-columns','4');
+  await expect(frame.locator('#legacy-a')).toHaveAttribute('data-cms-column','');
+  await expect(frame.locator('#legacy-a')).toHaveAttribute('data-cms-span','1');
+  await expect(frame.locator('#legacy-b')).toHaveAttribute('data-cms-span','3');
+  await expect(grid).toContainText('Título mantido');
+  await expect(grid).toContainText('Texto B');
+  await expect(frame.locator('section[data-cms-section="legacy"]')).not.toHaveAttribute('data-cms-columns','4');
   await expect(page.locator('body')).toHaveAttribute('data-save-count','1');
 });
 
