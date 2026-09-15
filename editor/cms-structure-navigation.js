@@ -40,6 +40,14 @@ function ensureSearch(){
   });
   searchWrap.querySelector('button').addEventListener('click',()=>{searchInput.value='';filterTree('');searchInput.focus()});
 }
+function rowDepth(row){return Number.parseInt(row?.style?.getPropertyValue('--tree-depth')||'0',10)||0}
+function revealAncestors(rows,index){
+  let wanted=rowDepth(rows[index]);
+  for(let i=index-1;i>=0&&wanted>1;i--){
+    const depth=rowDepth(rows[i]);
+    if(depth<wanted){rows[i].hidden=false;wanted=depth}
+  }
+}
 function filterTree(query=''){
   ensureSearch();
   lastQuery=query;
@@ -48,19 +56,31 @@ function filterTree(query=''){
   let visible=0;
   for(const group of groups){
     const sectionRow=group.querySelector(':scope > .cms-page-tree-row[data-tree-level="section"]');
-    const sectionMatch=!needle||normalize(sectionRow?.textContent).includes(needle);
     const childRows=[...group.querySelectorAll(':scope > .cms-page-tree-row[data-tree-level="node"]')];
+    if(!needle){
+      group.hidden=false;
+      if(sectionRow)sectionRow.hidden=false;
+      childRows.forEach(row=>row.hidden=false);
+      visible++;
+      continue;
+    }
+    const sectionMatch=normalize(sectionRow?.textContent).includes(needle);
+    childRows.forEach(row=>row.hidden=true);
     let childMatches=0;
-    for(const row of childRows){
-      const match=!needle||normalize(row.textContent).includes(needle);
-      row.hidden=!match;
-      if(match)childMatches++;
+    if(sectionMatch){
+      childRows.forEach(row=>row.hidden=false);
+    }else{
+      childRows.forEach((row,index)=>{
+        if(!normalize(row.textContent).includes(needle))return;
+        row.hidden=false;
+        revealAncestors(childRows,index);
+        childMatches++;
+      });
     }
     const showGroup=sectionMatch||childMatches>0;
     group.hidden=!showGroup;
     if(sectionRow)sectionRow.hidden=!showGroup;
     if(showGroup)visible++;
-    if(needle&&sectionMatch)childRows.forEach(row=>row.hidden=false);
   }
   if(searchEmpty)searchEmpty.hidden=!needle||visible>0;
   searchWrap?.classList.toggle('has-query',!!needle);
