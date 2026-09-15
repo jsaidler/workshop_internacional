@@ -54,11 +54,16 @@ Largura, fundo e borda são propriedades visuais compartilhadas. Espaçamento e 
 
 Cada coluna pode definir separadamente por viewport:
 
+- largura dentro da grade, ocupando uma ou mais colunas do grupo;
 - alinhamento vertical do conteúdo;
 - alinhamento horizontal do conteúdo;
 - alinhamento do texto;
 - ordem visual;
 - visibilidade.
+
+A largura individual usa `data-cms-span` no desktop, `data-cms-tablet-span` no tablet e `data-cms-mobile-span` no celular. A largura nunca cria colunas implícitas além da quantidade disponível no grupo: quando o valor pedido excede a grade daquele viewport, a coluna ocupa a largura total disponível.
+
+`Automático` para a largura individual significa ocupar uma coluna da grade naquele viewport. Se o grupo estiver automaticamente reduzido a uma única coluna, isso equivale à largura total.
 
 Ocultar uma coluna em um dispositivo é sempre uma escolha explícita. No preview do editor, a coluna continua visível com indicação visual para não se tornar impossível de selecionar; no site público ela é realmente removida do layout naquele viewport.
 
@@ -80,19 +85,23 @@ Um grupo de colunas pode definir separadamente:
 - proporção quando houver duas colunas;
 - espaçamento entre colunas.
 
+Cada coluna do grupo também pode definir separadamente quanto da grade ocupa em cada viewport. Isso permite, por exemplo, uma grade de quatro colunas em que um bloco ocupa três colunas e outro ocupa uma no desktop, mas passa a 2+1 em uma grade de três colunas no tablet e a 1+1 em uma grade de duas colunas no celular.
+
 `Automático` significa usar a regra responsiva daquele viewport. Não significa herdar silenciosamente a configuração de desktop.
 
 Exemplo: um grupo de `2 colunas / 30–70` no desktop cai para uma coluna no tablet e celular quando estes estão em `Automático`. Se o usuário escolher explicitamente duas colunas no tablet, apenas então a proporção de tablet passa a ser aplicável.
 
-A mesma regra vale para padding, alinhamento, ordem, visibilidade e futuras propriedades que possam variar conforme o dispositivo.
+A mesma regra vale para largura individual, padding, alinhamento, ordem, visibilidade e futuras propriedades que possam variar conforme o dispositivo.
 
 ## Compatibilidade e adoção progressiva
 
 As seções legadas continuam válidas e não são convertidas automaticamente. Novos componentes podem ser inseridos ao redor do conteúdo existente. Elementos antigos tocados pelo usuário podem ser promovidos individualmente a nós estruturais.
 
-Grades antigas baseadas em `cms-free-grid` recebem um caminho explícito de adoção. Quando não existem larguras personalizadas por `data-cms-span`, o usuário pode escolher **Usar estrutura atual**. Nesse caso, a grade passa a ser um grupo de colunas de primeira classe e suas células passam a ser colunas de primeira classe, preservando o conteúdo e mapeando as propriedades compatíveis.
+Grades antigas baseadas em `cms-free-grid` recebem um caminho explícito de adoção por **Usar estrutura atual**. A conversão nunca é automática. O conteúdo é preservado, a grade passa a ser um grupo de colunas de primeira classe e suas células passam a ser colunas de primeira classe.
 
-Se uma grade antiga usa `data-cms-span`, a conversão automática não é oferecida. O objetivo é preservar o desenho existente até que o modelo atual tenha largura individual de coluna equivalente. Os ajustes originais continuam acessíveis de forma recolhida no inspetor.
+Quando a grade antiga usa `data-cms-span`, essas larguras também são preservadas no desktop e passam a ser editáveis pela propriedade **Largura na grade**. Tablet e celular permanecem em seus comportamentos automáticos responsivos até que o usuário escolha explicitamente larguras específicas para esses viewports.
+
+Também são mapeadas, quando compatíveis, proporção de duas colunas, espaçamento aproximado, alinhamento vertical legado e ordem móvel. Depois da conversão, a grade deixa de depender do editor antigo para essas capacidades.
 
 Novas seções livres já nascem com o modelo estrutural atual. O editor deixa de oferecer novas “grades livres” no formato antigo, reduzindo progressivamente a quantidade de conteúdo dependente do editor legado sem forçar uma migração global.
 

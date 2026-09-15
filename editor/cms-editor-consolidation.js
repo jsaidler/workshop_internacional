@@ -112,7 +112,7 @@ function chooseGap(value){
 }
 function upgradeFreeGrid(section,grid){
   const cells=[...grid.children];
-  if(!cells.length||cells.some(cell=>cell.dataset.cmsSpan))return false;
+  if(!cells.length)return false;
   const win=frame.contentWindow;
   const oldGap=win?.getComputedStyle(grid).columnGap||'';
   const count=Math.max(1,Math.min(4,Number(section.dataset.cmsColumns)||cells.length));
@@ -131,7 +131,10 @@ function upgradeFreeGrid(section,grid){
     cell.classList.add('cms-column');
     cell.dataset.cmsColumn='';
     cell.dataset.cmsNodeId=cell.dataset.cmsNodeId||uid('column');
+    const legacySpan=cell.dataset.cmsSpan||'';
+    if(legacySpan&&!['1','2','3','4'].includes(legacySpan))delete cell.dataset.cmsSpan;
     if(['start','center','end'].includes(cell.dataset.cmsSelf||''))cell.dataset.cmsJustify=cell.dataset.cmsSelf;
+    delete cell.dataset.cmsSelf;
     if(section.dataset.layoutMobile==='reverse')cell.dataset.cmsMobileOrder=String(cells.length-index);
   });
   delete section.dataset.cmsColumns;
@@ -157,7 +160,7 @@ function wrapLegacyLayout(){
     const card=document.createElement('div');
     card.className='cms-layout-consolidation-card';
     card.innerHTML=hasSpans
-      ?'<p class="eyebrow">Estrutura</p><h3>Grade com larguras personalizadas</h3><p class="inspector-note">Esta seção continua com seus ajustes originais para não alterar o desenho. Novos conteúdos já usam a árvore Estrutura.</p>'
+      ?'<p class="eyebrow">Estrutura</p><h3>Trazer esta grade para o editor atual</h3><p class="inspector-note">O conteúdo e as larguras personalizadas são mantidos. Depois da conversão, cada coluna pode ter largura própria em desktop, tablet e celular.</p><button type="button" class="panel-button" data-upgrade-free-grid>Usar estrutura atual</button>'
       :'<p class="eyebrow">Estrutura</p><h3>Trazer esta grade para o editor atual</h3><p class="inspector-note">O conteúdo é mantido. As colunas passam a aparecer na árvore Estrutura e podem ser movidas diretamente.</p><button type="button" class="panel-button" data-upgrade-free-grid>Usar estrutura atual</button>';
     wrapper.append(card);
     card.querySelector('[data-upgrade-free-grid]')?.addEventListener('click',()=>upgradeFreeGrid(section,grid));

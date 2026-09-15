@@ -50,6 +50,36 @@ test('tablet and mobile container overrides are independent',async({page})=>{
   expect(await page.locator('#stack').evaluate(el=>getComputedStyle(el).gap)).toBe('24px');
 });
 
+test('individual column width is independent on desktop tablet and phone',async({page})=>{
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto(url);
+  const spans=page.locator('#spans');
+  const a=page.locator('#span-a');
+  const b=page.locator('#span-b');
+  expect(await columnCount(spans)).toBe(4);
+  let boxA=await a.boundingBox(),boxB=await b.boundingBox();
+  expect(boxA.width/boxB.width).toBeGreaterThan(2.7);
+  expect(boxA.width/boxB.width).toBeLessThan(3.3);
+
+  const clamped=page.locator('#clamped');
+  const clampedA=page.locator('#clamped-a');
+  expect(await columnCount(clamped)).toBe(2);
+  const clampGrid=await clamped.boundingBox(),clampA=await clampedA.boundingBox();
+  expect(Math.abs(clampGrid.width-clampA.width)).toBeLessThan(2);
+
+  await page.setViewportSize({width:800,height:900});
+  expect(await columnCount(spans)).toBe(3);
+  boxA=await a.boundingBox();boxB=await b.boundingBox();
+  expect(boxA.width/boxB.width).toBeGreaterThan(1.7);
+  expect(boxA.width/boxB.width).toBeLessThan(2.3);
+
+  await page.setViewportSize({width:390,height:844});
+  expect(await columnCount(spans)).toBe(2);
+  boxA=await a.boundingBox();boxB=await b.boundingBox();
+  expect(boxA.width/boxB.width).toBeGreaterThan(.9);
+  expect(boxA.width/boxB.width).toBeLessThan(1.1);
+});
+
 test('container appearance and column behavior have independent viewport controls',async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await page.goto(url);
