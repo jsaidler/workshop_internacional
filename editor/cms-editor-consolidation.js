@@ -25,7 +25,7 @@ function ensureStyles(){
 .cms-layout-legacy-details[open]>summary::after{content:'−'}
 .cms-layout-legacy-details>.cms-layout-children{margin:0;padding:0 12px 12px}
 .cms-layout-legacy-details>.cms-layout-children>hr:first-child{display:none}
-#pro-add-component[hidden],.pro-components-dialog [data-pro-component][hidden]{display:none}
+#pro-add-component[hidden],#pro-components-dialog [data-pro-component][hidden]{display:none}
 .editor-more-menu>#pro-save-block{width:100%;text-align:left}
 `;
   document.head.append(style);
