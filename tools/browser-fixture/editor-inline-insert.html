@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><title>Editor inline insert fixture</title><link rel="stylesheet" href="/editor/cms-structure-sidebar.css"><link rel="stylesheet" href="/editor/cms-structure-navigation.css"><style>body{margin:0;padding:12px;font-family:Arial,sans-serif}.fixture-shell{display:grid;grid-template-columns:240px 280px;gap:12px;align-items:start}#inspector{display:block;min-height:80px;max-height:230px;overflow:auto;padding:8px;border:1px solid #ddd;background:#fff}#page-frame{display:block;width:1100px;height:760px;margin-top:8px;border:1px solid #aaa}.fixture-sidebar{width:240px;margin-bottom:8px}</style></head>
+<head><meta charset="utf-8"><title>Editor inline insert fixture</title><link rel="stylesheet" href="/editor/cms-structure-sidebar.css"><link rel="stylesheet" href="/editor/cms-structure-navigation.css"><style>body{margin:0;padding:12px;font-family:Arial,sans-serif}.fixture-shell{display:grid;grid-template-columns:240px 280px;gap:12px;align-items:start}#inspector{display:block;min-height:80px;max-height:230px;overflow:auto;padding:8px;border:1px solid #ddd;background:#fff}#page-frame{display:block;width:1100px;height:760px;margin-top:8px;border:1px solid #aaa}.fixture-sidebar{width:240px;margin-bottom:8px}.fixture-history{display:flex;gap:8px;align-items:center;margin:8px 0}</style></head>
 <body>
 <div class="fixture-shell">
   <div class="fixture-sidebar" id="editor-structure-panel">
@@ -11,7 +11,7 @@
   </div>
   <aside id="inspector"><div class="inspector-section"></div></aside>
 </div>
-<button id="save-page" type="button">Salvar</button>
+<div class="fixture-history"><button id="save-page" type="button">Salvar</button><button id="undo" type="button" disabled>Desfazer</button><button id="redo" type="button" disabled>Refazer</button><span id="save-status">Rascunho</span></div>
 <iframe id="page-frame" title="Página em edição"></iframe>
 <script src="/editor/cms-component-editor.js"></script>
 <script src="/editor/cms-rich-components.js"></script>
@@ -20,20 +20,25 @@
 <script src="/editor/cms-direct-structure-dnd.js"></script>
 <script src="/editor/cms-structure-navigation.js"></script>
 <script src="/editor/cms-structure-labels.js"></script>
+<script src="/editor/cms-history-transactions.js"></script>
 <script>
 (()=>{
   const frame=document.querySelector('#page-frame');
   const save=document.querySelector('#save-page');
+  const status=document.querySelector('#save-status');
   const shell=main=>`<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;font-family:Arial,sans-serif}main{padding:40px}.section{min-height:520px;padding:28px;border:1px solid #ddd}.cms-container-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:40px 0}.cms-column{min-height:150px;padding:18px;border:1px solid #bbb}.cms-component-divider{margin:48px 0}.cms-component-divider hr{border:0;border-top:1px solid #999}</style></head><body>${main}</body></html>`;
-  const initial=`<main data-cms-page-main><section class="section cms-section-selected" data-cms-section="fixture" data-cms-section-name="Fixture"><div id="columns" class="cms-container cms-container-columns" data-cms-component="container" data-cms-container="columns" data-cms-columns="2" data-cms-node-id="columns-fixture"><div id="column-a" class="cms-column" data-cms-column data-cms-node-id="column-a"><p data-cms-component="paragraph" data-cms-editable data-cms-node-id="paragraph-a">Texto existente</p></div><div id="column-b" class="cms-column" data-cms-column data-cms-node-id="column-b"></div></div><div id="divider" class="cms-component-divider" data-cms-component="divider" data-cms-node-id="divider-fixture"><hr></div></section></main>`;
+  const initial=`<main data-cms-page-main><section class="section cms-section-selected" data-cms-section="fixture" data-cms-section-name="Fixture"><div id="columns" class="cms-container cms-container-columns" data-cms-component="container" data-cms-container="columns" data-cms-columns="2" data-cms-node-id="columns-fixture"><div id="column-a" class="cms-column" data-cms-column data-cms-node-id="column-a"><p id="paragraph-a" data-cms-component="paragraph" data-cms-editable data-cms-node-id="paragraph-a">Texto existente</p></div><div id="column-b" class="cms-column" data-cms-column data-cms-node-id="column-b"></div></div><div id="divider" class="cms-component-divider" data-cms-component="divider" data-cms-node-id="divider-fixture"><hr></div></section></main>`;
   save.addEventListener('click',()=>{
     const doc=frame.contentDocument;
     const main=doc?.querySelector('[data-cms-page-main]');
     if(!main)return;
+    status.textContent='Salvando';
     const clone=main.cloneNode(true);
     clone.querySelectorAll('.cms-structure-selected,.cms-section-selected,.cms-selection,.cms-editing,.cms-direct-drop-before,.cms-direct-drop-after,.cms-direct-drop-inside,.cms-direct-dragging').forEach(node=>node.classList.remove('cms-structure-selected','cms-section-selected','cms-selection','cms-editing','cms-direct-drop-before','cms-direct-drop-after','cms-direct-drop-inside','cms-direct-dragging'));
+    clone.querySelectorAll('[contenteditable]').forEach(node=>node.removeAttribute('contenteditable'));
     clone.querySelector('section[data-cms-section]')?.classList.add('cms-section-selected');
     frame.srcdoc=shell(clone.outerHTML);
+    status.textContent='Rascunho';
   });
   frame.srcdoc=shell(initial);
 })();
