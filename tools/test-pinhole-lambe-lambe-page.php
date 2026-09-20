@@ -70,6 +70,10 @@ $rewrite=require dirname(__DIR__).'/migrations/035_pinhole_lambe_lambe_sales_rew
 if(!is_callable($rewrite))throw new RuntimeException('rewrite_migration_not_callable');
 $rewrite($db);
 
+$publicCopy=require dirname(__DIR__).'/migrations/036_pinhole_public_copy.php';
+if(!is_callable($publicCopy))throw new RuntimeException('public_copy_migration_not_callable');
+$publicCopy($db);
+
 $page=$db->query("SELECT * FROM cms_pages WHERE activity_id=1 AND locale='pt-BR' AND slug='pinhole-lambe-lambe'")->fetch();
 if(!$page)throw new RuntimeException('pinhole_page_missing');
 if((int)$page['show_in_nav']!==1)throw new RuntimeException('pinhole_page_not_in_nav');
@@ -86,30 +90,33 @@ foreach([
     'data-cms-section="about"',
     'data-cms-section="faq"',
     'data-cms-section="interest"',
-    'data-cms-image-placeholder',
     'data-cms-form-key="pinhole-interest"',
-    'Uma câmera. Um pequeno laboratório.',
-    'Materiais simples. Soluções de projeto que não são.',
-    'O projeto completo, a construção explicada e a operação da câmera.',
-    'modelos preparados em diferentes estágios',
-    'A oficina é ao vivo e não será gravada.',
-    'O material permanente que você recebe é o projeto em PDF.',
+    'Uma câmera fotográfica sem lente e um pequeno laboratório no mesmo equipamento',
+    'Uma câmera que também abriga o laboratório.',
+    'Você recebe o projeto e acompanha a construção do começo ao fim.',
+    'A montagem completa é apresentada etapa por etapa',
+    'Projeto autoral desenvolvido por João Saidler.',
+    'Receba a data e o valor.',
     '2 a 3 horas',
+    '/assets/media/joao-portrait.webp',
 ] as $needle){
     if(!str_contains($html,$needle))throw new RuntimeException('pinhole_page_missing_content: '.$needle);
 }
 foreach([
-    'data-cms-section="method"',
-    'data-cms-section="content"',
-    'data-cms-section="scope"',
-    'data-cms-section="audience"',
-    'data-cms-section="continuity"',
-    'Uma Pinhole Lambe-Lambe funcional, não uma experiência escolar de câmera escura.',
-    'O PDF é o projeto da câmera, não um resumo da aula.',
-    'A oficina termina com a compreensão da construção e da operação da câmera.',
-    'Uma porta de entrada pela construção de um objeto fotográfico de verdade.',
+    'data-cms-image-placeholder',
+    'protótipo',
+    'em preparação',
+    'entra aqui',
+    'modelos preparados em diferentes estágios',
+    'sem depender do tempo',
+    'O material permanente',
+    'As regras serão informadas',
+    'quando protótipo, data e valor estiverem fechados',
+    'porta de entrada',
+    'experiência escolar',
+    'Não haverá fotografia nem revelação durante a oficina',
 ] as $needle){
-    if(str_contains($html,$needle))throw new RuntimeException('pinhole_page_retained_non_sales_content: '.$needle);
+    if(stripos($html,$needle)!==false)throw new RuntimeException('pinhole_page_exposes_internal_copy: '.$needle);
 }
 
 $form=$db->query("SELECT * FROM cms_forms WHERE activity_id=1 AND locale='pt-BR' AND form_key='pinhole-interest'")->fetch();
@@ -123,9 +130,10 @@ foreach(['name','email','contact','consent'] as $field){
 }
 if(isset($fields['main_interest']))throw new RuntimeException('pinhole_interest_form_kept_research_field');
 if(empty($fields['name']['required'])||empty($fields['email']['required'])||empty($fields['consent']['required']))throw new RuntimeException('pinhole_interest_required_fields_wrong');
+if(($schema['submitLabel']??'')!=='Quero receber data e valor')throw new RuntimeException('pinhole_interest_submit_copy_wrong');
 
 $seo=$db->query('SELECT * FROM cms_page_seo WHERE page_id='.(int)$page['id'])->fetch();
 if(!$seo)throw new RuntimeException('pinhole_page_seo_missing');
 if(!str_contains((string)$seo['title'],'Pinhole Lambe-Lambe'))throw new RuntimeException('pinhole_page_seo_wrong');
 
-echo "Pinhole Lambe-Lambe sales page OK\n";
+echo "Pinhole Lambe-Lambe public copy OK\n";
