@@ -70,22 +70,18 @@ SQL);
 $db->exec('INSERT INTO activities(id,is_root) VALUES(1,1),(2,0)');
 $db->exec("INSERT INTO cms_site_settings(activity_id,locale,settings_json,updated_at) VALUES(1,'pt-BR','{\"wordmark\":\"Workshop: Positivo Direto\",\"header\":{\"showLanguageSwitch\":true},\"footer\":{\"line1\":\"João Saidler\",\"line2\":\"Positivo direto\"}}','2026-09-20T00:00:00Z')");
 
-$seed=require dirname(__DIR__).'/migrations/034_pinhole_lambe_lambe_landing.php';
-if(!is_callable($seed))throw new RuntimeException('seed_migration_not_callable');
-$seed($db);
-$seed($db);
-
-$rewrite=require dirname(__DIR__).'/migrations/035_pinhole_lambe_lambe_sales_rewrite.php';
-if(!is_callable($rewrite))throw new RuntimeException('rewrite_migration_not_callable');
-$rewrite($db);
-
-$publicCopy=require dirname(__DIR__).'/migrations/036_pinhole_public_copy.php';
-if(!is_callable($publicCopy))throw new RuntimeException('public_copy_migration_not_callable');
-$publicCopy($db);
-
-$uiux=require dirname(__DIR__).'/migrations/037_pinhole_uiux_and_site_identity.php';
-if(!is_callable($uiux))throw new RuntimeException('uiux_migration_not_callable');
-$uiux($db);
+foreach([
+    '034_pinhole_lambe_lambe_landing.php',
+    '035_pinhole_lambe_lambe_sales_rewrite.php',
+    '036_pinhole_public_copy.php',
+    '037_pinhole_uiux_and_site_identity.php',
+    '038_restore_pinhole_media_and_global_form_ux.php',
+] as $migrationFile){
+    $migration=require dirname(__DIR__).'/migrations/'.$migrationFile;
+    if(!is_callable($migration))throw new RuntimeException('migration_not_callable: '.$migrationFile);
+    $migration($db);
+    if($migrationFile==='034_pinhole_lambe_lambe_landing.php')$migration($db);
+}
 
 $page=$db->query("SELECT * FROM cms_pages WHERE activity_id=1 AND locale='pt-BR' AND slug='pinhole-lambe-lambe'")->fetch();
 if(!$page)throw new RuntimeException('pinhole_page_missing');
@@ -97,7 +93,13 @@ if((int)$db->query("SELECT COUNT(*) FROM cms_pages WHERE activity_id=2")->fetchC
 $document=json_decode((string)$page['published_document_json'],true,512,JSON_THROW_ON_ERROR);
 $html=(string)($document['html']??'');
 foreach([
-    'class="hero hero--copy-only"',
+    'class="hero"',
+    'class="hero-image"',
+    'data-cms-image-placeholder',
+    'Imagem ou vídeo da Pinhole Lambe-Lambe',
+    'Detalhe da Pinhole Lambe-Lambe',
+    'Prévia do projeto em PDF',
+    '/assets/media/joao-portrait.webp',
     'data-cms-section="project"',
     'data-cms-section="offer"',
     'data-cms-section="about"',
@@ -109,16 +111,16 @@ foreach([
     'O projeto completo da câmera — e a construção demonstrada do começo ao fim.',
     'class="format-grid cols-3"',
     'class="section-cta"',
-    'class="section about about--single section-compact"',
+    'class="section about section-compact"',
     'Receba a data e o valor.',
     '2 a 3 horas',
 ] as $needle){
     if(!str_contains($html,$needle))throw new RuntimeException('pinhole_page_missing_content: '.$needle);
 }
+if(substr_count($html,'data-cms-image-placeholder')<3)throw new RuntimeException('pinhole_page_missing_visual_placeholders');
 foreach([
-    'class="hero-image"',
-    'data-cms-image-placeholder',
-    '/assets/media/joao-portrait.webp',
+    'hero--copy-only',
+    'about--single',
     'protótipo',
     'em preparação',
     'entra aqui',
@@ -156,7 +158,7 @@ if(!str_contains($renderer,'cms-ui-refinements.css'))throw new RuntimeException(
 if(!str_contains($renderer,'&&$langUrl!==\'\''))throw new RuntimeException('language_switch_not_hidden_without_counterpart');
 
 $uiCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms-ui-refinements.css');
-foreach(['.hero--copy-only','.format-grid.cols-3','.section-compact','.about.about--single','.interest .cms-form .button'] as $needle){
+foreach(['.format-grid.cols-3','.section-compact','.hero-image>.cms-media-placeholder','.cms-project-preview'] as $needle){
     if(!str_contains($uiCss,$needle))throw new RuntimeException('ui_refinement_missing: '.$needle);
 }
 
