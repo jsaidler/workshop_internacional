@@ -39,11 +39,22 @@ foreach([
     'ArtLimited Awards — Runner-up, Portraiture',
     'Siena Creative Photo Awards — Highly Commended, People',
     'The Black &amp; White Book — GOD Publishing',
-    "STRKNG Editors' Selection #88",
+    "STRKNG Editors' Selection #88 e #89",
     'fabrico para venda a NINA',
     'câmera autoral de grande formato',
     '/assets/media/joao-portrait.webp',
 ] as $needle)expect_authority(str_contains($out,$needle),'missing authority proof: '.$needle);
 expect_authority(substr_count($out,'data-cms-section="about"')===1,'about section duplicated');
+
+$legacyHtml=str_replace("STRKNG Editors' Selection #88 e #89","STRKNG Editors' Selection #88",$out);
+$legacyDoc=json_encode(['version'=>2,'html'=>$legacyHtml],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
+$db->prepare('UPDATE cms_pages SET draft_document_json=?,published_document_json=? WHERE id=?')->execute([$legacyDoc,$legacyDoc,(int)$page['id']]);
+$repair=require dirname(__DIR__).'/migrations/040_pinhole_strkng_89.php';
+expect_authority(is_callable($repair),'repair migration not callable');
+$repair($db);
+$page=$db->query("SELECT * FROM cms_pages WHERE slug='pinhole-lambe-lambe'")->fetch();
+$published=json_decode((string)$page['published_document_json'],true,512,JSON_THROW_ON_ERROR);
+$out=(string)($published['html']??'');
+expect_authority(str_contains($out,"STRKNG Editors' Selection #88 e #89"),'repair migration did not add #89');
 
 echo "Pinhole camera authority section OK\n";
