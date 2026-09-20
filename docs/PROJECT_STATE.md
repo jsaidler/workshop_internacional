@@ -2,7 +2,7 @@
 
 Este é o documento canônico de estado operacional do projeto. Leia antes de alterar código, conteúdo, deploy ou fluxo administrativo. Atualize este arquivo sempre que uma decisão estrutural, operacional ou editorial mudar.
 
-## Estado em 13/09/2026
+## Estado em 20/09/2026
 
 - Branch de produção: `wip/form-response-refinement-2026-07-16`.
 - O CI gera e valida o pacote de produção e publica o resultado na branch `production-dist`.
@@ -203,6 +203,21 @@ Hierarquia vigente:
 7. interest list.
 
 A página inglesa não deve ser mera tradução da brasileira.
+
+### PT-BR — Oficina Pinhole Lambe-Lambe
+
+- Nova página própria em `/pinhole-lambe-lambe`, independente da home do workshop de positivo direto.
+- Nesta primeira fase, a página é de pré-lançamento/lista de interesse: não cobra pagamento e não anuncia preço ou data ainda não fechados.
+- A página usa placeholders deliberados para a imagem/vídeo do protótipo e para a prévia do PDF; esses espaços serão substituídos no CMS quando o projeto físico estiver pronto.
+- O produto é um encontro on-line e ao vivo de 2 a 3 horas, focado na construção e operação introdutória de uma Pinhole Lambe-Lambe autoral.
+- O PDF entregue contém lista de materiais e projeto imprimível para colar no papel paraná e recortar; não é tratado como simples resumo de aula.
+- A demonstração é feita por etapas, com modelos preparados em diferentes estágios. O participante escolhe se monta junto ou constrói depois.
+- Não há fotografia nem revelação durante a oficina. O conteúdo teórico é introdutório: princípio da pinhole, o que esperar da câmera, falha de reciprocidade e operação da câmera/laboratório.
+- Materiais-base comunicados: papel paraná, lata de refrigerante, fita isolante e, se o projeto final pedir, ímãs. A construção é enquadrada como trabalho de papelaria, sem ferramentas de oficina.
+- O valor pago na oficina poderá virar crédito integral em um único curso elegível posterior: Positivo Direto em Filme de Raio-X ou o futuro curso completo de Construção de Câmeras. Regras e prazo só serão publicados quando fechados.
+- O formulário próprio `pinhole-interest` coleta nome, e-mail, contato opcional, interesses e consentimento para aviso da primeira turma.
+- A migração `034_pinhole_lambe_lambe_landing.php` cria e publica a página e o formulário somente quando ainda não existem, sem sobrescrever uma versão editorial já presente no banco. Depois do seed, ambos continuam sob autoridade do CMS.
+- Não existe contraparte EN desta página neste momento; PT e EN permanecem independentes.
 
 ## Estado do CMS/admin
 
