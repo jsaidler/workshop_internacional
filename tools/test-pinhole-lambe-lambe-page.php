@@ -92,7 +92,7 @@ foreach([
     'Materiais simples. Soluções de projeto que não são.',
     'O projeto completo, a construção explicada e a operação da câmera.',
     'modelos preparados em diferentes estágios',
-    'O encontro é ao vivo e não será gravado.',
+    'A oficina é ao vivo e não será gravada.',
     'O material permanente que você recebe é o projeto em PDF.',
     '2 a 3 horas',
 ] as $needle){
