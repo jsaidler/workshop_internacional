@@ -16,9 +16,9 @@
 .button-emphasis{min-height:62px;padding-inline:24px;font-size:11px}
 
 .cms-field>span,.cms-choice-group legend{font-size:12px}
-.cms-form-submit{min-height:58px;padding-inline:22px;font-size:11px}
-.interest .cms-form-submit{color:var(--inverse-bg);background:var(--inverse);border-color:var(--inverse)}
-.interest .cms-form-submit:hover{color:var(--inverse);background:transparent;border-color:var(--inverse)}
+.cms-form .button{min-height:58px;padding-inline:22px;font-size:11px}
+.interest .cms-form .button{color:var(--inverse-bg);background:var(--inverse);border-color:var(--inverse)}
+.interest .cms-form .button:hover{color:var(--inverse);background:transparent;border-color:var(--inverse)}
 
 @media(max-width:1040px){
   .hero--copy-only .hero-copy{min-height:auto;grid-template-columns:1fr;align-items:start}
@@ -29,5 +29,5 @@
   .hero--copy-only .hero-copy{padding-top:48px;padding-bottom:34px;gap:38px}
   .format-grid.cols-3{grid-template-columns:1fr}
   .format-grid.cols-3 .format-card{min-height:220px}
-  .section-cta .button,.button-emphasis,.cms-form-submit{width:100%}
+  .section-cta .button,.button-emphasis,.cms-form .button{width:100%}
 }
