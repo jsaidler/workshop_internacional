@@ -61,10 +61,14 @@ CREATE TABLE cms_page_seo (
 SQL);
 $db->exec('INSERT INTO activities(id,is_root) VALUES(1,1),(2,0)');
 
-$migration=require dirname(__DIR__).'/migrations/034_pinhole_lambe_lambe_landing.php';
-if(!is_callable($migration))throw new RuntimeException('migration_not_callable');
-$migration($db);
-$migration($db);
+$seed=require dirname(__DIR__).'/migrations/034_pinhole_lambe_lambe_landing.php';
+if(!is_callable($seed))throw new RuntimeException('seed_migration_not_callable');
+$seed($db);
+$seed($db);
+
+$rewrite=require dirname(__DIR__).'/migrations/035_pinhole_lambe_lambe_sales_rewrite.php';
+if(!is_callable($rewrite))throw new RuntimeException('rewrite_migration_not_callable');
+$rewrite($db);
 
 $page=$db->query("SELECT * FROM cms_pages WHERE activity_id=1 AND locale='pt-BR' AND slug='pinhole-lambe-lambe'")->fetch();
 if(!$page)throw new RuntimeException('pinhole_page_missing');
@@ -77,14 +81,35 @@ $document=json_decode((string)$page['published_document_json'],true,512,JSON_THR
 $html=(string)($document['html']??'');
 foreach([
     'data-cms-section="hero"',
+    'data-cms-section="project"',
+    'data-cms-section="offer"',
+    'data-cms-section="about"',
+    'data-cms-section="faq"',
+    'data-cms-section="interest"',
     'data-cms-image-placeholder',
     'data-cms-form-key="pinhole-interest"',
-    'Sem pagamento agora',
+    'Uma câmera. Um pequeno laboratório.',
+    'Materiais simples. Soluções de projeto que não são.',
+    'O projeto completo, a construção explicada e a operação da câmera.',
+    'modelos preparados em diferentes estágios',
+    'O encontro é ao vivo e não será gravado.',
+    'O material permanente que você recebe é o projeto em PDF.',
     '2 a 3 horas',
-    'Eu não vou fotografar nem revelar durante este encontro',
-    'O PDF é o projeto da câmera, não um resumo da aula',
 ] as $needle){
     if(!str_contains($html,$needle))throw new RuntimeException('pinhole_page_missing_content: '.$needle);
+}
+foreach([
+    'data-cms-section="method"',
+    'data-cms-section="content"',
+    'data-cms-section="scope"',
+    'data-cms-section="audience"',
+    'data-cms-section="continuity"',
+    'Uma Pinhole Lambe-Lambe funcional, não uma experiência escolar de câmera escura.',
+    'O PDF é o projeto da câmera, não um resumo da aula.',
+    'A oficina termina com a compreensão da construção e da operação da câmera.',
+    'Uma porta de entrada pela construção de um objeto fotográfico de verdade.',
+] as $needle){
+    if(str_contains($html,$needle))throw new RuntimeException('pinhole_page_retained_non_sales_content: '.$needle);
 }
 
 $form=$db->query("SELECT * FROM cms_forms WHERE activity_id=1 AND locale='pt-BR' AND form_key='pinhole-interest'")->fetch();
@@ -93,13 +118,14 @@ if($form['published_schema_json']===null)throw new RuntimeException('pinhole_int
 if((int)$db->query("SELECT COUNT(*) FROM cms_forms WHERE form_key='pinhole-interest'")->fetchColumn()!==1)throw new RuntimeException('pinhole_interest_form_not_idempotent');
 $schema=json_decode((string)$form['published_schema_json'],true,512,JSON_THROW_ON_ERROR);
 $fields=array_column((array)($schema['fields']??[]),null,'id');
-foreach(['name','email','contact','main_interest','consent'] as $field){
+foreach(['name','email','contact','consent'] as $field){
     if(!isset($fields[$field]))throw new RuntimeException('pinhole_interest_missing_field: '.$field);
 }
+if(isset($fields['main_interest']))throw new RuntimeException('pinhole_interest_form_kept_research_field');
 if(empty($fields['name']['required'])||empty($fields['email']['required'])||empty($fields['consent']['required']))throw new RuntimeException('pinhole_interest_required_fields_wrong');
 
 $seo=$db->query('SELECT * FROM cms_page_seo WHERE page_id='.(int)$page['id'])->fetch();
 if(!$seo)throw new RuntimeException('pinhole_page_seo_missing');
 if(!str_contains((string)$seo['title'],'Pinhole Lambe-Lambe'))throw new RuntimeException('pinhole_page_seo_wrong');
 
-echo "Pinhole Lambe-Lambe page seed OK\n";
+echo "Pinhole Lambe-Lambe sales page OK\n";
