@@ -109,17 +109,16 @@ foreach([
     'O projeto completo da câmera — e a construção demonstrada do começo ao fim.',
     'class="format-grid cols-3"',
     'class="section-cta"',
-    'class="section about section-compact"',
-    'class="media-figure about-image"',
+    'class="section about about--single section-compact"',
     'Receba a data e o valor.',
     '2 a 3 horas',
-    '/assets/media/joao-portrait.webp',
 ] as $needle){
     if(!str_contains($html,$needle))throw new RuntimeException('pinhole_page_missing_content: '.$needle);
 }
 foreach([
     'class="hero-image"',
     'data-cms-image-placeholder',
+    '/assets/media/joao-portrait.webp',
     'protótipo',
     'em preparação',
     'entra aqui',
@@ -157,7 +156,7 @@ if(!str_contains($renderer,'cms-ui-refinements.css'))throw new RuntimeException(
 if(!str_contains($renderer,'&&$langUrl!==\'\''))throw new RuntimeException('language_switch_not_hidden_without_counterpart');
 
 $uiCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms-ui-refinements.css');
-foreach(['.hero--copy-only','.format-grid.cols-3','.section-compact','.interest .cms-form .button'] as $needle){
+foreach(['.hero--copy-only','.format-grid.cols-3','.section-compact','.about.about--single','.interest .cms-form .button'] as $needle){
     if(!str_contains($uiCss,$needle))throw new RuntimeException('ui_refinement_missing: '.$needle);
 }
 
