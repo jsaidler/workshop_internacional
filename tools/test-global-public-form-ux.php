@@ -26,6 +26,6 @@ foreach([
     if(str_contains($uiCss,$needle)||str_contains($registrationCss,$needle))throw new RuntimeException('form_ux_is_not_global: '.$needle);
 }
 
-if(!str_contains($formRenderer,'<form class=\"cms-form\"'))throw new RuntimeException('cms_form_renderer_lost_shared_form_class');
+if(!str_contains($formRenderer,'<form class="cms-form"'))throw new RuntimeException('cms_form_renderer_lost_shared_form_class');
 
 echo "Global public form UX OK\n";
