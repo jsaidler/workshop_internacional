@@ -39,6 +39,7 @@ jobs:
           php tools/test-png-derivative-delivery.php
           php tools/test-design-css-cascade.php
           php tools/test-page-seo-seed.php
+          php tools/test-pinhole-lambe-lambe-page.php
           php tools/test-registration-google-form-parity.php
           php tools/test-registration-payment-migration.php
           php tools/test-registration-native-content.php
