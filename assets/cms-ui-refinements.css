@@ -9,6 +9,7 @@
 .section-compact{padding-top:calc(var(--section)*.62);padding-bottom:calc(var(--section)*.62)}
 .cms-support--single .cms-support-inner{grid-template-columns:minmax(0,900px);gap:0;justify-content:start}
 .cms-support--single .cms-support-inner>div:first-child>p{max-width:780px}
+.about.about--single{grid-template-columns:minmax(0,820px);justify-content:start}
 
 .format-grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .format-grid.cols-3 .format-card{min-height:260px}
