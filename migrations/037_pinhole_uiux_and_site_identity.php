@@ -51,7 +51,7 @@ return static function(PDO $db): void {
   </div>
 </section>
 
-<section class="section about section-compact" data-cms-section="about" data-cms-section-name="João Saidler">
+<section class="section about about--single section-compact" data-cms-section="about" data-cms-section-name="João Saidler">
   <div class="about-copy">
     <p class="section-label" data-cms-editable>03 / Quem conduz</p>
     <h2 data-cms-editable>João Saidler</h2>
@@ -59,7 +59,6 @@ return static function(PDO $db): void {
     <p data-cms-editable>Parte dessa pesquisa consiste em projetar e construir as próprias ferramentas: câmeras de grande formato, obturadores, tanques e sistemas de processamento.</p>
     <p data-cms-editable>A Pinhole Lambe-Lambe nasce dessa prática aplicada a um projeto simples de construir e funcional como equipamento fotográfico.</p>
   </div>
-  <figure class="media-figure about-image" data-cms-image-block><div class="media-area"><img src="/assets/media/joao-portrait.webp" alt="João Saidler com equipamento fotográfico" data-cms-image></div><figcaption class="media-caption" data-cms-editable>João Saidler · Fotógrafo e pesquisador independente</figcaption></figure>
 </section>
 
 <section class="format" data-cms-section="faq" data-cms-section-name="Perguntas frequentes">
