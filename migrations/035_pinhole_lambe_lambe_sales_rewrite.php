@@ -55,7 +55,7 @@ return static function(PDO $db): void {
       <article class="format-card"><span class="number">02</span><h3 data-cms-editable>Construção completa</h3><p data-cms-editable>Durante a oficina eu percorro todas as etapas usando modelos preparados em diferentes estágios, para mostrar cada solução sem depender do tempo de uma montagem completa ao vivo.</p></article>
       <article class="format-card"><span class="number">03</span><h3 data-cms-editable>Como a câmera funciona</h3><p data-cms-editable>Princípio da pinhole, o que esperar da imagem, uma introdução à falha de reciprocidade e a operação da câmera com seu laboratório integrado.</p></article>
     </div>
-    <p class="technical-note" data-cms-editable>O encontro é ao vivo e não será gravado. Não haverá fotografia nem revelação durante a oficina; o foco é a construção e a operação do equipamento.</p>
+    <p class="technical-note" data-cms-editable>A oficina é ao vivo e não será gravada. O projeto em PDF fica com você.</p>
   </div>
 </section>
 
