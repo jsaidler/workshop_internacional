@@ -52,9 +52,17 @@ $db->prepare('UPDATE cms_pages SET draft_document_json=?,published_document_json
 $repair=require dirname(__DIR__).'/migrations/040_pinhole_strkng_89.php';
 expect_authority(is_callable($repair),'repair migration not callable');
 $repair($db);
+
+$refinement=require dirname(__DIR__).'/migrations/041_pinhole_authority_refinement.php';
+expect_authority(is_callable($refinement),'refinement migration not callable');
+$refinement($db);
+
 $page=$db->query("SELECT * FROM cms_pages WHERE slug='pinhole-lambe-lambe'")->fetch();
 $published=json_decode((string)$page['published_document_json'],true,512,JSON_THROW_ON_ERROR);
 $out=(string)($published['html']??'');
 expect_authority(str_contains($out,"STRKNG Editors' Selection #88 e #89"),'repair migration did not add #89');
+expect_authority(str_contains($out,'Além de projetar e construir as câmeras que uso no meu próprio trabalho, fabrico para venda a NINA'),'refined camera authority copy missing');
+expect_authority(str_contains($out,'desenvolver equipamentos fotográficos funcionais a partir das necessidades do processo.'),'refined Pinhole relationship missing');
+expect_authority(!str_contains($out,'A construção também passou do uso pessoal para um produto'),'old personal-use framing remained');
 
 echo "Pinhole camera authority section OK\n";

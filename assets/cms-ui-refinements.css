@@ -19,6 +19,12 @@
 .cms-project-preview{margin-top:44px}
 .cms-project-preview .cms-media-placeholder{min-height:300px}
 
+/* Recognition is proof, not decoration: readable, quiet, and visually subordinate to the main proposition. */
+.recognition{margin:28px 0 30px;border-top:1px solid color-mix(in srgb,currentColor 38%,transparent)}
+.recognition>div{display:grid;grid-template-columns:minmax(76px,.22fr) minmax(0,1fr);gap:20px;align-items:baseline;padding:13px 0;border-bottom:1px solid color-mix(in srgb,currentColor 22%,transparent)}
+.recognition dt{font-family:var(--mono);font-size:11px;line-height:1.4;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,currentColor 72%,transparent)}
+.recognition dd{margin:0;font-size:clamp(14px,1vw,16px);line-height:1.48}
+
 /* Canonical public form UX. The registration page is the reference and every
    CMS-rendered form uses the same field, choice, consent and submit patterns. */
 .cms-form .cms-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 20px;margin:0}
@@ -34,7 +40,9 @@
 .cms-form .cms-choice-grid label:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
 .cms-form .cms-consent{grid-column:1/-1;border:1px solid color-mix(in srgb,currentColor 62%,transparent);padding:17px 18px;margin-bottom:18px;align-items:flex-start}
 .cms-form .cms-consent label,.cms-form .cms-consent span{font-size:14px;line-height:1.5}
-.cms-form>.button,.cms-form button[type=submit]{min-width:min(100%,300px);min-height:58px;padding-inline:22px;justify-content:center;font-size:11px}
+.cms-form>.button,.cms-form button[type=submit]{min-width:min(100%,320px);min-height:60px;padding:0 24px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--line-strong);border-radius:0;color:var(--inverse);background:var(--inverse-bg);cursor:pointer}
+.cms-form>.button:hover,.cms-form button[type=submit]:hover{color:var(--text);background:transparent}
+.cms-form>.button:focus-visible,.cms-form button[type=submit]:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
 .cms-form [aria-invalid=true]{border-color:#b22929!important}
 .cms-form .form-error{margin-top:-8px;margin-bottom:6px}
 
@@ -54,4 +62,5 @@
   .format-grid.cols-3 .format-card{min-height:220px}
   .section-cta .button,.button-emphasis{width:100%}
   .hero-image>.cms-media-placeholder{min-height:72svh}
+  .recognition>div{grid-template-columns:68px minmax(0,1fr);gap:14px}
 }
