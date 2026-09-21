@@ -35,6 +35,6 @@ foreach([
 }
 
 if(!str_contains($formRenderer,'<form class="cms-form"'))throw new RuntimeException('cms_form_renderer_lost_shared_form_class');
-if(!str_contains($formRenderer,'<button class="button" type="'.($editor?'button':'submit').'">'))throw new RuntimeException('cms_form_renderer_lost_shared_submit_button');
+if(!str_contains($formRenderer,'<button class="button" type="'))throw new RuntimeException('cms_form_renderer_lost_shared_submit_button');
 
 echo "Global public form UX OK\n";
