@@ -51,13 +51,26 @@ FAQ:
 - formulação vigente para gravação: a construção da câmera faz parte do conteúdo em vídeo; o encontro com João acontece ao vivo e não é gravado;
 - fotografia e revelação continuam fora do escopo da oficina.
 
-## Regra técnica para mudanças editoriais estruturais
+## Integridade estrutural da página — correção de 21/09/2026
 
-A migração `042_pinhole_hybrid_format.php` mostrou uma fragilidade: mudanças baseadas em `str_replace` de frases exatas podem atualizar apenas parte de uma página quando o conteúdo já sofreu edições anteriores no CMS.
+A atualização `043_pinhole_hybrid_coherence.php` corrigiu parte da copy, mas revelou outro problema: aplicar substituições estruturais por expressões regulares sobre HTML já transformado pelo CMS pode produzir um documento diferente do esperado na hospedagem. O sintoma observado foi inequívoco: a seção da oferta passou a exibir dois parágrafos equivalentes, e as seções posteriores — autoridade, FAQ e formulário — desapareceram da página renderizada, fazendo o rodapé surgir logo após a oferta.
 
-Para mudanças que alteram a arquitetura de uma oferta, não depender de frases antigas exatas. Normalizar os blocos estruturais pelo identificador semântico da seção (`data-cms-section`) e preservar os componentes de mídia e demais seções que não fazem parte da mudança.
+Essa condição invalida a estratégia de continuar aplicando pequenos patches sobre o HTML já deformado.
 
-A correção canônica é `migrations/043_pinhole_hybrid_coherence.php`, com regressão específica em `tools/test-pinhole-hybrid-coherence.php`.
+A correção vigente é `migrations/044_repair_pinhole_page_integrity.php`. Ela executa uma reconstrução canônica única do documento público da Pinhole com as seis seções aprovadas, na ordem:
+
+1. hero;
+2. câmera/projeto;
+3. oferta;
+4. autoridade de João;
+5. FAQ;
+6. lista de interesse.
+
+A reconstrução preserva deliberadamente os três placeholders de mídia, o retrato da seção de autoridade, a NINA, as premiações/publicações e o formulário existente. Ela elimina a copy duplicada e restaura as seções desaparecidas.
+
+A regressão `tools/test-pinhole-page-integrity-repair.php` parte de um HTML deliberadamente corrompido que reproduz o sintoma observado — página truncada após a oferta e parágrafo híbrido duplicado — e exige a restauração integral da arquitetura antes de o CI passar.
+
+Regra resultante: quando a integridade estrutural do HTML persistido estiver em dúvida, não tentar “consertar” o documento com mais regex ou substituições de frases. Reconstruir a superfície editorial canônica uma vez e voltar a deixar futuras alterações de conteúdo para o CMS.
 
 ## Pontos ainda não definidos
 

@@ -44,6 +44,7 @@ jobs:
           php tools/test-pinhole-camera-authority.php
           php tools/test-pinhole-hybrid-format.php
           php tools/test-pinhole-hybrid-coherence.php
+          php tools/test-pinhole-page-integrity-repair.php
           php tools/test-registration-google-form-parity.php
           php tools/test-registration-payment-migration.php
           php tools/test-registration-native-content.php
