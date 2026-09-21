@@ -12,6 +12,9 @@ foreach([
     '.cms-form .cms-choice-grid',
     '.cms-form .cms-consent',
     '.cms-form button[type=submit]',
+    '.cms-form button[type=submit]:hover',
+    'background:var(--inverse-bg)',
+    'border:1px solid var(--line-strong)',
 ] as $needle){
     if(!str_contains($uiCss,$needle))throw new RuntimeException('global_form_ux_missing: '.$needle);
 }
