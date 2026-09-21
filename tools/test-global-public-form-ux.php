@@ -13,8 +13,13 @@ foreach([
     '.cms-form .cms-consent',
     '.cms-form button[type=submit]',
     '.cms-form button[type=submit]:hover',
-    'background:var(--inverse-bg)',
-    'border:1px solid var(--line-strong)',
+    'background:var(--inverse-bg)!important',
+    'border:1px solid var(--inverse-bg)!important',
+    'background:transparent!important',
+    'color:var(--text)!important',
+    'border-color:var(--line-strong)!important',
+    'opacity:1!important',
+    'visibility:visible!important',
 ] as $needle){
     if(!str_contains($uiCss,$needle))throw new RuntimeException('global_form_ux_missing: '.$needle);
 }
@@ -30,5 +35,6 @@ foreach([
 }
 
 if(!str_contains($formRenderer,'<form class="cms-form"'))throw new RuntimeException('cms_form_renderer_lost_shared_form_class');
+if(!str_contains($formRenderer,'<button class="button" type="'.($editor?'button':'submit').'">'))throw new RuntimeException('cms_form_renderer_lost_shared_submit_button');
 
 echo "Global public form UX OK\n";
