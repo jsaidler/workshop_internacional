@@ -23,18 +23,41 @@ A construção em vídeo melhora a qualidade da demonstração, permite close, c
 
 Publicamente, a oferta não deve ser apresentada como “curso gravado + chamada”. A comunicação deve vender a combinação de três entregas complementares: projeto completo, construção em vídeo e encontro ao vivo com o autor da câmera.
 
-## Copy pública aprovada como direção
+## Arquitetura pública canônica
 
-A página passa a comunicar:
+A página deve comunicar o formato inteiro de maneira coerente em todos os pontos de decisão. Não pode coexistir copy do formato antigo com copy híbrida.
 
-- “Oficina on-line · conteúdo em vídeo + encontro ao vivo”;
-- “O projeto completo. A construção em vídeo. E um encontro ao vivo comigo.”;
-- construção no próprio ritmo;
-- encontro ao vivo de 60–90 minutos;
-- PDF como projeto construtivo;
-- encontro ao vivo como espaço de operação, dúvidas de montagem e conversa sobre a câmera.
+Hero:
 
-A página não deve expor a justificativa interna de escala, custo marginal, funil ou comparação com YouTube.
+- “Oficina on-line · construção em vídeo + encontro ao vivo”;
+- formato: “Vídeos + encontro ao vivo”;
+- encontro: “60 a 90 minutos”;
+- projeto: “PDF completo da câmera”;
+- construção: “No seu ritmo”.
+
+Seção da oferta:
+
+- título: “O projeto completo. A construção em vídeo. E um encontro ao vivo comigo.”;
+- eixo 1: Projeto em PDF;
+- eixo 2: Construção em vídeo;
+- eixo 3: Encontro ao vivo.
+
+O conteúdo sobre imagem, exposição e princípio da pinhole continua fazendo parte da oficina, mas não ocupa o mesmo nível visual das três entregas que estruturam a oferta.
+
+FAQ:
+
+- manter “A câmera é funcional?” como objeção comercial importante;
+- distinguir explicitamente o conteúdo em vídeo do encontro ao vivo;
+- formulação vigente para gravação: a construção da câmera faz parte do conteúdo em vídeo; o encontro com João acontece ao vivo e não é gravado;
+- fotografia e revelação continuam fora do escopo da oficina.
+
+## Regra técnica para mudanças editoriais estruturais
+
+A migração `042_pinhole_hybrid_format.php` mostrou uma fragilidade: mudanças baseadas em `str_replace` de frases exatas podem atualizar apenas parte de uma página quando o conteúdo já sofreu edições anteriores no CMS.
+
+Para mudanças que alteram a arquitetura de uma oferta, não depender de frases antigas exatas. Normalizar os blocos estruturais pelo identificador semântico da seção (`data-cms-section`) e preservar os componentes de mídia e demais seções que não fazem parte da mudança.
+
+A correção canônica é `migrations/043_pinhole_hybrid_coherence.php`, com regressão específica em `tools/test-pinhole-hybrid-coherence.php`.
 
 ## Pontos ainda não definidos
 
