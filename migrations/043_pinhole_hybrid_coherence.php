@@ -70,9 +70,10 @@ HTML;
         $draft=json_decode((string)$page['draft_document_json'],true);
         if(!is_array($draft))continue;
         $draftBefore=(string)($draft['html']??'');
+        $draftOldDescription=(string)($draft['meta']['description']??'');
         $draft['html']=$normalizeHtml($draftBefore);
         $draft['meta']['description']=$description;
-        $draftChanged=$draft['html']!==$draftBefore || (($draft['meta']['description']??'')!==$description);
+        $draftChanged=$draft['html']!==$draftBefore || $draftOldDescription!==$description;
         $draftJson=json_encode($draft,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
 
         $publishedChanged=false;
@@ -81,8 +82,8 @@ HTML;
             $published=json_decode($publishedOut,true);
             if(is_array($published)){
                 $publishedBefore=(string)($published['html']??'');
-                $published['html']=$normalizeHtml($publishedBefore);
                 $oldDescription=(string)($published['meta']['description']??'');
+                $published['html']=$normalizeHtml($publishedBefore);
                 $published['meta']['description']=$description;
                 $publishedChanged=$published['html']!==$publishedBefore || $oldDescription!==$description;
                 $publishedOut=json_encode($published,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
