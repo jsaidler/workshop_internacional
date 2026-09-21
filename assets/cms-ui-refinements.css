@@ -40,9 +40,9 @@
 .cms-form .cms-choice-grid label:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
 .cms-form .cms-consent{grid-column:1/-1;border:1px solid color-mix(in srgb,currentColor 62%,transparent);padding:17px 18px;margin-bottom:18px;align-items:flex-start}
 .cms-form .cms-consent label,.cms-form .cms-consent span{font-size:14px;line-height:1.5}
-.cms-form>.button,.cms-form button[type=submit]{min-width:min(100%,320px);min-height:60px;padding:0 24px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--line-strong);border-radius:0;color:var(--inverse);background:var(--inverse-bg);cursor:pointer}
-.cms-form>.button:hover,.cms-form button[type=submit]:hover{color:var(--text);background:transparent}
-.cms-form>.button:focus-visible,.cms-form button[type=submit]:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
+.cms-form>.button,.cms-form button[type=submit]{min-width:min(100%,320px);min-height:60px;padding:0 24px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--inverse-bg)!important;border-radius:0;color:var(--inverse)!important;background:var(--inverse-bg)!important;opacity:1!important;visibility:visible!important;cursor:pointer}
+.cms-form>.button:hover,.cms-form button[type=submit]:hover{color:var(--text)!important;background:transparent!important;border-color:var(--line-strong)!important;opacity:1!important;visibility:visible!important}
+.cms-form>.button:focus-visible,.cms-form button[type=submit]:focus-visible{color:var(--text)!important;background:transparent!important;border-color:var(--line-strong)!important;opacity:1!important;visibility:visible!important;outline:3px solid var(--focus);outline-offset:4px}
 .cms-form [aria-invalid=true]{border-color:#b22929!important}
 .cms-form .form-error{margin-top:-8px;margin-bottom:6px}
 
