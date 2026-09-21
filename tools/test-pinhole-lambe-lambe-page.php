@@ -76,6 +76,10 @@ foreach([
     '036_pinhole_public_copy.php',
     '037_pinhole_uiux_and_site_identity.php',
     '038_restore_pinhole_media_and_global_form_ux.php',
+    '039_pinhole_camera_authority.php',
+    '040_pinhole_strkng_89.php',
+    '041_pinhole_authority_refinement.php',
+    '042_pinhole_hybrid_format.php',
 ] as $migrationFile){
     $migration=require dirname(__DIR__).'/migrations/'.$migrationFile;
     if(!is_callable($migration))throw new RuntimeException('migration_not_callable: '.$migrationFile);
@@ -108,12 +112,17 @@ foreach([
     'data-cms-form-key="pinhole-interest"',
     'Uma câmera fotográfica sem lente e um pequeno laboratório no mesmo equipamento',
     'Uma câmera que também abriga o laboratório.',
-    'O projeto completo da câmera — e a construção demonstrada do começo ao fim.',
+    'Oficina on-line · conteúdo em vídeo + encontro ao vivo',
+    'Vídeo + encontro ao vivo',
+    '60 a 90 minutos',
+    'O projeto completo. A construção em vídeo. E um encontro ao vivo comigo.',
+    'Construção em vídeo',
+    'Como funciona o conteúdo em vídeo?',
+    'O encontro ao vivo fica gravado?',
     'class="format-grid cols-3"',
     'class="section-cta"',
     'class="section about section-compact"',
     'Receba a data e o valor.',
-    '2 a 3 horas',
 ] as $needle){
     if(!str_contains($html,$needle))throw new RuntimeException('pinhole_page_missing_content: '.$needle);
 }
@@ -131,6 +140,8 @@ foreach([
     'porta de entrada',
     'experiência escolar',
     'Não haverá fotografia nem revelação durante a oficina',
+    '2 a 3 horas',
+    '1 encontro ao vivo',
 ] as $needle){
     if(stripos($html,$needle)!==false)throw new RuntimeException('pinhole_page_exposes_internal_or_wrong_ui_copy: '.$needle);
 }
@@ -162,4 +173,4 @@ foreach(['.format-grid.cols-3','.section-compact','.hero-image>.cms-media-placeh
     if(!str_contains($uiCss,$needle))throw new RuntimeException('ui_refinement_missing: '.$needle);
 }
 
-echo "Pinhole Lambe-Lambe UI/UX sales page OK\n";
+echo "Pinhole Lambe-Lambe hybrid UI/UX sales page OK\n";
