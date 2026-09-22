@@ -1,76 +1,115 @@
-# Pinhole Lambe-Lambe — formato híbrido
+# Pinhole Lambe-Lambe — formato híbrido e oferta em duas versões
 
 Data: 21/09/2026
 
 ## Decisão vigente
 
-A Oficina Pinhole Lambe-Lambe deixa de ser concebida como uma aula integral de 2–3 horas transmitida ao vivo. O formato aprovado combina conteúdo gravado com um encontro ao vivo.
+A Oficina Pinhole Lambe-Lambe combina conteúdo gravado com encontro ao vivo e passa a existir em **duas versões comerciais independentes**.
 
-A oferta passa a ser composta por:
+Cada versão entrega:
 
-- projeto completo da câmera em PDF, com lista de materiais e peças imprimíveis;
-- demonstração completa da construção em vídeo, para o participante acompanhar e montar no próprio ritmo;
-- conteúdo introdutório sobre princípio da pinhole, características da imagem, falha de reciprocidade e operação do equipamento;
-- um encontro ao vivo de 60–90 minutos com João Saidler, separado do conteúdo gravado, dedicado à operação, às dúvidas surgidas durante a montagem e à conversa direta sobre a câmera;
+- projeto completo da câmera em PDF;
+- demonstração da construção correspondente em vídeo, para o participante montar no próprio ritmo;
+- conteúdo introdutório necessário para compreender a pinhole, a imagem e a operação do equipamento;
+- um encontro ao vivo de 60–90 minutos com João Saidler, dedicado à operação, dúvidas de montagem e conversa sobre o projeto;
 - o encontro ao vivo não é gravado;
 - fotografia e revelação não fazem parte da entrega da oficina.
 
+## Duas versões
+
+### Materiais alternativos — R$ 98
+
+A construção usa container plástico, pasta de escritório e outros materiais simples de encontrar. O valor comercial está nas soluções construtivas usadas para transformar objetos cotidianos em uma câmera-laboratório funcional, sem depender de marcenaria.
+
+### Madeira — R$ 98
+
+A construção usa estrutura em madeira. O participante pode cortar as próprias peças se tiver ferramentas e espaço adequados ou encomendar as peças já cortadas nas medidas indicadas no projeto e fazer apenas a montagem.
+
+### Combo — R$ 168
+
+O combo inclui os dois projetos e os dois conteúdos de construção. A economia é de R$ 28 em relação à compra separada.
+
+Cada versão deve continuar sendo percebida como produto completo. O combo é um upsell para quem quer explorar as duas soluções, não requisito para obter uma experiência suficiente.
+
+## Crédito para o Workshop Positivo Direto
+
+Quem adquirir uma das versões pode usar **R$ 98 como crédito** na inscrição do Workshop Positivo Direto em Filme de Raio-X, caso decida continuar.
+
+Quem adquirir o combo também tem crédito máximo de **R$ 98**. A compra das duas versões não duplica o crédito.
+
+Na comunicação pública, usar “crédito” e não “desconto”. O objetivo é preservar o valor próprio da Pinhole Lambe-Lambe e apresentar a continuidade como progressão, não como cupom promocional.
+
 ## Função comercial
 
-O formato híbrido preserva o contato direto com João — importante para confiança, relacionamento e continuidade para produtos maiores — sem exigir que toda a demonstração construtiva seja repetida ao vivo a cada turma.
+A divisão em duas versões surgiu após pesquisa no Instagram em que o interesse por câmera de madeira e câmera feita com materiais alternativos ficou praticamente empatado. Em vez de aumentar a carga de produção e suporte dentro de um único ticket, cada caminho construtivo vira uma oferta autônoma.
 
-A construção em vídeo melhora a qualidade da demonstração, permite close, cortes e repetição de etapas e reduz a dependência de horário para a parte mais longa do conteúdo. O encontro ao vivo permanece como elemento de diferenciação frente a um tutorial gravado comum.
+A estrutura resolve quatro problemas:
 
-Publicamente, a oferta não deve ser apresentada como “curso gravado + chamada”. A comunicação deve vender a combinação de três entregas complementares: projeto completo, construção em vídeo e encontro ao vivo com o autor da câmera.
+- atende os dois grupos de interesse sem obrigar todos a receber dois projetos;
+- mantém o ticket de entrada baixo;
+- evita duplicar o trabalho dentro de uma única oficina de R$ 98;
+- cria um upsell simples e compreensível com o combo de R$ 168.
+
+O formato híbrido continua preservando contato direto com João sem exigir repetição integral da demonstração construtiva ao vivo a cada turma.
 
 ## Arquitetura pública canônica
 
-A página deve comunicar o formato inteiro de maneira coerente em todos os pontos de decisão. Não pode coexistir copy do formato antigo com copy híbrida.
+A página passa a comunicar:
 
-Hero:
+### Hero
 
-- “Oficina on-line · construção em vídeo + encontro ao vivo”;
-- formato: “Vídeos + encontro ao vivo”;
-- encontro: “60 a 90 minutos”;
-- projeto: “PDF completo da câmera”;
-- construção: “No seu ritmo”.
+- oficina on-line;
+- duas versões;
+- construção em vídeo + encontro ao vivo;
+- materiais alternativos ou madeira;
+- R$ 98 por versão;
+- R$ 168 pelas duas.
 
-Seção da oferta:
+### Escolha do projeto
 
-- título: “O projeto completo. A construção em vídeo. E um encontro ao vivo comigo.”;
-- eixo 1: Projeto em PDF;
-- eixo 2: Construção em vídeo;
-- eixo 3: Encontro ao vivo.
+A página apresenta três opções no mesmo nível:
 
-O conteúdo sobre imagem, exposição e princípio da pinhole continua fazendo parte da oficina, mas não ocupa o mesmo nível visual das três entregas que estruturam a oferta.
+1. Materiais alternativos — R$ 98;
+2. Madeira — R$ 98;
+3. As duas — R$ 168.
 
-FAQ:
+A versão de materiais alternativos deve citar container plástico, pasta de escritório e materiais simples de encontrar. A versão em madeira deve explicar que o participante pode cortar as peças ou encomendar o corte nas medidas do projeto.
 
-- manter “A câmera é funcional?” como objeção comercial importante;
-- distinguir explicitamente o conteúdo em vídeo do encontro ao vivo;
-- formulação vigente para gravação: a construção da câmera faz parte do conteúdo em vídeo; o encontro com João acontece ao vivo e não é gravado;
-- fotografia e revelação continuam fora do escopo da oficina.
+### O que cada versão entrega
 
-## Integridade estrutural da página — correção de 21/09/2026
+- projeto em PDF;
+- construção em vídeo;
+- encontro ao vivo de 60–90 minutos.
 
-A atualização `043_pinhole_hybrid_coherence.php` corrigiu parte da copy, mas revelou outro problema: aplicar substituições estruturais por expressões regulares sobre HTML já transformado pelo CMS pode produzir um documento diferente do esperado na hospedagem. O sintoma observado foi inequívoco: a seção da oferta passou a exibir dois parágrafos equivalentes, e as seções posteriores — autoridade, FAQ e formulário — desapareceram da página renderizada, fazendo o rodapé surgir logo após a oferta.
+No combo, o comprador recebe os dois projetos e os dois conteúdos construtivos.
 
-Essa condição invalida a estratégia de continuar aplicando pequenos patches sobre o HTML já deformado.
+### Crédito
 
-A correção vigente é `migrations/044_repair_pinhole_page_integrity.php`. Ela executa uma reconstrução canônica única do documento público da Pinhole com as seis seções aprovadas, na ordem:
+A página deve informar de forma clara, mas secundária, que R$ 98 podem virar crédito no Workshop Positivo Direto. No combo, o crédito máximo continua sendo R$ 98.
 
-1. hero;
-2. câmera/projeto;
-3. oferta;
-4. autoridade de João;
-5. FAQ;
-6. lista de interesse.
+### Formulário de interesse
 
-A reconstrução preserva deliberadamente os três placeholders de mídia, o retrato da seção de autoridade, a NINA, as premiações/publicações e o formulário existente. Ela elimina a copy duplicada e restaura as seções desaparecidas.
+O formulário deve pedir a opção de interesse por radio obrigatório:
 
-A regressão `tools/test-pinhole-page-integrity-repair.php` parte de um HTML deliberadamente corrompido que reproduz o sintoma observado — página truncada após a oferta e parágrafo híbrido duplicado — e exige a restauração integral da arquitetura antes de o CI passar.
+- Materiais alternativos — R$ 98;
+- Madeira — R$ 98;
+- As duas — R$ 168.
 
-Regra resultante: quando a integridade estrutural do HTML persistido estiver em dúvida, não tentar “consertar” o documento com mais regex ou substituições de frases. Reconstruir a superfície editorial canônica uma vez e voltar a deixar futuras alterações de conteúdo para o CMS.
+O CTA deixa de prometer “data e valor”, porque o valor agora está definido. A função passa a ser receber a data de abertura da primeira turma.
+
+## Integridade estrutural da página
+
+As correções anteriores mostraram que regex e `str_replace` sobre HTML persistido podem deixar a página em estado parcial ou truncado. A atualização estrutural vigente para esta nova oferta é `migrations/045_pinhole_two_versions_offer.php`, que reconstrói a superfície canônica da página e atualiza o schema do formulário de interesse na mesma migração.
+
+A regressão `tools/test-pinhole-two-versions-offer.php` exige:
+
+- presença das três opções e preços;
+- materiais alternativos e madeira descritos corretamente;
+- combo a R$ 168 e economia de R$ 28;
+- crédito máximo de R$ 98;
+- preservação de autoridade, NINA, STRKNG #88/#89 e três slots de mídia;
+- escolha obrigatória da versão no formulário;
+- remoção da promessa antiga baseada apenas em papel paraná/lata/fita isolante.
 
 ## Pontos ainda não definidos
 
@@ -78,7 +117,7 @@ Regra resultante: quando a integridade estrutural do HTML persistido estiver em 
 - plataforma de hospedagem dos vídeos;
 - frequência/calendário dos encontros ao vivo;
 - política para quem não puder comparecer ao encontro ao vivo;
-- preço final e meios de pagamento;
+- meios de pagamento;
 - momento em que a lista de interesse será convertida em inscrição direta.
 
 Esses pontos não devem ser inventados na página até serem decididos.
