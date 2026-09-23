@@ -18,6 +18,7 @@ CREATE TABLE student_users (
     last_login_at TEXT NULL
 );
 CREATE INDEX idx_student_users_status ON student_users(status, username);
+CREATE UNIQUE INDEX idx_student_users_email_nonempty ON student_users(lower(email)) WHERE email!='';
 
 CREATE TABLE student_enrollments (
     user_id INTEGER NOT NULL,
