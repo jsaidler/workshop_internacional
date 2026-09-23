@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 $root=dirname(__DIR__);
 function ok(bool $condition,string $message): void { if(!$condition){fwrite(STDERR,"student-area: $message\n");exit(1);} }
+function utc_now(): string { return gmdate('c'); }
+function activity_slug(string $value): string { $slug=strtolower(trim(preg_replace('~[^a-z0-9]+~i','-',$value)??''));return trim($slug,'-')?:'atividade'; }
 
 $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
 $db->exec('PRAGMA foreign_keys=ON; CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT,admin_name TEXT NOT NULL,public_title TEXT NOT NULL,slug TEXT NOT NULL UNIQUE,status TEXT NOT NULL DEFAULT "active",is_root INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);');
@@ -18,7 +20,14 @@ ok(student_safe_return_url('//evil.example')==='/aluno/','protocol-relative redi
 $good='<!doctype html><html><head><style>body{color:#000}</style></head><body><h1>Material</h1><img src="data:image/png;base64,AA=="></body></html>';
 ok(student_material_validate_html($good)===$good,'valid self-contained html changed unexpectedly');
 $blocked=false;try{student_material_validate_html('<html><body><script>alert(1)</script></body></html>');}catch(RuntimeException $e){$blocked=$e->getMessage()==='unsafe_html';}ok($blocked,'script was not rejected');
+$student=student_create($db,'aluno.teste','Aluno Teste','aluno@example.com','senha-temporaria-forte',[1]);
+ok(password_verify('senha-temporaria-forte',(string)$student['password_hash']),'student password was not hashed correctly');
+ok(student_enrollment_ids($db,(int)$student['id'])===[1],'student enrollment missing');
+$material=student_material_upsert($db,1,'Positivo direto','positivo-direto',$good);
+ok((string)$material['slug']==='positivo-direto','material slug mismatch');
+$listed=student_materials_for_user($db,(int)$student['id']);ok(count($listed)===1&&$listed[0]['title']==='Positivo direto','authorized material not listed');
+$noAccess=student_create($db,'sem.acesso','Sem Acesso','','outra-senha-temporaria',[]);ok(student_materials_for_user($db,(int)$noAccess['id'])===[],'material leaked to unenrolled student');
 $files=['aluno/login.php','aluno/index.php','aluno/senha.php','aluno/logout.php','aluno/material.php','admin/students.php','admin/student-materials.php','assets/student-area.css'];foreach($files as $file)ok(is_file($root.'/'.$file),"missing $file");
-$material=file_get_contents($root.'/aluno/material.php');ok(is_string($material)&&str_contains($material,'student_material_for_view'),'protected material route lacks authorization lookup');
+$route=file_get_contents($root.'/aluno/material.php');ok(is_string($route)&&str_contains($route,'student_material_for_view'),'protected material route lacks authorization lookup');
 $auth=file_get_contents($root.'/app/student_auth.php');ok(is_string($auth)&&str_contains($auth,'password_hash(')&&str_contains($auth,'password_verify('),'password hashing contract missing');
 echo "student-area: ok\n";
