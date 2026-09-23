@@ -20,6 +20,7 @@ function admin_workspace(string $section): string {
         'forms','responses'=>'registrations',
         'analytics'=>'analytics',
         'media'=>'media',
+        'students','student-materials'=>'students',
         'system','activities'=>'settings',
         default=>'site',
     };
@@ -35,6 +36,10 @@ function admin_context_items(string $workspace,?array $activity): array {
         'registrations'=>[
             'responses'=>['Respostas',admin_shell_url('/admin/submissions.php',$activity)],
             'forms'=>['Formulário',admin_shell_url('/admin/forms.php',$activity)],
+        ],
+        'students'=>[
+            'students'=>['Alunos','/admin/students.php'],
+            'student-materials'=>['Materiais',admin_shell_url('/admin/student-materials.php',$activity)],
         ],
         'settings'=>[
             'system'=>['Sistema e atualizações','/admin/system.php'],
@@ -52,6 +57,7 @@ function admin_shell_start(string $section,string $title,array $state): void {
         'registrations'=>['Inscrições',admin_shell_url('/admin/submissions.php',$activity)],
         'analytics'=>['Métricas',admin_shell_url('/admin/analytics.php',$activity)],
         'media'=>['Mídia',admin_shell_url('/admin/media.php',$activity)],
+        'students'=>['Alunos','/admin/students.php'],
         'settings'=>['Configurações','/admin/system.php'],
     ];
     $context=admin_context_items($workspace,$activity);
