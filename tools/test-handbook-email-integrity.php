@@ -8,8 +8,8 @@ $db->exec("CREATE TABLE course_page_sections(page_id INTEGER,section_key TEXT,le
 $db->exec("CREATE TABLE student_private_media(id INTEGER PRIMARY KEY AUTOINCREMENT,asset_uuid TEXT UNIQUE,activity_id INTEGER,page_id INTEGER,title TEXT,original_name TEXT,mime_type TEXT,byte_size INTEGER,storage_path TEXT,checksum TEXT,created_at TEXT,updated_at TEXT);");
 $seed=json_encode(['version'=>2,'theme'=>'auto','meta'=>[],'html'=>'<section data-cms-section="seed"><p>seed</p></section>'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 $q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,status,show_in_nav,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,updated_at,access_level) VALUES(1,'pt-BR','caderno-positivo-direto','x','x','published',1,?,?,1,1,'x','x','x','public')");$q->execute([$seed,$seed]);
-foreach([050,051,052,053,054,055,056,057,058] as $n){
-    $matches=glob(__DIR__.'/../migrations/'.str_pad((string)$n,3,'0',STR_PAD_LEFT).'_*.php');
+foreach(['050','051','052','053','054','055','056','057','058'] as $n){
+    $matches=glob(__DIR__.'/../migrations/'.$n.'_*.php');
     if(!$matches||count($matches)!==1)handbook_fail('migration not uniquely resolved: '.$n);
     (require $matches[0])($db);
 }
