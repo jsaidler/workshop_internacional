@@ -3,13 +3,15 @@ declare(strict_types=1);
 
 function cms_xml_escape(string $value): string {return htmlspecialchars($value,ENT_XML1|ENT_QUOTES,'UTF-8');}
 function cms_page_is_indexable(PDO $db,array $page): bool {
-    if(($page['status']??'')==='archived'||empty($page['published_document_json']))return false;$seo=cms_page_seo($db,(int)$page['id']);return !str_starts_with((string)$seo['robots'],'noindex');
+    if(($page['status']??'')==='archived'||empty($page['published_document_json']))return false;
+    if(($page['access_level']??'public')!=='public')return false;
+    $seo=cms_page_seo($db,(int)$page['id']);return !str_starts_with((string)$seo['robots'],'noindex');
 }
 function cms_page_public_location(PDO $db,array $activity,array $page): string {
     $seo=cms_page_seo($db,(int)$page['id']);$url=$seo['canonicalUrl']!==''?$seo['canonicalUrl']:cms_page_url($activity,$page,(string)$page['locale']);return cms_absolute_url($url);
 }
 function cms_page_counterpart(PDO $db,array $page,string $locale): ?array {
-    if((string)$page['locale']===$locale)return $page;$activityId=(int)$page['activity_id'];$candidate=(int)$page['is_home']===1?cms_page_home($db,$activityId,$locale):cms_page_by_slug($db,$activityId,$locale,(string)$page['slug']);return $candidate&&cms_page_is_indexable($db,$candidate)?$candidate:null;
+    if((string)$page['locale']===$locale)return cms_page_is_indexable($db,$page)?$page:null;$activityId=(int)$page['activity_id'];$candidate=(int)$page['is_home']===1?cms_page_home($db,$activityId,$locale):cms_page_by_slug($db,$activityId,$locale,(string)$page['slug']);return $candidate&&cms_page_is_indexable($db,$candidate)?$candidate:null;
 }
 function cms_sitemap_entries(PDO $db): array {
     $activities=$db->query("SELECT * FROM activities WHERE status='active' ORDER BY is_root DESC,id")->fetchAll();$entries=[];
@@ -27,5 +29,5 @@ function cms_sitemap_xml(PDO $db): string {
     $out[]='</urlset>';return implode("\n",$out)."\n";
 }
 function cms_robots_text(): string {
-    $sitemap=cms_absolute_url('/sitemap.xml');return implode("\n",['User-agent: *','Allow: /','Disallow: /admin/','Disallow: /editor/','Disallow: /preview/','Disallow: /install/','Disallow: /form-submit.php','Disallow: /form-config.php','',$sitemap!==''?'Sitemap: '.$sitemap:''])."\n";
+    $sitemap=cms_absolute_url('/sitemap.xml');return implode("\n",['User-agent: *','Allow: /','Disallow: /admin/','Disallow: /aluno/','Disallow: /editor/','Disallow: /preview/','Disallow: /install/','Disallow: /form-submit.php','Disallow: /form-config.php','',$sitemap!==''?'Sitemap: '.$sitemap:''])."\n";
 }
