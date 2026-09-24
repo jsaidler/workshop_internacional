@@ -95,6 +95,7 @@ HTML;
             },$m[1])??$m[1];
             return '<div class="process-list">'.$inner.'</div>';
         },$html)??$html;
+        $html=str_replace('class="steps"','class="process-list"',$html);
 
         // Remove every class family introduced only for this handbook.
         $html=preg_replace('~\sclass=["\'][^"\']*\bcms-(?:document|lesson)[^"\']*["\']~i','',$html)??$html;
