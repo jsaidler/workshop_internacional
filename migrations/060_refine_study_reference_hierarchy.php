@@ -13,8 +13,7 @@ return static function(PDO $db): void {
     $sourceLead='Para os próximos testes, considero mais útil estabelecer primeiro uma condição de referência:';
     $longHeading='<div><h3 data-cms-editable>'.$sourceLead.'</h3></div>';
     $shortHeading='<div><h3 data-cms-editable>Condição de referência</h3></div>';
-    $firstValue='<div class="statement-copy"><p data-cms-editable>EI 200</p>';
-    $copyWithLead='<div class="statement-copy"><p data-cms-editable>'.$sourceLead.'</p><p data-cms-editable>EI 200</p>';
+    $leadParagraph='<p data-cms-editable>'.$sourceLead.'</p>';
 
     $changed=false;
     $updates=[];
@@ -29,17 +28,20 @@ return static function(PDO $db): void {
         $html=str_replace($longHeading,$shortHeading,$html);
 
         $sectionPos=strpos($html,'data-cms-section="caderno-19-duas-chapas"');
+        if($sectionPos===false)$sectionPos=strpos($html,'data-cms-section="caderno-19-duas-chapas"');
+        if($sectionPos===false)$sectionPos=strpos($html,'caderno-19-duas-chapas');
         if($sectionPos!==false){
             $head=substr($html,0,$sectionPos);
             $tail=substr($html,$sectionPos);
             $referencePos=strpos($tail,$shortHeading);
             if($referencePos!==false){
+                $beforeReference=substr($tail,0,$referencePos);
                 $referenceTail=substr($tail,$referencePos);
-                if(!str_contains(substr($referenceTail,0,700),'<p data-cms-editable>'.$sourceLead.'</p>')){
-                    $referenceTail=str_replace($firstValue,$copyWithLead,$referenceTail);
-                    $tail=substr($tail,0,$referencePos).$referenceTail;
-                    $html=$head.$tail;
+                if(!str_contains(substr($referenceTail,0,900),$leadParagraph)){
+                    $pattern='~(<h3 data-cms-editable>Condição de referência</h3>\s*</div>\s*<div class="statement-copy">\s*)(<p data-cms-editable>EI 200</p>)~u';
+                    $referenceTail=preg_replace($pattern,'$1'.$leadParagraph.'$2',$referenceTail,1)??$referenceTail;
                 }
+                $html=$head.$beforeReference.$referenceTail;
             }
         }
 
