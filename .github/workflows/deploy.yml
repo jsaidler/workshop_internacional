@@ -16,6 +16,9 @@ on:
       - 'cms-v3-professional-10'
       - 'cms-v3-professional-11'
       - 'cms-v3-professional-12'
+  pull_request:
+    branches:
+      - 'wip/form-response-refinement-2026-07-16'
   workflow_dispatch:
 
 permissions:
