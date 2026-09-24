@@ -2,9 +2,9 @@
 
 ## Evidência
 
-Após a correção do eixo horizontal de leitura, a captura instalada mostrou um novo problema sistêmico: a página ficou verticalmente comprimida. O texto passou a ocupar uma largura adequada, mas unidades, subtítulos, notas técnicas, grades, procedimentos e figuras ficaram próximos demais entre si.
+Após a correção do eixo horizontal de leitura, a captura instalada mostrou um problema sistêmico de ritmo vertical. O texto passou a ocupar uma largura adequada, mas unidades, subtítulos, notas técnicas, grades, procedimentos e figuras ficaram próximos demais entre si.
 
-O sintoma não é falta de entrelinha. O corpo em 18 px / 1,58 está adequado como ponto de partida. O problema é a ausência de diferenças suficientes entre os níveis de espaçamento que estruturam o documento.
+O sintoma não é falta de entrelinha. O corpo em 18 px / 1,58 está adequado como ponto de partida. O problema é a diferença insuficiente entre os níveis de espaçamento que estruturam o documento.
 
 ## Diagnóstico inicial
 
@@ -48,24 +48,50 @@ Os valores diminuíram proporcionalmente, mas sem voltar ao compactamento anteri
 
 A captura instalada após essa primeira correção revelou um problema diferente. Entre duas unidades consecutivas — visível com clareza na passagem de **Como ler os resultados** para **Registro dos testes** — o divisor ficou isolado entre dois vazios grandes.
 
-A causa está no contrato anterior aplicado literalmente ao box model: cada `.study-unit` recebeu aproximadamente 78–104 px tanto no início quanto no fim. Em um desktop de 1440 px, `7vw` resulta em cerca de 100,8 px. Portanto, uma única mudança conceitual passou a receber aproximadamente 100,8 px antes do divisor e mais 100,8 px depois dele. O intervalo renderizado superava 200 px, embora existisse apenas uma transição editorial.
+A causa estava no contrato anterior aplicado literalmente ao box model: cada `.study-unit` recebeu aproximadamente 78–104 px tanto no início quanto no fim. Em um desktop de 1440 px, `7vw` resulta em cerca de 100,8 px. Portanto, uma única mudança conceitual passou a receber aproximadamente 100,8 px antes do divisor e mais 100,8 px depois dele. O intervalo renderizado superava 200 px, embora existisse apenas uma transição editorial.
 
-A imagem também permite separar esse defeito dos demais níveis de ritmo. Dentro de **Registro dos testes**, a relação rótulo → frase introdutória → lista continua legível. O excesso está na fronteira entre duas unidades, não na entrelinha, no corpo tipográfico nem na largura de leitura.
+A segunda correção tratou espaçamento como propriedade da **relação entre elementos**, não como soma automática de margens e paddings isolados.
 
-## Decisão corrigida
+Para duas unidades consecutivas, o objetivo desktop passou a ser aproximadamente **108–136 px entre o último conteúdo da unidade anterior e o primeiro rótulo/conteúdo da unidade seguinte, incluindo o divisor**. A abertura da nova unidade pode receber ligeiramente mais espaço que o encerramento da anterior, mas os dois lados não carregam uma pausa macro completa.
 
-Espaçamento passa a ser tratado como propriedade da **relação entre elementos**, não como soma automática de margens e paddings isolados.
-
-Para duas unidades consecutivas, o objetivo desktop é aproximadamente **108–136 px entre o último conteúdo da unidade anterior e o primeiro rótulo/conteúdo da unidade seguinte, incluindo o divisor**. A abertura da nova unidade pode receber ligeiramente mais espaço que o encerramento da anterior, mas os dois lados não carregam mais uma pausa macro completa.
-
-Calibração global adotada:
+Calibração macro adotada:
 
 - desktop — início da unidade: `clamp(58px, 5vw, 72px)`;
 - desktop — fim da unidade: `clamp(50px, 4.2vw, 62px)`;
 - tablet — início: cerca de 58 px; fim: cerca de 54 px;
 - celular — início: cerca de 48 px; fim: cerca de 46 px.
 
-Os níveis intermediários introduzidos na primeira correção permanecem. Não há motivo visual para voltar a comprimir notas, grades, procedimentos, figuras ou parágrafos só porque a fronteira macro estava superdimensionada.
+## Terceira validação: o nível intermediário continuava comprimido
+
+A inspeção seguinte, em captura integral e em recorte ampliado, mostrou que a correção macro não resolvia o problema de leitura dentro das unidades. A primeira leitura havia considerado o conjunto **Registro dos testes** aceitável, mas o recorte em escala normal tornou evidente que ainda havia conteúdo visualmente grudado, sobretudo **títulos/subtítulos e caixas/componentes de referência**.
+
+O defeito estava concentrado em relações de nível intermediário:
+
+- rótulo de unidade muito próximo do primeiro conteúdo;
+- `h2` e `h3` com pouca distância do texto que introduzem;
+- subtítulo interno com pouca pausa em relação ao argumento anterior;
+- `format-grid` e `process-list` com margem apenas de entrada, sem respiro equivalente quando o texto retomava depois deles;
+- nota técnica, grade, procedimento e figura sem uma regra explícita de entrada **e saída**;
+- índice com título e grade visualmente próximos demais.
+
+Isso explica por que a página podia simultaneamente apresentar um vazio macro exagerado em uma fronteira e, poucos centímetros abaixo, uma caixa parecer colada ao texto seguinte. São níveis diferentes de espaçamento e precisam de contratos independentes.
+
+## Decisão final desta rodada
+
+O nível meso passa a ter relações explícitas dos dois lados do componente. Em desktop:
+
+- rótulo de unidade → primeiro conteúdo: aproximadamente **30 px**;
+- `h2` estrutural → texto que ele introduz: aproximadamente **36 px**;
+- subtítulo interno `h3`: aproximadamente **56 px antes** e **22 px depois**;
+- nota técnica: aproximadamente **48 px antes e depois**;
+- grade comparativa: aproximadamente **52 px antes e depois**;
+- procedimento: aproximadamente **52 px antes e depois**;
+- figura: aproximadamente **60 px antes e depois**;
+- título do índice → grade de aulas: aproximadamente **36 px**.
+
+Em tablet, esses valores descem aproximadamente para 28 / 34 / 50–20 / 44 / 48 / 48 / 52 px. Em celular, para aproximadamente 24 / 30 / 44–18 / 36 / 40 / 40 / 44 px.
+
+A regra de saída não pode aumentar novamente a pausa macro. Quando nota, grade, procedimento, figura, definição ou separador são o último elemento da unidade, a margem inferior intermediária é anulada e o padding da própria unidade continua sendo a única pausa estrutural até a próxima seção.
 
 ## O que não muda
 
@@ -73,7 +99,7 @@ Os níveis intermediários introduzidos na primeira correção permanecem. Não 
 - entrelinha de aproximadamente 1,58;
 - largura de leitura de aproximadamente 880 px;
 - rótulo e texto no mesmo eixo;
-- margens intermediárias já calibradas para notas, grades, procedimentos e figuras;
+- intervalo macro corrigido entre unidades consecutivas;
 - texto técnico das fontes;
 - estrutura de aulas e unidades;
 - sistema visual global do site.
@@ -86,13 +112,18 @@ O browser test deve medir o ritmo renderizado, não apenas seletores CSS. Em des
 - distância real entre o último conteúdo de uma unidade e o divisor da próxima;
 - distância real entre o divisor e o primeiro rótulo/conteúdo da unidade seguinte;
 - intervalo total da fronteira entre unidades, impedindo tanto a compressão quanto o vazio duplicado;
-- distância rótulo → conteúdo;
-- intervalo entre parágrafos;
-- margem de nota técnica;
-- distância antes de grade/procedimento;
-- margem de figura;
+- distância rótulo → primeiro conteúdo;
+- distância `h2` → corpo;
+- distância argumento anterior → `h3` e `h3` → corpo seguinte;
+- intervalo entre parágrafos relacionados;
+- entrada e saída de nota técnica;
+- entrada e saída de grade comparativa;
+- entrada e saída de procedimento;
+- entrada e saída de figura;
+- título do índice → grade;
+- ausência de margem meso inferior redundante quando o componente encerra a unidade;
 - ausência de overflow horizontal.
 
-A regressão anterior verificava principalmente mínimos e, por isso, conseguia impedir o retorno ao estado comprimido mas não detectava excesso. O novo contrato exige faixa: respiro suficiente sem permitir que uma única transição acumule duas pausas macro.
+A regressão não pode testar apenas mínimos. Cada relação importante recebe uma faixa inferior e superior para impedir tanto a volta ao estado comprimido quanto a criação de vazios artificiais.
 
-A página longa não deve ser encurtada artificialmente às custas de legibilidade. O objetivo é leitura sustentada, não densidade máxima de interface; pela mesma razão, altura não deve ser criada artificialmente pela duplicação de espaçamento estrutural.
+A página longa não deve ser encurtada às custas de legibilidade. O objetivo é leitura sustentada, não densidade máxima de interface; pela mesma razão, altura não deve ser criada artificialmente pela duplicação de espaçamento estrutural.
