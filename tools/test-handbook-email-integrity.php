@@ -8,7 +8,7 @@ $db->exec("CREATE TABLE course_page_sections(page_id INTEGER,section_key TEXT,le
 $db->exec("CREATE TABLE student_private_media(id INTEGER PRIMARY KEY AUTOINCREMENT,asset_uuid TEXT UNIQUE,activity_id INTEGER,page_id INTEGER,title TEXT,original_name TEXT,mime_type TEXT,byte_size INTEGER,storage_path TEXT,checksum TEXT,created_at TEXT,updated_at TEXT);");
 $seed=json_encode(['version'=>2,'theme'=>'auto','meta'=>[],'html'=>'<section data-cms-section="seed"><p>seed</p></section>'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 $q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,status,show_in_nav,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,updated_at,access_level) VALUES(1,'pt-BR','caderno-positivo-direto','x','x','published',1,?,?,1,1,'x','x','x','public')");$q->execute([$seed,$seed]);
-foreach(['050','051','052','053','054','055','056','057','058'] as $n){
+foreach(['050','051','052','053','054','055','056','057','058','059'] as $n){
     $matches=glob(__DIR__.'/../migrations/'.$n.'_*.php');
     if(!$matches||count($matches)!==1)handbook_fail('migration not uniquely resolved: '.$n);
     (require $matches[0])($db);
@@ -20,11 +20,16 @@ $mustHave=[
  'A ideia não é transformar isso numa bula. Principalmente porque, como vimos na aula, boa parte do processo depende da relação entre exposição, revelação, temperatura, diluição e movimento.',
  'ALGUMAS COISAS IMPORTANTES SOBRE O FILME DE RAIO-X',
  'O Fuji Super HR-U é um filme ortocromático.',
- 'EXPOSIÇÃO E ENERGIA',
- 'FALHA DE RECIPROCIDADE',
- 'DUAS COISAS DIFERENTES, UM MESMO PROBLEMA DE ENERGIA',
- '>EI<',
+ 'EXPOSIÇÃO E ENERGIA','FALHA DE RECIPROCIDADE','DUAS COISAS DIFERENTES, UM MESMO PROBLEMA DE ENERGIA','>EI<',
  'O filme não muda. A exposição muda.',
+ '1 EV abaixo</span><h3 data-cms-editable>1/2 da luz',
+ '3 EV abaixo</span><h3 data-cms-editable>1/8 da luz',
+ '5 EV abaixo</span><h3 data-cms-editable>1/32 da luz',
+ 'EV 16</span><h3 data-cms-editable>1 segundo → 1 segundo',
+ 'EV 13</span><h3 data-cms-editable>8 segundos → aproximadamente 18 segundos',
+ 'EV 10</span><h3 data-cms-editable>1 minuto → aproximadamente 5 minutos',
+ 'EV 7</span><h3 data-cms-editable>8 minutos e meio → aproximadamente 1 hora e 34 minutos',
+ 'EV 4</span><h3 data-cms-editable>1 hora e 8 minutos → aproximadamente 28 horas',
  'Isso nos leva a um conceito que eu deveria ter apresentado durante a aula e acabei deixando passar: o EI, ou Índice de Exposição.',
  'Foi justamente o que observamos.',
  'Para entender por que isso acontece, precisamos voltar um pouco e olhar o que estamos realmente revelando.',
@@ -34,21 +39,19 @@ $mustHave=[
  'Na segunda passamos para EI 400 e 20 ml de Parodinal + 550 ml de água, mantendo os mesmos 7 minutos, 26 °C e a mesma agitação.',
  'Ag⁺ + elétron → Ag⁰',
  'O cloreto férrico e a amônia, portanto, são dois processos independentes.',
- 'Agora podemos voltar às duas fotografias da aula.',
- 'Foi exatamente o que fizemos nas duas chapas da aula.',
+ 'Agora podemos voltar às duas fotografias da aula.','Foi exatamente o que fizemos nas duas chapas da aula.',
  'Trabalhamos com quatro parâmetros que interferem diretamente na revelação: concentração, temperatura, tempo e agitação.',
- 'Não como uma receita definitiva, mas como um possível desenvolvimento normal.',
- 'Não precisa virar um relatório da NASA.'
+ 'Não como uma receita definitiva, mas como um possível desenvolvimento normal.','Não precisa virar um relatório da NASA.'
 ];
 foreach($mustHave as $needle)if(!str_contains($html,$needle))handbook_fail('source detail missing: '.$needle);
 $mustNotHave=[
  'Qual o tamanho do suporte','Qual o endereço para envio','08/10','me convidem como colaborador',
- 'Três aulas, um único processo',
- 'O conteúdo foi reorganizado editorialmente',
+ 'Três aulas, um único processo','O conteúdo foi reorganizado editorialmente',
  'Pretos absolutos. Altas luzes na transparência da base. E fotografia entre os dois extremos.',
  'A câmera fará uma única exposição para uma cena inteira que contém quantidades muito diferentes de luz.',
  'Quantidade de luz e tempo deixam de ser perfeitamente intercambiáveis nas exposições longas.',
- 'Registro preservado literalmente do segundo e-mail:'
+ 'Registro preservado literalmente do segundo e-mail:',
+ '<span class="number">−1 EV</span>','1 s → 1 s','8 s → aproximadamente 18 s','1 min → aproximadamente 5 min','8 min 30 s → aproximadamente 1 h 34 min','1 h 8 min → aproximadamente 28 h'
 ];
 foreach($mustNotHave as $needle)if(str_contains($html,$needle))handbook_fail('non-source or cohort copy leaked: '.$needle);
 $slots=['filme-ortocromatico','dupla-emulsao-positivo','energia-positivo','reciprocidade-energia','ei-zonas','imagem-latente-prata','negativo-positivo','branqueamentos-rotas','parametros-revelacao'];
