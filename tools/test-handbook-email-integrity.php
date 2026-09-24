@@ -8,7 +8,7 @@ $db->exec("CREATE TABLE course_page_sections(page_id INTEGER,section_key TEXT,le
 $db->exec("CREATE TABLE student_private_media(id INTEGER PRIMARY KEY AUTOINCREMENT,asset_uuid TEXT UNIQUE,activity_id INTEGER,page_id INTEGER,title TEXT,original_name TEXT,mime_type TEXT,byte_size INTEGER,storage_path TEXT,checksum TEXT,created_at TEXT,updated_at TEXT);");
 $seed=json_encode(['version'=>2,'theme'=>'auto','meta'=>[],'html'=>'<section data-cms-section="seed"><p>seed</p></section>'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 $q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,status,show_in_nav,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,updated_at,access_level) VALUES(1,'pt-BR','caderno-positivo-direto','x','x','published',1,?,?,1,1,'x','x','x','public')");$q->execute([$seed,$seed]);
-foreach(['050','051','052','053','054','055','056','057','058','059'] as $n){
+foreach(['050','051','052','053','054','055','056','057','058','059','060'] as $n){
     $matches=glob(__DIR__.'/../migrations/'.$n.'_*.php');
     if(!$matches||count($matches)!==1)handbook_fail('migration not uniquely resolved: '.$n);
     (require $matches[0])($db);
@@ -41,7 +41,9 @@ $mustHave=[
  'O cloreto férrico e a amônia, portanto, são dois processos independentes.',
  'Agora podemos voltar às duas fotografias da aula.','Foi exatamente o que fizemos nas duas chapas da aula.',
  'Trabalhamos com quatro parâmetros que interferem diretamente na revelação: concentração, temperatura, tempo e agitação.',
- 'Não como uma receita definitiva, mas como um possível desenvolvimento normal.','Não precisa virar um relatório da NASA.'
+ 'Não como uma receita definitiva, mas como um possível desenvolvimento normal.','Não precisa virar um relatório da NASA.',
+ '<h3 data-cms-editable>Condição de referência</h3>',
+ '<p data-cms-editable>Para os próximos testes, considero mais útil estabelecer primeiro uma condição de referência:</p>'
 ];
 foreach($mustHave as $needle)if(!str_contains($html,$needle))handbook_fail('source detail missing: '.$needle);
 $mustNotHave=[
@@ -51,7 +53,8 @@ $mustNotHave=[
  'A câmera fará uma única exposição para uma cena inteira que contém quantidades muito diferentes de luz.',
  'Quantidade de luz e tempo deixam de ser perfeitamente intercambiáveis nas exposições longas.',
  'Registro preservado literalmente do segundo e-mail:',
- '<span class="number">−1 EV</span>','1 s → 1 s','8 s → aproximadamente 18 s','1 min → aproximadamente 5 min','8 min 30 s → aproximadamente 1 h 34 min','1 h 8 min → aproximadamente 28 h'
+ '<span class="number">−1 EV</span>','1 s → 1 s','8 s → aproximadamente 18 s','1 min → aproximadamente 5 min','8 min 30 s → aproximadamente 1 h 34 min','1 h 8 min → aproximadamente 28 h',
+ '<h3 data-cms-editable>Para os próximos testes, considero mais útil estabelecer primeiro uma condição de referência:</h3>'
 ];
 foreach($mustNotHave as $needle)if(str_contains($html,$needle))handbook_fail('non-source or cohort copy leaked: '.$needle);
 $slots=['filme-ortocromatico','dupla-emulsao-positivo','energia-positivo','reciprocidade-energia','ei-zonas','imagem-latente-prata','negativo-positivo','branqueamentos-rotas','parametros-revelacao'];
