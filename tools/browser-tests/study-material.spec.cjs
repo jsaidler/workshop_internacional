@@ -17,7 +17,7 @@ async function expectSameRow(locator){
   return rendered;
 }
 
-test('study material uses one continuous desktop reading axis',async({page})=>{
+test('study material uses one continuous desktop reading axis with hierarchical breathing room',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(url);
 
@@ -30,6 +30,9 @@ test('study material uses one continuous desktop reading axis',async({page})=>{
   const note=page.locator('#technical-note');
   const unitGrid=page.locator('#unit-heading-grid');
   const heading=page.locator('#unit-heading');
+  const referenceGrid=page.locator('#reference-grid');
+  const processList=page.locator('#unit-reference > .process-list');
+  const figure=page.locator('#unit-reference > .media-figure');
   const indexCards=page.locator('#study-index-grid > .format-card');
 
   const unitBox=await unit.boundingBox();
@@ -55,7 +58,20 @@ test('study material uses one continuous desktop reading axis',async({page})=>{
   const lineHeight=px(await directCopy.evaluate(el=>getComputedStyle(el).lineHeight));
   expect(lineHeight).toBeGreaterThanOrEqual(27);
   expect(lineHeight).toBeLessThanOrEqual(29.5);
-  expect(px(await paragraph.evaluate(el=>getComputedStyle(el).marginBottom))).toBeLessThanOrEqual(14);
+
+  const paragraphGap=px(await paragraph.evaluate(el=>getComputedStyle(el).marginBottom));
+  expect(paragraphGap).toBeGreaterThanOrEqual(16);
+  expect(paragraphGap).toBeLessThanOrEqual(19);
+  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingTop))).toBeGreaterThanOrEqual(78);
+  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom))).toBeGreaterThanOrEqual(78);
+  expect(px(await label.evaluate(el=>getComputedStyle(el).marginBottom))).toBeGreaterThanOrEqual(20);
+  expect(px(await note.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(36);
+  expect(px(await note.evaluate(el=>getComputedStyle(el).marginBottom))).toBeGreaterThanOrEqual(36);
+  expect(px(await referenceGrid.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(42);
+  expect(px(await processList.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(40);
+  expect(px(await figure.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(52);
+  expect(px(await figure.evaluate(el=>getComputedStyle(el).marginBottom))).toBeGreaterThanOrEqual(52);
+
   expect(px(await note.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(13);
   expect(px(await heading.evaluate(el=>getComputedStyle(el).fontSize))).toBeLessThanOrEqual(45);
   expect(px(await coverTitle.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThan(60);
@@ -85,7 +101,7 @@ test('study reference components stay distinct without breaking the reading flow
   expect(await firstLink.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
 });
 
-test('study material keeps the same reading axis on tablet',async({page})=>{
+test('study material keeps the same reading axis and reduced but visible rhythm on tablet',async({page})=>{
   await page.setViewportSize({width:900,height:1000});
   await page.goto(url);
 
@@ -94,6 +110,7 @@ test('study material keeps the same reading axis on tablet',async({page})=>{
   const unitGrid=page.locator('#unit-heading-grid');
   const copy=page.locator('#direct-copy');
   const label=page.locator('#unit-label');
+  const note=page.locator('#technical-note');
   const indexCards=page.locator('#study-index-grid > .format-card');
 
   expect(await unit.evaluate(el=>getComputedStyle(el).display)).toBe('block');
@@ -103,6 +120,9 @@ test('study material keeps the same reading axis on tablet',async({page})=>{
   expect(copyBox.width).toBeGreaterThanOrEqual(760);
   expect(copyBox.width).toBeLessThanOrEqual(785);
   expect(Math.abs(copyBox.x-labelBox.x)).toBeLessThan(2);
+  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingTop))).toBeGreaterThanOrEqual(68);
+  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom))).toBeGreaterThanOrEqual(72);
+  expect(px(await note.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(36);
 
   const indexBoxes=await expectSameRow(indexCards);
   expect(indexBoxes).toHaveLength(3);
@@ -112,7 +132,7 @@ test('study material keeps the same reading axis on tablet',async({page})=>{
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
 });
 
-test('study material collapses cleanly on small screens',async({page})=>{
+test('study material preserves a readable vertical hierarchy on small screens',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto(url);
 
@@ -123,12 +143,18 @@ test('study material collapses cleanly on small screens',async({page})=>{
   const reference=page.locator('#reference-grid');
   const copy=page.locator('#direct-copy');
   const label=page.locator('#unit-label');
+  const note=page.locator('#technical-note');
+  const figure=page.locator('#unit-reference > .media-figure');
 
   expect(await unit.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   expect(await unitGrid.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   expect(await gridColumns(indexGrid)).toBe(1);
   expect(await gridColumns(reference)).toBe(1);
   expect(px(await copy.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(17.5);
+  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingTop))).toBeGreaterThanOrEqual(52);
+  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom))).toBeGreaterThanOrEqual(60);
+  expect(px(await note.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(28);
+  expect(px(await figure.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(38);
 
   const copyBox=await copy.boundingBox();
   const labelBox=await label.boundingBox();
