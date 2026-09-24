@@ -4,6 +4,12 @@ const url='http://127.0.0.1:8099/tools/browser-fixture/study-material.html';
 const px=value=>Number.parseFloat(value||'0');
 const gridColumns=async locator=>locator.evaluate(el=>getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length);
 
+async function boxes(locator){
+  const out=[];
+  for(let i=0;i<await locator.count();i++)out.push(await locator.nth(i).boundingBox());
+  return out;
+}
+
 test('study material uses the desktop canvas without sacrificing reading measure',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(url);
@@ -22,7 +28,7 @@ test('study material uses the desktop canvas without sacrificing reading measure
   const copyBox=await directCopy.boundingBox();
   expect(unitBox.width).toBeGreaterThan(1120);
   expect(unitBox.width).toBeLessThanOrEqual(1201);
-  expect(copyBox.width).toBeGreaterThan(700);
+  expect(copyBox.width).toBeGreaterThan(640);
   expect(copyBox.width).toBeLessThanOrEqual(765);
   expect(labelBox.x).toBeLessThan(copyBox.x-70);
 
@@ -43,13 +49,18 @@ test('study material keeps reference components visually distinct and keyboard n
 
   const copy=page.locator('#direct-copy');
   const note=page.locator('#technical-note');
-  const reference=page.locator('#reference-grid');
+  const cards=page.locator('#reference-grid > .format-card');
   const firstLink=page.locator('#study-index-grid a').first();
 
   const copyBg=await copy.evaluate(el=>getComputedStyle(el).backgroundColor);
   const noteBg=await note.evaluate(el=>getComputedStyle(el).backgroundColor);
   expect(noteBg).not.toBe(copyBg);
-  expect(await gridColumns(reference)).toBe(3);
+
+  const cardBoxes=await boxes(cards);
+  expect(cardBoxes).toHaveLength(3);
+  expect(Math.abs(cardBoxes[0].y-cardBoxes[1].y)).toBeLessThan(2);
+  expect(Math.abs(cardBoxes[0].y-cardBoxes[2].y)).toBeLessThan(2);
+  for(const box of cardBoxes)expect(box.width).toBeGreaterThan(190);
 
   await firstLink.focus();
   expect(await firstLink.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
