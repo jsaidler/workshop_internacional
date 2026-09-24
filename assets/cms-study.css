@@ -93,7 +93,7 @@
 .cms-public .study-unit{
   width:min(100%,var(--study-shell));
   margin:0 auto;
-  padding:clamp(78px,7vw,104px) var(--gutter);
+  padding:clamp(58px,5vw,72px) var(--gutter) clamp(50px,4.2vw,62px);
   display:block;
   border-top:1px solid var(--line);
   background:var(--surface);
@@ -201,7 +201,7 @@
 @media(max-width:960px){
   .cms-public .study-material{--study-shell:900px;--study-reading:780px;--study-wide:840px}
   .cms-public .study-cover,.cms-public .study-index .format-inner,.cms-public .study-chapter .format-inner,.cms-public .study-unit{width:100%}
-  .cms-public .study-unit{padding-top:68px;padding-bottom:76px}
+  .cms-public .study-unit{padding-top:58px;padding-bottom:54px}
   .cms-public .study-index .format-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 
@@ -215,7 +215,7 @@
   .cms-public .study-index .format-card{min-height:68px;padding:14px 14px}
   .cms-public .study-chapter .format-inner{padding-top:40px;padding-bottom:44px}
   .cms-public .study-chapter .format-heading h2{font-size:clamp(36px,10vw,48px)}
-  .cms-public .study-unit{padding-top:54px;padding-bottom:62px}
+  .cms-public .study-unit{padding-top:48px;padding-bottom:46px}
   .cms-public .study-unit>.section-label{margin-bottom:18px}
   .cms-public .study-unit h2{font-size:clamp(30px,8vw,38px);margin-bottom:24px}
   .cms-public .study-unit h3{font-size:clamp(23px,6.8vw,28px);margin-top:36px;margin-bottom:14px}
