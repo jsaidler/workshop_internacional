@@ -50,6 +50,8 @@ jobs:
           php tools/test-registration-payment-migration.php
           php tools/test-registration-native-content.php
           php tools/test-registration-success-payment.php
+          php tools/test-student-area.php
+          php tools/test-student-accounts.php
           php tools/test-update-service.php
           php tools/test-update-restore.php
       - name: Install browser test dependencies

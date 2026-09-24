@@ -1,52 +1,117 @@
-# Área do aluno — autenticação e materiais protegidos
+# Área do aluno — estado canônico
 
-## Objetivo
+## Regra de identidade
 
-A área do aluno protege materiais que não devem ser publicados como arquivos ou páginas abertas. Cada participante recebe uma conta individual; não existe senha compartilhada da turma.
+Não existe cadastro manual de aluno.
 
-## Princípios de segurança
+Um participante se torna aluno quando uma inscrição do formulário `registration` é confirmada (`status=converted` ou pagamento confirmado). A confirmação é reconciliada automaticamente com a conta do aluno e com a turma correspondente.
 
-- contas individuais com senha armazenada apenas como `password_hash()`;
-- senha temporária obrigatoriamente trocada no primeiro acesso;
-- sessão regenerada no login e no logout;
-- limitação de tentativas de login por combinação de e-mail e IP;
-- CSRF nos formulários de login administrativo, logout e troca de senha;
-- materiais enviados para a área do aluno são armazenados no SQLite persistente da instalação, nunca no repositório público;
-- páginas protegidas enviam `Cache-Control: private, no-store` e `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet`;
-- o HTML protegido recebe identificação visual do aluno autenticado para desencorajar redistribuição casual;
-- desativar a matrícula corta o acesso imediatamente sem apagar a conta ou o material.
+A conta é única entre cursos. A mesma pessoa pode ter várias matrículas sem duplicar credenciais ou preencher novamente todos os dados estáveis do perfil.
 
-## Modelo de dados
+## Primeiro acesso
 
-`student_users` mantém identidade, hash de senha, estado e último login.
+O primeiro acesso usa **e-mail da inscrição + CPF somente com números** como prova inicial de identidade.
 
-`student_enrollments` vincula um aluno a uma atividade/site. A mesma conta pode ter acesso a mais de uma atividade sem duplicação de credenciais.
+O CPF não é senha permanente e nunca é gravado como `password_hash`. Depois da identificação inicial:
 
-`student_materials` armazena título, slug, idioma, estado e o HTML integral do material. O conteúdo fica dentro de `storage/database.sqlite`, que já é persistente e bloqueado para acesso HTTP.
+1. o aluno lê o Aviso de Privacidade;
+2. cria uma senha própria com no mínimo 12 caracteres;
+3. a conta é marcada como ativada;
+4. os acessos seguintes usam e-mail + senha.
 
-`student_login_attempts` registra apenas uma chave HMAC derivada de e-mail + IP para limitar tentativas; não armazena o IP em claro.
+A tentativa de primeiro acesso usa a mesma limitação de tentativas do login. O CPF é indexado no perfil por HMAC para comparação e a cópia recuperável usada no preenchimento de formulários fica criptografada em repouso com chave derivada de `app_secret`.
 
-## Operação
+## Pessoa, turma e matrícula
 
-No admin, `Inscrições → Área do aluno` permite:
+- `student_users`: identidade da conta e credencial.
+- `student_profiles`: dados reutilizáveis de identificação e contato.
+- `course_cohorts`: turmas de uma atividade/curso.
+- `course_enrollments`: matrícula confirmada de uma conta em uma turma.
+- `cms_form_submissions.student_id/cohort_id`: vínculo histórico entre inscrição, conta e turma.
 
-- criar ou reativar acesso individual;
-- gerar senha temporária;
-- redefinir senha;
-- ativar/desativar a matrícula;
-- importar um HTML protegido;
-- publicar ou recolher o material.
+A tabela antiga `student_enrollments` permanece somente para compatibilidade/migração. Ela não é a fonte canônica das novas matrículas.
 
-O material deve ser importado como HTML autônomo. Quando houver imagens exclusivas do material, a opção preferida é incorporá-las ao próprio HTML como `data:` para que não exista uma URL pública separada. Isso também evita colocar o conteúdo protegido no repositório público.
+## Reaproveitamento de dados
 
-## Rotas
+O perfil mantém os dados estáveis usados nas inscrições: nome, e-mail, CPF, telefone, Instagram e endereço.
 
-- `/aluno/login.php`
-- `/aluno/`
-- `/aluno/senha.php`
-- `/aluno/material.php?slug=...`
-- `/aluno/logout.php`
+Quando um aluno autenticado abre outro formulário do CMS, esses dados podem ser usados como valores iniciais. O formulário continua editável: o aluno revisa os dados antes de enviar. Respostas específicas do curso — disponibilidade, forma de pagamento, tamanho do suporte e outras escolhas — não fazem parte do perfil reutilizável.
 
-## Limite real da proteção
+O aluno pode consultar e corrigir o perfil em `/aluno/perfil.php`.
 
-Autenticação impede acesso público, indexação e URLs diretas abertas. Nenhum sistema web consegue impedir um usuário autorizado de fotografar a tela, fazer captura ou copiar manualmente o que consegue ler. A identificação individual no material funciona como camada de responsabilização, não como DRM absoluto.
+## Conteúdo protegido: páginas normais do CMS
+
+Material didático não usa mais a tabela `student_materials` como sistema editorial paralelo.
+
+O conteúdo é uma página comum de `cms_pages`, com o mesmo rascunho/publicação, slug, editor WYSIWYG e renderer das páginas públicas. A diferença é o campo:
+
+- `access_level=public`: página pública;
+- `access_level=enrolled`: exige conta autenticada e matrícula ativa naquela atividade.
+
+Quando uma página é protegida, ela deixa de aparecer automaticamente na navegação pública. O acesso do aluno parte da Área do aluno e continua usando a URL normal do CMS.
+
+A tabela antiga `student_materials` permanece somente para compatibilidade histórica e não deve receber novos conteúdos.
+
+## Liberação por aula
+
+O CMS já identifica seções por `data-cms-section`. A área do aluno usa essa identidade existente; não cria um segundo formato de página.
+
+- `course_lessons`: aulas do curso;
+- `course_page_sections`: associação entre uma seção da página e uma aula;
+- `cohort_lesson_releases`: estado de liberação daquela aula para cada turma.
+
+Se uma seção estiver ligada a uma aula ainda bloqueada, ela é **removida do documento no servidor antes da renderização**. Não existe `display:none`, comentário oculto ou HTML bloqueado enviado ao navegador.
+
+Se uma seção não estiver associada a aula alguma, ela é considerada conteúdo comum e permanece visível para qualquer matriculado com acesso à página.
+
+## Múltiplas turmas
+
+Cada atividade pode ter várias turmas. Uma delas pode ser marcada como padrão para novas inscrições confirmadas.
+
+A inscrição confirmada pode ser movida para outra turma no admin sem recriar a conta do aluno. Se um aluno tiver mais de uma matrícula ativa na mesma atividade, a Área do aluno inclui a identidade da turma ao construir o link da página protegida.
+
+## Mídia privada
+
+Imagens exclusivas de páginas protegidas não devem ser servidas de `/uploads/`.
+
+`student_private_media` guarda metadados no SQLite e o arquivo físico em `storage/student-media/`, caminho já bloqueado para acesso HTTP pelo `.htaccess` raiz.
+
+No conteúdo do CMS a referência persistente é:
+
+`/aluno/media.php?asset=<uuid>`
+
+Antes de a página ser enviada ao aluno, essa referência é transformada em uma URL assinada e temporária vinculada a:
+
+- conta autenticada;
+- página;
+- turma;
+- prazo de validade.
+
+`/aluno/media.php` valida todos esses elementos e somente então lê o arquivo privado e o entrega com `Cache-Control: private, no-store`.
+
+Isso impede uma URL pública permanente para o arquivo. Como em qualquer aplicação web, um usuário autorizado ainda pode copiar visualmente o conteúdo que recebeu.
+
+## Administração
+
+`Admin → Inscrições → Área do aluno` concentra:
+
+- turmas e turma padrão;
+- aulas;
+- liberação/bloqueio de aulas por turma;
+- definição de páginas públicas ou exclusivas de matriculados;
+- associação das seções da página às aulas;
+- upload de imagens privadas vinculadas a uma página protegida;
+- alunos originados de inscrições confirmadas;
+- associação/reassociação de inscrições confirmadas a turmas.
+
+Não há formulário de “criar aluno”.
+
+## Compatibilidade e migração
+
+A migração `047_student_accounts_cohorts_privacy.php` é aditiva. A migração 046 já publicada não é reescrita.
+
+A 047 cria o novo modelo e migra vínculos antigos de `student_enrollments` para uma turma padrão. As tabelas antigas são mantidas para permitir rollback e leitura histórica, mas novos fluxos devem usar o modelo descrito neste documento.
+
+## Limite de proteção
+
+Autenticação, filtro server-side, armazenamento privado, URLs assinadas, `no-store` e `noindex` protegem contra acesso público e redistribuição casual. Nenhum sistema web impede de forma absoluta que um aluno autorizado fotografe a tela ou reproduza manualmente aquilo que conseguiu ler.
