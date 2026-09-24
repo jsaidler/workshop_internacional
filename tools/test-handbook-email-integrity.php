@@ -8,40 +8,59 @@ $db->exec("CREATE TABLE course_page_sections(page_id INTEGER,section_key TEXT,le
 $db->exec("CREATE TABLE student_private_media(id INTEGER PRIMARY KEY AUTOINCREMENT,asset_uuid TEXT UNIQUE,activity_id INTEGER,page_id INTEGER,title TEXT,original_name TEXT,mime_type TEXT,byte_size INTEGER,storage_path TEXT,checksum TEXT,created_at TEXT,updated_at TEXT);");
 $seed=json_encode(['version'=>2,'theme'=>'auto','meta'=>[],'html'=>'<section data-cms-section="seed"><p>seed</p></section>'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 $q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,status,show_in_nav,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,updated_at,access_level) VALUES(1,'pt-BR','caderno-positivo-direto','x','x','published',1,?,?,1,1,'x','x','x','public')");$q->execute([$seed,$seed]);
-(require __DIR__.'/../migrations/050_protected_handbook_media_slots.php')($db);
-(require __DIR__.'/../migrations/051_handbook_document_lessons.php')($db);
-(require __DIR__.'/../migrations/052_remove_handbook_specific_visual_system.php')($db);
-(require __DIR__.'/../migrations/053_rebuild_handbook_from_email_sources.php')($db);
-(require __DIR__.'/../migrations/054_complete_handbook_source_details.php')($db);
-(require __DIR__.'/../migrations/055_apply_global_editorial_components_to_handbook.php')($db);
+foreach(['050','051','052','053','054','055','056','057','058'] as $n){
+    $matches=glob(__DIR__.'/../migrations/'.$n.'_*.php');
+    if(!$matches||count($matches)!==1)handbook_fail('migration not uniquely resolved: '.$n);
+    (require $matches[0])($db);
+}
 $page=$db->query("SELECT * FROM cms_pages WHERE slug='caderno-positivo-direto'")->fetch();if(!$page)handbook_fail('page missing');
 $html=(string)(json_decode((string)$page['published_document_json'],true)['html']??'');
 $mustHave=[
- 'A ideia não é transformar isso numa bula.',
+ 'Receitas, materiais, exposição e algumas referências para os testes',
+ 'A ideia não é transformar isso numa bula. Principalmente porque, como vimos na aula, boa parte do processo depende da relação entre exposição, revelação, temperatura, diluição e movimento.',
+ 'ALGUMAS COISAS IMPORTANTES SOBRE O FILME DE RAIO-X',
  'O Fuji Super HR-U é um filme ortocromático.',
- 'A cada EV abaixo temos metade da luz:',
- 'Usando uma pinhole f/256 como referência, podemos ver o tamanho da diferença:',
- 'tempo corrigido = tempo calculado elevado a 1,3854',
+ 'EXPOSIÇÃO E ENERGIA',
+ 'FALHA DE RECIPROCIDADE',
+ 'DUAS COISAS DIFERENTES, UM MESMO PROBLEMA DE ENERGIA',
+ '>EI<',
  'O filme não muda. A exposição muda.',
+ 'Isso nos leva a um conceito que eu deveria ter apresentado durante a aula e acabei deixando passar: o EI, ou Índice de Exposição.',
+ 'Foi justamente o que observamos.',
+ 'Para entender por que isso acontece, precisamos voltar um pouco e olhar o que estamos realmente revelando.',
+ 'Agora podemos olhar para os químicos com mais clareza.',
+ 'Na segunda aula fizemos duas fotografias em condições diferentes e o processo completo até o positivo.',
+ 'A primeira foi exposta em EI 200 e revelada com 10 ml de Parodinal + 550 ml de água, durante 7 minutos, a 26 °C e com agitação leve.',
+ 'Na segunda passamos para EI 400 e 20 ml de Parodinal + 550 ml de água, mantendo os mesmos 7 minutos, 26 °C e a mesma agitação.',
  'Ag⁺ + elétron → Ag⁰',
  'O cloreto férrico e a amônia, portanto, são dois processos independentes.',
+ 'Agora podemos voltar às duas fotografias da aula.',
+ 'Foi exatamente o que fizemos nas duas chapas da aula.',
  'Trabalhamos com quatro parâmetros que interferem diretamente na revelação: concentração, temperatura, tempo e agitação.',
  'Não como uma receita definitiva, mas como um possível desenvolvimento normal.',
  'Não precisa virar um relatório da NASA.'
 ];
 foreach($mustHave as $needle)if(!str_contains($html,$needle))handbook_fail('source detail missing: '.$needle);
-$mustNotHave=['Qual o tamanho do suporte','Qual o endereço para envio','08/10','me convidem como colaborador'];
-foreach($mustNotHave as $needle)if(str_contains($html,$needle))handbook_fail('cohort message leaked: '.$needle);
+$mustNotHave=[
+ 'Qual o tamanho do suporte','Qual o endereço para envio','08/10','me convidem como colaborador',
+ 'Três aulas, um único processo',
+ 'O conteúdo foi reorganizado editorialmente',
+ 'Pretos absolutos. Altas luzes na transparência da base. E fotografia entre os dois extremos.',
+ 'A câmera fará uma única exposição para uma cena inteira que contém quantidades muito diferentes de luz.',
+ 'Quantidade de luz e tempo deixam de ser perfeitamente intercambiáveis nas exposições longas.',
+ 'Registro preservado literalmente do segundo e-mail:'
+];
+foreach($mustNotHave as $needle)if(str_contains($html,$needle))handbook_fail('non-source or cohort copy leaked: '.$needle);
 $slots=['filme-ortocromatico','dupla-emulsao-positivo','energia-positivo','reciprocidade-energia','ei-zonas','imagem-latente-prata','negativo-positivo','branqueamentos-rotas','parametros-revelacao'];
 foreach($slots as $slot)if(!str_contains($html,'data-private-media-slot="'.$slot.'"'))handbook_fail('slot missing: '.$slot);
 foreach(['<style','<svg',' style=','cms-document','cms-lesson'] as $needle)if(str_contains(mb_strtolower($html,'UTF-8'),mb_strtolower($needle,'UTF-8')))handbook_fail('page-exclusive visual system leaked: '.$needle);
-foreach(['editorial-cover','editorial-index','editorial-chapter','editorial-unit'] as $class)if(!str_contains($html,$class))handbook_fail('global editorial component missing: '.$class);
-if(str_contains($html,'caderno-editorial')||str_contains($html,'handbook-editorial'))handbook_fail('page-specific editorial component leaked');
+foreach(['editorial-cover','editorial-index','editorial-chapter','editorial-unit'] as $class)if(str_contains($html,$class))handbook_fail('landing-page editorial component leaked into study material: '.$class);
+foreach(['study-material','study-cover','study-index','study-chapter','study-unit'] as $class)if(!str_contains($html,$class))handbook_fail('global study component missing: '.$class);
 $map=$db->query("SELECT s.section_key,l.lesson_key FROM course_page_sections s JOIN course_lessons l ON l.id=s.lesson_id ORDER BY s.section_key")->fetchAll(PDO::FETCH_KEY_PAIR);
 foreach(['caderno-04-energia'=>'aula-1','caderno-10-imagem-latente'=>'aula-2','caderno-21-leitura-resultados'=>'aula-3'] as $section=>$lesson)if(($map[$section]??'')!==$lesson)handbook_fail('wrong lesson mapping: '.$section);
 $css=(string)file_get_contents(__DIR__.'/../assets/cms-ui-refinements.css');
-foreach(['.editorial-cover','.editorial-index','.editorial-chapter','.editorial-unit'] as $selector)if(!str_contains($css,$selector))handbook_fail('global editorial CSS missing: '.$selector);
-foreach(['caderno-positivo-direto','caderno-aula-','caderno-04-energia'] as $needle)if(str_contains($css,$needle))handbook_fail('page slug/section leaked into global editorial CSS: '.$needle);
+foreach(['.study-material','.study-cover','.study-index','.study-chapter','.study-unit'] as $selector)if(!str_contains($css,$selector))handbook_fail('global study CSS missing: '.$selector);
+foreach(['caderno-positivo-direto','caderno-aula-','caderno-04-energia'] as $needle)if(str_contains($css,$needle))handbook_fail('page slug/section leaked into global study CSS: '.$needle);
 $material=(string)file_get_contents(__DIR__.'/../app/student_material.php');
 foreach(['if(!current_admin())return','cms-media-placeholder','Infográfico pendente','slot: '] as $needle)if(!str_contains($material,$needle))handbook_fail('admin private-media placeholder contract missing: '.$needle);
 echo "handbook-email-integrity: ok\n";
