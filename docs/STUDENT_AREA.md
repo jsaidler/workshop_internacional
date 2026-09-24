@@ -2,128 +2,72 @@
 
 ## Regra de identidade
 
-Não existe cadastro manual de aluno.
+Não existe cadastro manual de aluno. Um participante se torna aluno quando uma inscrição do formulário `registration` é confirmada (`status=converted` ou pagamento confirmado). A conta é única entre cursos e pode possuir várias matrículas.
 
-Um participante se torna aluno quando uma inscrição do formulário `registration` é confirmada (`status=converted` ou pagamento confirmado). A confirmação é reconciliada automaticamente com a conta do aluno e com a turma correspondente.
+O primeiro acesso usa **e-mail da inscrição + CPF somente com números** como prova inicial de identidade. O CPF não é senha permanente. Depois da validação inicial, o aluno reconhece o Aviso de Privacidade e cria a própria senha.
 
-A conta é única entre cursos. A mesma pessoa pode ter várias matrículas sem duplicar credenciais ou preencher novamente todos os dados estáveis do perfil.
+## Perfil e novas inscrições
 
-## Primeiro acesso
+`student_users` representa a conta; `student_profiles`, os dados reutilizáveis; `course_cohorts`, as turmas; `course_enrollments`, as matrículas. Nome, e-mail, CPF, telefone, Instagram e endereço podem preencher uma nova inscrição para um aluno autenticado, sempre permitindo revisão. Respostas específicas do curso continuam pertencendo à inscrição. O aluno consulta e corrige o perfil em `/aluno/perfil.php`.
 
-O primeiro acesso usa **e-mail da inscrição + CPF somente com números** como prova inicial de identidade.
+## Conteúdo protegido continua sendo conteúdo do CMS
 
-O CPF não é senha permanente e nunca é gravado como `password_hash`. Depois da identificação inicial:
-
-1. o aluno lê o Aviso de Privacidade;
-2. cria uma senha própria com no mínimo 12 caracteres;
-3. a conta é marcada como ativada;
-4. os acessos seguintes usam e-mail + senha.
-
-A tentativa de primeiro acesso usa a mesma limitação de tentativas do login. O CPF é indexado no perfil por HMAC para comparação e a cópia recuperável usada no preenchimento de formulários fica criptografada em repouso com chave derivada de `app_secret`.
-
-## Pessoa, turma e matrícula
-
-- `student_users`: identidade da conta e credencial.
-- `student_profiles`: dados reutilizáveis de identificação e contato.
-- `course_cohorts`: turmas de uma atividade/curso.
-- `course_enrollments`: matrícula confirmada de uma conta em uma turma.
-- `cms_form_submissions.student_id/cohort_id`: vínculo histórico entre inscrição, conta e turma.
-
-A tabela antiga `student_enrollments` permanece somente para compatibilidade/migração. Ela não é a fonte canônica das novas matrículas.
-
-## Reaproveitamento de dados
-
-O perfil mantém os dados estáveis usados nas inscrições: nome, e-mail, CPF, telefone, Instagram e endereço.
-
-Quando um aluno autenticado abre outro formulário do CMS, esses dados podem ser usados como valores iniciais. O formulário continua editável: o aluno revisa os dados antes de enviar. Respostas específicas do curso — disponibilidade, forma de pagamento, tamanho do suporte e outras escolhas — não fazem parte do perfil reutilizável.
-
-O aluno pode consultar e corrigir o perfil em `/aluno/perfil.php`.
-
-## Conteúdo protegido: páginas normais do CMS
-
-Material didático não usa mais a tabela `student_materials` como sistema editorial paralelo.
-
-O conteúdo é uma página comum de `cms_pages`, com o mesmo rascunho/publicação, slug, editor WYSIWYG e renderer das páginas públicas. A diferença é o campo:
+Material didático é uma página comum de `cms_pages`. Não existe um sistema editorial paralelo.
 
 - `access_level=public`: página pública;
-- `access_level=enrolled`: exige conta autenticada e matrícula ativa naquela atividade.
+- `access_level=enrolled`: exige aluno autenticado com matrícula ativa;
+- administrador autenticado: acesso integral à página protegida para inspeção, inclusive seções ainda não liberadas aos alunos.
 
-Quando uma página é protegida, ela deixa de aparecer automaticamente na navegação pública. O acesso do aluno parte da Área do aluno e continua usando a URL normal do CMS.
+Uma página protegida não aparece na navegação pública e recebe `noindex`. O acesso continua usando sua URL normal do CMS.
 
-A tabela antiga `student_materials` permanece somente para compatibilidade histórica e não deve receber novos conteúdos.
+### Regra visual das páginas
 
-## Caderno técnico do workshop
+Uma página de material **não possui stylesheet próprio**. O HTML editorial usa os componentes e classes do sistema global e herda integralmente o Design do site. Exceções deliberadas pertencem a `Design → CSS adicional`, que continua sendo a camada editorial final do site.
 
-A migração `048_seed_positive_handbook.php` cria e publica uma página CMS protegida com slug `caderno-positivo-direto` e título **Caderno de processo — Positivo Direto em Filme de Raio-X**.
+É proibido resolver uma página protegida com `<style>` local, propriedades visuais inline ou outro sistema visual paralelo.
 
-Esse conteúdo não é um placeholder. A página já nasce com o material técnico do workshop organizado em seções editoriais reais: filme e dupla emulsão, exposição e energia, reciprocidade, EI, imagem latente, reveladores, Parodinal, Brewed Caffenol, caminhos negativo/positivo, solução peracética, cloreto férrico + amônia, segunda revelação, quatro parâmetros, hipótese de desenvolvimento normal, materiais e registro de testes.
+## Caderno “Positivo direto em filme de raio-X”
 
-A capa permanece visível para qualquer matriculado com acesso à página. As seções de filme/exposição são associadas à `aula-1`; as seções de química, processo e registro são associadas à `aula-2`. A `aula-3` não recebe conteúdo artificial apenas para preencher uma etapa: ela continua reservada à revisão dos resultados, e novos conteúdos podem ser associados manualmente se forem criados.
+A página `caderno-positivo-direto` tem como fonte editorial os conteúdos efetivamente enviados aos participantes por e-mail:
 
-A página usa apenas diagramas técnicos construídos em HTML/SVG. Não deve receber ilustrações genéricas de câmeras ou equipamento inventado. Fotografias de equipamento só entram quando forem imagens documentais reais do projeto.
+- “Receitas, materiais e algumas referências para trabalhar com filme de raio-X” — 07/09/2026;
+- “Segundo Encontro: Processos químicos para positivos” — 18/09/2026.
+
+O CMS pode reorganizar esses conteúdos em seções e hierarquia editorial, mas não substituir a fonte por uma apostila genérica nem preencher lacunas com conteúdo inventado. Quando os registros divergem, a divergência é preservada explicitamente. Exemplo: o primeiro e-mail define `15/550` como volume final de 550 ml; o segundo registra literalmente `10 ml` ou `20 ml de Parodinal + 550 ml de água`. O sistema não transforma silenciosamente uma notação na outra.
+
+A `aula-3`, destinada à revisão dos resultados, não recebe conteúdo artificial.
+
+## Infográficos privados
+
+Os elementos visuais explicativos do material são **infográficos ilustrados gerados**, não fotografias simuladas, não grafismos HTML/SVG e não equipamentos inventados.
+
+A página contém quatro slots semânticos de mídia privada:
+
+- `energia-cena` — distribuição de energia na cena;
+- `reciprocidade` — baixa energia e falha de reciprocidade;
+- `imagem-latente` — da imagem latente à prata metálica;
+- `fluxo-positivo` — fluxo do positivo direto em filme.
+
+O HTML persistido contém apenas `<figure data-private-media-slot="…">`. O arquivo real é enviado pelo admin e associado ao slot. Se um slot ainda não tiver arquivo, ele é removido da resposta pública: nenhum texto de placeholder ou instrução de desenvolvimento aparece para o aluno.
+
+Os arquivos ficam em `storage/student-media/`, fora do acesso HTTP direto. Para alunos, o renderer troca a referência persistente por URL assinada e temporária vinculada a aluno, página e turma. Para administradores autenticados, a mesma mídia pode ser visualizada diretamente durante a inspeção da página protegida.
 
 ## Liberação por aula
 
-O CMS já identifica seções por `data-cms-section`. A área do aluno usa essa identidade existente; não cria um segundo formato de página.
+As seções da página usam `data-cms-section`. `course_page_sections` liga uma seção a uma aula; `cohort_lesson_releases` controla a liberação por turma. Uma seção bloqueada é removida no servidor antes do HTML ser enviado ao aluno. Não existe `display:none` para conteúdo ainda não liberado.
 
-- `course_lessons`: aulas do curso;
-- `course_page_sections`: associação entre uma seção da página e uma aula;
-- `cohort_lesson_releases`: estado de liberação daquela aula para cada turma.
+O bypass administrativo é deliberado: um administrador precisa conseguir verificar a página completa e suas mídias sem possuir uma matrícula de aluno.
 
-Se uma seção estiver ligada a uma aula ainda bloqueada, ela é **removida do documento no servidor antes da renderização**. Não existe `display:none`, comentário oculto ou HTML bloqueado enviado ao navegador.
+## Administração e escala
 
-Se uma seção não estiver associada a aula alguma, ela é considerada conteúdo comum e permanece visível para qualquer matriculado com acesso à página.
+`Admin → Inscrições → Área do aluno` usa o mesmo sistema de UI/UX do restante da administração. Não existe stylesheet visual exclusivo da Área do aluno.
 
-## Múltiplas turmas
+A superfície é dividida em tarefas: Visão geral, Turmas, Aulas, Páginas protegidas e Alunos. Listas extensas usam componentes compartilhados, filtros, busca, paginação e tabelas com overflow responsivo. A tela não pode depender de carregar todos os alunos e todos os registros em uma única coluna crescente.
 
-Cada atividade pode ter várias turmas. Uma delas pode ser marcada como padrão para novas inscrições confirmadas.
+Qualquer componente administrativo novo deve ser implementado como padrão reutilizável do admin quando puder aparecer em outras superfícies. Não usar CSS específico de página para compensar uma deficiência do sistema compartilhado.
 
-A inscrição confirmada pode ser movida para outra turma no admin sem recriar a conta do aluno. Se um aluno tiver mais de uma matrícula ativa na mesma atividade, a Área do aluno inclui a identidade da turma ao construir o link da página protegida.
+## LGPD e segurança
 
-## Mídia privada
+O tratamento de dados segue finalidade, necessidade, transparência e segurança. O CPF é usado como prova inicial de identidade, indexado por HMAC e mantido de forma recuperável apenas quando necessário ao perfil, criptografado em repouso. Senhas são hashes e o CPF nunca é gravado como `password_hash`.
 
-Imagens exclusivas de páginas protegidas não devem ser servidas de `/uploads/`.
-
-`student_private_media` guarda metadados no SQLite e o arquivo físico em `storage/student-media/`, caminho já bloqueado para acesso HTTP pelo `.htaccess` raiz.
-
-No conteúdo do CMS a referência persistente é:
-
-`/aluno/media.php?asset=<uuid>`
-
-Antes de a página ser enviada ao aluno, essa referência é transformada em uma URL assinada e temporária vinculada a:
-
-- conta autenticada;
-- página;
-- turma;
-- prazo de validade.
-
-`/aluno/media.php` valida todos esses elementos e somente então lê o arquivo privado e o entrega com `Cache-Control: private, no-store`.
-
-Isso impede uma URL pública permanente para o arquivo. Como em qualquer aplicação web, um usuário autorizado ainda pode copiar visualmente o conteúdo que recebeu.
-
-## Administração
-
-`Admin → Inscrições → Área do aluno` concentra:
-
-- turmas e turma padrão;
-- aulas;
-- liberação/bloqueio de aulas por turma;
-- definição de páginas públicas ou exclusivas de matriculados;
-- associação das seções da página às aulas;
-- upload de imagens privadas vinculadas a uma página protegida;
-- alunos originados de inscrições confirmadas;
-- associação/reassociação de inscrições confirmadas a turmas.
-
-Não há formulário de “criar aluno”.
-
-A tela administrativa possui folha visual própria (`assets/admin-student-area.css`), carregada somente no workspace da Área do aluno. O objetivo é preservar a linguagem do restante do admin sem apresentar a operação como uma sequência de controles crus: hierarquia, cartões, linhas, estados e ações têm tratamento visual específico, inclusive em telas estreitas.
-
-## Compatibilidade e migração
-
-A migração `047_student_accounts_cohorts_privacy.php` é aditiva. A migração 046 já publicada não é reescrita.
-
-A 047 cria o novo modelo e migra vínculos antigos de `student_enrollments` para uma turma padrão. A migração 048 adiciona o primeiro material protegido real do workshop dentro do próprio CMS. As tabelas antigas são mantidas para permitir rollback e leitura histórica, mas novos fluxos devem usar o modelo descrito neste documento.
-
-## Limite de proteção
-
-Autenticação, filtro server-side, armazenamento privado, URLs assinadas, `no-store` e `noindex` protegem contra acesso público e redistribuição casual. Nenhum sistema web impede de forma absoluta que um aluno autorizado fotografe a tela ou reproduza manualmente aquilo que conseguiu ler.
+Autenticação, filtro server-side, armazenamento privado, URLs assinadas, `no-store` e `noindex` protegem contra acesso público e redistribuição casual. Nenhum sistema web impede que um usuário autorizado fotografe a tela ou reproduza manualmente o conteúdo recebido.

@@ -20,11 +20,30 @@ Toda página pública deve ser escrita para uma pessoa que chegou ali sem conhec
 
 - O visitante não conhece o histórico da oferta, o funil, os testes de preço, a arquitetura do produto nem as razões operacionais de cada decisão.
 - Instruções usadas para orientar implementação, placeholders, justificativas de método e comentários de bastidor nunca devem ser transformados em copy pública.
-- Expressões como “protótipo entra aqui”, “em preparação”, “para não depender do tempo”, “porta de entrada”, “regras serão informadas” ou explicações sobre por que uma etapa foi estruturada de determinada maneira pertencem ao trabalho interno, não à página.
+- A ausência temporária de uma imagem não deve produzir texto técnico ou placeholder público; o elemento é simplesmente omitido até existir mídia editorial válida.
 - Cada frase pública precisa cumprir uma função para o interessado: explicar o que é, mostrar valor, responder uma dúvida real, reduzir risco relevante ou conduzir à ação.
-- Quando um fato operacional é necessário para a decisão — formato ao vivo, duração, gravação, materiais, o que a atividade inclui ou não inclui — comunicar somente o fato na linguagem do participante, sem expor a justificativa interna que levou à decisão.
-- A página não deve pressupor que o visitante sabe o que foi discutido antes. Termos próprios da oferta precisam ser compreensíveis no próprio texto.
-- A ausência temporária de imagem, preço, data ou outro elemento não deve ser compensada com texto de bastidor. O conteúdo público mostra apenas o que já pode ser afirmado ao interessado.
+- Quando um fato operacional é necessário para a decisão, comunicar somente o fato na linguagem do participante, sem expor a justificativa interna.
+
+## Conteúdo editorial baseado em fonte
+
+Quando uma página é declarada como derivada de e-mails, documentos, pesquisas ou outro corpus definido, esse corpus é a fonte editorial. O sistema pode organizar e hierarquizar o material, mas não substituí-lo por conteúdo genérico nem corrigir silenciosamente registros divergentes. Conflitos relevantes entre fontes precisam permanecer explícitos até decisão editorial do autor.
+
+## Estilo das páginas do CMS
+
+Páginas normais do CMS não carregam stylesheet próprio nem estilos inline para criar uma identidade paralela. O visual vem do sistema global do site e das configurações de Design. Uma exceção deliberada é feita em `Design → CSS adicional`, não dentro do conteúdo da página.
+
+Ilustrações editoriais são conteúdo de mídia. Quando o projeto pede infográficos, usar os arquivos de infográfico apropriados; não substituir por SVG/HTML improvisado ou por simulação fotográfica que altere a natureza editorial solicitada.
+
+## UI/UX administrativa unificada e escalável
+
+Toda nova superfície administrativa deve partir dos componentes compartilhados do admin e permanecer utilizável com volume real de dados.
+
+- Não criar uma identidade visual isolada para uma única tela quando o padrão pode ser compartilhado.
+- Listas potencialmente grandes precisam prever busca, filtros e paginação ou carregamento progressivo.
+- Tabelas e listas devem manter cabeçalhos, estados, ações e comportamento responsivo consistentes.
+- A navegação deve separar tarefas e evitar uma página infinita com todas as operações e todos os registros carregados simultaneamente.
+- Controles, estados vazios, feedback, ações primárias/secundárias e formulários devem reutilizar a mesma linguagem da administração.
+- Se uma necessidade nova revelar falta de um componente, criar o componente na camada compartilhada e reutilizá-lo, em vez de resolver com CSS específico daquela página.
 
 ## Controles
 

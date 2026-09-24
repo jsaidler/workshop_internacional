@@ -1,0 +1,24 @@
+<?php
+declare(strict_types=1);
+function fail_material(string $message): never {fwrite(STDERR,"student-material-system: $message\n");exit(1);}
+$db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+$db->exec("CREATE TABLE cms_pages(id INTEGER PRIMARY KEY AUTOINCREMENT,activity_id INTEGER,locale TEXT,slug TEXT,title TEXT,nav_title TEXT,status TEXT,show_in_nav INTEGER,draft_document_json TEXT,published_document_json TEXT,draft_revision INTEGER,published_revision INTEGER,draft_updated_at TEXT,published_at TEXT,updated_at TEXT,access_level TEXT DEFAULT 'public');");
+$db->exec("CREATE TABLE course_lessons(id INTEGER PRIMARY KEY AUTOINCREMENT,activity_id INTEGER,lesson_key TEXT,title TEXT); INSERT INTO course_lessons(activity_id,lesson_key,title) VALUES(1,'aula-1','Aula 1'),(1,'aula-2','Aula 2'),(1,'aula-3','Aula 3');");
+$db->exec("CREATE TABLE course_page_sections(page_id INTEGER,section_key TEXT,lesson_id INTEGER,created_at TEXT,updated_at TEXT,PRIMARY KEY(page_id,section_key));");
+$db->exec("CREATE TABLE student_private_media(id INTEGER PRIMARY KEY AUTOINCREMENT,asset_uuid TEXT UNIQUE,activity_id INTEGER,page_id INTEGER,title TEXT,original_name TEXT,mime_type TEXT,byte_size INTEGER,storage_path TEXT,checksum TEXT,created_at TEXT,updated_at TEXT);");
+$old=json_encode(['version'=>2,'theme'=>'auto','meta'=>[],'html'=>'<style id="positive-handbook-style">.bad{}</style><section data-cms-section="caderno-03-exposicao"><p>Exposição</p></section><section data-cms-section="caderno-04-reciprocidade"><p>Reciprocidade</p></section><section data-cms-section="caderno-06-imagem-latente"><p>Imagem latente</p></section><section data-cms-section="caderno-12"><p>Positivo? Negativo?</p></section>'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+$q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,status,show_in_nav,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,updated_at,access_level) VALUES(1,'pt-BR','caderno-positivo-direto','x','x','published',1,?,?,1,1,'x','x','x','public')");$q->execute([$old,$old]);
+$migration=require __DIR__.'/../migrations/050_protected_handbook_media_slots.php';$migration($db);
+$page=$db->query("SELECT * FROM cms_pages WHERE slug='caderno-positivo-direto'")->fetch();if(!$page)fail_material('handbook missing');
+$html=(string)(json_decode((string)$page['published_document_json'],true)['html']??'');
+foreach(['data-private-media-slot="energia-cena"','data-private-media-slot="reciprocidade"','data-private-media-slot="imagem-latente"','data-private-media-slot="fluxo-positivo"'] as $needle)if(!str_contains($html,$needle))fail_material('missing: '.$needle);
+foreach(['<style','<svg',' style='] as $needle)if(str_contains(mb_strtolower($html,'UTF-8'),mb_strtolower($needle,'UTF-8')))fail_material('page-local visual code leaked: '.$needle);
+if(str_contains(mb_strtolower($html,'UTF-8'),'boliche tonal'))fail_material('reserved terminology leaked');
+$columns=$db->query('PRAGMA table_info(student_private_media)')->fetchAll(PDO::FETCH_COLUMN,1);if(!in_array('slot_key',$columns,true))fail_material('slot_key not migrated');
+$index=(string)file_get_contents(__DIR__.'/../index.php');$media=(string)file_get_contents(__DIR__.'/../aluno/media.php');$shell=(string)file_get_contents(__DIR__.'/../app/admin_shell.php');$admin=(string)file_get_contents(__DIR__.'/../admin/student-area.php');
+if(!str_contains($index,'$admin=current_admin()')||!str_contains($index,'if($admin)'))fail_material('admin protected-page bypass missing');
+if(!str_contains($media,'if(current_admin())')||!str_contains($media,'student_private_media_admin_asset'))fail_material('admin private-media bypass missing');
+if(!str_contains($shell,"/assets/admin-data-ux.css")||str_contains($shell,"/assets/admin-student-area.css"))fail_material('admin shared UX stylesheet not canonical');
+if(str_contains($admin,'style='))fail_material('student admin contains page-local inline style');
+foreach(['view=','admin-subtabs','admin-data-toolbar','LIMIT ? OFFSET ?','slot_key'] as $needle)if(!str_contains($admin,$needle))fail_material('scalable admin contract missing: '.$needle);
+echo "student-material-system: ok\n";
