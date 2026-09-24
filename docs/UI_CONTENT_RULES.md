@@ -28,11 +28,15 @@ Toda página pública deve ser escrita para uma pessoa que chegou ali sem conhec
 
 Quando uma página é declarada como derivada de e-mails, documentos, pesquisas ou outro corpus definido, esse corpus é a fonte editorial. O sistema pode organizar e hierarquizar o material, mas não substituí-lo por conteúdo genérico nem corrigir silenciosamente registros divergentes. Conflitos relevantes entre fontes precisam permanecer explícitos até decisão editorial do autor.
 
+Uma ilustração criada para esse conteúdo também precisa ser derivada das relações efetivamente descritas na fonte. Não basta usar o mesmo assunto. Um infográfico sobre “fotografia analógica”, “revelação” ou “reciprocidade” em termos genéricos não satisfaz uma página cuja fonte define relações, valores, etapas ou contrastes específicos.
+
 ## Estilo das páginas do CMS
 
 Páginas normais do CMS não carregam stylesheet próprio nem estilos inline para criar uma identidade paralela. O visual vem do sistema global do site e das configurações de Design. Uma exceção deliberada é feita em `Design → CSS adicional`, não dentro do conteúdo da página.
 
-Ilustrações editoriais são conteúdo de mídia. Quando o projeto pede infográficos, usar os arquivos de infográfico apropriados; não substituir por SVG/HTML improvisado ou por simulação fotográfica que altere a natureza editorial solicitada.
+Também é proibido deslocar para um arquivo global um conjunto de seletores criado exclusivamente para uma página e então tratá-lo como “componente compartilhado”. Um componente só é global quando já pertence ao vocabulário geral do CMS/site ou quando existe uma necessidade sistêmica comprovada para várias superfícies, independente da página que motivou a mudança.
+
+Ilustrações editoriais são conteúdo de mídia. Quando o projeto pede infográficos, usar arquivos de infográfico apropriados; não substituir por SVG/HTML improvisado, por fotografia simulada ou por uma peça genérica que apenas compartilhe o tema do texto.
 
 ### Materiais longos e didáticos
 
@@ -40,9 +44,10 @@ Material extenso não deve ser apresentado como uma coluna contínua de texto se
 
 - separar capa, índice, aulas e unidades editoriais;
 - cada aula deve possuir divisor visual inequívoco e participar da mesma regra de liberação do conteúdo que introduz;
-- cada unidade extensa deve se comportar visualmente como uma página/bloco editorial autônomo, com respiro e limite claros em relação à seguinte;
+- cada unidade extensa deve se comportar visualmente como um bloco editorial autônomo, com respiro e limite claros em relação à seguinte;
 - não criar texto para preencher uma aula sem fonte editorial real;
-- padrões de publicação longa devem ser componentes globais reutilizáveis do CMS, e não CSS ligado ao slug ou a uma página específica;
+- montar a hierarquia com componentes já existentes no sistema visual do site; não criar uma família CSS específica do material;
+- se uma exceção visual for realmente necessária, ela pertence a `Design → CSS adicional` e deve continuar sob controle editorial;
 - a hierarquia visual deve usar a mesma tipografia, paleta, linhas, escala e lógica de composição do restante do site.
 
 ## UI/UX administrativa unificada e escalável
@@ -54,7 +59,7 @@ Toda nova superfície administrativa deve partir dos componentes compartilhados 
 - Tabelas e listas devem manter cabeçalhos, estados, ações e comportamento responsivo consistentes.
 - A navegação deve separar tarefas e evitar uma página infinita com todas as operações e todos os registros carregados simultaneamente.
 - Controles, estados vazios, feedback, ações primárias/secundárias e formulários devem reutilizar a mesma linguagem da administração.
-- Se uma necessidade nova revelar falta de um componente, criar o componente na camada compartilhada e reutilizá-lo, em vez de resolver com CSS específico daquela página.
+- Se uma necessidade nova revelar falta de um componente, criar o componente na camada compartilhada somente quando a necessidade for sistêmica e reutilizável; não mascarar uma exceção de página como componente global.
 
 ## Controles
 

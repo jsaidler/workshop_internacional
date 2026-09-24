@@ -22,11 +22,11 @@ Uma página protegida não aparece na navegação pública e recebe `noindex`. O
 
 ### Regra visual das páginas
 
-Uma página de material **não possui stylesheet próprio**. O HTML editorial usa os componentes e classes do sistema global e herda integralmente o Design do site. Exceções deliberadas pertencem a `Design → CSS adicional`, que continua sendo a camada editorial final do site.
+Uma página de material **não possui stylesheet próprio**. O HTML editorial usa exclusivamente componentes, classes e atributos de layout que já fazem parte do sistema visual geral do site. Exceções deliberadas pertencem a `Design → CSS adicional`, que continua sendo a camada editorial final do site.
 
-É proibido resolver uma página protegida com `<style>` local, propriedades visuais inline ou outro sistema visual paralelo.
+É proibido resolver uma página protegida com `<style>` local, propriedades visuais inline ou criando no stylesheet global uma nova família de classes feita, na prática, para aquela página. Mover um CSS específico da página para `assets/cms.css` não o transforma em componente global.
 
-Materiais longos não devem ser renderizados como uma sequência contínua de parágrafos. O sistema global oferece a família reutilizável `cms-document`: capa, índice, páginas editoriais, divisores de aula, tabelas, fórmulas, notas, etapas e mídia. Esses componentes pertencem ao CSS compartilhado do CMS e podem ser usados por qualquer página; não são estilo exclusivo do caderno.
+Para material longo, capa, índice, divisores de aula e unidades editoriais devem ser construídos com componentes que já existiam no sistema antes daquela página, como `section`, `statement-grid`, `format`, `format-inner`, `format-heading`, `format-grid`, `format-card`, `process-list`, `process-item`, `section-label`, `statement-copy` e `technical-note`. Se o sistema existente não permitir uma composição desejada, a exceção visual pertence a `Design → CSS adicional`; não se cria um subsistema CSS para o material.
 
 ## Caderno “Positivo direto em filme de raio-X”
 
@@ -44,25 +44,27 @@ O material precisa ser reconhecível como publicação e como sequência de aula
 - capa do material;
 - índice das três aulas;
 - divisor visual **Aula 01 — Filme e exposição**;
-- páginas editoriais correspondentes ao conteúdo do primeiro encontro;
+- unidades editoriais correspondentes ao conteúdo do primeiro encontro;
 - divisor visual **Aula 02 — Processos químicos para positivos**;
-- páginas editoriais correspondentes ao conteúdo químico/prático;
+- unidades editoriais correspondentes ao conteúdo químico/prático;
 - divisor visual **Aula 03 — Revisão de resultados**.
 
-Cada assunto continua sendo uma `data-cms-section` independente para edição e liberação, mas recebe apresentação de página por meio dos componentes globais `cms-document-page`. Entre páginas existe separação física/visual clara no fluxo; entre aulas existe um divisor de grande escala no mesmo DNA visual do site.
+Cada assunto continua sendo uma `data-cms-section` independente para edição e liberação. A separação visual entre aulas e unidades é feita com os componentes normais do site, não por uma família `cms-document`, `cms-lesson` ou equivalente criada para o caderno.
 
 A `aula-3`, destinada à revisão dos resultados, **não recebe conteúdo artificial**. O divisor existe para representar a terceira etapa do curso e para que sua liberação seja controlada como aula; conteúdo adicional só entra quando houver fonte editorial real.
 
 ## Infográficos privados
 
-Os elementos visuais explicativos do material são **infográficos ilustrados gerados**, não fotografias simuladas, não grafismos HTML/SVG e não equipamentos inventados.
+Os elementos visuais explicativos do material são **infográficos ilustrados gerados a partir de relações concretas descritas nos e-mails**, não fotografias simuladas, não grafismos HTML/SVG, não equipamentos inventados e não explicações genéricas de fotografia química.
 
 A página contém quatro slots semânticos de mídia privada:
 
-- `energia-cena` — distribuição de energia na cena;
-- `reciprocidade` — baixa energia e falha de reciprocidade;
-- `imagem-latente` — da imagem latente à prata metálica;
-- `fluxo-positivo` — fluxo do positivo direto em filme.
+- `energia-cena` — deve ilustrar a relação específica do e-mail entre uma exposição única, diferenças de EV dentro da cena, quantidade de prata formada na primeira revelação, remoção no branqueamento e densidade/transparência do positivo;
+- `reciprocidade` — deve separar visualmente baixa energia na cena de falha de reciprocidade e usar os tempos e a fórmula registrados no e-mail, sem substituir por curva ou números genéricos;
+- `imagem-latente` — deve ilustrar somente a sequência sustentada pelo e-mail: haletos de prata, alteração pela luz, imagem latente, redução `Ag⁺ + elétron → Ag⁰` e formação de prata metálica;
+- `fluxo-positivo` — deve representar as duas rotas de branqueamento descritas no e-mail: solução peracética por oxidação e cloreto férrico com formação de AgCl seguida de limpeza separada com amônia, antes da segunda revelação.
+
+O infográfico é uma ilustração editorial. Não deve parecer uma fotografia de laboratório nem uma “página pronta” colocada dentro da página do site. Título, legenda, fórmulas extensas e explicação permanecem no HTML/CMS quando já existem no texto; a imagem serve para tornar visível a relação explicada no trecho correspondente.
 
 O HTML persistido contém apenas `<figure data-private-media-slot="…">`. O arquivo real é enviado pelo admin e associado ao slot. Se um slot ainda não tiver arquivo, ele é removido da resposta pública: nenhum texto de placeholder ou instrução de desenvolvimento aparece para o aluno.
 
