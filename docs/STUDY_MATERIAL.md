@@ -12,9 +12,9 @@ Nenhum seletor desse sistema pode depender do slug, do nome do workshop ou de um
 
 ## Contrato visual e de UX
 
-As capturas integrais de 24/09/2026 mostraram quatro problemas sucessivos. Primeiro, o material ocupava uma coluna pequena demais dentro de uma tela larga. Depois, ao tentar aproveitar mais o canvas, foi criada uma margem editorial lateral permanente com rótulos e blocos em dois eixos. Em seguida, ao corrigir o eixo de leitura, o ritmo vertical foi comprimido demais: unidades, subtítulos, notas, grades e figuras ficaram visualmente próximos demais, produzindo uma massa contínua. A validação seguinte mostrou o problema inverso em uma relação específica: duas unidades consecutivas estavam somando o respiro macro completo dos dois lados do mesmo divisor, criando um vazio de mais de 200 px em desktop.
+As capturas integrais de 24/09/2026 mostraram cinco problemas sucessivos. Primeiro, o material ocupava uma coluna pequena demais dentro de uma tela larga. Depois, ao tentar aproveitar mais o canvas, foi criada uma margem editorial lateral permanente com rótulos e blocos em dois eixos. Em seguida, ao corrigir o eixo de leitura, o ritmo vertical foi comprimido demais: unidades, subtítulos, notas, grades e figuras ficaram visualmente próximos demais, produzindo uma massa contínua. A validação seguinte mostrou o problema inverso em uma relação específica: duas unidades consecutivas estavam somando o respiro macro completo dos dois lados do mesmo divisor, criando um vazio de mais de 200 px em desktop. Depois de corrigida essa fronteira macro, a inspeção ampliada mostrou que o nível intermediário permanecia comprimido: títulos e subtítulos ainda encostavam no conteúdo, e grades, procedimentos e outras caixas tinham entrada razoável mas pouca ou nenhuma pausa quando o texto retomava depois delas.
 
-A decisão canônica passa a ser: **material de estudo usa um eixo principal contínuo de leitura com respiro vertical hierárquico e relacional**. A largura adicional do desktop fica reservada para figuras, tabelas, grades comparativas e outros elementos que realmente se beneficiam dela; o espaço vertical é usado para marcar mudanças reais de nível sem transformar cada parágrafo em bloco autônomo. Uma única transição conceitual recebe um único intervalo macro; o sistema não duplica essa pausa apenas porque a fronteira pertence a dois elementos adjacentes.
+A decisão canônica passa a ser: **material de estudo usa um eixo principal contínuo de leitura com respiro vertical hierárquico, relacional e bilateral nos componentes intermediários**. A largura adicional do desktop fica reservada para figuras, tabelas, grades comparativas e outros elementos que realmente se beneficiam dela; o espaço vertical é usado para marcar mudanças reais de nível sem transformar cada parágrafo em bloco autônomo. Uma única transição conceitual recebe um único intervalo macro; componentes internos, por outro lado, precisam ter entrada e saída perceptíveis quando existem conteúdos dos dois lados.
 
 ### Canvas e medida de leitura
 
@@ -39,11 +39,14 @@ A decisão canônica passa a ser: **material de estudo usa um eixo principal con
 - Texto corrido, nota técnica, grade de valores, procedimento e figura não podem parecer o mesmo tipo de caixa.
 - Parágrafos relacionados permanecem visualmente próximos, mas não comprimidos. O intervalo entre parágrafos precisa permitir que o olho reconheça a continuidade sem fundir blocos consecutivos.
 - A entrelinha deve favorecer leitura prolongada, sem inflar artificialmente a página. Em desktop, o alvo permanece aproximadamente 1,55–1,62 para o corpo.
+- Rótulo de unidade e título estrutural precisam separar claramente identificação, assunto e corpo. O rótulo não pode parecer colado à primeira frase ou ao primeiro título.
+- `h2` e `h3` internos precisam ter respiro assimétrico: maior distância antes quando abrem uma mudança de assunto e distância menor, mas ainda inequívoca, depois, antes do texto que introduzem.
 - Nota técnica é uma interrupção de referência, não um card promocional: recebe tratamento contido, boa legibilidade e distância suficiente do texto anterior e seguinte.
-- Grades de dados usam números tabulares e células compactas; a informação deve ser comparável sem produzir cards gigantes, mas a grade deve ter distância clara do argumento que a introduz.
-- Procedimentos mantêm sequência e separação entre passos sem aumentar artificialmente a altura interna de cada passo; o conjunto, porém, precisa respirar em relação ao texto corrido.
+- Grades de dados usam números tabulares e células compactas; a informação deve ser comparável sem produzir cards gigantes, mas a grade deve ter distância clara tanto do argumento que a introduz quanto do texto que retoma depois dela.
+- Procedimentos mantêm sequência e separação entre passos sem aumentar artificialmente a altura interna de cada passo; o conjunto, porém, precisa respirar antes e depois quando houver conteúdo adjacente.
 - Figuras recebem largura maior que o corpo quando isso melhora a leitura da relação visual e usam margem vertical suficiente para serem percebidas como apoio editorial, não como caixa colada ao texto.
 - O espaçamento pertence à relação entre elementos, não a cada componente isoladamente. Margens e paddings adjacentes não devem somar duas pausas completas para representar uma única mudança de assunto.
+- A regra bilateral do nível meso não deve contaminar o nível macro: quando uma nota, grade, procedimento, figura, definição ou separador encerra a unidade, sua margem inferior intermediária deve ceder ao padding estrutural da unidade em vez de somar uma segunda pausa.
 - A ausência de uma figura privada continua sem produzir placeholder para o aluno.
 
 ### Escala de respiro vertical
@@ -51,12 +54,24 @@ A decisão canônica passa a ser: **material de estudo usa um eixo principal con
 O componente usa três níveis de espaçamento vertical. Eles não são números absolutos para todas as telas, mas uma relação hierárquica que deve permanecer perceptível:
 
 1. **continuidade de raciocínio** — parágrafos e itens relacionados usam o menor intervalo;
-2. **mudança interna de assunto** — subtítulos, notas técnicas, fórmulas, grades, procedimentos e figuras usam um intervalo intermediário claramente maior;
+2. **mudança interna de assunto** — subtítulos, notas técnicas, fórmulas, grades, procedimentos e figuras usam um intervalo intermediário claramente maior e, quando há conteúdo dos dois lados, perceptível na entrada e na saída;
 3. **mudança de unidade ou aula** — unidades e divisores usam o maior intervalo, criando uma pausa perceptível antes do próximo conjunto conceitual.
 
-Em desktop, a fronteira entre duas unidades consecutivas deve produzir aproximadamente 108–136 px entre o último conteúdo da unidade anterior e o primeiro rótulo/conteúdo da unidade seguinte, incluindo o divisor. Para chegar a essa faixa sem duplicar a pausa, cada borda de unidade trabalha aproximadamente entre 50 e 72 px, com ligeira ênfase na abertura da unidade seguinte. Componentes intermediários normalmente entram na faixa aproximada de 36–56 px de distância do conteúdo adjacente. Parágrafos relacionados permanecem próximos de 0,9–1 em.
+Em desktop, a fronteira entre duas unidades consecutivas deve produzir aproximadamente 108–136 px entre o último conteúdo da unidade anterior e o primeiro rótulo/conteúdo da unidade seguinte, incluindo o divisor. Para chegar a essa faixa sem duplicar a pausa, cada borda de unidade trabalha aproximadamente entre 50 e 72 px, com ligeira ênfase na abertura da unidade seguinte.
 
-O divisor de unidade não deve ficar isolado no centro de dois grandes vazios. Em telas menores esses valores diminuem, mas a proporção entre os três níveis deve ser preservada.
+No nível intermediário, os alvos desktop são aproximadamente:
+
+- rótulo de unidade → primeiro conteúdo: 28–32 px;
+- `h2` estrutural → corpo: 34–40 px;
+- mudança interna com `h3`: cerca de 50–58 px antes e 20–24 px depois;
+- nota técnica: aproximadamente 46–50 px dos dois lados;
+- grade comparativa e procedimento: aproximadamente 50–54 px dos dois lados;
+- figura: aproximadamente 58–62 px dos dois lados;
+- título do índice → grade de aulas: aproximadamente 34–38 px.
+
+Parágrafos relacionados permanecem próximos de 0,9–1 em. Em tablet e celular os valores diminuem proporcionalmente, mas a ordenação entre micro, meso e macro deve continuar óbvia.
+
+O divisor de unidade não deve ficar isolado no centro de dois grandes vazios. Tampouco uma caixa pode terminar e entregar imediatamente o próximo parágrafo sem uma pausa intermediária. O sistema precisa sustentar simultaneamente esses dois limites.
 
 Não reduzir o respiro de nota, figura ou grade apenas para encurtar a página. Uma publicação longa pode ser longa; o critério é se a leitura mantém orientação e ritmo. Da mesma forma, não aumentar indiscriminadamente o padding de cada unidade: respiro editorial é calibrado pela distância renderizada entre conteúdos adjacentes.
 
@@ -143,7 +158,10 @@ Os testes do material devem verificar simultaneamente:
 - três níveis de respiro vertical perceptíveis entre parágrafo, componente intermediário e unidade;
 - fronteiras entre unidades com limites inferior e superior de respiro, para impedir tanto compressão quanto soma excessiva de paddings;
 - validação da distância renderizada entre o último conteúdo de uma unidade, o divisor e o primeiro conteúdo da unidade seguinte — não apenas valores isolados de CSS;
-- redução proporcional do ritmo macro em telas menores;
+- validação renderizada do rótulo para o primeiro conteúdo e do título/subtítulo para o corpo que ele introduz;
+- validação de entrada e saída para nota técnica, grade, procedimento e figura;
+- ausência de margem meso inferior redundante quando um desses componentes encerra a unidade;
+- redução proporcional do ritmo macro e meso em telas menores;
 - colapso correto de grades em tablet/celular;
 - ausência de overflow horizontal;
 - índice navegável e visualmente distinto;

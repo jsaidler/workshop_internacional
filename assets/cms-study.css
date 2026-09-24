@@ -55,7 +55,7 @@
 .cms-public .study-index .format-grid{
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:1px;
-  margin-top:28px;
+  margin-top:36px;
   border:1px solid var(--line);
   background:var(--line);
 }
@@ -82,7 +82,7 @@
 .cms-public .study-chapter .format-heading>div{display:block}
 .cms-public .study-chapter .format-heading h2{
   max-width:900px;
-  margin:10px 0 0;
+  margin:14px 0 0;
   font-size:clamp(42px,4vw,58px);
   line-height:.96;
   text-wrap:balance;
@@ -103,7 +103,7 @@
 .cms-public .study-unit>.section-label{
   position:static;
   width:min(100%,var(--study-reading));
-  margin:0 auto 22px;
+  margin:0 auto 30px;
   padding:0 0 10px;
   border:0;
   border-bottom:1px solid var(--line);
@@ -116,18 +116,18 @@
   max-width:var(--study-reading);
   margin:0 auto;
 }
-.cms-public .study-unit>.statement-grid>div:first-child{margin:0 0 28px}
+.cms-public .study-unit>.statement-grid>div:first-child{margin:0 0 36px}
 .cms-public .study-unit>.statement-grid>div:first-child:empty{display:none}
-.cms-public .study-unit>.statement-grid+.statement-grid{margin-top:48px}
+.cms-public .study-unit>.statement-grid+.statement-grid{margin-top:56px}
 .cms-public .study-unit h2{
-  margin:0 0 28px;
+  margin:0 0 36px;
   font-size:clamp(34px,3vw,44px);
   font-weight:500;
   line-height:1;
   text-wrap:balance;
 }
 .cms-public .study-unit h3{
-  margin:44px 0 16px;
+  margin:56px 0 22px;
   font-family:var(--title);
   font-size:clamp(24px,2vw,30px);
   font-weight:500;
@@ -151,7 +151,7 @@
 .cms-public .study-unit .statement-copy :where(ul,ol){margin:1.15em 0;padding-left:1.35em}
 .cms-public .study-unit .statement-copy li+li{margin-top:.55em}
 .cms-public .study-unit .statement-copy h3{
-  margin:46px 0 16px;
+  margin:56px 0 22px;
   font-size:clamp(24px,1.9vw,29px);
   line-height:1.1;
   text-transform:none;
@@ -159,7 +159,7 @@
 .cms-public .study-unit .technical-note{
   width:min(100%,var(--study-reading));
   max-width:var(--study-reading);
-  margin:40px auto;
+  margin:48px auto;
   padding:18px 18px;
   border:0;
   border-block:1px solid var(--line);
@@ -176,7 +176,7 @@
 .cms-public .study-unit>.format-grid{
   width:min(100%,var(--study-wide));
   max-width:var(--study-wide);
-  margin:46px auto 0;
+  margin:52px auto;
   grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
   gap:1px;
   border:1px solid var(--line);
@@ -186,23 +186,44 @@
 .cms-public .study-unit .format-card .number{font-size:10.5px;line-height:1.35;font-variant-numeric:tabular-nums}
 .cms-public .study-unit .format-card h3{margin:20px 0 0;font-size:clamp(20px,1.65vw,25px);line-height:1.08}
 .cms-public .study-unit .format-card p{margin:9px 0 0;font-size:14.5px;line-height:1.5}
-.cms-public .study-unit>.process-list{width:min(100%,var(--study-reading));max-width:var(--study-reading);margin:44px auto 0}
+.cms-public .study-unit>.process-list{width:min(100%,var(--study-reading));max-width:var(--study-reading);margin:52px auto}
 .cms-public .study-unit .process-item{grid-template-columns:38px minmax(0,1fr);gap:14px;padding:16px 0}
 .cms-public .study-unit .process-item>span{padding-top:2px;font-size:10.5px}
 .cms-public .study-unit .process-item h3{margin:0 0 7px;font-size:24px}
 .cms-public .study-unit .process-item p{color:inherit;font-size:16px;line-height:1.5}
-.cms-public .study-unit>.media-figure{width:min(100%,var(--study-wide));max-width:var(--study-wide);margin:56px auto}
+.cms-public .study-unit>.media-figure{width:min(100%,var(--study-wide));max-width:var(--study-wide);margin:60px auto}
 .cms-public .study-unit>.media-figure .media-area{border:1px solid var(--line)}
 .cms-public .study-unit>.media-figure .cms-media-placeholder{min-height:300px;border:1px dashed var(--line-strong);opacity:.78;background:color-mix(in srgb,var(--surface-2) 68%,transparent)}
 .cms-public .study-term{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.cms-public .study-definition{width:min(100%,var(--study-reading));max-width:var(--study-reading);margin:16px auto 40px;padding:4px 0 4px 18px;border-left:2px solid var(--line-strong);font-size:18px;line-height:1.58}
-.cms-public .study-separator{width:min(100%,var(--study-reading));max-width:var(--study-reading);margin:52px auto;border:0;border-top:1px solid var(--line)}
+.cms-public .study-definition{width:min(100%,var(--study-reading));max-width:var(--study-reading);margin:22px auto 48px;padding:4px 0 4px 18px;border-left:2px solid var(--line-strong);font-size:18px;line-height:1.58}
+.cms-public .study-separator{width:min(100%,var(--study-reading));max-width:var(--study-reading);margin:56px auto;border:0;border-top:1px solid var(--line)}
+
+/* Internal components need entry and exit breathing room, but the unit padding
+   remains the sole macro pause when a component is the last item in a unit. */
+.cms-public .study-unit>.technical-note:last-child,
+.cms-public .study-unit>.format-grid:last-child,
+.cms-public .study-unit>.process-list:last-child,
+.cms-public .study-unit>.media-figure:last-child,
+.cms-public .study-unit>.study-definition:last-child,
+.cms-public .study-unit>.study-separator:last-child{margin-bottom:0}
 
 @media(max-width:960px){
   .cms-public .study-material{--study-shell:900px;--study-reading:780px;--study-wide:840px}
   .cms-public .study-cover,.cms-public .study-index .format-inner,.cms-public .study-chapter .format-inner,.cms-public .study-unit{width:100%}
+  .cms-public .study-index .format-grid{margin-top:32px;grid-template-columns:repeat(3,minmax(0,1fr))}
   .cms-public .study-unit{padding-top:58px;padding-bottom:54px}
-  .cms-public .study-index .format-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cms-public .study-unit>.section-label{margin-bottom:28px}
+  .cms-public .study-unit>.statement-grid>div:first-child{margin-bottom:34px}
+  .cms-public .study-unit>.statement-grid+.statement-grid{margin-top:52px}
+  .cms-public .study-unit h2{margin-bottom:34px}
+  .cms-public .study-unit h3{margin-top:50px;margin-bottom:20px}
+  .cms-public .study-unit .statement-copy h3{margin-top:50px;margin-bottom:20px}
+  .cms-public .study-unit .technical-note{margin-top:44px;margin-bottom:44px}
+  .cms-public .study-unit>.format-grid{margin-top:48px;margin-bottom:48px}
+  .cms-public .study-unit>.process-list{margin-top:48px;margin-bottom:48px}
+  .cms-public .study-unit>.media-figure{margin-top:52px;margin-bottom:52px}
+  .cms-public .study-definition{margin-top:20px;margin-bottom:44px}
+  .cms-public .study-separator{margin-top:50px;margin-bottom:50px}
 }
 
 @media(max-width:760px){
@@ -211,24 +232,26 @@
   .cms-public .study-cover h1{font-size:clamp(50px,15vw,72px);line-height:.9}
   .cms-public .study-cover .study-subtitle{font-size:18px;line-height:1.42}
   .cms-public .study-index .format-inner{padding-top:34px;padding-bottom:36px}
-  .cms-public .study-index .format-grid{grid-template-columns:1fr}
+  .cms-public .study-index .format-grid{grid-template-columns:1fr;margin-top:28px}
   .cms-public .study-index .format-card{min-height:68px;padding:14px 14px}
   .cms-public .study-chapter .format-inner{padding-top:40px;padding-bottom:44px}
   .cms-public .study-chapter .format-heading h2{font-size:clamp(36px,10vw,48px)}
   .cms-public .study-unit{padding-top:48px;padding-bottom:46px}
-  .cms-public .study-unit>.section-label{margin-bottom:18px}
-  .cms-public .study-unit h2{font-size:clamp(30px,8vw,38px);margin-bottom:24px}
-  .cms-public .study-unit h3{font-size:clamp(23px,6.8vw,28px);margin-top:36px;margin-bottom:14px}
+  .cms-public .study-unit>.section-label{margin-bottom:24px}
+  .cms-public .study-unit>.statement-grid>div:first-child{margin-bottom:30px}
+  .cms-public .study-unit>.statement-grid+.statement-grid{margin-top:44px}
+  .cms-public .study-unit h2{font-size:clamp(30px,8vw,38px);margin-bottom:30px}
+  .cms-public .study-unit h3{font-size:clamp(23px,6.8vw,28px);margin-top:44px;margin-bottom:18px}
   .cms-public .study-unit .statement-copy{font-size:17.5px;line-height:1.62;letter-spacing:0}
   .cms-public .study-unit .statement-copy p{margin-bottom:.9em}
-  .cms-public .study-unit .statement-copy h3{margin-top:38px;margin-bottom:14px}
-  .cms-public .study-unit .technical-note{margin-top:30px;margin-bottom:30px;padding:15px 14px;font-size:13px!important}
-  .cms-public .study-unit>.format-grid{grid-template-columns:1fr;margin-top:34px}
-  .cms-public .study-unit>.process-list{margin-top:34px}
-  .cms-public .study-unit>.media-figure{margin-top:40px;margin-bottom:40px}
+  .cms-public .study-unit .statement-copy h3{margin-top:44px;margin-bottom:18px}
+  .cms-public .study-unit .technical-note{margin-top:36px;margin-bottom:36px;padding:15px 14px;font-size:13px!important}
+  .cms-public .study-unit>.format-grid{grid-template-columns:1fr;margin-top:40px;margin-bottom:40px}
+  .cms-public .study-unit>.process-list{margin-top:40px;margin-bottom:40px}
+  .cms-public .study-unit>.media-figure{margin-top:44px;margin-bottom:44px}
   .cms-public .study-unit>.media-figure .cms-media-placeholder{min-height:220px}
-  .cms-public .study-definition{margin-bottom:32px}
-  .cms-public .study-separator{margin-top:40px;margin-bottom:40px}
+  .cms-public .study-definition{margin-top:18px;margin-bottom:36px}
+  .cms-public .study-separator{margin-top:44px;margin-bottom:44px}
 }
 
 @media(max-width:700px){
