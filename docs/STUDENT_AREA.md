@@ -22,11 +22,13 @@ Uma página protegida não aparece na navegação pública e recebe `noindex`. O
 
 ### Regra visual das páginas
 
-Uma página de material **não possui stylesheet próprio**. O HTML editorial usa exclusivamente componentes, classes e atributos de layout que já fazem parte do sistema visual geral do site. Exceções deliberadas pertencem a `Design → CSS adicional`, que continua sendo a camada editorial final do site.
+Uma página de material **não possui stylesheet próprio**. O HTML editorial usa componentes, classes e atributos de layout do sistema visual geral do site.
 
-É proibido resolver uma página protegida com `<style>` local, propriedades visuais inline ou criando no stylesheet global uma nova família de classes feita, na prática, para aquela página. Mover um CSS específico da página para `assets/cms.css` não o transforma em componente global.
+É proibido resolver uma página protegida com `<style>` local, propriedades visuais inline ou criando no stylesheet global uma nova família de classes feita, na prática, apenas para aquela página. Mover um CSS específico da página para `assets/cms.css` não o transforma em componente global.
 
-Para material longo, capa, índice, divisores de aula e unidades editoriais devem ser construídos com componentes que já existiam no sistema antes daquela página, como `section`, `statement-grid`, `format`, `format-inner`, `format-heading`, `format-grid`, `format-card`, `process-list`, `process-item`, `section-label`, `statement-copy` e `technical-note`. Se o sistema existente não permitir uma composição desejada, a exceção visual pertence a `Design → CSS adicional`; não se cria um subsistema CSS para o material.
+**Componentes novos são permitidos quando a necessidade é real, mas precisam nascer como componentes globais e reutilizáveis do CMS/site**, com nome, contrato visual e comportamento genéricos, disponíveis para qualquer página compatível e cobertos por regressão no mesmo nível. O critério não é “já existia antes”; o critério é “é realmente um componente do sistema, e não um objeto exclusivo disfarçado de global”.
+
+Para o caderno atual, os componentes já existentes (`section`, `statement-grid`, `format`, `format-inner`, `format-heading`, `format-grid`, `format-card`, `process-list`, `process-item`, `section-label`, `statement-copy` e `technical-note`) são suficientes para capa, índice, divisores de aula, receitas, comparações e unidades editoriais. `Design → CSS adicional` continua sendo a camada editorial final para exceções deliberadas do site, não um lugar para esconder um subsistema exclusivo de uma página.
 
 ## Caderno “Positivo direto em filme de raio-X”
 
@@ -35,7 +37,13 @@ A página `caderno-positivo-direto` tem como fonte editorial os conteúdos efeti
 - “Receitas, materiais e algumas referências para trabalhar com filme de raio-X” — 07/09/2026;
 - “Segundo Encontro: Processos químicos para positivos” — 18/09/2026.
 
-O CMS pode reorganizar esses conteúdos em seções e hierarquia editorial, mas não substituir a fonte por uma apostila genérica nem preencher lacunas com conteúdo inventado. Quando os registros divergem, a divergência é preservada explicitamente. Exemplo: o primeiro e-mail define `15/550` como volume final de 550 ml; o segundo registra literalmente `10 ml` ou `20 ml de Parodinal + 550 ml de água`. O sistema não transforma silenciosamente uma notação na outra.
+### Integridade editorial da fonte
+
+O conteúdo técnico desses e-mails entra **integralmente** no material. A edição pode reorganizar a ordem, criar títulos, separar assuntos, agrupar trechos e distribuir conteúdo entre aulas, mas não pode resumir, substituir, simplificar ou reescrever o corpo técnico apenas para caber em um formato arbitrário.
+
+São removidos somente elementos circunstanciais da comunicação com a turma: saudações, datas de encontro, pedidos de endereço/tamanho de suporte, chamadas para publicação em rede social e outros recados administrativos. Quando uma frase mistura recado e conteúdo técnico, preserva-se o conteúdo técnico e retira-se apenas o trecho circunstancial.
+
+Quando os registros divergem, a divergência é preservada explicitamente. Exemplo: o primeiro e-mail define `15/550` como volume final de 550 ml; o segundo registra literalmente `10 ml` ou `20 ml de Parodinal + 550 ml de água`. O sistema não transforma silenciosamente uma notação na outra.
 
 ### Estrutura editorial do caderno
 
@@ -44,25 +52,31 @@ O material precisa ser reconhecível como publicação e como sequência de aula
 - capa do material;
 - índice das três aulas;
 - divisor visual **Aula 01 — Filme e exposição**;
-- unidades editoriais correspondentes ao conteúdo do primeiro encontro;
+- unidades editoriais sobre filme ortocromático, dupla emulsão, construção do positivo, exposição/energia, reciprocidade, EI e luz de segurança;
 - divisor visual **Aula 02 — Processos químicos para positivos**;
-- unidades editoriais correspondentes ao conteúdo químico/prático;
-- divisor visual **Aula 03 — Revisão de resultados**.
+- unidades editoriais sobre segurança, imagem latente, reveladores, receitas, branqueamento, segunda revelação, parâmetros de desenvolvimento, comparação EI 200 × EI 400 e materiais;
+- divisor visual **Aula 03 — Revisão de resultados**;
+- conteúdo dos próprios e-mails sobre leitura dos resultados, repetibilidade e registro dos testes.
 
-Cada assunto continua sendo uma `data-cms-section` independente para edição e liberação. A separação visual entre aulas e unidades é feita com os componentes normais do site, não por uma família `cms-document`, `cms-lesson` ou equivalente criada para o caderno.
+Cada assunto continua sendo uma `data-cms-section` independente para edição e liberação. A separação visual entre aulas e unidades é feita com componentes globais do site.
 
-A `aula-3`, destinada à revisão dos resultados, **não recebe conteúdo artificial**. O divisor existe para representar a terceira etapa do curso e para que sua liberação seja controlada como aula; conteúdo adicional só entra quando houver fonte editorial real.
+A Aula 3 não recebe conteúdo inventado: ela usa somente o que os e-mails já dizem sobre avaliar as chapas, localizar mudanças na escala, modificar uma variável por vez e registrar as condições do teste.
 
 ## Infográficos privados
 
 Os elementos visuais explicativos do material são **infográficos ilustrados gerados a partir de relações concretas descritas nos e-mails**, não fotografias simuladas, não grafismos HTML/SVG, não equipamentos inventados e não explicações genéricas de fotografia química.
 
-A página contém quatro slots semânticos de mídia privada:
+A página contém slots semânticos de mídia privada onde uma imagem explicativa realmente reforça o texto:
 
-- `energia-cena` — deve ilustrar a relação específica do e-mail entre uma exposição única, diferenças de EV dentro da cena, quantidade de prata formada na primeira revelação, remoção no branqueamento e densidade/transparência do positivo;
-- `reciprocidade` — deve separar visualmente baixa energia na cena de falha de reciprocidade e usar os tempos e a fórmula registrados no e-mail, sem substituir por curva ou números genéricos;
-- `imagem-latente` — deve ilustrar somente a sequência sustentada pelo e-mail: haletos de prata, alteração pela luz, imagem latente, redução `Ag⁺ + elétron → Ag⁰` e formação de prata metálica;
-- `fluxo-positivo` — deve representar as duas rotas de branqueamento descritas no e-mail: solução peracética por oxidação e cloreto férrico com formação de AgCl seguida de limpeza separada com amônia, antes da segunda revelação.
+- `filme-ortocromatico` — resposta ortocromática: vermelhos mais escuros; verdes e azuis mais claros;
+- `dupla-emulsao-positivo` — emulsão nos dois lados da base e sua relação com densidade máxima e transparência;
+- `energia-positivo` — uma única exposição, diferenças de EV, prata formada na primeira revelação, remoção no branqueamento e densidade/transparência final;
+- `reciprocidade-energia` — diferença entre baixa energia na cena e falha de reciprocidade, usando fórmula e exemplos registrados no e-mail;
+- `ei-zonas` — EI 200 × EI 400 como deslocamento de uma zona e perda de separação nas regiões baixas;
+- `imagem-latente-prata` — haletos, alteração pela luz, imagem latente, `Ag⁺ + elétron → Ag⁰` e prata metálica;
+- `negativo-positivo` — depois da primeira revelação, o que fica e o que sai para formar negativo ou positivo;
+- `branqueamentos-rotas` — rota peracética por oxidação e rota FeCl₃ → AgCl → limpeza separada com amônia;
+- `parametros-revelacao` — concentração, tempo, agitação e temperatura como parâmetros que atuam por mecanismos diferentes.
 
 O infográfico é uma ilustração editorial. Não deve parecer uma fotografia de laboratório nem uma “página pronta” colocada dentro da página do site. Título, legenda, fórmulas extensas e explicação permanecem no HTML/CMS quando já existem no texto; a imagem serve para tornar visível a relação explicada no trecho correspondente.
 
