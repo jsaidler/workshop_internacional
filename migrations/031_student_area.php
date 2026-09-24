@@ -11,7 +11,6 @@ CREATE TABLE student_users (
     password_hash TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'active',
     must_change_password INTEGER NOT NULL DEFAULT 1,
-    session_token_hash TEXT NULL,
     last_login_at TEXT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
