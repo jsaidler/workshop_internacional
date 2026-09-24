@@ -10,6 +10,13 @@ async function boxes(locator){
   return out;
 }
 
+async function expectSameRow(locator){
+  const rendered=await boxes(locator);
+  expect(rendered.length).toBeGreaterThan(1);
+  for(let i=1;i<rendered.length;i++)expect(Math.abs(rendered[0].y-rendered[i].y)).toBeLessThan(2);
+  return rendered;
+}
+
 test('study material uses the desktop canvas without sacrificing reading measure',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(url);
@@ -21,7 +28,7 @@ test('study material uses the desktop canvas without sacrificing reading measure
   const directCopy=page.locator('#direct-copy');
   const note=page.locator('#technical-note');
   const unitGrid=page.locator('#unit-heading-grid');
-  const indexGrid=page.locator('#study-index-grid');
+  const indexCards=page.locator('#study-index-grid > .format-card');
 
   const unitBox=await unit.boundingBox();
   const labelBox=await label.boundingBox();
@@ -33,7 +40,10 @@ test('study material uses the desktop canvas without sacrificing reading measure
   expect(labelBox.x).toBeLessThan(copyBox.x-70);
 
   expect(await gridColumns(unitGrid)).toBe(2);
-  expect(await gridColumns(indexGrid)).toBe(3);
+  const indexBoxes=await expectSameRow(indexCards);
+  expect(indexBoxes).toHaveLength(3);
+  for(const box of indexBoxes)expect(box.width).toBeGreaterThan(250);
+
   expect(px(await directCopy.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(17.5);
   expect(px(await directCopy.evaluate(el=>getComputedStyle(el).lineHeight))).toBeGreaterThan(28);
   expect(px(await note.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(12);
@@ -56,14 +66,36 @@ test('study material keeps reference components visually distinct and keyboard n
   const noteBg=await note.evaluate(el=>getComputedStyle(el).backgroundColor);
   expect(noteBg).not.toBe(copyBg);
 
-  const cardBoxes=await boxes(cards);
+  const cardBoxes=await expectSameRow(cards);
   expect(cardBoxes).toHaveLength(3);
-  expect(Math.abs(cardBoxes[0].y-cardBoxes[1].y)).toBeLessThan(2);
-  expect(Math.abs(cardBoxes[0].y-cardBoxes[2].y)).toBeLessThan(2);
   for(const box of cardBoxes)expect(box.width).toBeGreaterThan(190);
 
   await firstLink.focus();
   expect(await firstLink.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
+});
+
+test('study material becomes a calm single reading axis on tablet',async({page})=>{
+  await page.setViewportSize({width:900,height:1000});
+  await page.goto(url);
+
+  const material=page.locator('#material');
+  const unit=page.locator('#unit-reference');
+  const unitGrid=page.locator('#unit-heading-grid');
+  const copy=page.locator('#direct-copy');
+  const indexCards=page.locator('#study-index-grid > .format-card');
+
+  expect(await unit.evaluate(el=>getComputedStyle(el).display)).toBe('block');
+  expect(await unitGrid.evaluate(el=>getComputedStyle(el).display)).toBe('block');
+  const copyBox=await copy.boundingBox();
+  expect(copyBox.width).toBeGreaterThan(720);
+  expect(copyBox.width).toBeLessThanOrEqual(765);
+
+  const indexBoxes=await expectSameRow(indexCards);
+  expect(indexBoxes).toHaveLength(3);
+  for(const box of indexBoxes)expect(box.width).toBeGreaterThan(240);
+
+  expect(await material.evaluate(el=>el.scrollWidth-el.clientWidth)).toBeLessThanOrEqual(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
 });
 
 test('study material collapses to a single reading flow on small screens',async({page})=>{
