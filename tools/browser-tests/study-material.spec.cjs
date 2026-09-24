@@ -17,6 +17,8 @@ async function expectSameRow(locator){
   return rendered;
 }
 
+const bottom=box=>box.y+box.height;
+
 test('study material uses one continuous desktop reading axis with hierarchical breathing room',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(url);
@@ -34,6 +36,9 @@ test('study material uses one continuous desktop reading axis with hierarchical 
   const processList=page.locator('#unit-reference > .process-list');
   const figure=page.locator('#unit-reference > .media-figure');
   const indexCards=page.locator('#study-index-grid > .format-card');
+  const beforeRegisterCopy=page.locator('#before-register-copy');
+  const registerUnit=page.locator('#unit-register');
+  const registerLabel=page.locator('#register-label');
 
   const unitBox=await unit.boundingBox();
   const labelBox=await label.boundingBox();
@@ -62,8 +67,13 @@ test('study material uses one continuous desktop reading axis with hierarchical 
   const paragraphGap=px(await paragraph.evaluate(el=>getComputedStyle(el).marginBottom));
   expect(paragraphGap).toBeGreaterThanOrEqual(16);
   expect(paragraphGap).toBeLessThanOrEqual(19);
-  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingTop))).toBeGreaterThanOrEqual(78);
-  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom))).toBeGreaterThanOrEqual(78);
+
+  const unitPaddingTop=px(await unit.evaluate(el=>getComputedStyle(el).paddingTop));
+  const unitPaddingBottom=px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom));
+  expect(unitPaddingTop).toBeGreaterThanOrEqual(58);
+  expect(unitPaddingTop).toBeLessThanOrEqual(72.5);
+  expect(unitPaddingBottom).toBeGreaterThanOrEqual(50);
+  expect(unitPaddingBottom).toBeLessThanOrEqual(62.5);
   expect(px(await label.evaluate(el=>getComputedStyle(el).marginBottom))).toBeGreaterThanOrEqual(20);
   expect(px(await note.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(36);
   expect(px(await note.evaluate(el=>getComputedStyle(el).marginBottom))).toBeGreaterThanOrEqual(36);
@@ -71,6 +81,19 @@ test('study material uses one continuous desktop reading axis with hierarchical 
   expect(px(await processList.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(40);
   expect(px(await figure.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(52);
   expect(px(await figure.evaluate(el=>getComputedStyle(el).marginBottom))).toBeGreaterThanOrEqual(52);
+
+  const beforeBox=await beforeRegisterCopy.boundingBox();
+  const registerUnitBox=await registerUnit.boundingBox();
+  const registerLabelBox=await registerLabel.boundingBox();
+  const beforeDivider=registerUnitBox.y-bottom(beforeBox);
+  const afterDivider=registerLabelBox.y-registerUnitBox.y;
+  const boundaryGap=registerLabelBox.y-bottom(beforeBox);
+  expect(beforeDivider).toBeGreaterThanOrEqual(50);
+  expect(beforeDivider).toBeLessThanOrEqual(63);
+  expect(afterDivider).toBeGreaterThanOrEqual(58);
+  expect(afterDivider).toBeLessThanOrEqual(74);
+  expect(boundaryGap).toBeGreaterThanOrEqual(108);
+  expect(boundaryGap).toBeLessThanOrEqual(137);
 
   expect(px(await note.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(13);
   expect(px(await heading.evaluate(el=>getComputedStyle(el).fontSize))).toBeLessThanOrEqual(45);
@@ -112,6 +135,9 @@ test('study material keeps the same reading axis and reduced but visible rhythm 
   const label=page.locator('#unit-label');
   const note=page.locator('#technical-note');
   const indexCards=page.locator('#study-index-grid > .format-card');
+  const beforeRegisterCopy=page.locator('#before-register-copy');
+  const registerUnit=page.locator('#unit-register');
+  const registerLabel=page.locator('#register-label');
 
   expect(await unit.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   expect(await unitGrid.evaluate(el=>getComputedStyle(el).display)).toBe('block');
@@ -120,9 +146,21 @@ test('study material keeps the same reading axis and reduced but visible rhythm 
   expect(copyBox.width).toBeGreaterThanOrEqual(760);
   expect(copyBox.width).toBeLessThanOrEqual(785);
   expect(Math.abs(copyBox.x-labelBox.x)).toBeLessThan(2);
-  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingTop))).toBeGreaterThanOrEqual(68);
-  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom))).toBeGreaterThanOrEqual(72);
+
+  const unitPaddingTop=px(await unit.evaluate(el=>getComputedStyle(el).paddingTop));
+  const unitPaddingBottom=px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom));
+  expect(unitPaddingTop).toBeGreaterThanOrEqual(58);
+  expect(unitPaddingTop).toBeLessThanOrEqual(60);
+  expect(unitPaddingBottom).toBeGreaterThanOrEqual(54);
+  expect(unitPaddingBottom).toBeLessThanOrEqual(56);
   expect(px(await note.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(36);
+
+  const beforeBox=await beforeRegisterCopy.boundingBox();
+  const registerUnitBox=await registerUnit.boundingBox();
+  const registerLabelBox=await registerLabel.boundingBox();
+  const boundaryGap=registerLabelBox.y-bottom(beforeBox);
+  expect(boundaryGap).toBeGreaterThanOrEqual(108);
+  expect(boundaryGap).toBeLessThanOrEqual(118);
 
   const indexBoxes=await expectSameRow(indexCards);
   expect(indexBoxes).toHaveLength(3);
@@ -145,16 +183,31 @@ test('study material preserves a readable vertical hierarchy on small screens',a
   const label=page.locator('#unit-label');
   const note=page.locator('#technical-note');
   const figure=page.locator('#unit-reference > .media-figure');
+  const beforeRegisterCopy=page.locator('#before-register-copy');
+  const registerUnit=page.locator('#unit-register');
+  const registerLabel=page.locator('#register-label');
 
   expect(await unit.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   expect(await unitGrid.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   expect(await gridColumns(indexGrid)).toBe(1);
   expect(await gridColumns(reference)).toBe(1);
   expect(px(await copy.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(17.5);
-  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingTop))).toBeGreaterThanOrEqual(52);
-  expect(px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom))).toBeGreaterThanOrEqual(60);
+
+  const unitPaddingTop=px(await unit.evaluate(el=>getComputedStyle(el).paddingTop));
+  const unitPaddingBottom=px(await unit.evaluate(el=>getComputedStyle(el).paddingBottom));
+  expect(unitPaddingTop).toBeGreaterThanOrEqual(48);
+  expect(unitPaddingTop).toBeLessThanOrEqual(50);
+  expect(unitPaddingBottom).toBeGreaterThanOrEqual(46);
+  expect(unitPaddingBottom).toBeLessThanOrEqual(48);
   expect(px(await note.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(28);
   expect(px(await figure.evaluate(el=>getComputedStyle(el).marginTop))).toBeGreaterThanOrEqual(38);
+
+  const beforeBox=await beforeRegisterCopy.boundingBox();
+  const registerUnitBox=await registerUnit.boundingBox();
+  const registerLabelBox=await registerLabel.boundingBox();
+  const boundaryGap=registerLabelBox.y-bottom(beforeBox);
+  expect(boundaryGap).toBeGreaterThanOrEqual(90);
+  expect(boundaryGap).toBeLessThanOrEqual(100);
 
   const copyBox=await copy.boundingBox();
   const labelBox=await label.boundingBox();
