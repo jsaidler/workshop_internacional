@@ -9,12 +9,14 @@ $db->exec("CREATE TABLE cms_page_seo(page_id INTEGER PRIMARY KEY,title TEXT,desc
 $db->exec("CREATE TABLE course_lessons(id INTEGER PRIMARY KEY AUTOINCREMENT,activity_id INTEGER,lesson_key TEXT,title TEXT,sort_order INTEGER,created_at TEXT,updated_at TEXT); INSERT INTO course_lessons(activity_id,lesson_key,title,sort_order,created_at,updated_at) VALUES(1,'aula-1','Aula 1',1,'x','x'),(1,'aula-2','Aula 2',2,'x','x'),(1,'aula-3','Aula 3',3,'x','x');");
 $db->exec("CREATE TABLE course_page_sections(page_id INTEGER,section_key TEXT,lesson_id INTEGER,created_at TEXT,updated_at TEXT,PRIMARY KEY(page_id,section_key));");
 $migration=require __DIR__.'/../migrations/048_seed_positive_handbook.php';$migration($db);
+$clarify=require __DIR__.'/../migrations/049_clarify_handbook_dilution_records.php';$clarify($db);
 $page=$db->query("SELECT * FROM cms_pages WHERE slug='caderno-positivo-direto'")->fetch();if(!$page)fail('page not seeded');
 if($page['access_level']!=='enrolled')fail('page is not protected');if((int)$page['show_in_nav']!==0)fail('protected page exposed in nav');
 $doc=json_decode((string)$page['published_document_json'],true);$html=(string)($doc['html']??'');
 foreach(['Positivo direto','Fuji','Parodinal','Brewed','FeCl','Quatro','Apenas dois momentos decisivos'] as $needle)if(!str_contains($html,$needle))fail('missing content: '.$needle);
 if(str_contains(mb_strtolower($html,'UTF-8'),'boliche tonal'))fail('reserved terminology leaked into handbook');
 if(!str_contains($html,'data-cms-section="caderno-01-principio"')||!str_contains($html,'data-cms-section="caderno-18-final"'))fail('section identities missing');
+if(!str_contains($html,'O resumo de receitas define as diluições como volume final de 550 ml')||!str_contains($html,'10 ml ou 20 ml de Parodinal + 550 ml de água'))fail('dilution source discrepancy not preserved');
 $seo=$db->query('SELECT robots FROM cms_page_seo WHERE page_id='.(int)$page['id'])->fetchColumn();if($seo!=='noindex,nofollow')fail('seo protection missing');
 $maps=$db->query('SELECT s.section_key,l.lesson_key FROM course_page_sections s JOIN course_lessons l ON l.id=s.lesson_id ORDER BY s.section_key')->fetchAll(PDO::FETCH_KEY_PAIR);
 if(($maps['caderno-03-exposicao']??'')!=='aula-1')fail('exposure not mapped to lesson 1');if(($maps['caderno-08-parodinal']??'')!=='aula-2')fail('chemistry not mapped to lesson 2');
