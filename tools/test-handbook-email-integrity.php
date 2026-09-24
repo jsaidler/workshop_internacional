@@ -8,14 +8,11 @@ $db->exec("CREATE TABLE course_page_sections(page_id INTEGER,section_key TEXT,le
 $db->exec("CREATE TABLE student_private_media(id INTEGER PRIMARY KEY AUTOINCREMENT,asset_uuid TEXT UNIQUE,activity_id INTEGER,page_id INTEGER,title TEXT,original_name TEXT,mime_type TEXT,byte_size INTEGER,storage_path TEXT,checksum TEXT,created_at TEXT,updated_at TEXT);");
 $seed=json_encode(['version'=>2,'theme'=>'auto','meta'=>[],'html'=>'<section data-cms-section="seed"><p>seed</p></section>'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 $q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,status,show_in_nav,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,updated_at,access_level) VALUES(1,'pt-BR','caderno-positivo-direto','x','x','published',1,?,?,1,1,'x','x','x','public')");$q->execute([$seed,$seed]);
-(require __DIR__.'/../migrations/050_protected_handbook_media_slots.php')($db);
-(require __DIR__.'/../migrations/051_handbook_document_lessons.php')($db);
-(require __DIR__.'/../migrations/052_remove_handbook_specific_visual_system.php')($db);
-(require __DIR__.'/../migrations/053_rebuild_handbook_from_email_sources.php')($db);
-(require __DIR__.'/../migrations/054_complete_handbook_source_details.php')($db);
-(require __DIR__.'/../migrations/055_apply_global_editorial_components_to_handbook.php')($db);
-(require __DIR__.'/../migrations/056_study_material_source_fidelity.php')($db);
-(require __DIR__.'/../migrations/057_restore_source_titles_and_cover.php')($db);
+foreach([050,051,052,053,054,055,056,057,058] as $n){
+    $matches=glob(__DIR__.'/../migrations/'.str_pad((string)$n,3,'0',STR_PAD_LEFT).'_*.php');
+    if(!$matches||count($matches)!==1)handbook_fail('migration not uniquely resolved: '.$n);
+    (require $matches[0])($db);
+}
 $page=$db->query("SELECT * FROM cms_pages WHERE slug='caderno-positivo-direto'")->fetch();if(!$page)handbook_fail('page missing');
 $html=(string)(json_decode((string)$page['published_document_json'],true)['html']??'');
 $mustHave=[
@@ -28,8 +25,17 @@ $mustHave=[
  'DUAS COISAS DIFERENTES, UM MESMO PROBLEMA DE ENERGIA',
  '>EI<',
  'O filme não muda. A exposição muda.',
+ 'Isso nos leva a um conceito que eu deveria ter apresentado durante a aula e acabei deixando passar: o EI, ou Índice de Exposição.',
+ 'Foi justamente o que observamos.',
+ 'Para entender por que isso acontece, precisamos voltar um pouco e olhar o que estamos realmente revelando.',
+ 'Agora podemos olhar para os químicos com mais clareza.',
+ 'Na segunda aula fizemos duas fotografias em condições diferentes e o processo completo até o positivo.',
+ 'A primeira foi exposta em EI 200 e revelada com 10 ml de Parodinal + 550 ml de água, durante 7 minutos, a 26 °C e com agitação leve.',
+ 'Na segunda passamos para EI 400 e 20 ml de Parodinal + 550 ml de água, mantendo os mesmos 7 minutos, 26 °C e a mesma agitação.',
  'Ag⁺ + elétron → Ag⁰',
  'O cloreto férrico e a amônia, portanto, são dois processos independentes.',
+ 'Agora podemos voltar às duas fotografias da aula.',
+ 'Foi exatamente o que fizemos nas duas chapas da aula.',
  'Trabalhamos com quatro parâmetros que interferem diretamente na revelação: concentração, temperatura, tempo e agitação.',
  'Não como uma receita definitiva, mas como um possível desenvolvimento normal.',
  'Não precisa virar um relatório da NASA.'
