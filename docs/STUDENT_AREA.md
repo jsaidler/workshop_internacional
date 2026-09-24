@@ -52,6 +52,16 @@ Quando uma página é protegida, ela deixa de aparecer automaticamente na navega
 
 A tabela antiga `student_materials` permanece somente para compatibilidade histórica e não deve receber novos conteúdos.
 
+## Caderno técnico do workshop
+
+A migração `048_seed_positive_handbook.php` cria e publica uma página CMS protegida com slug `caderno-positivo-direto` e título **Caderno de processo — Positivo Direto em Filme de Raio-X**.
+
+Esse conteúdo não é um placeholder. A página já nasce com o material técnico do workshop organizado em seções editoriais reais: filme e dupla emulsão, exposição e energia, reciprocidade, EI, imagem latente, reveladores, Parodinal, Brewed Caffenol, caminhos negativo/positivo, solução peracética, cloreto férrico + amônia, segunda revelação, quatro parâmetros, hipótese de desenvolvimento normal, materiais e registro de testes.
+
+A capa permanece visível para qualquer matriculado com acesso à página. As seções de filme/exposição são associadas à `aula-1`; as seções de química, processo e registro são associadas à `aula-2`. A `aula-3` não recebe conteúdo artificial apenas para preencher uma etapa: ela continua reservada à revisão dos resultados, e novos conteúdos podem ser associados manualmente se forem criados.
+
+A página usa apenas diagramas técnicos construídos em HTML/SVG. Não deve receber ilustrações genéricas de câmeras ou equipamento inventado. Fotografias de equipamento só entram quando forem imagens documentais reais do projeto.
+
 ## Liberação por aula
 
 O CMS já identifica seções por `data-cms-section`. A área do aluno usa essa identidade existente; não cria um segundo formato de página.
@@ -106,11 +116,13 @@ Isso impede uma URL pública permanente para o arquivo. Como em qualquer aplica�
 
 Não há formulário de “criar aluno”.
 
+A tela administrativa possui folha visual própria (`assets/admin-student-area.css`), carregada somente no workspace da Área do aluno. O objetivo é preservar a linguagem do restante do admin sem apresentar a operação como uma sequência de controles crus: hierarquia, cartões, linhas, estados e ações têm tratamento visual específico, inclusive em telas estreitas.
+
 ## Compatibilidade e migração
 
 A migração `047_student_accounts_cohorts_privacy.php` é aditiva. A migração 046 já publicada não é reescrita.
 
-A 047 cria o novo modelo e migra vínculos antigos de `student_enrollments` para uma turma padrão. As tabelas antigas são mantidas para permitir rollback e leitura histórica, mas novos fluxos devem usar o modelo descrito neste documento.
+A 047 cria o novo modelo e migra vínculos antigos de `student_enrollments` para uma turma padrão. A migração 048 adiciona o primeiro material protegido real do workshop dentro do próprio CMS. As tabelas antigas são mantidas para permitir rollback e leitura histórica, mas novos fluxos devem usar o modelo descrito neste documento.
 
 ## Limite de proteção
 
