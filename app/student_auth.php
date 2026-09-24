@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+const STUDENT_IDLE_TIMEOUT_SECONDS=7200;
+const STUDENT_ABSOLUTE_TIMEOUT_SECONDS=43200;
+
 function student_uuid(): string { return bin2hex(random_bytes(16)); }
 function student_normalize_email(string $email): string { return strtolower(trim($email)); }
 function student_password_valid(string $password): bool { return mb_strlen($password)>=12; }
@@ -10,9 +13,11 @@ function student_url(string $path,array $activity,array $extra=[]): string {
     return $path.($query?'?'.http_build_query($query,'','&',PHP_QUERY_RFC3986):'');
 }
 function current_student(PDO $db): ?array {
-    $id=(int)($_SESSION['student']['id']??0);if($id<=0)return null;
+    $session=is_array($_SESSION['student']??null)?$_SESSION['student']:null;if(!$session)return null;
+    $id=(int)($session['id']??0);$issued=(int)($session['issued_at']??0);$last=(int)($session['last_activity']??0);$now=time();
+    if($id<=0||$issued<=0||$last<=0||$now-$last>STUDENT_IDLE_TIMEOUT_SECONDS||$now-$issued>STUDENT_ABSOLUTE_TIMEOUT_SECONDS){unset($_SESSION['student']);return null;}
     $q=$db->prepare("SELECT id,user_uuid,name,email,status,must_change_password,last_login_at FROM student_users WHERE id=? AND status='active'");$q->execute([$id]);$user=$q->fetch();
-    if(!$user){unset($_SESSION['student']);return null;}return $user;
+    if(!$user){unset($_SESSION['student']);return null;}$_SESSION['student']['last_activity']=$now;return $user;
 }
 function student_has_activity(PDO $db,int $studentId,int $activityId): bool {
     $q=$db->prepare("SELECT 1 FROM student_enrollments WHERE student_id=? AND activity_id=? AND status='active'");$q->execute([$studentId,$activityId]);return (bool)$q->fetchColumn();
@@ -37,12 +42,15 @@ function student_login(PDO $db,array $activity,string $email,string $password): 
     $email=student_normalize_email($email);if($email===''||student_login_blocked($db,$email))return false;
     $q=$db->prepare("SELECT * FROM student_users WHERE email=? AND status='active'");$q->execute([$email]);$user=$q->fetch()?:null;
     if(!$user||!password_verify($password,(string)$user['password_hash'])||!student_has_activity($db,(int)$user['id'],(int)$activity['id'])){student_record_failed_login($db,$email);return false;}
-    student_clear_login_attempts($db,$email);session_regenerate_id(true);$_SESSION['student']=['id'=>(int)$user['id'],'email'=>(string)$user['email'],'name'=>(string)$user['name']];
+    student_clear_login_attempts($db,$email);session_regenerate_id(true);$now=time();$_SESSION['student']=['id'=>(int)$user['id'],'email'=>(string)$user['email'],'name'=>(string)$user['name'],'issued_at'=>$now,'last_activity'=>$now];
     $db->prepare('UPDATE student_users SET last_login_at=?,updated_at=? WHERE id=?')->execute([utc_now(),utc_now(),(int)$user['id']]);return true;
 }
 function student_logout(): void { unset($_SESSION['student']);session_regenerate_id(true); }
 function student_private_headers(): void {
     header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');header('Pragma: no-cache');header('Expires: 0');header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet');
+}
+function student_material_security_headers(): void {
+    student_private_headers();header("Content-Security-Policy: default-src 'none'; img-src 'self' data:; media-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'none'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'self'");
 }
 function student_safe_next(?string $value,string $fallback='/aluno/'): string {
     $value=trim((string)$value);if($value===''||!str_starts_with($value,'/')||str_starts_with($value,'//')||str_contains($value,"\r")||str_contains($value,"\n"))return $fallback;return $value;
@@ -85,8 +93,15 @@ function student_materials(PDO $db,int $activityId,?string $locale=null,bool $ac
 function student_material_by_slug(PDO $db,int $activityId,string $locale,string $slug,bool $activeOnly=true): ?array {
     $sql='SELECT * FROM student_materials WHERE activity_id=? AND locale=? AND slug=?'.($activeOnly?" AND status='active'":'').' LIMIT 1';$q=$db->prepare($sql);$q->execute([$activityId,$locale,student_material_slug($slug)]);return $q->fetch()?:null;
 }
+function student_material_clean_html(string $html): string {
+    $html=trim($html);if($html==='')return '';
+    $previous=libxml_use_internal_errors(true);$dom=new DOMDocument('1.0','UTF-8');$dom->loadHTML('<?xml encoding="utf-8" ?>'.$html,LIBXML_HTML_NODEFDTD);$xpath=new DOMXPath($dom);
+    foreach(['script','iframe','object','embed','base','form','input','button','textarea','select','option'] as $tag){foreach(iterator_to_array($xpath->query('//'.$tag)?:[]) as $node){if($node->parentNode)$node->parentNode->removeChild($node);}}
+    foreach(iterator_to_array($xpath->query('//*')?:[]) as $element){if(!$element instanceof DOMElement)continue;for($i=$element->attributes->length-1;$i>=0;$i--){$attr=$element->attributes->item($i);if(!$attr)continue;$name=strtolower($attr->name);$value=trim($attr->value);if(str_starts_with($name,'on')){$element->removeAttributeNode($attr);continue;}if(in_array($name,['href','src','action','formaction','poster'],true)&&preg_match('~^\s*(?:javascript|vbscript|data:text/html)\s*:~i',$value))$element->removeAttributeNode($attr);}}
+    $out=$dom->saveHTML();libxml_clear_errors();libxml_use_internal_errors($previous);return is_string($out)?preg_replace('~^<\?xml[^>]*>\s*~','',$out)??$out:'';
+}
 function student_material_upsert(PDO $db,int $activityId,string $locale,string $title,string $slug,string $html,string $status='active'): array {
-    $title=trim($title);$slug=student_material_slug($slug!==''?$slug:$title);if($title===''||trim($html)==='')throw new RuntimeException('material_invalid');if(!in_array($status,['active','draft'],true))$status='draft';$now=utc_now();
+    $title=trim($title);$slug=student_material_slug($slug!==''?$slug:$title);$html=student_material_clean_html($html);if($title===''||trim($html)==='')throw new RuntimeException('material_invalid');if(!in_array($status,['active','draft'],true))$status='draft';$now=utc_now();
     $existing=student_material_by_slug($db,$activityId,$locale,$slug,false);if($existing){$db->prepare('UPDATE student_materials SET title=?,html_content=?,status=?,updated_at=? WHERE id=?')->execute([$title,$html,$status,$now,(int)$existing['id']]);$id=(int)$existing['id'];}else{$db->prepare('INSERT INTO student_materials(material_uuid,activity_id,locale,slug,title,status,html_content,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)')->execute([student_uuid(),$activityId,$locale,$slug,$title,$status,$html,$now,$now]);$id=(int)$db->lastInsertId();}
     $q=$db->prepare('SELECT * FROM student_materials WHERE id=?');$q->execute([$id]);return $q->fetch();
 }
