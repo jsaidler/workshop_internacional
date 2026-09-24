@@ -26,6 +26,8 @@ Uma página de material **não possui stylesheet próprio**. O HTML editorial us
 
 É proibido resolver uma página protegida com `<style>` local, propriedades visuais inline ou outro sistema visual paralelo.
 
+Materiais longos não devem ser renderizados como uma sequência contínua de parágrafos. O sistema global oferece a família reutilizável `cms-document`: capa, índice, páginas editoriais, divisores de aula, tabelas, fórmulas, notas, etapas e mídia. Esses componentes pertencem ao CSS compartilhado do CMS e podem ser usados por qualquer página; não são estilo exclusivo do caderno.
+
 ## Caderno “Positivo direto em filme de raio-X”
 
 A página `caderno-positivo-direto` tem como fonte editorial os conteúdos efetivamente enviados aos participantes por e-mail:
@@ -35,7 +37,21 @@ A página `caderno-positivo-direto` tem como fonte editorial os conteúdos efeti
 
 O CMS pode reorganizar esses conteúdos em seções e hierarquia editorial, mas não substituir a fonte por uma apostila genérica nem preencher lacunas com conteúdo inventado. Quando os registros divergem, a divergência é preservada explicitamente. Exemplo: o primeiro e-mail define `15/550` como volume final de 550 ml; o segundo registra literalmente `10 ml` ou `20 ml de Parodinal + 550 ml de água`. O sistema não transforma silenciosamente uma notação na outra.
 
-A `aula-3`, destinada à revisão dos resultados, não recebe conteúdo artificial.
+### Estrutura editorial do caderno
+
+O material precisa ser reconhecível como publicação e como sequência de aulas, não como reprodução visual de um e-mail. A estrutura canônica é:
+
+- capa do material;
+- índice das três aulas;
+- divisor visual **Aula 01 — Filme e exposição**;
+- páginas editoriais correspondentes ao conteúdo do primeiro encontro;
+- divisor visual **Aula 02 — Processos químicos para positivos**;
+- páginas editoriais correspondentes ao conteúdo químico/prático;
+- divisor visual **Aula 03 — Revisão de resultados**.
+
+Cada assunto continua sendo uma `data-cms-section` independente para edição e liberação, mas recebe apresentação de página por meio dos componentes globais `cms-document-page`. Entre páginas existe separação física/visual clara no fluxo; entre aulas existe um divisor de grande escala no mesmo DNA visual do site.
+
+A `aula-3`, destinada à revisão dos resultados, **não recebe conteúdo artificial**. O divisor existe para representar a terceira etapa do curso e para que sua liberação seja controlada como aula; conteúdo adicional só entra quando houver fonte editorial real.
 
 ## Infográficos privados
 
@@ -55,6 +71,8 @@ Os arquivos ficam em `storage/student-media/`, fora do acesso HTTP direto. Para 
 ## Liberação por aula
 
 As seções da página usam `data-cms-section`. `course_page_sections` liga uma seção a uma aula; `cohort_lesson_releases` controla a liberação por turma. Uma seção bloqueada é removida no servidor antes do HTML ser enviado ao aluno. Não existe `display:none` para conteúdo ainda não liberado.
+
+Os próprios divisores `caderno-aula-1`, `caderno-aula-2` e `caderno-aula-3` são mapeados às aulas correspondentes. Assim uma aula ainda bloqueada não deixa no documento um cabeçalho anunciando conteúdo que o aluno não pode acessar.
 
 O bypass administrativo é deliberado: um administrador precisa conseguir verificar a página completa e suas mídias sem possuir uma matrícula de aluno.
 
