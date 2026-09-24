@@ -9,18 +9,44 @@ $db->exec("CREATE TABLE student_private_media(id INTEGER PRIMARY KEY AUTOINCREME
 $oldHtml='<div class="positive-handbook"><style id="positive-handbook-style">.bad{}</style><section class="sheet cover" data-cms-section="caderno-capa"><div class="cover-copy"><h1>Positivo direto</h1></div></section><section class="sheet" data-cms-section="caderno-01-principio"><div class="section-head"><div><p class="kicker">01</p><h2>Princípio</h2></div><p class="lead">Texto</p></div></section><section class="sheet" data-cms-section="caderno-03-exposicao"><p>Exposição</p></section><section class="sheet" data-cms-section="caderno-04-reciprocidade"><p>Reciprocidade</p></section><section class="sheet" data-cms-section="caderno-06-imagem-latente"><p>Imagem latente</p></section><section class="sheet" data-cms-section="caderno-12"><p>Positivo? Negativo?</p></section><section class="sheet final" data-cms-section="caderno-18-final"><p>Final</p></section></div>';
 $old=json_encode(['version'=>2,'theme'=>'auto','meta'=>[],'html'=>$oldHtml],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 $q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,status,show_in_nav,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,updated_at,access_level) VALUES(1,'pt-BR','caderno-positivo-direto','x','x','published',1,?,?,1,1,'x','x','x','public')");$q->execute([$old,$old]);
-$migration=require __DIR__.'/../migrations/050_protected_handbook_media_slots.php';$migration($db);
-$structure=require __DIR__.'/../migrations/051_handbook_document_lessons.php';$structure($db);
-$normalize=require __DIR__.'/../migrations/052_remove_handbook_specific_visual_system.php';$normalize($db);
+(require __DIR__.'/../migrations/050_protected_handbook_media_slots.php')($db);
+(require __DIR__.'/../migrations/051_handbook_document_lessons.php')($db);
+(require __DIR__.'/../migrations/052_remove_handbook_specific_visual_system.php')($db);
+(require __DIR__.'/../migrations/053_rebuild_handbook_from_email_sources.php')($db);
 $page=$db->query("SELECT * FROM cms_pages WHERE slug='caderno-positivo-direto'")->fetch();if(!$page)fail_material('handbook missing');
 $html=(string)(json_decode((string)$page['published_document_json'],true)['html']??'');
-foreach(['data-private-media-slot="energia-cena"','data-private-media-slot="reciprocidade"','data-private-media-slot="imagem-latente"','data-private-media-slot="fluxo-positivo"'] as $needle)if(!str_contains($html,$needle))fail_material('missing: '.$needle);
-foreach(['data-cms-section="caderno-aula-1"','data-cms-section="caderno-aula-2"','data-cms-section="caderno-aula-3"','class="format"','class="format-grid"','class="section"','class="statement-grid"'] as $needle)if(!str_contains($html,$needle))fail_material('existing CMS structure missing: '.$needle);
+
+$slots=['filme-ortocromatico','dupla-emulsao-positivo','energia-positivo','reciprocidade-energia','ei-zonas','imagem-latente-prata','negativo-positivo','branqueamentos-rotas','parametros-revelacao'];
+foreach($slots as $slot)if(!str_contains($html,'data-private-media-slot="'.$slot.'"'))fail_material('missing media slot: '.$slot);
+
+foreach(['data-cms-section="caderno-aula-1"','data-cms-section="caderno-aula-2"','data-cms-section="caderno-aula-3"','class="format"','class="format-grid"','class="section"','class="statement-grid"','class="process-list"'] as $needle)if(!str_contains($html,$needle))fail_material('existing CMS structure missing: '.$needle);
 foreach(['<style','<svg',' style=','class="positive-handbook"','class="sheet','cms-document','cms-lesson'] as $needle)if(str_contains(mb_strtolower($html,'UTF-8'),mb_strtolower($needle,'UTF-8')))fail_material('page-specific visual system leaked: '.$needle);
 if(str_contains(mb_strtolower($html,'UTF-8'),'boliche tonal'))fail_material('reserved terminology leaked');
+
+$sourceMarkers=[
+    'A ideia não é transformar isso numa bula.',
+    'O Fuji Super HR-U é um filme ortocromático.',
+    'Cinco pontos de diferença significam que uma das regiões está fornecendo ao filme trinta e duas vezes menos luz que a outra.',
+    'tempo corrigido = tempo calculado elevado a 1,3854',
+    'O filme não muda. A exposição muda.',
+    'Ag⁺ + elétron → Ag⁰',
+    'O cloreto férrico e a amônia, portanto, são dois processos independentes.',
+    'Trabalhamos com quatro parâmetros que interferem diretamente na revelação: concentração, temperatura, tempo e agitação.',
+    'Não como uma receita definitiva, mas como um possível desenvolvimento normal.',
+    'Não precisa virar um relatório da NASA.'
+];
+foreach($sourceMarkers as $needle)if(!str_contains($html,$needle))fail_material('email-source content missing: '.$needle);
+foreach(['Qual o tamanho do suporte','Qual o endereço para envio','08/10','me convidem como colaborador'] as $needle)if(str_contains($html,$needle))fail_material('cohort/admin message leaked into handbook: '.$needle);
+
 $columns=$db->query('PRAGMA table_info(student_private_media)')->fetchAll(PDO::FETCH_COLUMN,1);if(!in_array('slot_key',$columns,true))fail_material('slot_key not migrated');
 $map=$db->query("SELECT s.section_key,l.lesson_key FROM course_page_sections s JOIN course_lessons l ON l.id=s.lesson_id ORDER BY s.section_key")->fetchAll(PDO::FETCH_KEY_PAIR);
-foreach(['caderno-aula-1'=>'aula-1','caderno-aula-2'=>'aula-2','caderno-aula-3'=>'aula-3'] as $section=>$lesson)if(($map[$section]??'')!==$lesson)fail_material('lesson divider mapping wrong: '.$section);
+$expected=[
+ 'caderno-aula-1'=>'aula-1','caderno-04-energia'=>'aula-1','caderno-07-ei'=>'aula-1',
+ 'caderno-aula-2'=>'aula-2','caderno-10-imagem-latente'=>'aula-2','caderno-16-fecl3-amonia'=>'aula-2','caderno-19-duas-chapas'=>'aula-2',
+ 'caderno-aula-3'=>'aula-3','caderno-21-leitura-resultados'=>'aula-3','caderno-22-registro'=>'aula-3'
+];
+foreach($expected as $section=>$lesson)if(($map[$section]??'')!==$lesson)fail_material('lesson mapping wrong: '.$section);
+
 $css=(string)file_get_contents(__DIR__.'/../assets/cms.css');
 foreach(['.cms-document{','.cms-document-page{','.cms-lesson-divider{','.cms-document-index{','Shared long-form document system'] as $needle)if(str_contains($css,$needle))fail_material('handbook-specific CSS leaked into shared stylesheet: '.$needle);
 $index=(string)file_get_contents(__DIR__.'/../index.php');$media=(string)file_get_contents(__DIR__.'/../aluno/media.php');$shell=(string)file_get_contents(__DIR__.'/../app/admin_shell.php');$admin=(string)file_get_contents(__DIR__.'/../admin/student-area.php');
