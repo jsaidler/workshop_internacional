@@ -17,7 +17,7 @@ async function expectSameRow(locator){
   return rendered;
 }
 
-test('study material uses the desktop canvas without sacrificing reading measure',async({page})=>{
+test('study material uses one continuous desktop reading axis',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(url);
 
@@ -26,34 +26,45 @@ test('study material uses the desktop canvas without sacrificing reading measure
   const unit=page.locator('#unit-reference');
   const label=page.locator('#unit-label');
   const directCopy=page.locator('#direct-copy');
+  const paragraph=page.locator('#paragraph-one');
   const note=page.locator('#technical-note');
   const unitGrid=page.locator('#unit-heading-grid');
+  const heading=page.locator('#unit-heading');
   const indexCards=page.locator('#study-index-grid > .format-card');
 
   const unitBox=await unit.boundingBox();
   const labelBox=await label.boundingBox();
   const copyBox=await directCopy.boundingBox();
+  const noteBox=await note.boundingBox();
   expect(unitBox.width).toBeGreaterThan(1120);
   expect(unitBox.width).toBeLessThanOrEqual(1201);
-  expect(copyBox.width).toBeGreaterThan(640);
-  expect(copyBox.width).toBeLessThanOrEqual(765);
-  expect(labelBox.x).toBeLessThan(copyBox.x-70);
+  expect(copyBox.width).toBeGreaterThanOrEqual(840);
+  expect(copyBox.width).toBeLessThanOrEqual(885);
+  expect(Math.abs(labelBox.x-copyBox.x)).toBeLessThan(2);
+  expect(Math.abs(noteBox.x-copyBox.x)).toBeLessThan(2);
 
-  expect(await gridColumns(unitGrid)).toBe(2);
+  expect(await unit.evaluate(el=>getComputedStyle(el).display)).toBe('block');
+  expect(await unitGrid.evaluate(el=>getComputedStyle(el).display)).toBe('block');
+  expect(await label.evaluate(el=>getComputedStyle(el).position)).toBe('static');
+
   const indexBoxes=await expectSameRow(indexCards);
   expect(indexBoxes).toHaveLength(3);
   for(const box of indexBoxes)expect(box.width).toBeGreaterThan(250);
 
-  expect(px(await directCopy.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(17.5);
-  expect(px(await directCopy.evaluate(el=>getComputedStyle(el).lineHeight))).toBeGreaterThan(28);
-  expect(px(await note.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(12);
-  expect(px(await coverTitle.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThan(70);
+  expect(px(await directCopy.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(18);
+  const lineHeight=px(await directCopy.evaluate(el=>getComputedStyle(el).lineHeight));
+  expect(lineHeight).toBeGreaterThanOrEqual(27);
+  expect(lineHeight).toBeLessThanOrEqual(29.5);
+  expect(px(await paragraph.evaluate(el=>getComputedStyle(el).marginBottom))).toBeLessThanOrEqual(14);
+  expect(px(await note.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(13);
+  expect(px(await heading.evaluate(el=>getComputedStyle(el).fontSize))).toBeLessThanOrEqual(45);
+  expect(px(await coverTitle.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThan(60);
 
   const overflow=await material.evaluate(el=>el.scrollWidth-el.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
 
-test('study material keeps reference components visually distinct and keyboard navigable',async({page})=>{
+test('study reference components stay distinct without breaking the reading flow',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(url);
 
@@ -68,13 +79,13 @@ test('study material keeps reference components visually distinct and keyboard n
 
   const cardBoxes=await expectSameRow(cards);
   expect(cardBoxes).toHaveLength(3);
-  for(const box of cardBoxes)expect(box.width).toBeGreaterThan(190);
+  for(const box of cardBoxes)expect(box.width).toBeGreaterThan(210);
 
   await firstLink.focus();
   expect(await firstLink.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
 });
 
-test('study material becomes a calm single reading axis on tablet',async({page})=>{
+test('study material keeps the same reading axis on tablet',async({page})=>{
   await page.setViewportSize({width:900,height:1000});
   await page.goto(url);
 
@@ -82,13 +93,16 @@ test('study material becomes a calm single reading axis on tablet',async({page})
   const unit=page.locator('#unit-reference');
   const unitGrid=page.locator('#unit-heading-grid');
   const copy=page.locator('#direct-copy');
+  const label=page.locator('#unit-label');
   const indexCards=page.locator('#study-index-grid > .format-card');
 
   expect(await unit.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   expect(await unitGrid.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   const copyBox=await copy.boundingBox();
-  expect(copyBox.width).toBeGreaterThan(720);
-  expect(copyBox.width).toBeLessThanOrEqual(765);
+  const labelBox=await label.boundingBox();
+  expect(copyBox.width).toBeGreaterThanOrEqual(760);
+  expect(copyBox.width).toBeLessThanOrEqual(785);
+  expect(Math.abs(copyBox.x-labelBox.x)).toBeLessThan(2);
 
   const indexBoxes=await expectSameRow(indexCards);
   expect(indexBoxes).toHaveLength(3);
@@ -98,7 +112,7 @@ test('study material becomes a calm single reading axis on tablet',async({page})
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
 });
 
-test('study material collapses to a single reading flow on small screens',async({page})=>{
+test('study material collapses cleanly on small screens',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto(url);
 
@@ -114,7 +128,7 @@ test('study material collapses to a single reading flow on small screens',async(
   expect(await unitGrid.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   expect(await gridColumns(indexGrid)).toBe(1);
   expect(await gridColumns(reference)).toBe(1);
-  expect(px(await copy.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(17);
+  expect(px(await copy.evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(17.5);
 
   const copyBox=await copy.boundingBox();
   const labelBox=await label.boundingBox();
