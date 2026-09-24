@@ -16,6 +16,9 @@ on:
       - 'cms-v3-professional-10'
       - 'cms-v3-professional-11'
       - 'cms-v3-professional-12'
+  pull_request:
+    branches:
+      - 'wip/form-response-refinement-2026-07-16'
   workflow_dispatch:
 
 permissions:
@@ -41,6 +44,7 @@ jobs:
           find . -path './dist' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
           find assets editor admin -name '*.js' -print0 | xargs -0 -n1 node --check
           php tools/test-cms.php
+          php tools/test-student-area.php
           php tools/test-cms-v3.php
           php tools/test-media-image-policy.php
           php tools/test-media-maintenance.php

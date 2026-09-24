@@ -1,0 +1,8 @@
+<?php
+declare(strict_types=1);
+
+function student_shell_start(string $title,array $activity,?array $student=null): void {
+    $assetVersion=function_exists('admin_asset_version')?admin_asset_version():(string)(@filemtime(dirname(__DIR__).'/assets/student-area.css')?:1);
+    ?><!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Saira+Extra+Condensed:wght@400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/student-area.css?v=<?=h($assetVersion)?>"><title><?=h($title)?></title></head><body class="student-page"><div class="student-shell"><header class="student-topbar"><a class="student-wordmark" href="<?=h(student_url('/aluno/',$activity))?>">Direct Positive Workshop</a><span class="student-topbar-spacer"></span><?php if($student):?><span class="student-user"><?=h((string)$student['name'])?> · <?=h((string)$student['email'])?></span><a class="student-link" href="<?=h(student_url('/aluno/senha.php',$activity))?>">Senha</a><form method="post" action="<?=h(student_url('/aluno/logout.php',$activity))?>"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-logout'))?>"><button class="student-logout" type="submit">Sair</button></form><?php endif;?></header><main class="student-main"><?php
+}
+function student_shell_end(): void {?></main></div></body></html><?php }

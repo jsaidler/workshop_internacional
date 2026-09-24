@@ -17,7 +17,7 @@ function admin_public_activity_url(?array $activity): string {if(!$activity)retu
 function admin_workspace(string $section): string {
     return match($section){
         'pages','blocks','design','site','seo','overview'=>'site',
-        'forms','responses'=>'registrations',
+        'forms','responses','students'=>'registrations',
         'analytics'=>'analytics',
         'media'=>'media',
         'system','activities'=>'settings',
@@ -35,6 +35,7 @@ function admin_context_items(string $workspace,?array $activity): array {
         'registrations'=>[
             'responses'=>['Respostas',admin_shell_url('/admin/submissions.php',$activity)],
             'forms'=>['Formulário',admin_shell_url('/admin/forms.php',$activity)],
+            'students'=>['Área do aluno',admin_shell_url('/admin/student-area.php',$activity)],
         ],
         'settings'=>[
             'system'=>['Sistema e atualizações','/admin/system.php'],
