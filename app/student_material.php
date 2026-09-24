@@ -58,7 +58,11 @@ function student_page_resolve_private_media_slots(PDO $db,array $page,array $doc
     $html=preg_replace_callback('~<figure\b([^>]*)data-private-media-slot=["\']([^"\']+)["\']([^>]*)>.*?</figure>~is',static function(array $m)use($db,$pageId):string{
         try{$slot=student_private_media_slot_key((string)$m[2]);}catch(Throwable){return '';}
         $whole=(string)$m[0];$alt=$slot;if(preg_match('~data-private-media-alt=["\']([^"\']*)["\']~i',$whole,$am))$alt=html_entity_decode((string)$am[1],ENT_QUOTES|ENT_HTML5,'UTF-8');
-        $asset=student_private_media_for_slot($db,$pageId,$slot);if(!$asset)return '';
+        $asset=student_private_media_for_slot($db,$pageId,$slot);
+        if(!$asset){
+            if(!current_admin())return '';
+            return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Infográfico pendente<br>'.h($alt).'<br><br>slot: '.h($slot).'</span></div></figure>';
+        }
         $src=student_private_media_placeholder($asset);
         return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="media-area"><img data-cms-media src="'.h($src).'" alt="'.h($alt).'"></div></figure>';
     },$html)??$html;$document['html']=$html;return $document;

@@ -46,15 +46,65 @@
 .cms-form [aria-invalid=true]{border-color:#b22929!important}
 .cms-form .form-error{margin-top:-8px;margin-bottom:6px}
 
+/* Global long-form editorial system.
+   These components are available to any CMS page; none are tied to a page slug. */
+.cms-public .editorial-cover{min-height:68svh;display:grid;align-content:end;border-bottom:1px solid var(--line-strong)}
+.cms-public .editorial-cover .statement-grid{grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);align-items:end}
+.cms-public .editorial-cover h1{margin:0;font-family:var(--title);font-size:clamp(68px,8.7vw,144px);font-weight:500;line-height:.82;letter-spacing:.01em;text-transform:uppercase}
+.cms-public .editorial-cover .statement-copy{max-width:620px;font-size:clamp(17px,1.25vw,21px);line-height:1.58}
+
+.cms-public .editorial-index .format-inner{padding-top:clamp(58px,7vw,104px);padding-bottom:clamp(58px,7vw,104px)}
+.cms-public .editorial-index .format-heading{grid-template-columns:minmax(0,.7fr) minmax(320px,.3fr);align-items:start}
+.cms-public .editorial-index .format-heading h2{font-size:clamp(48px,5.8vw,88px)}
+.cms-public .editorial-index .format-grid{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:42px}
+.cms-public .editorial-index .format-card{min-height:190px}
+.cms-public .editorial-index .format-card h3{margin-top:44px}
+
+.cms-public .editorial-chapter{color:var(--inverse);background:var(--inverse-bg);border-block:1px solid var(--line-strong)}
+.cms-public .editorial-chapter .format-inner{padding-top:clamp(70px,8vw,124px);padding-bottom:clamp(70px,8vw,124px)}
+.cms-public .editorial-chapter .format-heading{grid-template-columns:minmax(220px,.34fr) minmax(0,.66fr);gap:clamp(34px,6vw,94px);align-items:start}
+.cms-public .editorial-chapter .format-heading h2{font-size:clamp(62px,7.8vw,120px);line-height:.86}
+.cms-public .editorial-chapter .format-heading p:last-child{max-width:690px;color:color-mix(in srgb,var(--inverse) 72%,transparent);font-size:clamp(17px,1.35vw,21px);line-height:1.5}
+.cms-public .editorial-chapter .section-label{color:color-mix(in srgb,var(--inverse) 64%,transparent)}
+
+.cms-public .editorial-unit{position:relative;width:min(100%,var(--max));margin:0 auto;padding:clamp(58px,6.5vw,104px) var(--gutter);border-top:1px solid var(--line)}
+.cms-public .editorial-unit+.editorial-unit{border-top-color:var(--line-strong)}
+.cms-public .editorial-unit .section-label{margin-bottom:20px}
+.cms-public .editorial-unit>.statement-grid{grid-template-columns:minmax(220px,.68fr) minmax(0,1.32fr);gap:clamp(34px,6vw,96px);align-items:start}
+.cms-public .editorial-unit>.statement-grid>div:first-child>h2{font-size:clamp(42px,4.8vw,76px);line-height:.92}
+.cms-public .editorial-unit>.statement-grid>div:first-child>h3{margin:0;font-family:var(--title);font-size:clamp(30px,3.1vw,48px);font-weight:500;line-height:1;text-transform:uppercase}
+.cms-public .editorial-unit .statement-copy{max-width:840px;font-size:clamp(16px,1.15vw,19px);font-weight:400;line-height:1.72}
+.cms-public .editorial-unit>.statement-copy{margin-left:auto;margin-right:auto}
+.cms-public .editorial-unit>.statement-grid+.statement-grid{margin-top:clamp(42px,5vw,72px)}
+.cms-public .editorial-unit .statement-copy h3{margin:44px 0 16px;font-size:clamp(28px,2.8vw,42px);font-weight:500;line-height:1;text-transform:uppercase}
+.cms-public .editorial-unit .technical-note{max-width:840px;margin:clamp(30px,4vw,52px) auto;padding:16px 0;border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line);color:inherit;font-family:var(--mono);font-size:11px!important;line-height:1.65;letter-spacing:.04em;text-transform:none}
+.cms-public .editorial-unit>.format-grid{max-width:1120px;margin:clamp(34px,4.6vw,58px) auto 0;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.cms-public .editorial-unit .format-card{min-height:150px;padding:18px}
+.cms-public .editorial-unit .format-card h3{margin:32px 0 8px;font-size:clamp(22px,2vw,30px);line-height:1.05}
+.cms-public .editorial-unit .format-card p{font-size:14px;line-height:1.5}
+.cms-public .editorial-unit>.process-list{max-width:980px;margin:clamp(34px,4.5vw,56px) auto 0}
+.cms-public .editorial-unit .process-item{grid-template-columns:44px minmax(0,1fr);gap:16px;padding:16px 0}
+.cms-public .editorial-unit .process-item p{color:inherit;font-size:15px;line-height:1.55}
+.cms-public .editorial-unit>.media-figure{max-width:1100px;margin:clamp(42px,6vw,76px) auto}
+.cms-public .editorial-unit>.media-figure .media-area{border:1px solid var(--line)}
+.cms-public .editorial-unit>.media-figure .cms-media-placeholder{min-height:300px;border:1px dashed var(--line-strong);opacity:.72}
+
 @media(max-width:1040px){
   .hero--copy-only .hero-copy{min-height:auto;grid-template-columns:1fr;align-items:start}
   .hero--copy-only .hero-bottom{width:min(100%,720px)}
   .format-grid.cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cms-public .editorial-cover .statement-grid,.cms-public .editorial-chapter .format-heading,.cms-public .editorial-unit>.statement-grid{grid-template-columns:1fr}
+  .cms-public .editorial-cover{min-height:auto}
+  .cms-public .editorial-index .format-heading{grid-template-columns:1fr}
 }
 @media(max-width:760px){
   .cms-form .cms-form-grid{grid-template-columns:1fr}
   .cms-form .cms-field.half,.cms-form .cms-choice-group.half,.cms-form .cms-consent.half{grid-column:1/-1}
   .cms-form>.button,.cms-form button[type=submit]{width:100%}
+  .cms-public .editorial-index .format-grid{grid-template-columns:1fr}
+  .cms-public .editorial-unit{padding-top:48px;padding-bottom:48px}
+  .cms-public .editorial-unit>.format-grid{grid-template-columns:1fr}
+  .cms-public .editorial-unit>.media-figure .cms-media-placeholder{min-height:220px}
 }
 @media(max-width:700px){
   .hero--copy-only .hero-copy{padding-top:48px;padding-bottom:34px;gap:38px}
@@ -63,4 +113,7 @@
   .section-cta .button,.button-emphasis{width:100%}
   .hero-image>.cms-media-placeholder{min-height:72svh}
   .recognition>div{grid-template-columns:68px minmax(0,1fr);gap:14px}
+  .cms-public .editorial-cover h1{font-size:clamp(58px,19vw,92px)}
+  .cms-public .editorial-chapter .format-heading h2{font-size:clamp(54px,16vw,84px)}
+  .cms-public .editorial-unit>.statement-grid>div:first-child>h2{font-size:clamp(38px,12vw,58px)}
 }

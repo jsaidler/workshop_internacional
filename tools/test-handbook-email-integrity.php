@@ -13,6 +13,7 @@ $q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,s
 (require __DIR__.'/../migrations/052_remove_handbook_specific_visual_system.php')($db);
 (require __DIR__.'/../migrations/053_rebuild_handbook_from_email_sources.php')($db);
 (require __DIR__.'/../migrations/054_complete_handbook_source_details.php')($db);
+(require __DIR__.'/../migrations/055_apply_global_editorial_components_to_handbook.php')($db);
 $page=$db->query("SELECT * FROM cms_pages WHERE slug='caderno-positivo-direto'")->fetch();if(!$page)handbook_fail('page missing');
 $html=(string)(json_decode((string)$page['published_document_json'],true)['html']??'');
 $mustHave=[
@@ -34,6 +35,13 @@ foreach($mustNotHave as $needle)if(str_contains($html,$needle))handbook_fail('co
 $slots=['filme-ortocromatico','dupla-emulsao-positivo','energia-positivo','reciprocidade-energia','ei-zonas','imagem-latente-prata','negativo-positivo','branqueamentos-rotas','parametros-revelacao'];
 foreach($slots as $slot)if(!str_contains($html,'data-private-media-slot="'.$slot.'"'))handbook_fail('slot missing: '.$slot);
 foreach(['<style','<svg',' style=','cms-document','cms-lesson'] as $needle)if(str_contains(mb_strtolower($html,'UTF-8'),mb_strtolower($needle,'UTF-8')))handbook_fail('page-exclusive visual system leaked: '.$needle);
+foreach(['editorial-cover','editorial-index','editorial-chapter','editorial-unit'] as $class)if(!str_contains($html,$class))handbook_fail('global editorial component missing: '.$class);
+if(str_contains($html,'caderno-editorial')||str_contains($html,'handbook-editorial'))handbook_fail('page-specific editorial component leaked');
 $map=$db->query("SELECT s.section_key,l.lesson_key FROM course_page_sections s JOIN course_lessons l ON l.id=s.lesson_id ORDER BY s.section_key")->fetchAll(PDO::FETCH_KEY_PAIR);
 foreach(['caderno-04-energia'=>'aula-1','caderno-10-imagem-latente'=>'aula-2','caderno-21-leitura-resultados'=>'aula-3'] as $section=>$lesson)if(($map[$section]??'')!==$lesson)handbook_fail('wrong lesson mapping: '.$section);
+$css=(string)file_get_contents(__DIR__.'/../assets/cms-ui-refinements.css');
+foreach(['.editorial-cover','.editorial-index','.editorial-chapter','.editorial-unit'] as $selector)if(!str_contains($css,$selector))handbook_fail('global editorial CSS missing: '.$selector);
+foreach(['caderno-positivo-direto','caderno-aula-','caderno-04-energia'] as $needle)if(str_contains($css,$needle))handbook_fail('page slug/section leaked into global editorial CSS: '.$needle);
+$material=(string)file_get_contents(__DIR__.'/../app/student_material.php');
+foreach(['if(!current_admin())return','cms-media-placeholder','Infográfico pendente','slot: '] as $needle)if(!str_contains($material,$needle))handbook_fail('admin private-media placeholder contract missing: '.$needle);
 echo "handbook-email-integrity: ok\n";
