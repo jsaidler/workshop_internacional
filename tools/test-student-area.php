@@ -22,12 +22,21 @@ if($user['email']!=='aluno@example.com')fail('email not normalized');
 if(!password_verify($result['generated_password'],$user['password_hash']))fail('password hash invalid');
 if(!student_has_activity($db,(int)$user['id'],1))fail('enrollment missing');
 
-$material=student_material_upsert($db,1,'pt-BR','Material protegido','material-protegido','<!doctype html><html><head></head><body><h1>Conteúdo</h1></body></html>','active');
+$unsafe='<!doctype html><html><head><script>alert(1)</script></head><body onload="alert(2)"><h1>Conteúdo</h1><a href="javascript:alert(3)">x</a><img src="data:image/png;base64,AA=="></body></html>';
+$material=student_material_upsert($db,1,'pt-BR','Material protegido','material-protegido',$unsafe,'active');
 if(($material['slug']??'')!=='material-protegido')fail('material slug invalid');
 $found=student_material_by_slug($db,1,'pt-BR','material-protegido',true);if(!$found)fail('material not found');
-$rendered=student_material_render((string)$found['html_content'],['name'=>'Aluno Teste','email'=>'aluno@example.com'],['id'=>1,'slug'=>'workshop','is_root'=>1]);
+$stored=(string)$found['html_content'];
+if(stripos($stored,'<script')!==false||stripos($stored,'onload=')!==false||stripos($stored,'javascript:')!==false)fail('unsafe html survived sanitizer');
+if(!str_contains($stored,'data:image/png'))fail('embedded image removed');
+$rendered=student_material_render($stored,['name'=>'Aluno Teste','email'=>'aluno@example.com'],['id'=>1,'slug'=>'workshop','is_root'=>1]);
 if(!str_contains($rendered,'student-access-bar')||!str_contains($rendered,'Acesso individual'))fail('protection UI not injected');
 if(!str_contains($rendered,'Conteúdo'))fail('material content lost');
+
+$_SESSION=['student'=>['id'=>(int)$user['id'],'issued_at'=>time(),'last_activity'=>time()]];
+if(!current_student($db))fail('valid session rejected');
+$_SESSION=['student'=>['id'=>(int)$user['id'],'issued_at'=>time()-STUDENT_ABSOLUTE_TIMEOUT_SECONDS-1,'last_activity'=>time()]];
+if(current_student($db)!==null)fail('expired absolute session accepted');
 
 student_admin_set_enrollment($db,(int)$user['id'],1,'disabled');
 if(student_has_activity($db,(int)$user['id'],1))fail('disabled enrollment still active');
