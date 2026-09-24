@@ -12,36 +12,44 @@ Nenhum seletor desse sistema pode depender do slug, do nome do workshop ou de um
 
 ## Contrato visual e de UX
 
-A captura de 24/09/2026 tornou explícito um problema que não pode regressar: em desktop, o material ocupava uma coluna pequena demais dentro de uma tela larga e transformava uma publicação extensa em uma sequência visualmente monótona de blocos semelhantes. A correção não consiste em aumentar tudo indiscriminadamente; consiste em separar **canvas editorial**, **medida de leitura** e **componentes de referência**.
+As capturas integrais de 24/09/2026 mostraram dois problemas sucessivos. Primeiro, o material ocupava uma coluna pequena demais dentro de uma tela larga. Depois, ao tentar aproveitar mais o canvas, foi criada uma margem editorial lateral permanente com rótulos e blocos em dois eixos. O resultado continuou ruim para leitura prolongada: o olho precisava se reposicionar horizontalmente, o corpo permanecia estreito e o documento ainda se comportava como uma landing page longa.
+
+A decisão canônica passa a ser outra: **material de estudo usa um eixo principal contínuo de leitura**. A largura adicional do desktop fica reservada para figuras, tabelas, grades comparativas e outros elementos que realmente se beneficiam dela; não para manter uma coluna lateral permanente competindo com o texto.
 
 ### Canvas e medida de leitura
 
-- O material usa um canvas editorial mais amplo que a coluna de texto corrido. Capa, índice, divisores de aula, tabelas/cartões e figuras podem ocupar essa largura maior.
-- Texto corrido mantém medida de leitura própria, limitada. Em desktop, não deve ficar espremido no centro da tela nem se estender a linhas excessivamente longas.
-- Unidades de estudo podem usar uma margem editorial para rótulos e uma segunda coluna para conteúdo complementar, mas o corpo principal continua sendo o eixo de leitura.
-- Em tablet e celular, a composição volta a um fluxo único sem depender de uma configuração de desktop para funcionar.
+- O material usa um canvas editorial amplo para capa, índice, divisores de aula, tabelas, grades e figuras.
+- O texto corrido usa uma coluna central estável de aproximadamente 820–900 px em desktop, dependendo da largura disponível.
+- Rótulos de unidade aparecem acima do conteúdo, alinhados ao mesmo eixo de leitura. Não há margem editorial lateral sticky como padrão do componente.
+- Um título estrutural curto pode anteceder o corpo, mas não deve retirar do fluxo uma frase argumentativa da fonte para transformá-la em manchete.
+- Elementos largos podem ultrapassar a coluna de texto quando a comparação visual justificar isso, retornando depois ao mesmo eixo de leitura.
+- Em tablet e celular, a composição permanece em fluxo único, sem depender de estruturas laterais de desktop.
 
 ### Hierarquia
 
-- A capa deve ter presença suficiente para identificar o documento sem assumir a escala dramática de uma hero comercial.
-- O índice deve funcionar como navegação real: cada aula é um alvo claro, clicável, com foco de teclado legível e área de interação confortável.
-- O divisor de aula é o marco de maior hierarquia interna do documento. Deve interromper inequivocamente o fluxo anterior sem parecer uma nova landing page.
-- A unidade editorial é o nível recorrente de leitura. Seu título, rótulo lateral, texto, dados, notas e imagens precisam formar um conjunto reconhecível antes de começar a unidade seguinte.
+- A capa identifica o documento sem assumir a escala dramática de uma hero comercial.
+- O índice funciona como navegação real: cada aula é um alvo claro, clicável, com foco de teclado legível e área de interação confortável.
+- O divisor de aula é o maior marco interno do documento e interrompe inequivocamente o capítulo anterior.
+- Unidades recorrentes usam hierarquia mais contida que uma landing page. Títulos não devem dominar uma área maior que o conteúdo que introduzem.
+- Subtítulos internos servem para orientar consulta e retomada; não para converter cada passagem em chamada visual.
 - Títulos usam a família de display do site; corpo usa a família editorial configurada; fórmulas, valores e notas técnicas usam a família mono. O material não cria tipografia paralela.
 
 ### Ritmo e distinção semântica
 
 - Texto corrido, nota técnica, grade de valores, procedimento e figura não podem parecer o mesmo tipo de caixa.
+- Parágrafos relacionados permanecem visualmente próximos. O sistema não cria um intervalo grande o suficiente para transformar cada parágrafo curto em bloco autônomo.
+- A entrelinha deve favorecer leitura prolongada, sem inflar artificialmente a página. Em desktop, o alvo é aproximadamente 1,55–1,62 para o corpo.
 - Nota técnica é uma interrupção de referência, não um card promocional: recebe tratamento contido, boa legibilidade e distinção por linha/contraste.
 - Grades de dados usam números tabulares e células compactas; a informação deve ser comparável sem produzir cards gigantes.
 - Procedimentos mantêm sequência e separação entre passos sem aumentar artificialmente a altura da página.
-- Figuras recebem largura maior que o corpo quando isso melhora leitura da relação visual, mas permanecem no fluxo da unidade a que pertencem.
+- Figuras recebem largura maior que o corpo quando isso melhora a leitura da relação visual, mas permanecem no fluxo da unidade a que pertencem.
 - A ausência de uma figura privada continua sem produzir placeholder para o aluno.
 
 ### Legibilidade
 
 - O corpo do material deve permanecer em tamanho confortável para leitura prolongada; desktop não pode reduzir o texto para compensar a extensão da página.
-- Entrelinha e comprimento de linha têm precedência sobre a tentativa de “caber mais conteúdo”.
+- A largura maior do corpo deve reduzir a sensação de coluna de celular no desktop sem produzir linhas excessivamente longas.
+- O corpo de referência é de aproximadamente 18 px em desktop, com redução moderada apenas em telas menores.
 - Parágrafos curtos da fonte continuam curtos. O sistema não os cola artificialmente nem cria espaços tão grandes que cada frase pareça uma chamada publicitária.
 - Em modo escuro, contraste, linhas e superfícies usam os tokens do sistema. Não introduzir cinzas ou cores fixas específicos do caderno.
 - Âncoras de aula/unidade consideram o header fixo ao definir a posição de rolagem.
@@ -49,7 +57,7 @@ A captura de 24/09/2026 tornou explícito um problema que não pode regressar: e
 ### Responsividade e acessibilidade
 
 - Desktop, tablet e celular fazem parte do mesmo componente. Nenhuma melhoria desktop pode depender de largura fixa que gere overflow em tela menor.
-- Até o breakpoint de tablet, margens editoriais e grids complexos colapsam para fluxo único.
+- Em tablet e celular, todas as unidades permanecem no mesmo eixo de leitura.
 - Grades de referência tornam-se uma coluna quando necessário para preservar leitura.
 - Navegação do índice precisa funcionar por teclado e conservar o `:focus-visible` global.
 - Movimentos decorativos são removidos quando `prefers-reduced-motion: reduce` estiver ativo.
@@ -113,8 +121,11 @@ Os testes do material devem verificar simultaneamente:
 - segmentação por aula;
 - uso do sistema global `study-material`;
 - ausência de CSS, SVG ou estilo inline exclusivo da página;
-- medida de leitura e tamanho de corpo adequados em desktop;
-- colapso correto do grid editorial em tablet/celular;
+- corpo de leitura central com largura efetiva adequada em desktop;
+- ausência de coluna lateral sticky no fluxo padrão de estudo;
+- títulos recorrentes em escala inferior aos divisores de aula;
+- entrelinha e espaçamento de parágrafos adequados para leitura contínua;
+- colapso correto de grades em tablet/celular;
 - ausência de overflow horizontal;
 - índice navegável e visualmente distinto;
 - permanência dos componentes dentro da paleta e tipografia globais do site.
