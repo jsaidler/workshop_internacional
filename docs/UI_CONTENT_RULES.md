@@ -34,6 +34,17 @@ Páginas normais do CMS não carregam stylesheet próprio nem estilos inline par
 
 Ilustrações editoriais são conteúdo de mídia. Quando o projeto pede infográficos, usar os arquivos de infográfico apropriados; não substituir por SVG/HTML improvisado ou por simulação fotográfica que altere a natureza editorial solicitada.
 
+### Materiais longos e didáticos
+
+Material extenso não deve ser apresentado como uma coluna contínua de texto semelhante a e-mail. Quando existir divisão real por capítulos, encontros ou aulas, essa estrutura precisa ser legível também visualmente.
+
+- separar capa, índice, aulas e unidades editoriais;
+- cada aula deve possuir divisor visual inequívoco e participar da mesma regra de liberação do conteúdo que introduz;
+- cada unidade extensa deve se comportar visualmente como uma página/bloco editorial autônomo, com respiro e limite claros em relação à seguinte;
+- não criar texto para preencher uma aula sem fonte editorial real;
+- padrões de publicação longa devem ser componentes globais reutilizáveis do CMS, e não CSS ligado ao slug ou a uma página específica;
+- a hierarquia visual deve usar a mesma tipografia, paleta, linhas, escala e lógica de composição do restante do site.
+
 ## UI/UX administrativa unificada e escalável
 
 Toda nova superfície administrativa deve partir dos componentes compartilhados do admin e permanecer utilizável com volume real de dados.
