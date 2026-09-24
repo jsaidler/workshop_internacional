@@ -12,9 +12,9 @@ Nenhum seletor desse sistema pode depender do slug, do nome do workshop ou de um
 
 ## Contrato visual e de UX
 
-As capturas integrais de 24/09/2026 mostraram três problemas sucessivos. Primeiro, o material ocupava uma coluna pequena demais dentro de uma tela larga. Depois, ao tentar aproveitar mais o canvas, foi criada uma margem editorial lateral permanente com rótulos e blocos em dois eixos. Por fim, ao corrigir o eixo de leitura, o ritmo vertical foi comprimido demais: unidades, subtítulos, notas, grades e figuras ficaram visualmente próximos demais, produzindo uma massa contínua.
+As capturas integrais de 24/09/2026 mostraram quatro problemas sucessivos. Primeiro, o material ocupava uma coluna pequena demais dentro de uma tela larga. Depois, ao tentar aproveitar mais o canvas, foi criada uma margem editorial lateral permanente com rótulos e blocos em dois eixos. Em seguida, ao corrigir o eixo de leitura, o ritmo vertical foi comprimido demais: unidades, subtítulos, notas, grades e figuras ficaram visualmente próximos demais, produzindo uma massa contínua. A validação seguinte mostrou o problema inverso em uma relação específica: duas unidades consecutivas estavam somando o respiro macro completo dos dois lados do mesmo divisor, criando um vazio de mais de 200 px em desktop.
 
-A decisão canônica passa a ser: **material de estudo usa um eixo principal contínuo de leitura com respiro vertical hierárquico**. A largura adicional do desktop fica reservada para figuras, tabelas, grades comparativas e outros elementos que realmente se beneficiam dela; o espaço vertical é usado para marcar mudanças reais de nível sem transformar cada parágrafo em bloco autônomo.
+A decisão canônica passa a ser: **material de estudo usa um eixo principal contínuo de leitura com respiro vertical hierárquico e relacional**. A largura adicional do desktop fica reservada para figuras, tabelas, grades comparativas e outros elementos que realmente se beneficiam dela; o espaço vertical é usado para marcar mudanças reais de nível sem transformar cada parágrafo em bloco autônomo. Uma única transição conceitual recebe um único intervalo macro; o sistema não duplica essa pausa apenas porque a fronteira pertence a dois elementos adjacentes.
 
 ### Canvas e medida de leitura
 
@@ -43,6 +43,7 @@ A decisão canônica passa a ser: **material de estudo usa um eixo principal con
 - Grades de dados usam números tabulares e células compactas; a informação deve ser comparável sem produzir cards gigantes, mas a grade deve ter distância clara do argumento que a introduz.
 - Procedimentos mantêm sequência e separação entre passos sem aumentar artificialmente a altura interna de cada passo; o conjunto, porém, precisa respirar em relação ao texto corrido.
 - Figuras recebem largura maior que o corpo quando isso melhora a leitura da relação visual e usam margem vertical suficiente para serem percebidas como apoio editorial, não como caixa colada ao texto.
+- O espaçamento pertence à relação entre elementos, não a cada componente isoladamente. Margens e paddings adjacentes não devem somar duas pausas completas para representar uma única mudança de assunto.
 - A ausência de uma figura privada continua sem produzir placeholder para o aluno.
 
 ### Escala de respiro vertical
@@ -53,9 +54,11 @@ O componente usa três níveis de espaçamento vertical. Eles não são números
 2. **mudança interna de assunto** — subtítulos, notas técnicas, fórmulas, grades, procedimentos e figuras usam um intervalo intermediário claramente maior;
 3. **mudança de unidade ou aula** — unidades e divisores usam o maior intervalo, criando uma pausa perceptível antes do próximo conjunto conceitual.
 
-No desktop, uma unidade de estudo deve ter aproximadamente 80–104 px de respiro vertical total por lado quando houver espaço. Componentes intermediários normalmente entram na faixa aproximada de 36–56 px de distância do conteúdo adjacente. Em telas menores esses valores diminuem, mas a proporção entre os três níveis deve ser preservada.
+Em desktop, a fronteira entre duas unidades consecutivas deve produzir aproximadamente 108–136 px entre o último conteúdo da unidade anterior e o primeiro rótulo/conteúdo da unidade seguinte, incluindo o divisor. Para chegar a essa faixa sem duplicar a pausa, cada borda de unidade trabalha aproximadamente entre 50 e 72 px, com ligeira ênfase na abertura da unidade seguinte. Componentes intermediários normalmente entram na faixa aproximada de 36–56 px de distância do conteúdo adjacente. Parágrafos relacionados permanecem próximos de 0,9–1 em.
 
-Não reduzir o respiro de unidade, nota, figura ou grade apenas para encurtar a página. Uma publicação longa pode ser longa; o critério é se a leitura mantém orientação e ritmo.
+O divisor de unidade não deve ficar isolado no centro de dois grandes vazios. Em telas menores esses valores diminuem, mas a proporção entre os três níveis deve ser preservada.
+
+Não reduzir o respiro de nota, figura ou grade apenas para encurtar a página. Uma publicação longa pode ser longa; o critério é se a leitura mantém orientação e ritmo. Da mesma forma, não aumentar indiscriminadamente o padding de cada unidade: respiro editorial é calibrado pela distância renderizada entre conteúdos adjacentes.
 
 ### Legibilidade
 
@@ -138,7 +141,9 @@ Os testes do material devem verificar simultaneamente:
 - títulos recorrentes em escala inferior aos divisores de aula;
 - entrelinha adequada para leitura contínua;
 - três níveis de respiro vertical perceptíveis entre parágrafo, componente intermediário e unidade;
-- unidade com respiro vertical suficiente em desktop e redução proporcional em telas menores;
+- fronteiras entre unidades com limites inferior e superior de respiro, para impedir tanto compressão quanto soma excessiva de paddings;
+- validação da distância renderizada entre o último conteúdo de uma unidade, o divisor e o primeiro conteúdo da unidade seguinte — não apenas valores isolados de CSS;
+- redução proporcional do ritmo macro em telas menores;
 - colapso correto de grades em tablet/celular;
 - ausência de overflow horizontal;
 - índice navegável e visualmente distinto;
