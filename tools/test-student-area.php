@@ -13,7 +13,7 @@ require __DIR__.'/../app/student_auth.php';
 $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
 $db->exec('PRAGMA foreign_keys=ON; CREATE TABLE activities(id INTEGER PRIMARY KEY AUTOINCREMENT,slug TEXT NOT NULL,status TEXT NOT NULL DEFAULT \'active\',is_root INTEGER NOT NULL DEFAULT 0);');
 $db->exec("INSERT INTO activities(slug,status,is_root) VALUES('workshop','active',1)");
-$migration=require __DIR__.'/../migrations/031_student_area.php';$migration($db);
+$migration=require __DIR__.'/../migrations/046_student_area.php';$migration($db);
 
 $result=student_admin_create_or_enroll($db,1,'Aluno Teste','ALUNO@example.com',null);
 if(!is_string($result['generated_password']??null)||strlen($result['generated_password'])<12)fail('temporary password not generated');
@@ -31,7 +31,8 @@ if(stripos($stored,'<script')!==false||stripos($stored,'onload=')!==false||strip
 if(!str_contains($stored,'data:image/png'))fail('embedded image removed');
 $rendered=student_material_render($stored,['name'=>'Aluno Teste','email'=>'aluno@example.com'],['id'=>1,'slug'=>'workshop','is_root'=>1]);
 if(!str_contains($rendered,'student-access-bar')||!str_contains($rendered,'Acesso individual'))fail('protection UI not injected');
-if(!str_contains($rendered,'Conteúdo'))fail('material content lost');
+$visibleText=html_entity_decode(strip_tags($rendered),ENT_QUOTES|ENT_HTML5,'UTF-8');
+if(!str_contains($visibleText,'Conteúdo'))fail('material content lost');
 
 $_SESSION=['student'=>['id'=>(int)$user['id'],'issued_at'=>time(),'last_activity'=>time()]];
 if(!current_student($db))fail('valid session rejected');
