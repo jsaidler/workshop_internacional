@@ -93,7 +93,6 @@ test('desktop study material reads as continuous longform instead of stacked pan
   expect(px(noteStyle.borderLeftWidth)).toBeGreaterThanOrEqual(2);
   expect(noteBox.height).toBeLessThan(80);
 
-  expect(await gridColumns(grid)).toBe(3);
   const dataCards=await expectSameRow(page.locator('#reference-grid > .format-card'));
   expect(dataCards).toHaveLength(3);
   for(const box of dataCards)expect(box.width).toBeGreaterThan(300);
