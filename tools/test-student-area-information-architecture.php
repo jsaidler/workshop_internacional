@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 function fail(string $message): never {fwrite(STDERR,"student-area-ia: $message\n");exit(1);}
 $root=dirname(__DIR__);
-$area=(string)file_get_contents($root.'/admin/student-area.php');
+$guard=(string)file_get_contents($root.'/admin/student-area.php');
+$area=(string)file_get_contents($root.'/admin/student-area-legacy.php');
 $shell=(string)file_get_contents($root.'/app/admin_shell.php');
 $legacy=(string)file_get_contents($root.'/admin/student-operations.php');
 $adminJs=(string)file_get_contents($root.'/assets/admin.js');
@@ -22,8 +23,9 @@ if(str_contains($area,'Operações e testes'))fail('legacy task grouping leaked 
 if(str_contains($legacy,'admin_shell_start('))fail('legacy operations page still renders a parallel admin surface');
 if(!str_contains($legacy,"'import'=>'students'")||!str_contains($legacy,"'tests'=>'tests'"))fail('legacy routes do not redirect to canonical object views');
 
-if(!str_contains($adminJs,"textContent.trim() === 'Páginas protegidas'"))fail('student admin does not remove the obsolete protected-pages destination');
-if(!str_contains($adminJs,"window.location.replace('/admin/pages.php'"))fail('legacy protected-pages URL is not redirected to canonical CMS pages');
+if(!str_contains($guard,"if(\$view==='pages')")||!str_contains($guard,"'/admin/pages.php'"))fail('protected-pages URL is not redirected server-side to canonical CMS pages');
+foreach(['set_page_access','save_section_map','bind_page_media','unbind_page_media'] as $action)if(!str_contains($guard,"'".$action."'"))fail('obsolete editorial writer is not blocked: '.$action);
+if(!str_contains($guard,'http_response_code(410)'))fail('obsolete editorial writers do not fail closed');
 foreach(['cms-access-audience','cms-access-availability','cms-visible-from','cms-access-lesson'] as $needle)if(!str_contains($editorAccess,$needle))fail('canonical editor missing section access property: '.$needle);
 foreach(['Importar CSV','accept=".csv,text/csv"','/assets/modelo-importacao-alunos.csv','Exemplo:'] as $needle)if(!str_contains($area,$needle))fail('server-rendered CSV UI missing: '.$needle);
 if(str_contains($adminJs,'studentCsvInput')||str_contains($adminJs,'Importar planilha'))fail('CSV UI still depends on JavaScript rewriting');
