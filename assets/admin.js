@@ -44,6 +44,14 @@ if (studentCsvInput) {
   }
 
   const form = studentCsvInput.closest('form');
+  if (form) {
+    const pageUrl = new URL(window.location.href);
+    const actionUrl = new URL('/admin/student-import-csv.php', window.location.origin);
+    const activity = pageUrl.searchParams.get('activity');
+    if (activity) actionUrl.searchParams.set('activity', activity);
+    form.action = actionUrl.pathname + actionUrl.search;
+  }
+
   const card = form?.closest('.admin-card');
   const note = form?.querySelector('.muted');
   if (note) note.textContent = note.textContent.replace('CSV ou XLSX', 'CSV');
