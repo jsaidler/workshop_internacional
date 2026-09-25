@@ -19,9 +19,22 @@ function run_migrations(PDO $db): void {
         $insert=$db->prepare('INSERT INTO schema_migrations(version,applied_at) VALUES(?,?)');$insert->execute([$version,gmdate('c')]);
     }
 }
+function database_run_migrations_locked(PDO $db,string $storageRoot): void {
+    $lockPath=$storageRoot.'/migrations.lock';
+    $handle=@fopen($lockPath,'c+');
+    if($handle===false)throw new RuntimeException('Cannot open migration lock.');
+    try{
+        if(!flock($handle,LOCK_EX))throw new RuntimeException('Cannot acquire migration lock.');
+        run_migrations($db);
+    }finally{
+        @flock($handle,LOCK_UN);
+        fclose($handle);
+    }
+}
 function database(): PDO {
     static $db; if($db) return $db;
-    $path=dirname(__DIR__).'/storage/database.sqlite';
+    $storage=dirname(__DIR__).'/storage';
+    $path=$storage.'/database.sqlite';
     if(!is_file($path)) throw new RuntimeException('Missing storage/database.sqlite.');
-    $db=database_connection($path);run_migrations($db);return $db;
+    $db=database_connection($path);database_run_migrations_locked($db,$storage);return $db;
 }
