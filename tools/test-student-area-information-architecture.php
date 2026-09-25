@@ -50,7 +50,7 @@ if(!str_contains($studentHome,'student-dashboard'))fail('student home is still t
 if(str_contains($studentHome,'style='))fail('student home contains inline layout styles');
 foreach(['Cena e exposição','Revelação','Resultado'] as $stageLabel)if(!str_contains($studentTests,$stageLabel))fail('student test stage missing: '.$stageLabel);
 if(!str_contains($studentTests,'capture="environment"'))fail('student test scene/result workflow does not offer direct camera capture');
-if(!str_contains($studentTests,'value="scene"')||!str_contains($studentTests,'value="result"'))fail('student images are not classified as scene/result');
+if(!str_contains($studentTests,"student_test_capture_controls(\$id,'scene'")||!str_contains($studentTests,"student_test_capture_controls(\$id,'result'"))fail('student images are not classified as scene/result');
 if(!str_contains($studentTestHelpers,'function student_test_update_stage'))fail('staged test updates are not partial');
 if(!str_contains($studentTestHelpers,"['scene','result']"))fail('media kind helper does not constrain scene/result roles');
 if(!str_contains($studentCss,'.student-test-progress')||!str_contains($studentCss,'.student-bottom-nav'))fail('mobile test application styles are missing');
