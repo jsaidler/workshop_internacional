@@ -220,6 +220,7 @@
 }
 .cms-public .study-unit>.study-comparison .format-card{padding:18px 20px}
 .cms-public .study-unit>.study-comparison .format-card h3{margin-top:8px;font-size:16.5px;line-height:1.5}
+.cms-public .study-unit>.study-comparison .format-card p{margin:0;font-size:16.5px;line-height:1.58}
 
 /* Procurement data is a lookup list, not a wall of cards. */
 .cms-public .study-unit>.study-resource-list{
