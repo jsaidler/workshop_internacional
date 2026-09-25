@@ -61,6 +61,25 @@ return static function(PDO $db): void {
         )??$html;
     };
 
+    $makeEiComparison=static function(string $html): string {
+        $lead='Na segunda aula fizemos duas fotografias em condições diferentes e o processo completo até o positivo.';
+        $first='A primeira foi exposta em EI 200 e revelada com 10 ml de Parodinal + 550 ml de água, durante 7 minutos, a 26 °C e com agitação leve.';
+        $second='Na segunda passamos para EI 400 e 20 ml de Parodinal + 550 ml de água, mantendo os mesmos 7 minutos, 26 °C e a mesma agitação.';
+        $sectionPattern='~(<section\b[^>]*data-cms-section=["\']caderno-19-duas-chapas["\'][^>]*>)(.*?)(</section>)~si';
+        return preg_replace_callback($sectionPattern,static function(array $m)use($lead,$first,$second):string{
+            $body=(string)$m[2];
+            if(str_contains($body,'study-comparison'))return (string)$m[1].$body.(string)$m[3];
+            $source='<div class="statement-copy"><p data-cms-editable>'.$lead.'</p><p data-cms-editable>'.$first.'</p><p data-cms-editable>'.$second.'</p></div>';
+            if(!str_contains($body,$source))return (string)$m[1].$body.(string)$m[3];
+            $replacement='<div class="statement-copy"><p data-cms-editable>'.$lead.'</p></div>'
+                .'<div class="format-grid study-comparison">'
+                .'<div class="format-card"><p data-cms-editable>'.$first.'</p></div>'
+                .'<div class="format-card"><p data-cms-editable>'.$second.'</p></div>'
+                .'</div>';
+            return (string)$m[1].str_replace($source,$replacement,$body).(string)$m[3];
+        },$html,1)??$html;
+    };
+
     $changed=false;
     $updates=[];
     foreach(['draft_document_json','published_document_json'] as $column){
@@ -72,12 +91,12 @@ return static function(PDO $db): void {
         $html=(string)$doc['html'];
         $before=$html;
 
-        /* The source contains five non-navigation grids. They do not all carry
-           the same semantic weight, so they must not all look like card walls. */
+        /* Existing reference groups receive different visual roles. No source
+           value is rewritten; only the representation changes. */
         $html=$addGridClassInSection($html,'caderno-04-energia','study-data-strip');
         $html=$addGridClassInSection($html,'caderno-05-reciprocidade','study-data-strip study-reciprocity-strip');
         $html=$addGridClassInSection($html,'caderno-12-parodinal','study-compact-values');
-        $html=$addGridClassInSection($html,'caderno-19-duas-chapas','study-comparison');
+        $html=$makeEiComparison($html);
         $html=$addGridClassInSection($html,'caderno-20-materiais','study-resource-list');
 
         /* Preserve every word from the source while distinguishing equation,
