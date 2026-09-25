@@ -49,10 +49,11 @@ foreach($expected as $section=>$lesson)if(($map[$section]??'')!==$lesson)fail_ma
 
 $css=(string)file_get_contents(__DIR__.'/../assets/cms.css');
 foreach(['.cms-document{','.cms-document-page{','.cms-lesson-divider{','.cms-document-index{','Shared long-form document system'] as $needle)if(str_contains($css,$needle))fail_material('handbook-specific CSS leaked into shared stylesheet: '.$needle);
-$index=(string)file_get_contents(__DIR__.'/../index.php');$media=(string)file_get_contents(__DIR__.'/../aluno/media.php');$shell=(string)file_get_contents(__DIR__.'/../app/admin_shell.php');$admin=(string)file_get_contents(__DIR__.'/../admin/student-area.php');
+$index=(string)file_get_contents(__DIR__.'/../index.php');$media=(string)file_get_contents(__DIR__.'/../aluno/media.php');$shell=(string)file_get_contents(__DIR__.'/../app/admin_shell.php');$guard=(string)file_get_contents(__DIR__.'/../admin/student-area.php');$admin=(string)file_get_contents(__DIR__.'/../admin/student-area-legacy.php');
 if(!str_contains($index,'$admin=current_admin()')||!str_contains($index,'if($admin)'))fail_material('admin protected-page bypass missing');
 if(!str_contains($media,'if(current_admin())')||!str_contains($media,'student_private_media_admin_asset'))fail_material('admin private-media bypass missing');
 if(!str_contains($shell,"/assets/admin-data-ux.css")||str_contains($shell,"/assets/admin-student-area.css"))fail_material('admin shared UX stylesheet not canonical');
 if(str_contains($admin,'style='))fail_material('student admin contains page-local inline style');
-foreach(['view=','admin-subtabs','admin-data-toolbar','LIMIT ? OFFSET ?','slot_key'] as $needle)if(!str_contains($admin,$needle))fail_material('scalable admin contract missing: '.$needle);
+foreach(['view=','admin-subtabs','admin-data-toolbar','LIMIT ? OFFSET ?','slot_key'] as $needle)if(!str_contains($admin,$needle))fail_material('scalable student operations contract missing: '.$needle);
+if(!str_contains($guard,"if(\$view==='pages')")||!str_contains($guard,'http_response_code(410)'))fail_material('canonical student-area guard does not retire protected-page authority');
 echo "student-material-system: ok\n";
