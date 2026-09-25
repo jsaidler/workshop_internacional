@@ -12,9 +12,12 @@ return static function(PDO $db): void {
         foreach([PUBLIC_LOCALE_PT_BR,PUBLIC_LOCALE_EN] as $locale){
             $settings=cms_site_settings($db,(int)$activityId,$locale);
             $label=$locale===PUBLIC_LOCALE_PT_BR?'Área do aluno':'Student area';
-            if(trim((string)($settings['header']['ctaLabel']??''))===''&&trim((string)($settings['header']['ctaUrl']??''))===''){
-                $settings['header']['ctaLabel']=$label;
-                $settings['header']['ctaUrl']='/aluno/';
+            $items=is_array($settings['navigation']['items']??null)?$settings['navigation']['items']:[];
+            $hasStudent=false;
+            foreach($items as $item)if(is_array($item)&&($item['type']??'')==='custom'&&rtrim((string)($item['url']??''),'/')==='/aluno'){$hasStudent=true;break;}
+            if(!$hasStudent){
+                $items[]=['type'=>'custom','label'=>$label,'url'=>'/aluno/','newTab'=>false];
+                $settings['navigation']['items']=$items;
                 cms_settings_save($db,'site',(int)$activityId,$locale,$settings);
             }
         }
