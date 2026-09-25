@@ -2,6 +2,7 @@ Options -Indexes
 RewriteEngine On
 RewriteRule ^(app|config|storage|data|output|reference)/ - [F,L]
 RewriteRule ^\.git - [F,L]
+RewriteRule ^uploads/media/(.+)$ media-file.php?path=$1 [QSA,L]
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 RewriteRule ^robots\.txt$ robots.php [L]
 RewriteCond %{REQUEST_FILENAME} !-f

@@ -56,6 +56,7 @@ jobs:
           php tools/test-student-area-information-architecture.php
           php tools/test-student-mobile-experience.php
           php tools/test-admin-lifecycle-and-student-design.php
+          php tools/test-private-media-library.php
           php tools/test-student-handbook.php
           php tools/test-student-material-system.php
           php tools/test-handbook-email-integrity.php
