@@ -12,7 +12,7 @@ test('student test recorder behaves as a mobile application surface',async({page
   await expect(page.locator('.student-bottom-nav')).toBeVisible();
   await expect(page.locator('.student-desktop-nav')).toBeHidden();
   await expect(page.locator('.student-test-progress a')).toHaveCount(3);
-  await expect(page.getByText('Cena e exposição',{exact:true})).toBeVisible();
+  await expect(page.getByText('Cena e exposição',{exact:true}).first()).toBeVisible();
   await expect(page.getByText('Fotografar cena',{exact:true})).toBeVisible();
 
   const progress=await page.locator('.student-test-progress').boundingBox();
