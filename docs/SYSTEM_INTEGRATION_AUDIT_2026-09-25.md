@@ -42,6 +42,10 @@ Cada atividade continua preservando seu `id`, `slug`, status e todos os relacion
 
 `cms_pages` continua sendo a autoridade do conteúdo editorial de uma URL. Título de página, rótulo de navegação e SEO da página não são substitutos do nome do curso.
 
+As páginas de uma atividade também precisam ter **relação estrutural entre si**. Pertencer à mesma atividade não basta para expressar que uma página é a apresentação principal do curso e outra é uma página subordinada daquele mesmo curso, como ocorre com a página do workshop de positivo direto e sua página de inscrição.
+
+A hierarquia editorial de páginas deve ser independente da URL pública: relacionar uma página à sua página-mãe não autoriza alterar automaticamente o slug ou quebrar links existentes.
+
 ## Problemas encontrados
 
 ### P0 — identidade duplicada e concorrente
@@ -76,6 +80,60 @@ Isso permite estados incoerentes: alterar um nome em uma tela não garante que h
 - timestamps.
 
 O campo atual `activities.public_title` permanece como fallback de compatibilidade durante a migração.
+
+### P0 — páginas de uma atividade formam hoje uma lista plana
+
+`cms_pages` já possui `activity_id`, portanto a relação curso → páginas existe. O que falta é a relação **página → página subordinada** dentro da própria atividade. A administração atual ordena todas as páginas do locale numa única lista; uma página de inscrição, material complementar, FAQ ou outra página operacional aparece no mesmo nível da página principal do workshop.
+
+Isso perde informação semântica importante. Exemplo canônico:
+
+```text
+Positivo direto em filme de raio-X
+└── Inscrição
+```
+
+A página `Inscrição` não é outro curso, nem apenas uma página qualquer no mesmo saco. Ela pertence ao mesmo curso e é subordinada à sua página principal.
+
+**Modelo-alvo:** adicionar relação estrutural aditiva em `cms_pages`, preferencialmente `parent_page_id` nullable, com regras:
+
+- pai e filho devem pertencer à mesma `activity`;
+- por padrão devem pertencer ao mesmo locale;
+- ciclos são proibidos;
+- página sem pai continua sendo página de nível superior da atividade;
+- a home/página principal do curso pode ter páginas filhas;
+- hierarquia editorial não muda slug nem URL automaticamente;
+- `sort_order` deve ser interpretado entre irmãos quando a hierarquia estiver ativa;
+- arquivar uma página-pai não deve apagar nem arquivar filhos implicitamente.
+
+A migração não deve tentar adivinhar toda a árvore a partir de títulos ou slugs. Todas as páginas existentes permanecem no nível atual até uma relação ser definida explicitamente ou houver uma regra de backfill inequivocamente segura. No caso conhecido do workshop de positivo direto, a página de inscrição poderá ser vinculada explicitamente à página principal depois que o recurso existir.
+
+A tela `Páginas` deve mostrar a árvore visualmente, e não uma lista plana. Exemplo:
+
+```text
+Positivo direto em filme de raio-X · Inicial
+    Inscrição
+    Material do workshop
+Pinhole Lambe-Lambe
+    Lista de interesse
+```
+
+A área `Navegação` continua controlando exposição no menu, rótulos e ordem de navegação, mas não deve manter uma segunda hierarquia concorrente. A estrutura pai/filho pertence a `cms_pages`; a navegação apenas decide quais nós dessa estrutura aparecem publicamente.
+
+### P0 — páginas equivalentes em idiomas diferentes não possuem relação explícita
+
+A existência de `locale` separa documentos, mas hoje não há uma identidade que diga que duas páginas são versões linguísticas do mesmo objeto editorial. Com a hierarquia de páginas, esse vazio fica mais evidente: a versão EN da landing e sua página de interesse/inscrição precisam poder corresponder às equivalentes PT sem depender de título ou slug igual.
+
+Não usar `parent_page_id` para ligar traduções. São relações diferentes.
+
+**Modelo recomendado:** introduzir posteriormente uma identidade editorial compartilhada, como `page_group_uuid`/`translation_key`, preservando os `id` atuais. Isso permite:
+
+- alternância de idioma para a página equivalente;
+- `hreflang` correto;
+- comparação de estrutura entre locales;
+- hierarquia equivalente sem obrigar os slugs a serem iguais;
+- impedir que “trocar idioma” leve apenas para a home por falta de correspondência conhecida.
+
+Nenhuma correspondência histórica deve ser inferida automaticamente quando houver ambiguidade.
 
 ### P0 — contexto visual da Área autenticada é resolvido pela primeira matrícula
 
@@ -252,6 +310,8 @@ Uma atividade pode evoluir por estados como preparação, inscrições abertas, 
 
 O HTML do documento CMS e `data-cms-section` são a estrutura real. Não criar tabela paralela de seções para edição.
 
+A hierarquia entre páginas pertence a `cms_pages`; ela não deve criar um segundo documento de conteúdo nem uma segunda árvore de seções.
+
 ### Acesso de seção
 
 Audiência e disponibilidade pertencem à própria seção do CMS e são avaliadas server-side.
@@ -283,6 +343,15 @@ Qualquer refatoração das integrações acima deve seguir esta sequência:
 
 Nunca usar migração que “reconstrói defaults” como substituto dos dados existentes. Conteúdo e configurações já editados no CMS têm precedência sobre seeds.
 
+Para hierarquia de páginas especificamente:
+
+- adicionar `parent_page_id` sem alterar `id`, slug, URL ou conteúdo das páginas atuais;
+- páginas existentes começam com `parent_page_id=NULL`;
+- definir relações pai/filho explicitamente no admin;
+- somente depois adaptar listagem, navegação, breadcrumbs e seletores para consumir a mesma árvore;
+- não gerar redirects nem URLs aninhadas como efeito colateral da migração;
+- se URLs aninhadas forem desejadas no futuro, tratá-las como decisão de roteamento separada com aliases/redirects preservando os endereços históricos.
+
 ## Ordem recomendada de execução
 
 ### Fase A — coerência imediata, sem mudança estrutural pesada
@@ -293,14 +362,17 @@ Nunca usar migração que “reconstrói defaults” como substituto dos dados e
 - declarar estruturas legadas como read-only em regressão;
 - atualizar `PRIVACY_LGPD.md` para a arquitetura vigente.
 
-### Fase B — identidade multi-curso
+### Fase B — identidade multi-curso e estrutura editorial
 
 - criar configuração global `JSaidler Fotografia`;
 - criar identidade localizada de atividade;
 - migrar nomes existentes sem apagar `public_title`, `siteName` ou `wordmark` no primeiro release;
 - trocar UI “Sites” por “Cursos e workshops”;
 - remover marca hardcoded de admin/Área autenticada;
-- resolver design da Área autenticada por contexto explícito.
+- resolver design da Área autenticada por contexto explícito;
+- adicionar `parent_page_id` e transformar `Páginas` em árvore por atividade/locale sem alterar URLs;
+- permitir associar a página de inscrição à página principal do workshop de positivo direto;
+- preparar identidade de tradução de página separada da relação pai/filho.
 
 ### Fase C — integrações genéricas de produto
 
@@ -308,7 +380,8 @@ Nunca usar migração que “reconstrói defaults” como substituto dos dados e
 - variáveis comerciais genéricas por atividade/locale;
 - timezone por atividade;
 - idioma preferencial da conta;
-- visão agregada de métricas.
+- visão agregada de métricas;
+- breadcrumbs e navegação pública consumindo a hierarquia canônica de páginas quando aplicável.
 
 ### Fase D — limpeza posterior
 
@@ -317,7 +390,8 @@ Somente depois de uma versão estável com telemetria/testes:
 - retirar writes antigos;
 - remover fallbacks comprovadamente não usados;
 - avaliar remoção física de tabelas/colunas legadas;
-- avaliar separação da raiz institucional das URLs históricas da atividade raiz.
+- avaliar separação da raiz institucional das URLs históricas da atividade raiz;
+- avaliar rotas aninhadas apenas se houver benefício real, sempre preservando aliases/redirects dos slugs atuais.
 
 ## Regra permanente de arquitetura
 
@@ -329,5 +403,6 @@ Antes de implementar uma capacidade nova, responder explicitamente:
 4. A capacidade é global, de atividade, de locale, de página, de seção, de turma, de aula, de usuário ou de registro?
 5. Existe uma estrutura antiga contendo os mesmos dados?
 6. Como migrar sem apagar nem reinterpretar dados existentes?
+7. Se envolver páginas: a relação é **atividade → página**, **página → página filha** ou **página → equivalente em outro locale**? Não misturar esses três vínculos.
 
 Se a resposta levar à criação de uma segunda interface para o mesmo objeto, a arquitetura deve ser reconsiderada antes de escrever código.
