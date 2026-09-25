@@ -22,20 +22,14 @@ function student_page_resolve_private_media_slots(PDO $db,array $page,array $doc
         try{$slot=student_private_media_slot_key((string)$m[2]);}catch(Throwable){return '';}
         $whole=(string)$m[0];$alt=$slot;if(preg_match('~data-private-media-alt=["\']([^"\']*)["\']~i',$whole,$am))$alt=html_entity_decode((string)$am[1],ENT_QUOTES|ENT_HTML5,'UTF-8');
         $binding=media_page_slot_binding($db,$pageId,$slot);
-        if($binding){
-            $src=current_admin()?'/media-file.php?asset='.(int)$binding['media_asset_id']:('/aluno/media.php?media='.(int)$binding['media_asset_id']);
-            return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="media-area"><img data-cms-media src="'.h($src).'" alt="'.h($alt).'"></div></figure>';
-        }
+        if($binding){$src=current_admin()?'/media-file.php?asset='.(int)$binding['media_asset_id']:('/aluno/media.php?media='.(int)$binding['media_asset_id']);return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="media-area"><img data-cms-media src="'.h($src).'" alt="'.h($alt).'"></div></figure>';}
         $legacy=student_private_media_for_slot($db,$pageId,$slot);
         if($legacy){$src=student_private_media_placeholder($legacy);return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="media-area"><img data-cms-media src="'.h($src).'" alt="'.h($alt).'"></div></figure>';}
         if(!current_admin())return '';
         return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Mídia pendente<br>'.h($alt).'<br><br>slot: '.h($slot).'</span></div></figure>';
     },$html)??$html;$document['html']=$html;return $document;
 }
-
-function student_page_sign_private_media(array $document,array $student,array $page,array $enrollment): array {
+function student_page_sign_media_library(array $document,array $student,array $page,array $enrollment): array {
     $html=(string)($document['html']??'');$studentId=(int)$student['id'];$pageId=(int)$page['id'];$cohortId=(int)$enrollment['cohort_id'];
-    $html=preg_replace_callback('~/aluno/media\.php\?media=(\d+)~i',static fn($m)=>h(media_private_student_url($studentId,(int)$m[1],$pageId,$cohortId)),$html)??$html;
-    $html=preg_replace_callback('~(?:https?://[^\"\']+)?/aluno/media\.php\?asset=([a-f0-9]{32})(?:&amp;|&[^\"\']*)?~i',static fn($m)=>h(student_private_media_url($studentId,strtolower($m[1]),$pageId,$cohortId)),$html)??$html;
-    $document['html']=$html;return $document;
+    $html=preg_replace_callback('~/aluno/media\.php\?media=(\d+)~i',static fn($m)=>h(media_private_student_url($studentId,(int)$m[1],$pageId,$cohortId)),$html)??$html;$document['html']=$html;return $document;
 }
