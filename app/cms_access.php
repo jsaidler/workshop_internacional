@@ -8,6 +8,8 @@ function cms_access_parse_local_datetime(string $value): ?int {
     $value=trim($value);if($value==='')return null;
     try{$tz=new DateTimeZone((string)(app_config()['timezone']??'UTC'));$dt=new DateTimeImmutable($value,$tz);return $dt->getTimestamp();}catch(Throwable){return null;}
 }
+function cms_access_local_to_utc(string $value): ?string {$ts=cms_access_parse_local_datetime($value);return $ts===null?null:gmdate('c',$ts);}
+function cms_access_local_input_value(?string $utc): string {if(!$utc)return '';try{$dt=new DateTimeImmutable($utc);$tz=new DateTimeZone((string)(app_config()['timezone']??'UTC'));return $dt->setTimezone($tz)->format('Y-m-d\TH:i');}catch(Throwable){return '';}}
 function cms_access_section_rule(DOMElement $section): array {
     $access=$section->getAttribute('data-cms-access');if(!in_array($access,cms_access_levels(),true))$access='public';
     $availability=$section->getAttribute('data-cms-availability');if(!in_array($availability,cms_availability_modes(),true))$availability='immediate';
@@ -28,6 +30,14 @@ function cms_access_active_enrollment(PDO $db,int $studentId,int $activityId,?in
 function cms_access_lesson_released(PDO $db,int $cohortId,int $lessonId,?int $now=null): bool {
     if($cohortId<1||$lessonId<1)return false;$q=$db->prepare('SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=? AND lesson_id=?');$q->execute([$cohortId,$lessonId]);$value=$q->fetchColumn();if(!is_string($value)||trim($value)==='')return false;
     $ts=strtotime($value);return $ts!==false&&$ts<=($now??time());
+}
+function cms_access_lesson_release_state(?string $releasedAt,?int $now=null): string {if(!$releasedAt)return 'blocked';$ts=strtotime($releasedAt);if($ts===false)return 'blocked';return $ts<=($now??time())?'released':'scheduled';}
+function cms_access_set_lesson_release(PDO $db,int $activityId,int $cohortId,int $lessonId,string $mode,string $scheduled=''): ?string {
+    $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==$activityId)throw new RuntimeException('Turma inválida.');
+    $q=$db->prepare('SELECT 1 FROM course_lessons WHERE id=? AND activity_id=?');$q->execute([$lessonId,$activityId]);if(!$q->fetchColumn())throw new RuntimeException('Aula inválida.');
+    $releasedAt=match($mode){'release'=>utc_now(),'block'=>null,'schedule'=>cms_access_local_to_utc($scheduled),default=>throw new RuntimeException('Ação de liberação inválida.')};
+    if($mode==='schedule'&&$releasedAt===null)throw new RuntimeException('Informe uma data e hora válidas.');$now=utc_now();
+    $db->prepare('INSERT INTO cohort_lesson_releases(cohort_id,lesson_id,released_at,created_at,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(cohort_id,lesson_id) DO UPDATE SET released_at=excluded.released_at,updated_at=excluded.updated_at')->execute([$cohortId,$lessonId,$releasedAt,$now,$now]);return $releasedAt;
 }
 function cms_access_section_allowed(PDO $db,array $activity,array $rule,?array $user=null,?int $now=null): bool {
     $now??=time();$availability=(string)($rule['availability']??'immediate');
