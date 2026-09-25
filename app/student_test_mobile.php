@@ -30,9 +30,10 @@ function student_test_update_development(PDO $db,int $testId,int $studentId,arra
     $temperature=student_workspace_text($input['temperature']??'',80);
     $time=student_workspace_text($input['development_time']??'',120);
     $agitation=student_workspace_text($input['agitation']??'',1200);
+    $bleach=student_workspace_text($input['bleach']??'',180);
     $notes=student_workspace_text($input['notes']??'',4000);
-    $db->prepare('UPDATE student_tests SET developer=?,dilution=?,temperature=?,development_time=?,agitation=?,notes=?,updated_at=? WHERE id=? AND student_id=?')
-        ->execute([$developer,$dilution,$temperature,$time,$agitation,$notes,utc_now(),$testId,$studentId]);
+    $db->prepare('UPDATE student_tests SET developer=?,dilution=?,temperature=?,development_time=?,agitation=?,bleach=?,notes=?,updated_at=? WHERE id=? AND student_id=?')
+        ->execute([$developer,$dilution,$temperature,$time,$agitation,$bleach,$notes,utc_now(),$testId,$studentId]);
     return student_test_for_student($db,$testId,$studentId)??throw new RuntimeException('Teste não encontrado.');
 }
 
