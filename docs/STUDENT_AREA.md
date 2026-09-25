@@ -86,7 +86,7 @@ O fluxo móvel acompanha a ordem do trabalho:
 2. **Revelação** — revelador; diluição; temperatura; tempo; movimentação/agitação; **branqueador usado**; observações; foto/anexo do resultado.
 3. **Revisar e enviar** — ficha e imagens reunidas antes da avaliação.
 
-O campo **Branqueador** permite escolher valores usados na pesquisa (Ácido peracético ou Cloreto férrico) e também aceitar outro texto, porque o registro deve descrever o processo efetivamente utilizado sem limitar experimentações futuras.
+O campo **Branqueador** permite escolher valores usados na pesquisa (**Solução peroxiacética** ou **Cloreto férrico**) e também aceitar outro texto, porque o registro deve descrever o processo efetivamente utilizado sem limitar experimentações futuras.
 
 As fotografias ficam em armazenamento próprio do teste e são servidas somente após autorização.
 
@@ -128,3 +128,7 @@ Os testes devem provar que:
 - o registro de teste persiste e exibe o branqueador;
 - visibilidade do teste continua valendo para ficha, imagens e conversa;
 - CI, browser regression, build e dry-run passam antes do merge.
+
+## Auditoria de integração
+
+A integração entre marca global, cursos/workshops, páginas, formulários, contas, turmas, mídia, variáveis comerciais e estruturas legadas está documentada em `docs/SYSTEM_INTEGRATION_AUDIT_2026-09-25.md`. Qualquer refatoração desses domínios deve seguir o plano aditivo e sem perda de dados definido ali.

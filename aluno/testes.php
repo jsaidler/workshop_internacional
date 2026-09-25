@@ -43,7 +43,7 @@ student_shell_start('Testes',null,$student);?>
 </section>
 
 <section class="student-section">
-  <div class="student-section-heading"><div><p class="student-kicker">Referências da comunidade</p><h2 class="student-subtitle">Compartilhados com você</h2></div><p>Testes compartilhados mostram ficha técnica e imagens. A conversa de avaliação entre autor e professor continua privada.</p></div>
+  <div class="student-section-heading"><div><p class="student-kicker">Referências da comunidade</p><h2 class="student-subtitle">Compartilhados com você</h2></div><p>Quando um teste é compartilhado, a mesma visibilidade vale para a ficha técnica, as imagens e a conversa de avaliação.</p></div>
   <?php if(!$shared):?><div class="student-empty">Nenhum teste foi compartilhado com você ainda.</div><?php else:?><div class="student-test-list"><?php foreach($shared as $test):?><a class="student-test-row" href="/aluno/teste-compartilhado.php?id=<?=(int)$test['id']?>"><div><span class="student-status"><?=h(student_test_visibility_label((string)$test['visibility']))?></span><h3><?=h((string)$test['title'])?></h3><p><?=h((string)$test['student_name'])?> · <?=h((string)$test['cohort_title'])?></p></div><div class="student-test-meta"><span><?=h((string)($test['test_date']?:'sem data'))?></span><span>Atualizado <?=h(student_ops_datetime_exists((string)$test['updated_at']))?></span></div></a><?php endforeach;?></div><?php endif;?>
 </section>
 <?php student_shell_end();
