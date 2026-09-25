@@ -17,22 +17,18 @@ if(!str_contains($area,'$views=[\'overview\',\'cohorts\',\'students\',\'tests\',
 $labels=['Visão geral','Turmas','Alunos','Testes','Aulas','Páginas protegidas'];
 $last=-1;foreach($labels as $label){$pos=strpos($area,"'".$label."'");if($pos===false)fail('navigation label missing: '.$label);if($pos<=$last)fail('student area navigation order changed around '.$label);$last=$pos;}
 if(!str_contains($area,"\$action==='update_cohort'"))fail('cohort editing is not part of the student area');
-if(!str_contains($area,"\$action==='import_students'"))fail('historical import is not part of the student area');
-if(!str_contains($area,'name="return_view" value="students"'))fail('historical import is not contextualized under Students');
+if(!str_contains($area,'/admin/student-import-csv.php?activity='))fail('historical CSV import is not contextualized under Students');
 if(!str_contains($area,"\$view==='tests'"))fail('tests are not a first-class student area view');
 if(str_contains($area,'Dados das turmas'))fail('legacy task label leaked into canonical navigation');
 if(str_contains($area,'Operações e testes'))fail('legacy task grouping leaked into canonical page');
 if(str_contains($legacy,'admin_shell_start('))fail('legacy operations page still renders a parallel admin surface');
 if(!str_contains($legacy,"'import'=>'students'")||!str_contains($legacy,"'tests'=>'tests'"))fail('legacy routes do not redirect to canonical object views');
 
-if(!str_contains($adminJs,"studentCsvInput.setAttribute('accept', '.csv,text/csv')"))fail('student import UI is not constrained to CSV');
-if(!str_contains($adminJs,"/admin/student-import-csv.php"))fail('student import form is not routed through the CSV-only endpoint');
-if(!str_contains($adminJs,"templateLink.href = '/assets/modelo-importacao-alunos.csv'"))fail('CSV template download is not exposed in the student import UI');
-if(!str_contains($adminJs,"Exemplo de linha: "))fail('CSV import does not show an example row');
+foreach(['Importar CSV','accept=".csv,text/csv"','/assets/modelo-importacao-alunos.csv','Exemplo:'] as $needle)if(!str_contains($area,$needle))fail('server-rendered CSV UI missing: '.$needle);
+if(str_contains($adminJs,'studentCsvInput')||str_contains($adminJs,'Importar planilha'))fail('CSV UI still depends on JavaScript rewriting');
 if(!str_contains($csvEndpoint,"strtolower(pathinfo(\$name,PATHINFO_EXTENSION))!=='csv'"))fail('CSV endpoint does not reject non-CSV uploads');
 if(!str_contains($csvEndpoint,"student_import_historical_students(\$db,\$activityId,\$cohortId,\$file)"))fail('CSV endpoint is not connected to the historical importer');
 $csvHeader=ltrim(strtok($csvTemplate,"\r\n"),"\xEF\xBB\xBF");
 if($csvHeader!=='Nome;E-mail;CPF;Telefone;Instagram;Endereço;Cidade/UF;CEP')fail('CSV template header changed');
-
 
 echo "student-area-ia: ok\n";

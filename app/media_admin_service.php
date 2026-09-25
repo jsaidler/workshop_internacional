@@ -27,7 +27,7 @@ function media_asset_admin(PDO $db,int $id): array {
     $asset=media_asset($db,$id);
     $asset['tags']=media_asset_tags($db,$id);
     $asset['uses']=media_usage_all($db,$id);
-    return $asset;
+    return function_exists('media_rewrite_admin_delivery')?media_rewrite_admin_delivery($asset):$asset;
 }
 
 function media_update_metadata(PDO $db,int $assetId,array $input): array {
@@ -38,6 +38,9 @@ function media_update_metadata(PDO $db,int $assetId,array $input): array {
     $description=trim((string)($input['description']??$asset['description']??''));
     $focalX=max(0,min(100,(float)($input['focal_x']??$asset['focal_x']??50)));
     $focalY=max(0,min(100,(float)($input['focal_y']??$asset['focal_y']??50)));
+    $visibility=(string)($input['visibility']??(function_exists('media_asset_visibility')?media_asset_visibility($asset):(string)($asset['visibility']??'public')));
+    $allowed=function_exists('media_visibility_values')?media_visibility_values():['public','private'];
+    if(!in_array($visibility,$allowed,true))throw new RuntimeException('invalid_visibility');
     if($title==='')$title=pathinfo((string)$asset['original_name'],PATHINFO_FILENAME);
     foreach([$title,$alt,$caption] as $value)if(mb_strlen($value)>500)throw new RuntimeException('metadata_too_long');
     if(mb_strlen($description)>5000)throw new RuntimeException('metadata_too_long');
@@ -49,6 +52,11 @@ function media_update_metadata(PDO $db,int $assetId,array $input): array {
         media_set_tags($db,$assetId,$tags);
         $db->commit();
     }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+    $currentVisibility=function_exists('media_asset_visibility')?media_asset_visibility($asset):(string)($asset['visibility']??'public');
+    if($visibility!==$currentVisibility){
+        if(!function_exists('media_set_visibility'))throw new RuntimeException('media_visibility_service_unavailable');
+        return media_set_visibility($db,$assetId,$visibility);
+    }
     return media_asset_admin($db,$assetId);
 }
 
@@ -83,6 +91,10 @@ function media_usage_all(PDO $db,int $assetId): array {
             if(str_contains($html,$needle))$uses[]=['source'=>'cms','activity'=>$row['admin_name'],'slug'=>$row['activity_slug'],'state'=>$state,'pageId'=>(int)$row['id'],'page'=>$row['title'],'pageSlug'=>$row['slug'],'locale'=>$row['locale'],'element'=>'structured media'];
         }
     }
+    try{
+        $q=$db->prepare('SELECT s.page_id,s.slot_key,p.title,p.slug,p.locale,a.admin_name,a.slug activity_slug FROM course_page_media_slots s JOIN cms_pages p ON p.id=s.page_id JOIN activities a ON a.id=p.activity_id WHERE s.media_asset_id=?');$q->execute([$assetId]);
+        foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row)$uses[]=['source'=>'protected-slot','activity'=>$row['admin_name'],'slug'=>$row['activity_slug'],'state'=>'Protegido','pageId'=>(int)$row['page_id'],'page'=>$row['title'],'pageSlug'=>$row['slug'],'locale'=>$row['locale'],'element'=>'slot: '.$row['slot_key']];
+    }catch(Throwable){ }
     return $uses;
 }
 
@@ -97,23 +109,22 @@ function media_resolve_cms_html(PDO $db,string $html): string {
         $assetId=(int)$node->getAttribute('data-media-asset-id');
         if($assetId<1)continue;
         try{$asset=media_asset($db,$assetId);}catch(Throwable){continue;}
+        $isPrivate=(string)($asset['visibility']??'public')==='private';
+        $isAdmin=$isPrivate&&function_exists('current_admin')?(bool)current_admin():false;
+        if($isPrivate&&!$isAdmin){$node->parentNode?->removeChild($node);continue;}
         $versionId=(int)($asset['active_version_id']??0);
         if($node->getAttribute('data-media-version-mode')==='pinned'&&$node->hasAttribute('data-media-version-id'))$versionId=(int)$node->getAttribute('data-media-version-id');
         if(strtolower($node->tagName)==='img'&&$asset['kind']==='image'){
             $sources=media_image_sources($db,$assetId,$versionId,(string)$node->getAttribute('src'));
-            $node->setAttribute('src',$sources['src']);
-            if($sources['srcset']!==''){
-                $node->setAttribute('srcset',$sources['srcset']);
-                $node->setAttribute('sizes','(max-width: 720px) 100vw, 50vw');
-            }else{
-                $node->removeAttribute('srcset');
-                $node->removeAttribute('sizes');
+            if($isPrivate&&function_exists('media_admin_private_url')){
+                $srcPath=(string)($asset['original_path']??'');$sources=['src'=>media_admin_private_url($assetId,$srcPath),'srcset'=>''];
             }
+            $node->setAttribute('src',$sources['src']);
+            if($sources['srcset']!==''){$node->setAttribute('srcset',$sources['srcset']);$node->setAttribute('sizes','(max-width: 720px) 100vw, 50vw');}else{$node->removeAttribute('srcset');$node->removeAttribute('sizes');}
             $x=$node->hasAttribute('data-focal-x')?(float)$node->getAttribute('data-focal-x'):(float)($asset['focal_x']??50);
             $y=$node->hasAttribute('data-focal-y')?(float)$node->getAttribute('data-focal-y'):(float)($asset['focal_y']??50);
             $fit=$node->getAttribute('data-fit')==='contain'?'contain':'cover';
-            $existing=trim($node->getAttribute('style'));
-            $existing=preg_replace('/(?:object-fit|object-position|--cms-media-fit|--cms-media-position)\s*:[^;]+;?/i','',$existing)??$existing;
+            $existing=trim($node->getAttribute('style'));$existing=preg_replace('/(?:object-fit|object-position|--cms-media-fit|--cms-media-position)\s*:[^;]+;?/i','',$existing)??$existing;
             $node->setAttribute('style',trim($existing.';--cms-media-fit:'.$fit.';--cms-media-position:'.$x.'% '.$y.'%;',';'));
             if(trim($node->getAttribute('alt'))===''&&trim((string)($asset['default_alt']??''))!=='')$node->setAttribute('alt',(string)$asset['default_alt']);
         }

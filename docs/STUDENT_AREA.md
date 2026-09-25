@@ -1,202 +1,152 @@
 # Área do aluno — estado canônico
 
-## Regra de identidade
+Este documento é a autoridade funcional da Área do aluno. A implementação deve reutilizar os domínios já existentes do CMS em vez de criar sistemas paralelos.
 
-A conta de aluno é única entre cursos e pode possuir várias matrículas. Existem dois caminhos administrativos autorizados para que uma pessoa passe a existir na Área do aluno:
+## Princípios de arquitetura
 
-1. uma inscrição do formulário `registration` é confirmada (`status=converted` ou pagamento confirmado);
-2. um participante de turma anterior é incorporado por uma **importação administrativa de planilha**, vinculada explicitamente a uma turma existente.
+- **Design** é autoridade de tipografia, cores e tema. A Área do aluno carrega `template/page.css` e os tokens dinâmicos configurados em `Design`; `assets/student-area.css` define somente layout e comportamento do aplicativo.
+- **Atividade/curso** é autoridade do nome público do curso (`activities.public_title`). Esse nome é editável em `Site → Navegação → Identidade`, junto de Nome do site e Wordmark.
+- **Biblioteca de mídia** (`media_assets`) é a única autoridade para mídia editorial reutilizável, pública ou privada.
+- **Fotos de testes** não pertencem à biblioteca editorial: são anexos privados de um registro experimental do aluno e possuem ciclo de vida próprio.
+- **Página protegida** continua sendo uma `cms_page` normal. Não existe editor, stylesheet ou sistema editorial paralelo para materiais de curso.
+- **Liberação por aula** é feita no servidor. Conteúdo bloqueado não é enviado ao HTML do aluno.
 
-A importação histórica não é um cadastro manual livre. Ela exige uma planilha de origem e registra lote, linha, resultado e turma de destino para auditoria. O sistema reaproveita uma conta já existente quando e-mail/CPF identificam a mesma pessoa e recusa conflitos em que os dois identificadores apontam para contas diferentes.
+## Conta, perfil e matrículas
 
-O primeiro acesso usa **e-mail + CPF somente com números** como prova inicial de identidade, inclusive para contas importadas. O CPF não é senha permanente. Depois da validação inicial, o aluno reconhece o Aviso de Privacidade e cria a própria senha.
+A conta de aluno é única entre cursos e pode possuir várias matrículas. Uma pessoa entra no sistema por dois caminhos autorizados:
 
-## Perfil e novas inscrições
+1. inscrição `registration` confirmada;
+2. importação histórica por **CSV**, vinculada explicitamente a uma turma existente.
 
-`student_users` representa a conta; `student_profiles`, os dados reutilizáveis; `course_cohorts`, as turmas; `course_enrollments`, as matrículas. Nome, e-mail, CPF, telefone, Instagram e endereço podem preencher uma nova inscrição para um aluno autenticado, sempre permitindo revisão. Respostas específicas do curso continuam pertencendo à inscrição. O aluno consulta e corrige o perfil em `/aluno/perfil.php`.
+`student_users` representa a conta; `student_profiles`, os dados reutilizáveis; `course_cohorts`, as turmas; `course_enrollments`, as matrículas.
 
-Uma planilha histórica usa `Nome`, `E-mail` e `CPF` como colunas obrigatórias. `Telefone`, `Instagram`, `Endereço`, `Cidade/UF` e `CEP` são opcionais. O relatório de importação **não armazena CPF em texto**; mantém apenas linha, nome, e-mail, resultado e mensagem de erro. O CPF entra somente pelo mesmo mecanismo de HMAC + criptografia já usado pelo perfil.
+O primeiro acesso usa e-mail + CPF como prova inicial de identidade. O CPF não é senha permanente. Depois da validação, o aluno reconhece o Aviso de Privacidade e cria a própria senha.
+
+### Importação histórica
+
+O formato canônico é CSV com cabeçalho:
+
+```text
+Nome;E-mail;CPF;Telefone;Instagram;Endereço;Cidade/UF;CEP
+```
+
+Nome, E-mail e CPF são obrigatórios. A tela `Alunos → Importar CSV` oferece o modelo para download e um exemplo de linha. A interface é renderizada corretamente pelo PHP; não depende de JavaScript para renomear campos, trocar `accept` ou reescrever o `action` do formulário.
 
 ## Turmas
 
-Uma turma mantém identidade interna própria (`cohort_uuid`/`id`) e pode ter seus metadados corrigidos depois da criação sem recriar matrículas ou liberações.
+Uma turma mantém identidade interna própria (`cohort_uuid`/`id`). O administrador pode editar nome, slug, estado, início, fim, observações e definição como turma padrão sem recriar matrículas ou liberações.
 
-O admin pode editar:
+## Registro de testes
 
-- nome;
-- slug;
-- estado (`active`, `closed`, `archived`);
-- data inicial;
-- data final;
-- observações administrativas;
-- definição como turma padrão para novas matrículas confirmadas.
+A Área do aluno possui um caderno operacional em `/aluno/testes.php`. O fluxo móvel acompanha a ordem real do trabalho:
 
-Slug precisa ser único dentro da atividade. Turma arquivada não pode ser padrão. Alterar nome, datas ou slug não altera a identidade interna da turma nem desloca seus alunos.
+1. **Exposição** — fotografia/anexo da cena; filme/lote; EI/ISO; diafragma; tempo calculado; tempo corrigido por reciprocidade; condição da luz; relação entre claras e sombras.
+2. **Revelação** — revelador; diluição; temperatura; tempo; movimentação/agitação; observações; fotografia/anexo do resultado.
+3. **Revisar e enviar** — conferência da ficha e das imagens antes de solicitar avaliação.
 
-## Registro e acompanhamento de testes
+As fotografias ficam em `storage/student-test-media/`, fora do acesso HTTP direto, e são servidas somente após autorização.
 
-A Área do aluno possui um caderno operacional de testes em `/aluno/testes.php`. Ele não substitui o material didático; registra a experimentação realizada pelo aluno e concentra a avaliação posterior.
+### Propriedade, exclusão e visibilidade
 
-Cada registro pertence a **um aluno e uma turma ativa** e possui os campos usados no próprio caderno do workshop para repetibilidade:
+O aluno é proprietário dos testes que cria. Ele pode excluir definitivamente um teste independentemente do estado da avaliação. A exclusão remove ficha, mensagens, registros de mídia e arquivos físicos das fotografias.
 
-- título e data do teste;
-- filme e lote;
-- ISO usado como referência;
-- diafragma;
-- tempo inicialmente calculado;
-- tempo corrigido pela reciprocidade, quando necessário;
-- condição da luz;
-- diferença entre regiões claras e sombras que o aluno quer preservar;
-- revelador;
-- diluição;
-- temperatura;
-- tempo de revelação;
-- movimentação/agitação;
-- observações livres.
+Cada teste possui visibilidade explícita:
 
-O aluno pode ainda anexar até seis imagens JPEG, PNG ou WebP, de até 12 MB cada. Esses arquivos ficam em armazenamento privado (`storage/student-test-media/`) e só são servidos depois de autenticação e verificação de propriedade. Não existe URL pública direta para o arquivo armazenado.
+- `private` — somente autor e administração;
+- `cohort` — autor, administração e alunos com matrícula ativa na mesma turma;
+- `course` — autor, administração e alunos com matrícula ativa no mesmo curso/site.
 
-### Estados do teste
+Não existe publicação anônima na web. Compartilhar um teste disponibiliza somente ficha técnica e imagens. **A conversa de avaliação entre aluno e professor permanece privada.**
 
-- `draft` — rascunho ainda sendo registrado;
-- `submitted` — aluno declarou que está pronto para avaliação;
-- `needs_revision` — o professor pediu ajuste, nova informação ou nova tentativa;
-- `reviewed` — avaliação concluída; a ficha técnica fica preservada e bloqueada para edição, mas a conversa pode continuar.
+### Avaliação
 
-Rascunhos também aparecem para o administrador, mas a fila prioriza registros enviados para avaliação.
+Estados:
 
-### Avaliação e dúvidas
+- `draft` — registro em andamento;
+- `submitted` — aguardando avaliação;
+- `needs_revision` — ajustes solicitados;
+- `reviewed` — revisão concluída.
 
-Cada teste possui uma conversa própria (`student_test_messages`). Aluno e professor podem continuar perguntas e respostas no mesmo histórico, evitando que a análise se perca em mensagens separadas.
+A conversa `student_test_messages` permanece vinculada ao teste e pode continuar depois da revisão.
 
-O professor pode:
+## Conteúdo protegido continua sendo CMS
 
-- abrir a ficha completa;
-- ver as imagens enviadas;
-- responder com avaliação ou orientação;
-- marcar como `needs_revision`;
-- marcar como `reviewed`;
-- devolver para `submitted` caso precise reabrir formalmente a avaliação.
+`access_level=public` torna a página pública; `access_level=enrolled` exige matrícula ativa. Administradores podem inspecionar a página completa.
 
-A conversa permanece associada ao teste mesmo depois de ele ser marcado como revisado.
+Uma página protegida não recebe CSS próprio. O HTML editorial usa os mesmos componentes globais do site. É proibido resolver problemas criando uma segunda família tipográfica, uma paleta paralela, `<style>` local ou classes “globais” que na prática existam somente para uma página.
 
-## Conteúdo protegido continua sendo conteúdo do CMS
+## Estrutura e liberação por aula
 
-Material didático é uma página comum de `cms_pages`. Não existe um sistema editorial paralelo.
+Cada unidade editorial liberável possui `data-cms-section`. O sistema usa:
 
-- `access_level=public`: página pública;
-- `access_level=enrolled`: exige aluno autenticado com matrícula ativa;
-- administrador autenticado: acesso integral à página protegida para inspeção, inclusive seções ainda não liberadas aos alunos.
+- `course_page_sections`: seção → aula;
+- `cohort_lesson_releases`: aula → estado de liberação para uma turma.
 
-Uma página protegida não aparece na navegação pública e recebe `noindex`. O acesso continua usando sua URL normal do CMS.
+`student_page_filter_document()` remove do DOM as seções cujas aulas não estão liberadas **antes** da resposta HTML. Não existe `display:none` para esconder material bloqueado.
 
-### Regra visual das páginas
+Em `Admin → Inscrições → Área do aluno → Páginas protegidas`, a lista mostra as seções reais encontradas no documento, agrupadas pela aula à qual pertencem. A ação **Visualizar como turma** abre a página passando pelo mesmo filtro server-side usado para alunos. Isso é a verificação administrativa canônica de que a segmentação funciona.
 
-Uma página de material **não possui stylesheet próprio**. O HTML editorial usa componentes, classes e atributos de layout do sistema visual geral do site.
+Para o caderno `caderno-positivo-direto`, capa, índice, divisores de Aula 1/2/3 e unidades editoriais continuam sendo elementos reais no HTML. Os divisores de aula também são mapeados, para que uma aula bloqueada não deixe um cabeçalho órfão.
 
-É proibido resolver uma página protegida com `<style>` local, propriedades visuais inline ou criando no stylesheet global uma nova família de classes feita, na prática, apenas para aquela página. Mover um CSS específico da página para `assets/cms.css` não o transforma em componente global.
+## Mídia editorial privada
 
-**Componentes novos são permitidos quando a necessidade é real, mas precisam nascer como componentes globais e reutilizáveis do CMS/site**, com nome, contrato visual e comportamento genéricos, disponíveis para qualquer página compatível e cobertos por regressão no mesmo nível. O critério não é “já existia antes”; o critério é “é realmente um componente do sistema, e não um objeto exclusivo disfarçado de global”.
+A biblioteca `media_assets` é a única fonte de mídia editorial.
 
-Para o caderno atual, os componentes já existentes (`section`, `statement-grid`, `format`, `format-inner`, `format-heading`, `format-grid`, `format-card`, `process-list`, `process-item`, `section-label`, `statement-copy` e `technical-note`) são suficientes para capa, índice, divisores de aula, receitas, comparações e unidades editoriais. `Design → CSS adicional` continua sendo a camada editorial final para exceções deliberadas do site, não um lugar para esconder um subsistema exclusivo de uma página.
+Cada asset possui `visibility = public|private`:
+
+- **Pública** — uso normal no site;
+- **Privada** — sem entrega direta normal; pode ser vinculada a conteúdo protegido.
+
+Upload, título, metadados e mudança de privacidade acontecem somente em **Admin → Mídia**. Uma mídia que já esteja usada em conteúdo público não pode ser transformada silenciosamente em privada.
+
+Os slots do material (`data-private-media-slot`) armazenam somente a relação com um `media_asset` através de `course_page_media_slots`. Em **Páginas protegidas** não existe segundo uploader: a interface apenas mostra o slot e permite **Vincular mídia / Trocar mídia / Remover vínculo**, escolhendo imagens privadas existentes na biblioteca.
+
+Dados históricos de `student_private_media` são migrados para `media_assets` antes de a interface paralela deixar de ser usada. Fotos produzidas pelos alunos em testes permanecem separadas porque não são mídia editorial reutilizável.
 
 ## Caderno “Positivo direto em filme de raio-X”
 
-A página `caderno-positivo-direto` tem como fonte editorial os conteúdos efetivamente enviados aos participantes por e-mail:
+A fonte editorial são os conteúdos efetivamente enviados aos participantes por e-mail. O corpo técnico não pode ser resumido, reescrito ou completado com conhecimento externo apenas para ajustar a composição.
 
-- “Receitas, materiais e algumas referências para trabalhar com filme de raio-X” — 07/09/2026;
-- “Segundo Encontro: Processos químicos para positivos” — 18/09/2026.
+Estrutura canônica:
 
-### Integridade editorial da fonte
+- capa;
+- índice;
+- **Aula 01 — Filme e exposição**;
+- unidades sobre filme ortocromático, dupla emulsão, construção do positivo, exposição/energia, reciprocidade, EI e luz de segurança;
+- **Aula 02 — Processos químicos para positivos**;
+- unidades sobre segurança, imagem latente, reveladores, receitas, branqueamento, segunda revelação, parâmetros, comparação EI 200 × EI 400 e materiais;
+- **Aula 03 — Revisão de resultados**;
+- leitura dos resultados, repetibilidade e registro dos testes.
 
-O conteúdo técnico desses e-mails entra **integralmente** no material. A edição pode reorganizar a ordem, criar títulos, separar assuntos, agrupar trechos e distribuir conteúdo entre aulas, mas não pode resumir, substituir, simplificar ou reescrever o corpo técnico apenas para caber em um formato arbitrário.
+Cada assunto continua sendo uma `data-cms-section` independente para edição e liberação.
 
-São removidos somente elementos circunstanciais da comunicação com a turma: saudações, datas de encontro, pedidos de endereço/tamanho de suporte, chamadas para publicação em rede social e outros recados administrativos. Quando uma frase mistura recado e conteúdo técnico, preserva-se o conteúdo técnico e retira-se apenas o trecho circunstancial.
+## Administração
 
-Quando os registros divergem, a divergência é preservada explicitamente. Exemplo: o primeiro e-mail define `15/550` como volume final de 550 ml; o segundo registra literalmente `10 ml` ou `20 ml de Parodinal + 550 ml de água`. O sistema não transforma silenciosamente uma notação na outra.
+`Admin → Inscrições → Área do aluno` é organizado por objeto:
 
-### Estrutura editorial do caderno
+1. Visão geral;
+2. Turmas;
+3. Alunos;
+4. Testes;
+5. Aulas;
+6. Páginas protegidas.
 
-O material precisa ser reconhecível como publicação e como sequência de aulas, não como reprodução visual de um e-mail. A estrutura canônica é:
+Não existe “Operações e testes”.
 
-- capa do material;
-- índice das três aulas;
-- divisor visual **Aula 01 — Filme e exposição**;
-- unidades editoriais sobre filme ortocromático, dupla emulsão, construção do positivo, exposição/energia, reciprocidade, EI e luz de segurança;
-- divisor visual **Aula 02 — Processos químicos para positivos**;
-- unidades editoriais sobre segurança, imagem latente, reveladores, receitas, branqueamento, segunda revelação, parâmetros de desenvolvimento, comparação EI 200 × EI 400 e materiais;
-- divisor visual **Aula 03 — Revisão de resultados**;
-- conteúdo dos próprios e-mails sobre leitura dos resultados, repetibilidade e registro dos testes.
+### Inscrições
 
-Cada assunto continua sendo uma `data-cms-section` independente para edição e liberação. A separação visual entre aulas e unidades é feita com componentes globais do site.
+Cancelar/arquivar e excluir são ações distintas. Em `Admin → Inscrições → Respostas`, a inscrição possui uma área destrutiva explícita para **Excluir inscrição definitivamente**. Quando a inscrição originou uma matrícula, essa matrícula é removida. Conta, perfil e testes do aluno não são apagados silenciosamente.
 
-A Aula 3 não recebe conteúdo inventado: ela usa somente o que os e-mails já dizem sobre avaliar as chapas, localizar mudanças na escala, modificar uma variável por vez e registrar as condições do teste.
+## Segurança e regressão
 
-## Infográficos privados
+A regressão deve provar, no mínimo:
 
-Os elementos visuais explicativos do material são **infográficos ilustrados gerados a partir de relações concretas descritas nos e-mails**, não fotografias simuladas, não grafismos HTML/SVG, não equipamentos inventados e não explicações genéricas de fotografia química.
-
-A página contém slots semânticos de mídia privada onde uma imagem explicativa realmente reforça o texto:
-
-- `filme-ortocromatico` — resposta ortocromática: vermelhos mais escuros; verdes e azuis mais claros;
-- `dupla-emulsao-positivo` — emulsão nos dois lados da base e sua relação com densidade máxima e transparência;
-- `energia-positivo` — uma única exposição, diferenças de EV, prata formada na primeira revelação, remoção no branqueamento e densidade/transparência final;
-- `reciprocidade-energia` — diferença entre baixa energia na cena e falha de reciprocidade, usando fórmula e exemplos registrados no e-mail;
-- `ei-zonas` — EI 200 × EI 400 como deslocamento de uma zona e perda de separação nas regiões baixas;
-- `imagem-latente-prata` — haletos, alteração pela luz, imagem latente, `Ag⁺ + elétron → Ag⁰` e prata metálica;
-- `negativo-positivo` — depois da primeira revelação, o que fica e o que sai para formar negativo ou positivo;
-- `branqueamentos-rotas` — rota peracética por oxidação e rota FeCl₃ → AgCl → limpeza separada com amônia;
-- `parametros-revelacao` — concentração, tempo, agitação e temperatura como parâmetros que atuam por mecanismos diferentes.
-
-O infográfico é uma ilustração editorial. Não deve parecer uma fotografia de laboratório nem uma “página pronta” colocada dentro da página do site. Título, legenda, fórmulas extensas e explicação permanecem no HTML/CMS quando já existem no texto; a imagem serve para tornar visível a relação explicada no trecho correspondente.
-
-O HTML persistido contém apenas `<figure data-private-media-slot="…">`. O arquivo real é enviado pelo admin e associado ao slot. Se um slot ainda não tiver arquivo, ele é removido da resposta pública: nenhum texto de placeholder ou instrução de desenvolvimento aparece para o aluno.
-
-Os arquivos ficam em `storage/student-media/`, fora do acesso HTTP direto. Para alunos, o renderer troca a referência persistente por URL assinada e temporária vinculada a aluno, página e turma. Para administradores autenticados, a mesma mídia pode ser visualizada diretamente durante a inspeção da página protegida.
-
-## Liberação por aula
-
-As seções da página usam `data-cms-section`. `course_page_sections` liga uma seção a uma aula; `cohort_lesson_releases` controla a liberação por turma. Uma seção bloqueada é removida no servidor antes do HTML ser enviado ao aluno. Não existe `display:none` para conteúdo ainda não liberado.
-
-Os próprios divisores `caderno-aula-1`, `caderno-aula-2` e `caderno-aula-3` são mapeados às aulas correspondentes. Assim uma aula ainda bloqueada não deixa no documento um cabeçalho anunciando conteúdo que o aluno não pode acessar.
-
-O bypass administrativo é deliberado: um administrador precisa conseguir verificar a página completa e suas mídias sem possuir uma matrícula de aluno.
-
-## Administração e escala
-
-`Admin → Inscrições → Área do aluno` é a única superfície administrativa do sistema de alunos. A organização canônica é por **objeto**, não por uma categoria genérica de operações:
-
-1. **Visão geral**;
-2. **Turmas**;
-3. **Alunos**;
-4. **Testes**;
-5. **Aulas**;
-6. **Páginas protegidas**.
-
-Não existe uma área paralela chamada “Operações e testes”. A rota histórica `/admin/student-operations.php` apenas redireciona bookmarks antigos para o objeto correspondente dentro de `/admin/student-area.php`.
-
-### Turmas
-
-A tela **Turmas** lista as turmas existentes. Abrir uma turma é a ação que revela a edição de nome, slug, período, estado, observações e definição como padrão. Criar nova turma também pertence a essa tela. Edição de turma nunca é apresentada como uma ferramenta solta.
-
-### Alunos
-
-A tela **Alunos** concentra lista, busca, filtros, matrículas confirmadas e importação histórica. **Importar planilha** é uma ação da tela de Alunos e retorna para a mesma área com o relatório do lote importado; não é uma seção de navegação independente.
-
-### Testes
-
-A tela **Testes** é uma área própria porque possui fila, filtros, estados, ficha técnica, imagens, conversa e fluxo de avaliação próprios. Ela não fica agrupada com edição de turma ou importação de aluno.
-
-### Aulas e páginas protegidas
-
-**Aulas** mantém a liberação por turma e a criação de novas aulas. **Páginas protegidas** mantém proteção, associação seção→aula e mídia privada. Esses objetos continuam separados das operações de aluno e de teste.
-
-As listas usam componentes compartilhados, filtros, busca, paginação e tabelas com overflow responsivo. A tela não deve depender de carregar todos os alunos e todos os registros em uma única coluna crescente.
-
-## LGPD e segurança
-
-O tratamento de dados segue finalidade, necessidade, transparência e segurança. O CPF é usado como prova inicial de identidade, indexado por HMAC e mantido de forma recuperável apenas quando necessário ao perfil, criptografado em repouso. Senhas são hashes e o CPF nunca é gravado como `password_hash`.
-
-Importações históricas não persistem CPF no relatório operacional. Imagens de testes ficam fora do webroot e são entregues apenas após autenticação e autorização. Tanto a Área do aluno quanto a mídia de teste usam `no-store`; páginas privadas recebem `noindex`.
-
-Autenticação, filtro server-side, armazenamento privado, URLs protegidas e cabeçalhos de cache reduzem exposição e redistribuição casual. Nenhum sistema web impede que um usuário autorizado fotografe a tela ou reproduza manualmente o conteúdo recebido.
+- Área do aluno consome o Design global e não declara autoridade própria de fonte/paleta;
+- nome público do curso é editável no contexto do site atual;
+- exclusão de teste remove registros e arquivos físicos;
+- visibilidade de teste respeita `private|cohort|course` e nunca compartilha a conversa de avaliação;
+- uma turma com apenas Aula 1 liberada recebe HTML sem as seções de Aula 2 e Aula 3;
+- mídia editorial privada vem de `media_assets` e Páginas protegidas não contém uploader paralelo;
+- importação histórica é CSV nativo no HTML/PHP;
+- exclusão permanente de inscrição continua disponível;
+- CI, browser regression, build e dry-run passam antes do merge.

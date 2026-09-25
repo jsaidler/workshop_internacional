@@ -2,85 +2,81 @@
 
 ## Problemas observados
 
-A validação visual em produção expôs quatro falhas de produto que não podem ser tratadas como detalhes cosméticos:
+A validação visual em produção expôs falhas de produto, não detalhes cosméticos:
 
-1. o site público não oferecia um caminho evidente para a Área do aluno;
-2. a Área do aluno parecia uma página administrativa estreita dentro de uma tela vazia, em vez de uma extensão coerente do site;
-3. o registro de testes era um formulário longo de desktop, embora o uso real aconteça junto da câmera e do laboratório, frequentemente no telefone;
-4. controles de upload de mídia privada no admin podiam extrapolar horizontalmente o card.
+1. o site público não oferecia caminho evidente para a Área do aluno;
+2. a Área do aluno parecia uma aplicação visualmente separada do site;
+3. o registro de testes era um formulário longo de desktop, embora o uso real aconteça junto da câmera e do laboratório;
+4. mídia editorial privada havia ganhado um uploader paralelo em vez de reutilizar a Biblioteca de mídia;
+5. páginas legais, especialmente `privacidade`, herdavam composição promocional inadequada para leitura contínua.
 
-A mesma captura mostrou que páginas legais, especialmente `privacidade`, estavam herdando uma composição promocional em duas colunas e criando uma área vazia desproporcional para um texto de leitura contínua.
+## Autoridade visual
 
-## Contrato de navegação
+A Área do aluno **não possui tipografia, paleta ou tema próprios**. Ela consome:
 
-`Área do aluno` é uma ação estrutural do site e não depende da configuração editorial do menu. Toda página pública renderizada pelo CMS exibe acesso direto para `/aluno/`. Se o visitante ainda não estiver autenticado, o fluxo existente o leva ao login e depois ao destino protegido.
+- `template/page.css` como base visual;
+- tokens e fontes dinâmicos configurados em `Design` para a atividade atual;
+- `assets/student-area.css` somente para layout, estados e comportamento próprios do aplicativo.
+
+Nomes de fontes ou cores não são hardcoded como decisão local da Área do aluno. Se o Design do site mudar, a Área do aluno acompanha a mesma configuração.
+
+## Navegação
+
+`Área do aluno` é uma ação estrutural do site e não depende da configuração editorial do menu. Toda página pública renderizada pelo CMS possui acesso para `/aluno/`.
 
 Dentro da Área do aluno:
 
-- desktop: `Cursos · Testes · Conta` permanecem na barra superior;
-- celular: a navegação principal fica fixa na base da tela, com alvos amplos para uso por toque;
-- `Sair` continua disponível no desktop; ações de conta ficam agrupadas em `Conta` em vez de competir com a navegação primária.
+- desktop: `Cursos · Testes · Conta` na barra superior;
+- celular: navegação principal fixa na base, com alvos adequados para toque;
+- `Sair` continua disponível no desktop; ações de conta ficam agrupadas em `Conta`.
 
-## Contrato do registro de teste
+## Registro de teste
 
-O registro não é uma ficha burocrática. Ele acompanha a ordem real do trabalho e funciona como um pequeno aplicativo de campo/laboratório.
+O registro acompanha a ordem real do trabalho e funciona como ferramenta de campo/laboratório.
 
-### Etapa 01 — Cena e exposição
+### 01 — Exposição
 
-O aluno:
+O aluno fotografa/anexa a cena e registra identificação, filme/lote, EI/ISO, diafragma, tempo calculado, tempo corrigido pela reciprocidade, condição da luz e relação entre regiões claras e sombras.
 
-1. registra ou anexa uma fotografia da cena usando a câmera traseira do telefone quando disponível;
-2. informa identificação do teste, filme/lote, EI ou ISO de referência, diafragma, tempo inicialmente calculado, tempo após correção de reciprocidade, condição da luz e relação entre regiões claras e sombras que pretende preservar;
-3. salva a exposição e segue para a revelação.
+### 02 — Revelação
 
-### Etapa 02 — Revelação e resultado
+O aluno registra revelador, diluição, temperatura, tempo, movimentação/agitação e observações; depois fotografa/anexa o resultado.
 
-O aluno:
+### 03 — Revisar e enviar
 
-1. registra revelador, diluição/quantidade, temperatura, tempo, movimentação/agitação e observações do processo;
-2. fotografa ou anexa o resultado já processado;
-3. segue para a revisão.
+A tela reúne parâmetros essenciais e coloca cena e resultado de forma comparável antes do envio para avaliação.
 
-### Etapa 03 — Revisar e enviar
+`student_test_media.phase` diferencia `scene` e `result`. Arquivos continuam privados. No celular, os controles usam `accept="image/*"` e `capture="environment"` quando apropriado.
 
-A tela reúne os parâmetros essenciais e coloca, de forma visualmente comparável, a fotografia da cena e a fotografia do resultado. Depois disso o aluno envia o teste para avaliação. A conversa com o professor permanece vinculada ao mesmo teste.
+## Propriedade e compartilhamento
 
-## Mídia
+O aluno pode excluir definitivamente seus testes e todas as mídias/mensagens associadas. Cada teste pode ser:
 
-`student_test_media` passa a diferenciar `scene` e `result`. Arquivos continuam privados, servidos somente pelos endpoints autenticados e sujeitos aos mesmos limites de formato, tamanho e quantidade. Registros de mídia existentes recebem `result` como compatibilidade histórica.
+- privado;
+- compartilhado com a turma;
+- compartilhado com os alunos do curso.
 
-No celular, os controles usam `accept="image/*"` compatível com os formatos aceitos e `capture="environment"` para oferecer a câmera traseira quando o navegador suporta essa capacidade.
-
-## Direção visual
-
-A Área do aluno continua usando a identidade do projeto:
-
-- fundo neutro claro;
-- preto como cor estrutural;
-- verde existente como acento funcional;
-- `Saira Extra Condensed` para títulos;
-- IBM Plex Sans para leitura;
-- IBM Plex Mono para rótulos, estados e parâmetros.
-
-A mudança não introduz estética de dashboard SaaS. O objetivo é uma ferramenta editorial/técnica ligada ao workshop, com hierarquia clara, superfícies contidas e controles dimensionados para toque.
+A conversa professor/aluno nunca faz parte do compartilhamento.
 
 ## Páginas legais
 
-`privacidade` passa a ser tratada como texto longo: uma coluna editorial central, título e rótulo no mesmo eixo, largura de leitura controlada e entrelinha apropriada. Não usa a divisão visual de uma seção promocional.
+`privacidade` é texto longo: uma coluna editorial central, largura de leitura controlada e hierarquia do mesmo sistema visual público. Não usa composição promocional em duas colunas.
 
-## Admin de mídia privada
+## Mídia editorial privada
 
-Formulários dentro de `Área do aluno → Páginas protegidas → Imagens privadas` têm `min-width: 0`, controles limitados a 100% da célula e `input[type=file]` contido pelo card. Em telas pequenas, o formulário cai para uma coluna.
+Não existe upload em `Área do aluno → Páginas protegidas`. Upload e alteração de visibilidade acontecem em `Admin → Mídia`. A tela de página protegida somente vincula um slot semântico a um `media_asset` privado existente.
+
+As fotografias dos testes dos alunos continuam fora da Biblioteca de mídia porque são anexos de registros individuais, não assets editoriais reutilizáveis.
 
 ## Regressão
 
-`tools/test-student-mobile-experience.php` impede regressões estruturais verificando:
+Os testes devem verificar:
 
-- presença do acesso público à Área do aluno;
-- navegação responsiva da Área do aluno;
-- três etapas do registro;
-- controles de captura para cena e resultado;
-- persistência separada das fases de mídia;
-- estilos de navegação e ação móvel;
-- tratamento editorial da página de privacidade;
-- proteção contra overflow no upload de mídia privada.
+- acesso público à Área do aluno;
+- navegação responsiva;
+- herança real do Design global;
+- três etapas do registro e captura de cena/resultado;
+- exclusão integral do teste;
+- visibilidade privado/turma/curso sem vazamento da conversa;
+- ausência do uploader editorial paralelo;
+- tratamento editorial da página de privacidade.
