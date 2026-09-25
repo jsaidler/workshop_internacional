@@ -5,4 +5,8 @@ if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){http_response_code(405);echo js
 $input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))$input=$_POST;
 if(!verify_csrf('media',$input['csrf']??null)){http_response_code(403);echo json_encode(['error'=>'csrf_invalid']);exit;}
 $id=(int)($input['assetId']??0);if($id<1){http_response_code(422);echo json_encode(['error'=>'invalid_asset']);exit;}
-try{$item=media_archive_asset(database(),$id,!empty($input['archive']));echo json_encode(['item'=>$item],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);}catch(Throwable $e){http_response_code(422);echo json_encode(['error'=>$e->getMessage()]);}
+try{
+    $db=database();
+    if(!empty($input['archive'])){$q=$db->prepare('SELECT 1 FROM course_page_media_slots WHERE media_asset_id=? LIMIT 1');$q->execute([$id]);if($q->fetchColumn())throw new RuntimeException('asset_in_use');}
+    $item=media_archive_asset($db,$id,!empty($input['archive']));echo json_encode(['item'=>$item],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+}catch(Throwable $e){http_response_code(422);echo json_encode(['error'=>$e->getMessage()]);}
