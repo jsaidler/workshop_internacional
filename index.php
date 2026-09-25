@@ -10,26 +10,22 @@ try{
     $pageSlug=is_string($_GET['page']??null)?trim((string)$_GET['page']):'';
     $page=$pageSlug!==''?cms_page_by_slug($db,(int)$activity['id'],$locale,$pageSlug):cms_page_home($db,(int)$activity['id'],$locale);
     if($page&&$page['status']!=='archived'&&!empty($page['published_document_json'])){
-        $document=cms_page_doc($page,true);$admin=current_admin();$student=student_account_current($db);
-        if(student_page_is_protected($page)){
-            student_private_headers();
-            if($admin){
-                $previewCohortId=(int)($_GET['preview_cohort']??0);
-                if($previewCohortId>0){
-                    $q=$db->prepare("SELECT * FROM course_cohorts WHERE id=? AND activity_id=? AND status!='archived' LIMIT 1");$q->execute([$previewCohortId,(int)$activity['id']]);$previewCohort=$q->fetch(PDO::FETCH_ASSOC);
-                    if(!$previewCohort){http_response_code(404);exit('Turma de visualização não encontrada.');}
-                    $document=student_page_filter_document($db,$page,$document,['cohort_id'=>$previewCohortId]);
-                    header('X-Student-Preview-Cohort: '.rawurlencode((string)$previewCohort['slug']));
-                }
-                $document=student_page_resolve_private_media_slots($db,$page,$document);
-            }else{
-                student_account_reconcile_confirmed_registrations($db,(int)$activity['id']);$student=student_account_current($db);
-                if(!$student){$next=student_safe_next((string)($_SERVER['REQUEST_URI']??cms_page_url($activity,$page,$locale)));header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
+        $document=cms_page_doc($page,true);$admin=current_admin();$student=student_account_current($db);$pageAccess=(string)($page['access_level']??'public');
+        if(!$admin&&!cms_access_page_allowed($db,$activity,$page,$student)){
+            if(!$student&&$pageAccess!=='public'){$next=student_safe_next((string)($_SERVER['REQUEST_URI']??cms_page_url($activity,$page,$locale)));header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
+            http_response_code(403);student_private_headers();exit('Este conteúdo não está disponível para esta conta.');
+        }
+        $hasSectionRules=preg_match('~data-cms-(?:access|availability|visible-from|visible-until|lesson-id|cohort-id)=~',(string)($document['html']??''))===1;
+        if($pageAccess!=='public'||$hasSectionRules)student_private_headers();
+        if(!$admin){$document['html']=cms_access_filter_html($db,$activity,(string)$document['html'],$student,false);}
+        if($pageAccess!=='public'){
+            if($admin){$document=student_page_resolve_private_media_slots($db,$page,$document);}
+            elseif($student){
                 $cohortUuid=trim((string)($_GET['cohort']??''));$enrollment=student_account_page_context($db,$student,$page,$cohortUuid);
-                if(!$enrollment){http_response_code(403);exit('Este material não está disponível para esta matrícula.');}
-                $document=student_page_filter_document($db,$page,$document,$enrollment);$document=student_page_resolve_private_media_slots($db,$page,$document);$document=student_page_sign_private_media($document,$student,$page,$enrollment);student_page_prefill_for_page($db,$student,$page,$document);
+                if($enrollment){$document=student_page_resolve_private_media_slots($db,$page,$document);$document=student_page_sign_private_media($document,$student,$page,$enrollment);}
             }
-        }elseif($student){student_page_prefill_for_page($db,$student,$page,$document);}
+        }
+        if($student)student_page_prefill_for_page($db,$student,$page,$document);
         try{analytics_record_pageview($db,$activity,$page,$locale);}catch(Throwable $analyticsError){error_log('Analytics pageview failed: '.$analyticsError->getMessage());}
         cms_render_public_page($activity,$page,$document,false);exit;
     }
