@@ -34,7 +34,8 @@ if(!str_contains($adminJs,"view') === 'pages'"))fail_coherence('legacy protected
 foreach(['Agendar','Liberar agora','Bloquear','/admin/api/course-lesson-release.php'] as $needle)if(!str_contains($adminJs,$needle))fail_coherence('lesson scheduling missing from existing lessons interface: '.$needle);
 if(!str_contains($media,'admin-media-privacy.js')||!str_contains($mediaPrivacy,"['public','private']"))fail_coherence('media library is not privacy authority');
 
-if(!str_contains($testPage,'name="bleach"')||!str_contains($testPage,'Ácido peracético')||!str_contains($testPage,'Cloreto férrico'))fail_coherence('bleach selector is missing from development workflow');
+if(!str_contains($testPage,'name="bleach"')||!str_contains($testPage,'Solução peroxiacética')||!str_contains($testPage,'Cloreto férrico'))fail_coherence('bleach selector is missing or uses non-canonical terminology');
+if(str_contains($testPage,'Ácido peracético'))fail_coherence('obsolete bleach terminology returned');
 if(!str_contains($testPage,'<dt>Branqueador</dt>')||!str_contains($sharedTest,'<dt>Branqueador</dt>'))fail_coherence('bleach is not shown in test review/shared test');
 if(!str_contains($testMobile,"SET developer=?,dilution=?,temperature=?,development_time=?,agitation=?,bleach=?,notes=?"))fail_coherence('bleach is not persisted with development parameters');
 $migration66=(string)file_get_contents($root.'/migrations/066_cms_section_access_and_test_bleach.php');
