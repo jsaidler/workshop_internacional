@@ -102,15 +102,24 @@ O componente usa três níveis:
 2. **meso — mudança interna**: subtítulos, notas, referências, procedimentos e figuras;
 3. **macro — mudança de unidade/aula**: unidades consecutivas e divisores de aula.
 
-Alvos desktop após o escrutínio de 24/09/2026:
+Há uma regra adicional que tem precedência sobre números isolados: **um título pertence visualmente ao conteúdo que ele introduz**. A distância depois do título deve ser menor que a pausa necessária para anunciar uma nova mudança de assunto. Rótulo, título e primeiro parágrafo formam um único grupo editorial.
 
-- rótulo → conteúdo: aproximadamente 24 px;
-- `h2` → corpo: aproximadamente 28 px;
-- `h3`: aproximadamente 46 px antes e 17 px depois;
+Alvos desktop após a correção de ritmo de títulos de 24/09/2026:
+
+- rótulo de capa → `h1`: aproximadamente 18 px;
+- `h1` → subtítulo de capa: aproximadamente 20 px;
+- rótulo do índice → título: aproximadamente 10 px;
+- rótulo do divisor de aula → título: aproximadamente 10 px;
+- `section-label` de unidade → `h2`: aproximadamente 16 px;
+- `h2` → corpo que ele introduz: aproximadamente 22 px;
+- corpo anterior → `h3`: aproximadamente 36 px;
+- `h3` → corpo que ele introduz: aproximadamente 10 px;
 - nota curta: aproximadamente 40 px;
 - grade ou procedimento: aproximadamente 42 px;
 - figura: aproximadamente 50 px;
 - fronteira entre unidades consecutivas: aproximadamente 92–118 px, dependendo do viewport dentro dos `clamp()`.
+
+Esses intervalos são medidos pela geometria renderizada, não inferidos a partir de uma soma de `margin`. Títulos não podem depender de colapso de margens entre `h2`/`h3`, wrappers e elementos irmãos. O bloco de título e o bloco de texto seguinte têm responsabilidades explícitas de espaçamento.
 
 O objetivo não é maximizar espaço. É tornar perceptível a hierarquia sem criar uma página inflada. O nível meso nunca deve ser duplicado no nível macro quando o componente é o último da unidade.
 
@@ -150,6 +159,7 @@ Afirmações específicas sobre o Fuji permanecem específicas.
 
 - Desktop, tablet e celular pertencem ao mesmo componente.
 - Nenhuma melhoria desktop pode criar overflow em tela menor.
+- O vínculo título → conteúdo permanece em todos os breakpoints; apenas os intervalos diminuem de modo controlado.
 - `study-data-strip` vira coluna quando necessário.
 - `study-compact-values` pode usar duas colunas em celular.
 - `study-comparison` vira uma coluna em celular.
@@ -171,6 +181,8 @@ Os testes devem verificar simultaneamente:
 - corpo e entrelinha adequados para longform;
 - ausência de borda superior em cada unidade e de sublinhado integral em rótulos;
 - três níveis de ritmo vertical com limites inferiores e superiores;
+- geometria renderizada de rótulo → título e título → conteúdo na capa, índice, divisor de aula e unidades;
+- geometria renderizada de corpo → `h3` e `h3` → corpo em desktop, tablet e celular;
 - notas com fundo transparente, sem bordas horizontais e com keyline lateral;
 - papéis semânticos distintos para dados, valores compactos, comparação e catálogo;
 - colapso correto desses papéis em tablet/celular;

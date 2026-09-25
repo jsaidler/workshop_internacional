@@ -64,17 +64,20 @@ test('desktop study material reads as continuous longform instead of stacked pan
   const unitStyle=await unit.evaluate(el=>getComputedStyle(el));
   expect(px(unitStyle.borderTopWidth)).toBe(0);
   expect(px(await label.evaluate(el=>getComputedStyle(el).borderBottomWidth))).toBe(0);
-  expect(px(await label.evaluate(el=>getComputedStyle(el).marginBottom))).toBeGreaterThanOrEqual(23);
-  expect(px(await label.evaluate(el=>getComputedStyle(el).marginBottom))).toBeLessThanOrEqual(25);
+  expect(px(await label.evaluate(el=>getComputedStyle(el).marginBottom))).toBeGreaterThanOrEqual(15);
+  expect(px(await label.evaluate(el=>getComputedStyle(el).marginBottom))).toBeLessThanOrEqual(17);
 
-  expect(await renderedGap(label,heading)).toBeGreaterThanOrEqual(22);
-  expect(await renderedGap(label,heading)).toBeLessThanOrEqual(26);
-  expect(await renderedGap(heading,headingCopy)).toBeGreaterThanOrEqual(26);
-  expect(await renderedGap(heading,headingCopy)).toBeLessThanOrEqual(30);
-  expect(await renderedGap(paragraphTwo,internalHeading)).toBeGreaterThanOrEqual(44);
-  expect(await renderedGap(paragraphTwo,internalHeading)).toBeLessThanOrEqual(48);
-  expect(await renderedGap(internalHeading,afterInternal)).toBeGreaterThanOrEqual(15);
-  expect(await renderedGap(internalHeading,afterInternal)).toBeLessThanOrEqual(19);
+  /* A title must visually belong to the copy it introduces. The previous
+     version had independent margins on label, wrapper and heading, so title
+     gaps changed according to DOM structure and margin collapsing. */
+  expect(await renderedGap(label,heading)).toBeGreaterThanOrEqual(15);
+  expect(await renderedGap(label,heading)).toBeLessThanOrEqual(17);
+  expect(await renderedGap(heading,headingCopy)).toBeGreaterThanOrEqual(21);
+  expect(await renderedGap(heading,headingCopy)).toBeLessThanOrEqual(23);
+  expect(await renderedGap(paragraphTwo,internalHeading)).toBeGreaterThanOrEqual(35);
+  expect(await renderedGap(paragraphTwo,internalHeading)).toBeLessThanOrEqual(37);
+  expect(await renderedGap(internalHeading,afterInternal)).toBeGreaterThanOrEqual(9);
+  expect(await renderedGap(internalHeading,afterInternal)).toBeLessThanOrEqual(11);
   expect(await renderedGap(afterInternal,note)).toBeGreaterThanOrEqual(38);
   expect(await renderedGap(afterInternal,note)).toBeLessThanOrEqual(42);
   expect(await renderedGap(note,grid)).toBeGreaterThanOrEqual(40);
@@ -98,6 +101,32 @@ test('desktop study material reads as continuous longform instead of stacked pan
   for(const box of dataCards)expect(box.width).toBeGreaterThan(300);
 
   expect(await material.evaluate(el=>el.scrollWidth-el.clientWidth)).toBeLessThanOrEqual(1);
+});
+
+test('cover index chapter and unit titles use one coherent editorial rhythm',async({page})=>{
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto(url);
+
+  const coverLabel=page.locator('.study-cover .section-label');
+  const coverTitle=page.locator('.study-cover h1');
+  const coverSubtitle=page.locator('.study-cover .study-subtitle');
+  const indexLabel=page.locator('.study-index .section-label');
+  const indexTitle=page.locator('.study-index .format-heading h2');
+  const chapterLabel=page.locator('#lesson-1 .section-label');
+  const chapterTitle=page.locator('#lesson-1 h2');
+  const unitLabel=page.locator('#unit-label');
+  const unitTitle=page.locator('#unit-heading');
+
+  expect(await renderedGap(coverLabel,coverTitle)).toBeGreaterThanOrEqual(17);
+  expect(await renderedGap(coverLabel,coverTitle)).toBeLessThanOrEqual(19);
+  expect(await renderedGap(coverTitle,coverSubtitle)).toBeGreaterThanOrEqual(19);
+  expect(await renderedGap(coverTitle,coverSubtitle)).toBeLessThanOrEqual(21);
+  expect(await renderedGap(indexLabel,indexTitle)).toBeGreaterThanOrEqual(9);
+  expect(await renderedGap(indexLabel,indexTitle)).toBeLessThanOrEqual(11);
+  expect(await renderedGap(chapterLabel,chapterTitle)).toBeGreaterThanOrEqual(9);
+  expect(await renderedGap(chapterLabel,chapterTitle)).toBeLessThanOrEqual(11);
+  expect(await renderedGap(unitLabel,unitTitle)).toBeGreaterThanOrEqual(15);
+  expect(await renderedGap(unitLabel,unitTitle)).toBeLessThanOrEqual(17);
 });
 
 test('desktop reference components receive visual weight according to semantic value',async({page})=>{
@@ -163,6 +192,11 @@ test('tablet keeps editorial measure and semantic reference hierarchy',async({pa
   const material=page.locator('#material');
   const copy=page.locator('#direct-copy');
   const label=page.locator('#unit-label');
+  const heading=page.locator('#unit-heading');
+  const headingCopy=page.locator('#heading-copy');
+  const paragraphTwo=page.locator('#paragraph-two');
+  const internalHeading=page.locator('#internal-heading');
+  const afterInternal=page.locator('#after-internal-heading');
   const compact=page.locator('#compact-values');
   const comparison=page.locator('#comparison-grid');
   const resources=page.locator('#resource-list');
@@ -177,6 +211,14 @@ test('tablet keeps editorial measure and semantic reference hierarchy',async({pa
   expect(await gridColumns(compact)).toBe(4);
   expect(await gridColumns(comparison)).toBe(2);
   expect(await resources.evaluate(el=>getComputedStyle(el).display)).toBe('block');
+  expect(await renderedGap(label,heading)).toBeGreaterThanOrEqual(15);
+  expect(await renderedGap(label,heading)).toBeLessThanOrEqual(17);
+  expect(await renderedGap(heading,headingCopy)).toBeGreaterThanOrEqual(19);
+  expect(await renderedGap(heading,headingCopy)).toBeLessThanOrEqual(21);
+  expect(await renderedGap(paragraphTwo,internalHeading)).toBeGreaterThanOrEqual(33);
+  expect(await renderedGap(paragraphTwo,internalHeading)).toBeLessThanOrEqual(35);
+  expect(await renderedGap(internalHeading,afterInternal)).toBeGreaterThanOrEqual(9);
+  expect(await renderedGap(internalHeading,afterInternal)).toBeLessThanOrEqual(11);
 
   const total=await renderedGap(beforeCopy,registerLabel);
   expect(total).toBeGreaterThanOrEqual(92);
@@ -191,6 +233,12 @@ test('small screens collapse references without restoring card walls or horizont
 
   const material=page.locator('#material');
   const copy=page.locator('#direct-copy');
+  const label=page.locator('#unit-label');
+  const heading=page.locator('#unit-heading');
+  const headingCopy=page.locator('#heading-copy');
+  const paragraphTwo=page.locator('#paragraph-two');
+  const internalHeading=page.locator('#internal-heading');
+  const afterInternal=page.locator('#after-internal-heading');
   const data=page.locator('#reference-grid');
   const compact=page.locator('#compact-values');
   const comparison=page.locator('#comparison-grid');
@@ -208,6 +256,14 @@ test('small screens collapse references without restoring card walls or horizont
   expect(await resources.evaluate(el=>getComputedStyle(el).display)).toBe('block');
   expect(await gridColumns(resourceCard)).toBe(1);
   expect(await note.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+  expect(await renderedGap(label,heading)).toBeGreaterThanOrEqual(13);
+  expect(await renderedGap(label,heading)).toBeLessThanOrEqual(15);
+  expect(await renderedGap(heading,headingCopy)).toBeGreaterThanOrEqual(17);
+  expect(await renderedGap(heading,headingCopy)).toBeLessThanOrEqual(19);
+  expect(await renderedGap(paragraphTwo,internalHeading)).toBeGreaterThanOrEqual(31);
+  expect(await renderedGap(paragraphTwo,internalHeading)).toBeLessThanOrEqual(33);
+  expect(await renderedGap(internalHeading,afterInternal)).toBeGreaterThanOrEqual(8);
+  expect(await renderedGap(internalHeading,afterInternal)).toBeLessThanOrEqual(10);
 
   const total=await renderedGap(beforeCopy,registerLabel);
   expect(total).toBeGreaterThanOrEqual(78);
