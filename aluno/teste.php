@@ -87,6 +87,11 @@ student_shell_start((string)$test['title'].' · Teste',null,$student);?>
   <form method="post" class="student-message-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="step" value="review"><input type="hidden" name="action" value="message"><label class="student-field">Nova dúvida ou comentário<textarea name="message" rows="4" required></textarea></label><button class="student-button student-button-secondary" type="submit">Enviar mensagem</button></form>
 </section>
 <?php endif;?>
+
+<section class="student-workflow-panel">
+  <header class="student-workflow-heading"><div><p class="student-kicker">Gerenciar registro</p><h2 class="student-subtitle">Excluir este teste</h2></div><p>A exclusão remove o teste, a conversa de avaliação e todas as fotografias associadas. Essa ação é permanente.</p></header>
+  <a class="student-button student-button-secondary" href="/aluno/excluir-teste.php?id=<?=$id?>">Continuar para exclusão</a>
+</section>
 <?php student_shell_end();
 
 function student_test_message_date(string $value): string {$ts=strtotime($value);return $ts===false?$value:date('d/m/Y H:i',$ts);}
