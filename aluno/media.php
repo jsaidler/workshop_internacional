@@ -5,13 +5,14 @@ student_private_headers();header('X-Content-Type-Options: nosniff');
 $db=database();$uuid=strtolower(trim((string)($_GET['asset']??'')));if(!preg_match('/^[a-f0-9]{32}$/',$uuid)){http_response_code(404);exit;}
 $asset=null;
 if(current_admin()){
-    $asset=student_library_media_admin_asset($db,$uuid)?:student_private_media_admin_asset($db,$uuid);
+    $asset=cms_private_media_admin_asset($db,$uuid)?:student_library_media_admin_asset($db,$uuid)?:student_private_media_admin_asset($db,$uuid);
 }else{
-    $student=student_account_current($db);if(!$student){http_response_code(404);exit;}
-    $pageId=(int)($_GET['page']??0);$cohortId=(int)($_GET['cohort']??0);$expires=(int)($_GET['expires']??0);$sig=trim((string)($_GET['sig']??''));
-    if($pageId<1||$cohortId<1||$expires<1||$sig===''){http_response_code(404);exit;}
-    $asset=student_library_media_authorize($db,$student,$uuid,$pageId,$cohortId,$expires,$sig)
-        ?:student_private_media_authorize($db,$student,$uuid,$pageId,$cohortId,$expires,$sig);
+    $user=student_account_current($db);if(!$user){http_response_code(404);exit;}
+    $pageId=(int)($_GET['page']??0);$cohortId=max(0,(int)($_GET['cohort']??0));$expires=(int)($_GET['expires']??0);$sig=trim((string)($_GET['sig']??''));
+    if($pageId<1||$expires<1||$sig===''){http_response_code(404);exit;}
+    $asset=cms_private_media_authorize($db,$user,$uuid,$pageId,$cohortId,$expires,$sig)
+        ?:student_library_media_authorize($db,$user,$uuid,$pageId,$cohortId,$expires,$sig)
+        ?:student_private_media_authorize($db,$user,$uuid,$pageId,$cohortId,$expires,$sig);
 }
 if(!$asset){http_response_code(404);exit;}
 if(!empty($asset['_library'])){
