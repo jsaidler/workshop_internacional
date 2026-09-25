@@ -8,11 +8,11 @@ if((int)($_SERVER['CONTENT_LENGTH']??0)>media_effective_upload_limit()){http_res
 if(!verify_csrf('media',$_POST['csrf']??null)){http_response_code(403);echo json_encode(['error'=>'csrf_invalid']);exit;}
 try{
     $replace=trim((string)($_POST['replace_asset']??''));
-    $db=database();
-    $asset=media_create($db,$_FILES['file']??[],$replace===''?null:(int)$replace);
-    if(($asset['kind']??'')==='image'){
-        media_regenerate_image_asset($db,(int)$asset['id'],false);
-        $asset=media_asset_admin($db,(int)$asset['id']);
-    }
+    $db=database();$replaceId=$replace===''?null:(int)$replace;$wasPrivate=false;
+    if($replaceId!==null){$existing=media_asset($db,$replaceId);$wasPrivate=media_asset_is_private($existing);}
+    $asset=media_create($db,$_FILES['file']??[],$replaceId);
+    if(($asset['kind']??'')==='image')media_regenerate_image_asset($db,(int)$asset['id'],false);
+    if($wasPrivate)media_private_resecure_asset($db,(int)$asset['id']);
+    $asset=media_private_adminize_asset(media_asset_admin($db,(int)$asset['id']));
     echo json_encode(['item'=>$asset],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 }catch(Throwable $e){http_response_code(422);error_log('media.upload '.$e->getMessage());echo json_encode(['error'=>$e->getMessage()]);}
