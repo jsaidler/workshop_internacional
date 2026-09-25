@@ -8,7 +8,7 @@ $db->exec("CREATE TABLE course_page_sections(page_id INTEGER,section_key TEXT,le
 $db->exec("CREATE TABLE student_private_media(id INTEGER PRIMARY KEY AUTOINCREMENT,asset_uuid TEXT UNIQUE,activity_id INTEGER,page_id INTEGER,title TEXT,original_name TEXT,mime_type TEXT,byte_size INTEGER,storage_path TEXT,checksum TEXT,created_at TEXT,updated_at TEXT);");
 $seed=json_encode(['version'=>2,'theme'=>'auto','meta'=>[],'html'=>'<section data-cms-section="seed"><p>seed</p></section>'],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 $q=$db->prepare("INSERT INTO cms_pages(activity_id,locale,slug,title,nav_title,status,show_in_nav,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,updated_at,access_level) VALUES(1,'pt-BR','caderno-positivo-direto','x','x','published',1,?,?,1,1,'x','x','x','public')");$q->execute([$seed,$seed]);
-foreach(['050','051','052','053','054','055','056','057','058','059','060'] as $n){
+foreach(['050','051','052','053','054','055','056','057','058','059','060','061'] as $n){
     $matches=glob(__DIR__.'/../migrations/'.$n.'_*.php');
     if(!$matches||count($matches)!==1)handbook_fail('migration not uniquely resolved: '.$n);
     (require $matches[0])($db);
@@ -43,9 +43,11 @@ $mustHave=[
  'Trabalhamos com quatro parâmetros que interferem diretamente na revelação: concentração, temperatura, tempo e agitação.',
  'Não como uma receita definitiva, mas como um possível desenvolvimento normal.','Não precisa virar um relatório da NASA.',
  '<h3 data-cms-editable>Condição de referência</h3>',
- '<p data-cms-editable>Para os próximos testes, considero mais útil estabelecer primeiro uma condição de referência:</p>'
+ '<p data-cms-editable>Para os próximos testes, considero mais útil estabelecer primeiro uma condição de referência:</p>',
+ 'format-grid study-data-strip','format-grid study-data-strip study-reciprocity-strip','format-grid study-compact-values','format-grid study-comparison','format-grid study-resource-list',
+ 'technical-note study-summary','technical-note study-equation','technical-note study-quote','technical-note study-instruction'
 ];
-foreach($mustHave as $needle)if(!str_contains($html,$needle))handbook_fail('source detail missing: '.$needle);
+foreach($mustHave as $needle)if(!str_contains($html,$needle))handbook_fail('source detail or semantic role missing: '.$needle);
 $mustNotHave=[
  'Qual o tamanho do suporte','Qual o endereço para envio','08/10','me convidem como colaborador',
  'Três aulas, um único processo','O conteúdo foi reorganizado editorialmente',
@@ -67,6 +69,9 @@ foreach(['caderno-04-energia'=>'aula-1','caderno-10-imagem-latente'=>'aula-2','c
 $css=(string)file_get_contents(__DIR__.'/../assets/cms-ui-refinements.css');
 foreach(['.study-material','.study-cover','.study-index','.study-chapter','.study-unit'] as $selector)if(!str_contains($css,$selector))handbook_fail('global study CSS missing: '.$selector);
 foreach(['caderno-positivo-direto','caderno-aula-','caderno-04-energia'] as $needle)if(str_contains($css,$needle))handbook_fail('page slug/section leaked into global study CSS: '.$needle);
+$studyCss=(string)file_get_contents(__DIR__.'/../assets/cms-study.css');
+foreach(['.study-data-strip','.study-compact-values','.study-comparison','.study-resource-list','.study-equation','.study-quote','.study-summary'] as $selector)if(!str_contains($studyCss,$selector))handbook_fail('study semantic CSS missing: '.$selector);
+foreach(['caderno-positivo-direto','caderno-04-energia','caderno-12-parodinal','caderno-20-materiais'] as $needle)if(str_contains($studyCss,$needle))handbook_fail('page-specific selector leaked into global study CSS: '.$needle);
 $material=(string)file_get_contents(__DIR__.'/../app/student_material.php');
 foreach(['if(!current_admin())return','cms-media-placeholder','Infográfico pendente','slot: '] as $needle)if(!str_contains($material,$needle))handbook_fail('admin private-media placeholder contract missing: '.$needle);
 echo "handbook-email-integrity: ok\n";
