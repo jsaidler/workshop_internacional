@@ -10,19 +10,55 @@ return static function(PDO $db): void {
     $page=$q->fetch(PDO::FETCH_ASSOC)?:null;
     if(!$page)return;
 
-    $addGridClassInSection=static function(string $html,string $sectionKey,string $classes): string {
+    $appendClasses=static function(string $tag,string $classes): string {
+        return preg_replace_callback(
+            '~\bclass=["\']([^"\']*)["\']~i',
+            static function(array $m)use($classes):string{
+                $existing=preg_split('/\s+/',trim((string)$m[1]))?:[];
+                foreach(preg_split('/\s+/',trim($classes))?:[] as $class){
+                    if($class!==''&&!in_array($class,$existing,true))$existing[]=$class;
+                }
+                return 'class="'.implode(' ',$existing).'"';
+            },
+            $tag,
+            1
+        )??$tag;
+    };
+
+    $addGridClassInSection=static function(string $html,string $sectionKey,string $classes)use($appendClasses): string {
         $pattern='~(<section\b[^>]*data-cms-section=["\']'.preg_quote($sectionKey,'~').'["\'][^>]*>)(.*?)(</section>)~si';
-        return preg_replace_callback($pattern,static function(array $m)use($classes):string{
+        return preg_replace_callback($pattern,static function(array $m)use($classes,$appendClasses):string{
             $body=(string)$m[2];
-            $body=preg_replace('~<div class="format-grid">~','<div class="format-grid '.$classes.'">',$body,1)??$body;
+            $body=preg_replace_callback(
+                '~<div\b[^>]*\bclass=["\'][^"\']*\bformat-grid\b[^"\']*["\'][^>]*>~i',
+                static fn(array $g):string=>$appendClasses((string)$g[0],$classes),
+                $body,
+                1
+            )??$body;
             return (string)$m[1].$body.(string)$m[3];
         },$html,1)??$html;
     };
 
     $addNoteClass=static function(string $html,string $text,string $class): string {
-        $from='<p class="technical-note" data-cms-editable>'.$text.'</p>';
-        $to='<p class="technical-note '.$class.'" data-cms-editable>'.$text.'</p>';
-        return str_replace($from,$to,$html);
+        $quoted=preg_quote($text,'~');
+        return preg_replace_callback(
+            '~<p\b[^>]*\bclass=["\']([^"\']*\btechnical-note\b[^"\']*)["\'][^>]*data-cms-editable[^>]*>'.$quoted.'</p>~u',
+            static function(array $m)use($class):string{
+                $tag=(string)$m[0];
+                return preg_replace_callback(
+                    '~\bclass=["\']([^"\']*)["\']~i',
+                    static function(array $c)use($class):string{
+                        $existing=preg_split('/\s+/',trim((string)$c[1]))?:[];
+                        if(!in_array($class,$existing,true))$existing[]=$class;
+                        return 'class="'.implode(' ',$existing).'"';
+                    },
+                    $tag,
+                    1
+                )??$tag;
+            },
+            $html,
+            1
+        )??$html;
     };
 
     $changed=false;
