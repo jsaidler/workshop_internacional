@@ -3,7 +3,9 @@ declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';
 security_headers();student_private_headers();
 $db=database();student_account_reconcile_confirmed_registrations($db);$student=student_account_current($db);
-$id=(int)($_GET['id']??$_POST['id']??0);$next='/aluno/teste.php?id='.$id;
+$id=(int)($_GET['id']??$_POST['id']??0);$requestedStep=(string)($_GET['step']??$_POST['step']??'exposure');
+$step=in_array($requestedStep,['exposure','development','review'],true)?$requestedStep:'exposure';
+$next='/aluno/teste.php?'.http_build_query(['id'=>$id,'step'=>$step]);
 if(!$student){header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
 $studentId=(int)$student['id'];$test=student_test_for_student($db,$id,$studentId);
 if(!$test){http_response_code(404);student_shell_start('Teste não encontrado',null,$student);?><div class="student-empty">Teste não encontrado.</div><?php student_shell_end();exit;}
@@ -12,68 +14,80 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('student-test-'.$id,$_POST['_csrf']??null))$error='Solicitação inválida.';
     else{
         try{
-            $action=(string)($_POST['action']??'save');
-            if($action==='save')student_test_update($db,$id,$studentId,$_POST);
-            elseif($action==='submit')student_test_submit($db,$id,$studentId);
-            elseif($action==='message')student_test_add_student_message($db,$id,$studentId,(string)($_POST['message']??''));
+            $action=(string)($_POST['action']??'');
+            if($action==='save_exposure'){student_test_update_exposure($db,$id,$studentId,$_POST);$step='development';}
+            elseif($action==='save_development'){student_test_update_development($db,$id,$studentId,$_POST);$step='review';}
+            elseif($action==='submit'){student_test_submit($db,$id,$studentId);$step='review';}
+            elseif($action==='message'){student_test_add_student_message($db,$id,$studentId,(string)($_POST['message']??''));$step='review';}
             elseif($action==='upload'){
-                $file=$_FILES['image']??null;if(!is_array($file))throw new RuntimeException('Selecione uma imagem.');student_test_add_media($db,$id,$studentId,$file);
-            }elseif($action==='delete_media')student_test_delete_media($db,(int)($_POST['media_id']??0),$studentId);
+                $file=$_FILES['image']??null;if(!is_array($file))throw new RuntimeException('Selecione uma imagem.');
+                $phase=(string)($_POST['phase']??'result');student_test_add_media_phase($db,$id,$studentId,$file,$phase);$step=$phase==='scene'?'exposure':'development';
+            }elseif($action==='delete_media'){student_test_delete_media($db,(int)($_POST['media_id']??0),$studentId);$step=in_array((string)($_POST['phase']??''),['scene','result'],true)&&$_POST['phase']==='scene'?'exposure':'development';}
             else throw new RuntimeException('Ação inválida.');
-            $_SESSION['student_test_notice']=match($action){'save'=>'Ficha salva.','submit'=>'Teste enviado para avaliação.','message'=>'Mensagem enviada.','upload'=>'Imagem adicionada.','delete_media'=>'Imagem removida.',default=>'Alteração salva.'};
-            header('Location: /aluno/teste.php?id='.$id,true,303);exit;
+            $_SESSION['student_test_notice']=match($action){'save_exposure'=>'Exposição salva. Agora registre a revelação.','save_development'=>'Revelação salva. Revise o teste antes de enviar.','submit'=>'Teste enviado para avaliação.','message'=>'Mensagem enviada.','upload'=>'Imagem adicionada.','delete_media'=>'Imagem removida.',default=>'Alteração salva.'};
+            header('Location: /aluno/teste.php?'.http_build_query(['id'=>$id,'step'=>$step]),true,303);exit;
         }catch(Throwable $e){$error=$e->getMessage();}
     }
 }
-$test=student_test_for_student($db,$id,$studentId)??$test;$media=student_test_media($db,$id);$messages=student_test_messages($db,$id);$notice=$_SESSION['student_test_notice']??null;unset($_SESSION['student_test_notice']);$locked=$test['status']==='reviewed';
+$test=student_test_for_student($db,$id,$studentId)??$test;$media=student_test_media($db,$id);$sceneMedia=student_test_media_by_phase($media,'scene');$resultMedia=student_test_media_by_phase($media,'result');$messages=student_test_messages($db,$id);$notice=$_SESSION['student_test_notice']??null;unset($_SESSION['student_test_notice']);$locked=$test['status']==='reviewed';
+$steps=['exposure'=>['01','Exposição'],'development'=>['02','Revelação'],'review'=>['03','Revisar e enviar']];
 student_shell_start((string)$test['title'].' · Teste',null,$student);?>
-<a class="student-back" href="/aluno/testes.php">← Meus testes</a>
+<div class="student-appbar"><a class="student-back" href="/aluno/testes.php">← Testes</a><span class="student-status student-status-<?=h((string)$test['status'])?>"><?=h(student_test_status_label((string)$test['status']))?></span></div>
 <p class="student-kicker"><?=h((string)$test['public_title'])?> · <?=h((string)$test['cohort_title'])?></p>
-<div class="student-title-row"><h1 class="student-title student-title-record"><?=h((string)$test['title'])?></h1><span class="student-status student-status-<?=h((string)$test['status'])?>"><?=h(student_test_status_label((string)$test['status']))?></span></div>
-<p class="student-lead">A ficha guarda exposição, revelação, imagens e a conversa sobre este teste no mesmo lugar.</p>
+<h1 class="student-title student-title-record"><?=h((string)$test['title'])?></h1>
+<p class="student-lead student-lead-compact">Registre o teste no momento em que ele acontece: primeiro a cena e a exposição, depois a revelação e o resultado.</p>
 <?php if($notice):?><p class="student-notice"><?=h((string)$notice)?></p><?php endif;?><?php if($error):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
 
-<section class="student-section">
-  <div class="student-section-heading"><div><p class="student-kicker">Registro</p><h2 class="student-subtitle">Dados do teste</h2></div><?php if($locked):?><p>Este registro foi marcado como revisado. Os dados ficam preservados; dúvidas ainda podem ser enviadas abaixo.</p><?php else:?><p>Salve quantas vezes precisar antes ou depois de enviar para avaliação.</p><?php endif;?></div>
-  <form method="post" class="student-form-grid">
-    <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="action" value="save">
-    <h3 class="student-form-heading">Identificação</h3>
-    <label class="student-field student-span-2">Título<input name="title" value="<?=h((string)$test['title'])?>" required maxlength="180"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Data<input type="date" name="test_date" value="<?=h((string)($test['test_date']??''))?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Filme<input name="film" value="<?=h((string)$test['film'])?>" placeholder="Filme e formato"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Lote<input name="lot" value="<?=h((string)$test['lot'])?>"<?=$locked?' disabled':''?>></label>
+<nav class="student-step-nav" aria-label="Etapas do teste">
+<?php foreach($steps as $key=>[$number,$label]):?><a href="/aluno/teste.php?<?=h(http_build_query(['id'=>$id,'step'=>$key]))?>"<?=$step===$key?' aria-current="step"':''?>><span><?=$number?></span><strong><?=h($label)?></strong></a><?php endforeach;?>
+</nav>
 
-    <h3 class="student-form-heading">Exposição</h3>
-    <label class="student-field">ISO usado como referência<input name="iso_reference" value="<?=h((string)$test['iso_reference'])?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Diafragma<input name="aperture" value="<?=h((string)$test['aperture'])?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Tempo inicialmente calculado<input name="calculated_time" value="<?=h((string)$test['calculated_time'])?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Tempo corrigido pela reciprocidade<input name="reciprocity_time" value="<?=h((string)$test['reciprocity_time'])?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field student-span-2">Condição da luz<textarea name="light_condition" rows="4"<?=$locked?' disabled':''?>><?=h((string)$test['light_condition'])?></textarea></label>
-    <label class="student-field student-span-2">Diferença entre regiões claras e sombras que quer preservar<textarea name="tonal_range" rows="4"<?=$locked?' disabled':''?>><?=h((string)$test['tonal_range'])?></textarea></label>
-
-    <h3 class="student-form-heading">Revelação</h3>
-    <label class="student-field">Revelador<input name="developer" value="<?=h((string)$test['developer'])?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Diluição<input name="dilution" value="<?=h((string)$test['dilution'])?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Temperatura<input name="temperature" value="<?=h((string)$test['temperature'])?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field">Tempo de revelação<input name="development_time" value="<?=h((string)$test['development_time'])?>"<?=$locked?' disabled':''?>></label>
-    <label class="student-field student-span-2">Movimentação<textarea name="agitation" rows="3"<?=$locked?' disabled':''?>><?=h((string)$test['agitation'])?></textarea></label>
-    <label class="student-field student-span-2">Observações<textarea name="notes" rows="7" placeholder="O que aconteceu, o que chamou atenção, o que pretende alterar no próximo teste"<?=$locked?' disabled':''?>><?=h((string)$test['notes'])?></textarea></label>
-    <?php if(!$locked):?><div class="student-actions student-span-2"><button class="student-button" type="submit">Salvar ficha</button></div><?php endif;?>
+<?php if($step==='exposure'):?>
+<section class="student-workflow-panel">
+  <header class="student-workflow-heading"><div><p class="student-kicker">Etapa 01</p><h2 class="student-subtitle">Cena e exposição</h2></div><p>Anote o que existia diante da câmera antes de ir para o laboratório. A fotografia da cena serve como referência para comparar intenção e resultado.</p></header>
+  <div class="student-capture-block">
+    <div><span class="student-capture-number">A</span><div><h3>Fotografe a cena</h3><p>Use a câmera do telefone ou escolha uma imagem já feita.</p></div></div>
+    <?php if(!$locked&&count($media)<STUDENT_TEST_MEDIA_MAX_FILES):?><form method="post" enctype="multipart/form-data" class="student-capture-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="step" value="exposure"><input type="hidden" name="action" value="upload"><input type="hidden" name="phase" value="scene"><label class="student-capture-button">Fotografar ou anexar<input type="file" name="image" accept="image/jpeg,image/png,image/webp" capture="environment" required onchange="this.form.requestSubmit()"></label></form><?php endif;?>
+  </div>
+  <?php if($sceneMedia):?><div class="student-media-strip" aria-label="Fotos da cena"><?php foreach($sceneMedia as $item):$src='/aluno/teste-media.php?id='.(int)$item['id'];?><figure class="student-media-card"><a href="<?=h($src)?>" target="_blank" rel="noopener"><img src="<?=h($src)?>" alt="Cena registrada" loading="lazy"></a><?php if(!$locked):?><figcaption><span>Foto da cena</span><form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="action" value="delete_media"><input type="hidden" name="phase" value="scene"><input type="hidden" name="media_id" value="<?=(int)$item['id']?>"><button class="student-link" type="submit">remover</button></form></figcaption><?php endif;?></figure><?php endforeach;?></div><?php endif;?>
+  <form method="post" class="student-mobile-form">
+    <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="step" value="exposure"><input type="hidden" name="action" value="save_exposure">
+    <div class="student-form-group"><h3>Identificação</h3><div class="student-form-grid"><label class="student-field student-span-2">Título do teste<input name="title" value="<?=h((string)$test['title'])?>" required maxlength="180"<?=$locked?' disabled':''?>></label><label class="student-field">Data<input type="date" name="test_date" value="<?=h((string)($test['test_date']??''))?>"<?=$locked?' disabled':''?>></label><label class="student-field">Filme<input name="film" value="<?=h((string)$test['film'])?>" placeholder="Filme e formato"<?=$locked?' disabled':''?>></label><label class="student-field">Lote<input name="lot" value="<?=h((string)$test['lot'])?>"<?=$locked?' disabled':''?>></label></div></div>
+    <div class="student-form-group"><h3>Exposição</h3><div class="student-form-grid"><label class="student-field">EI / ISO de referência<input inputmode="decimal" name="iso_reference" value="<?=h((string)$test['iso_reference'])?>"<?=$locked?' disabled':''?>></label><label class="student-field">Diafragma<input name="aperture" value="<?=h((string)$test['aperture'])?>" placeholder="ex.: f/64"<?=$locked?' disabled':''?>></label><label class="student-field">Tempo calculado<input name="calculated_time" value="<?=h((string)$test['calculated_time'])?>"<?=$locked?' disabled':''?>></label><label class="student-field">Tempo após reciprocidade<input name="reciprocity_time" value="<?=h((string)$test['reciprocity_time'])?>"<?=$locked?' disabled':''?>></label><label class="student-field student-span-2">Condição da luz<textarea name="light_condition" rows="3"<?=$locked?' disabled':''?>><?=h((string)$test['light_condition'])?></textarea></label><label class="student-field student-span-2">Regiões claras e sombras que quer preservar<textarea name="tonal_range" rows="3"<?=$locked?' disabled':''?>><?=h((string)$test['tonal_range'])?></textarea></label></div></div>
+    <?php if(!$locked):?><div class="student-sticky-action"><button class="student-button" type="submit">Salvar exposição e continuar →</button></div><?php endif;?>
   </form>
-  <?php if(!$locked):?><form method="post" class="student-submit-review"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="action" value="submit"><button class="student-button student-button-secondary" type="submit"><?=$test['status']==='submitted'?'Reenviar para avaliação':'Enviar para avaliação'?></button><p>O envio avisa, pelo estado do registro, que este teste está pronto para ser avaliado. Você continua podendo corrigir a ficha até ele ser marcado como revisado.</p></form><?php endif;?>
 </section>
 
-<section class="student-section">
-  <div class="student-section-heading"><div><p class="student-kicker">Imagem</p><h2 class="student-subtitle">Resultados visuais</h2></div><p>Até <?=STUDENT_TEST_MEDIA_MAX_FILES?> imagens por teste · JPEG, PNG ou WebP · máximo 12 MB cada.</p></div>
-  <?php if($media):?><div class="student-media-grid"><?php foreach($media as $item):$src='/aluno/teste-media.php?id='.(int)$item['id'];?><figure class="student-media-card"><a href="<?=h($src)?>" target="_blank" rel="noopener"><img src="<?=h($src)?>" alt="<?=h((string)$item['original_name'])?>" loading="lazy"></a><figcaption><span><?=h((string)$item['original_name'])?></span><?php if(!$locked):?><form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="action" value="delete_media"><input type="hidden" name="media_id" value="<?=(int)$item['id']?>"><button class="student-link" type="submit">remover</button></form><?php endif;?></figcaption></figure><?php endforeach;?></div><?php endif;?>
-  <?php if(!$locked&&count($media)<STUDENT_TEST_MEDIA_MAX_FILES):?><form method="post" enctype="multipart/form-data" class="student-upload"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="action" value="upload"><label class="student-field">Adicionar imagem<input type="file" name="image" accept="image/jpeg,image/png,image/webp" required></label><button class="student-button" type="submit">Enviar imagem</button></form><?php endif;?>
+<?php elseif($step==='development'):?>
+<section class="student-workflow-panel">
+  <header class="student-workflow-heading"><div><p class="student-kicker">Etapa 02</p><h2 class="student-subtitle">Revelação e resultado</h2></div><p>Registre o processo como ele realmente aconteceu. Depois fotografe o positivo para que os parâmetros possam ser avaliados junto com o resultado.</p></header>
+  <form method="post" class="student-mobile-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="step" value="development"><input type="hidden" name="action" value="save_development">
+    <div class="student-form-group"><h3>Primeira revelação</h3><div class="student-form-grid"><label class="student-field">Revelador<input name="developer" value="<?=h((string)$test['developer'])?>"<?=$locked?' disabled':''?>></label><label class="student-field">Diluição / quantidade<input name="dilution" value="<?=h((string)$test['dilution'])?>"<?=$locked?' disabled':''?>></label><label class="student-field">Temperatura<input name="temperature" value="<?=h((string)$test['temperature'])?>" placeholder="ex.: 26 °C"<?=$locked?' disabled':''?>></label><label class="student-field">Tempo<input name="development_time" value="<?=h((string)$test['development_time'])?>"<?=$locked?' disabled':''?>></label><label class="student-field student-span-2">Movimentação / agitação<textarea name="agitation" rows="3"<?=$locked?' disabled':''?>><?=h((string)$test['agitation'])?></textarea></label><label class="student-field student-span-2">O que aconteceu?<textarea name="notes" rows="5" placeholder="Densidade, transparência, manchas, separação das sombras, o que pretende alterar no próximo teste"<?=$locked?' disabled':''?>><?=h((string)$test['notes'])?></textarea></label></div></div>
+    <?php if(!$locked):?><div class="student-actions"><button class="student-button student-button-secondary" type="submit">Salvar revelação</button></div><?php endif;?>
+  </form>
+  <div class="student-capture-block student-capture-result"><div><span class="student-capture-number">B</span><div><h3>Fotografe o resultado</h3><p>Faça uma ou mais fotos do positivo já processado.</p></div></div><?php if(!$locked&&count($media)<STUDENT_TEST_MEDIA_MAX_FILES):?><form method="post" enctype="multipart/form-data" class="student-capture-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="step" value="development"><input type="hidden" name="action" value="upload"><input type="hidden" name="phase" value="result"><label class="student-capture-button">Fotografar ou anexar<input type="file" name="image" accept="image/jpeg,image/png,image/webp" capture="environment" required onchange="this.form.requestSubmit()"></label></form><?php endif;?></div>
+  <?php if($resultMedia):?><div class="student-media-strip" aria-label="Fotos do resultado"><?php foreach($resultMedia as $item):$src='/aluno/teste-media.php?id='.(int)$item['id'];?><figure class="student-media-card"><a href="<?=h($src)?>" target="_blank" rel="noopener"><img src="<?=h($src)?>" alt="Resultado do teste" loading="lazy"></a><?php if(!$locked):?><figcaption><span>Resultado</span><form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="action" value="delete_media"><input type="hidden" name="phase" value="result"><input type="hidden" name="media_id" value="<?=(int)$item['id']?>"><button class="student-link" type="submit">remover</button></form></figcaption><?php endif;?></figure><?php endforeach;?></div><?php endif;?>
+  <?php if(!$locked):?><div class="student-sticky-action"><a class="student-button" href="/aluno/teste.php?<?=h(http_build_query(['id'=>$id,'step'=>'review']))?>">Revisar teste →</a></div><?php endif;?>
 </section>
 
-<section class="student-section">
-  <div class="student-section-heading"><div><p class="student-kicker">Acompanhamento</p><h2 class="student-subtitle">Avaliação e dúvidas</h2></div><p>Use este histórico para responder à avaliação ou perguntar sobre qualquer ponto deste teste.</p></div>
+<?php else:?>
+<section class="student-workflow-panel">
+  <header class="student-workflow-heading"><div><p class="student-kicker">Etapa 03</p><h2 class="student-subtitle">Revisar e enviar</h2></div><p>Confira exposição, revelação e imagens no mesmo registro. É isso que será usado na avaliação.</p></header>
+  <div class="student-review-grid">
+    <article><span>Exposição</span><dl><div><dt>EI / ISO</dt><dd><?=student_review_value($test['iso_reference'])?></dd></div><div><dt>Diafragma</dt><dd><?=student_review_value($test['aperture'])?></dd></div><div><dt>Tempo calculado</dt><dd><?=student_review_value($test['calculated_time'])?></dd></div><div><dt>Após reciprocidade</dt><dd><?=student_review_value($test['reciprocity_time'])?></dd></div></dl><a href="/aluno/teste.php?<?=h(http_build_query(['id'=>$id,'step'=>'exposure']))?>">Editar exposição</a></article>
+    <article><span>Revelação</span><dl><div><dt>Revelador</dt><dd><?=student_review_value($test['developer'])?></dd></div><div><dt>Diluição</dt><dd><?=student_review_value($test['dilution'])?></dd></div><div><dt>Temperatura</dt><dd><?=student_review_value($test['temperature'])?></dd></div><div><dt>Tempo</dt><dd><?=student_review_value($test['development_time'])?></dd></div></dl><a href="/aluno/teste.php?<?=h(http_build_query(['id'=>$id,'step'=>'development']))?>">Editar revelação</a></article>
+  </div>
+  <div class="student-review-media"><div><span>Foto da cena</span><?php if($sceneMedia):?><img src="/aluno/teste-media.php?id=<?=(int)$sceneMedia[0]['id']?>" alt="Cena do teste"><?php else:?><p>Nenhuma foto da cena.</p><?php endif;?></div><div><span>Resultado</span><?php if($resultMedia):?><img src="/aluno/teste-media.php?id=<?=(int)$resultMedia[0]['id']?>" alt="Resultado do teste"><?php else:?><p>Nenhuma foto do resultado.</p><?php endif;?></div></div>
+  <?php if(!$locked):?><form method="post" class="student-submit-review"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="step" value="review"><input type="hidden" name="action" value="submit"><button class="student-button" type="submit"><?=$test['status']==='submitted'?'Reenviar para avaliação':'Enviar para avaliação'?></button><p>Você poderá continuar a conversa sobre este teste depois do envio.</p></form><?php endif;?>
+</section>
+
+<section class="student-workflow-panel student-conversation">
+  <header class="student-workflow-heading"><div><p class="student-kicker">Acompanhamento</p><h2 class="student-subtitle">Avaliação e dúvidas</h2></div><p>A conversa fica presa ao teste, junto dos parâmetros e das imagens.</p></header>
   <?php if(!$messages):?><div class="student-empty">Ainda não há mensagens neste teste.</div><?php else:?><div class="student-thread"><?php foreach($messages as $message):?><article class="student-message <?=$message['author_role']==='admin'?'student-message-admin':'student-message-student'?>"><header><strong><?=$message['author_role']==='admin'?'João · avaliação':h((string)$student['name'])?></strong><span><?=h(student_test_message_date((string)$message['created_at']))?></span></header><p><?=nl2br(h((string)$message['body']))?></p></article><?php endforeach;?></div><?php endif;?>
-  <form method="post" class="student-message-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="action" value="message"><label class="student-field">Nova dúvida ou comentário<textarea name="message" rows="5" required></textarea></label><button class="student-button" type="submit">Enviar mensagem</button></form>
+  <form method="post" class="student-message-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="step" value="review"><input type="hidden" name="action" value="message"><label class="student-field">Nova dúvida ou comentário<textarea name="message" rows="4" required></textarea></label><button class="student-button student-button-secondary" type="submit">Enviar mensagem</button></form>
 </section>
+<?php endif;?>
 <?php student_shell_end();
 
 function student_test_message_date(string $value): string {$ts=strtotime($value);return $ts===false?$value:date('d/m/Y H:i',$ts);}
+function student_review_value(mixed $value): string {$value=trim((string)$value);return $value===''?'—':h($value);}
