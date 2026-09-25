@@ -164,15 +164,34 @@ O bypass administrativo é deliberado: um administrador precisa conseguir verifi
 
 ## Administração e escala
 
-`Admin → Inscrições → Área do aluno` continua concentrando configuração estrutural: Visão geral, Turmas, Aulas, Páginas protegidas e Alunos.
+`Admin → Inscrições → Área do aluno` é a única superfície administrativa do sistema de alunos. A organização canônica é por **objeto**, não por uma categoria genérica de operações:
 
-`Admin → Inscrições → Operações e testes` concentra tarefas operacionais que não pertencem ao CMS editorial:
+1. **Visão geral**;
+2. **Turmas**;
+3. **Alunos**;
+4. **Testes**;
+5. **Aulas**;
+6. **Páginas protegidas**.
 
-- **Dados das turmas** — corrigir nome, slug, período, estado, observação e turma padrão;
-- **Importar alunos** — incorporar histórico por CSV/XLSX com relatório por linha;
-- **Testes dos alunos** — fila de avaliação, filtros por turma/estado, imagens e conversa.
+Não existe uma área paralela chamada “Operações e testes”. A rota histórica `/admin/student-operations.php` apenas redireciona bookmarks antigos para o objeto correspondente dentro de `/admin/student-area.php`.
 
-As duas superfícies usam o mesmo sistema de UI/UX do restante da administração. Listas extensas usam componentes compartilhados, filtros, busca e tabelas com overflow responsivo. A tela não deve depender de carregar todos os alunos e todos os registros em uma única coluna crescente.
+### Turmas
+
+A tela **Turmas** lista as turmas existentes. Abrir uma turma é a ação que revela a edição de nome, slug, período, estado, observações e definição como padrão. Criar nova turma também pertence a essa tela. Edição de turma nunca é apresentada como uma ferramenta solta.
+
+### Alunos
+
+A tela **Alunos** concentra lista, busca, filtros, matrículas confirmadas e importação histórica. **Importar planilha** é uma ação da tela de Alunos e retorna para a mesma área com o relatório do lote importado; não é uma seção de navegação independente.
+
+### Testes
+
+A tela **Testes** é uma área própria porque possui fila, filtros, estados, ficha técnica, imagens, conversa e fluxo de avaliação próprios. Ela não fica agrupada com edição de turma ou importação de aluno.
+
+### Aulas e páginas protegidas
+
+**Aulas** mantém a liberação por turma e a criação de novas aulas. **Páginas protegidas** mantém proteção, associação seção→aula e mídia privada. Esses objetos continuam separados das operações de aluno e de teste.
+
+As listas usam componentes compartilhados, filtros, busca, paginação e tabelas com overflow responsivo. A tela não deve depender de carregar todos os alunos e todos os registros em uma única coluna crescente.
 
 ## LGPD e segurança
 
