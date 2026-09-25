@@ -30,5 +30,5 @@ function media_detail_admin(PDO $db,int $assetId): array {
 
     try{$q=$db->prepare('SELECT s.page_id,s.slot_key,p.title,p.slug,p.locale,a.admin_name,a.slug activity_slug FROM course_page_media_slots s JOIN cms_pages p ON p.id=s.page_id JOIN activities a ON a.id=p.activity_id WHERE s.media_asset_id=?');$q->execute([$assetId]);foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row)$asset['uses'][]=['source'=>'protected-slot','activity'=>$row['admin_name'],'slug'=>$row['activity_slug'],'state'=>'Protegido','pageId'=>(int)$row['page_id'],'page'=>$row['title'],'pageSlug'=>$row['slug'],'locale'=>$row['locale'],'element'=>'slot: '.$row['slot_key']];}catch(Throwable){ }
 
-    return media_rewrite_admin_delivery($asset);
+    return function_exists('media_rewrite_admin_delivery')?media_rewrite_admin_delivery($asset):$asset;
 }
