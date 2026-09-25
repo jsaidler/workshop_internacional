@@ -56,7 +56,7 @@ Cada teste possui visibilidade explícita:
 - `cohort` — autor, administração e alunos com matrícula ativa na mesma turma;
 - `course` — autor, administração e alunos com matrícula ativa no mesmo curso/site.
 
-Não existe publicação anônima na web. Compartilhar um teste disponibiliza somente ficha técnica e imagens. **A conversa de avaliação entre aluno e professor permanece privada.**
+Não existe publicação anônima na web. **A visibilidade vale para o registro inteiro**: ficha técnica, imagens e conversa de avaliação/dúvidas seguem a mesma configuração escolhida pelo autor. Não há um segundo nível de privacidade específico para mensagens.
 
 ### Avaliação
 
@@ -67,7 +67,7 @@ Estados:
 - `needs_revision` — ajustes solicitados;
 - `reviewed` — revisão concluída.
 
-A conversa `student_test_messages` permanece vinculada ao teste e pode continuar depois da revisão.
+A conversa `student_test_messages` permanece vinculada ao teste e pode continuar depois da revisão. Quando o teste está compartilhado com turma ou curso, as mensagens já existentes também fazem parte do registro compartilhado; outros alunos não ganham permissão para responder no teste alheio.
 
 ## Conteúdo protegido continua sendo CMS
 
@@ -144,7 +144,9 @@ A regressão deve provar, no mínimo:
 - Área do aluno consome o Design global e não declara autoridade própria de fonte/paleta;
 - nome público do curso é editável no contexto do site atual;
 - exclusão de teste remove registros e arquivos físicos;
-- visibilidade de teste respeita `private|cohort|course` e nunca compartilha a conversa de avaliação;
+- visibilidade de teste respeita `private|cohort|course` e compartilha ficha, imagens e conversa como uma unidade;
+- alunos que recebem um teste compartilhado podem ler a conversa, mas não escrever no teste alheio;
+- Páginas protegidas enumera as `data-cms-section` reais do documento e não substitui a estrutura por uma linha sintética de “Página inteira”;
 - uma turma com apenas Aula 1 liberada recebe HTML sem as seções de Aula 2 e Aula 3;
 - mídia editorial privada vem de `media_assets` e Páginas protegidas não contém uploader paralelo;
 - importação histórica é CSV nativo no HTML/PHP;
