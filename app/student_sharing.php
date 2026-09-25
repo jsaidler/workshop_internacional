@@ -13,7 +13,7 @@ function student_test_set_visibility(PDO $db,int $testId,int $studentId,string $
 
 function student_test_accessible_to_student(PDO $db,int $testId,int $studentId): ?array {
     $q=$db->prepare(<<<'SQL'
-SELECT t.*,u.name AS student_name,u.email AS student_email,c.title AS cohort_title
+SELECT t.*,u.name AS student_name,u.email AS student_email,c.title AS cohort_title,c.activity_id
 FROM student_tests t
 JOIN student_users u ON u.id=t.student_id
 JOIN course_cohorts c ON c.id=t.cohort_id
@@ -26,7 +26,7 @@ WHERE t.id=? AND (
     OR (t.visibility='course' AND EXISTS(
         SELECT 1 FROM course_enrollments e
         JOIN course_cohorts ec ON ec.id=e.cohort_id
-        WHERE e.student_id=? AND e.status='active' AND ec.activity_id=t.activity_id
+        WHERE e.student_id=? AND e.status='active' AND ec.status!='archived' AND ec.activity_id=c.activity_id
     ))
 )
 LIMIT 1
@@ -38,10 +38,11 @@ SQL);
 
 function student_tests_shared_with_student(PDO $db,int $studentId): array {
     $q=$db->prepare(<<<'SQL'
-SELECT t.*,u.name AS student_name,c.title AS cohort_title
+SELECT t.*,u.name AS student_name,c.title AS cohort_title,c.activity_id,a.public_title
 FROM student_tests t
 JOIN student_users u ON u.id=t.student_id
 JOIN course_cohorts c ON c.id=t.cohort_id
+JOIN activities a ON a.id=c.activity_id
 WHERE t.student_id<>? AND (
     (t.visibility='cohort' AND EXISTS(
         SELECT 1 FROM course_enrollments e
@@ -50,7 +51,7 @@ WHERE t.student_id<>? AND (
     OR (t.visibility='course' AND EXISTS(
         SELECT 1 FROM course_enrollments e
         JOIN course_cohorts ec ON ec.id=e.cohort_id
-        WHERE e.student_id=? AND e.status='active' AND ec.activity_id=t.activity_id
+        WHERE e.student_id=? AND e.status='active' AND ec.status!='archived' AND ec.activity_id=c.activity_id
     ))
 )
 ORDER BY t.updated_at DESC,t.id DESC
