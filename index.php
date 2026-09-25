@@ -19,7 +19,7 @@ try{
                 if(!$student){$next=student_safe_next((string)($_SERVER['REQUEST_URI']??cms_page_url($activity,$page,$locale)));header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
                 $cohortUuid=trim((string)($_GET['cohort']??''));$enrollment=student_account_page_context($db,$student,$page,$cohortUuid);
                 if(!$enrollment){http_response_code(403);exit('Este material não está disponível para esta matrícula.');}
-                $document=student_page_filter_document($db,$page,$document);$document=student_page_resolve_private_media_slots($db,$page,$document);$document=student_page_sign_media_library($document,$student,$page,$enrollment);$document=student_page_sign_private_media($document,$student,$page,$enrollment);student_page_prefill_for_page($db,$student,$page,$document);
+                $document=student_page_filter_document($db,$page,$document,$enrollment);$document=student_page_resolve_private_media_slots($db,$page,$document);$document=student_page_sign_media_library($document,$student,$page,$enrollment);$document=student_page_sign_private_media($document,$student,$page,$enrollment);student_page_prefill_for_page($db,$student,$page,$document);
             }
         }elseif($student){student_page_prefill_for_page($db,$student,$page,$document);}
         try{analytics_record_pageview($db,$activity,$page,$locale);}catch(Throwable $analyticsError){error_log('Analytics pageview failed: '.$analyticsError->getMessage());}
