@@ -7,6 +7,7 @@ $area=(string)file_get_contents($root.'/admin/student-area.php');
 $shell=(string)file_get_contents($root.'/app/admin_shell.php');
 $legacy=(string)file_get_contents($root.'/admin/student-operations.php');
 $adminJs=(string)file_get_contents($root.'/assets/admin.js');
+$csvEndpoint=(string)file_get_contents($root.'/admin/student-import-csv.php');
 $csvTemplate=(string)file_get_contents($root.'/assets/modelo-importacao-alunos.csv');
 
 if(str_contains($shell,'Operações e testes'))fail('artificial Operations and tests context item is still visible');
@@ -25,8 +26,11 @@ if(str_contains($legacy,'admin_shell_start('))fail('legacy operations page still
 if(!str_contains($legacy,"'import'=>'students'")||!str_contains($legacy,"'tests'=>'tests'"))fail('legacy routes do not redirect to canonical object views');
 
 if(!str_contains($adminJs,"studentCsvInput.setAttribute('accept', '.csv,text/csv')"))fail('student import UI is not constrained to CSV');
+if(!str_contains($adminJs,"/admin/student-import-csv.php"))fail('student import form is not routed through the CSV-only endpoint');
 if(!str_contains($adminJs,"templateLink.href = '/assets/modelo-importacao-alunos.csv'"))fail('CSV template download is not exposed in the student import UI');
 if(!str_contains($adminJs,"Exemplo de linha: "))fail('CSV import does not show an example row');
+if(!str_contains($csvEndpoint,"strtolower(pathinfo(\$name,PATHINFO_EXTENSION))!=='csv'"))fail('CSV endpoint does not reject non-CSV uploads');
+if(!str_contains($csvEndpoint,"student_import_historical_students(\$db,\$activityId,\$cohortId,\$file)"))fail('CSV endpoint is not connected to the historical importer');
 $csvHeader=ltrim(strtok($csvTemplate,"\r\n"),"\xEF\xBB\xBF");
 if($csvHeader!=='Nome;E-mail;CPF;Telefone;Instagram;Endereço;Cidade/UF;CEP')fail('CSV template header changed');
 
