@@ -29,7 +29,7 @@ student_shell_start('Área do aluno',null,$student);?>
   </section>
   <aside class="student-dashboard-section">
     <article class="student-quick-card"><p class="student-kicker">Caderno de testes</p><h2>Registrar experimentação</h2><p>Anote a exposição ainda na cena, fotografe a referência e complete a revelação e os resultados depois.</p><a class="student-button" href="/aluno/testes.php?new=1">Novo teste</a></article>
-    <?php if($recentTests):?><div class="student-dashboard-heading" style="margin-top:28px"><h2>Recentes</h2><a href="/aluno/testes.php">Ver todos</a></div><div class="student-recent-list"><?php foreach($recentTests as $test):?><a class="student-recent-item" href="/aluno/teste.php?id=<?=(int)$test['id']?>"><strong><?=h((string)$test['title'])?></strong><span><?=h(student_test_status_label((string)$test['status']))?> · <?=h((string)$test['cohort_title'])?></span></a><?php endforeach;?></div><?php endif;?>
+    <?php if($recentTests):?><div class="student-dashboard-heading is-secondary"><h2>Recentes</h2><a href="/aluno/testes.php">Ver todos</a></div><div class="student-recent-list"><?php foreach($recentTests as $test):?><a class="student-recent-item" href="/aluno/teste.php?id=<?=(int)$test['id']?>"><strong><?=h((string)$test['title'])?></strong><span><?=h(student_test_status_label((string)$test['status']))?> · <?=h((string)$test['cohort_title'])?></span></a><?php endforeach;?></div><?php endif;?>
   </aside>
 </div><?php endif;?>
 <?php student_shell_end();
