@@ -35,11 +35,18 @@ function submission_url(int $activityId,int $id=0,string $status='',int $form=0)
 function registration_status(array $row): string {if(($row['status']??'')==='archived')return 'Cancelada';if(($row['payment_status']??'pending')==='paid'||($row['status']??'')==='converted')return 'Confirmada';return 'Aguardando pagamento';}
 function registration_payment_label(array $row): string {$p=submission_payload($row);$f=submission_fields($row);return submission_value_label($f['payment_method']??[],(string)($p['payment_method']??''));}
 
+$notice=$_SESSION['admin_submission_notice']??'';unset($_SESSION['admin_submission_notice']);
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('cms-submissions',$_POST['_csrf']??null)){http_response_code(403);exit('Invalid request');}
     $id=(int)($_POST['submission_id']??0);$action=(string)($_POST['action']??'');
     $q=$db->prepare('SELECT s.*,f.form_key FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');$q->execute([$id,$activityId]);$row=$q->fetch()?:null;
     if(!$row){http_response_code(404);exit('Submission not found');}
+    $filterStatus=(string)($_POST['filter_status']??'');$filterForm=(int)($_POST['filter_form']??0);
+    if($action==='delete'){
+        $db->prepare('DELETE FROM cms_form_submissions WHERE id=? AND activity_id=?')->execute([$id,$activityId]);
+        $_SESSION['admin_submission_notice']='Inscrição excluída permanentemente. Contas, matrículas e testes já criados não foram removidos.';
+        header('Location: '.submission_url($activityId,0,$filterStatus,$filterForm),true,303);exit;
+    }
     $now=utc_now();$paymentNote=array_key_exists('payment_note',$_POST)?trim((string)$_POST['payment_note']):(string)($row['payment_note']??'');
     if($row['form_key']==='registration'){
         if($action==='confirm')$db->prepare("UPDATE cms_form_submissions SET status='converted',payment_status='paid',payment_confirmed_at=?,payment_note=?,updated_at=? WHERE id=? AND activity_id=?")->execute([$now,$paymentNote,$now,$id,$activityId]);
@@ -48,7 +55,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     }else{
         $allowed=['new','contacted','converted','archived'];$status=(string)($_POST['status']??'new');if(!in_array($status,$allowed,true))$status='new';$notes=trim((string)($_POST['notes']??''));$db->prepare('UPDATE cms_form_submissions SET status=?,notes=?,updated_at=? WHERE id=? AND activity_id=?')->execute([$status,$notes,$now,$id,$activityId]);
     }
-    header('Location: '.submission_url($activityId,$id,(string)($_POST['filter_status']??''),(int)($_POST['filter_form']??0)));exit;
+    header('Location: '.submission_url($activityId,$id,$filterStatus,$filterForm),true,303);exit;
 }
 
 $formFilter=(int)($_GET['form']??0);$statusFilter=(string)($_GET['status']??'');
@@ -58,6 +65,7 @@ $forms=cms_forms($db,$activityId);$selectedId=(int)($_GET['submission']??0);if(!
 $countQ=$db->prepare('SELECT status,COUNT(*) n FROM cms_form_submissions WHERE activity_id=? GROUP BY status');$countQ->execute([$activityId]);$counts=['new'=>0,'contacted'=>0,'converted'=>0,'archived'=>0];foreach($countQ->fetchAll() as $r)if(isset($counts[$r['status']]))$counts[$r['status']]=(int)$r['n'];
 
 admin_shell_start('responses','Inscrições',$state);?>
+<?php if($notice!==''):?><p class="admin-success" role="status"><?=h($notice)?></p><?php endif;?>
 <section class="inbox-toolbar">
 <div class="inbox-toolbar-summary"><strong><?=$counts['new']?> aguardando</strong><span>· <?=$counts['converted']?> confirmada<?=$counts['converted']===1?'':'s'?></span></div>
 <div class="inbox-toolbar-controls">
@@ -81,6 +89,7 @@ admin_shell_start('responses','Inscrições',$state);?>
 <section class="registration-admin-payment"><p class="admin-kicker">Pagamento</p><h3><?=h(registration_payment_label($selected))?></h3><p><strong><?=$selected['payment_status']==='paid'?'Confirmado':'Aguardando confirmação'?></strong><?php if(!empty($selected['payment_confirmed_at'])):?> · <?=h(date('d/m/Y · H:i',strtotime($selected['payment_confirmed_at'])))?><?php endif;?></p>
 <form method="post" class="registration-payment-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('cms-submissions'))?>"><input type="hidden" name="submission_id" value="<?=(int)$selected['id']?>"><input type="hidden" name="filter_status" value="<?=h($statusFilter)?>"><input type="hidden" name="filter_form" value="<?=$formFilter?>"><label>Informações do pagamento<textarea name="payment_note" rows="3" placeholder="Ex.: comprovante conferido, identificação da transação…"><?=h((string)($selected['payment_note']??''))?></textarea></label><div class="registration-payment-actions"><?php if(($selected['payment_status']??'pending')!=='paid'):?><button class="admin-button" type="submit" name="action" value="confirm">Confirmar inscrição e pagamento</button><?php else:?><button class="admin-button secondary" type="submit" name="action" value="pending">Marcar como aguardando pagamento</button><?php endif;?><button class="admin-button secondary" type="submit" name="action" value="archive">Cancelar inscrição</button></div></form></section>
 <?php else:?><dl class="inbox-fields"><?php foreach($payload as $key=>$value):?><div><dt><?=h((string)($fields[$key]['label']??$key))?></dt><dd><?=h(submission_value_label($fields[$key]??[],$value))?></dd></div><?php endforeach;?></dl><form method="post" class="inbox-followup"><input type="hidden" name="_csrf" value="<?=h(csrf_token('cms-submissions'))?>"><input type="hidden" name="submission_id" value="<?=(int)$selected['id']?>"><input type="hidden" name="filter_status" value="<?=h($statusFilter)?>"><input type="hidden" name="filter_form" value="<?=$formFilter?>"><label>Notas<textarea name="notes" rows="4"><?=h((string)$selected['notes'])?></textarea></label><div class="inbox-status-actions"><?php foreach(['new'=>'Novo','contacted'=>'Em contato','converted'=>'Concluído','archived'=>'Arquivado'] as $value=>$label):?><button type="submit" name="status" value="<?=$value?>" formaction="/admin/submissions.php" onclick="this.form.action.value='generic'"<?=$selected['status']===$value?' aria-current="true"':''?>><?=h($label)?></button><?php endforeach;?><input type="hidden" name="action" value="generic"></div></form><?php endif;?>
+<section class="registration-admin-group"><p class="admin-kicker">Registro</p><h3>Excluir inscrição</h3><p>Remove permanentemente esta resposta do formulário. Se a inscrição já criou uma conta, matrícula ou testes, esses registros permanecem intactos e devem ser administrados em suas próprias áreas.</p><form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('cms-submissions'))?>"><input type="hidden" name="submission_id" value="<?=(int)$selected['id']?>"><input type="hidden" name="filter_status" value="<?=h($statusFilter)?>"><input type="hidden" name="filter_form" value="<?=$formFilter?>"><button class="admin-button secondary" type="submit" name="action" value="delete" data-confirm="Excluir esta inscrição permanentemente? Contas, matrículas e testes vinculados não serão excluídos.">Excluir inscrição</button></form></section>
 </aside><?php endif;?></div>
 <link rel="stylesheet" href="<?=h(admin_asset_url('/assets/admin-inbox.css'))?>"><link rel="stylesheet" href="<?=h(admin_asset_url('/assets/admin-registration.css'))?>">
 <?php admin_shell_end();
