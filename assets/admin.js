@@ -76,3 +76,13 @@ async function initLessonScheduling() {
   }
 }
 initLessonScheduling().catch(console.error);
+
+async function initStudentTestBleach() {
+  if (!adminUrl.pathname.endsWith('/admin/student-area.php') || adminUrl.searchParams.get('view') !== 'tests') return;
+  const testId = adminUrl.searchParams.get('test'), activity = adminUrl.searchParams.get('activity');if (!testId || !activity) return;
+  const response = await fetch(`/admin/api/student-test-detail.php?activity=${encodeURIComponent(activity)}&test=${encodeURIComponent(testId)}`, {credentials:'same-origin'});if (!response.ok) return;
+  const data = await response.json();
+  const table = document.querySelector('.admin-section-stack .admin-card .admin-data-table tbody');if (!table || table.querySelector('[data-test-bleach]')) return;
+  const row = document.createElement('tr');row.dataset.testBleach='1';row.innerHTML = `<th>Branqueador</th><td colspan="3"></td>`;row.querySelector('td').textContent = data.bleach || '—';table.append(row);
+}
+initStudentTestBleach().catch(console.error);
