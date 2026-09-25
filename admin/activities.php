@@ -24,27 +24,28 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
 }
 $notice=(string)($_SESSION['activities_notice']??'');unset($_SESSION['activities_notice']);
 $state=admin_activity_resolution($db);
-admin_shell_start('activities','Sites',$state);
+admin_shell_start('activities','Cursos e workshops',$state);
 ?>
 <?php if($notice!==''):?><p class="admin-success"><?=h($notice)?></p><?php endif;?>
 <?php if($error!==''):?><p class="admin-error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="activities-layout">
   <section class="admin-panel">
-    <p class="admin-kicker">Novo site</p>
-    <h2>Criar site</h2>
+    <p class="admin-kicker">Nova atividade</p>
+    <h2>Criar curso ou workshop</h2>
     <form method="post">
       <input type="hidden" name="csrf" value="<?=h(csrf_token('activities'))?>">
       <input type="hidden" name="action" value="create">
       <label class="admin-field">Nome no admin<input name="admin_name" required maxlength="160"></label>
       <label class="admin-field">Nome público do curso<input name="public_title" required maxlength="220"></label>
       <label class="admin-field">Slug<input name="slug" required></label>
-      <button class="admin-button">Criar site</button>
+      <button class="admin-button">Criar atividade</button>
     </form>
+    <p class="muted">A criação de atividades ainda usa o template histórico do workshop atual. O modo realmente vazio será liberado somente depois da retirada dos seeds automáticos de páginas e formulários.</p>
   </section>
   <section>
-    <p class="admin-kicker">Sites existentes</p>
+    <p class="admin-kicker">Cursos e workshops existentes</p>
     <div class="activity-list">
-      <?php if(!$state['activities']):?><div class="admin-empty compact"><h2>Nenhum site criado</h2><p>Crie o primeiro site para começar.</p></div><?php endif;?>
+      <?php if(!$state['activities']):?><div class="admin-empty compact"><h2>Nenhuma atividade criada</h2><p>Crie o primeiro curso ou workshop para começar.</p></div><?php endif;?>
       <?php foreach($state['activities'] as $item):?>
         <article class="activity-card">
           <form method="post">
