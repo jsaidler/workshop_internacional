@@ -9,7 +9,7 @@ $test=student_test_accessible_to_student($db,$id,(int)$student['id']);
 if(!$test||(int)$test['student_id']===(int)$student['id']){header('Location: /aluno/teste.php?id='.$id,true,303);exit;}
 $media=student_test_media($db,$id);$sceneMedia=student_test_media_by_phase($media,'scene');$resultMedia=student_test_media_by_phase($media,'result');
 student_shell_start((string)$test['title'].' · Compartilhado',null,$student);?>
-<div class="student-appbar"><a class="student-back" href="/aluno/testes.php">← Testes</a><span class="student-sharing-badge"><?=h(student_test_visibility_label((string)$test['visibility']))?></span></div>
+<div class="student-appbar"><a class="student-back" href="/aluno/testes.php">← Testes</a><span class="student-status"><?=h(student_test_visibility_label((string)$test['visibility']))?></span></div>
 <p class="student-kicker"><?=h((string)$test['student_name'])?> · <?=h((string)$test['cohort_title'])?></p>
 <h1 class="student-title student-title-record"><?=h((string)$test['title'])?></h1>
 <p class="student-lead student-lead-compact">Ficha compartilhada pelo autor. A conversa de avaliação com o professor não faz parte do compartilhamento.</p>
