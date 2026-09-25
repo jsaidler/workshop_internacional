@@ -7,7 +7,7 @@ $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
 $headerCss=(string)file_get_contents($root.'/assets/cms-header.css');
-$adminCss=(string)file_get_contents($root.'/assets/admin-student-area.css');
+$adminCss=(string)file_get_contents($root.'/assets/admin-form-ux.css');
 $migration=(string)file_get_contents($root.'/migrations/063_student_test_mobile_workflow.php');
 $helper=(string)file_get_contents($root.'/app/student_test_mobile.php');
 
