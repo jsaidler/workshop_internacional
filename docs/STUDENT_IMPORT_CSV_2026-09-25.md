@@ -32,15 +32,27 @@ Campos opcionais:
 - `Cidade/UF`
 - `CEP`
 
+## Fluxo do admin
+
+A tela continua sendo renderizada dentro de `Área do aluno → Alunos`. Quando o formulário de importação está aberto, o comportamento do admin:
+
+- apresenta `Importar CSV` em vez de `Importar planilha`;
+- limita o seletor de arquivo a `.csv`;
+- oferece `Baixar modelo CSV`;
+- mostra uma linha de exemplo separada do arquivo modelo;
+- envia o formulário para `/admin/student-import-csv.php`, que rejeita extensões diferentes de `.csv` antes de chamar o importador histórico.
+
 ## Compatibilidade
 
-O formulário administrativo anuncia e seleciona somente arquivos `.csv`. O parser existente continua tolerante a formatos históricos que já eram aceitos, mas essa compatibilidade não faz parte da interface canônica e não deve ser apresentada como opção ao administrador.
+O parser existente continua tolerante a formatos históricos que já eram aceitos, mas essa compatibilidade fica fora do fluxo canônico. A interface e o endpoint administrativo atuais trabalham somente com CSV.
 
 ## Regressão
 
 `tools/test-student-area-information-architecture.php` verifica que:
 
 - a interface restringe o seletor a CSV;
+- o formulário usa o endpoint CSV-only;
+- o endpoint rejeita extensões diferentes de CSV;
 - o modelo para download continua presente;
 - a tela continua mostrando uma linha de exemplo;
 - o cabeçalho do arquivo modelo não é alterado silenciosamente.
