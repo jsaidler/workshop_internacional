@@ -6,6 +6,18 @@ function student_private_media_slot_key(string $value): string {
     if($value===''||strlen($value)>80)throw new RuntimeException('Slot de mídia inválido.');
     return $value;
 }
+function student_private_media_admin_slot_label(string $key,string $alt): string {
+    $label=trim($alt);
+    $label=preg_replace('~^Infográfico(?: ilustrado)?\s*:\s*~iu','',$label)??$label;
+    if($label==='')$label=str_replace('-',' ',$key);
+    if(mb_strlen($label)>92){
+        $candidate=mb_substr($label,0,92);$comma=mb_strrpos($candidate,',');
+        if($comma!==false&&$comma>=32)$candidate=mb_substr($candidate,0,$comma);
+        else{$space=mb_strrpos($candidate,' ');if($space!==false&&$space>=32)$candidate=mb_substr($candidate,0,$space);}
+        $label=rtrim($candidate," ,.;:–—-").'…';
+    }
+    return mb_strtoupper(mb_substr($label,0,1)).mb_substr($label,1);
+}
 
 function student_page_private_media_slots_from_document(array $document): array {
     $html=(string)($document['html']??'');$slots=[];
@@ -14,7 +26,7 @@ function student_page_private_media_slots_from_document(array $document): array 
         foreach($matches as $match){
             $tag=(string)$match[0];$key=student_private_media_slot_key((string)$match[1]);$alt='';
             if(preg_match('~data-private-media-alt=["\']([^"\']*)["\']~i',$tag,$altMatch))$alt=html_entity_decode((string)$altMatch[1],ENT_QUOTES|ENT_HTML5,'UTF-8');
-            $slots[$key]=['key'=>$key,'alt'=>$alt!==''?$alt:$key];
+            $slots[$key]=['key'=>$key,'alt'=>student_private_media_admin_slot_label($key,$alt)];
         }
     }
     return $slots;
