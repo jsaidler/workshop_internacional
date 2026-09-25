@@ -1,11 +1,7 @@
 <?php
 declare(strict_types=1);
 
-function student_private_media_slot_key(string $value): string {
-    $value=activity_slug(trim($value));
-    if($value===''||strlen($value)>80)throw new RuntimeException('Slot de mídia inválido.');
-    return $value;
-}
+function student_private_media_slot_key(string $value): string {return cms_protected_media_slot_key($value);}
 
 function student_page_private_media_slots_from_document(array $document): array {
     $html=(string)($document['html']??'');$slots=[];
@@ -20,38 +16,7 @@ function student_page_private_media_slots_from_document(array $document): array 
     return $slots;
 }
 
-function student_private_media_for_slot(PDO $db,int $pageId,string $slotKey): ?array {
-    $q=$db->prepare("SELECT * FROM student_private_media WHERE page_id=? AND slot_key=? ORDER BY id DESC LIMIT 1");
-    $q->execute([$pageId,student_private_media_slot_key($slotKey)]);return $q->fetch()?:null;
-}
-
-function student_private_media_bind_slot(PDO $db,int $activityId,int $pageId,string $slotKey,string $title,array $file): array {
-    $slotKey=student_private_media_slot_key($slotKey);
-    $page=cms_page_by_id($db,$pageId);
-    if(!$page||(int)$page['activity_id']!==$activityId||!student_page_is_protected($page))throw new RuntimeException('Selecione uma página protegida.');
-    $slots=student_page_private_media_slots_from_document(cms_page_doc($page,false));
-    if(!isset($slots[$slotKey]))throw new RuntimeException('Este espaço de imagem não existe na página.');
-    if(($file['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK||!is_file((string)($file['tmp_name']??''))||($file['size']??0)<1)throw new RuntimeException('Arquivo inválido.');
-    if((int)$file['size']>25*1024*1024)throw new RuntimeException('O arquivo excede 25 MB.');
-    $mime=(new finfo(FILEINFO_MIME_TYPE))->file((string)$file['tmp_name'])?:'';$ext=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'][$mime]??null;
-    if($ext===null)throw new RuntimeException('Use JPEG, PNG ou WebP.');
-    student_private_media_mkdir();$uuid=student_uuid();$relative=$uuid.'.'.$ext;$dest=student_private_media_root().'/'.$relative;
-    if(!move_uploaded_file((string)$file['tmp_name'],$dest))throw new RuntimeException('Falha ao armazenar arquivo.');
-    $existing=student_private_media_for_slot($db,$pageId,$slotKey);$oldPath=$existing?(string)$existing['storage_path']:'';$now=utc_now();
-    try{
-        $db->beginTransaction();
-        if($existing){
-            $db->prepare('UPDATE student_private_media SET asset_uuid=?,title=?,original_name=?,mime_type=?,byte_size=?,storage_path=?,checksum=?,slot_key=?,updated_at=? WHERE id=?')
-                ->execute([$uuid,trim($title)!==''?trim($title):pathinfo((string)($file['name']??'imagem'),PATHINFO_FILENAME),(string)($file['name']??$relative),$mime,(int)$file['size'],$relative,hash_file('sha256',$dest),$slotKey,$now,(int)$existing['id']]);
-        }else{
-            $db->prepare('INSERT INTO student_private_media(asset_uuid,activity_id,page_id,title,original_name,mime_type,byte_size,storage_path,checksum,slot_key,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)')
-                ->execute([$uuid,$activityId,$pageId,trim($title)!==''?trim($title):pathinfo((string)($file['name']??'imagem'),PATHINFO_FILENAME),(string)($file['name']??$relative),$mime,(int)$file['size'],$relative,hash_file('sha256',$dest),$slotKey,$now,$now]);
-        }
-        $db->commit();
-    }catch(Throwable $e){if($db->inTransaction())$db->rollBack();@unlink($dest);throw $e;}
-    if($oldPath!==''&&$oldPath!==$relative){$old=student_private_media_root().'/'.$oldPath;if(is_file($old))@unlink($old);}
-    return student_private_media_by_uuid($db,$uuid)??throw new RuntimeException('media_bind_failed');
-}
+function student_private_media_for_slot(PDO $db,int $pageId,string $slotKey): ?array {return cms_protected_media_for_slot($db,$pageId,$slotKey);}
 
 function student_page_resolve_private_media_slots(PDO $db,array $page,array $document): array {
     $html=(string)($document['html']??'');if($html==='')return $document;$pageId=(int)$page['id'];
@@ -61,14 +26,29 @@ function student_page_resolve_private_media_slots(PDO $db,array $page,array $doc
         $asset=student_private_media_for_slot($db,$pageId,$slot);
         if(!$asset){
             if(!current_admin())return '';
-            return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Infográfico pendente<br>'.h($alt).'<br><br>slot: '.h($slot).'</span></div></figure>';
+            return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Mídia pendente<br>'.h($alt).'<br><br>slot: '.h($slot).'</span></div></figure>';
         }
-        $src=student_private_media_placeholder($asset);
-        return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="media-area"><img data-cms-media src="'.h($src).'" alt="'.h($alt).'"></div></figure>';
+        $src=current_admin()?media_private_admin_url((int)$asset['id']):('/aluno/media.php?asset='.rawurlencode((string)$asset['asset_uuid']));
+        return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="media-area"><img data-cms-media data-media-asset-id="'.(int)$asset['id'].'" src="'.h($src).'" alt="'.h($alt).'"></div></figure>';
     },$html)??$html;$document['html']=$html;return $document;
 }
 
+function student_page_sign_private_media(array $document,array $student,array $page,array $enrollment): array {
+    $html=(string)($document['html']??'');if($html==='')return $document;
+    $pageId=(int)$page['id'];$cohortUuid=(string)($enrollment['cohort_uuid']??'');
+    $html=preg_replace_callback('~(?:https?://[^\"\']+)?/aluno/media\.php\?asset=([a-f0-9]{32})~i',static function(array $m)use($pageId,$cohortUuid):string{
+        return h('/aluno/media.php?'.http_build_query(['asset'=>strtolower((string)$m[1]),'page'=>$pageId,'cohort'=>$cohortUuid]));
+    },$html)??$html;$document['html']=$html;return $document;
+}
+
+function student_protected_media_authorize(PDO $db,array $student,string $uuid,int $pageId,string $cohortUuid): ?array {
+    if(!preg_match('/^[a-f0-9]{32}$/',$uuid)||$pageId<1||$cohortUuid==='')return null;
+    $page=cms_page_by_id($db,$pageId);if(!$page||!student_page_is_protected($page))return null;
+    $q=$db->prepare("SELECT a.* FROM cms_protected_media_slots s JOIN media_assets a ON a.id=s.asset_id WHERE s.page_id=? AND a.asset_uuid=? AND a.visibility='private' AND a.archived_at IS NULL LIMIT 1");$q->execute([$pageId,$uuid]);$asset=$q->fetch()?:null;if(!$asset)return null;
+    $q=$db->prepare("SELECT e.id FROM course_enrollments e JOIN course_cohorts c ON c.id=e.cohort_id WHERE e.student_id=? AND e.status='active' AND c.cohort_uuid=? AND c.activity_id=? AND c.status!='archived' LIMIT 1");$q->execute([(int)$student['id'],$cohortUuid,(int)$page['activity_id']]);if(!$q->fetchColumn())return null;
+    return $asset;
+}
+
 function student_private_media_admin_asset(PDO $db,string $uuid): ?array {
-    if(!preg_match('/^[a-f0-9]{32}$/',$uuid))return null;$asset=student_private_media_by_uuid($db,$uuid);if(!$asset)return null;
-    $page=cms_page_by_id($db,(int)$asset['page_id']);if(!$page||!student_page_is_protected($page))return null;return $asset;
+    if(!preg_match('/^[a-f0-9]{32}$/',$uuid))return null;$q=$db->prepare("SELECT a.* FROM media_assets a WHERE a.asset_uuid=? AND a.visibility='private' AND a.archived_at IS NULL LIMIT 1");$q->execute([$uuid]);return $q->fetch()?:null;
 }
