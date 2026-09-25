@@ -27,7 +27,7 @@ function media_asset_admin(PDO $db,int $id): array {
     $asset=media_asset($db,$id);
     $asset['tags']=media_asset_tags($db,$id);
     $asset['uses']=media_usage_all($db,$id);
-    return media_rewrite_admin_delivery($asset);
+    return function_exists('media_rewrite_admin_delivery')?media_rewrite_admin_delivery($asset):$asset;
 }
 
 function media_update_metadata(PDO $db,int $assetId,array $input): array {
@@ -38,7 +38,9 @@ function media_update_metadata(PDO $db,int $assetId,array $input): array {
     $description=trim((string)($input['description']??$asset['description']??''));
     $focalX=max(0,min(100,(float)($input['focal_x']??$asset['focal_x']??50)));
     $focalY=max(0,min(100,(float)($input['focal_y']??$asset['focal_y']??50)));
-    $visibility=(string)($input['visibility']??media_asset_visibility($asset));if(!in_array($visibility,media_visibility_values(),true))throw new RuntimeException('invalid_visibility');
+    $visibility=(string)($input['visibility']??(function_exists('media_asset_visibility')?media_asset_visibility($asset):(string)($asset['visibility']??'public')));
+    $allowed=function_exists('media_visibility_values')?media_visibility_values():['public','private'];
+    if(!in_array($visibility,$allowed,true))throw new RuntimeException('invalid_visibility');
     if($title==='')$title=pathinfo((string)$asset['original_name'],PATHINFO_FILENAME);
     foreach([$title,$alt,$caption] as $value)if(mb_strlen($value)>500)throw new RuntimeException('metadata_too_long');
     if(mb_strlen($description)>5000)throw new RuntimeException('metadata_too_long');
@@ -50,7 +52,11 @@ function media_update_metadata(PDO $db,int $assetId,array $input): array {
         media_set_tags($db,$assetId,$tags);
         $db->commit();
     }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
-    if($visibility!==media_asset_visibility($asset))return media_set_visibility($db,$assetId,$visibility);
+    $currentVisibility=function_exists('media_asset_visibility')?media_asset_visibility($asset):(string)($asset['visibility']??'public');
+    if($visibility!==$currentVisibility){
+        if(!function_exists('media_set_visibility'))throw new RuntimeException('media_visibility_service_unavailable');
+        return media_set_visibility($db,$assetId,$visibility);
+    }
     return media_asset_admin($db,$assetId);
 }
 
@@ -103,12 +109,14 @@ function media_resolve_cms_html(PDO $db,string $html): string {
         $assetId=(int)$node->getAttribute('data-media-asset-id');
         if($assetId<1)continue;
         try{$asset=media_asset($db,$assetId);}catch(Throwable){continue;}
-        if(media_asset_private($asset)){if(!current_admin()){$node->parentNode?->removeChild($node);continue;}}
+        $isPrivate=(string)($asset['visibility']??'public')==='private';
+        $isAdmin=$isPrivate&&function_exists('current_admin')?(bool)current_admin():false;
+        if($isPrivate&&!$isAdmin){$node->parentNode?->removeChild($node);continue;}
         $versionId=(int)($asset['active_version_id']??0);
         if($node->getAttribute('data-media-version-mode')==='pinned'&&$node->hasAttribute('data-media-version-id'))$versionId=(int)$node->getAttribute('data-media-version-id');
         if(strtolower($node->tagName)==='img'&&$asset['kind']==='image'){
             $sources=media_image_sources($db,$assetId,$versionId,(string)$node->getAttribute('src'));
-            if(media_asset_private($asset)){
+            if($isPrivate&&function_exists('media_admin_private_url')){
                 $srcPath=(string)($asset['original_path']??'');$sources=['src'=>media_admin_private_url($assetId,$srcPath),'srcset'=>''];
             }
             $node->setAttribute('src',$sources['src']);
