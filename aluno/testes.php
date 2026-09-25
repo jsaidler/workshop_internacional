@@ -5,7 +5,7 @@ security_headers();student_private_headers();
 $db=database();student_account_reconcile_confirmed_registrations($db);$student=student_account_current($db);
 if(!$student){header('Location: /aluno/login.php?next='.rawurlencode('/aluno/testes.php'),true,303);exit;}
 $studentId=(int)$student['id'];$enrollments=student_account_enrollments($db,$studentId);
-$error='';
+$error='';$notice=$_SESSION['student_tests_notice']??'';unset($_SESSION['student_tests_notice']);
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('student-tests',$_POST['_csrf']??null))$error='Solicitação inválida.';
     else{
@@ -21,6 +21,7 @@ student_shell_start('Meus testes',null,$student);?>
 <h1 class="student-title">Meus testes</h1>
 <p class="student-lead">Registre cada experimentação com os dados de exposição e revelação. Você pode anexar imagens, enviar o teste para avaliação e continuar as dúvidas no mesmo histórico.</p>
 
+<?php if($notice!==''):?><p class="student-notice" role="status"><?=h((string)$notice)?></p><?php endif;?>
 <?php if($error):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="student-section">
   <div class="student-section-heading"><div><p class="student-kicker">Novo registro</p><h2 class="student-subtitle">Criar teste</h2></div><p>Comece com um título e complete os dados na ficha do teste.</p></div>
