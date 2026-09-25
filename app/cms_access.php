@@ -19,6 +19,9 @@ function cms_access_window_open(string $from,string $until,?DateTimeImmutable $n
     if($end&&$now>$end)return false;
     return true;
 }
+function cms_access_datetime_local_value(?string $value): string {
+    $dt=$value?cms_access_parse_datetime($value):null;return $dt?$dt->format('Y-m-d\TH:i'):'';
+}
 function cms_access_enrollment(PDO $db,?array $user,array $page,string $cohortUuid=''): ?array {
     if(!$user)return null;
     return student_account_enrollment_for_activity($db,(int)$user['id'],(int)$page['activity_id'],$cohortUuid);
@@ -71,4 +74,19 @@ function cms_access_page_context(PDO $db,array $page,?array $user,string $cohort
 function cms_access_section_rule(DOMElement $section): array {
     $audience=trim($section->getAttribute('data-cms-access'));if(!in_array($audience,cms_access_section_audiences(),true))$audience='public';
     return ['audience'=>$audience,'cohort'=>$section->getAttribute('data-cms-cohort'),'lesson'=>$section->getAttribute('data-cms-lesson'),'available_from'=>$section->getAttribute('data-cms-available-from'),'available_until'=>$section->getAttribute('data-cms-available-until')];
+}
+function cms_access_editor_context(PDO $db,array $page): array {
+    $activityId=(int)$page['activity_id'];
+    $lessons=[];foreach(course_lessons($db,$activityId) as $row)$lessons[]=['id'=>(int)$row['id'],'key'=>(string)$row['lesson_key'],'title'=>(string)$row['title']];
+    $cohorts=[];foreach(course_cohorts($db,$activityId) as $row)if(($row['status']??'')!=='archived')$cohorts[]=['id'=>(int)$row['id'],'uuid'=>(string)$row['cohort_uuid'],'slug'=>(string)$row['slug'],'title'=>(string)$row['title']];
+    return ['pageLevels'=>cms_access_page_levels(),'sectionAudiences'=>cms_access_section_audiences(),'lessons'=>$lessons,'cohorts'=>$cohorts];
+}
+function course_lesson_release_state(?string $releasedAt,?DateTimeImmutable $now=null): string {
+    $releasedAt=trim((string)$releasedAt);if($releasedAt==='')return 'blocked';$dt=cms_access_parse_datetime($releasedAt);if(!$dt)return 'blocked';return ($now??new DateTimeImmutable('now'))>=$dt?'released':'scheduled';
+}
+function course_set_lesson_release_schedule(PDO $db,int $cohortId,int $lessonId,?string $releaseAt): void {
+    $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort)throw new RuntimeException('Turma inválida.');
+    $q=$db->prepare('SELECT 1 FROM course_lessons WHERE id=? AND activity_id=?');$q->execute([$lessonId,(int)$cohort['activity_id']]);if(!$q->fetchColumn())throw new RuntimeException('Aula inválida.');
+    $stored=null;if($releaseAt!==null&&trim($releaseAt)!==''){$dt=cms_access_parse_datetime($releaseAt);if(!$dt)throw new RuntimeException('Data e hora de liberação inválidas.');$stored=$dt->format('c');}
+    $now=utc_now();$db->prepare('INSERT INTO cohort_lesson_releases(cohort_id,lesson_id,released_at,created_at,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(cohort_id,lesson_id) DO UPDATE SET released_at=excluded.released_at,updated_at=excluded.updated_at')->execute([$cohortId,$lessonId,$stored,$now,$now]);
 }
