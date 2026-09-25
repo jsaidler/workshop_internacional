@@ -9,6 +9,13 @@ $legacy=(string)file_get_contents($root.'/admin/student-operations.php');
 $adminJs=(string)file_get_contents($root.'/assets/admin.js');
 $csvEndpoint=(string)file_get_contents($root.'/admin/student-import-csv.php');
 $csvTemplate=(string)file_get_contents($root.'/assets/modelo-importacao-alunos.csv');
+$studentShell=(string)file_get_contents($root.'/app/student_shell.php');
+$studentHome=(string)file_get_contents($root.'/aluno/index.php');
+$studentTests=(string)file_get_contents($root.'/aluno/teste.php');
+$studentTestHelpers=(string)file_get_contents($root.'/app/student_test_mobile.php');
+$studentCss=(string)file_get_contents($root.'/assets/student-area.css');
+$adminFormCss=(string)file_get_contents($root.'/assets/admin-form-ux.css');
+$migration=(string)file_get_contents($root.'/migrations/063_student_mobile_test_media_kinds.php');
 
 if(str_contains($shell,'Operações e testes'))fail('artificial Operations and tests context item is still visible');
 if(!str_contains($shell,"'students'=>['Área do aluno'"))fail('student area context item missing');
@@ -34,5 +41,19 @@ if(!str_contains($csvEndpoint,"student_import_historical_students(\$db,\$activit
 $csvHeader=ltrim(strtok($csvTemplate,"\r\n"),"\xEF\xBB\xBF");
 if($csvHeader!=='Nome;E-mail;CPF;Telefone;Instagram;Endereço;Cidade/UF;CEP')fail('CSV template header changed');
 
+if(!str_contains($migration,"'url'=>'/aluno/'"))fail('public navigation does not receive a student-area entry');
+if(!str_contains($migration,'media_kind'))fail('student test media has no scene/result migration');
+if(str_contains($studentShell,'Direct Positive Workshop'))fail('student shell still exposes the old parallel workshop brand');
+if(!str_contains($studentShell,'João Saidler Fotografia'))fail('student shell is not tied to the public-site identity');
+if(!str_contains($studentShell,'student-bottom-nav'))fail('student shell has no mobile navigation');
+if(!str_contains($studentHome,'student-dashboard'))fail('student home is still the old sparse card list');
+if(str_contains($studentHome,'style='))fail('student home contains inline layout styles');
+foreach(['Cena e exposição','Revelação','Resultado'] as $stageLabel)if(!str_contains($studentTests,$stageLabel))fail('student test stage missing: '.$stageLabel);
+if(!str_contains($studentTests,'capture="environment"'))fail('student test scene/result workflow does not offer direct camera capture');
+if(!str_contains($studentTests,'value="scene"')||!str_contains($studentTests,'value="result"'))fail('student images are not classified as scene/result');
+if(!str_contains($studentTestHelpers,'function student_test_update_stage'))fail('staged test updates are not partial');
+if(!str_contains($studentTestHelpers,"['scene','result']"))fail('media kind helper does not constrain scene/result roles');
+if(!str_contains($studentCss,'.student-test-progress')||!str_contains($studentCss,'.student-bottom-nav'))fail('mobile test application styles are missing');
+if(!str_contains($adminFormCss,'form.admin-form-grid[enctype="multipart/form-data"]'))fail('private media upload overflow regression is not guarded');
 
 echo "student-area-ia: ok\n";
