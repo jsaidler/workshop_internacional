@@ -26,7 +26,7 @@ function student_page_resolve_private_media_slots(PDO $db,array $page,array $doc
         $legacy=student_private_media_for_slot($db,$pageId,$slot);
         if($legacy){$src=student_private_media_placeholder($legacy);return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="media-area"><img data-cms-media src="'.h($src).'" alt="'.h($alt).'"></div></figure>';}
         if(!current_admin())return '';
-        return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Mídia pendente<br>'.h($alt).'<br><br>slot: '.h($slot).'</span></div></figure>';
+        return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Infográfico pendente<br>'.h($alt).'<br><br>slot: '.h($slot).'</span></div></figure>';
     },$html)??$html;$document['html']=$html;return $document;
 }
 function student_page_sign_media_library(array $document,array $student,array $page,array $enrollment): array {
