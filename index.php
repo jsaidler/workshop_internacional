@@ -30,5 +30,7 @@ try{
         cms_render_public_page($activity,$page,$document,false);exit;
     }
     if($pageSlug!=='')cms_render_not_found($activity,$locale);
+    if((int)($activity['is_root']??0)!==1){cms_render_not_found($activity,$locale);exit;}
+    error_log('legacy_public_renderer_fallback activity='.(int)$activity['id'].' locale='.$locale);
     require __DIR__.'/template/public.php';render_public_page([],[],isset($_GET['success']));
 }catch(RuntimeException $error){cms_render_not_found($activity,$locale);}
