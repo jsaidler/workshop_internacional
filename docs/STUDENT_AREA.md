@@ -2,13 +2,83 @@
 
 ## Regra de identidade
 
-Não existe cadastro manual de aluno. Um participante se torna aluno quando uma inscrição do formulário `registration` é confirmada (`status=converted` ou pagamento confirmado). A conta é única entre cursos e pode possuir várias matrículas.
+A conta de aluno é única entre cursos e pode possuir várias matrículas. Existem dois caminhos administrativos autorizados para que uma pessoa passe a existir na Área do aluno:
 
-O primeiro acesso usa **e-mail da inscrição + CPF somente com números** como prova inicial de identidade. O CPF não é senha permanente. Depois da validação inicial, o aluno reconhece o Aviso de Privacidade e cria a própria senha.
+1. uma inscrição do formulário `registration` é confirmada (`status=converted` ou pagamento confirmado);
+2. um participante de turma anterior é incorporado por uma **importação administrativa de planilha**, vinculada explicitamente a uma turma existente.
+
+A importação histórica não é um cadastro manual livre. Ela exige uma planilha de origem e registra lote, linha, resultado e turma de destino para auditoria. O sistema reaproveita uma conta já existente quando e-mail/CPF identificam a mesma pessoa e recusa conflitos em que os dois identificadores apontam para contas diferentes.
+
+O primeiro acesso usa **e-mail + CPF somente com números** como prova inicial de identidade, inclusive para contas importadas. O CPF não é senha permanente. Depois da validação inicial, o aluno reconhece o Aviso de Privacidade e cria a própria senha.
 
 ## Perfil e novas inscrições
 
 `student_users` representa a conta; `student_profiles`, os dados reutilizáveis; `course_cohorts`, as turmas; `course_enrollments`, as matrículas. Nome, e-mail, CPF, telefone, Instagram e endereço podem preencher uma nova inscrição para um aluno autenticado, sempre permitindo revisão. Respostas específicas do curso continuam pertencendo à inscrição. O aluno consulta e corrige o perfil em `/aluno/perfil.php`.
+
+Uma planilha histórica usa `Nome`, `E-mail` e `CPF` como colunas obrigatórias. `Telefone`, `Instagram`, `Endereço`, `Cidade/UF` e `CEP` são opcionais. O relatório de importação **não armazena CPF em texto**; mantém apenas linha, nome, e-mail, resultado e mensagem de erro. O CPF entra somente pelo mesmo mecanismo de HMAC + criptografia já usado pelo perfil.
+
+## Turmas
+
+Uma turma mantém identidade interna própria (`cohort_uuid`/`id`) e pode ter seus metadados corrigidos depois da criação sem recriar matrículas ou liberações.
+
+O admin pode editar:
+
+- nome;
+- slug;
+- estado (`active`, `closed`, `archived`);
+- data inicial;
+- data final;
+- observações administrativas;
+- definição como turma padrão para novas matrículas confirmadas.
+
+Slug precisa ser único dentro da atividade. Turma arquivada não pode ser padrão. Alterar nome, datas ou slug não altera a identidade interna da turma nem desloca seus alunos.
+
+## Registro e acompanhamento de testes
+
+A Área do aluno possui um caderno operacional de testes em `/aluno/testes.php`. Ele não substitui o material didático; registra a experimentação realizada pelo aluno e concentra a avaliação posterior.
+
+Cada registro pertence a **um aluno e uma turma ativa** e possui os campos usados no próprio caderno do workshop para repetibilidade:
+
+- título e data do teste;
+- filme e lote;
+- ISO usado como referência;
+- diafragma;
+- tempo inicialmente calculado;
+- tempo corrigido pela reciprocidade, quando necessário;
+- condição da luz;
+- diferença entre regiões claras e sombras que o aluno quer preservar;
+- revelador;
+- diluição;
+- temperatura;
+- tempo de revelação;
+- movimentação/agitação;
+- observações livres.
+
+O aluno pode ainda anexar até seis imagens JPEG, PNG ou WebP, de até 12 MB cada. Esses arquivos ficam em armazenamento privado (`storage/student-test-media/`) e só são servidos depois de autenticação e verificação de propriedade. Não existe URL pública direta para o arquivo armazenado.
+
+### Estados do teste
+
+- `draft` — rascunho ainda sendo registrado;
+- `submitted` — aluno declarou que está pronto para avaliação;
+- `needs_revision` — o professor pediu ajuste, nova informação ou nova tentativa;
+- `reviewed` — avaliação concluída; a ficha técnica fica preservada e bloqueada para edição, mas a conversa pode continuar.
+
+Rascunhos também aparecem para o administrador, mas a fila prioriza registros enviados para avaliação.
+
+### Avaliação e dúvidas
+
+Cada teste possui uma conversa própria (`student_test_messages`). Aluno e professor podem continuar perguntas e respostas no mesmo histórico, evitando que a análise se perca em mensagens separadas.
+
+O professor pode:
+
+- abrir a ficha completa;
+- ver as imagens enviadas;
+- responder com avaliação ou orientação;
+- marcar como `needs_revision`;
+- marcar como `reviewed`;
+- devolver para `submitted` caso precise reabrir formalmente a avaliação.
+
+A conversa permanece associada ao teste mesmo depois de ele ser marcado como revisado.
 
 ## Conteúdo protegido continua sendo conteúdo do CMS
 
@@ -94,14 +164,20 @@ O bypass administrativo é deliberado: um administrador precisa conseguir verifi
 
 ## Administração e escala
 
-`Admin → Inscrições → Área do aluno` usa o mesmo sistema de UI/UX do restante da administração. Não existe stylesheet visual exclusivo da Área do aluno.
+`Admin → Inscrições → Área do aluno` continua concentrando configuração estrutural: Visão geral, Turmas, Aulas, Páginas protegidas e Alunos.
 
-A superfície é dividida em tarefas: Visão geral, Turmas, Aulas, Páginas protegidas e Alunos. Listas extensas usam componentes compartilhados, filtros, busca, paginação e tabelas com overflow responsivo. A tela não pode depender de carregar todos os alunos e todos os registros em uma única coluna crescente.
+`Admin → Inscrições → Operações e testes` concentra tarefas operacionais que não pertencem ao CMS editorial:
 
-Qualquer componente administrativo novo deve ser implementado como padrão reutilizável do admin quando puder aparecer em outras superfícies. Não usar CSS específico de página para compensar uma deficiência do sistema compartilhado.
+- **Dados das turmas** — corrigir nome, slug, período, estado, observação e turma padrão;
+- **Importar alunos** — incorporar histórico por CSV/XLSX com relatório por linha;
+- **Testes dos alunos** — fila de avaliação, filtros por turma/estado, imagens e conversa.
+
+As duas superfícies usam o mesmo sistema de UI/UX do restante da administração. Listas extensas usam componentes compartilhados, filtros, busca e tabelas com overflow responsivo. A tela não deve depender de carregar todos os alunos e todos os registros em uma única coluna crescente.
 
 ## LGPD e segurança
 
 O tratamento de dados segue finalidade, necessidade, transparência e segurança. O CPF é usado como prova inicial de identidade, indexado por HMAC e mantido de forma recuperável apenas quando necessário ao perfil, criptografado em repouso. Senhas são hashes e o CPF nunca é gravado como `password_hash`.
 
-Autenticação, filtro server-side, armazenamento privado, URLs assinadas, `no-store` e `noindex` protegem contra acesso público e redistribuição casual. Nenhum sistema web impede que um usuário autorizado fotografe a tela ou reproduza manualmente o conteúdo recebido.
+Importações históricas não persistem CPF no relatório operacional. Imagens de testes ficam fora do webroot e são entregues apenas após autenticação e autorização. Tanto a Área do aluno quanto a mídia de teste usam `no-store`; páginas privadas recebem `noindex`.
+
+Autenticação, filtro server-side, armazenamento privado, URLs protegidas e cabeçalhos de cache reduzem exposição e redistribuição casual. Nenhum sistema web impede que um usuário autorizado fotografe a tela ou reproduza manualmente o conteúdo recebido.
