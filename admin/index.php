@@ -63,7 +63,7 @@ admin_shell_start('overview','Visão geral',$state);
 ?>
 <section class="overview-hero">
   <div><p class="admin-kicker">Painel</p><h2><?=h((string)$activity['public_title'])?></h2><p>O que precisa de atenção, como o site está convertendo e os atalhos para trabalhar no conteúdo.</p></div>
-  <div class="hero-actions"><a class="admin-button" href="<?=h($homeUrl)?>">Editar página inicial</a><a class="admin-button secondary" href="<?=h($publicUrl)?>" target="_blank" rel="noopener">Abrir site ↗</a></div>
+  <div class="hero-actions"><a class="admin-button" href="<?=h($homeUrl)?>">Editar página inicial</a><a class="admin-button secondary" href="/admin/activities.php?activity=<?=$id?>">Editar nome do curso</a><a class="admin-button secondary" href="<?=h($publicUrl)?>" target="_blank" rel="noopener">Abrir site ↗</a></div>
 </section>
 <section class="admin-dashboard-status" aria-label="Resumo do site">
   <article class="admin-status-card" data-tone="<?=$pendingCount>0?'attention':'good'?>"><span>Publicação</span><strong><?=$pendingCount>0?h(admin_quantity_label($pendingCount,'alteração pendente','alterações pendentes')):'Tudo publicado'?></strong></article>

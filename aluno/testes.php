@@ -15,12 +15,14 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         }catch(Throwable $e){$error=$e->getMessage();}
     }
 }
+$notice=(string)($_SESSION['student_tests_notice']??'');unset($_SESSION['student_tests_notice']);
 $tests=student_tests_for_student($db,$studentId);
 student_shell_start('Meus testes',null,$student);?>
 <p class="student-kicker">Área do aluno</p>
 <h1 class="student-title">Meus testes</h1>
 <p class="student-lead">Registre cada experimentação com os dados de exposição e revelação. Você pode anexar imagens, enviar o teste para avaliação e continuar as dúvidas no mesmo histórico.</p>
 
+<?php if($notice!==''):?><p class="student-notice"><?=h($notice)?></p><?php endif;?>
 <?php if($error):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="student-section">
   <div class="student-section-heading"><div><p class="student-kicker">Novo registro</p><h2 class="student-subtitle">Criar teste</h2></div><p>Comece com um título e complete os dados na ficha do teste.</p></div>
@@ -35,7 +37,7 @@ student_shell_start('Meus testes',null,$student);?>
 
 <section class="student-section">
   <div class="student-section-heading"><div><p class="student-kicker">Histórico</p><h2 class="student-subtitle">Testes registrados</h2></div><p><?=count($tests)?> registro(s).</p></div>
-  <?php if(!$tests):?><div class="student-empty">Você ainda não registrou nenhum teste.</div><?php else:?><div class="student-test-list"><?php foreach($tests as $test):?><a class="student-test-row" href="/aluno/teste.php?id=<?=(int)$test['id']?>"><div><span class="student-status student-status-<?=h((string)$test['status'])?>"><?=h(student_test_status_label((string)$test['status']))?></span><h3><?=h((string)$test['title'])?></h3><p><?=h((string)$test['public_title'])?> · <?=h((string)$test['cohort_title'])?></p></div><div class="student-test-meta"><span><?=h((string)($test['test_date']?:'sem data'))?></span><span>Atualizado <?=h(student_ops_datetime_exists((string)$test['updated_at']))?></span></div></a><?php endforeach;?></div><?php endif;?>
+  <?php if(!$tests):?><div class="student-empty">Você ainda não registrou nenhum teste.</div><?php else:?><div class="student-test-list"><?php foreach($tests as $test):?><article class="student-test-item"><a class="student-test-row" href="/aluno/teste.php?id=<?=(int)$test['id']?>"><div><span class="student-status student-status-<?=h((string)$test['status'])?>"><?=h(student_test_status_label((string)$test['status']))?></span><h3><?=h((string)$test['title'])?></h3><p><?=h((string)$test['public_title'])?> · <?=h((string)$test['cohort_title'])?></p></div><div class="student-test-meta"><span><?=h((string)($test['test_date']?:'sem data'))?></span><span>Atualizado <?=h(student_ops_datetime_exists((string)$test['updated_at']))?></span></div></a><div class="student-actions"><a class="student-link" href="/aluno/excluir-teste.php?id=<?=(int)$test['id']?>">Excluir teste</a></div></article><?php endforeach;?></div><?php endif;?>
 </section>
 <?php student_shell_end();
 
