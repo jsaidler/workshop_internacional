@@ -4,7 +4,7 @@
 
 A revisão funcional posterior ao PR #89 mostrou que corrigir ações isoladas não é suficiente. O problema restante é arquitetural: algumas responsabilidades ainda estão duplicadas, algumas permissões existem sem uma forma confiável de pré-visualização e alguns objetos administrativos aparecem longe do lugar onde o usuário naturalmente procura por eles.
 
-Esta auditoria é o contrato da próxima correção sistêmica.
+Esta auditoria é o contrato da correção sistêmica.
 
 ## 1. Identidade visual
 
@@ -58,14 +58,14 @@ A existência de opções de segmentação sem uma pré-visualização real do c
 
 ## 5. Mídia editorial privada
 
-Existe hoje uma implementação paralela `student_private_media`. Ela viola a regra de fonte única de mídia do CMS.
+A implementação paralela `student_private_media` viola a regra de fonte única de mídia do CMS.
 
 Contrato final:
 
 - `media_assets` é a única biblioteca para mídia editorial reutilizável;
 - cada asset possui `visibility = public|private`;
 - asset privado não pode continuar acessível por URL direta em `/uploads`;
-- ao tornar um asset privado, seus arquivos são armazenados em diretório protegido e servidos somente por endpoint autorizado;
+- ao tornar um asset privado, seus arquivos são protegidos e servidos somente por endpoint autorizado;
 - slots do material armazenam apenas referência ao asset da biblioteca;
 - `Área do aluno → Páginas protegidas` não faz upload: apenas escolhe/troca a mídia privada da biblioteca;
 - o gerenciador de mídia é o único lugar para upload, metadados e mudança de visibilidade;
@@ -99,3 +99,19 @@ A correção só está pronta quando:
 8. a exclusão definitiva de inscrição permanece clara e testada;
 9. o fluxo de importação é CSV nativo no HTML/PHP, sem correção posterior por JavaScript;
 10. CI, browser regression, build e dry-run ficam verdes antes do merge.
+
+## Implementação desta auditoria
+
+A correção correspondente adota explicitamente as seguintes fronteiras:
+
+- `app/student_shell.php` carrega `template/page.css` e `cms_design_css()` / `cms_design_font_import_css()` da atividade, sem autoridade tipográfica local;
+- `admin/site.php` edita `activities.public_title` como **Nome público do curso**;
+- `student_tests.visibility` recebe `private|cohort|course`; autorização de `course` é derivada de `course_cohorts.activity_id`, pois `student_tests` não possui `activity_id`;
+- `/aluno/testes.php` oferece visibilidade e exclusão ao autor; a tela compartilhada não carrega `student_test_messages`;
+- `Páginas protegidas` agrupa seções reais por aula e oferece **Visualizar como turma** através do mesmo `student_page_filter_document()` usado pelo aluno;
+- a Biblioteca de mídia passa a controlar `media_assets.visibility`; `course_page_media_slots` liga slots protegidos a assets privados;
+- o uploader paralelo de imagens protegidas é removido de `admin/student-area.php`;
+- importação histórica aparece como CSV já no HTML do servidor;
+- `tools/test-student-platform-coherence.php` executa uma prova real de filtragem: apenas Aula 1 liberada significa que marcadores de Aula 2 e Aula 3 não sobrevivem no HTML filtrado.
+
+A implementação não deve ser considerada concluída apenas por inspeção visual; o merge depende da suíte completa e do build de distribuição.
