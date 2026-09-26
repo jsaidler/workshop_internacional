@@ -20,6 +20,7 @@ $index=(string)file_get_contents($root.'/index.php');
 $submissions=(string)file_get_contents($root.'/admin/submissions.php');
 
 foreach(['cms_design_font_import_css','cms_design_css','/template/page.css'] as $needle)if(!str_contains($studentShell,$needle))fail_coherence('student shell does not consume canonical design authority: '.$needle);
+if(!str_contains($studentShell,'installation_brand_name()')||str_contains($studentShell,'student_account_enrollments('))fail_coherence('student shell still conflates global identity/design with first enrollment');
 if(!str_contains($site,'name="course_public_title"')||!str_contains($site,'Nome público do curso'))fail_coherence('course public title is not editable in Site identity');
 foreach(['private','cohort','course'] as $visibility)if(!str_contains($sharing,"'".$visibility."'"))fail_coherence('missing test visibility: '.$visibility);
 if(!str_contains($sharedTest,'student_test_messages($db,$id)')||!str_contains($sharedTest,'segue a mesma visibilidade do teste'))fail_coherence('shared conversation does not follow test visibility');
@@ -29,8 +30,8 @@ if(!str_contains($submissions,'delete_registration')||!str_contains($submissions
 foreach(['data-cms-access-controls','cms-access-audience','cms-access-availability','cms-visible-from','cms-visible-until','cms-access-lesson'] as $needle)if(!str_contains($editorAccess,$needle))fail_coherence('section access control missing from canonical editor: '.$needle);
 if(!str_contains($editorHtml,'/editor/cms-access-controls.js'))fail_coherence('canonical editor does not load access controls');
 if(!str_contains($index,'cms_access_filter_html'))fail_coherence('public renderer path does not apply generic section authorization');
-if(!str_contains($adminJs,"textContent.trim() === 'Páginas protegidas'"))fail_coherence('legacy protected-pages destination is not removed from student admin navigation');
-if(!str_contains($adminJs,"view') === 'pages'"))fail_coherence('legacy protected-pages direct view is not redirected to CMS pages');
+if(!str_contains($studentAdmin,"if(\$view==='pages')")||!str_contains($studentAdmin,"'/admin/pages.php'"))fail_coherence('protected-pages direct view is not redirected server-side to CMS pages');
+foreach(['set_page_access','save_section_map','bind_page_media','unbind_page_media'] as $action)if(!str_contains($studentAdmin,"'".$action."'"))fail_coherence('obsolete student-area editorial action is not blocked: '.$action);
 foreach(['Agendar','Liberar agora','Bloquear','/admin/api/course-lesson-release.php'] as $needle)if(!str_contains($adminJs,$needle))fail_coherence('lesson scheduling missing from existing lessons interface: '.$needle);
 if(!str_contains($media,'admin-media-privacy.js')||!str_contains($mediaPrivacy,"['public','private']"))fail_coherence('media library is not privacy authority');
 

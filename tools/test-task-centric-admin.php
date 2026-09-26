@@ -41,7 +41,8 @@ must(str_contains($client,'/admin/api/editor-context.php'),'editor context must 
 must(str_contains($client,"includes('não salvas')"),'page switching must protect unsaved changes');
 must(str_contains($context,"status='new'"),'editor context must surface new inscriptions');
 must(!str_contains($shell,"'overview'=>['Início'"),'overview must remain a dashboard, not a redundant context-tab entry');
-must(str_contains($shell,"'site'=>['Site','/admin/'"),'site workspace must lead to the dashboard');
+must(str_contains($shell,"'site'=>['Conteúdo','/admin/'"),'content workspace must lead to the dashboard without calling the activity a site');
+must(str_contains($shell,'installation_brand_name()'),'admin shell must use installation brand authority');
 must(str_contains($submissions,"foreach(['name','full_name','email','phone']"),'inbox must identify registrations by participant name before email');
 must(str_contains($submissions,'Aguardando pagamento'),'registration inbox must expose payment state directly');
 must(str_contains($submissions,'Confirmar inscrição e pagamento'),'registration admin must make confirmation the primary operational action');
