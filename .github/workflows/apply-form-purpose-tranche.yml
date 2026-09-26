@@ -2,10 +2,6 @@ name: Apply form purpose authority tranche
 
 on:
   push:
-    branches:
-      - audit/form-purpose-enrollment-authority-2026-09-26
-    paths:
-      - .github/workflows/apply-form-purpose-tranche.yml
 
 permissions:
   contents: write
@@ -16,34 +12,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: audit/form-purpose-enrollment-authority-2026-09-26
           fetch-depth: 0
-      - name: Apply and validate tranche
-        shell: bash
+      - name: Apply patcher
+        run: python3 tools/apply_form_purpose_tranche.py
+      - name: Validate
         run: |
-          python3 tools/apply_form_purpose_tranche.py
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('migrations/069_form_purpose_authority.php')
-          s=p.read_text()
-          old="""    if(!in_array('purpose',$names,true))$db->exec(\"ALTER TABLE cms_forms ADD COLUMN purpose TEXT NOT NULL DEFAULT 'common'\");
-    $db->exec(\"UPDATE cms_forms SET purpose='enrollment' WHERE form_key='registration' AND (purpose='' OR purpose='common')\");
-    $db->exec(\"UPDATE cms_forms SET purpose='interest' WHERE form_key='interest' AND (purpose='' OR purpose='common')\");
-    $db->exec(\"UPDATE cms_forms SET purpose='common' WHERE purpose NOT IN ('common','interest','registration','enrollment') OR purpose IS NULL OR purpose=''\");
-"""
-          new="""    $added=!in_array('purpose',$names,true);
-    if($added)$db->exec(\"ALTER TABLE cms_forms ADD COLUMN purpose TEXT NOT NULL DEFAULT 'common'\");
-    if($added){
-        $db->exec(\"UPDATE cms_forms SET purpose='enrollment' WHERE form_key='registration'\");
-        $db->exec(\"UPDATE cms_forms SET purpose='interest' WHERE form_key='interest'\");
-    }
-    $db->exec(\"UPDATE cms_forms SET purpose='common' WHERE purpose NOT IN ('common','interest','registration','enrollment') OR purpose IS NULL OR purpose=''\");
-"""
-          if old not in s: raise SystemExit('migration hardening anchor missing')
-          p.write_text(s.replace(old,new,1))
-          PY
           php tools/test-form-purpose-enrollment-authority.php
-          for f in app/form_purpose.php app/student_accounts.php app/student_lifecycle.php admin/forms.php admin/submissions.php app/workshop_cms_setup.php migrations/069_form_purpose_authority.php; do php -l "$f"; done
+          php -l app/form_purpose.php
+          php -l app/student_accounts.php
+          php -l app/student_lifecycle.php
+          php -l admin/forms.php
+          php -l admin/submissions.php
+          php -l app/workshop_cms_setup.php
+          php -l migrations/069_form_purpose_authority.php
+      - name: Commit
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
