@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/activity_locales.php';
 
 const ACTIVITY_TEMPLATE_BLANK='blank';
 const ACTIVITY_TEMPLATE_DIRECT_POSITIVE='direct-positive';
