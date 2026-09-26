@@ -62,6 +62,7 @@ jobs:
           php tools/test-handbook-email-integrity.php
           php tools/test-system-authority-boundaries.php
           php tools/test-read-purity-activity-templates.php
+          php tools/test-activity-locales-page-hierarchy.php
           php tools/test-update-service.php
           php tools/test-update-restore.php
       - name: Install browser test dependencies
