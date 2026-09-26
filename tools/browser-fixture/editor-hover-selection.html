@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Hover selection fixture</title><style>body{margin:0;padding:16px}#page-frame{width:900px;height:620px;border:1px solid #bbb}</style></head>
+<body>
+<iframe id="page-frame" title="Página em edição"></iframe>
+<script>
+const frame=document.querySelector('#page-frame');
+frame.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0}.lesson{padding:60px}.blank{height:100px;margin-top:20px;background:#eee}.divider{height:24px;margin:20px 0;border-top:1px solid #777}</style></head><body><main data-cms-page-main><section class="lesson" data-cms-section="aula-1" data-cms-section-name="Aula 1 · Ponto de partida"><p id="editable" data-cms-component="paragraph" data-cms-editable>Parágrafo editável</p><div id="divider" class="divider" data-cms-component="divider"></div><div id="blank" class="blank"></div></section></main></body></html>`;
+</script>
+<script src="/editor/cms-hover-selection.js"></script>
+</body>
+</html>
