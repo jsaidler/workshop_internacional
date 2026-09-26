@@ -38,8 +38,8 @@ function student_page_resolve_private_media_slots(PDO $db,array $page,array $doc
         $whole=(string)$m[0];$alt=$slot;if(preg_match('~data-private-media-alt=["\']([^"\']*)["\']~i',$whole,$am))$alt=html_entity_decode((string)$am[1],ENT_QUOTES|ENT_HTML5,'UTF-8');
         $asset=course_page_media_slot($db,$pageId,$slot);
         if(!$asset){
-            $adminDetail=current_admin()?'<br><br>slot: '.h($slot):'';
-            return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Infográfico pendente<br>'.h($alt).$adminDetail.'</span></div></figure>';
+            if(!current_admin())return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Infográfico pendente<br>'.h($alt).'</span></div></figure>';
+            return '<figure class="media-figure" data-private-media-slot="'.h($slot).'"><div class="cms-media-placeholder"><span>Infográfico pendente<br>'.h($alt).'<br><br>slot: '.h($slot).'</span></div></figure>';
         }
         if(!media_asset_private($asset))return '';
         $src=current_admin()
