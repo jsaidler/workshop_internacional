@@ -256,3 +256,20 @@ A página inglesa não deve ser mera tradução da brasileira.
 4. `README.md` — arquitetura geral;
 5. `DEPLOY.md` — bootstrap, fallback e atualização;
 6. `AGENTS.md` — regras de operação no repositório.
+
+## Atualização estrutural em 26/09/2026 — identidade localizada e páginas
+
+A terceira tranche da auditoria sistêmica introduz autoridades aditivas para identidade localizada de cursos e estrutura editorial de páginas, sem retirar o legado no mesmo release.
+
+- `activity_locales(activity_id, locale, public_title, ...)` passa a ser a autoridade nova para o nome público localizado da `activity`.
+- `activities.public_title` permanece preservado como fallback/compatibilidade e não é mais atualizado pelas edições localizadas feitas no admin.
+- A criação de uma nova activity exige o idioma do primeiro nome público e grava simultaneamente a identidade localizada; a coluna legada continua preenchida apenas porque ainda é `NOT NULL` e precisa sustentar consumidores não migrados.
+- `cms_pages.parent_page_id` passa a representar a hierarquia editorial. Essa relação não altera slug, URL, ID, UUID, documento, revisão nem a configuração de Navegação.
+- `cms_pages.translation_group_uuid` passa a representar equivalência explícita entre versões em idiomas diferentes. PT e EN equivalentes não dependem de possuir o mesmo slug.
+- Troca pública de idioma e sitemap/hreflang usam primeiro o grupo explícito e mantêm temporariamente o comportamento antigo por home/slug quando ainda não existe grupo, para permitir migração gradual.
+- A hierarquia e a equivalência são editadas na interface canônica `Páginas`; títulos localizados continuam na interface canônica `Cursos e workshops`. Não existe interface paralela.
+- A migração `068_activity_locales_page_hierarchy.php` é aditiva e não reparenta nem agrupa páginas existentes por inferência.
+- A regressão `tools/test-activity-locales-page-hierarchy.php` valida preservação de slugs, rejeição de ciclos, equivalência com slugs diferentes, precedência da nova autoridade e ausência de writes no título legado durante edição localizada.
+- O documento detalhado desta tranche é `docs/LOCALIZED_ACTIVITY_IDENTITY_PAGE_HIERARCHY_2026-09-26.md`.
+
+Próximo trabalho sistêmico após estabilização e observação desta tranche: finalidade explícita de formulários e remoção das automações escondidas por `form_key='registration'`, seguida do lifecycle próprio de matrículas e continuação da consolidação dos renderers/editor conforme a auditoria.

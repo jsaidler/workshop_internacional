@@ -11,7 +11,16 @@ function cms_page_public_location(PDO $db,array $activity,array $page): string {
     $seo=cms_page_seo($db,(int)$page['id']);$url=$seo['canonicalUrl']!==''?$seo['canonicalUrl']:cms_page_url($activity,$page,(string)$page['locale']);return cms_absolute_url($url);
 }
 function cms_page_counterpart(PDO $db,array $page,string $locale): ?array {
-    if((string)$page['locale']===$locale)return cms_page_is_indexable($db,$page)?$page:null;$activityId=(int)$page['activity_id'];$candidate=(int)$page['is_home']===1?cms_page_home($db,$activityId,$locale):cms_page_by_slug($db,$activityId,$locale,(string)$page['slug']);return $candidate&&cms_page_is_indexable($db,$candidate)?$candidate:null;
+    if(function_exists('cms_page_translation_counterpart')){
+        $candidate=cms_page_translation_counterpart($db,$page,$locale);
+    }elseif((string)$page['locale']===$locale){
+        $candidate=$page;
+    }else{
+        $candidate=(int)$page['is_home']===1
+            ?cms_page_home($db,(int)$page['activity_id'],$locale)
+            :cms_page_by_slug($db,(int)$page['activity_id'],$locale,(string)$page['slug']);
+    }
+    return $candidate&&cms_page_is_indexable($db,$candidate)?$candidate:null;
 }
 function cms_sitemap_entries(PDO $db): array {
     $activities=$db->query("SELECT * FROM activities WHERE status='active' ORDER BY is_root DESC,id")->fetchAll();$entries=[];
