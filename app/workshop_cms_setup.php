@@ -119,6 +119,10 @@ function workshop_cms_setup_activity(PDO $db,int $activityId): void {
     $activity=activity_by_id($db,$activityId);
     if(!$activity)return;
 
+    $q=$db->prepare("SELECT COUNT(*) FROM cms_pages WHERE activity_id=? AND status!='archived'");$q->execute([$activityId]);$pageCount=(int)$q->fetchColumn();
+    $q=$db->prepare("SELECT COUNT(*) FROM cms_forms WHERE activity_id=? AND status!='archived'");$q->execute([$activityId]);$formCount=(int)$q->fetchColumn();
+    if($pageCount>0||$formCount>0)return;
+
     cms_forms_seed($db,$activityId);
     cms_pages_seed($db,$activityId);
     $now=gmdate('c');
