@@ -115,6 +115,80 @@ A decisão é deliberadamente conservadora: estado parcial não é “reparado�
 
 O teste faz parte do CI regular.
 
+## Terceiro tranche implementado — identidade localizada e hierarquia editorial
+
+### 12. `activity_locales` passa a ser a autoridade localizada do nome público
+
+A migração `068_activity_locales_page_hierarchy.php` cria `activity_locales(activity_id, locale, public_title, ...)` de forma aditiva.
+
+O backfill copia exatamente o valor legado de `activities.public_title` para os locales já presentes nas páginas de cada activity. Isto preserva o comportamento anterior sem inventar tradução. Activities sem páginas recebem um registro inicial `pt-BR` para não ficarem sem identidade localizada durante a migração.
+
+A leitura passa a ter precedência explícita:
+
+`activity_locales.public_title` do locale solicitado → `activities.public_title` como fallback.
+
+Novas edições administrativas escrevem somente na autoridade localizada. `activities.public_title` não é apagado nem atualizado por essas edições neste release. Na criação, a coluna antiga ainda recebe o primeiro título porque permanece `NOT NULL`, e a linha localizada correspondente é criada simultaneamente.
+
+### 13. Hierarquia editorial pertence a `cms_pages`
+
+A mesma migração adiciona `cms_pages.parent_page_id` nullable. Páginas existentes permanecem sem pai e nenhuma relação é inferida por título, slug ou ordem.
+
+A camada `app/cms_page_structure.php` valida que pai e filha:
+
+- pertencem à mesma activity;
+- pertencem ao mesmo locale;
+- não são a própria página;
+- não formam ciclo;
+- não usam página arquivada como pai.
+
+A página inicial continua raiz do locale e não pode se tornar subpágina.
+
+A relação não altera slug, URL, ID, UUID, documento, revisão ou navegação. `Admin → Páginas` é a interface canônica para editar essa estrutura. `Admin → Navegação` continua sendo somente a apresentação curada das páginas e não recebe árvore concorrente.
+
+### 14. Equivalência entre traduções deixa de depender do slug
+
+`cms_pages.translation_group_uuid` passa a identificar versões editoriais equivalentes em idiomas diferentes. O índice `(activity_id, translation_group_uuid, locale)` impede duas páginas do mesmo locale no mesmo grupo.
+
+A resolução é deliberadamente gradual:
+
+1. grupo explícito, quando existe;
+2. fallback legado por home/mesmo slug enquanto a equivalência ainda não foi cadastrada.
+
+Isto permite que `inscricao` e `registration`, por exemplo, sejam declaradas equivalentes sem alterar nenhum endereço existente.
+
+O resolvedor canônico alimenta:
+
+- troca pública de idioma;
+- `hreflang` e sitemap;
+- metadados de estrutura expostos pela API do editor.
+
+### 15. Interfaces existentes recebem as novas responsabilidades
+
+Nenhuma interface paralela foi criada.
+
+- `Admin → Cursos e workshops` edita nome administrativo e nomes públicos PT-BR/EN;
+- na criação, o idioma do primeiro nome público é explícito;
+- `Admin → Páginas` edita página superior e equivalência em outro idioma.
+
+Não foi criado segundo editor, segundo uploader, segunda árvore de navegação ou painel específico de “páginas protegidas”.
+
+### 16. Regressão do terceiro tranche
+
+`tools/test-activity-locales-page-hierarchy.php` valida:
+
+- backfill e precedência de título localizado;
+- ausência de novos writes no título legado durante edição localizada;
+- criação de activity em branco sem conteúdo específico de produto;
+- persistência de hierarquia sem alteração de slug;
+- rejeição de pai em outro idioma e de ciclos;
+- equivalência explícita com slugs diferentes;
+- uso da identidade explícita no renderer e no discovery;
+- presença dos controles somente nas interfaces canônicas.
+
+A regressão roda no CI de PR e também no workflow de produção.
+
+A especificação completa deste tranche está em `docs/LOCALIZED_ACTIVITY_IDENTITY_PAGE_HIERARCHY_2026-09-26.md`.
+
 ## Deliberadamente ainda não implementado
 
 Os itens abaixo permanecem no roadmap porque exigem migração coordenada de autoridade e testes próprios; misturá-los aos tranches acima aumentaria o risco de perda ou sobrescrita de conteúdo.
@@ -124,7 +198,7 @@ Os itens abaixo permanecem no roadmap porque exigem migração coordenada de aut
 - eliminar o seed transitório de `content_documents` ainda existente dentro do renderer/serviço legado antes de remover essa camada;
 - retirar o fallback de `workshop_settings_seed()` ainda existente em `workshop_prices()` quando o legado de preço deixar de ser necessário;
 - fazer mídia privada usar o mesmo contexto efetivo de autorização da página/seção CMS;
-- adicionar `parent_page_id` e identidade de tradução/equivalência de páginas;
+- retirar, depois de observação e cadastro das equivalências reais, o fallback de tradução por slug e a dependência restante de `activities.public_title`;
 - finalidade explícita do formulário no lugar de `form_key='registration'`;
 - lifecycle administrativo próprio de matrícula;
 - consolidação das gerações de CSS/JavaScript do editor;
@@ -139,11 +213,16 @@ Enquanto o renderer público legado existir, ele é permitido somente para a ati
 
 Enquanto `cms_pages_seed()` e `cms_forms_seed()` existirem, só podem ser chamados por instalação, migração deliberada ou aplicação explícita de template. Nunca por listagem, lookup, sitemap, renderer ou simples abertura de uma tela administrativa.
 
+Enquanto `activities.public_title` continuar existindo, ele é fallback de compatibilidade. Edições localizadas de nome público devem escrever em `activity_locales`, não reintroduzir o campo legado como autoridade.
+
+Enquanto páginas sem `translation_group_uuid` existirem, o fallback de home/slug pode ser usado apenas como compatibilidade de leitura. Novas equivalências editoriais devem ser gravadas no grupo explícito.
+
 ## Critérios para o próximo tranche
 
 O próximo conjunto deve continuar removendo autoridades paralelas sem apagar estruturas históricas prematuramente. Prioridades imediatas:
 
-1. separar autenticação de matrícula de forma completa e desativar novos writes em `student_enrollments`;
-2. tornar `student_materials` definitivamente somente-leitura/legado e eliminar chamadas executáveis restantes;
-3. definir o plano de retirada de `content_documents` e `public_locale.php` sem perder o fallback raiz ainda observado em produção;
-4. iniciar a política contextual de autorização para mídia privada editorial.
+1. finalidade explícita de formulários e retirada de automações escondidas por `form_key='registration'`;
+2. separar autenticação de matrícula de forma completa e desativar novos writes em `student_enrollments`;
+3. tornar `student_materials` definitivamente somente-leitura/legado e eliminar chamadas executáveis restantes;
+4. definir o plano de retirada de `content_documents` e `public_locale.php` sem perder o fallback raiz ainda observado em produção;
+5. iniciar a política contextual de autorização para mídia privada editorial.
