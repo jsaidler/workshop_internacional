@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 function fail_identity_hierarchy(string $message): never {fwrite(STDERR,"activity-locales-page-hierarchy: $message\n");exit(1);}
 function must_identity_hierarchy(bool $condition,string $message): void {if(!$condition)fail_identity_hierarchy($message);}
+function h(mixed $value): string {return htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function utc_now(): string {return gmdate('c');}
 function canonical_content(): array {return ['schemaVersion'=>1,'texts'=>[],'forms'=>[],'media'=>[]];}
 
