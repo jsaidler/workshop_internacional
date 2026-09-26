@@ -2,8 +2,9 @@
 'use strict';
 const frame=document.querySelector('#page-frame');
 if(!frame)return;
-let boundDoc=null,layer=null,box=null,labelNode=null,hovered=null,raf=0;
+let boundDoc=null,layer=null,box=null,labelNode=null,hovered=null,raf=0,bindTimer=0;
 const d=()=>frame.contentDocument;
+const pageRoot=()=>d()?.querySelector('[data-cms-page-main]')||d()?.querySelector('main')||null;
 const clean=value=>String(value||'').trim().replace(/\s+/g,' ');
 const sectionName=node=>clean(node?.dataset?.cmsSectionName||node?.dataset?.cmsSection||'Seção');
 function structuralLabel(node){
@@ -34,20 +35,22 @@ function targetFrom(node){
   return null;
 }
 function ensureUi(doc){
-  if(layer?.isConnected)return;
-  const style=doc.createElement('style');style.dataset.cmsEditorUi='hover-selection-style';style.textContent=`
+  if(layer?.isConnected&&layer.ownerDocument===doc)return;
+  const previous=doc.querySelector('[data-cms-editor-ui="hover-selection-layer"]');if(previous)previous.remove();
+  const style=doc.head.querySelector('[data-cms-editor-ui="hover-selection-style"]')||doc.createElement('style');
+  style.dataset.cmsEditorUi='hover-selection-style';style.textContent=`
 [data-cms-editor-ui="hover-selection-layer"]{position:fixed;inset:0;pointer-events:none;z-index:2147483200;font-family:Arial,sans-serif}
 .cms-editor-hover-box{position:fixed;box-sizing:border-box;border:2px solid #1e624b;background:rgba(30,98,75,.055);box-shadow:0 0 0 1px rgba(255,255,255,.72) inset;pointer-events:none}
 .cms-editor-hover-label{position:absolute;left:-2px;top:-25px;max-width:min(360px,80vw);height:23px;padding:5px 8px;box-sizing:border-box;background:#1e624b;color:#fff;border-radius:3px 3px 0 0;font:600 10px/13px Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cms-editor-hover-box.is-label-inside .cms-editor-hover-label{top:0;border-radius:0 0 3px 0}
 `;
-  doc.head.append(style);
+  if(!style.isConnected)doc.head.append(style);
   layer=doc.createElement('div');layer.dataset.cmsEditorUi='hover-selection-layer';
   box=doc.createElement('div');box.className='cms-editor-hover-box';box.hidden=true;
   labelNode=doc.createElement('div');labelNode.className='cms-editor-hover-label';box.append(labelNode);layer.append(box);doc.body.append(layer);
 }
 function draw(){
-  raf=0;const doc=d();if(!doc)return;ensureUi(doc);
+  raf=0;const doc=d();if(!doc||doc!==boundDoc)return;ensureUi(doc);
   if(!hovered?.node?.isConnected){if(box)box.hidden=true;return}
   const rect=hovered.node.getBoundingClientRect();if(rect.width<1||rect.height<1){box.hidden=true;return}
   box.hidden=false;box.classList.toggle('is-label-inside',rect.top<27);
@@ -57,24 +60,28 @@ function draw(){
 function schedule(){if(raf)return;raf=(frame.contentWindow||window).requestAnimationFrame(draw)}
 function setHovered(next){
   if(next?.node===hovered?.node&&next?.label===hovered?.label)return;
-  hovered=next;
-  // Pointer feedback must feel immediate; geometry-only updates remain throttled elsewhere.
-  draw();
+  hovered=next;draw();
 }
 function bind(){
-  const doc=d();if(!doc||doc===boundDoc)return;boundDoc=doc;layer=box=labelNode=null;hovered=null;ensureUi(doc);
+  const doc=d(),page=pageRoot();if(!doc||!page)return false;
+  if(doc===boundDoc)return true;
+  boundDoc=doc;layer=box=labelNode=null;hovered=null;ensureUi(doc);
   const track=event=>setHovered(targetFrom(event.target));
   doc.addEventListener('mouseover',track,true);
   doc.addEventListener('mousemove',track,true);
   doc.addEventListener('pointermove',track,true);
-  // Reset only when the pointer leaves the iframe document itself. Capturing leave
-  // events from descendants caused the hover state to be cleared immediately.
   doc.documentElement.addEventListener('mouseleave',()=>setHovered(null));
   doc.documentElement.addEventListener('pointerleave',()=>setHovered(null));
   doc.addEventListener('scroll',schedule,true);doc.defaultView?.addEventListener('resize',schedule,{passive:true});
   doc.addEventListener('click',()=>setTimeout(schedule,0),true);
+  return true;
 }
-frame.addEventListener('load',()=>setTimeout(bind,130));
-setTimeout(bind,200);
-window.CmsHoverSelection={targetFrom,refresh:schedule};
+function bindWhenReady(){
+  clearTimeout(bindTimer);
+  if(bind())return;
+  bindTimer=setTimeout(bindWhenReady,80);
+}
+frame.addEventListener('load',()=>setTimeout(bindWhenReady,0));
+bindWhenReady();
+window.CmsHoverSelection={targetFrom,refresh:schedule,rebind:bindWhenReady};
 })();
