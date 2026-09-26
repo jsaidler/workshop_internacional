@@ -226,3 +226,7 @@ O próximo conjunto deve continuar removendo autoridades paralelas sem apagar es
 3. tornar `student_materials` definitivamente somente-leitura/legado e eliminar chamadas executáveis restantes;
 4. definir o plano de retirada de `content_documents` e `public_locale.php` sem perder o fallback raiz ainda observado em produção;
 5. iniciar a política contextual de autorização para mídia privada editorial.
+
+## Tranche 2026-09-26 — finalidade de formulário como autoridade operacional
+
+Implementada em `audit/form-purpose-enrollment-authority-2026-09-26`: `cms_forms.purpose` é a autoridade explícita para comum/interesse/inscrição/inscrição que gera matrícula. O comportamento de matrícula deixou de ser decidido por `form_key='registration'`; a migração 069 preserva todas as chaves, IDs, submissões e o comportamento do formulário legado por backfill para `enrollment`. A interface permanece em `Admin → Formulários`. Ver `docs/FORM_PURPOSE_ENROLLMENT_AUTHORITY_2026-09-26.md`.
