@@ -40,6 +40,22 @@ function cms_page_set_parent(PDO $db,int $pageId,?int $parentId): array {
     $db->prepare('UPDATE cms_pages SET parent_page_id=?,updated_at=? WHERE id=?')->execute([$parentId,utc_now(),$pageId]);
     return cms_page_by_id($db,$pageId)??$page;
 }
+function cms_page_tree_rows(array $pages): array {
+    $byParent=[];$known=[];
+    foreach($pages as $page){$id=(int)($page['id']??0);if($id<1)continue;$known[$id]=true;}
+    foreach($pages as $page){$id=(int)($page['id']??0);if($id<1)continue;$parentId=(int)($page['parent_page_id']??0);if($parentId<1||!isset($known[$parentId]))$parentId=0;$byParent[$parentId][]=$page;}
+    $sort=static function(array &$rows): void {usort($rows,static fn(array $a,array $b): int=>[(int)($a['sort_order']??0),(int)($a['id']??0)]<=>[(int)($b['sort_order']??0),(int)($b['id']??0)]);};
+    foreach($byParent as &$siblings)$sort($siblings);unset($siblings);
+    $out=[];$seen=[];$walk=function(int $parentId,int $depth)use(&$walk,&$out,&$seen,$byParent):void{foreach($byParent[$parentId]??[] as $page){$id=(int)$page['id'];if(isset($seen[$id]))continue;$seen[$id]=true;$out[]=['page'=>$page,'depth'=>$depth];$walk($id,$depth+1);}};$walk(0,0);
+    foreach($pages as $page){$id=(int)($page['id']??0);if($id>0&&!isset($seen[$id]))$out[]=['page'=>$page,'depth'=>0];}
+    return $out;
+}
+function cms_page_siblings(PDO $db,array $page): array {
+    $parentId=(int)($page['parent_page_id']??0);$sql="SELECT * FROM cms_pages WHERE activity_id=? AND locale=? AND status!='archived' AND ".($parentId>0?'parent_page_id=?':'parent_page_id IS NULL')." ORDER BY sort_order,id";$args=[(int)$page['activity_id'],(string)$page['locale']];if($parentId>0)$args[]=$parentId;$q=$db->prepare($sql);$q->execute($args);return $q->fetchAll();
+}
+function cms_page_move_sibling(PDO $db,int $pageId,int $direction): void {
+    if(!in_array($direction,[-1,1],true))throw new RuntimeException('Direção inválida.');$page=cms_page_by_id($db,$pageId)??throw new RuntimeException('Página não encontrada.');$rows=cms_page_siblings($db,$page);$index=null;foreach($rows as $i=>$row)if((int)$row['id']===$pageId){$index=$i;break;}if($index===null)return;$target=$index+$direction;if($target<0||$target>=count($rows))return;$a=$rows[$index];$b=$rows[$target];$db->beginTransaction();try{$now=utc_now();$db->prepare('UPDATE cms_pages SET sort_order=?,updated_at=? WHERE id=?')->execute([(int)$b['sort_order'],$now,(int)$a['id']]);$db->prepare('UPDATE cms_pages SET sort_order=?,updated_at=? WHERE id=?')->execute([(int)$a['sort_order'],$now,(int)$b['id']]);$db->commit();}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+}
 function cms_page_translation_candidates(PDO $db,array $page): array {
     if(!cms_page_structure_available($db))return [];
     $q=$db->prepare("SELECT * FROM cms_pages WHERE activity_id=? AND locale<>? AND status!='archived' ORDER BY locale,is_home DESC,sort_order,id");

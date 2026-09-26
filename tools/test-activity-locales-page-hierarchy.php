@@ -68,6 +68,19 @@ cms_page_set_parent($db,(int)$otherPtChild['id'],(int)$otherPt['id']);
 $cycleRejected=false;try{cms_page_set_parent($db,(int)$otherPt['id'],(int)$otherPtChild['id']);}catch(RuntimeException){$cycleRejected=true;}
 must_identity_hierarchy($cycleRejected,'hierarchy cycle was accepted');
 
+$secondChild=cms_page_create($db,$legacyId,PUBLIC_LOCALE_PT_BR,'Perguntas','perguntas');
+cms_page_set_parent($db,(int)$secondChild['id'],(int)$home['id']);
+$rootsBefore=array_map(static fn(array $p): int=>(int)$p['id'],array_filter(cms_pages($db,$legacyId,PUBLIC_LOCALE_PT_BR,true),static fn(array $p): bool=>(int)($p['parent_page_id']??0)===0));
+$childrenBefore=cms_page_siblings($db,cms_page_by_id($db,(int)$secondChild['id'])??$secondChild);
+must_identity_hierarchy(count($childrenBefore)===2,'home children were not recognized as siblings');
+cms_page_move_sibling($db,(int)$secondChild['id'],-1);
+$childrenAfter=cms_page_siblings($db,cms_page_by_id($db,(int)$secondChild['id'])??$secondChild);
+must_identity_hierarchy((int)$childrenAfter[0]['id']===(int)$secondChild['id'],'sibling move did not reorder within the parent');
+$rootsAfter=array_map(static fn(array $p): int=>(int)$p['id'],array_filter(cms_pages($db,$legacyId,PUBLIC_LOCALE_PT_BR,true),static fn(array $p): bool=>(int)($p['parent_page_id']??0)===0));
+must_identity_hierarchy($rootsBefore===$rootsAfter,'moving a child changed root-page ordering');
+$tree=cms_page_tree_rows(array_values(array_filter(cms_pages($db,$legacyId,PUBLIC_LOCALE_PT_BR,true),static fn(array $p): bool=>$p['status']!=='archived')));$depths=[];foreach($tree as $row)$depths[(int)$row['page']['id']]=(int)$row['depth'];
+must_identity_hierarchy(($depths[(int)$child['id']]??-1)===1&&($depths[(int)$otherPtChild['id']]??-1)===1,'tree rows do not expose real parent depth');
+
 cms_page_set_translation_peer($db,(int)$child['id'],(int)$english['id']);
 $child=cms_page_by_id($db,(int)$child['id'])??fail_identity_hierarchy('translated child missing');
 $english=cms_page_by_id($db,(int)$english['id'])??fail_identity_hierarchy('translated peer missing');
@@ -86,7 +99,10 @@ $adminPages=(string)file_get_contents($root.'/admin/pages.php');
 $adminActivities=(string)file_get_contents($root.'/admin/activities.php');
 $renderer=(string)file_get_contents($root.'/app/cms_renderer.php');
 $discovery=(string)file_get_contents($root.'/app/cms_discovery.php');
-must_identity_hierarchy(str_contains($adminPages,'name="parent_page_id"')&&str_contains($adminPages,'name="translation_page_id"'),'canonical Pages admin does not expose hierarchy/equivalence');
+must_identity_hierarchy(str_contains($adminPages,'name="parent_page_id"')&&str_contains($adminPages,'Página superior'),'canonical Pages admin does not expose hierarchy as a primary property');
+must_identity_hierarchy(str_contains($adminPages,'cms_page_tree_rows')&&str_contains($adminPages,'cms_page_move_sibling'),'canonical Pages admin does not render/order the real hierarchy');
+must_identity_hierarchy(str_contains($adminPages,'data-page-depth'),'canonical Pages admin does not expose hierarchy depth');
+must_identity_hierarchy(str_contains($adminPages,'name="translation_page_id"'),'canonical Pages admin does not expose translation equivalence');
 must_identity_hierarchy(str_contains($adminActivities,'public_title_pt')&&str_contains($adminActivities,'public_title_en'),'canonical activity admin does not expose localized titles');
 must_identity_hierarchy(str_contains($renderer,'cms_page_translation_counterpart'),'language switch does not use explicit translation identity');
 must_identity_hierarchy(str_contains($renderer,'activity_public_title'),'public renderer does not use localized activity title fallback');
