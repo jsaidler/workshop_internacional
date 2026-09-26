@@ -10,7 +10,7 @@ $migration=(string)file_get_contents($root.'/migrations/067_normalize_page_activ
 
 if(!str_contains($migration,"SET access_level='activity'"))fail_student_material_hotfix('activity access normalization contract missing');
 if(!str_contains($dashboard,"access_level IN ('activity','enrolled')"))fail_student_material_hotfix('student dashboard does not list canonical activity-protected pages');
-if(!str_contains($material,'Infográfico pendente'))fail_student_material_hotfix('pending infographic placeholder missing');
-if(str_contains($material,"if(!current_admin())return '';"))fail_student_material_hotfix('pending infographic placeholder is still hidden from students');
+if(!str_contains($material,'Infográfico pendente'))fail_student_material_hotfix('admin pending infographic placeholder missing');
+if(!str_contains($material,"if(!current_admin())return '';"))fail_student_material_hotfix('pending infographic placeholder must stay hidden from students');
 
 echo "student-material-access-hotfix: ok\n";
