@@ -23,6 +23,7 @@ $now=utc_now();
 $db->prepare('INSERT INTO activities(admin_name,public_title,slug,status,is_root,created_at,updated_at)VALUES(?,?,?,?,1,?,?)')->execute(['Workshop','Direct Positive X-Ray Film','workshop','active',$now,$now]);
 $activityId=(int)$db->lastInsertId();
 $migration=require __DIR__.'/../migrations/011_cms_pages_forms.php';$migration($db);
+$purposeMigration=require __DIR__.'/../migrations/069_form_purpose_authority.php';$purposeMigration($db);
 workshop_cms_setup_activity($db,$activityId);
 
 $legacyForm=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_PT_BR,'registration');
@@ -53,7 +54,7 @@ $blocks=cms_form_content_blocks($schema);
 expect_native(count($blocks)>=7,'expected native editorial content blocks');
 $byId=[];foreach($blocks as $block)$byId[$block['id']]=$block;
 expect_native(isset($byId['payment_pix']),'Pix content block missing');
-expect_native(isset($byId['payment_card']),'card content block missing');
+expect_native(isset($byId['payment_card']),'card block missing');
 expect_native(isset($byId['program']),'program content block missing');
 expect_native(isset($byId['terms_copy']),'terms content block missing');
 expect_native(($byId['payment_pix']['condition']['source']??'')==='payment_method','Pix condition source missing');
