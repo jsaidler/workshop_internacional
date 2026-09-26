@@ -21,7 +21,7 @@ $db->exec("CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT,admin_n
 $now=utc_now();$db->prepare('INSERT INTO activities(admin_name,public_title,slug,status,is_root,created_at,updated_at)VALUES(?,?,?,?,1,?,?)')->execute(['Workshop','Direct Positive X-Ray Film','workshop','active',$now,$now]);$activityId=(int)$db->lastInsertId();
 $migration=require __DIR__.'/../migrations/011_cms_pages_forms.php';$migration($db);
 
-cms_forms_seed($db,$activityId);cms_pages_seed($db,$activityId);workshop_cms_setup_activity($db,$activityId);
+workshop_cms_setup_activity($db,$activityId);
 $forms=cms_forms($db,$activityId);$pages=cms_pages($db,$activityId);
 expect(count($forms)===2,'expected two seeded forms');
 expect(count($pages)===3,'expected two localized home pages plus registration page');
