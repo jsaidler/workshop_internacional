@@ -2,15 +2,16 @@ name: Apply form purpose authority tranche
 
 on:
   push:
-    branches: [audit/form-purpose-enrollment-authority-2026-09-26]
-    paths: [.github/workflows/apply-form-purpose-tranche.yml]
+    branches:
+      - audit/form-purpose-enrollment-authority-2026-09-26
+    paths:
+      - .github/workflows/apply-form-purpose-tranche.yml
 
 permissions:
   contents: write
 
 jobs:
   apply:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
