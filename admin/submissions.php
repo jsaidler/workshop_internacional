@@ -38,7 +38,7 @@ function registration_payment_label(array $row): string {$p=submission_payload($
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('cms-submissions',$_POST['_csrf']??null)){http_response_code(403);exit('Invalid request');}
     $id=(int)($_POST['submission_id']??0);$action=(string)($_POST['action']??'');
-    $q=$db->prepare('SELECT s.*,f.form_key FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');$q->execute([$id,$activityId]);$row=$q->fetch()?:null;
+    $q=$db->prepare('SELECT s.*,f.form_key,f.purpose FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');$q->execute([$id,$activityId]);$row=$q->fetch()?:null;
     if(!$row){http_response_code(404);exit('Submission not found');}
     if($action==='delete_registration'){
         try{admin_registration_delete($db,$id,$activityId);$_SESSION['admin_submissions_notice']='Inscrição excluída definitivamente.';}
@@ -46,7 +46,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         header('Location: '.submission_url($activityId,0,(string)($_POST['filter_status']??''),(int)($_POST['filter_form']??0)),true,303);exit;
     }
     $now=utc_now();$paymentNote=array_key_exists('payment_note',$_POST)?trim((string)$_POST['payment_note']):(string)($row['payment_note']??'');
-    if($row['form_key']==='registration'){
+    if(cms_form_purpose($row)==='enrollment'){
         if($action==='confirm')$db->prepare("UPDATE cms_form_submissions SET status='converted',payment_status='paid',payment_confirmed_at=?,payment_note=?,updated_at=? WHERE id=? AND activity_id=?")->execute([$now,$paymentNote,$now,$id,$activityId]);
         elseif($action==='pending')$db->prepare("UPDATE cms_form_submissions SET status='new',payment_status='pending',payment_confirmed_at=NULL,payment_note=?,updated_at=? WHERE id=? AND activity_id=?")->execute([$paymentNote,$now,$id,$activityId]);
         elseif($action==='archive')$db->prepare("UPDATE cms_form_submissions SET status='archived',payment_note=?,updated_at=? WHERE id=? AND activity_id=?")->execute([$paymentNote,$now,$id,$activityId]);
@@ -57,9 +57,9 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
 }
 
 $formFilter=(int)($_GET['form']??0);$statusFilter=(string)($_GET['status']??'');
-$sql='SELECT s.*,f.title form_title,f.form_key,f.locale form_locale FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.activity_id=?';$args=[$activityId];
+$sql='SELECT s.*,f.title form_title,f.form_key,f.purpose,f.locale form_locale FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.activity_id=?';$args=[$activityId];
 if($formFilter){$sql.=' AND s.form_id=?';$args[]=$formFilter;}if(in_array($statusFilter,['new','contacted','converted','archived'],true)){$sql.=' AND s.status=?';$args[]=$statusFilter;}$sql.=" ORDER BY CASE s.status WHEN 'new' THEN 0 WHEN 'contacted' THEN 1 WHEN 'converted' THEN 2 ELSE 3 END,s.created_at DESC LIMIT 250";$q=$db->prepare($sql);$q->execute($args);$rows=$q->fetchAll();
-$forms=cms_forms($db,$activityId);$selectedId=(int)($_GET['submission']??0);if(!$selectedId&&$rows)$selectedId=(int)$rows[0]['id'];$selected=null;if($selectedId){$q=$db->prepare('SELECT s.*,f.title form_title,f.form_key,f.locale form_locale FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');$q->execute([$selectedId,$activityId]);$selected=$q->fetch()?:null;}
+$forms=cms_forms($db,$activityId);$selectedId=(int)($_GET['submission']??0);if(!$selectedId&&$rows)$selectedId=(int)$rows[0]['id'];$selected=null;if($selectedId){$q=$db->prepare('SELECT s.*,f.title form_title,f.form_key,f.purpose,f.locale form_locale FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');$q->execute([$selectedId,$activityId]);$selected=$q->fetch()?:null;}
 $countQ=$db->prepare('SELECT status,COUNT(*) n FROM cms_form_submissions WHERE activity_id=? GROUP BY status');$countQ->execute([$activityId]);$counts=['new'=>0,'contacted'=>0,'converted'=>0,'archived'=>0];foreach($countQ->fetchAll() as $r)if(isset($counts[$r['status']]))$counts[$r['status']]=(int)$r['n'];
 $notice=(string)($_SESSION['admin_submissions_notice']??'');unset($_SESSION['admin_submissions_notice']);
 
@@ -74,10 +74,10 @@ admin_shell_start('responses','Inscrições',$state);?>
 <div class="submissions-layout inbox-layout">
 <section class="submission-list inbox-list" aria-label="Lista de inscrições">
 <?php if(!$rows):?><div class="admin-empty compact"><h2>Nenhuma inscrição</h2></div><?php endif;?>
-<?php foreach($rows as $row):$isRegistration=$row['form_key']==='registration';$status=$isRegistration?registration_status($row):($row['status']==='converted'?'Concluída':($row['status']==='contacted'?'Em contato':($row['status']==='archived'?'Arquivada':'Nova')));?>
+<?php foreach($rows as $row):$isRegistration=cms_form_purpose($row)==='enrollment';$status=$isRegistration?registration_status($row):($row['status']==='converted'?'Concluída':($row['status']==='contacted'?'Em contato':($row['status']==='archived'?'Arquivada':'Nova')));?>
 <a class="submission-row<?=$selectedId===(int)$row['id']?' selected':''?><?=$row['status']==='new'?' is-new':''?>" href="<?=h(submission_url($activityId,(int)$row['id'],$statusFilter,$formFilter))?>"><div class="submission-row-main"><strong><?=h(submission_name($row))?></strong><span><?=h(submission_secondary($row))?></span></div><div class="submission-row-meta"><time><?=h(date('d/m · H:i',strtotime($row['created_at'])))?></time><small data-status="<?=h($row['status'])?>"><?=h($status)?></small></div></a>
 <?php endforeach;?></section>
-<?php if($selected):$payload=submission_payload($selected);$fields=submission_fields($selected);$isRegistration=$selected['form_key']==='registration';?>
+<?php if($selected):$payload=submission_payload($selected);$fields=submission_fields($selected);$isRegistration=cms_form_purpose($selected)==='enrollment';?>
 <aside class="submission-detail inbox-detail">
 <header class="inbox-detail-header"><div><p><?=h($selected['form_title'])?></p><h2><?=h(submission_name($selected))?></h2><span><?=h(date('d/m/Y · H:i',strtotime($selected['created_at'])))?></span></div></header>
 <?php if($isRegistration):?>

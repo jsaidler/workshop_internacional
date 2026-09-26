@@ -54,6 +54,7 @@ CREATE TABLE workshop_locale_settings(
 );
 SQL);
 (require $root.'/migrations/011_cms_pages_forms.php')($db);
+(require $root.'/migrations/069_form_purpose_authority.php')($db);
 
 $blank=activity_create($db,'Curso vazio','Curso vazio','curso-vazio',null,ACTIVITY_TEMPLATE_BLANK);
 $blankId=(int)$blank['id'];

@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__.'/form_purpose.php';
+
 /**
  * Project-specific initial CMS defaults for the Direct Positive X-Ray Film workshop.
  * These values only seed the canonical CMS records. After setup, the database is
@@ -129,6 +131,9 @@ function workshop_cms_setup_activity(PDO $db,int $activityId): void {
 
     $form=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_PT_BR,'registration');
     if(!$form)$form=cms_form_create($db,$activityId,PUBLIC_LOCALE_PT_BR,'Inscrição — nova turma','registration','registration');
+    $form=cms_form_set_purpose($db,(int)$form['id'],'enrollment');
+    $interest=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_EN,'interest');
+    if($interest)cms_form_set_purpose($db,(int)$interest['id'],'interest');
     $registrationSchema=workshop_registration_schema();
     $schemaJson=json_encode($registrationSchema,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
     $formRevision=max((int)$form['draft_revision'],(int)($form['published_revision']??0))+1;

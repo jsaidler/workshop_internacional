@@ -566,3 +566,7 @@ Antes de qualquer nova funcionalidade, além das perguntas da auditoria de integ
 4. **a regra funciona também para uma segunda atividade hipotética vazia?** Se não, ainda existe acoplamento ao primeiro workshop;
 5. **a feature depende de “aluno” quando na verdade depende apenas de “usuário autenticado”?** Se sim, corrigir a abstração de identidade/autorização;
 6. **a mudança pode sobrescrever conteúdo editado pelo CMS?** Se sim, deve ser bloqueada ou versionada por estado-fonte inequívoco.
+
+## Tranche 2026-09-26 — finalidade de formulário como autoridade operacional
+
+Implementada em `audit/form-purpose-enrollment-authority-2026-09-26`: `cms_forms.purpose` é a autoridade explícita para comum/interesse/inscrição/inscrição que gera matrícula. O comportamento de matrícula deixou de ser decidido por `form_key='registration'`; a migração 069 preserva todas as chaves, IDs, submissões e o comportamento do formulário legado por backfill para `enrollment`. A interface permanece em `Admin → Formulários`. Ver `docs/FORM_PURPOSE_ENROLLMENT_AUTHORITY_2026-09-26.md`.

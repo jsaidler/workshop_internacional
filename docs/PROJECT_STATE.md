@@ -273,3 +273,7 @@ A terceira tranche da auditoria sistêmica introduz autoridades aditivas para id
 - O documento detalhado desta tranche é `docs/LOCALIZED_ACTIVITY_IDENTITY_PAGE_HIERARCHY_2026-09-26.md`.
 
 Próximo trabalho sistêmico após estabilização e observação desta tranche: finalidade explícita de formulários e remoção das automações escondidas por `form_key='registration'`, seguida do lifecycle próprio de matrículas e continuação da consolidação dos renderers/editor conforme a auditoria.
+
+## Tranche 2026-09-26 — finalidade de formulário como autoridade operacional
+
+Implementada em `audit/form-purpose-enrollment-authority-2026-09-26`: `cms_forms.purpose` é a autoridade explícita para comum/interesse/inscrição/inscrição que gera matrícula. O comportamento de matrícula deixou de ser decidido por `form_key='registration'`; a migração 069 preserva todas as chaves, IDs, submissões e o comportamento do formulário legado por backfill para `enrollment`. A interface permanece em `Admin → Formulários`. Ver `docs/FORM_PURPOSE_ENROLLMENT_AUTHORITY_2026-09-26.md`.
