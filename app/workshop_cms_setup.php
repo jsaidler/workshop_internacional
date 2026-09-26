@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__.'/form_purpose.php';
+
 /**
  * Project-specific initial CMS defaults for the Direct Positive X-Ray Film workshop.
  * These values only seed the canonical CMS records. After setup, the database is
