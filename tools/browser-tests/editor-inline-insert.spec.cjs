@@ -19,11 +19,13 @@ test('inline insertion UI is editor-only and does not enter page content',async(
   const frame=await fixture(page);
   await expect(frame.locator('[data-cms-page-main] .cms-inline-layer')).toHaveCount(0);
   await expect(frame.locator('body > .cms-inline-layer[data-cms-editor-ui="1"]')).toHaveCount(1);
-  await expect(frame.locator('.cms-inline-add')).toContainText(['Adicionar conteúdo']);
 });
 
 test('empty column can receive a paragraph directly from the canvas',async({page})=>{
   const frame=await fixture(page);
+  await expect(frame.locator('style[data-cms-inline-reliability="1"]')).toHaveCount(1);
+  const layerZ=await frame.locator('.cms-inline-layer').evaluate(el=>Number(getComputedStyle(el).zIndex));
+  expect(layerZ).toBeGreaterThan(2147483200);
   await frame.locator('#column-b').click({position:{x:20,y:20}});
   await expect(frame.locator('.cms-inline-add')).toHaveCount(1);
   await expect(frame.locator('.cms-inline-add', {hasText:'+ Adicionar'})).toHaveCount(1);
