@@ -49,8 +49,14 @@ function student_page_resolve_private_media_slots(PDO $db,array $page,array $doc
     },$html)??$html;$document['html']=$html;return $document;
 }
 
+function student_page_sign_private_media_for_access(array $document,array $student,array $page,?array $enrollment=null): array {
+    $html=(string)($document['html']??'');if($html==='')return $document;$studentId=(int)$student['id'];$pageId=(int)$page['id'];$cohortId=(int)($enrollment['cohort_id']??0);
+    $html=preg_replace_callback('~(?:https?://[^\"\']+)?/aluno/media\.php\?asset=([a-f0-9]{32})(?:&amp;|&[^\"\']*)?~i',static fn(array $m):string=>h(student_private_media_url($studentId,strtolower((string)$m[1]),$pageId,$cohortId)),$html)??$html;
+    $document['html']=$html;return $document;
+}
+
 function student_private_media_admin_asset(PDO $db,string $uuid): ?array {
     $library=student_library_media_admin_asset($db,$uuid);if($library)return $library;
     if(!preg_match('/^[a-f0-9]{32}$/',$uuid))return null;$asset=student_private_media_by_uuid($db,$uuid);if(!$asset)return null;
-    $page=cms_page_by_id($db,(int)$asset['page_id']);if(!$page||!student_page_is_protected($page))return null;return $asset;
+    $page=cms_page_by_id($db,(int)$asset['page_id']);if(!$page||!in_array((string)($page['access_level']??'public'),['authenticated','activity','cohort','enrolled'],true))return null;return $asset;
 }
