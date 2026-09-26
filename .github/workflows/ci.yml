@@ -62,6 +62,7 @@ jobs:
           php tools/test-student-material-system.php
           php tools/test-student-material-access-hotfix.php
           php tools/test-student-placeholder-visibility.php
+          php tools/test-private-media-editor-contract.php
           php tools/test-canonical-student-media-access.php
           php tools/test-handbook-email-integrity.php
           php tools/test-system-authority-boundaries.php

@@ -18,6 +18,7 @@ function componentType(node){
 }
 function isSafe(node){
   if(!node||node.hasAttribute('data-cms-component'))return false;
+  if(node.matches('[data-private-media-slot]')||node.closest('[data-private-media-slot]'))return false;
   if(node.closest('[data-cms-component]'))return false;
   if(!node.closest('[data-cms-section]'))return false;
   if(node.closest('[data-cms-form-block],form,nav,footer,[data-cms-editor-ui],.cms-inline-layer'))return false;
