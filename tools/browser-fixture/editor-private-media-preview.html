@@ -1,16 +1,30 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><title>Private media preview fixture</title><style>body{margin:0;padding:16px;font-family:Arial,sans-serif}#page-frame{width:900px;height:640px;border:1px solid #bbb}</style></head>
+<head><meta charset="utf-8"><title>Private media preview fixture</title><style>body{margin:0;padding:16px;font-family:Arial,sans-serif}.layout{display:grid;grid-template-columns:minmax(0,900px) 300px;gap:18px;align-items:start}#page-frame{width:900px;height:640px;border:1px solid #bbb}#inspector{min-height:240px;padding:14px;border:1px solid #bbb;background:#fff}#save-page{display:none}.editor-toast{position:fixed;right:16px;bottom:16px;padding:8px 10px;background:#111;color:#fff;opacity:0}.editor-toast.show{opacity:1}</style></head>
 <body>
-<iframe id="page-frame" title="Página em edição"></iframe>
+<button id="save-page" type="button">Salvar</button><div class="layout"><iframe id="page-frame" title="Página em edição"></iframe><aside id="inspector">Selecione um elemento.</aside></div><div id="toast" class="editor-toast"></div>
 <script>
-window.CMS_PRIVATE_MEDIA_PREVIEW_DATA={slots:{
-  'pendente':{key:'pendente',alt:'Diagrama de exposição',bound:false,src:null},
-  'vinculado':{key:'vinculado',alt:'Infográfico vinculado',bound:true,src:'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="320"%3E%3Crect width="640" height="320" fill="%23111"/%3E%3Ctext x="320" y="170" text-anchor="middle" fill="white" font-size="36"%3EVINCULADO%3C/text%3E%3C/svg%3E'}
+const svg=id=>`data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="320"%3E%3Crect width="640" height="320" fill="%23111"/%3E%3Ctext x="320" y="170" text-anchor="middle" fill="white" font-size="36"%3E${id}%3C/text%3E%3C/svg%3E`;
+window.CMS_PRIVATE_MEDIA_PREVIEW_DATA={pageId:1,csrf:'fixture',images:[
+  {id:11,title:'Diagrama escolhido',originalName:'diagrama.png',width:640,height:320,src:svg('ESCOLHIDO')},
+  {id:12,title:'Imagem atual',originalName:'atual.png',width:640,height:320,src:svg('ATUAL')}
+],slots:{
+  'pendente':{key:'pendente',alt:'Diagrama de exposição',bound:false,assetId:null,src:null},
+  'vinculado':{key:'vinculado',alt:'Infográfico vinculado',bound:true,assetId:12,src:svg('ATUAL')}
 }};
+window.CMS_PRIVATE_MEDIA_PREVIEW_MUTATE=async payload=>{
+  const state=window.CMS_PRIVATE_MEDIA_PREVIEW_DATA,slot=state.slots[payload.slotKey];
+  if(!slot)throw new Error('slot_not_found');
+  if(payload.action==='unbind'){slot.bound=false;slot.assetId=null;slot.src=null}
+  else if(payload.action==='bind'){
+    const image=state.images.find(item=>item.id===payload.assetId);if(!image)throw new Error('asset_not_found');slot.bound=true;slot.assetId=image.id;slot.src=image.src;
+  }
+  return state;
+};
 const frame=document.querySelector('#page-frame');
 frame.srcdoc=`<!doctype html><html><head><meta charset="utf-8"></head><body><main data-cms-page-main><section data-cms-section="material"><figure id="pending" data-private-media-slot="pendente" data-private-media-alt="Diagrama de exposição"></figure><figure id="bound" data-private-media-slot="vinculado" data-private-media-alt="Infográfico vinculado"></figure></section></main></body></html>`;
 </script>
+<script src="/editor/cms-legacy-node-promotion.js"></script>
 <script src="/editor/cms-private-media-preview.js"></script>
 </body>
 </html>
