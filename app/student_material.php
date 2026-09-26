@@ -52,5 +52,17 @@ function student_page_resolve_private_media_slots(PDO $db,array $page,array $doc
 function student_private_media_admin_asset(PDO $db,string $uuid): ?array {
     $library=student_library_media_admin_asset($db,$uuid);if($library)return $library;
     if(!preg_match('/^[a-f0-9]{32}$/',$uuid))return null;$asset=student_private_media_by_uuid($db,$uuid);if(!$asset)return null;
-    $page=cms_page_by_id($db,(int)$asset['page_id']);if(!$page||!student_page_is_protected($page))return null;return $asset;
+    $page=cms_page_by_id($db,(int)$asset['page_id']);if(!$page)return null;
+    $access=(string)($page['access_level']??'public');if($access==='public')return null;
+    return $asset;
+}
+
+function student_material_legacy_media_authorize(PDO $db,array $student,string $uuid,int $pageId,int $cohortId,int $expires,string $sig): ?array {
+    if($expires<time()||$expires>time()+STUDENT_MEDIA_URL_TTL_SECONDS+60)return null;
+    $expected=student_private_media_sig((int)$student['id'],$uuid,$pageId,$cohortId,$expires);if(!hash_equals($expected,$sig))return null;
+    $page=cms_page_by_id($db,$pageId);if(!$page)return null;$activity=activity_by_id($db,(int)$page['activity_id']);if(!$activity)return null;
+    if(!cms_access_page_allowed($db,$activity,$page,$student))return null;
+    $enrollment=student_account_enrollment_for_activity($db,(int)$student['id'],(int)$page['activity_id']);if(!$enrollment||(int)$enrollment['cohort_id']!==$cohortId)return null;
+    $asset=student_private_media_by_uuid($db,$uuid);if(!$asset||(int)$asset['page_id']!==$pageId||(int)$asset['activity_id']!==(int)$page['activity_id'])return null;
+    return $asset;
 }
