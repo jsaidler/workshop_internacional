@@ -17,14 +17,16 @@ try{
         }
         $hasSectionRules=preg_match('~data-cms-(?:access|availability|visible-from|visible-until|lesson-id|cohort-id)=~',(string)($document['html']??''))===1;
         if($pageAccess!=='public'||$hasSectionRules)student_private_headers();
-        if(!$admin){$document['html']=cms_access_filter_html($db,$activity,(string)$document['html'],$student,false);}
-        if($pageAccess!=='public'){
-            if($admin){$document=student_page_resolve_private_media_slots($db,$page,$document);}
-            elseif($student){
-                $cohortUuid=trim((string)($_GET['cohort']??''));$enrollment=student_account_page_context($db,$student,$page,$cohortUuid);
-                if($enrollment){$document=student_page_resolve_private_media_slots($db,$page,$document);$document=student_page_sign_private_media($document,$student,$page,$enrollment);}
-            }
+        if(!$admin)$document['html']=cms_access_filter_html($db,$activity,(string)$document['html'],$student,false);
+
+        $enrollment=null;
+        if($student){
+            if($pageAccess==='cohort')$enrollment=cms_access_active_enrollment($db,(int)$student['id'],(int)$page['activity_id'],cms_access_page_cohort_id($page));
+            else{$cohortUuid=trim((string)($_GET['cohort']??''));$enrollment=student_account_page_context($db,$student,$page,$cohortUuid);}
         }
+        if($admin)$document=student_page_resolve_private_media_slots($db,$page,$document);
+        elseif($student){$document=student_page_resolve_private_media_slots($db,$page,$document);$document=student_page_sign_private_media_for_access($document,$student,$page,$enrollment);}
+
         if($student)student_page_prefill_for_page($db,$student,$page,$document);
         try{analytics_record_pageview($db,$activity,$page,$locale);}catch(Throwable $analyticsError){error_log('Analytics pageview failed: '.$analyticsError->getMessage());}
         cms_render_public_page($activity,$page,$document,false);exit;
