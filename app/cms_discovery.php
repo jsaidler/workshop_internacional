@@ -15,7 +15,7 @@ function cms_page_counterpart(PDO $db,array $page,string $locale): ?array {
 }
 function cms_sitemap_entries(PDO $db): array {
     $activities=$db->query("SELECT * FROM activities WHERE status='active' ORDER BY is_root DESC,id")->fetchAll();$entries=[];
-    foreach($activities as $activity){$activityId=(int)$activity['id'];cms_pages_seed($db,$activityId);$q=$db->prepare("SELECT * FROM cms_pages WHERE activity_id=? AND status!='archived' AND published_document_json IS NOT NULL ORDER BY locale,sort_order,id");$q->execute([$activityId]);
+    foreach($activities as $activity){$activityId=(int)$activity['id'];$q=$db->prepare("SELECT * FROM cms_pages WHERE activity_id=? AND status!='archived' AND published_document_json IS NOT NULL ORDER BY locale,sort_order,id");$q->execute([$activityId]);
         foreach($q->fetchAll() as $page){if(!cms_page_is_indexable($db,$page))continue;$loc=cms_page_public_location($db,$activity,$page);if($loc==='')continue;$last=(string)($page['published_at']??$page['updated_at']??'');$timestamp=$last!==''?strtotime($last):false;$alternates=[];
             foreach([PUBLIC_LOCALE_PT_BR,PUBLIC_LOCALE_EN] as $locale){$counterpart=cms_page_counterpart($db,$page,$locale);if(!$counterpart)continue;$url=cms_page_public_location($db,$activity,$counterpart);if($url!=='')$alternates[$locale]=$url;}
             $entries[$loc]=['loc'=>$loc,'lastmod'=>$timestamp!==false?gmdate('c',$timestamp):'','alternates'=>$alternates];
