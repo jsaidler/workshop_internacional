@@ -91,7 +91,7 @@ function student_enrollment_install_reconciliation_hook(): void {
 }
 
 function student_enrollment_pages_for_enrollment(PDO $db,array $enrollment): array {
-    $q=$db->prepare("SELECT * FROM cms_pages WHERE activity_id=? AND access_level IN ('activity','enrolled') AND status!='archived' AND published_document_json IS NOT NULL ORDER BY locale,sort_order,id");
+    $q=$db->prepare("SELECT * FROM cms_pages WHERE activity_id=? AND access_level='activity' AND status!='archived' AND published_document_json IS NOT NULL ORDER BY locale,sort_order,id");
     $q->execute([(int)$enrollment['activity_id']]);
     return $q->fetchAll();
 }
