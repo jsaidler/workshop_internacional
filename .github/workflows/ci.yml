@@ -67,6 +67,7 @@ jobs:
           php tools/test-system-authority-boundaries.php
           php tools/test-read-purity-activity-templates.php
           php tools/test-activity-locales-page-hierarchy.php
+          php tools/test-pages-admin-ux.php
           php tools/test-cms-page-access.php
           php tools/test-cms-section-access.php
           php tools/test-material-lesson-sections.php
