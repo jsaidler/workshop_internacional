@@ -30,3 +30,5 @@ O template `Positivo direto` declara explicitamente `enrollment` para o formulá
 ## Regressão
 
 `tools/test-form-purpose-enrollment-authority.php` prova o backfill/idempotência e bloqueia o retorno de decisões operacionais baseadas em `form_key='registration'` nos caminhos de matrícula, lifecycle e respostas.
+
+As fixtures que exercitam setup do workshop, migração de conteúdo editorial do formulário e reconciliação de contas também executam ou representam explicitamente a migração de `purpose`. Isso mantém os testes fiéis ao schema pós-migração e impede que uma fixture antiga esconda dependências novas de autoridade.
