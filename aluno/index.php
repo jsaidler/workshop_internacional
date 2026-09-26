@@ -4,6 +4,10 @@ require __DIR__.'/../app/bootstrap.php';
 security_headers();student_private_headers();
 $db=database();student_account_reconcile_confirmed_registrations($db);$student=student_account_current($db);if(!$student){header('Location: /aluno/login.php?next=%2Faluno%2F',true,303);exit;}
 $enrollments=student_account_enrollments($db,(int)$student['id']);
+function student_dashboard_pages_for_enrollment(PDO $db,array $enrollment): array {
+    $q=$db->prepare("SELECT * FROM cms_pages WHERE activity_id=? AND access_level IN ('activity','enrolled') AND status!='archived' AND published_document_json IS NOT NULL ORDER BY locale,sort_order,id");
+    $q->execute([(int)$enrollment['activity_id']]);return $q->fetchAll();
+}
 student_shell_start('Área do aluno',null,$student);?>
 <p class="student-kicker">Área do aluno</p>
 <h1 class="student-title">Cursos e prática</h1>
@@ -11,7 +15,7 @@ student_shell_start('Área do aluno',null,$student);?>
 <?php if(!$enrollments):?>
   <div class="student-empty">Não há matrícula ativa vinculada a esta conta.</div>
 <?php else:?><section class="student-course-stack" aria-label="Cursos e materiais">
-  <?php foreach($enrollments as $enrollment):$activity=activity_by_id($db,(int)$enrollment['activity_id']);if(!$activity)continue;$pages=student_account_pages_for_enrollment($db,$enrollment);$releases=course_lesson_release_rows($db,(int)$enrollment['cohort_id'],(int)$enrollment['activity_id']);$released=array_values(array_filter($releases,static fn(array $lesson): bool=>!empty($lesson['released_at'])));?>
+  <?php foreach($enrollments as $enrollment):$activity=activity_by_id($db,(int)$enrollment['activity_id']);if(!$activity)continue;$pages=student_dashboard_pages_for_enrollment($db,$enrollment);$releases=course_lesson_release_rows($db,(int)$enrollment['cohort_id'],(int)$enrollment['activity_id']);$released=array_values(array_filter($releases,static fn(array $lesson): bool=>!empty($lesson['released_at'])));?>
     <article class="student-course-card">
       <header><div><span class="student-card-label"><?=h((string)$enrollment['cohort_title'])?></span><h2><?=h((string)$activity['public_title'])?></h2></div><span class="student-course-progress"><?=count($released)?>/<?=count($releases)?> aulas liberadas</span></header>
       <?php if($releases):?><div class="student-release-list" aria-label="Liberação das aulas"><?php foreach($releases as $lesson):?><span class="<?=$lesson['released_at']?'is-released':''?>"><b><?=h((string)$lesson['title'])?></b><small><?=$lesson['released_at']?'liberada':'aguardando'?></small></span><?php endforeach;?></div><?php endif;?>
