@@ -11,7 +11,7 @@ if(current_admin()){
     $pageId=(int)($_GET['page']??0);$cohortId=(int)($_GET['cohort']??0);$expires=(int)($_GET['expires']??0);$sig=trim((string)($_GET['sig']??''));
     if($pageId<1||$cohortId<1||$expires<1||$sig===''){http_response_code(404);exit;}
     $asset=student_library_media_authorize($db,$student,$uuid,$pageId,$cohortId,$expires,$sig)
-        ?:student_private_media_authorize($db,$student,$uuid,$pageId,$cohortId,$expires,$sig);
+        ?:student_material_legacy_media_authorize($db,$student,$uuid,$pageId,$cohortId,$expires,$sig);
 }
 if(!$asset){http_response_code(404);exit;}
 if(!empty($asset['_library'])){
