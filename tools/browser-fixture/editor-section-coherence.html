@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Section coherence fixture</title><link rel="stylesheet" href="/editor/cms-editor.css"><style>body{font-family:Arial,sans-serif;margin:0;padding:16px;display:grid;grid-template-columns:280px 1fr;gap:16px}#sections-list{min-height:180px}#page-frame{width:900px;height:600px;border:1px solid #bbb}#inspector{display:none}</style></head>
+<body>
+<div><div id="sections-list" class="sections-list"></div><p id="save-status">Rascunho</p><aside id="inspector"></aside></div>
+<iframe id="page-frame" title="Página em edição"></iframe>
+<script>
+const frame=document.querySelector('#page-frame');
+frame.srcdoc=`<!doctype html><html><body><main data-cms-page-main><div id="lesson-group"><section data-cms-section="alpha" data-cms-section-name="Alpha"><h2>Alpha</h2></section><section data-cms-section="beta" data-cms-section-name="Beta"><h2>Beta</h2></section></div><div id="other-group"><section data-cms-section="gamma" data-cms-section-name="Gamma"><h2>Gamma</h2></section></div></main><script>document.addEventListener('click',event=>{const section=event.target.closest('[data-cms-section]');if(!section)return;document.querySelectorAll('.cms-section-selected').forEach(node=>node.classList.remove('cms-section-selected'));section.classList.add('cms-section-selected')});<\/script></body></html>`;
+</script>
+<script src="/editor/cms-section-coherence.js"></script>
+</body>
+</html>
