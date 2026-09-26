@@ -127,8 +127,12 @@ function workshop_cms_setup_activity(PDO $db,int $activityId): void {
     cms_pages_seed($db,$activityId);
     $now=gmdate('c');
 
+    $interestForm=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_EN,'interest');
+    if($interestForm)cms_form_set_purpose($db,(int)$interestForm['id'],'interest');
+
     $form=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_PT_BR,'registration');
     if(!$form)$form=cms_form_create($db,$activityId,PUBLIC_LOCALE_PT_BR,'Inscrição — nova turma','registration','registration');
+    $form=cms_form_set_purpose($db,(int)$form['id'],'enrollment');
     $registrationSchema=workshop_registration_schema();
     $schemaJson=json_encode($registrationSchema,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
     $formRevision=max((int)$form['draft_revision'],(int)($form['published_revision']??0))+1;
