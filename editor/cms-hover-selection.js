@@ -61,7 +61,13 @@ function setHovered(next){
 }
 function bind(){
   const doc=d();if(!doc||doc===boundDoc)return;boundDoc=doc;layer=box=labelNode=null;hovered=null;ensureUi(doc);
-  doc.addEventListener('pointermove',event=>setHovered(targetFrom(event.target)),true);
+  const track=event=>setHovered(targetFrom(event.target));
+  // Mouse events are the compatibility baseline used by the editor and by automation;
+  // pointermove remains as an additional path for pen/touch-capable browsers.
+  doc.addEventListener('mouseover',track,true);
+  doc.addEventListener('mousemove',track,true);
+  doc.addEventListener('pointermove',track,true);
+  doc.addEventListener('mouseleave',()=>setHovered(null),true);
   doc.addEventListener('pointerleave',()=>setHovered(null),true);
   doc.addEventListener('scroll',schedule,true);doc.defaultView?.addEventListener('resize',schedule,{passive:true});
   doc.addEventListener('click',()=>setTimeout(schedule,0),true);
