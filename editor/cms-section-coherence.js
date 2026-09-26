@@ -117,4 +117,9 @@ hostObserver=new MutationObserver(schedule);
 hostObserver.observe(host,{childList:true,subtree:true,characterData:true});
 frame.addEventListener('load',()=>setTimeout(bindFrame,120));
 setTimeout(bindFrame,180);
+
+// Additional editor-only layers are loaded here so they do not enter the page document.
+if(!document.querySelector('script[data-cms-private-media-preview]')){
+  const script=document.createElement('script');script.src='/editor/cms-private-media-preview.js';script.dataset.cmsPrivateMediaPreview='1';document.head.append(script);
+}
 })();
