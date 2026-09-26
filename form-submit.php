@@ -20,12 +20,18 @@ $return=(string)($_POST['_return']??'');
 if($return===''||!str_starts_with($return,'/')){$activity=activity_by_id($db,(int)$page['activity_id']);$return=$activity?cms_page_url($activity,$page,$locale):'/';}
 $parts=parse_url($return);$returnPath=is_array($parts)&&isset($parts['path'])?(string)$parts['path']:'/';$returnQuery=is_array($parts)&&isset($parts['query'])?'?'.(string)$parts['query']:'';$return=$returnPath.$returnQuery;
 if($errors){$_SESSION['cms_form_flash'][$form['form_uuid']]=['values'=>$values,'errors'=>$errors];header('Location: '.$return.'#form-'.(int)$form['id'],true,303);exit;}
+$authenticatedEnrollmentStudent=null;
+if(cms_form_purpose($form)==='enrollment'){
+    $authenticatedEnrollmentStudent=current_student($db);
+    if($authenticatedEnrollmentStudent)student_enrollment_validate_authenticated_identity($db,$values,$authenticatedEnrollmentStudent);
+}
 try{
     $submissionUuid=cms_submission_save($db,$form,$schema,$values,(int)$page['id'],$locale,$return);
+    $submissionIdQuery=$db->prepare('SELECT id FROM cms_form_submissions WHERE submission_uuid=?');
+    $submissionIdQuery->execute([$submissionUuid]);
+    $submissionId=(int)$submissionIdQuery->fetchColumn();
+    if($submissionId>0&&$authenticatedEnrollmentStudent)student_enrollment_bind_authenticated_submission($db,$submissionId,$form,$values,$authenticatedEnrollmentStudent);
     try{
-        $submissionIdQuery=$db->prepare('SELECT id FROM cms_form_submissions WHERE submission_uuid=?');
-        $submissionIdQuery->execute([$submissionUuid]);
-        $submissionId=(int)$submissionIdQuery->fetchColumn();
         analytics_record_event($db,[
             'activity_id'=>(int)$form['activity_id'],
             'page_id'=>(int)$page['id'],
