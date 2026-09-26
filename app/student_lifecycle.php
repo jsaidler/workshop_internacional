@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__.'/form_purpose.php';
+
 function student_test_delete_owned(PDO $db,int $testId,int $studentId): void {
     $q=$db->prepare('SELECT id FROM student_tests WHERE id=? AND student_id=?');
     $q->execute([$testId,$studentId]);
