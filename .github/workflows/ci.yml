@@ -52,6 +52,7 @@ jobs:
           php tools/test-registration-success-payment.php
           php tools/test-student-area.php
           php tools/test-student-accounts.php
+          php tools/test-multi-course-enrollment.php
           php tools/test-student-workspace.php
           php tools/test-student-area-information-architecture.php
           php tools/test-student-mobile-experience.php
