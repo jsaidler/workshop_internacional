@@ -20,7 +20,7 @@ function current_student(PDO $db): ?array {
     if(!$user){unset($_SESSION['student']);return null;}$_SESSION['student']['last_activity']=$now;return $user;
 }
 function student_has_activity(PDO $db,int $studentId,int $activityId): bool {
-    $q=$db->prepare("SELECT 1 FROM student_enrollments WHERE student_id=? AND activity_id=? AND status='active'");$q->execute([$studentId,$activityId]);return (bool)$q->fetchColumn();
+    $q=$db->prepare("SELECT 1 FROM course_enrollments e JOIN course_cohorts c ON c.id=e.cohort_id WHERE e.student_id=? AND c.activity_id=? AND e.status='active' AND c.status!='archived' LIMIT 1");$q->execute([$studentId,$activityId]);return (bool)$q->fetchColumn();
 }
 function student_rate_key(string $email): string {
     $config=app_config();$ip=(string)($_SERVER['REMOTE_ADDR']??'');
@@ -41,7 +41,7 @@ function student_clear_login_attempts(PDO $db,string $email): void { $db->prepar
 function student_login(PDO $db,array $activity,string $email,string $password): bool {
     $email=student_normalize_email($email);if($email===''||student_login_blocked($db,$email))return false;
     $q=$db->prepare("SELECT * FROM student_users WHERE email=? AND status='active'");$q->execute([$email]);$user=$q->fetch()?:null;
-    if(!$user||!password_verify($password,(string)$user['password_hash'])||!student_has_activity($db,(int)$user['id'],(int)$activity['id'])){student_record_failed_login($db,$email);return false;}
+    if(!$user||!password_verify($password,(string)$user['password_hash'])){student_record_failed_login($db,$email);return false;}
     student_clear_login_attempts($db,$email);session_regenerate_id(true);$now=time();$_SESSION['student']=['id'=>(int)$user['id'],'email'=>(string)$user['email'],'name'=>(string)$user['name'],'issued_at'=>$now,'last_activity'=>$now];
     $db->prepare('UPDATE student_users SET last_login_at=?,updated_at=? WHERE id=?')->execute([utc_now(),utc_now(),(int)$user['id']]);return true;
 }
@@ -74,17 +74,18 @@ function student_admin_create_or_enroll(PDO $db,int $activityId,string $name,str
     $q=$db->prepare('SELECT * FROM student_users WHERE email=?');$q->execute([$email]);$user=$q->fetch()?:null;$generated=null;$now=utc_now();
     if(!$user){$password=$password!==null&&$password!==''?$password:student_random_password();if(!student_password_valid($password))throw new RuntimeException('password_too_short');$hash=password_hash($password,PASSWORD_DEFAULT);$db->prepare('INSERT INTO student_users(user_uuid,name,email,password_hash,status,must_change_password,created_at,updated_at) VALUES(?,?,?,?,\'active\',1,?,?)')->execute([student_uuid(),$name,$email,$hash,$now,$now]);$id=(int)$db->lastInsertId();$generated=$password;$q=$db->prepare('SELECT * FROM student_users WHERE id=?');$q->execute([$id]);$user=$q->fetch();}
     else{$id=(int)$user['id'];$db->prepare("UPDATE student_users SET name=?,status='active',updated_at=? WHERE id=?")->execute([$name,$now,$id]);}
-    $db->prepare("INSERT INTO student_enrollments(student_id,activity_id,status,created_at,updated_at) VALUES(?,?, 'active',?,?) ON CONFLICT(student_id,activity_id) DO UPDATE SET status='active',updated_at=excluded.updated_at")->execute([(int)$user['id'],$activityId,$now,$now]);
+    $cohort=course_default_cohort($db,$activityId,true);if(!$cohort)throw new RuntimeException('cohort_missing');$cohortId=(int)$cohort['id'];
+    $db->prepare("INSERT INTO course_enrollments(enrollment_uuid,student_id,cohort_id,source_submission_id,status,confirmed_at,created_at,updated_at) VALUES(?,?,?,NULL,'active',?,?,?) ON CONFLICT(student_id,cohort_id) DO UPDATE SET status='active',updated_at=excluded.updated_at")->execute([student_uuid(),(int)$user['id'],$cohortId,$now,$now,$now]);
     return ['student_id'=>(int)$user['id'],'generated_password'=>$generated];
 }
 function student_admin_reset_password(PDO $db,int $studentId): string {
     $password=student_random_password();$hash=password_hash($password,PASSWORD_DEFAULT);$db->prepare('UPDATE student_users SET password_hash=?,must_change_password=1,status=\'active\',updated_at=? WHERE id=?')->execute([$hash,utc_now(),$studentId]);return $password;
 }
 function student_admin_set_enrollment(PDO $db,int $studentId,int $activityId,string $status): void {
-    if(!in_array($status,['active','disabled'],true))throw new RuntimeException('invalid_status');$db->prepare('UPDATE student_enrollments SET status=?,updated_at=? WHERE student_id=? AND activity_id=?')->execute([$status,utc_now(),$studentId,$activityId]);
+    if(!in_array($status,['active','disabled'],true))throw new RuntimeException('invalid_status');$db->prepare('UPDATE course_enrollments SET status=?,updated_at=? WHERE student_id=? AND cohort_id IN (SELECT id FROM course_cohorts WHERE activity_id=?)')->execute([$status,utc_now(),$studentId,$activityId]);
 }
 function student_admin_list(PDO $db,int $activityId): array {
-    $q=$db->prepare('SELECT u.*,e.status AS enrollment_status,e.created_at AS enrolled_at FROM student_users u JOIN student_enrollments e ON e.student_id=u.id WHERE e.activity_id=? ORDER BY u.name COLLATE NOCASE,u.email COLLATE NOCASE');$q->execute([$activityId]);return $q->fetchAll();
+    $q=$db->prepare("SELECT u.*,CASE WHEN SUM(CASE WHEN e.status='active' THEN 1 ELSE 0 END)>0 THEN 'active' ELSE 'disabled' END AS enrollment_status,MIN(e.created_at) AS enrolled_at FROM student_users u JOIN course_enrollments e ON e.student_id=u.id JOIN course_cohorts c ON c.id=e.cohort_id WHERE c.activity_id=? GROUP BY u.id ORDER BY u.name COLLATE NOCASE,u.email COLLATE NOCASE");$q->execute([$activityId]);return $q->fetchAll();
 }
 function student_material_slug(string $value): string { return activity_slug($value); }
 function student_materials(PDO $db,int $activityId,?string $locale=null,bool $activeOnly=true): array {
