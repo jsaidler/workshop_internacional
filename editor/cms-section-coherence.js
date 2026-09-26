@@ -122,4 +122,7 @@ setTimeout(bindFrame,180);
 if(!document.querySelector('script[data-cms-private-media-preview]')){
   const script=document.createElement('script');script.src='/editor/cms-private-media-preview.js';script.dataset.cmsPrivateMediaPreview='1';document.head.append(script);
 }
+if(!document.querySelector('script[data-cms-hover-selection]')){
+  const script=document.createElement('script');script.src='/editor/cms-hover-selection.js';script.dataset.cmsHoverSelection='1';document.head.append(script);
+}
 })();
