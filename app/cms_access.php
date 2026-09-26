@@ -65,8 +65,21 @@ function cms_access_filter_html(PDO $db,array $activity,string $html,?array $use
     foreach(iterator_to_array($xpath->query('//*[@data-cms-section]')?:[]) as $node){if(!$node instanceof DOMElement)continue;$rule=cms_access_section_rule($node);if(cms_access_section_allowed($db,$activity,$rule,$user,$now))continue;$node->parentNode?->removeChild($node);}
     $root=$dom->getElementById('cms-access-root');$out='';if($root)foreach(iterator_to_array($root->childNodes) as $child)$out.=$dom->saveHTML($child);libxml_clear_errors();libxml_use_internal_errors($previous);return $out;
 }
+function cms_access_page_cohort_id(array $page): int {return (int)($page['access_cohort_id']??0);}
+function cms_access_set_page(PDO $db,array $page,string $access,?int $cohortId=null): array {
+    if($access==='enrolled')$access='activity';if(!in_array($access,cms_access_levels(),true))throw new RuntimeException('Acesso inválido.');
+    $cohortId=(int)($cohortId??0);
+    if($access==='cohort'){
+        if($cohortId<1)throw new RuntimeException('Escolha a turma que pode acessar esta página.');
+        $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==(int)$page['activity_id']||(string)$cohort['status']==='archived')throw new RuntimeException('Turma inválida para esta página.');
+    }else $cohortId=0;
+    $db->prepare('UPDATE cms_pages SET access_level=?,access_cohort_id=?,show_in_nav=CASE WHEN ?="public" THEN show_in_nav ELSE 0 END,updated_at=? WHERE id=?')->execute([$access,$cohortId>0?$cohortId:null,$access,utc_now(),(int)$page['id']]);
+    return cms_page_by_id($db,(int)$page['id'])??array_merge($page,['access_level'=>$access,'access_cohort_id'=>$cohortId?:null]);
+}
 function cms_access_page_allowed(PDO $db,array $activity,array $page,?array $user=null): bool {
     $access=(string)($page['access_level']??'public');if($access==='public')return true;if(!$user)return false;if($access==='authenticated')return true;
-    if(in_array($access,['activity','enrolled'],true))return (bool)cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id']);return false;
+    if(in_array($access,['activity','enrolled'],true))return (bool)cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id']);
+    if($access==='cohort'){ $cohortId=cms_access_page_cohort_id($page);return $cohortId>0&&(bool)cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id'],$cohortId); }
+    return false;
 }
-function cms_access_page_label(string $access): string {return match($access){'authenticated'=>'Usuários autenticados','activity','enrolled'=>'Participantes do curso',default=>'Público'};}
+function cms_access_page_label(string $access): string {return match($access){'authenticated'=>'Usuários autenticados','activity','enrolled'=>'Participantes do curso','cohort'=>'Turma específica',default=>'Público'};}
