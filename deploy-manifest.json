@@ -1,0 +1,1219 @@
+{
+    "schema": 1,
+    "sourceSha": "5d0b26bf3ad1d8435f0e175002d5e8261e5c0811",
+    "generatedAt": "2026-09-26T05:34:06+00:00",
+    "files": {
+        ".htaccess": {
+            "sha256": "c7313f7e46a21b5fe5a3982853cbc0cac3350e48349f595979952d47f20c62e1",
+            "bytes": 736
+        },
+        "admin/activities.php": {
+            "sha256": "e0e0218865852bed796a5f4fdc0da4500d37d6ddab3c2e40a8ff720d621c21ff",
+            "bytes": 4712
+        },
+        "admin/admin.css": {
+            "sha256": "d71190913151315a5a03ab9ae2edda5ad8e5f0ebfe8166d49c296409c98028d4",
+            "bytes": 16012
+        },
+        "admin/analytics.php": {
+            "sha256": "eef47474cef1a0697effad9ced34dbc12f817edf3bc9ac53ac08ad80048e59be",
+            "bytes": 14750
+        },
+        "admin/api/blocks.php": {
+            "sha256": "79e6088f9ff4d8d8b8f0236f535aa586f42f9d54745eec0c64da6ee4d6dce6ae",
+            "bytes": 1988
+        },
+        "admin/api/cms-access-options.php": {
+            "sha256": "b2d420acd51324492198c9297f0ecf974219946d49b538abba87703cefea352c",
+            "bytes": 864
+        },
+        "admin/api/cms-form-load.php": {
+            "sha256": "285cf6a12ecd84f09057f442eac4c373fd06ec9b7acb16bde2d61d765d6ddc69",
+            "bytes": 669
+        },
+        "admin/api/cms-form-publish.php": {
+            "sha256": "e7ac88a528cf5002b1b54e5dd1f05d5022490e4e0d4bd4444a7ab53d1268d218",
+            "bytes": 487
+        },
+        "admin/api/cms-form-save.php": {
+            "sha256": "3bd82646a488419a6808d7d62ba2661424a6d46b7e9d2a695c9636ef421cb5b9",
+            "bytes": 872
+        },
+        "admin/api/cms-page-access-save.php": {
+            "sha256": "d9fb11ed2f3bbf3d0b54681b010876469ed95f4f74da6c8b06d6d8cd3b73bd4b",
+            "bytes": 779
+        },
+        "admin/api/cms-page-load.php": {
+            "sha256": "43667920015644f0b3478def4e25bab8784019d4ee989ecc6ce2fcf0c0f59f1a",
+            "bytes": 1624
+        },
+        "admin/api/cms-page-publish.php": {
+            "sha256": "f75a5d9d61f98bef260ffd6637a3b9219dc1a9daaec8bd4b6242927bd69ddc87",
+            "bytes": 537
+        },
+        "admin/api/cms-page-save.php": {
+            "sha256": "b7ff788c11456f242322d0090d2c94c6052ceb448101441f15bc85a790367572",
+            "bytes": 1010
+        },
+        "admin/api/content-load.php": {
+            "sha256": "285266ab5030eb224d42d5b77ff5a1d69a42c39ec2b24a6395bc21f3f2c3b4e6",
+            "bytes": 431
+        },
+        "admin/api/content-publish.php": {
+            "sha256": "5cbbb4d71c0cfabcc38f1bba39a49c1dd815b394997580ca3c8c7479276dea70",
+            "bytes": 332
+        },
+        "admin/api/content-restore.php": {
+            "sha256": "a8131ede871f1d0a880736abb6bfcbf740c4be7ba8b67bcba24815b39a4b5f72",
+            "bytes": 388
+        },
+        "admin/api/content-save.php": {
+            "sha256": "eacba17a1e04cf81e9449084f2fd19fe065b782c3aa23e53958587262eb300e5",
+            "bytes": 553
+        },
+        "admin/api/course-lesson-release.php": {
+            "sha256": "9a4ba4f16dc2b8e7754b1ca56f3b69ea32524feaa7169a19a7e98133f1dbad95",
+            "bytes": 1421
+        },
+        "admin/api/editor-context.php": {
+            "sha256": "7eaf2ea7a8dbd28d1853413a604c165bc746d4a40df991f7f496ac80a33e0bd7",
+            "bytes": 1771
+        },
+        "admin/api/media-archive.php": {
+            "sha256": "8a811fdaf18e084942fc0541ba114992de11229273254c2c6b6c0993eb454c50",
+            "bytes": 883
+        },
+        "admin/api/media-bulk.php": {
+            "sha256": "6bcaf4b06e93e5b230b328f1445253da2172d7b05745cf5b7dc842b4ac1035c2",
+            "bytes": 1322
+        },
+        "admin/api/media-delete.php": {
+            "sha256": "909f1e897b9aeef5b1a0ffcdf95e49c698862c2a127b5799d4c0f220f5a73e29",
+            "bytes": 884
+        },
+        "admin/api/media-detail.php": {
+            "sha256": "943992c94fdde7d43f2b9954fd0f39e63bbaae6abe257340e8ac2826263466fd",
+            "bytes": 715
+        },
+        "admin/api/media-list.php": {
+            "sha256": "a5430e9091766bbcf48f2f31f54b1e2b5432cba2fba408d8678689f92aefd90c",
+            "bytes": 501
+        },
+        "admin/api/media-poster.php": {
+            "sha256": "3d1e90449892a4be04009b1281e521a8bb3b4f4f7923e855aacab08cc7f1b396",
+            "bytes": 595
+        },
+        "admin/api/media-regenerate.php": {
+            "sha256": "04c8fb9ff93218049d8ed2a38cda63776ac5231d68d57c1a24c8ed17b655f7b0",
+            "bytes": 949
+        },
+        "admin/api/media-update.php": {
+            "sha256": "5b06e7b878c1a49955c0cdf9ac44946f54b36a658b31aa696e6a616cc2812f83",
+            "bytes": 866
+        },
+        "admin/api/media-upload.php": {
+            "sha256": "6c6ea0f22455bc34cd46d44020fe3cdf0fcd0436cc8c1023574b6137d1a5c507",
+            "bytes": 1099
+        },
+        "admin/api/media-usage.php": {
+            "sha256": "b935fa7e6390372ef808a5bb1b8ef1f5756f865be5a43727f169e08f4ff180a2",
+            "bytes": 530
+        },
+        "admin/api/media-version-activate.php": {
+            "sha256": "c4ae848bafa40b55c570f46c3246a6ea3efa71a1b5bcc5207510704e6ff46d07",
+            "bytes": 1436
+        },
+        "admin/api/media-visibility.php": {
+            "sha256": "1e5f84caa67ec038051b7ae5135a7875a7bd1a8f2afff092636ec322624150ae",
+            "bytes": 804
+        },
+        "admin/api/student-test-detail.php": {
+            "sha256": "b8661be1ae3fd5eaabbd454434eaeea262869e5bf801483791ede17d75e09832",
+            "bytes": 388
+        },
+        "admin/blocks.php": {
+            "sha256": "714ad588cd8276d070b633fa10648e3dc0f7da540745238720e454c60382b1d5",
+            "bytes": 3237
+        },
+        "admin/cms-admin.css": {
+            "sha256": "3a33540e31aaf2dfd7d64165308eeef0b0f68cdb1b974e5f63d785791d54f641",
+            "bytes": 6399
+        },
+        "admin/design.php": {
+            "sha256": "646f7a574257e9b568b9fae61638059d57a3c918674bba50ef1e8284f7d6bb03",
+            "bytes": 8677
+        },
+        "admin/export.php": {
+            "sha256": "c659cce872c4df374a5748920d98c34399ac281ba1fb074498daec978361990c",
+            "bytes": 1197
+        },
+        "admin/forms.php": {
+            "sha256": "71d9b544188cbe8a5b2dc0312a5b9bf520d99b344b206e70e78fbeaade19bf4d",
+            "bytes": 11228
+        },
+        "admin/index.php": {
+            "sha256": "e825f188503a113341cc3c270aaf38220dcada21ed5fb59e5801eadbc109a28d",
+            "bytes": 7940
+        },
+        "admin/interests.php": {
+            "sha256": "35ac3579ea29bf6a24b1e3a5610915f2c24f9982cba2338f6def0807dafc0023",
+            "bytes": 8436
+        },
+        "admin/login.php": {
+            "sha256": "aff2972a10161b8395824d0b17951accc1032354742f88c5d4d9a813fe6ec604",
+            "bytes": 1171
+        },
+        "admin/logout.php": {
+            "sha256": "df8cc5cace929eeb95e368cc61b4b0867fd27fda4bf488b6d1d724b7278d0980",
+            "bytes": 210
+        },
+        "admin/media-private.php": {
+            "sha256": "4b4734dc5af3845911d257e69736cf9e598663600a596dcfaddd7061165ba6d9",
+            "bytes": 975
+        },
+        "admin/media.php": {
+            "sha256": "4c53480517ff176ac803537076119e3c5ec209ab410e93302c310fdb00e01bdd",
+            "bytes": 2858
+        },
+        "admin/page-history.php": {
+            "sha256": "0db771b73dacffdc27df0af7757c2082f0e68f79e920f1b0370cd725ecca45c7",
+            "bytes": 3410
+        },
+        "admin/pages.php": {
+            "sha256": "38aa852708177652084865bb11f830c81d015b9f85d67de6f7adc75a5428e807",
+            "bytes": 8636
+        },
+        "admin/preview.php": {
+            "sha256": "2c8dc3ab1c1e53a54f13bef6a778d5a160f5195011b4e3a84c8dfac36f9ecbd2",
+            "bytes": 965
+        },
+        "admin/pro-admin.css": {
+            "sha256": "455a1a878feb4a59ee9fbefe8396c15a2854457b9eccfce443d34e6be9c03980",
+            "bytes": 5067
+        },
+        "admin/seo.php": {
+            "sha256": "191c7f9de209a772f1436f2a856a47aa512292a8b03d5fef90461b33af9da733",
+            "bytes": 6903
+        },
+        "admin/setup.php": {
+            "sha256": "184e7ac586afa7fafc22a83be0871937525b1dce27b4775dde0e40b7da6e8441",
+            "bytes": 316
+        },
+        "admin/site.php": {
+            "sha256": "24539b6b6fdbec67c5282330468db0ef5360f439052567e8c0f57fc8794af1f1",
+            "bytes": 11255
+        },
+        "admin/student-area-legacy.php": {
+            "sha256": "a688b4928b67b2307c887eb1375c906479af94202b6ecd7ea99150046f6b378e",
+            "bytes": 39690
+        },
+        "admin/student-area.php": {
+            "sha256": "0d55f89dfdc2fb53ab3537ad0cd88e97b40afbee90d373da1d7f48a601ed67c2",
+            "bytes": 1405
+        },
+        "admin/student-import-csv.php": {
+            "sha256": "fd91cd7f444a6105452d4dadb762930d2ab3c8e65161e2ee433928a87da1f6d5",
+            "bytes": 1587
+        },
+        "admin/student-operations.php": {
+            "sha256": "4b57c0728b6540d3c5d416eb24eb6fded916ca09d7c8d303e9d3881c35823229",
+            "bytes": 599
+        },
+        "admin/student-test-media.php": {
+            "sha256": "3e31469d1ae89659e64d7fa050cee73798d559f2779e84ddd91c3d4b15f50198",
+            "bytes": 945
+        },
+        "admin/submissions-export.php": {
+            "sha256": "99ae750fd21f3cde1316cb23904ad8b6957c1f162058971adba9fe83388b9fec",
+            "bytes": 1491
+        },
+        "admin/submissions.php": {
+            "sha256": "7b34baf9acfa2c7ff7dede703aebde3fde78d42b83be1aa5f96c9747859ee9bd",
+            "bytes": 15127
+        },
+        "admin/system.php": {
+            "sha256": "0168a27c37208ef2ae4bfe3d576f6bc2c9cabe8bb778f89a9757d35df26731eb",
+            "bytes": 8599
+        },
+        "admin/workshop-values.php": {
+            "sha256": "699f5fa216f043a825665884873373a56a59e35b97967706c6bada6b69df3e3f",
+            "bytes": 2981
+        },
+        "aluno/excluir-teste.php": {
+            "sha256": "4378b51a115857abd348dff4bc2da55c0aaa9921d49f95d3e72629fef3e27aff",
+            "bytes": 2169
+        },
+        "aluno/index.php": {
+            "sha256": "c9b90681874ab907f8c2857ed10ff7d2d901a1525d98d537b03f1f6d8e6be491",
+            "bytes": 2783
+        },
+        "aluno/login.php": {
+            "sha256": "537e4392d716c5ee196f8af0d8bd12b3aacd5e67eb04e242921d1c7a299fc197",
+            "bytes": 3660
+        },
+        "aluno/logout.php": {
+            "sha256": "27bdf475743c864ea2fb0dfa1abedcd495f4789c0efa2f69ccc32393af605ebc",
+            "bytes": 344
+        },
+        "aluno/material.php": {
+            "sha256": "22bacba4c5edd7f4691357de5fe7ba8989f1ebd51e234960a51c153112429d62",
+            "bytes": 142
+        },
+        "aluno/media.php": {
+            "sha256": "451def74d6db4e57d7a1d4fdc81eafa52783af4232afc56752ddbce8a30ac7ea",
+            "bytes": 1752
+        },
+        "aluno/perfil.php": {
+            "sha256": "92d084c8e3e07ab923e80f689f30860b6530e34a02bb48334961f485213c518d",
+            "bytes": 2989
+        },
+        "aluno/senha.php": {
+            "sha256": "1c2ec0b928fe8f01fb04899adca525e4a31267069ec526e86634252f458fd722",
+            "bytes": 2958
+        },
+        "aluno/teste-compartilhado.php": {
+            "sha256": "bc9f5735a723b33eb6797ae4d5db3bceecf291c950aa75c03c194c9fc0772385",
+            "bytes": 4671
+        },
+        "aluno/teste-media.php": {
+            "sha256": "b71d61a9a8dfd15c386c59068a8793df47c824c5f00afd36547c3646ef760ebf",
+            "bytes": 1011
+        },
+        "aluno/teste.php": {
+            "sha256": "9047d8f6f555aeee7c0168bf4e94dddb3f31ce170304a96b5af932153300b625",
+            "bytes": 17524
+        },
+        "aluno/testes.php": {
+            "sha256": "33aa13b08641b9a59154c2f61f99b9dfb97c506ed5676f0ff311ffa9e0721e26",
+            "bytes": 6377
+        },
+        "aluno/visibilidade-teste.php": {
+            "sha256": "a973f09d9e3ca5fdc8d1cf9b338dc1ed94649dad6d9f6aec5bbbee6d8fc6c399",
+            "bytes": 895
+        },
+        "app/activity_locales.php": {
+            "sha256": "3fee39fce67103694b9330c11b9688bec09a0218ede714a213f3b4d23870ca33",
+            "bytes": 2648
+        },
+        "app/activity_repository.php": {
+            "sha256": "2457aff9327838967a0f0ed7f683af4842bafd82f6ae1c00b04e7e10aa6bba53",
+            "bytes": 7007
+        },
+        "app/admin_shell.php": {
+            "sha256": "3be258582789d908bbe7b2f7f7fd32177898025b30163994ace52d79c562ba54",
+            "bytes": 7424
+        },
+        "app/analytics_repository.php": {
+            "sha256": "5799eece6e39aaeca1678be7b5bd65852df220658bc5a2a60455e105fdcb304a",
+            "bytes": 9568
+        },
+        "app/auth.php": {
+            "sha256": "b8757e04b47bc3a961a003ffb85a93e81a03d250160ffb94245454849449a3c3",
+            "bytes": 681
+        },
+        "app/bootstrap.php": {
+            "sha256": "c88d038afbfd0cee22c2a97cbb1f907d5b68e16d9a8b31c7d92a2620c7ca5d8c",
+            "bytes": 1326
+        },
+        "app/brand.php": {
+            "sha256": "24f8df1d5ea787d0c8ffe237cec1e656300291152bf121043741be663a6931bd",
+            "bytes": 113
+        },
+        "app/cms_access.php": {
+            "sha256": "394e85cfdf4191699f0b8170fa828d739d24f56033e3a6648720b86097fca920",
+            "bytes": 6849
+        },
+        "app/cms_blocks.php": {
+            "sha256": "ae6d20f1f2b50d9459386865195a650f25fde16446db98101c6c834dae0bd92b",
+            "bytes": 2775
+        },
+        "app/cms_discovery.php": {
+            "sha256": "0a46108a95bb615fddb71cfba658635e8b7a87fc2ab6fb3fd05dd90615e55a08",
+            "bytes": 3521
+        },
+        "app/cms_forms.php": {
+            "sha256": "0badeec6ceea420bcfbaa8b2057564baac644882a3ada1b3dbfd1c4188667e61",
+            "bytes": 24069
+        },
+        "app/cms_media_video.php": {
+            "sha256": "140ccd0bf8d44d00cf9f3622493c9fd1e34f8ffa3b7671691537e71a2f5a92e8",
+            "bytes": 2499
+        },
+        "app/cms_page_structure.php": {
+            "sha256": "bb72a2d860c7171fc87000e8372a60cad6510b18ccb0c4e7189ebd2fbf71da0e",
+            "bytes": 6214
+        },
+        "app/cms_pages.php": {
+            "sha256": "feeeca23930443871f1dba6e50da9db5fe92e09e4ee63c72ee99643356335fdf",
+            "bytes": 29230
+        },
+        "app/cms_renderer.php": {
+            "sha256": "f0e2661bfc340b87357d85a9068364f787e2eb830a49f988f1cb1cb54e754b55",
+            "bytes": 12556
+        },
+        "app/cms_seo.php": {
+            "sha256": "b669222d8013bdf1914ded6797670fb480c4993815d8de69533eeb2847dac9fc",
+            "bytes": 3325
+        },
+        "app/cms_settings.php": {
+            "sha256": "c28089c095830bdcacb72090f9c456361497c4ac43337e198e87501951ff17bd",
+            "bytes": 17838
+        },
+        "app/config.php": {
+            "sha256": "ff2ec5bf5f909836df9728d96b394e58afccda02a8425d3ecab6399cfae88f23",
+            "bytes": 511
+        },
+        "app/content/content_repository.php": {
+            "sha256": "be8ad46c9895be017c0fcd7e833d6ca2a6101d3d67cfbc7e7c6a0b95d4bf7861",
+            "bytes": 1137
+        },
+        "app/content/content_response.php": {
+            "sha256": "ad9025633962a1fd6c895cf96cebc3f40409a92cb4fb3803b031db460e2b5cb2",
+            "bytes": 982
+        },
+        "app/content/content_service.php": {
+            "sha256": "e1305442d54d01695d6053b27791228250799e1cef88ede27e3f3a0cbdc69f27",
+            "bytes": 3250
+        },
+        "app/content/content_validator.php": {
+            "sha256": "e41f08bf94eeb56c0824dc1c6672414b712d262f7f21ae2aabc87905059e736a",
+            "bytes": 5268
+        },
+        "app/csrf.php": {
+            "sha256": "a0f76da800e61daf000a7dcea0373c62944d460a8b5740f727d705b247e661fd",
+            "bytes": 264
+        },
+        "app/database.php": {
+            "sha256": "901a88af51d5a559958a39ce79b0846fd7e18dfb0b036152b07368de277fc3bd",
+            "bytes": 2067
+        },
+        "app/form_definition.php": {
+            "sha256": "0996e99ed5d93115a4099e651bdd8ce587844d5322e12297ced6a8696037f20b",
+            "bytes": 1668
+        },
+        "app/form_validator.php": {
+            "sha256": "0a29baab0acecb3799e3729b941eb588eb6836b66af8d0eb6dcc0a9b657966f1",
+            "bytes": 3176
+        },
+        "app/form_workflow.php": {
+            "sha256": "b5e75f94ff6dc4f1f3146f2559534f09fe2aee789f537a24cf5f264da6f25386",
+            "bytes": 6885
+        },
+        "app/installation.php": {
+            "sha256": "62a2976fc4917a5fbaa59e1ba7e3a7f6cf5735d42b279561463840ec8bcfe4e7",
+            "bytes": 1053
+        },
+        "app/interest_presentation.php": {
+            "sha256": "7e2c50ffba853177b4d8e457d97dca8ddb95697bd1c213d035c7057b869fe22a",
+            "bytes": 2799
+        },
+        "app/interest_repository.php": {
+            "sha256": "66f82c80f8034e269d7898335ad76b091d3bdcb9500cdd36a89ff9d87ec5ec89",
+            "bytes": 1947
+        },
+        "app/media_admin_service.php": {
+            "sha256": "18b12b2c32aac7cc5273f4f0914fee89394ec9d88b261f5b581c14c1df85a190",
+            "bytes": 9103
+        },
+        "app/media_detail_service.php": {
+            "sha256": "4f6d9b4b93ee5913d10022ad2af59e752648e652618fad8911d22a524dae411e",
+            "bytes": 3517
+        },
+        "app/media_list_service.php": {
+            "sha256": "314de13545148c9cdea030df7e5bc93e626eb3e3c29d48609a763150771d31fa",
+            "bytes": 6531
+        },
+        "app/media_maintenance.php": {
+            "sha256": "a49678ead5e2af222772f5423d514df079a028eb29ec478ac4e3ab1b6d382d83",
+            "bytes": 12391
+        },
+        "app/media_privacy.php": {
+            "sha256": "4bd410bd1af03197e4d418f36cf1a5d769031cb69cca5e011b04d61339759c2a",
+            "bytes": 8326
+        },
+        "app/media_service.php": {
+            "sha256": "07246d37fb598c7a1397e6cc25416761913f84eb260d75ebb9512e97d7f73e08",
+            "bytes": 27723
+        },
+        "app/public_content.php": {
+            "sha256": "7758837dac007414c3e64311e8a0290225450038c211f42affd4368f8efb74d3",
+            "bytes": 532
+        },
+        "app/public_errors.php": {
+            "sha256": "e74a322610a881d2460405e29b94011202194797e80977170663f903700fbb46",
+            "bytes": 2290
+        },
+        "app/public_locale.php": {
+            "sha256": "4605eefab42f5e66e1e80a3fbdf29ab8e4cd8bcbb2346444956d8fb2b977756f",
+            "bytes": 16367
+        },
+        "app/response.php": {
+            "sha256": "b6cb12b334cd950e9a791d3e311e9dfff1854205fab10b92acc8e49c00700994",
+            "bytes": 668
+        },
+        "app/student_accounts.php": {
+            "sha256": "a31d91e2b83d854432e5bd275a0ddf72a5d632fbc2acc7da24457f01f80903b2",
+            "bytes": 34633
+        },
+        "app/student_auth.php": {
+            "sha256": "e2211568868e3b6068d1f73ab7acca14c2b1ae3f2a5273b0fe33dd6457ae455e",
+            "bytes": 14580
+        },
+        "app/student_lifecycle.php": {
+            "sha256": "d56ba0a8b331e63ef971c9e3f338758c226edc70434f4dd286976319afff5a84",
+            "bytes": 2421
+        },
+        "app/student_material.php": {
+            "sha256": "5e81daefcd22989bd64d2e03ca556a20438812bb1b5b5b0130d97ac974240aba",
+            "bytes": 3591
+        },
+        "app/student_sharing.php": {
+            "sha256": "7eed07aa6935f6eb876c68cfaf8ad8181547425714a9e5d29b8c38996c5e5107",
+            "bytes": 2993
+        },
+        "app/student_shell.php": {
+            "sha256": "517b703ca8502614aa2a9f64ffbe70c4d6d9e5cb0028cc1d03d2bff9b50f6337",
+            "bytes": 3231
+        },
+        "app/student_test_mobile.php": {
+            "sha256": "56add2e4af795e86e0dc1d83df166a7e6b6a223d2823def6eb68d76070c32349",
+            "bytes": 5076
+        },
+        "app/student_workspace.php": {
+            "sha256": "6874ac1629cd606501c8aa27aab45646e7681a73df221ad7c5b9a179c191937c",
+            "bytes": 26360
+        },
+        "app/system_health.php": {
+            "sha256": "465242ae3dd8d2540613d17e9b325b0bb07e074701f3c47dedb6b849163b34e1",
+            "bytes": 4366
+        },
+        "app/update_restore.php": {
+            "sha256": "bb48d2b95233fbdc0dcea1478147ee7b68c5da2a31f052f10e3148c7001924ba",
+            "bytes": 5324
+        },
+        "app/update_service.php": {
+            "sha256": "374af5fb383fa0008b3afe502b2db06f026fde7b4691c0c3179b220580a56353",
+            "bytes": 13451
+        },
+        "app/workshop_cms_setup.php": {
+            "sha256": "9a4d5eae3807c13af66caae288808c9fe6f35791e8b10e6bce5adf14557559c9",
+            "bytes": 11698
+        },
+        "app/workshop_copy_refinements.php": {
+            "sha256": "8dd6360771a62606e391a15104418b83f8bd5232b28685363c183f84da3b7ec6",
+            "bytes": 2669
+        },
+        "app/workshop_registration_content.php": {
+            "sha256": "9cd578df7f731c0c5d756f86e7697258aeb10146d8d15e1a18ffc269b71e9524",
+            "bytes": 9161
+        },
+        "app/workshop_settings.php": {
+            "sha256": "39ccc0f93329a6ecd34d994b5936499a1c57fe7177217da782d537ca5a2ed007",
+            "bytes": 3128
+        },
+        "assets/admin-data-ux.css": {
+            "sha256": "6a52fd9721fcbd89bb16bad3d7c4b1f892d230c7879101a4bed3630b4a2f23f0",
+            "bytes": 4148
+        },
+        "assets/admin-form-ux.css": {
+            "sha256": "c625a6f9f3084ca4f7aae69f21859b360d6d59a5d19db87de4da9e11e9948735",
+            "bytes": 3470
+        },
+        "assets/admin-inbox.css": {
+            "sha256": "88dc1b05fc2691ceb486642170241160e4f57b7cd9a6a83ebb2180acec64ed78",
+            "bytes": 6562
+        },
+        "assets/admin-media-maintenance.css": {
+            "sha256": "97481cbde95467787e4763ea246938fe92e2f3bae8610903796127c591fd9acd",
+            "bytes": 1731
+        },
+        "assets/admin-media-maintenance.js": {
+            "sha256": "1f0bc25fecf819f5b0764d3c22e11c2fe89b52dd588da431e0cd9ce49d8b7559",
+            "bytes": 6227
+        },
+        "assets/admin-media-privacy.js": {
+            "sha256": "c703933697a3c869040e26997006067f0b2de3f646d7928374c2eeb02d10fe96",
+            "bytes": 2680
+        },
+        "assets/admin-media-task.css": {
+            "sha256": "84a8767bfde4164cb0d1d754c6ff011fbda23e6c3ae7125372d1a49e59fb639e",
+            "bytes": 4279
+        },
+        "assets/admin-media-task.js": {
+            "sha256": "28a660a30c5d340d3db1a09d20ca9792c42524269af1f72ea2a403696a127472",
+            "bytes": 1533
+        },
+        "assets/admin-media.js": {
+            "sha256": "7aa48960c23ff1e605b1088a73ab4e2ae36a13d7ddfe68f12d98cae59e3283ad",
+            "bytes": 14158
+        },
+        "assets/admin-registration.css": {
+            "sha256": "8f5bd1f14307b68f912f58318d0bca67e9a97a3c4ab1c32e5c63c6d2410f67c2",
+            "bytes": 4041
+        },
+        "assets/admin-ux-v2.css": {
+            "sha256": "739a57d213ff04014c260dec25ccff8c472876e116f647d9ca22772478a23bdf",
+            "bytes": 11961
+        },
+        "assets/admin-ux-v2.js": {
+            "sha256": "74d6804357062e0f1c51e8ca661e5c83730333c66c685f08c6958e9973fc9249",
+            "bytes": 3512
+        },
+        "assets/admin-ux-v3.css": {
+            "sha256": "fd7964a588480064cc137eb24183a724ad235876748f1344875472717282dcb1",
+            "bytes": 16250
+        },
+        "assets/admin.js": {
+            "sha256": "ba255dda341236ad45caa59ebbcf79523d760414e00883b35b40ffd67f5af496",
+            "bytes": 7389
+        },
+        "assets/cms-content-layout.css": {
+            "sha256": "aeb43a19cab0be498c12458706d7847b58b39f56d3ff5edfd9846d4a10659b32",
+            "bytes": 16620
+        },
+        "assets/cms-errors.css": {
+            "sha256": "2dc0f52771949b2a08e87852a11b3643cb65e151c142b2a12abd3298971c7f8c",
+            "bytes": 1260
+        },
+        "assets/cms-header.css": {
+            "sha256": "6422f8ebd2b5b983ad870b6d4aa7e951677d8761ae01801d424413943f76e017",
+            "bytes": 3229
+        },
+        "assets/cms-pro.css": {
+            "sha256": "6eea1d84dfe61899808c3150d52c740f1fd1211bbbc474ed45b6b4d86ecc6f68",
+            "bytes": 14891
+        },
+        "assets/cms-responsive.css": {
+            "sha256": "d4c92e16fdd27e829b669f4bb3e5aab6b46de64984c42a7d4059d47f379b9b3e",
+            "bytes": 14157
+        },
+        "assets/cms-study.css": {
+            "sha256": "9a956c9406108d0f28fc6ce9b3153214bf75073d1878675dc1769be9f9a10818",
+            "bytes": 16646
+        },
+        "assets/cms-ui-refinements.css": {
+            "sha256": "98c18285a557bf79b070b60792cb16aa12b71382aab63143f785a3fd035ed4ea",
+            "bytes": 21857
+        },
+        "assets/cms-v3.css": {
+            "sha256": "28d7154b1d04c5b515cf0aa5670f5de6c3a096a0a4f0cee0773109d133f829af",
+            "bytes": 1562
+        },
+        "assets/cms.css": {
+            "sha256": "bdc011ac08d0fd6dc8cb8b8da59ca8d01b86abd898826c602b54fe52bbbbaf99",
+            "bytes": 8899
+        },
+        "assets/conversion-bar.css": {
+            "sha256": "0cf3042a2837519ce2fa3b7b0a046cc2c8a037c4cb8fdefddd2bfe5545c72f6d",
+            "bytes": 2004
+        },
+        "assets/design-admin.js": {
+            "sha256": "4c900da296491459f3802134d35d3e7c8c583de62b7339f37fc84303c4941f53",
+            "bytes": 5322
+        },
+        "assets/fonts/saira-extra-condensed/OFL.txt": {
+            "sha256": "0e2ccc5da1dd979f08ba82bca2fb61592506a1e58d3cbfc26d904f0db71bd812",
+            "bytes": 4403
+        },
+        "assets/fonts/saira-extra-condensed/SairaExtraCondensed-Medium.woff2": {
+            "sha256": "1f76bf043099e05a57926ee6ff43d93210cd22e1ac662669c75fe77a40a8074e",
+            "bytes": 34616
+        },
+        "assets/fonts/saira-extra-condensed/SairaExtraCondensed-Regular.woff2": {
+            "sha256": "2825c620716a13cf424da1991b8045b866eb9deb4f1765bed2d329a620241389",
+            "bytes": 34348
+        },
+        "assets/fonts/saira-extra-condensed/SairaExtraCondensed-SemiBold.woff2": {
+            "sha256": "d305dc6d7a40d7aa02a9d44782438d3e8545502b22c01e39f7b20e4e7c456fa8",
+            "bytes": 34776
+        },
+        "assets/forms-admin.js": {
+            "sha256": "4a2b7d0423b0dc20846b18274efa2e4175505a2e88569d659a8f48f318a45443",
+            "bytes": 15284
+        },
+        "assets/media/hero-medusa.webp": {
+            "sha256": "8d489f446e18b789f3bcc92601e71dfff2af177ac38cc4bd95765e373b9ef7ad",
+            "bytes": 139014
+        },
+        "assets/media/joao-portrait.webp": {
+            "sha256": "60112ff6f420bdb94a91844a7d492471f0752526036ab16c55ea3f5ef06efd9e",
+            "bytes": 90402
+        },
+        "assets/media/nina-poster.webp": {
+            "sha256": "66f66c82aa7e841d736bfad14928029d2a3605f5717436af105ac0a66f84f43f",
+            "bytes": 148744
+        },
+        "assets/media/nina-preview.mp4": {
+            "sha256": "e78edbd50c6cf14447744e98e57a337f6388b4ba08fab6782ee8276b77e12f68",
+            "bytes": 819069
+        },
+        "assets/media/pix-workshop.svg": {
+            "sha256": "d5897173419ab09d53d4fff36b2cb283559eb3254fbe549431024980089df63c",
+            "bytes": 7372
+        },
+        "assets/modelo-importacao-alunos.csv": {
+            "sha256": "a29c80b3859c83f11f9c69fa628d682a91d981a3ed60e1af0e80e58d4c32a6bd",
+            "bytes": 62
+        },
+        "assets/public.js": {
+            "sha256": "58ce434a2fc16cc0665ba421a9059cf1e60cec1d91fbfe76a6f2f871d1a6d288",
+            "bytes": 12183
+        },
+        "assets/registration.css": {
+            "sha256": "6a7c67e06e9e259fe2b2b8985a520bf3522fe4af1c5c197dc339e9fddd929c03",
+            "bytes": 3669
+        },
+        "assets/student-area.css": {
+            "sha256": "550617460257199567d41e4f588ed794da0dcf4f455c89bfa03bb8c94f78ce09",
+            "bytes": 15857
+        },
+        "config/install.example.php": {
+            "sha256": "ba4460df2a4d9a6d8a5138a0b5436cf2d065971ac65f542ec9f57cd212f6b7a1",
+            "bytes": 72
+        },
+        "config/local.example.php": {
+            "sha256": "1270dc89ca4b4d7a110e97a2fd384545f0bb4caa7b1bed0cf33d33a278207fa4",
+            "bytes": 271
+        },
+        "data/public-content.json": {
+            "sha256": "96ab320e5d808c334578971f10bc23948f9386cbd22fa9e769c08e0dbe369b0a",
+            "bytes": 7849
+        },
+        "editor/.htaccess": {
+            "sha256": "6bd36881d91ed3d3447711f06a1c6b30bebef98e38d10fa8d11285cfe76285b1",
+            "bytes": 25
+        },
+        "editor/autosave.js": {
+            "sha256": "283ac2362cfd7b0a59b05f6b5286046f581d21fa3e6ee2b39446e746a217ec73",
+            "bytes": 1295
+        },
+        "editor/cms-access-controls.js": {
+            "sha256": "d95256bb5abe30db82d6f26a08ef9aca23b6f59c5daf4c406b9a1975ae00a51f",
+            "bytes": 6411
+        },
+        "editor/cms-component-editor.css": {
+            "sha256": "f9553dd50f1091acc87f692b0637c8d0e6d65533357acb853f973a783031d16f",
+            "bytes": 2550
+        },
+        "editor/cms-component-editor.js": {
+            "sha256": "3595b14a48d498e35b10e745fdcb67d2cc9bab9f1e7362353653a78c71ab7850",
+            "bytes": 29544
+        },
+        "editor/cms-direct-structure-dnd.js": {
+            "sha256": "ff17486d4b67c947176c2194ea5a2f75abe088b40d20907157da43190756d381",
+            "bytes": 13020
+        },
+        "editor/cms-editor-consolidation.js": {
+            "sha256": "2564ba4afde12350bd813bfc0de368670a557d1f5e6fe9efa86633b3a4ce3604",
+            "bytes": 10280
+        },
+        "editor/cms-editor-v3.js": {
+            "sha256": "bb9db2e94717c5b2f6f6e254cbb4ff29e978a7f621eba77a83f67d34f3cfd1e1",
+            "bytes": 24095
+        },
+        "editor/cms-editor.css": {
+            "sha256": "213b2c345c7e303f0ad64cfb005ce945bbd7772e622c06aae1f38b374ac6b1cc",
+            "bytes": 8089
+        },
+        "editor/cms-editor.js": {
+            "sha256": "c7c78a747961787deddbfcce49e216f458644d5aa813415b93a4a964c2be4096",
+            "bytes": 31879
+        },
+        "editor/cms-form-editor.js": {
+            "sha256": "8dfa7ed4349c99aa55b99178ab47ba205cd83e715803b927fbe088e631483c12",
+            "bytes": 27789
+        },
+        "editor/cms-form-quick-edit.css": {
+            "sha256": "5c89a5db7f2d3fe660d1f8cadf73bdd0eb420e43ec1aec5b527d9e61baac3847",
+            "bytes": 956
+        },
+        "editor/cms-history-transactions.js": {
+            "sha256": "bacdfba05a4cd44fe4c18af1d7e05e5a7a09c28b9db9ab5b0823bc5490f2c2c0",
+            "bytes": 12277
+        },
+        "editor/cms-inline-geometry.js": {
+            "sha256": "679e89d1fda7c40f43484276336a5ab8080499ba1c5d8d7c9c2338dd724f2064",
+            "bytes": 2005
+        },
+        "editor/cms-layout-editor.js": {
+            "sha256": "c88c91ecb6e8f5e28b38a35194a444c47569f1be039476e5f88693cd25037de3",
+            "bytes": 4290
+        },
+        "editor/cms-layout-properties.css": {
+            "sha256": "4d4a2ca077fce5228a2cf84d7508cb03a7e2e2fe7495987eb3b83f6a76ca210c",
+            "bytes": 570
+        },
+        "editor/cms-layout-properties.js": {
+            "sha256": "c153c72c060800e2057d78b4abb38fe2be8f867bb345e88cd7db91bc1cef6a82",
+            "bytes": 6821
+        },
+        "editor/cms-legacy-node-promotion.js": {
+            "sha256": "6c00afae2cbe7f3618902892d4f9517168bea78e264d84ffc1b25b500ed89bc7",
+            "bytes": 2259
+        },
+        "editor/cms-pro-compat.js": {
+            "sha256": "095ad748b0a2a3efa0db468a609087eaf25454cb7292be5d7822f0d2845e5699",
+            "bytes": 1303
+        },
+        "editor/cms-pro-editor.css": {
+            "sha256": "7079676d70ed8bda98224c1b03a34e2c532cb874be993e078864c446f3ad0824",
+            "bytes": 1407
+        },
+        "editor/cms-pro-editor.js": {
+            "sha256": "c9ebb0d0b4000aad07cd9ab6c80aee52ff1c3a2fbb8926ae76d03126844f1a00",
+            "bytes": 22575
+        },
+        "editor/cms-pro-toolbar.js": {
+            "sha256": "5ab5803878d59f1df912e1dcfbafdc1274a59d41b2dac276b66034b51a9e1f4c",
+            "bytes": 1091
+        },
+        "editor/cms-rich-components.js": {
+            "sha256": "b24e5ce851a2020d36f76ffbfb3d1a867835b445b53eda925a47526e695edbc5",
+            "bytes": 15609
+        },
+        "editor/cms-structure-labels.js": {
+            "sha256": "52c484a3deed098ef1e553e2a68f1109a01380bc4d58642be84ddc085039d9dd",
+            "bytes": 3545
+        },
+        "editor/cms-structure-navigation.css": {
+            "sha256": "107811ee00e12e8c3452f21789f87fd6e2e8c6c52c4aff64af62cd14d3b0ae17",
+            "bytes": 2336
+        },
+        "editor/cms-structure-navigation.js": {
+            "sha256": "fa482d41f1f5b1e8c43861f7ae5ee1cb1dbde4e6fd248d8c5ac8bf1c28d9a855",
+            "bytes": 9930
+        },
+        "editor/cms-structure-sidebar.css": {
+            "sha256": "0a60aaedcaa0395da466d49c07b2285f0c7261ca2de53cbb6294083ac8a38499",
+            "bytes": 3083
+        },
+        "editor/cms-structure-sidebar.js": {
+            "sha256": "60f53f56d53200f5ccd3c1eddd20a594f4c53ecaaeaddb9c0b0966411ac55c81",
+            "bytes": 10069
+        },
+        "editor/cms-ux-v2.css": {
+            "sha256": "050a1b4bb2ecd145421c46eac62bdab8352259d45e10166a38f3da87222b185f",
+            "bytes": 4813
+        },
+        "editor/cms-ux-v3.css": {
+            "sha256": "f25f3d3c1eb4652aa064694b26b2571339dd2a023c6fbd23771d9c3c9e9aed5d",
+            "bytes": 7149
+        },
+        "editor/cms-video-library.js": {
+            "sha256": "dd61cb2c96e21e34a2b59a3ba94ddeebb88892ce8459040933a3574d7e18e8ab",
+            "bytes": 11318
+        },
+        "editor/editor-ui.css": {
+            "sha256": "98917938ba97e27f756ab0049702c2cec0b4d50726ab4add43ef07c469e41a5e",
+            "bytes": 8849
+        },
+        "editor/editor-ui.js": {
+            "sha256": "3a6b3f471858bc42b75ab2afaa49a9d8b13c92bb628dfe89ef3c65d83a61b002",
+            "bytes": 34434
+        },
+        "editor/editor.css": {
+            "sha256": "d178c4b44ee6b87d1aec8e46688f1eee56f94d1234b24e4c414bb602e0104a3b",
+            "bytes": 17982
+        },
+        "editor/editor.js": {
+            "sha256": "c938b71a9e5cff0b0cc6cce340448c56abe24e8988de7da1d2e6e97e8c3605fe",
+            "bytes": 81262
+        },
+        "editor/framing.css": {
+            "sha256": "7b4d13887203dce0422654b4f41e97f167059162d7d47d5c6af8213db3adaf43",
+            "bytes": 1110
+        },
+        "editor/index.html": {
+            "sha256": "25f8a85ffc22edef0542e0cbb532fe5f137c742740745d604ebe22eb7cbc7403",
+            "bytes": 7710
+        },
+        "editor/index.php": {
+            "sha256": "73d8772617dfd9702927d331eb5e35da6c7b0ff7ab73e5cb939ad1165ec76489",
+            "bytes": 934
+        },
+        "editor/media-library.js": {
+            "sha256": "881591242e8543d170c89586bd8542dc5a4838bd32b84be4fc3ac5e6d0ff1505",
+            "bytes": 6055
+        },
+        "editor/responsive-controls.js": {
+            "sha256": "dcf91e12325f4280de39842c911b020dcfe7a0d1764a93153679a363c6e645dd",
+            "bytes": 8848
+        },
+        "editor/sections.css": {
+            "sha256": "5a034741a114669a1f1e2593f09c9710013e633b35ae0afd006d57db9d5e616d",
+            "bytes": 1668
+        },
+        "editor/stage2.js": {
+            "sha256": "4e5faab271187b6d5bdfde4d611e84776da95ff704398ed50ee1f7d2eed8028e",
+            "bytes": 16380
+        },
+        "editor/task-centric.css": {
+            "sha256": "0a9fd4526a25d015240838b619049b3df31d43ed78d401edda19c34056d3c585",
+            "bytes": 10927
+        },
+        "editor/task-centric.js": {
+            "sha256": "90535da66767b7c894c4716247a4209dc2c7bca2c145d436a39b060ac3c049b8",
+            "bytes": 5731
+        },
+        "form-config.php": {
+            "sha256": "9bc85108cdcbbff089f9e07bffb17dec627e9e35c08acb8ec40c3f6856563eba",
+            "bytes": 733
+        },
+        "form-submit.php": {
+            "sha256": "4339327f7c474f0dc9aabde8b80bd83200e1dac5d29d9a031ce6c71931cde852",
+            "bytes": 3256
+        },
+        "index.php": {
+            "sha256": "c39e25620be577d49262f91a75ef437ef4d5ff0454e5be473721d153cdf378ee",
+            "bytes": 2714
+        },
+        "inscricao/.htaccess": {
+            "sha256": "6bd36881d91ed3d3447711f06a1c6b30bebef98e38d10fa8d11285cfe76285b1",
+            "bytes": 25
+        },
+        "inscricao/index.php": {
+            "sha256": "a0f050b5ae329b8b1547d95ed75393b173f1fbc46c39174c8318e2042ca5d89d",
+            "bytes": 579
+        },
+        "install/index.php": {
+            "sha256": "0f17a3e6f7f7ea99111fc48c9ea85f12dde072fd0933d7a8cf127478a98e91cf",
+            "bytes": 12237
+        },
+        "interest-submit.php": {
+            "sha256": "2aea81fde46220aa2c28d594f3a120cf4746a936235bd8f2609f4cf975190417",
+            "bytes": 1966
+        },
+        "media-stream.php": {
+            "sha256": "0427355f364b69ac70c2ad07cc7bdeb041f3845bf709d9cd18d462295330ba1d",
+            "bytes": 3077
+        },
+        "migrations/001_initial.php": {
+            "sha256": "9f1e57463d4af081ddd09db190542e9b7486aa2b3f59b00aa4b0e385517104c2",
+            "bytes": 1095
+        },
+        "migrations/002_content_documents.php": {
+            "sha256": "80bee5b2bf859208b6c7cab938c4ea8d3e2e4d302b1ea6178ee529ea5ec0b078",
+            "bytes": 521
+        },
+        "migrations/003_activities_and_media.php": {
+            "sha256": "9f3f13640e2e085c4235b03211facd274fd6c7feee4d06e97ce6a8b9f281fde5",
+            "bytes": 3674
+        },
+        "migrations/004_migrate_current_media.php": {
+            "sha256": "159f0a7855932754b8d9fd9419e38842928f929f89ede54560afd5aafadca0b2",
+            "bytes": 1499
+        },
+        "migrations/005_immutable_video_posters.php": {
+            "sha256": "852809e5a6a7b050676031ba5c8e38ebcf472a66037fb776054d1b62d8e671ce",
+            "bytes": 1130
+        },
+        "migrations/006_media_derivative_metadata.php": {
+            "sha256": "3e63ca3fc4b85e46640862926cf895e8b47a10667d92f50625edccfb86e777db",
+            "bytes": 435
+        },
+        "migrations/007_interest_submission_status.php": {
+            "sha256": "b54d2046924b7b45dd55e9f52725305811717bb66f6e203b45e970e0c927c680",
+            "bytes": 428
+        },
+        "migrations/008_interest_submission_locale.php": {
+            "sha256": "5db83ed445c407aa7462dd77b7d5bc9822c983424ac4214f47dcd0214d4d6751",
+            "bytes": 454
+        },
+        "migrations/009_workshop_locale_settings.php": {
+            "sha256": "4a954ab5874128f929a112a762e728a0b39e9ade3bbe5cbe91d739ad5729ae7f",
+            "bytes": 1189
+        },
+        "migrations/010_form_field_audiences_and_city.php": {
+            "sha256": "ecb6dde2186fcb562eaa97fab2b2468c401e96f6d5120d207927d4a912102156",
+            "bytes": 1778
+        },
+        "migrations/011_cms_pages_forms.php": {
+            "sha256": "cc132a6ffb6ed1f269bda6785ce429990a99ddf14e75b877508ddbcac243c7e0",
+            "bytes": 3006
+        },
+        "migrations/012_preserve_legacy_media_in_cms.php": {
+            "sha256": "577124df3aabdd98782912789ef14b65916862cee7d2b38cd67b457db86cec76",
+            "bytes": 4302
+        },
+        "migrations/013_prepare_registration_page.php": {
+            "sha256": "31b262e91c18e93dda5ef97e2a8426823624a87bd26a14ed182177b4dba0d816",
+            "bytes": 752
+        },
+        "migrations/014_brazilian_workshop_price.php": {
+            "sha256": "85adfea041a08dd39f4444fe4808689eecb2b0ba89ed91d88fcec176b5017125",
+            "bytes": 466
+        },
+        "migrations/015_professional_cms_foundation.php": {
+            "sha256": "1c63f9a70d7fcb6457d0118c133eb09a7391453ce63080841744d374ca9a578e",
+            "bytes": 2007
+        },
+        "migrations/016_reconcile_legacy_media_to_cms.php": {
+            "sha256": "2b3fd0d89c264af9397b02a68c554e42ddbfb0ed8d3804d107fb9dc852304c5a",
+            "bytes": 3978
+        },
+        "migrations/017_reusable_blocks.php": {
+            "sha256": "51ed0a078029e2486ea1c5d56947655cfc5a534df1d89018a6b144fc3a335d06",
+            "bytes": 612
+        },
+        "migrations/018_page_seo.php": {
+            "sha256": "b4be8906e0f829693f71dfb7f9a3b43f8399a3395d394633628d208f485c4078",
+            "bytes": 618
+        },
+        "migrations/019_refine_live_session_copy.php": {
+            "sha256": "5aa2ae47fd4526af7d0e9f697acc8cde2d8b39bfb237e4604dbeee9aba1330bd",
+            "bytes": 2393
+        },
+        "migrations/020_registration_google_form_parity.php": {
+            "sha256": "0672086322d2238784578098bbf86018c1d10eab6488ca14d73ff4c699640253",
+            "bytes": 1521
+        },
+        "migrations/021_restore_process_editorial_hierarchy.php": {
+            "sha256": "9ea21d3f2145cb8d4fc27e79bd38e4acd020f7282e493bc9f4ce284dfc8b8a2b",
+            "bytes": 16702
+        },
+        "migrations/022_registration_native_editorial_content.php": {
+            "sha256": "c5346d8a6098a0b4f6eecb34a9fa111a2f7bfa799edb546e3a45ede7408a8b91",
+            "bytes": 3205
+        },
+        "migrations/023_repair_registration_editorial_blocks.php": {
+            "sha256": "8dc8edb24b9fcb7518246da35b1eaab39f283bf2e12ecf500736399368109c2f",
+            "bytes": 2963
+        },
+        "migrations/024_rebuild_png_derivatives.php": {
+            "sha256": "f34b895fb94cb4e919a45e23a7b9bde0616239ed17c23432fbbb2e29403af7fb",
+            "bytes": 1083
+        },
+        "migrations/025_republish_png_derivatives_with_new_urls.php": {
+            "sha256": "a6d81f444adb43e7d4a7f8a5bff263953438891e8e85d7fc08b48b7139d5436b",
+            "bytes": 1226
+        },
+        "migrations/026_repair_transparent_png_regeneration.php": {
+            "sha256": "0495ae610805928240f318b72d71237ed074284c6217a4b732d235c11067a8a7",
+            "bytes": 1224
+        },
+        "migrations/027_site_wide_additional_css.php": {
+            "sha256": "c6d1f2d44fc2225b60410525f1242b67935383b5b7e2fd4f98f5188e13b57061",
+            "bytes": 1581
+        },
+        "migrations/028_repair_png_regeneration_with_gd.php": {
+            "sha256": "af3d7cf3d29cc9da0103c3b847e4f2e1e167c2a75e03f3eb30a20034f6b07f00",
+            "bytes": 1364
+        },
+        "migrations/029_normalize_design_font_values.php": {
+            "sha256": "99a9c48415d177c25b1174f5e1c816a1cd96d04d095f82fee3200b6e5e814f07",
+            "bytes": 1511
+        },
+        "migrations/030_google_font_family_values.php": {
+            "sha256": "d74097c6bbb0a18e4478c64c3d62b3a918c11efef2d34dfb15bf5ef9d261abb8",
+            "bytes": 1946
+        },
+        "migrations/031_fill_page_seo.php": {
+            "sha256": "eda9ae00539265bd4531bd3775db6cdd73236208715ef9210242973dc20de470",
+            "bytes": 6231
+        },
+        "migrations/032_keep_registration_payment_on_success.php": {
+            "sha256": "0eb99086e17e038d57801571e9a7374e49a93c5350766d1403a942b86a3903b3",
+            "bytes": 2559
+        },
+        "migrations/033_analytics_dashboard.php": {
+            "sha256": "d685b24a80789ba258b8e335ac592d0917dc67fa06b50f798e1c44448ca3bc2f",
+            "bytes": 1503
+        },
+        "migrations/034_pinhole_lambe_lambe_landing.php": {
+            "sha256": "36071a7b8570de950f2145d6cd2599c20a060bfc99bf6cd33666ef06ab23b3f8",
+            "bytes": 20825
+        },
+        "migrations/035_pinhole_lambe_lambe_sales_rewrite.php": {
+            "sha256": "e3149fc05267461cb4b57775f74e37215fc9857e3322f8b1b85f8cb21f784447",
+            "bytes": 12270
+        },
+        "migrations/036_pinhole_public_copy.php": {
+            "sha256": "9c19ed86b6a6b2b839a888ebb60cc91881470f458dcdbed1462801efdb925ba6",
+            "bytes": 10381
+        },
+        "migrations/037_pinhole_uiux_and_site_identity.php": {
+            "sha256": "9afc2f6379fce19663c37bc3c363a9ac52c8ae9c8556e6dacdb7f6aa491f0396",
+            "bytes": 9414
+        },
+        "migrations/038_restore_pinhole_media_and_global_form_ux.php": {
+            "sha256": "d4ad750e623b10f44ec6bbed7bf8c3848be1bbef1afb0454cd94db75ff1241c2",
+            "bytes": 8543
+        },
+        "migrations/039_pinhole_camera_authority.php": {
+            "sha256": "fb223927e311fb475f4c09f8147a6a17f6fa85cf99e4eb90887aebfa0b7cd264",
+            "bytes": 4094
+        },
+        "migrations/040_pinhole_strkng_89.php": {
+            "sha256": "d9f36471530a628f98f44b8fdcf5b7e75a9fa6c943955160e9033e4f25058cb7",
+            "bytes": 1181
+        },
+        "migrations/041_pinhole_authority_refinement.php": {
+            "sha256": "ca1ba9cc53d234f890b43ca18414f1e972d954c775bd390f95c78b9790c3b285",
+            "bytes": 2586
+        },
+        "migrations/042_pinhole_hybrid_format.php": {
+            "sha256": "65d325d853b2cecea2ff6e4fb21653a3de45466d8dae1caf300f7a2b1b66cbd6",
+            "bytes": 6298
+        },
+        "migrations/043_pinhole_hybrid_coherence.php": {
+            "sha256": "50c467a7dad3bd23dd1b24dcdd84eb1b7c7302ba793317d1ddd206b7729c9594",
+            "bytes": 7828
+        },
+        "migrations/044_repair_pinhole_page_integrity.php": {
+            "sha256": "a190b76414fb8a09cc460d687deea798fa66c9a2a6292d2f65a7823268ea68db",
+            "bytes": 11273
+        },
+        "migrations/045_pinhole_two_versions_offer.php": {
+            "sha256": "782f17ecdecce57c243d6a00a4f5bfe29edd0fdca13e515b641ebb6c31528037",
+            "bytes": 15377
+        },
+        "migrations/046_student_area.php": {
+            "sha256": "b99ceffe14a04a97f5889e57ec79404e62fdf5d646553cd6552ab503cf82858a",
+            "bytes": 1951
+        },
+        "migrations/047_student_accounts_cohorts_privacy.php": {
+            "sha256": "7ac275bec0939ff2810e06b7ac498be76bc1c35ae5e873da705e8aee0bb979cf",
+            "bytes": 14274
+        },
+        "migrations/048_seed_positive_handbook.php": {
+            "sha256": "a17bba913faa2523566ea65c3bdeb6b692ce01ba0b62b7c88257f14332606818",
+            "bytes": 35607
+        },
+        "migrations/049_clarify_handbook_dilution_records.php": {
+            "sha256": "b0ec2afcccfec0d3118348f953da0fb4908bf016f455160865ddbf7caa53097c",
+            "bytes": 2700
+        },
+        "migrations/050_protected_handbook_media_slots.php": {
+            "sha256": "9c4c4ae02f891e7f169e569b74d0d70facc57ee4912c55add733169a5dd3d5d3",
+            "bytes": 3786
+        },
+        "migrations/051_handbook_document_lessons.php": {
+            "sha256": "94687f39f1d555cdfeea23a02d879382e99f820ef8dd745b84fe49c583011d7c",
+            "bytes": 5466
+        },
+        "migrations/052_remove_handbook_specific_visual_system.php": {
+            "sha256": "6734fb1dcfb28f2359bffee70280823d03d8b54262137d2d5f4e5922f6f2a4eb",
+            "bytes": 7121
+        },
+        "migrations/053_rebuild_handbook_from_email_sources.php": {
+            "sha256": "7fb8f6c872611e8ca68f17f32b47e6f53fb205c6ed0f7a371690aba4c38ecb1f",
+            "bytes": 63659
+        },
+        "migrations/054_complete_handbook_source_details.php": {
+            "sha256": "6cf68ae01041316cf10605738ad988230805de4df8367fa630ba0982bf738dfb",
+            "bytes": 2353
+        },
+        "migrations/055_apply_global_editorial_components_to_handbook.php": {
+            "sha256": "463b83de6d8669cbe40d463b8d62e8ea69b6c00e6e04f79264d1e10c20674e23",
+            "bytes": 2834
+        },
+        "migrations/056_study_material_source_fidelity.php": {
+            "sha256": "54d0e2c74ac5104b575cf636e0fd4c3556164587bae3cd69e93bb5ab26b28d20",
+            "bytes": 6607
+        },
+        "migrations/057_restore_source_titles_and_cover.php": {
+            "sha256": "9cd3bb0c3cf147aa6c9891e8694acb46c22ade1f27f11f6e4c3598de0c4225ac",
+            "bytes": 3380
+        },
+        "migrations/058_restore_omitted_source_sentences.php": {
+            "sha256": "bc6357fd492f29ecba6b1dd7a300eeb9928fc2e1b04eb331426571f4bf3b2024",
+            "bytes": 5483
+        },
+        "migrations/059_restore_source_numeric_wording.php": {
+            "sha256": "3ee5f4c3ee8e135a29f2c6706b65cac3a3b1f48f05ea73488b385cb840d96d8b",
+            "bytes": 3147
+        },
+        "migrations/060_refine_study_reference_hierarchy.php": {
+            "sha256": "d56751188c04aeb82abd098f28c0e6d3db01a6058fcb17a714ba9fefb0c80f8a",
+            "bytes": 3096
+        },
+        "migrations/061_refine_study_longform_semantics.php": {
+            "sha256": "cdc8a5f7b1f6dbad760a160b3c5205cacd6e71cf9ce6503ea4d502e4ba407ec2",
+            "bytes": 6850
+        },
+        "migrations/062_student_operations_and_test_log.php": {
+            "sha256": "7cbfdbf5de09f1eff0f3c65f5bcc96a6b6c8d66903c8fc68b637ea2fdb6be07d",
+            "bytes": 3956
+        },
+        "migrations/063_student_test_mobile_workflow.php": {
+            "sha256": "5fcb687ee54f8e60cfa2dde5ff5ea3ff390ce5a914fa470f915ede8a970d98ef",
+            "bytes": 480
+        },
+        "migrations/064_student_test_visibility.php": {
+            "sha256": "62a25ba3cdf56efc8fcfc2b378d048bcf3ee062376856fe4d767022f12a62c8c",
+            "bytes": 678
+        },
+        "migrations/065_unify_private_editorial_media.php": {
+            "sha256": "ea7e31d3f3c88d319056e27dd9889a3289bb119635d367279a6ce511729b89fc",
+            "bytes": 5382
+        },
+        "migrations/066_cms_section_access_and_test_bleach.php": {
+            "sha256": "aeb50c71f8995b1850a178b630e72de141e9544134f580a5f68b942adf1c13ce",
+            "bytes": 2721
+        },
+        "migrations/067_normalize_page_activity_access.php": {
+            "sha256": "bc4e597baaa4790bf117089998b1b7a3e4f9956458ead974943c41c4245d0e6a",
+            "bytes": 302
+        },
+        "migrations/068_activity_locales_page_hierarchy.php": {
+            "sha256": "f35c676b2b9b002cf239fc4eda443108244e31f50b5ff6b769edc18df467f3fd",
+            "bytes": 2602
+        },
+        "preview/.htaccess": {
+            "sha256": "6bd36881d91ed3d3447711f06a1c6b30bebef98e38d10fa8d11285cfe76285b1",
+            "bytes": 25
+        },
+        "preview/index.html": {
+            "sha256": "0e12b4abd75d5aaae140231be2440b7aa8ea42bad9b93741f3854e959bb8f953",
+            "bytes": 517
+        },
+        "preview/index.php": {
+            "sha256": "2631fc95db96e4cd9c3c35abd08e8a3b23b42f4e9f574a13c3cfba90d4c903d6",
+            "bytes": 457
+        },
+        "preview/preview.js": {
+            "sha256": "2025fe6054456cca3bdff66d8fc6490f1b1283265a39f07cb1e3948b55bde7a5",
+            "bytes": 4657
+        },
+        "robots.php": {
+            "sha256": "f0819aa4145754b314dc95b2863be297f6a1f97f0ccb2848d5aefc8facb27fca",
+            "bytes": 190
+        },
+        "sitemap.php": {
+            "sha256": "d95c098743db5bd3cece72623a9b88ab2af6a581ecd66246f31536ef1429a75d",
+            "bytes": 205
+        },
+        "storage/.htaccess": {
+            "sha256": "6cb71b0cea790d8fbce27f8b31b5390cf8e902de4bf6b5a524ba700264e2eee6",
+            "bytes": 36
+        },
+        "storage/logs/.gitkeep": {
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "bytes": 1
+        },
+        "template/index.html": {
+            "sha256": "249110680e2c7c5cc8f23a3435b8e80eb96e270d1d7941da7f2a088a31c10c9b",
+            "bytes": 12707
+        },
+        "template/page.css": {
+            "sha256": "6171b83fa02bc8f3e75c4156f2951b0d1fc497dd6fff807a1d25bc915cc57631",
+            "bytes": 24286
+        },
+        "template/page.js": {
+            "sha256": "34da758afad659cef553e3cb390e9044f53ef7ad56af52da8e5dfde8278735e7",
+            "bytes": 1741
+        },
+        "template/public.php": {
+            "sha256": "3ee47427f91dce2df173f7d836be0f9c7efdaa4f324c5a8f08d551dc4e41ad2c",
+            "bytes": 12307
+        },
+        "template/schema.json": {
+            "sha256": "0d139a1b8af975a764f6187c9bae37da04838b5a80d46e0d39fe385dd02df780",
+            "bytes": 4977
+        },
+        "uploads/.htaccess": {
+            "sha256": "d511ff75f0cd6aa5812b8e3f747b594ce77e2a011aa0dd4e5ba48bf03d20eab0",
+            "bytes": 98
+        }
+    }
+}

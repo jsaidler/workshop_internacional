@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editar site — Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/editor/cms-editor.css">
+<link rel="stylesheet" href="/editor/cms-pro-editor.css">
+<link rel="stylesheet" href="/editor/cms-ux-v2.css">
+<link rel="stylesheet" href="/editor/cms-ux-v3.css">
+<link rel="stylesheet" href="/editor/task-centric.css">
+<link rel="stylesheet" href="/editor/cms-form-quick-edit.css">
+<link rel="stylesheet" href="/editor/cms-component-editor.css">
+<link rel="stylesheet" href="/editor/cms-structure-sidebar.css">
+<link rel="stylesheet" href="/editor/cms-structure-navigation.css">
+<link rel="stylesheet" href="/editor/cms-layout-properties.css">
+</head>
+<body class="task-centric-editor">
+<span id="editor-title" hidden></span>
+<span id="editor-locale" hidden></span>
+<header class="cms-editor-bar task-editor-bar">
+  <a class="editor-wordmark" href="/admin/" aria-label="Voltar ao site">Site</a>
+  <div class="editor-page-switcher-wrap">
+    <span id="editor-site-name" class="editor-site-name">Carregando…</span>
+    <label class="editor-page-switcher"><span>Página</span><select id="editor-page-switcher" disabled><option>Carregando…</option></select></label>
+  </div>
+  <div class="editor-toolbar viewport-toolbar" aria-label="Visualização">
+    <button type="button" data-viewport="desktop" class="active" title="Desktop">Desktop</button>
+    <button type="button" data-viewport="tablet" title="Tablet">Tablet</button>
+    <button type="button" data-viewport="mobile" title="Celular">Celular</button>
+  </div>
+  <div class="editor-toolbar editor-actions">
+    <button type="button" id="editor-structure-mobile" class="editor-structure-mobile-toggle" aria-controls="editor-structure-panel" aria-expanded="false">Estrutura</button>
+    <a id="editor-submissions" class="editor-context-link" href="/admin/submissions.php">Inscrições<span id="editor-new-count" hidden></span></a>
+    <span id="save-status" aria-live="polite"></span>
+    <button type="button" id="publish-page" class="publish">Publicar</button>
+    <details class="editor-more" id="editor-more">
+      <summary aria-label="Mais opções">•••</summary>
+      <div class="editor-more-menu">
+        <button type="button" id="save-page">Salvar agora</button>
+        <button type="button" id="page-settings">Configurar página</button>
+        <button type="button" id="add-section">Adicionar seção</button>
+        <hr>
+        <button type="button" id="undo" disabled>Desfazer</button>
+        <button type="button" id="redo" disabled>Refazer</button>
+        <hr>
+        <a id="editor-pages-link" href="/admin/pages.php">Páginas e nova página</a>
+        <a id="editor-navigation-link" href="/admin/site.php">Navegação</a>
+        <a id="editor-design-link" href="/admin/design.php">Visual do site</a>
+        <a id="editor-seo-link" href="/admin/seo.php">SEO e compartilhamento</a>
+        <a id="editor-media-link" href="/admin/media.php">Biblioteca de mídia</a>
+        <a id="editor-public-link" href="/" target="_blank" rel="noopener">Abrir site público ↗</a>
+      </div>
+    </details>
+  </div>
+</header>
+<main class="cms-editor-workspace task-editor-workspace">
+  <aside class="editor-panel sections-panel" id="editor-structure-panel" aria-label="Estrutura da página">
+    <div class="panel-heading"><div><p>Estrutura</p><h2 id="structure-panel-title">Seções</h2></div><button type="button" id="editor-structure-mobile-close" class="structure-mobile-close" aria-label="Fechar estrutura">×</button></div>
+    <div class="cms-structure-view-tabs" role="tablist" aria-label="Navegação da página">
+      <button type="button" role="tab" data-structure-view="sections" class="is-active" aria-selected="true">Seções</button>
+      <button type="button" role="tab" data-structure-view="tree" aria-selected="false" tabindex="-1">Estrutura</button>
+    </div>
+    <button type="button" id="add-section-side" class="panel-button primary-panel-action">+ Adicionar seção</button>
+    <div id="sections-list" class="sections-list"></div>
+    <div id="page-structure-tree" class="cms-page-structure-tree" hidden></div>
+  </aside>
+  <section class="editor-canvas" aria-label="Página em edição"><div class="device-frame desktop" id="device-frame"><iframe id="page-frame" title="Página em edição"></iframe></div></section>
+  <aside class="editor-panel inspector" id="inspector"><div class="inspector-empty"><p>Selecione diretamente na página o texto, imagem, vídeo, formulário ou seção que deseja alterar.</p></div></aside>
+</main>
+<button type="button" id="editor-structure-backdrop" class="editor-structure-backdrop" aria-label="Fechar estrutura" tabindex="-1"></button>
+<div class="floating-format" id="text-toolbar" hidden>
+  <button type="button" data-command="bold"><b>B</b></button><button type="button" data-command="italic"><i>I</i></button><button type="button" data-command="createLink">Link</button><button type="button" data-command="removeFormat">Limpar</button><button type="button" id="finish-text">Concluir</button>
+</div>
+<dialog id="section-dialog" class="editor-dialog"><form method="dialog"><header><div><p>Componentes</p><h2>Adicionar seção</h2></div><button value="cancel" aria-label="Fechar">×</button></header><div class="section-library" id="section-library"></div></form></dialog>
+<dialog id="media-dialog" class="editor-dialog wide"><form method="dialog"><header><div><p>Trocar imagem</p><h2>Biblioteca</h2></div><button value="cancel" aria-label="Fechar">×</button></header><div class="media-dialog-tools"><label class="media-search-label"><span>Buscar</span><input id="media-library-search" type="search" placeholder="Nome da imagem"></label><label class="upload-label">Enviar nova imagem <input id="media-upload" type="file" accept="image/jpeg,image/png,image/webp"></label><a id="media-maintenance-link" href="/admin/media.php" target="_blank">Gerenciar arquivos ↗</a></div><div class="media-grid" id="media-grid"></div></form></dialog>
+<div class="editor-toast" id="toast" role="status"></div>
+<script src="/editor/media-library.js"></script>
+<script src="/editor/cms-form-editor.js"></script>
+<script src="/editor/cms-editor-v3.js"></script>
+<script src="/editor/cms-access-controls.js"></script>
+<script src="/editor/autosave.js"></script>
+<script src="/editor/cms-video-library.js"></script>
+<script src="/editor/cms-pro-editor.js"></script>
+<script src="/editor/cms-layout-editor.js"></script>
+<script src="/editor/cms-pro-compat.js"></script>
+<script src="/editor/cms-pro-toolbar.js"></script>
+<script src="/editor/responsive-controls.js"></script>
+<script src="/editor/task-centric.js"></script>
+<script src="/editor/cms-component-editor.js"></script>
+<script src="/editor/cms-legacy-node-promotion.js"></script>
+<script src="/editor/cms-rich-components.js"></script>
+<script src="/editor/cms-inline-geometry.js"></script>
+<script src="/editor/cms-structure-sidebar.js"></script>
+<script src="/editor/cms-direct-structure-dnd.js"></script>
+<script src="/editor/cms-structure-navigation.js"></script>
+<script src="/editor/cms-structure-labels.js"></script>
+<script src="/editor/cms-layout-properties.js"></script>
+<script src="/editor/cms-editor-consolidation.js"></script>
+<script src="/editor/cms-history-transactions.js"></script>
+</body>
+</html>
