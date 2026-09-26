@@ -41,7 +41,7 @@ function ensureUi(doc){
 .cms-editor-hover-label{position:absolute;left:-2px;top:-25px;max-width:min(360px,80vw);height:23px;padding:5px 8px;box-sizing:border-box;background:#1e624b;color:#fff;border-radius:3px 3px 0 0;font:600 10px/13px Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cms-editor-hover-box.is-label-inside .cms-editor-hover-label{top:0;border-radius:0 0 3px 0}
 `;
-  style.dataset.cmsEditorUi='hover-selection-style';doc.head.append(style);
+  doc.head.append(style);
   layer=doc.createElement('div');layer.dataset.cmsEditorUi='hover-selection-layer';
   box=doc.createElement('div');box.className='cms-editor-hover-box';box.hidden=true;
   labelNode=doc.createElement('div');labelNode.className='cms-editor-hover-label';box.append(labelNode);layer.append(box);doc.body.append(layer);
@@ -57,18 +57,20 @@ function draw(){
 function schedule(){if(raf)return;raf=(frame.contentWindow||window).requestAnimationFrame(draw)}
 function setHovered(next){
   if(next?.node===hovered?.node&&next?.label===hovered?.label)return;
-  hovered=next;schedule();
+  hovered=next;
+  // Pointer feedback must feel immediate; geometry-only updates remain throttled elsewhere.
+  draw();
 }
 function bind(){
   const doc=d();if(!doc||doc===boundDoc)return;boundDoc=doc;layer=box=labelNode=null;hovered=null;ensureUi(doc);
   const track=event=>setHovered(targetFrom(event.target));
-  // Mouse events are the compatibility baseline used by the editor and by automation;
-  // pointermove remains as an additional path for pen/touch-capable browsers.
   doc.addEventListener('mouseover',track,true);
   doc.addEventListener('mousemove',track,true);
   doc.addEventListener('pointermove',track,true);
-  doc.addEventListener('mouseleave',()=>setHovered(null),true);
-  doc.addEventListener('pointerleave',()=>setHovered(null),true);
+  // Reset only when the pointer leaves the iframe document itself. Capturing leave
+  // events from descendants caused the hover state to be cleared immediately.
+  doc.documentElement.addEventListener('mouseleave',()=>setHovered(null));
+  doc.documentElement.addEventListener('pointerleave',()=>setHovered(null));
   doc.addEventListener('scroll',schedule,true);doc.defaultView?.addEventListener('resize',schedule,{passive:true});
   doc.addEventListener('click',()=>setTimeout(schedule,0),true);
 }
