@@ -33,6 +33,26 @@ Uma atividade vazia é um estado válido do CMS. Consultar conteúdo não equiva
 
 A regra arquitetural é: **consulta não cria conteúdo; template inicializa conteúdo somente por ação explícita**.
 
+### Identidade localizada e estrutura editorial das páginas
+
+A instalação é globalmente `JSaidler Fotografia`; curso/workshop é uma `activity`. O nome público de uma activity não pode depender de um único valor compartilhado por todos os idiomas.
+
+- `activity_locales(activity_id, locale, public_title, ...)` é a autoridade nova para o nome público localizado do curso;
+- `activities.public_title` permanece apenas como fallback/compatibilidade durante a migração e não é atualizado pelas edições localizadas feitas no admin;
+- `Admin → Cursos e workshops` é a interface canônica para nome administrativo e nomes públicos PT-BR/EN; não existe uma segunda tela de identidade por curso;
+- a criação de uma activity exige o locale do primeiro nome público e continua exigindo template explícito;
+- `cms_pages.parent_page_id` é a autoridade da hierarquia editorial das páginas;
+- hierarquia editorial não altera `id`, `page_uuid`, slug, URL, documento, revisão nem publicação;
+- a árvore editorial pertence a `Páginas`. `Navegação` continua sendo somente a apresentação curada: páginas incluídas, rótulo, ordem e links externos;
+- `cms_pages.translation_group_uuid` identifica páginas equivalentes em idiomas diferentes, inclusive quando os slugs são diferentes;
+- a troca pública de idioma e o sitemap/hreflang consultam primeiro essa identidade explícita;
+- páginas antigas ainda sem grupo mantêm temporariamente o fallback legado por home/slug, apenas como compatibilidade de leitura;
+- `Admin → Páginas` é a interface canônica para definir página superior e equivalente em outro idioma;
+- relações pai/filha só são válidas na mesma activity e locale, e ciclos são rejeitados;
+- nenhum parent ou grupo de tradução é inferido automaticamente na migração; páginas existentes permanecem estruturalmente intactas até uma decisão editorial explícita.
+
+A regra arquitetural é: **identidade localizada pertence à activity; hierarquia e equivalência pertencem às páginas; menu não é uma segunda árvore**.
+
 ## Mídia
 
 - imagens e vídeos em biblioteca própria;
