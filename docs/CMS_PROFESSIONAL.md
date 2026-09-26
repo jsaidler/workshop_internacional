@@ -16,6 +16,23 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 - CSS adicional como recurso avançado, sem ser necessário para a operação normal;
 - CSS e JavaScript locais da administração usam a versão instalada no URL, evitando que uma atualização correta continue escondida por cache antigo.
 
+### Inicialização de cursos e pureza das leituras
+
+Uma atividade vazia é um estado válido do CMS. Consultar conteúdo não equivale a inicializá-lo.
+
+- listagens e lookups de páginas não executam `cms_pages_seed()`;
+- listagens e lookups de formulários não executam `cms_forms_seed()`;
+- abrir `Admin → Páginas` ou `Admin → Formulários` não cria conteúdo;
+- o sitemap apenas descobre páginas já existentes e publicadas; ele nunca inicializa uma atividade;
+- `cms_pages_seed()` e `cms_forms_seed()` permanecem transitórios como primitivas explícitas de instalação/template/migração, não como parte de uma leitura;
+- a criação de curso/workshop exige uma escolha inicial explícita: `Em branco` ou `Positivo direto`;
+- `Em branco` é o default neutro e não copia a atividade raiz nem recebe páginas/formulários do primeiro workshop;
+- `Positivo direto` aplica deliberadamente os defaults específicos desse produto somente numa atividade vazia;
+- reaplicar o setup de Positivo Direto depois que uma página ou formulário CMS já existe é uma operação nula: conteúdo editorial existente nunca é sobrescrito por setup;
+- copiar um curso e aplicar um template são operações distintas e não podem ocorrer simultaneamente.
+
+A regra arquitetural é: **consulta não cria conteúdo; template inicializa conteúdo somente por ação explícita**.
+
 ## Mídia
 
 - imagens e vídeos em biblioteca própria;

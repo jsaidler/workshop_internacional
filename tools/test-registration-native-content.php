@@ -23,7 +23,7 @@ $now=utc_now();
 $db->prepare('INSERT INTO activities(admin_name,public_title,slug,status,is_root,created_at,updated_at)VALUES(?,?,?,?,1,?,?)')->execute(['Workshop','Direct Positive X-Ray Film','workshop','active',$now,$now]);
 $activityId=(int)$db->lastInsertId();
 $migration=require __DIR__.'/../migrations/011_cms_pages_forms.php';$migration($db);
-cms_forms_seed($db,$activityId);cms_pages_seed($db,$activityId);workshop_cms_setup_activity($db,$activityId);
+workshop_cms_setup_activity($db,$activityId);
 
 $legacyForm=cms_form_by_key($db,$activityId,PUBLIC_LOCALE_PT_BR,'registration');
 expect_native($legacyForm!==null,'registration form missing before migration');

@@ -12,7 +12,7 @@ A auditoria não será resolvida apagando estruturas históricas no mesmo releas
 4. adicionar regressões;
 5. só então retirar fisicamente estruturas antigas.
 
-## Implementado nesta PR
+## Primeiro tranche implementado
 
 ### 1. Identidade global da instalação
 
@@ -62,14 +62,67 @@ Isso impede que duas primeiras requisições concorrentes após uma atualizaçã
 
 O teste de build cobre explicitamente um gap em `020` e uma duplicação de `020`, além de confirmar que um build inválido não altera o `dist` anterior.
 
-## Deliberadamente ainda não implementado nesta PR
+## Segundo tranche implementado — leituras puras e criação explícita de curso
 
-Os itens abaixo permanecem no roadmap porque exigem migração coordenada de autoridade e testes próprios; misturá-los ao primeiro tranche aumentaria o risco de perda ou sobrescrita de conteúdo.
+### 7. Consultas de páginas e formulários não fazem mais seed
 
-- retirar `cms_pages_seed()` e `cms_forms_seed()` de todos os read paths;
-- transformar criação de atividade em template explícito `em branco` / `positivo direto`;
+As APIs de leitura do CMS deixam de criar conteúdo como efeito colateral.
+
+- `cms_pages()`, `cms_page_home()`, `cms_page_by_slug()` e `cms_nav_pages()` apenas consultam `cms_pages`;
+- `cms_forms()` e `cms_form_by_key()` apenas consultam `cms_forms`;
+- abrir `Admin → Páginas` não chama `cms_pages_seed()`;
+- abrir `Admin → Formulários` não chama `cms_forms_seed()`;
+- uma atividade vazia pode permanecer genuinamente vazia até uma ação explícita de criação ou aplicação de template.
+
+As funções `cms_pages_seed()` e `cms_forms_seed()` permanecem temporariamente como primitivas explícitas de inicialização para templates e migrações históricas. Elas não são mais parte do caminho normal de leitura.
+
+### 8. Sitemap é somente leitura
+
+`cms_sitemap_entries()` não chama mais `cms_pages_seed()` ao percorrer atividades.
+
+Uma atividade vazia, portanto, não ganha páginas simplesmente porque um crawler ou administrador requisitou o sitemap. Somente páginas já existentes, publicadas, públicas e indexáveis participam da descoberta.
+
+### 9. Criação de curso exige template explícito
+
+`activity_create()` deixa de assumir silenciosamente que um curso novo deve copiar a atividade raiz ou receber o workshop de Positivo Direto.
+
+A criação administrativa agora possui templates explícitos:
+
+- `blank` / **Em branco** — cria apenas a entidade curso/workshop e não cria páginas, formulários nem `content_documents` do produto anterior;
+- `direct-positive` / **Positivo direto** — aplica deliberadamente os defaults históricos desse workshop.
+
+`blank` é o default neutro do repositório. Um `copyId` continua sendo uma operação explícita separada; cópia de curso e aplicação de template não podem ocorrer simultaneamente.
+
+### 10. Setup do template Positivo Direto é de inicialização, não de manutenção editorial
+
+`workshop_cms_setup_activity()` verifica o estado antes de aplicar o template. Se a atividade já possui página ou formulário CMS ativo, a função retorna sem alterar o conteúdo existente.
+
+Isto fecha o comportamento anterior em que uma rotina de setup podia republicar ou substituir formulário, página de inscrição e home já editados. O template passa a valer somente para uma atividade vazia.
+
+A decisão é deliberadamente conservadora: estado parcial não é “reparado” automaticamente por essa rotina. Reparos de migração continuam precisando identificar de maneira inequívoca o estado-fonte antes de escrever.
+
+### 11. Regressão do segundo tranche
+
+`tools/test-read-purity-activity-templates.php` valida que:
+
+- consultas de páginas/formulários sobre uma atividade vazia retornam vazio sem criar linhas;
+- lookups de home, slug, navegação e formulário inexistente não fazem seed;
+- gerar sitemap de uma atividade vazia não cria conteúdo;
+- `Admin → Páginas` e `Admin → Formulários` não carregam chamadas de seed;
+- template `blank` não cria conteúdo específico do primeiro workshop;
+- template `direct-positive` cria o conjunto inicial esperado;
+- reaplicar o setup de Positivo Direto depois de edição não substitui título de página nem de formulário.
+
+O teste faz parte do CI regular.
+
+## Deliberadamente ainda não implementado
+
+Os itens abaixo permanecem no roadmap porque exigem migração coordenada de autoridade e testes próprios; misturá-los aos tranches acima aumentaria o risco de perda ou sobrescrita de conteúdo.
+
 - desligar writers de `student_enrollments`, `student_materials`, `content_documents` e `interest_submissions` após backfill/verificação;
 - remover definitivamente `template/public.php`, `public_locale.php` e a camada `content_documents`;
+- eliminar o seed transitório de `content_documents` ainda existente dentro do renderer/serviço legado antes de remover essa camada;
+- retirar o fallback de `workshop_settings_seed()` ainda existente em `workshop_prices()` quando o legado de preço deixar de ser necessário;
 - fazer mídia privada usar o mesmo contexto efetivo de autorização da página/seção CMS;
 - adicionar `parent_page_id` e identidade de tradução/equivalência de páginas;
 - finalidade explícita do formulário no lugar de `form_key='registration'`;
@@ -84,6 +137,13 @@ Enquanto `admin/student-area-legacy.php` existir, alterações editoriais não p
 
 Enquanto o renderer público legado existir, ele é permitido somente para a atividade raiz e sua utilização deve continuar observável por log.
 
+Enquanto `cms_pages_seed()` e `cms_forms_seed()` existirem, só podem ser chamados por instalação, migração deliberada ou aplicação explícita de template. Nunca por listagem, lookup, sitemap, renderer ou simples abertura de uma tela administrativa.
+
 ## Critérios para o próximo tranche
 
-O próximo conjunto deve atacar primeiro os efeitos colaterais de leitura e a criação de atividades. Antes de tornar `Em branco` o padrão real, é obrigatório garantir que visitar Páginas, Formulários, sitemap ou uma rota pública vazia não execute seed específico do primeiro workshop.
+O próximo conjunto deve continuar removendo autoridades paralelas sem apagar estruturas históricas prematuramente. Prioridades imediatas:
+
+1. separar autenticação de matrícula de forma completa e desativar novos writes em `student_enrollments`;
+2. tornar `student_materials` definitivamente somente-leitura/legado e eliminar chamadas executáveis restantes;
+3. definir o plano de retirada de `content_documents` e `public_locale.php` sem perder o fallback raiz ainda observado em produção;
+4. iniciar a política contextual de autorização para mídia privada editorial.
