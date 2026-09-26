@@ -30,24 +30,28 @@ function activity_by_slug(PDO $db,string $slug): ?array {$q=$db->prepare("SELECT
 function activity_for_request(PDO $db): array { if(isset($_GET['activity'])&&is_string($_GET['activity'])&&$_GET['activity']!==''){ $a=activity_by_slug($db,$_GET['activity']);if(!$a) throw new RuntimeException('activity_not_found');return $a;} return root_activity($db); }
 function admin_activity(PDO $db): array { $state=admin_activity_resolution($db);if(!$state['activity'])throw new RuntimeException('activity_not_found');return $state['activity']; }
 function activity_slug(string $value): string {$s=strtolower(trim(preg_replace('~[^a-z0-9]+~i','-',$value)??''));return trim($s,'-')?:'atividade';}
-function activity_update_identity(PDO $db,int $id,string $adminName,string $publicTitle,string $locale='pt-BR'): array {
+function activity_update_localized_identity(PDO $db,int $id,string $adminName,array $titles): array {
     $activity=activity_by_id($db,$id)??throw new RuntimeException('Curso não encontrado.');
-    $adminName=trim($adminName);$publicTitle=trim($publicTitle);
-    if($adminName==='')throw new RuntimeException('Informe o nome administrativo.');
-    if($publicTitle==='')throw new RuntimeException('Informe o nome público do curso.');
-    if(mb_strlen($adminName)>160||mb_strlen($publicTitle)>220)throw new RuntimeException('Nome muito longo.');
+    $adminName=trim($adminName);if($adminName==='')throw new RuntimeException('Informe o nome administrativo.');if(mb_strlen($adminName)>160)throw new RuntimeException('Nome administrativo muito longo.');
+    $normalized=[];foreach($titles as $locale=>$raw){$title=trim((string)$raw);if($title==='')continue;if(mb_strlen($title)>220)throw new RuntimeException('Nome público muito longo.');$normalized[activity_locale_normalize((string)$locale)]=$title;}
+    if(!$normalized)throw new RuntimeException('Informe ao menos um nome público do curso.');
     $now=gmdate('c');
     if(activity_locales_available($db)){
         $db->beginTransaction();
         try{
             $db->prepare('UPDATE activities SET admin_name=?,updated_at=? WHERE id=?')->execute([$adminName,$now,$id]);
-            activity_locale_save($db,$id,$locale,$publicTitle);
+            foreach($normalized as $locale=>$title)activity_locale_save($db,$id,$locale,$title);
             $db->commit();
         }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
-        return activity_with_locale($db,activity_by_id($db,$id)??$activity,$locale);
+        return activity_by_id($db,$id)??$activity;
     }
-    $db->prepare('UPDATE activities SET admin_name=?,public_title=?,updated_at=? WHERE id=?')->execute([$adminName,$publicTitle,$now,$id]);
+    $legacyTitle=reset($normalized);$db->prepare('UPDATE activities SET admin_name=?,public_title=?,updated_at=? WHERE id=?')->execute([$adminName,$legacyTitle,$now,$id]);
     return activity_by_id($db,$id)??$activity;
+}
+function activity_update_identity(PDO $db,int $id,string $adminName,string $publicTitle,string $locale='pt-BR'): array {
+    $publicTitle=trim($publicTitle);if($publicTitle==='')throw new RuntimeException('Informe o nome público do curso.');
+    $activity=activity_update_localized_identity($db,$id,$adminName,[$locale=>$publicTitle]);
+    return activity_locales_available($db)?activity_with_locale($db,$activity,$locale):$activity;
 }
 function activity_create(PDO $db,string $name,string $title,string $slug,?int $copyId=null,string $template=ACTIVITY_TEMPLATE_BLANK,string $locale='pt-BR'): array {
     $template=activity_template($template);$locale=activity_locale_normalize($locale);$slug=activity_slug($slug);$base=$slug;$n=2;while(activity_by_slug($db,$slug))$slug=$base.'-'.$n++;
