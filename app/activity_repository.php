@@ -1,5 +1,20 @@
 <?php
 declare(strict_types=1);
+
+const ACTIVITY_TEMPLATE_BLANK='blank';
+const ACTIVITY_TEMPLATE_DIRECT_POSITIVE='direct-positive';
+
+function activity_template_options(): array {
+    return [
+        ACTIVITY_TEMPLATE_BLANK=>'Em branco',
+        ACTIVITY_TEMPLATE_DIRECT_POSITIVE=>'Positivo direto',
+    ];
+}
+function activity_template(string $value): string {
+    $value=trim($value);
+    if(!array_key_exists($value,activity_template_options()))throw new RuntimeException('Template de curso inválido.');
+    return $value;
+}
 function root_activity(PDO $db): array { $r=$db->query('SELECT * FROM activities WHERE is_root=1 LIMIT 1')->fetch(); if(!$r) throw new RuntimeException('root_activity_missing'); return $r; }
 function admin_activity_resolution(PDO $db): array {
     $activities=$db->query('SELECT * FROM activities ORDER BY is_root DESC, updated_at DESC, id DESC')->fetchAll();
@@ -15,7 +30,7 @@ function activity_for_request(PDO $db): array { if(isset($_GET['activity'])&&is_
 function admin_activity(PDO $db): array { $state=admin_activity_resolution($db);if(!$state['activity'])throw new RuntimeException('activity_not_found');return $state['activity']; }
 function activity_slug(string $value): string {$s=strtolower(trim(preg_replace('~[^a-z0-9]+~i','-',$value)??''));return trim($s,'-')?:'atividade';}
 function activity_update_identity(PDO $db,int $id,string $adminName,string $publicTitle): array {
-    $activity=activity_by_id($db,$id)??throw new RuntimeException('Site não encontrado.');
+    $activity=activity_by_id($db,$id)??throw new RuntimeException('Curso não encontrado.');
     $adminName=trim($adminName);$publicTitle=trim($publicTitle);
     if($adminName==='')throw new RuntimeException('Informe o nome administrativo.');
     if($publicTitle==='')throw new RuntimeException('Informe o nome público do curso.');
@@ -23,4 +38,23 @@ function activity_update_identity(PDO $db,int $id,string $adminName,string $publ
     $db->prepare('UPDATE activities SET admin_name=?,public_title=?,updated_at=? WHERE id=?')->execute([$adminName,$publicTitle,gmdate('c'),$id]);
     return activity_by_id($db,$id)??$activity;
 }
-function activity_create(PDO $db,string $name,string $title,string $slug,?int $copyId=null): array { $slug=activity_slug($slug);$base=$slug;$n=2;while(activity_by_slug($db,$slug))$slug=$base.'-'.$n++;$source=$copyId?activity_by_id($db,$copyId):($db->query('SELECT * FROM activities WHERE is_root=1 LIMIT 1')->fetch()?:null);$doc=$source?content_for_draft($db,(int)$source['id']):canonical_content();$now=gmdate('c');$db->beginTransaction();try{$q=$db->prepare('INSERT INTO activities(admin_name,public_title,slug,status,is_root,created_at,updated_at) VALUES(?,?,?,?,?,?,?)');$q->execute([$name,$title,$slug,'active',$source?0:1,$now,$now]);$id=(int)$db->lastInsertId();$json=json_encode($doc,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);$db->prepare('INSERT INTO content_documents(document_key,activity_id,schema_version,draft_json,published_json,draft_revision,published_revision,draft_updated_at,published_at,created_at,updated_at) VALUES(?,?,?,?,?,1,1,?,?,?,?)')->execute(['activity-'.$id,$id,$doc['schemaVersion'],$json,$json,$now,$now,$now,$now]);workshop_settings_seed($db,$id);workshop_cms_setup_activity($db,$id);workshop_refine_live_session_copy_for_activity($db,$id);$db->commit();return activity_by_id($db,$id);}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}}
+function activity_create(PDO $db,string $name,string $title,string $slug,?int $copyId=null,string $template=ACTIVITY_TEMPLATE_BLANK): array {
+    $template=activity_template($template);$slug=activity_slug($slug);$base=$slug;$n=2;while(activity_by_slug($db,$slug))$slug=$base.'-'.$n++;
+    $source=$copyId?activity_by_id($db,$copyId):null;if($copyId&&!$source)throw new RuntimeException('Curso de origem não encontrado.');
+    if($source&&$template!==ACTIVITY_TEMPLATE_BLANK)throw new RuntimeException('Cópia e template não podem ser aplicados ao mesmo tempo.');
+    $hasRoot=(bool)$db->query('SELECT 1 FROM activities WHERE is_root=1 LIMIT 1')->fetchColumn();$now=gmdate('c');
+    $db->beginTransaction();
+    try{
+        $q=$db->prepare('INSERT INTO activities(admin_name,public_title,slug,status,is_root,created_at,updated_at) VALUES(?,?,?,?,?,?,?)');
+        $q->execute([trim($name),trim($title),$slug,'active',$hasRoot?0:1,$now,$now]);$id=(int)$db->lastInsertId();
+        if($source){
+            $doc=content_for_draft($db,(int)$source['id']);$json=json_encode($doc,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+            $db->prepare('INSERT INTO content_documents(document_key,activity_id,schema_version,draft_json,published_json,draft_revision,published_revision,draft_updated_at,published_at,created_at,updated_at) VALUES(?,?,?,?,?,1,1,?,?,?,?)')->execute(['activity-'.$id,$id,$doc['schemaVersion'],$json,$json,$now,$now,$now,$now]);
+        }elseif($template===ACTIVITY_TEMPLATE_DIRECT_POSITIVE){
+            $doc=canonical_content();$json=json_encode($doc,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+            $db->prepare('INSERT INTO content_documents(document_key,activity_id,schema_version,draft_json,published_json,draft_revision,published_revision,draft_updated_at,published_at,created_at,updated_at) VALUES(?,?,?,?,?,1,1,?,?,?,?)')->execute(['activity-'.$id,$id,$doc['schemaVersion'],$json,$json,$now,$now,$now,$now]);
+            workshop_settings_seed($db,$id);workshop_cms_setup_activity($db,$id);workshop_refine_live_session_copy_for_activity($db,$id);
+        }
+        $db->commit();return activity_by_id($db,$id)??throw new RuntimeException('course_create_failed');
+    }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+}
