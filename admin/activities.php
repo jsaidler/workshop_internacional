@@ -17,7 +17,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
                 $_SESSION['activities_notice']=$notice;
                 header('Location: /admin/activities.php?activity='.(int)$updated['id'],true,303);exit;
             }
-            activity_create($db,trim((string)($_POST['admin_name']??'')),trim((string)($_POST['public_title']??'')),trim((string)($_POST['slug']??'')));
+            activity_create($db,trim((string)($_POST['admin_name']??'')),trim((string)($_POST['public_title']??'')),trim((string)($_POST['slug']??'')),null,(string)($_POST['template']??ACTIVITY_TEMPLATE_BLANK));
             header('Location: /admin/activities.php',true,303);exit;
         }catch(Throwable $e){$error=$e->getMessage();}
     }
@@ -30,22 +30,23 @@ admin_shell_start('activities','Cursos e workshops',$state);
 <?php if($error!==''):?><p class="admin-error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="activities-layout">
   <section class="admin-panel">
-    <p class="admin-kicker">Nova atividade</p>
-    <h2>Criar curso ou workshop</h2>
+    <p class="admin-kicker">Novo curso ou workshop</p>
+    <h2>Criar curso</h2>
     <form method="post">
       <input type="hidden" name="csrf" value="<?=h(csrf_token('activities'))?>">
       <input type="hidden" name="action" value="create">
       <label class="admin-field">Nome no admin<input name="admin_name" required maxlength="160"></label>
       <label class="admin-field">Nome público do curso<input name="public_title" required maxlength="220"></label>
       <label class="admin-field">Slug<input name="slug" required></label>
-      <button class="admin-button">Criar atividade</button>
+      <label class="admin-field">Começar a partir de<select name="template" required><?php foreach(activity_template_options() as $value=>$label):?><option value="<?=h($value)?>"><?=h($label)?></option><?php endforeach;?></select></label>
+      <p class="muted">Em branco não cria páginas nem formulários. O template Positivo direto aplica somente os conteúdos iniciais desse workshop.</p>
+      <button class="admin-button">Criar curso</button>
     </form>
-    <p class="muted">A criação de atividades ainda usa o template histórico do workshop atual. O modo realmente vazio será liberado somente depois da retirada dos seeds automáticos de páginas e formulários.</p>
   </section>
   <section>
     <p class="admin-kicker">Cursos e workshops existentes</p>
     <div class="activity-list">
-      <?php if(!$state['activities']):?><div class="admin-empty compact"><h2>Nenhuma atividade criada</h2><p>Crie o primeiro curso ou workshop para começar.</p></div><?php endif;?>
+      <?php if(!$state['activities']):?><div class="admin-empty compact"><h2>Nenhum curso criado</h2><p>Crie o primeiro curso ou workshop para começar.</p></div><?php endif;?>
       <?php foreach($state['activities'] as $item):?>
         <article class="activity-card">
           <form method="post">
