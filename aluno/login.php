@@ -13,7 +13,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         if($result==='ok'){header('Location: /aluno/senha.php?primeiro=1&next='.rawurlencode($next),true,303);exit;}
         if($result==='already_active')$notice='Esta conta já foi ativada. Entre com o e-mail e a senha escolhida.';
         else $error='Não encontrei uma matrícula confirmada com este e-mail e CPF. Confira os dados ou aguarde a confirmação da matrícula.';
-    }elseif(student_account_login($db,(string)($_POST['email']??''),(string)($_POST['password']??''))){header('Location: '.$next,true,303);exit;}
+    }elseif(student_account_global_login($db,(string)($_POST['email']??''),(string)($_POST['password']??''))){header('Location: '.$next,true,303);exit;}
     else $error='E-mail ou senha inválidos. Se houve muitas tentativas, aguarde alguns minutos antes de tentar novamente.';
 }
 student_shell_start('Entrar · Área do aluno',null,null);?>
