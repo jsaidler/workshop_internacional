@@ -224,6 +224,10 @@ A página inglesa não deve ser mera tradução da brasileira.
 - `/admin/` é dashboard. Não deve redirecionar diretamente para o editor.
 - O editor da home é uma ação do dashboard, não a própria página inicial administrativa.
 - Dashboard atual: publicação, alterações pendentes, novas inscrições, páginas, formulários, mídia, armazenamento/saúde e atividade recente.
+- Consultar/listar páginas e formulários, abrir suas telas administrativas ou gerar sitemap não deve criar conteúdo. Uma atividade vazia permanece vazia até uma ação editorial explícita ou aplicação deliberada de template.
+- A criação de um novo curso/workshop usa template explícito. `Em branco` é o estado neutro e não herda nem recebe automaticamente conteúdo do primeiro workshop; `Positivo direto` aplica deliberadamente os defaults desse produto.
+- O template `Positivo direto` é operação de inicialização. Se a atividade já possuir página ou formulário CMS ativo, o setup não altera nem republica o conteúdo existente.
+- `cms_pages_seed()` e `cms_forms_seed()` permanecem apenas como primitivas transitórias de instalação/template/migração. Não podem ser chamadas por listagem, lookup, sitemap, renderer ou simples abertura de tela administrativa.
 - Checkbox e radio devem manter 18 × 18 px no site público, preview e em toda a administração.
 - O shell administrativo carrega CSS/JS locais com `?v=<versão instalada>` e mantém a geometria crítica de checkbox/radio independentemente de cache de stylesheet.
 - O editor completo de formulários não deve comprimir configuração, lista de campos, propriedades e preview em colunas concorrentes. Configuração fica em faixa superior; lista de campos e propriedades recebem o espaço principal; preview fica em bloco separado abaixo.
