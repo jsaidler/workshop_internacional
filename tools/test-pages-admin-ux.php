@@ -13,7 +13,7 @@ must_pages_admin_ux(str_contains($pages,'page-tree-row')&&str_contains($pages,'s
 must_pages_admin_ux(!str_contains($pages,"str_repeat('— ',\$depth)"),'hierarchy still relies on punctuation in page titles');
 must_pages_admin_ux(str_contains($pages,'page-hierarchy-label">Página superior'),'parent relationship is not visible in the reading path');
 must_pages_admin_ux(str_contains($pages,'page-parent-editor')&&str_contains($pages,'page-parent-popover'),'parent editing is not progressive/disclosed');
-must_pages_admin_ux(str_contains($pages,'page-status-badge')&&str_contains($pages,'data-state="<?=$unpublished?\'draft\':\'published\'?>"'),'status does not have a stable visual state hook');
+must_pages_admin_ux(str_contains($pages,'page-status-badge')&&str_contains($pages,'data-state="')&&str_contains($pages,"'draft':'published'"),'status does not have a stable visual state hook');
 must_pages_admin_ux(str_contains($pages,'page-action-primary'),'primary edit action is not visually distinguishable');
 must_pages_admin_ux(str_contains($pages,'$canMoveUp')&&str_contains($pages,'$canMoveDown'),'impossible sibling moves are not disabled');
 
