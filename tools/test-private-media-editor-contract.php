@@ -14,9 +14,9 @@ $contract=(string)file_get_contents($root.'/docs/EDITOR_INTERACTION_CONTRACT_202
 must_private_media_editor(str_contains($api,"verify_csrf('cms-private-media'")&&str_contains($api,"\$action==='bind'")&&str_contains($api,"\$action==='unbind'"),'editor API is not an authenticated bind/unbind authority');
 must_private_media_editor(str_contains($api,'course_page_media_bind')&&str_contains($api,'course_page_media_unbind')&&str_contains($api,'media_private_images'),'editor API does not use canonical private-media services');
 must_private_media_editor(str_contains($preview,'cms-private-media-dialog')&&str_contains($preview,"mutateSlot(key,'bind'")&&str_contains($preview,"mutateSlot(selectedKey,'unbind'"),'private slot UI cannot choose, bind and remove an image');
-must_private_media_editor(str_contains($preview,"data-private-media-slot")&&!str_contains($preview,'data-cms-image-placeholder'),'private slot editor is falling back to the public-image component contract');
+must_private_media_editor(str_contains($preview,'data-private-media-slot')&&!str_contains($preview,'data-cms-image-placeholder'),'private slot editor is falling back to the public-image component contract');
 must_private_media_editor(str_contains($promotion,"node.matches('[data-private-media-slot]')"),'legacy promotion can still convert a private slot into a generic image component');
-must_private_media_editor(str_contains($privacy,'course_page_media_slots')&&str_contains($privacy,'visibility=\'private\''),'canonical private-media persistence contract is missing');
+must_private_media_editor(str_contains($privacy,'course_page_media_slots')&&str_contains($privacy,"visibility='private'"),'canonical private-media persistence contract is missing');
 must_private_media_editor(str_contains($contract,'O HTML canônico conserva o slot'),'editor interaction contract does not preserve canonical private slot markup');
 
 echo "private-media-editor: ok\n";
