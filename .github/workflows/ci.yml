@@ -55,6 +55,7 @@ jobs:
           php tools/test-multi-course-enrollment.php
           php tools/test-student-dashboard-truth.php
           php tools/test-student-course-context.php
+          php tools/test-student-account-experience.php
           php tools/test-student-workspace.php
           php tools/test-student-area-information-architecture.php
           php tools/test-student-mobile-experience.php
