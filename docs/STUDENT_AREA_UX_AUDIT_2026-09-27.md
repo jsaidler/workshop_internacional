@@ -10,7 +10,7 @@ O painel `Admin → Sistema e atualizações` foi conferido em 27/09/2026 e most
 - **Produção disponível:** `67fe31d5f189`
 - timestamp exibido em ambos: `2026-09-27T03:40:41+00:00`
 
-Portanto, naquele ponto da revisão, a hospedagem e o canal de produção estavam sincronizados no mesmo `sourceSha` abreviado. O editor permanece pausado; a revisão seguinte é da Área do aluno.
+Portanto, naquele ponto da revisão, a hospedagem e o canal de produção estavam sincronizados no mesmo `sourceSha` abreviado. Este é o último estado **instalado** confirmado visualmente durante esta auditoria. Os blocos posteriores podem estar publicados no atualizador sem que isso, sozinho, prove que a hospedagem já os instalou. O editor permanece pausado; a revisão em andamento é da Área do aluno.
 
 ## Princípio da revisão
 
@@ -71,13 +71,26 @@ Contrato:
 - `Sair` fica disponível dentro de Conta também no celular e continua usando POST + CSRF no endpoint canônico `/aluno/logout.php`;
 - o logout rápido do topo desktop pode continuar existindo; ele não é uma segunda autoridade, apenas outro acionador do mesmo endpoint.
 
-**Estado:** implementação em `fix/student-account-complete-a3-2026-09-27`.
+**Estado:** concluído no PR #128, merge `9974cf0981d2c75b41735cccee5a11c94efc4df8`. A suíte passou completa, incluindo regressão PHP, Playwright/Chromium, build e dry-run. O deploy de produção run `36295605240` concluiu com sucesso e publicou o artefato para o atualizador administrativo.
 
 ### A4 — Continuidade do material
 
-O material deve continuar sendo página CMS normal, com a mesma autoridade editorial e de autorização. O problema é apenas a perda de contexto do workspace ao entrar no material.
+O material continua sendo página CMS normal, com a mesma autoridade editorial, visual e de autorização. O defeito observado era a perda do contexto da matrícula ao sair do workspace e entrar no material: o aluno voltava ao cabeçalho público sem indicação do curso/turma nem acesso direto ao workspace correspondente.
 
-A correção futura deve acrescentar contexto de retorno ao curso/Área do aluno sem criar um segundo renderer do material.
+Contrato:
+
+- não existe segundo renderer, template de caderno ou cópia do material dentro da Área do aluno;
+- o contexto de curso é derivado da matrícula autorizada, não de estado paralelo;
+- páginas `activity`/legado `enrolled` preservam o `cohort_uuid` solicitado quando ele pertence à conta;
+- páginas `cohort` usam a turma autorizada pela própria página, mesmo que a URL sugira outra matrícula;
+- páginas `public` e páginas genéricas `authenticated` não ganham artificialmente contexto de curso;
+- a UI contextual nunca aparece no editor/preview;
+- quando existe contexto, o link **Área do aluno** do cabeçalho volta diretamente ao workspace daquela matrícula;
+- uma barra discreta identifica curso e turma e oferece **Voltar ao curso**, **Testes** e **Conta**;
+- essa barra pertence ao shell/runtime, não ao documento CMS persistido;
+- desktop e celular precisam permanecer sem overflow horizontal.
+
+**Estado:** implementação em `fix/student-material-context-a4-2026-09-27`.
 
 ### A5 — Entrada e recuperação
 
@@ -107,8 +120,8 @@ A partir do A1, cada bloco que alterar UX combina:
 
 1. A1 — verdade do dashboard — **concluído**;
 2. A2 — contexto curso/turma — **concluído**;
-3. A3 — Conta completa — **em implementação**;
-4. A4 — continuidade do material;
+3. A3 — Conta completa — **concluído**;
+4. A4 — continuidade do material — **em implementação**;
 5. A5 — entrada e recuperação;
 6. A6 — índice de testes;
 7. A7 — workflow do teste;
