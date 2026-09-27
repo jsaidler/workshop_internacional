@@ -4,7 +4,7 @@ declare(strict_types=1);
 function fail_student_material_context(string $message): never {fwrite(STDERR,"student-material-context: $message\n");exit(1);}
 function must_student_material_context(bool $condition,string $message): void {if(!$condition)fail_student_material_context($message);}
 // This test intentionally covers the legacy activity-scoped material fallback.
-// Workshop-page resolution has its own canonical regression.
+// Canonical course/material resolution has its own regression.
 function cms_page_workshop_root_id(PDO $db,array $page): int {return 0;}
 function workshop_course_scope_available(PDO $db): bool {return false;}
 
@@ -18,10 +18,10 @@ $db->exec("INSERT INTO course_cohorts(id,activity_id,workshop_page_id,title,coho
 $db->exec("INSERT INTO course_enrollments VALUES(1,10,7,'active','2026-09-01T00:00:00Z'),(2,10,8,'active','2026-09-02T00:00:00Z'),(3,10,9,'active','2026-09-03T00:00:00Z');");
 
 $student=['id'=>10];
-$activityPage=['activity_id'=>1,'access_level'=>'activity','access_cohort_id'=>null];
-$cohortPage=['activity_id'=>1,'access_level'=>'cohort','access_cohort_id'=>7];
-$publicPage=['activity_id'=>1,'access_level'=>'public','access_cohort_id'=>null];
-$authenticatedPage=['activity_id'=>1,'access_level'=>'authenticated','access_cohort_id'=>null];
+$activityPage=['id'=>101,'activity_id'=>1,'access_level'=>'activity','access_cohort_id'=>null];
+$cohortPage=['id'=>102,'activity_id'=>1,'access_level'=>'cohort','access_cohort_id'=>7];
+$publicPage=['id'=>103,'activity_id'=>1,'access_level'=>'public','access_cohort_id'=>null];
+$authenticatedPage=['id'=>104,'activity_id'=>1,'access_level'=>'authenticated','access_cohort_id'=>null];
 
 $context=student_enrollment_material_context($db,$student,$activityPage,'cohort-a');
 must_student_material_context($context!==null&&(int)$context['cohort_id']===7,'activity material did not preserve the requested enrollment context');
@@ -38,7 +38,7 @@ must_student_material_context(student_enrollment_material_context($db,$student,$
 $renderer=(string)file_get_contents(__DIR__.'/../app/cms_renderer.php');
 $css=(string)file_get_contents(__DIR__.'/../assets/cms-header.css');
 must_student_material_context(str_contains($renderer,'student_enrollment_material_context'),'public renderer does not derive context from the canonical enrollment helper');
-must_student_material_context(str_contains($renderer,'cms_access_filter_html($db,$activity,$body,$currentStudent,$editor)'),'public renderer does not apply the canonical section access filter');
+must_student_material_context(str_contains($renderer,'cms_access_filter_html($db,$activity,$body,$currentStudent,$editor,null,$materialContext)'),'public renderer does not apply the canonical section access filter with enrollment context');
 must_student_material_context(!str_contains($renderer,'data-cms-student-context')&&!str_contains($css,'.cms-student-context'),'protected material still creates a second header bar');
 must_student_material_context(str_contains($renderer,"'/aluno/?cohort='"),'course return link does not preserve the cohort uuid');
 must_student_material_context(str_contains($renderer,'/aluno/testes.php?cohort=')&&str_contains($renderer,'href="/aluno/perfil.php"'),'single topbar does not expose tests and account');
