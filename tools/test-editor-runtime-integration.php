@@ -10,10 +10,12 @@ $reliability=(string)file_get_contents($root.'/editor/cms-inline-reliability.js'
 $coherence=(string)file_get_contents($root.'/editor/cms-section-coherence.js');
 $inspector=(string)file_get_contents($root.'/editor/cms-inspector-coherence.js');
 $access=(string)file_get_contents($root.'/editor/cms-access-controls.js');
+$consolidation=(string)file_get_contents($root.'/editor/cms-editor-consolidation.js');
+$proEditor=(string)file_get_contents($root.'/editor/cms-pro-editor.js');
 $private=(string)file_get_contents($root.'/editor/cms-private-media-preview.js');
 $endpoint=(string)file_get_contents($root.'/admin/api/cms-private-media-slots.php');
 
-foreach(['cms-component-editor.js','cms-inline-reliability.js','cms-rich-components.js','cms-section-coherence.js','cms-inspector-coherence.js'] as $script){
+foreach(['cms-component-editor.js','cms-inline-reliability.js','cms-rich-components.js','cms-section-coherence.js','cms-inspector-coherence.js','cms-editor-consolidation.js'] as $script){
     must_editor_runtime(str_contains($index,'/editor/'.$script),'production editor does not load '.$script);
 }
 $componentPos=strpos($index,'cms-component-editor.js');
@@ -52,5 +54,14 @@ must_editor_runtime(!str_contains($access,'id="cms-page-access-save"'),'page acc
 must_editor_runtime(!str_contains($access,'Salvar acesso da página'),'page access still asks for an isolated save action');
 must_editor_runtime(str_contains($access,'data-page-access-state'),'page access does not expose autosave state');
 must_editor_runtime(str_contains($access,'Salvando acesso')&&str_contains($access,'Acesso salvo'),'page access autosave lacks visible saving/saved states');
+
+must_editor_runtime(!str_contains($index,'id="section-dialog"'),'legacy section library dialog is still shipped in the editor DOM');
+must_editor_runtime(!str_contains($index,'id="section-library"'),'legacy section library host is still shipped in the editor DOM');
+must_editor_runtime(str_contains($consolidation,'button.onclick=null'),'consolidated section library does not clear legacy property handlers');
+must_editor_runtime(!str_contains($consolidation,'stopImmediatePropagation'),'consolidated section library still depends on suppressing competing handlers');
+must_editor_runtime(str_contains($consolidation,"readyTab.textContent='Seções prontas'")&&str_contains($consolidation,"blocksTab.textContent='Blocos salvos'"),'consolidated section library tabs are not canonical');
+must_editor_runtime(str_contains($consolidation,"['add-section','add-section-side']"),'both section-add entry points are not governed by the consolidated library');
+must_editor_runtime(str_contains($proEditor,'/admin/api/blocks.php'),'saved blocks do not use the canonical blocks endpoint');
+must_editor_runtime(str_contains($proEditor,'pro-components-dialog'),'modern section library dialog is missing from the active editor layer');
 
 echo "editor-runtime-integration: ok\n";
