@@ -67,7 +67,10 @@ function sectionInspector(){
     access.classList.add('is-consumed');
   }
   const actions=panel.querySelector(':scope > .button-row');
-  if(actions){actions.classList.add('cms-inspector-actions');panel.append(actions)}
+  if(actions){
+    actions.classList.add('cms-inspector-actions');
+    if(actions!==panel.lastElementChild)panel.append(actions);
+  }
   cleanSeparators(panel);
   return true;
 }
