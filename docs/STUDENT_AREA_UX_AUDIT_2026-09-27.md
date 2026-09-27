@@ -71,13 +71,25 @@ Contrato:
 - `Sair` fica disponível dentro de Conta também no celular e continua usando POST + CSRF no endpoint canônico `/aluno/logout.php`;
 - o logout rápido do topo desktop pode continuar existindo; ele não é uma segunda autoridade, apenas outro acionador do mesmo endpoint.
 
-**Estado:** implementação em `fix/student-account-complete-a3-2026-09-27`.
+**Estado:** concluído no PR #128, merge `9974cf0981d2c75b41735cccee5a11c94efc4df8`. A suíte do PR passou completa, incluindo Playwright/Chromium, build e dry-run. O deploy de produção run `36295605240` concluiu com sucesso e publicou o artefato para o atualizador administrativo.
 
 ### A4 — Continuidade do material
 
-O material deve continuar sendo página CMS normal, com a mesma autoridade editorial e de autorização. O problema é apenas a perda de contexto do workspace ao entrar no material.
+O material continua sendo página CMS normal, com a mesma autoridade editorial e de autorização. O defeito era a quebra de contexto ao sair do workspace para uma página do curso: o cabeçalho voltava a ser apenas o cabeçalho público e os links internos não preservavam a matrícula selecionada.
 
-A correção futura deve acrescentar contexto de retorno ao curso/Área do aluno sem criar um segundo renderer do material.
+Contrato:
+
+- não existe segundo renderer do material;
+- o contexto só é ativado quando há uma conta autenticada e o `cohort_uuid` da URL corresponde a uma matrícula ativa daquela conta na atividade atual;
+- contexto inválido ou ausente não altera a página pública;
+- quando válido, o CMS mostra uma faixa discreta com curso, turma e ações **Curso**, **Testes** e **Conta**;
+- `Área do aluno` no cabeçalho passa a funcionar como **Voltar ao curso** nesse contexto e aponta para `/aluno/?cohort=<uuid>`;
+- links de páginas CMS e o wordmark preservam o `cohort_uuid`, evitando perder a matrícula ao navegar dentro do mesmo site;
+- o seletor de idioma visível também pode preservar o contexto, mas `canonical` e `hreflang` continuam livres de parâmetros pessoais de matrícula;
+- links customizados do CMS não recebem `cohort` automaticamente;
+- a faixa contextual usa os tokens visuais existentes e permanece utilizável no celular.
+
+**Estado:** implementação em `fix/student-material-continuity-a4-2026-09-27`.
 
 ### A5 — Entrada e recuperação
 
@@ -107,8 +119,8 @@ A partir do A1, cada bloco que alterar UX combina:
 
 1. A1 — verdade do dashboard — **concluído**;
 2. A2 — contexto curso/turma — **concluído**;
-3. A3 — Conta completa — **em implementação**;
-4. A4 — continuidade do material;
+3. A3 — Conta completa — **concluído**;
+4. A4 — continuidade do material — **em implementação**;
 5. A5 — entrada e recuperação;
 6. A6 — índice de testes;
 7. A7 — workflow do teste;
