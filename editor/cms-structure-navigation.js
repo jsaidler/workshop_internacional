@@ -151,13 +151,11 @@ function pathFor(section,node){
 }
 function selectTarget(node,kind){
   if(!node?.isConnected)return;
-  if(kind==='section'){
-    node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:frame.contentWindow}));
-  }else{
-    const target=node.matches('[data-cms-component],[data-cms-column]')?node:node.closest('[data-cms-component],[data-cms-column]');
-    target?.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:frame.contentWindow}));
-  }
-  setTimeout(()=>node.scrollIntoView({behavior:'smooth',block:'center'}),0);
+  const selected=kind==='section'
+    ?window.CmsEditorStructure?.selectSection?.(node)
+    :window.CmsEditorStructure?.select?.(node);
+  if(selected)return;
+  console.warn('CmsEditorStructure selection authority is unavailable.');
 }
 function renderBreadcrumb(){
   const section=selectedSection();
