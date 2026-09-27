@@ -40,6 +40,7 @@ Backfills só usam associações existentes que já são inequívocas. Estados a
 
 - `tools/test-course-domain-material.php`: curso, formulário, turma, aula, material, seções e proibição de matrícula antes da atribuição explícita de turma;
 - `tools/test-course-material-release-filter.php`: garante que Material consome páginas e seções CMS existentes, entra pelo editor canônico e que o renderer filtra no servidor as seções vinculadas a aulas bloqueadas;
+- `tools/test-course-admin-context.php`: garante que Inscrições e Área do aluno começam pelo curso e que Material não cria uma autoridade editorial paralela;
 - `tools/test-course-sharing-scope.php`: visibilidade de teste `course` restrita a matrículas do mesmo curso.
 
 As regressões existentes de CMS/editor continuam obrigatórias, garantindo que o novo ponto de entrada de Material não crie editor, renderer ou sistema visual paralelo.
