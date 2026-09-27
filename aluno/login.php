@@ -17,11 +17,12 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     else $error='E-mail ou senha inválidos. Se houve muitas tentativas, aguarde alguns minutos antes de tentar novamente.';
 }
 student_shell_start('Entrar · Área do aluno',null,null);?>
-<div class="student-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;align-items:start">
-<section class="student-login-card">
-  <p class="student-kicker">Área do aluno</p>
-  <h1 class="student-title" style="font-size:58px">Entrar</h1>
-  <p class="student-lead" style="font-size:16px;margin-top:18px">Para contas já ativadas.</p>
+<p class="student-kicker">Área do aluno</p>
+<h1 class="student-title">Acesso</h1>
+<p class="student-lead student-lead-compact">Entre com a conta já ativada. Se esta é a primeira vez que você acessa a área, a ativação fica logo abaixo.</p>
+<section class="student-login-card" aria-labelledby="student-login-title">
+  <p class="student-kicker">Conta ativada</p>
+  <h2 id="student-login-title" class="student-subtitle">Entrar</h2>
   <?php if($error&&$mode!=='activate'):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
   <?php if($notice):?><p class="student-notice"><?=h($notice)?></p><?php endif;?>
   <form method="post">
@@ -31,17 +32,16 @@ student_shell_start('Entrar · Área do aluno',null,null);?>
     <button class="student-button" type="submit">Entrar</button>
   </form>
 </section>
-<section class="student-login-card">
+<section class="student-login-card" aria-labelledby="student-activation-title">
   <p class="student-kicker">Primeiro acesso</p>
-  <h2 class="student-title" style="font-size:44px">Ativar conta</h2>
-  <p class="student-lead" style="font-size:16px;margin-top:18px">Depois que a matrícula for confirmada, use o mesmo e-mail da inscrição e o CPF somente com números. O CPF serve apenas para este primeiro reconhecimento; em seguida você cria sua própria senha.</p>
+  <h2 id="student-activation-title" class="student-subtitle">Ativar conta</h2>
+  <p class="student-lead student-lead-compact">Depois que a matrícula for confirmada, use o mesmo e-mail da inscrição e o CPF somente com números. O CPF é usado apenas neste reconhecimento inicial; em seguida você cria sua própria senha.</p>
   <?php if($error&&$mode==='activate'):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
   <form method="post">
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-login'))?>"><input type="hidden" name="mode" value="activate"><input type="hidden" name="next" value="<?=h($next)?>">
     <label class="student-field">E-mail da inscrição<input name="email" type="email" autocomplete="email" required></label>
     <label class="student-field">CPF<input name="cpf" inputmode="numeric" autocomplete="off" pattern="[0-9. -]{11,14}" required></label>
-    <button class="student-button" type="submit">Continuar</button>
+    <button class="student-button student-button-secondary" type="submit">Ativar conta</button>
   </form>
 </section>
-</div>
 <?php student_shell_end();
