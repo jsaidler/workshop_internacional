@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:monospace}</style>
   <link rel="stylesheet" href="/template/page.css">
+  <link rel="stylesheet" href="/assets/ui-core.css">
   <link rel="stylesheet" href="/assets/student-area.css">
   <title>Student account experience fixture</title>
 </head>
@@ -15,30 +16,27 @@
     <p class="student-kicker">Área do aluno</p>
     <h1 class="student-title student-title-record">Conta</h1>
     <p class="student-lead student-lead-compact">Gerencie seus dados, sua senha e a sessão desta conta.</p>
-
     <section class="student-workflow-panel" aria-labelledby="profile-heading">
       <header class="student-workflow-heading"><div><p class="student-kicker">Dados pessoais</p><h2 class="student-subtitle" id="profile-heading">Perfil</h2></div><p>Estes dados podem preencher novas inscrições automaticamente.</p></header>
       <form class="student-form-grid" data-testid="profile-grid">
-        <label class="student-field student-span-2">Nome completo<input value="Aluno Teste"></label>
-        <label class="student-field">E-mail<input value="aluno@example.com"></label>
-        <label class="student-field">CPF<input value="12345678900"></label>
-        <label class="student-field">WhatsApp / telefone<input value="24999999999"></label>
-        <label class="student-field">Instagram<input value="@aluno"></label>
-        <label class="student-field student-span-2">Endereço<input value="Rua Um, 10"></label>
-        <label class="student-field">Cidade/UF<input value="Petrópolis/RJ"></label>
-        <label class="student-field">CEP<input value="25600-000"></label>
-        <div class="student-actions student-span-2"><button class="student-button" type="button">Salvar dados</button></div>
+        <label class="form-field student-span-2">Nome completo<input value="Aluno Teste"></label>
+        <label class="form-field">E-mail<input value="aluno@example.com"></label>
+        <label class="form-field">CPF<input value="12345678900"></label>
+        <label class="form-field">WhatsApp / telefone<input value="24999999999"></label>
+        <label class="form-field">Instagram<input value="@aluno"></label>
+        <label class="form-field student-span-2">Endereço<input value="Rua Um, 10"></label>
+        <label class="form-field">Cidade/UF<input value="Petrópolis/RJ"></label>
+        <label class="form-field">CEP<input value="25600-000"></label>
+        <div class="student-actions student-span-2"><button class="button button-primary" type="button">Salvar dados</button></div>
       </form>
     </section>
-
     <section class="student-workflow-panel" aria-labelledby="security-heading" data-testid="security">
       <header class="student-workflow-heading"><div><p class="student-kicker">Segurança</p><h2 class="student-subtitle" id="security-heading">Senha</h2></div><p>O acesso é feito com o seu e-mail e a senha escolhida na ativação da conta.</p></header>
-      <div class="student-actions"><a class="student-button student-button-secondary" data-testid="password-link" href="#senha">Alterar senha</a></div>
+      <div class="student-actions"><a class="button button-secondary" data-testid="password-link" href="#senha">Alterar senha</a></div>
     </section>
-
     <section class="student-workflow-panel" aria-labelledby="session-heading" data-testid="session">
       <header class="student-workflow-heading"><div><p class="student-kicker">Sessão</p><h2 class="student-subtitle" id="session-heading">Sair da conta</h2></div><p>Encerre a sessão deste navegador.</p></header>
-      <form class="student-actions"><button class="student-button student-button-secondary" data-testid="logout" type="button">Sair</button></form>
+      <form class="student-actions"><button class="button button-secondary" data-testid="logout" type="button">Sair</button></form>
     </section>
   </main>
   <nav class="student-mobile-nav" aria-label="Navegação da área do aluno"><a href="#"><span>01</span>Cursos</a><a href="#"><span>02</span>Testes</a><a href="#" aria-current="page"><span>03</span>Conta</a></nav>
