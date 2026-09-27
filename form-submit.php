@@ -30,6 +30,7 @@ try{
     $submissionIdQuery=$db->prepare('SELECT id FROM cms_form_submissions WHERE submission_uuid=?');
     $submissionIdQuery->execute([$submissionUuid]);
     $submissionId=(int)$submissionIdQuery->fetchColumn();
+    if($submissionId>0&&cms_form_purpose($form)==='enrollment'&&course_domain_available($db))course_bind_submission($db,$submissionId,(int)$form['id'],(int)$page['id']);
     if($submissionId>0&&$authenticatedEnrollmentStudent)student_enrollment_bind_authenticated_submission($db,$submissionId,$form,$values,$authenticatedEnrollmentStudent);
     try{
         analytics_record_event($db,[
