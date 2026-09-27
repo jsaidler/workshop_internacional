@@ -54,13 +54,24 @@ Contrato:
 - curso sem aulas mostra **Sem aulas cadastradas**, não `0/0 aulas liberadas`;
 - quando houver mais de uma matrícula, o workspace possui retorno explícito para **Todos os cursos**.
 
-**Estado:** implementação em `refactor/student-course-context-a2-2026-09-27`.
+**Estado:** concluído no PR #127, merge `5fee4bd87a4cffe1393a80615f9f4968f748c221`. A suíte passou completa, incluindo Playwright/Chromium, build e dry-run. O deploy de produção run `36295230388` concluiu com sucesso e publicou o artefato para o atualizador administrativo.
 
 ### A3 — Conta completa
 
-No celular, `Sair` desaparece e `Conta` leva apenas ao perfil. A rota de senha existe, mas não é descoberta pela interface.
+No celular, o shell ocultava `Sair` e `Conta` levava somente ao formulário de perfil. A rota de senha existia, mas não era descoberta pela interface. O formulário de perfil ainda usava um grid de duas colunas inline que não obedecia à regra responsiva da Área do aluno.
 
-Contrato futuro: `Conta` deve agrupar dados pessoais, segurança e encerramento de sessão, preservando uma única identidade global.
+Contrato:
+
+- `Conta` é o destino completo da identidade autenticada, reunindo **Dados pessoais**, **Segurança** e **Sessão**;
+- o perfil usa a grade canônica `.student-form-grid`, que vira uma coluna no celular;
+- `Alterar senha` é uma ação visível da Conta e usa a rota existente `/aluno/senha.php`;
+- depois da alteração de senha iniciada pela Conta, o retorno padrão desse fluxo é a própria Conta;
+- a tela de alteração de senha autenticada oferece retorno explícito `← Conta`;
+- o primeiro acesso continua separado e não recebe navegação de conta antes da ativação;
+- `Sair` fica disponível dentro de Conta também no celular e continua usando POST + CSRF no endpoint canônico `/aluno/logout.php`;
+- o logout rápido do topo desktop pode continuar existindo; ele não é uma segunda autoridade, apenas outro acionador do mesmo endpoint.
+
+**Estado:** implementação em `fix/student-account-complete-a3-2026-09-27`.
 
 ### A4 — Continuidade do material
 
@@ -95,8 +106,8 @@ A partir do A1, cada bloco que alterar UX combina:
 ## Ordem de execução
 
 1. A1 — verdade do dashboard — **concluído**;
-2. A2 — contexto curso/turma — **em implementação**;
-3. A3 — Conta completa;
+2. A2 — contexto curso/turma — **concluído**;
+3. A3 — Conta completa — **em implementação**;
 4. A4 — continuidade do material;
 5. A5 — entrada e recuperação;
 6. A6 — índice de testes;
