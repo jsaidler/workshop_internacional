@@ -15,7 +15,7 @@ A regra operacional permanece: correções e melhorias seguem em blocos pequenos
 | Múltiplas matrículas independentes | `course_enrollments` preserva uma matrícula por conta/turma e reativa sem duplicar | CORRETO | PR #103 | manter |
 | Hierarquia real de páginas | `parent_page_id`, validação de ciclo/idioma/atividade, árvore e ordenação entre irmãos | CORRETO | PRs #104 e #112; `app/cms_page_structure.php`, `admin/pages.php` | manter |
 | Hierarquia não altera URL | mudar página superior não altera slug/URL | CORRETO | `cms_page_set_parent()` | manter |
-| Acesso da página | público, autenticado, atividade e turma específica | CORRETO | PR #105; `app/cms_access.php`, `editor/cms-access-controls.js` | melhorar apenas integração visual do inspetor |
+| Acesso da página | público, autenticado, atividade e turma específica | CORRETO | PR #105; `app/cms_access.php`, `editor/cms-access-controls.js` | manter integração pelo inspetor coerente |
 | Audiência da seção | público, autenticado, atividade e turma | CORRETO | PR #106; atributos no próprio HTML CMS | manter |
 | Disponibilidade da seção | imediata, agendada e controlada por aula | CORRETO | PR #106; validação de datas/aula | manter |
 | Autorização server-side | página e seção são filtradas no servidor; conteúdo sem autorização não é enviado ao público | CORRETO | `cms_access_page_allowed()` e `cms_access_filter_html()` | manter |
@@ -36,7 +36,7 @@ A regra operacional permanece: correções e melhorias seguem em blocos pequenos
 | Regressão do runtime real do editor | CI verifica a composição efetivamente carregada pelo editor e contratos críticos de interação/mídia | CORRETO após J1 | PR #118; `tools/test-editor-runtime-integration.php` | ampliar quando novas camadas críticas entrarem |
 | Biblioteca “Adicionar seção” | o caminho ativo abre `pro-components-dialog`; `cms-editor-consolidation.js` renomeia as abas para **Seções prontas** e **Blocos salvos** e intercepta os gatilhos antigos | CORRETO NO CAMINHO ATIVO | `cms-pro-editor.js` + `cms-editor-consolidation.js` | não duplicar implementação |
 | Biblioteca única “Seções prontas + Blocos salvos” | `cms-pro-editor.js` carrega blocos por `admin/api/blocks.php`, insere cópia independente e permite salvar a seção atual como bloco | CORRETO NO CAMINHO ATIVO | a primeira leitura de `cms-editor-v3.js` isoladamente levou a uma classificação incorreta; a camada de consolidação é a autoridade de UI ativa | remover a biblioteca legada apenas em bloco posterior, com regressão |
-| Coerência do inspetor | propriedades funcionais vêm de módulos diferentes e alguns controles são injetados depois do inspetor base | PARCIAL / UX FRAGMENTADA | página, seção, acesso, layout e mídia são compostos por várias camadas JS | **próximo bloco** |
+| Coerência do inspetor | seção organizada em Identidade, Layout, Audiência e Disponibilidade; página organizada em Identidade, Navegação/aparência, SEO e Audiência; acesso da página com autosave e estados explícitos | IMPLEMENTADO NO J2 | PR #120; `cms-inspector-coherence.js` reorganiza os controles existentes sem duplicar backend nem handlers | validar, integrar e manter regressão |
 | Autoridade de interação do editor | seleção, estrutura, DnD, hover, promoção legada e inserção continuam distribuídos por módulos sobrepostos | FRÁGIL, MAS COM REGRESSÃO MELHOR | PR #118 passou a travar parte do stack real; ainda há sobreposição | reduzir gradualmente, uma responsabilidade por PR |
 
 ## Correção da auditoria: biblioteca de seções
@@ -53,15 +53,17 @@ O PR #118 removeu do runtime o padrão que cancelava `pointerdown` com `preventD
 
 O mesmo PR adicionou `tools/test-editor-runtime-integration.php` ao CI. Essa regressão verifica a ordem das camadas críticas do editor, proíbe a reintrodução do clique sintético/cancelador e confirma que mídia privada e hover continuam ligados ao runtime efetivo.
 
+## J2 — coerência do inspetor
+
+O PR #120 consolida a apresentação do inspetor sem criar nova autoridade de dados.
+
+Na seleção de seção, a interface passa a apresentar quatro grupos editoriais: **Identidade**, **Layout**, **Audiência** e **Disponibilidade**. Os controles já existentes são movidos no DOM, preservando seus listeners e os atributos canônicos da seção. O acesso continua usando `data-cms-access`, `data-cms-cohort-id`, `data-cms-availability`, `data-cms-visible-from`, `data-cms-visible-until` e `data-cms-lesson-id`.
+
+Nas configurações da página, os controles passam a ser organizados em **Identidade**, **Navegação e aparência**, **SEO e compartilhamento** e **Audiência**. O botão isolado **Salvar acesso da página** é removido: alteração de audiência/turma usa a mesma API canônica já existente, com autosave curto e estados visíveis de salvando, salvo e erro.
+
+A camada `cms-inspector-coherence.js` é carregada pelo runtime real depois da coerência de seções. Há regressão estática do runtime e regressão Playwright para confirmar os grupos e que mover controles no DOM não elimina os listeners já ligados por outras camadas.
+
 ## Ordem revisada dos próximos blocos
-
-### J2 — coerência do inspetor
-
-- organizar a seleção de seção em grupos claros: **Identidade**, **Layout**, **Audiência** e **Disponibilidade**;
-- evitar que controles de módulos diferentes pareçam painéis independentes sem relação;
-- eliminar ações de salvar isoladas quando puderem participar do fluxo normal da página;
-- estados alterado/salvo/erro visíveis e previsíveis;
-- preservar o backend e os atributos canônicos existentes.
 
 ### J3 — coerência da biblioteca e remoção de caminho legado
 
