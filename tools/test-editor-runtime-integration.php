@@ -6,6 +6,7 @@ function must_editor_runtime(bool $condition,string $message): void {if(!$condit
 
 $root=dirname(__DIR__);
 $index=(string)file_get_contents($root.'/editor/index.html');
+$coreEditor=(string)file_get_contents($root.'/editor/cms-editor-v3.js');
 $reliability=(string)file_get_contents($root.'/editor/cms-inline-reliability.js');
 $coherence=(string)file_get_contents($root.'/editor/cms-section-coherence.js');
 $inspector=(string)file_get_contents($root.'/editor/cms-inspector-coherence.js');
@@ -57,7 +58,13 @@ must_editor_runtime(str_contains($access,'Salvando acesso')&&str_contains($acces
 
 must_editor_runtime(!str_contains($index,'id="section-dialog"'),'legacy section library dialog is still shipped in the editor DOM');
 must_editor_runtime(!str_contains($index,'id="section-library"'),'legacy section library host is still shipped in the editor DOM');
-must_editor_runtime(str_contains($consolidation,'button.onclick=null'),'consolidated section library does not clear legacy property handlers');
+must_editor_runtime(!str_contains($coreEditor,"sectionDialog=$('#section-dialog')"),'core editor still references the legacy section dialog');
+must_editor_runtime(!str_contains($coreEditor,"sectionLibrary=$('#section-library')"),'core editor still references the legacy section library host');
+must_editor_runtime(!str_contains($coreEditor,'const templates=['),'core editor still contains the legacy hardcoded section templates');
+must_editor_runtime(!str_contains($coreEditor,'function openSections()'),'core editor still contains the legacy section-library implementation');
+must_editor_runtime(!str_contains($coreEditor,"$('#add-section').onclick=openSections"),'core editor still binds the legacy top section-add handler');
+must_editor_runtime(!str_contains($coreEditor,"$('#add-section-side').onclick=openSections"),'core editor still binds the legacy side section-add handler');
+must_editor_runtime(str_contains($consolidation,'button.onclick=null'),'consolidated section library does not clear property handlers defensively');
 must_editor_runtime(!str_contains($consolidation,'stopImmediatePropagation'),'consolidated section library still depends on suppressing competing handlers');
 must_editor_runtime(str_contains($consolidation,"readyTab.textContent='Seções prontas'")&&str_contains($consolidation,"blocksTab.textContent='Blocos salvos'"),'consolidated section library tabs are not canonical');
 must_editor_runtime(str_contains($consolidation,"['add-section','add-section-side']"),'both section-add entry points are not governed by the consolidated library');
