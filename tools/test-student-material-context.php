@@ -34,10 +34,11 @@ must_student_material_context(student_enrollment_material_context($db,$student,$
 $renderer=(string)file_get_contents(__DIR__.'/../app/cms_renderer.php');
 $css=(string)file_get_contents(__DIR__.'/../assets/cms-header.css');
 must_student_material_context(str_contains($renderer,'student_enrollment_material_context'),'public renderer does not derive context from the canonical enrollment helper');
-must_student_material_context(str_contains($renderer,'data-cms-student-context'),'public renderer does not expose the protected material context bar');
+must_student_material_context(str_contains($renderer,'cms_access_filter_html($db,$activity,$body,$currentStudent,$editor)'),'public renderer does not apply the canonical section access filter');
+must_student_material_context(!str_contains($renderer,'data-cms-student-context')&&!str_contains($css,'.cms-student-context'),'protected material still creates a second header bar');
 must_student_material_context(str_contains($renderer,"'/aluno/?cohort='"),'course return link does not preserve the cohort uuid');
-must_student_material_context(str_contains($renderer,'href="/aluno/testes.php"')&&str_contains($renderer,'href="/aluno/perfil.php"'),'material context does not expose tests and account');
+must_student_material_context(str_contains($renderer,'/aluno/testes.php?cohort=')&&str_contains($renderer,'href="/aluno/perfil.php"'),'single topbar does not expose tests and account');
+must_student_material_context(str_contains($renderer,'$studentAccessLabel=$materialContext?$contextBackLabel:$studentAreaLabel'),'single topbar does not turn the student action into the course return action');
 must_student_material_context(str_contains($renderer,'if(!$editor)'),'editor preview is not protected from student-session context UI');
-must_student_material_context(str_contains($css,'.cms-student-context')&&str_contains($css,'@media(max-width:620px)'),'material context is missing responsive styling');
 
 echo "student-material-context: ok\n";

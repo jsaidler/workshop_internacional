@@ -5,12 +5,15 @@
 Antes de alterar código, conteúdo, CMS, deploy ou fluxo administrativo, ler nesta ordem:
 
 1. `docs/PROJECT_STATE.md`;
-2. `docs/CMS_PROFESSIONAL.md`;
-3. `docs/UI_CONTENT_RULES.md`;
-4. `docs/DESIGN_TYPOGRAPHY.md`;
-5. `docs/CMS_V3_DEPLOYMENT.md`;
-6. `README.md`;
-7. `DEPLOY.md`.
+2. `docs/WORKSHOP_PAGE_REGISTRATION_STUDENT_ARCHITECTURE_2026-09-27.md`;
+3. `docs/CMS_PROFESSIONAL.md`;
+4. `docs/UI_CONTENT_RULES.md`;
+5. `docs/DESIGN_TYPOGRAPHY.md`;
+6. `docs/CMS_V3_DEPLOYMENT.md`;
+7. `README.md`;
+8. `DEPLOY.md`.
+
+Quando `CMS_PROFESSIONAL.md`, `README.md` ou documentação histórica ainda descreverem uma `activity` como curso/workshop, a arquitetura de workshops como páginas documentada em `WORKSHOP_PAGE_REGISTRATION_STUDENT_ARCHITECTURE_2026-09-27.md` prevalece até a remoção completa dessas referências legadas.
 
 Não reconstruir decisões pela memória quando os documentos vigentes disserem algo diferente. Quando uma decisão estrutural, editorial ou operacional mudar, atualizar os documentos canônicos no mesmo trabalho; não deixar a documentação para uma etapa futura.
 
