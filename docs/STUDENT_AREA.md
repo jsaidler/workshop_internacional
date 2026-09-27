@@ -21,6 +21,20 @@ Antes de criar qualquer tela administrativa nova, deve-se verificar se a entidad
 
 Uma pessoa entra no sistema por inscrição confirmada ou importação histórica por CSV. O primeiro acesso usa e-mail + CPF como prova inicial de identidade; depois o usuário cria senha própria.
 
+### Experiência de Conta
+
+`Conta` é o destino autenticado para o gerenciamento da identidade global e não pertence a um curso específico. A tela reúne três responsabilidades já existentes, sem criar backend paralelo:
+
+- **Dados pessoais** — perfil global reutilizável em novas inscrições;
+- **Segurança** — acesso à alteração de senha pelo fluxo canônico `/aluno/senha.php`;
+- **Sessão** — encerramento da sessão pelo endpoint canônico `/aluno/logout.php`.
+
+O formulário de perfil usa a grade responsiva da Área do aluno. No celular, os campos passam a uma única coluna; não existe grid inline de desktop que ignore as regras responsivas.
+
+A ação **Sair** precisa permanecer encontrável no celular mesmo que o logout rápido do cabeçalho desktop esteja oculto nesse viewport. Ambos usam o mesmo endpoint `POST` e o mesmo escopo CSRF `student-logout`.
+
+A alteração de senha iniciada por `Conta` retorna para `Conta` após sucesso. A tela de alteração autenticada também oferece retorno explícito para `Conta`. O fluxo de primeiro acesso continua separado: enquanto a conta ainda está sendo ativada, não se apresenta navegação de conta autenticada.
+
 ## Turmas
 
 A turma mantém identidade própria e pode ter nome, slug, estado, início, fim, observações e definição como padrão alterados sem recriar matrículas.
@@ -161,6 +175,9 @@ Os testes devem provar que:
 - `cohort_uuid` desconhecido não seleciona outra matrícula por fallback;
 - `active` e `closed` são comunicados sem mudar silenciosamente a política de acesso;
 - curso sem aulas não aparece como `0/0 aulas liberadas`;
+- `Conta` apresenta perfil, alteração de senha e logout em desktop e celular;
+- o formulário de perfil usa a grade responsiva e fica em uma coluna no celular;
+- o logout de `Conta` continua sendo POST + CSRF e a alteração de senha autenticada permite retornar à Conta;
 - a Área do aluno não apresenta “Páginas protegidas” como domínio administrativo;
 - a Biblioteca de mídia continua sendo a autoridade de mídia editorial;
 - o registro de teste persiste e exibe o branqueador;
