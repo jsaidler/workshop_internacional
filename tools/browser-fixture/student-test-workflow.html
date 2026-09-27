@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:monospace}</style>
+  <link rel="stylesheet" href="/template/page.css">
+  <link rel="stylesheet" href="/assets/student-area.css">
+  <title>Student test workflow fixture</title>
+</head>
+<body class="student-page">
+<div class="student-shell"><main class="student-main" id="app">
+  <div class="student-appbar"><a class="student-back" data-testid="tests-back" href="/tools/browser-fixture/student-tests-context.html?cohort=cohort-a">← Testes</a><span class="student-status">Rascunho</span></div>
+  <p class="student-kicker">Curso A · Turma Setembro</p>
+  <h1 class="student-title student-title-record">Teste A</h1>
+  <nav class="student-step-nav" aria-label="Etapas do teste">
+    <a aria-disabled="true" tabindex="-1"><span>01</span><strong>Exposição</strong></a>
+    <a aria-disabled="true" tabindex="-1" aria-current="step"><span>02</span><strong>Revelação</strong></a>
+    <a aria-disabled="true" tabindex="-1"><span>03</span><strong>Revisar e enviar</strong></a>
+  </nav>
+  <section class="student-workflow-panel" data-testid="development-panel">
+    <header class="student-workflow-heading"><div><p class="student-kicker">Etapa 02</p><h2 class="student-subtitle">Revelação e resultado</h2></div><p>O avanço principal salva os dados antes de abrir a revisão.</p></header>
+    <form id="student-development-form" class="student-mobile-form">
+      <div class="student-form-group"><h3>Primeira revelação</h3><div class="student-form-grid"><label class="student-field">Revelador<input name="developer" value=""></label><label class="student-field">Tempo<input name="development_time" value=""></label></div></div>
+      <div class="student-form-group"><h3>Resultado</h3><div class="student-form-grid"><label class="student-field student-span-2">O que aconteceu?<textarea name="notes"></textarea></label></div></div>
+    </form>
+    <div class="student-capture-block student-capture-result"><div><span class="student-capture-number">B</span><div><h3>Fotografe o resultado</h3><p>Referência visual do positivo processado.</p></div></div></div>
+    <div class="student-sticky-action"><button class="student-button" data-testid="save-development" type="submit" form="student-development-form">Salvar revelação e continuar →</button></div>
+  </section>
+</main></div>
+<script>
+const app=document.getElementById('app');
+document.getElementById('student-development-form').addEventListener('submit',event=>{
+  event.preventDefault();
+  const data=new FormData(event.currentTarget);
+  const developer=data.get('developer')||'—';
+  const notes=data.get('notes')||'—';
+  app.innerHTML=`<div class="student-appbar"><a class="student-back" data-testid="tests-back" href="/tools/browser-fixture/student-tests-context.html?cohort=cohort-a">← Testes</a><span class="student-status">Rascunho</span></div><p class="student-kicker">Curso A · Turma Setembro</p><h1 class="student-title student-title-record">Teste A</h1><nav class="student-step-nav"><a aria-disabled="true" tabindex="-1"><span>01</span><strong>Exposição</strong></a><a aria-disabled="true" tabindex="-1"><span>02</span><strong>Revelação</strong></a><a aria-disabled="true" tabindex="-1" aria-current="step"><span>03</span><strong>Revisar e enviar</strong></a></nav><section class="student-workflow-panel" data-testid="review-panel"><h2 class="student-subtitle">Revisar e enviar</h2><p data-testid="saved-developer">${developer}</p><p data-testid="saved-notes">${notes}</p></section>`;
+});
+</script>
+</body>
+</html>
