@@ -3,14 +3,16 @@ declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';
 security_headers();student_private_headers();
 $db=database();$student=student_account_current($db);
-$id=(int)($_GET['id']??0);
-if(!$student){header('Location: /aluno/login.php?next='.rawurlencode('/aluno/teste-compartilhado.php?id='.$id),true,303);exit;}
+$id=(int)($_GET['id']??0);$cohortValue=$_GET['cohort']??null;$requestedCohortUuid=is_string($cohortValue)?trim($cohortValue):'';$nextParams=['id'=>$id];if($requestedCohortUuid!=='')$nextParams['cohort']=$requestedCohortUuid;$next='/aluno/teste-compartilhado.php?'.http_build_query($nextParams);
+if(!$student){header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
 $test=student_test_accessible_to_student($db,$id,(int)$student['id']);
-if(!$test||(int)$test['student_id']===(int)$student['id']){header('Location: /aluno/teste.php?id='.$id,true,303);exit;}
+if(!$test){http_response_code(404);student_shell_start('Teste não encontrado',null,$student);?><div class="student-empty">Teste não encontrado.</div><?php student_shell_end();exit;}
+if((int)$test['student_id']===(int)$student['id']){$params=['id'=>$id];if($requestedCohortUuid!=='')$params['cohort']=$requestedCohortUuid;header('Location: /aluno/teste.php?'.http_build_query($params),true,303);exit;}
+$enrollments=student_account_enrollments($db,(int)$student['id']);$testContext=student_enrollment_shared_test_navigation_context($enrollments,$test,$requestedCohortUuid);$cohortUuid=$testContext?(string)$testContext['cohort_uuid']:'';$testsUrl='/aluno/testes.php'.($cohortUuid!==''?'?cohort='.rawurlencode($cohortUuid):'');$activity=activity_by_id($db,(int)$test['activity_id']);
 $media=student_test_media($db,$id);$sceneMedia=student_test_media_by_phase($media,'scene');$resultMedia=student_test_media_by_phase($media,'result');$messages=student_test_messages($db,$id);
-student_shell_start((string)$test['title'].' · Compartilhado',null,$student);?>
-<div class="student-appbar"><a class="student-back" href="/aluno/testes.php">← Testes</a><span class="student-status"><?=h(student_test_visibility_label((string)$test['visibility']))?></span></div>
-<p class="student-kicker"><?=h((string)$test['student_name'])?> · <?=h((string)$test['cohort_title'])?></p>
+student_shell_start((string)$test['title'].' · Compartilhado',$activity?:null,$student);?>
+<div class="student-appbar"><a class="student-back" href="<?=h($testsUrl)?>">← Testes</a><span class="student-status"><?=h(student_test_visibility_label((string)$test['visibility']))?></span></div>
+<p class="student-kicker"><?=h((string)($activity['public_title']??''))?><?=!empty($activity)?' · ':''?><?=h((string)$test['student_name'])?> · <?=h((string)$test['cohort_title'])?></p>
 <h1 class="student-title student-title-record"><?=h((string)$test['title'])?></h1>
 <p class="student-lead student-lead-compact">Ficha, imagens e conversa compartilhadas conforme a visibilidade escolhida pelo autor do teste.</p>
 <section class="student-workflow-panel">

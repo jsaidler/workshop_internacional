@@ -136,13 +136,30 @@ Contrato:
 - links de detalhe carregam o `cohort_uuid` como contexto de retorno, sem alterar a autoridade de acesso do teste;
 - a interface não cria filtros administrativos, “curso atual” persistido nem nova entidade de autorização.
 
-**Estado:** implementação em `fix/student-tests-context-a6-2026-09-27`.
+**Estado:** concluído no PR #131, merge `d97c3c0c47ae8945def6518defcaad1803954c53`. A suíte passou completa, incluindo regressão PHP, Playwright/Chromium, build e dry-run. O deploy de produção run `36299092654` concluiu com sucesso e publicou o artefato para o atualizador administrativo.
 
 ### A7 — Workflow do teste
 
-A etapa de Revelação possui hoje uma ação para salvar e outra para revisar; o segundo caminho pode abandonar dados ainda não enviados. A revisão deve manter um único avanço principal: salvar e continuar.
+A etapa de Revelação possuía duas rotas concorrentes: **Salvar revelação** submetia o formulário, enquanto **Revisar teste** era apenas um link e podia abandonar alterações ainda não enviadas. A faixa de etapas também funcionava como navegação livre e permitia sair de uma etapa de edição sem passar pela ação de salvamento.
 
-Também devem ser revistos estados de conclusão das etapas e o contexto de curso/turma nos testes compartilhados.
+Contrato:
+
+- Exposição mantém um único avanço principal: **Salvar exposição e continuar**;
+- Revelação passa a ter um único avanço principal: **Salvar revelação e continuar**;
+- o botão de avanço da Revelação submete o próprio formulário de revelação antes de abrir a revisão, mesmo estando visualmente depois do bloco de fotografia do resultado;
+- deixam de existir o botão secundário **Salvar revelação** e o link concorrente **Revisar teste**;
+- a faixa 01/02/03 é indicador de progresso e etapa atual, não navegação livre enquanto há formulários editáveis; edição de etapas anteriores parte da revisão pelos links explícitos **Editar exposição** e **Editar revelação**;
+- não se inventa uma nova coluna de “etapa concluída” nem se deduz conclusão porque algum campo está preenchido: o estado de ciclo do teste (`draft`, `submitted`, `needs_revision`, `reviewed`) continua sendo a autoridade persistida;
+- a ficha própria valida o contexto de retorno contra a própria turma do teste; um `cohort_uuid` de outra matrícula não é aceito como contexto daquele registro;
+- contexto válido é preservado nos POSTs, uploads, remoções de mídia, edição, revisão e exclusão;
+- a ficha própria usa o Design da atividade real do teste;
+- em teste compartilhado com visibilidade `cohort`, o contexto de retorno precisa ser a própria turma compartilhada;
+- em teste compartilhado com visibilidade `course`, o contexto pode ser qualquer matrícula ativa do leitor na mesma atividade, inclusive outra turma desse curso, mas nunca outro curso;
+- se mais de uma matrícula da mesma atividade puder servir de retorno e a URL não indicar uma delas, não se inventa uma seleção;
+- a ficha compartilhada usa o Design da atividade do teste e retorna ao índice de Testes correspondente quando há contexto válido;
+- nenhuma dessas regras altera a autoridade de acesso ao registro: propriedade e visibilidade continuam sendo verificadas pelos serviços canônicos existentes.
+
+**Estado:** implementação em `fix/student-test-workflow-a7-2026-09-27`.
 
 ## Cobertura de regressão
 
@@ -162,6 +179,6 @@ A partir do A1, cada bloco que alterar UX combina:
 4. A4 — continuidade do material — **concluído**;
 5. A5a — hierarquia de entrada — **concluído**;
 6. A5b — recuperação de senha — **aguarda infraestrutura de e-mail transacional**;
-7. A6 — índice de testes — **em implementação**;
-8. A7 — workflow do teste;
+7. A6 — índice de testes — **concluído**;
+8. A7 — workflow do teste — **em implementação**;
 9. revisão transversal final.

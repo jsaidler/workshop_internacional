@@ -155,11 +155,36 @@ Fotos produzidas pelos usuários nos testes continuam separadas porque são anex
 - mudança de visibilidade retorna ao mesmo workspace quando o `cohort_uuid` de origem é válido;
 - links para ficha própria ou compartilhada podem transportar `cohort_uuid` somente como contexto de retorno; autorização continua derivada do teste e das matrículas reais.
 
+### Workflow da ficha
+
 O fluxo móvel acompanha a ordem do trabalho:
 
 1. **Exposição** — foto/anexo da cena; filme/lote; EI/ISO; diafragma; tempo calculado; reciprocidade; condição da luz; relação entre claras e sombras.
 2. **Revelação** — revelador; diluição; temperatura; tempo; movimentação/agitação; **branqueador usado**; observações; foto/anexo do resultado.
 3. **Revisar e enviar** — ficha e imagens reunidas antes da avaliação.
+
+O avanço entre etapas editáveis precisa salvar a etapa atual. A faixa 01/02/03 informa posição no fluxo; ela não é uma navegação livre capaz de abandonar alterações ainda não submetidas.
+
+- Exposição avança por **Salvar exposição e continuar**;
+- Revelação avança por **Salvar revelação e continuar**;
+- não existe um botão separado de salvar e, ao lado, um link que pule diretamente para Revisão;
+- na Revisão, **Editar exposição** e **Editar revelação** são os retornos explícitos para corrigir uma etapa; depois da edição, o avanço volta a passar pelo respectivo salvamento;
+- o sistema não fabrica “etapa concluída” com base em campo preenchido. Os estados persistidos continuam sendo os estados do teste (`draft`, `submitted`, `needs_revision`, `reviewed`).
+
+A ficha própria preserva o contexto da matrícula sem torná-lo autoridade do teste:
+
+- o contexto de retorno precisa corresponder à própria turma do teste;
+- um `cohort_uuid` pertencente a outra matrícula é descartado como contexto;
+- POSTs, upload/remoção de mídia, revisão e exclusão carregam apenas um contexto já validado;
+- o shell usa o Design da atividade real do teste.
+
+Na ficha compartilhada, a visibilidade continua sendo a autoridade de acesso e o contexto serve somente à navegação:
+
+- `cohort` aceita como retorno somente a matrícula do leitor naquela mesma turma;
+- `course` aceita uma matrícula ativa do leitor na mesma atividade, inclusive outra turma do curso;
+- matrícula de outra atividade nunca é contexto válido;
+- quando mais de uma matrícula da mesma atividade poderia servir e a origem não informa qual delas, o sistema não escolhe uma arbitrariamente;
+- o shell usa o Design da atividade do teste e o retorno a **Testes** preserva o workspace quando houver contexto inequívoco.
 
 O campo **Branqueador** permite escolher valores usados na pesquisa (**Solução peroxiacética** ou **Cloreto férrico**) e também aceitar outro texto, porque o registro deve descrever o processo efetivamente utilizado sem limitar experimentações futuras.
 
@@ -167,7 +192,7 @@ As fotografias ficam em armazenamento próprio do teste e são servidas somente 
 
 ### Propriedade, exclusão e visibilidade
 
-O autor pode excluir definitivamente seu teste; a exclusão remove ficha, mensagens, registros de mídia e arquivos físicos.
+O autor pode excluir definitivamente seu teste; a exclusão remove ficha, mensagens, registros de mídia e arquivos físicos. Quando a exclusão foi iniciada dentro de um workspace válido, o retorno permanece nesse mesmo índice de Testes.
 
 Visibilidade:
 
@@ -217,6 +242,11 @@ Os testes devem provar que:
 - testes próprios de outra turma não aparecem no contexto selecionado;
 - compartilhamento `cohort` fica na turma e compartilhamento `course` pode atravessar turmas apenas dentro da mesma atividade;
 - o workspace de curso abre Testes já com o seu `cohort_uuid`;
+- Exposição e Revelação avançam somente por uma ação que salva a etapa atual;
+- a faixa de etapas não oferece um atalho que abandone dados editados antes do submit;
+- a ficha própria rejeita como contexto de retorno um `cohort_uuid` de outra turma;
+- a ficha compartilhada preserva `cohort` apenas na mesma turma e `course` apenas dentro da mesma atividade;
+- a exclusão retorna ao workspace validado quando houver contexto;
 - a Área do aluno não apresenta “Páginas protegidas” como domínio administrativo;
 - a Biblioteca de mídia continua sendo a autoridade de mídia editorial;
 - o registro de teste persiste e exibe o branqueador;
