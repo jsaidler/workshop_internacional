@@ -140,6 +140,21 @@ Fotos produzidas pelos usuários nos testes continuam separadas porque são anex
 
 ## Registro de testes
 
+### Índice de testes por matrícula
+
+`Testes` usa a mesma matrícula que estrutura o workspace de Cursos. O `cohort_uuid` na navegação identifica contexto; ele não cria estado persistido nem modifica a autorização do registro.
+
+- com uma matrícula ativa, o índice abre diretamente nesse contexto;
+- com várias matrículas, o índice mostra primeiro um seletor de curso/turma, sem misturar registros de todos os cursos;
+- UUID desconhecido não cai silenciosamente em outra matrícula;
+- o shell usa o Design da atividade selecionada;
+- a criação de teste fica presa ao `cohort_id` da matrícula aberta, validado no servidor; o usuário não recebe um seletor transversal de turmas;
+- **Seus testes** lista apenas testes cujo `cohort_id` é o da matrícula selecionada;
+- em **Compartilhados com você**, `cohort` exige a mesma turma e `course` pode trazer registros de outra turma da mesma atividade;
+- outro curso nunca aparece no contexto selecionado;
+- mudança de visibilidade retorna ao mesmo workspace quando o `cohort_uuid` de origem é válido;
+- links para ficha própria ou compartilhada podem transportar `cohort_uuid` somente como contexto de retorno; autorização continua derivada do teste e das matrículas reais.
+
 O fluxo móvel acompanha a ordem do trabalho:
 
 1. **Exposição** — foto/anexo da cena; filme/lote; EI/ISO; diafragma; tempo calculado; reciprocidade; condição da luz; relação entre claras e sombras.
@@ -197,6 +212,11 @@ Os testes devem provar que:
 - página `cohort` usa a turma autorizada pela página e não outro contexto sugerido na URL;
 - páginas `public` e `authenticated` genéricas não recebem a barra de curso;
 - a barra de contexto aparece em desktop e celular sem overflow e não entra no editor;
+- Testes com várias matrículas exige escolha de contexto antes de criar ou listar registros;
+- criação de teste não pode trocar o `cohort_id` para fora da matrícula aberta;
+- testes próprios de outra turma não aparecem no contexto selecionado;
+- compartilhamento `cohort` fica na turma e compartilhamento `course` pode atravessar turmas apenas dentro da mesma atividade;
+- o workspace de curso abre Testes já com o seu `cohort_uuid`;
 - a Área do aluno não apresenta “Páginas protegidas” como domínio administrativo;
 - a Biblioteca de mídia continua sendo a autoridade de mídia editorial;
 - o registro de teste persiste e exibe o branqueador;
