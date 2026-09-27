@@ -11,7 +11,11 @@ A revisão visual e funcional de 25/09 mostrou quatro falhas de produto que não
 
 ## Autoridade visual
 
-`template/page.css` é a autoridade visual pública também para a Área do aluno.
+`template/page.css` é a autoridade dos tokens e das primitivas visuais já existentes também para a Área do aluno.
+
+A regra estrutural vigente é: **procurar → consumir → identificar lacuna → criar/ampliar globalmente somente se necessário → consumir**. Uma nova superfície não recebe uma implementação local apenas porque precisa de um componente.
+
+As lacunas reutilizáveis que não possuíam antes uma autoridade neutra ficam em `assets/ui-core.css`: campos, select normalizado, choices, checkbox, alertas e modificadores genéricos. O comportamento reutilizável de tema e validação progressiva fica em `assets/ui-core.js`. Essas duas unidades são globais; não pertencem à Área do aluno.
 
 A Área do aluno pode manter CSS próprio **somente para layout e comportamento específicos do aplicativo**, como navegação móvel, fluxo em etapas, captura de imagens, cartões do histórico e barra de ação. Esse CSS não pode:
 
@@ -19,11 +23,14 @@ A Área do aluno pode manter CSS próprio **somente para layout e comportamento 
 - declarar stacks tipográficos próprios;
 - redefinir paleta paralela;
 - criar tokens concorrentes para `title`, `body`, `mono`, `bg`, `surface`, `text`, `muted` ou `line`;
+- recriar botão, campo, select, choice, checkbox, alert, validação ou tema com prefixo `student-*`;
 - duplicar estilos em um segundo stylesheet apenas para uma tela.
 
 A tipografia e a paleta devem vir dos tokens globais `--title`, `--body`, `--mono`, `--bg`, `--surface`, `--text`, `--muted`, `--line`, `--line-strong`, `--inverse`, `--inverse-bg` e `--focus`.
 
-O antigo `assets/student-dashboard.css` foi removido. O layout do dashboard foi incorporado ao único stylesheet funcional da Área do aluno, `assets/student-area.css`, que consome os tokens globais.
+O antigo `assets/student-dashboard.css` foi removido. `assets/student-area.css` permanece apenas como composição do aplicativo e consome as primitivas globais. `assets/student-area.js` também foi eliminado: não restou comportamento de interface que justificasse uma autoridade JavaScript exclusiva da Área do aluno.
+
+A regra completa está registrada em `GLOBAL_UI_CONSUMPTION_RULE_2026-09-27.md`.
 
 ## Nome do curso
 
@@ -75,11 +82,13 @@ A migração de `student_private_media` para a biblioteca única é tratada como
 
 ## Regressão
 
-`tools/test-admin-lifecycle-and-student-design.php` garante que:
+`tools/test-admin-lifecycle-and-student-design.php`, `tools/test-student-premium-ui.php` e `tools/test-global-ui-consumption.php` garantem que:
 
-- a Área do aluno herda `template/page.css`;
+- a Área do aluno herda `template/page.css` e consome `ui-core`;
 - Google Fonts e `student-dashboard.css` não reaparecem no shell;
-- o CSS da Área do aluno não volta a declarar stacks/paleta paralelos;
+- o CSS da Área do aluno não volta a declarar stacks/paleta paralelos nem primitivas globais locais;
+- `assets/student-area.js` não reaparece como motor paralelo de tema/validação;
+- as superfícies de aluno continuam consumindo campos, choices, alerts e botões globais;
 - o nome público do curso continua editável no Admin;
 - o aluno continua tendo acesso à exclusão integral do próprio teste;
 - o administrador continua tendo acesso à exclusão definitiva de inscrições;

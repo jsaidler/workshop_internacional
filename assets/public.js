@@ -1,6 +1,15 @@
 (()=>{
 'use strict';
 
+const assetQuery=(()=>{try{return new URL(document.currentScript?.src||location.href).search}catch{return ''}})();
+import(`/assets/ui-core.js${assetQuery}`).catch(()=>{});
+if(!document.querySelector('[data-ui-core-css]')){
+  const uiCore=document.createElement('style');
+  uiCore.dataset.uiCoreCss='1';
+  uiCore.textContent=`@import url("/assets/ui-core.css${assetQuery}") layer(cms-system);`;
+  document.head.append(uiCore);
+}
+
 // Public CMS styles are authored inside the lower `cms-system` cascade layer.
 // The renderer already marks its responsive loader with data-cms-responsive;
 // do not append a second unlayered stylesheet after Additional CSS.
@@ -30,19 +39,6 @@ if(document.querySelector('.registration-page,.registration-canonical-form')&&!d
   registration.textContent='@import url("/assets/registration.css") layer(cms-system);';
   document.head.append(registration);
 }
-
-const root=document.documentElement;
-const themeButtons=[...document.querySelectorAll('[data-theme-value]')];
-function applyTheme(theme){
-  if(theme==='auto')root.removeAttribute('data-theme');
-  else root.setAttribute('data-theme',theme);
-  themeButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.themeValue===theme)));
-  try{localStorage.setItem('workshop-theme',theme)}catch{}
-}
-let initialTheme=root.getAttribute('data-theme')||'auto';
-try{const stored=localStorage.getItem('workshop-theme');if(stored&&['auto','light','dark'].includes(stored))initialTheme=stored}catch{}
-themeButtons.forEach(button=>button.addEventListener('click',()=>applyTheme(button.dataset.themeValue)));
-applyTheme(initialTheme);
 
 const header=document.querySelector('[data-cms-public-header]');
 const navToggle=header?.querySelector('.cms-nav-toggle');
