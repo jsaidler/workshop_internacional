@@ -13,17 +13,25 @@ $inspector=(string)file_get_contents($root.'/editor/cms-inspector-coherence.js')
 $access=(string)file_get_contents($root.'/editor/cms-access-controls.js');
 $consolidation=(string)file_get_contents($root.'/editor/cms-editor-consolidation.js');
 $proEditor=(string)file_get_contents($root.'/editor/cms-pro-editor.js');
+$structureSelection=(string)file_get_contents($root.'/editor/cms-structure-selection.js');
+$structureSidebar=(string)file_get_contents($root.'/editor/cms-structure-sidebar.js');
+$structureNavigation=(string)file_get_contents($root.'/editor/cms-structure-navigation.js');
 $private=(string)file_get_contents($root.'/editor/cms-private-media-preview.js');
 $endpoint=(string)file_get_contents($root.'/admin/api/cms-private-media-slots.php');
 
-foreach(['cms-component-editor.js','cms-inline-reliability.js','cms-rich-components.js','cms-section-coherence.js','cms-inspector-coherence.js','cms-editor-consolidation.js'] as $script){
+foreach(['cms-component-editor.js','cms-structure-selection.js','cms-inline-reliability.js','cms-rich-components.js','cms-section-coherence.js','cms-inspector-coherence.js','cms-editor-consolidation.js'] as $script){
     must_editor_runtime(str_contains($index,'/editor/'.$script),'production editor does not load '.$script);
 }
 $componentPos=strpos($index,'cms-component-editor.js');
+$selectionPos=strpos($index,'cms-structure-selection.js');
 $reliabilityPos=strpos($index,'cms-inline-reliability.js');
 $richPos=strpos($index,'cms-rich-components.js');
 $sectionCoherencePos=strpos($index,'cms-section-coherence.js');
 $inspectorCoherencePos=strpos($index,'cms-inspector-coherence.js');
+must_editor_runtime(
+    $componentPos!==false&&$selectionPos!==false&&$reliabilityPos!==false&&$componentPos<$selectionPos&&$selectionPos<$reliabilityPos,
+    'canonical structure selection boundary is not loaded immediately after the component editor'
+);
 must_editor_runtime(
     $componentPos!==false&&$reliabilityPos!==false&&$richPos!==false&&$componentPos<$reliabilityPos&&$reliabilityPos<$richPos,
     'inline reliability layer is not loaded between component and rich-component layers'
@@ -70,5 +78,14 @@ must_editor_runtime(str_contains($consolidation,"readyTab.textContent='Seções 
 must_editor_runtime(str_contains($consolidation,"['add-section','add-section-side']"),'both section-add entry points are not governed by the consolidated library');
 must_editor_runtime(str_contains($proEditor,'/admin/api/blocks.php'),'saved blocks do not use the canonical blocks endpoint');
 must_editor_runtime(str_contains($proEditor,'pro-components-dialog'),'modern section library dialog is missing from the active editor layer');
+
+must_editor_runtime(str_contains($structureSelection,'window.CmsEditorStructure={select,selectSection}'),'canonical structural selection API is not exported');
+must_editor_runtime(str_contains($structureSelection,"[data-cms-column],[data-cms-container],[data-cms-component]"),'canonical structural selection API does not constrain structural targets');
+must_editor_runtime(str_contains($structureSidebar,'window.CmsEditorStructure?.select?.(target)'),'structure sidebar does not use the canonical structural selection API');
+must_editor_runtime(str_contains($structureSidebar,'window.CmsEditorStructure?.selectSection?.(section)'),'structure sidebar section navigation does not use the canonical selection boundary');
+must_editor_runtime(!str_contains($structureSidebar,'.cms-structure-tree [data-tree-select'),'structure sidebar still depends on the inspector duplicate structure tree');
+must_editor_runtime(str_contains($structureNavigation,'window.CmsEditorStructure?.select?.(node)'),'breadcrumb navigation does not use the canonical structural selection API');
+must_editor_runtime(str_contains($structureNavigation,'window.CmsEditorStructure?.selectSection?.(node)'),'breadcrumb section navigation does not use the canonical selection boundary');
+must_editor_runtime(!str_contains($structureNavigation,"dispatchEvent(new MouseEvent('click'"),'breadcrumb navigation still synthesizes structural clicks directly');
 
 echo "editor-runtime-integration: ok\n";
