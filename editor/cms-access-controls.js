@@ -3,7 +3,7 @@
 const params=new URLSearchParams(location.search),pageId=Number(params.get('page')||0),inspector=document.querySelector('#inspector'),frame=document.querySelector('#page-frame');
 if(!pageId||!inspector||!frame)return;
 let options=null,loading=null,pageSaveTimer=0,pageSaveSeq=0;
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 async function loadOptions(){if(options)return options;if(loading)return loading;loading=fetch(`/admin/api/cms-access-options.php?page=${pageId}`,{credentials:'same-origin'}).then(async r=>{const data=await r.json();if(!r.ok)throw new Error(data?.error?.code||'access_options_failed');options=data;return data;});return loading;}
 function markDirty(){const name=inspector.querySelector('#s-name,#section-name');if(name)name.dispatchEvent(new Event('change',{bubbles:true}));}
 function selectedSection(){return frame.contentDocument?.querySelector('.cms-section-selected')||null;}
