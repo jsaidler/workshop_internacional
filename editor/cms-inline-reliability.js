@@ -31,20 +31,21 @@ function install(){
   const doc=frame.contentDocument;
   if(!doc?.body||doc===boundDoc)return;
   boundDoc=doc;
-  const style=doc.createElement('style');
-  style.dataset.cmsInlineReliability='1';
-  style.textContent='.cms-inline-layer{z-index:2147483600!important}.cms-inline-palette{pointer-events:auto!important}.cms-inline-palette button{pointer-events:auto!important;position:relative;z-index:1}';
-  doc.head.append(style);
+  let style=doc.querySelector('style[data-cms-inline-reliability="1"]');
+  if(!style){
+    style=doc.createElement('style');
+    style.dataset.cmsInlineReliability='1';
+    style.textContent='.cms-inline-layer{z-index:2147483600!important}.cms-inline-palette{pointer-events:auto!important}.cms-inline-palette button{pointer-events:auto!important;position:relative;z-index:1;cursor:pointer!important}';
+    doc.head.append(style);
+  }
   observer?.disconnect();
   observer=new MutationObserver(schedulePosition);
   observer.observe(doc.body,{subtree:true,childList:true});
-  doc.addEventListener('pointerdown',event=>{
-    const button=event.target?.closest?.('.cms-inline-palette button[data-inline-type],.cms-inline-palette button[data-rich-inline-type]');
-    if(!button||button.disabled)return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    button.click();
-  },true);
+  // The palette already lives in editor-only chrome above the canvas. Do not
+  // cancel pointer events or synthesize clicks here: the browser must deliver
+  // the native button interaction so mouse, touch/pointer and keyboard follow
+  // the same path. Canvas handlers ignore editor UI or have no structural
+  // target for this layer.
   doc.addEventListener('scroll',schedulePosition,true);
   doc.defaultView?.addEventListener('resize',schedulePosition,{passive:true});
   schedulePosition();
