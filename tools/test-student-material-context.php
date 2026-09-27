@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 function fail_student_material_context(string $message): never {fwrite(STDERR,"student-material-context: $message\n");exit(1);}
 function must_student_material_context(bool $condition,string $message): void {if(!$condition)fail_student_material_context($message);}
+// This test intentionally covers the legacy activity-scoped material fallback.
+// Workshop-page resolution has its own canonical regression.
+function cms_page_workshop_root_id(PDO $db,array $page): int {return 0;}
+function workshop_course_scope_available(PDO $db): bool {return false;}
 
 require __DIR__.'/../app/student_accounts.php';
 require __DIR__.'/../app/student_enrollments.php';
