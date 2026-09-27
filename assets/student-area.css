@@ -82,3 +82,45 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
   .student-mobile-nav{position:fixed;z-index:70;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);padding:0 10px env(safe-area-inset-bottom);border-top:1px solid var(--line);background:color-mix(in srgb,var(--bg) 96%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.student-mobile-nav a{position:relative;min-height:66px;display:grid;place-items:center;align-content:center;gap:4px;color:var(--muted);font:500 9px/1 var(--mono);text-decoration:none;text-transform:uppercase;letter-spacing:.04em}.student-mobile-nav a span{font-size:8px}.student-mobile-nav a[aria-current=page]{color:var(--text);font-weight:600}.student-mobile-nav a[aria-current=page]::before{content:"";position:absolute;top:0;width:38px;height:2px;background:var(--focus)}
   .student-login-card{margin-top:24px;padding:22px 18px}.student-auth-title{font-size:44px}.student-auth-copy{font-size:15px}
 }
+
+/* 2026-09-27 UX audit: the student area is an application, not an editorial landing page. */
+:root{--student-content:1080px}
+.student-main{padding-top:38px}
+.student-title{max-width:880px;font-size:clamp(40px,5vw,64px);line-height:.98;letter-spacing:-.015em;text-transform:none}
+.student-title-record{font-size:clamp(38px,4.5vw,58px)}
+.student-lead{max-width:720px;margin-top:14px;font-size:17px;line-height:1.55;font-weight:400;color:var(--muted)}
+.student-subtitle{font-size:clamp(30px,3.5vw,44px);line-height:1;text-transform:none}
+.student-section{margin-top:36px}
+.student-appbar{margin-bottom:20px}
+.student-course-stack{margin-top:24px}
+.student-course-card{box-shadow:0 8px 28px color-mix(in srgb,var(--text) 3%,transparent)}
+.student-course-card>header{padding:24px 26px}
+.student-course-card h2{margin-top:10px;font-size:clamp(28px,3vw,38px);line-height:1.05;text-transform:none}
+.student-release-list{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.student-release-list>span{min-height:78px;padding:16px 18px}
+.student-release-list b{font-size:10px}
+.student-course-actions>div{padding:24px 26px}
+.student-resource-list{display:grid;margin-top:16px;border-top:1px solid var(--student-line-soft)}
+.student-resource-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;min-height:54px;padding:12px 0;border-bottom:1px solid var(--student-line-soft);color:var(--text);text-decoration:none}
+.student-resource-row:hover span{text-decoration:underline;text-underline-offset:4px}
+.student-resource-row span{font-size:15px;font-weight:600}
+.student-resource-row strong{font:500 10px/1.2 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.student-test-row h3{font-size:clamp(24px,3vw,30px);line-height:1.08;text-transform:none}
+.student-workflow-panel{padding:30px;box-shadow:0 8px 28px color-mix(in srgb,var(--text) 3%,transparent)}
+.student-form-group>h3,.student-danger-zone h2{font-size:26px;text-transform:none}
+@media(max-width:760px){
+  .student-shell{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .student-main{padding-top:24px}
+  .student-title{font-size:clamp(34px,10vw,46px);line-height:1}
+  .student-title-record{font-size:clamp(34px,9vw,44px)}
+  .student-lead{margin-top:12px;font-size:16px}
+  .student-section{margin-top:30px}
+  .student-course-stack{margin-top:20px}
+  .student-course-card>header{padding:20px 18px}
+  .student-course-card h2{font-size:30px}
+  .student-course-actions>div{padding:20px 18px}
+  .student-resource-row{min-height:52px}
+  .student-mobile-nav a{min-height:58px;font-size:10px;letter-spacing:.02em;text-transform:none}
+  .student-theme-switch button{font-size:8px}
+  .student-workflow-panel{padding-top:22px}
+}
