@@ -3,12 +3,14 @@ declare(strict_types=1);
 function fail_coherence(string $message): never {fwrite(STDERR,"student-platform-coherence: $message\n");exit(1);}
 if(!function_exists('app_config')){function app_config(): array{return ['timezone'=>'UTC'];}}
 if(!function_exists('utc_now')){function utc_now(): string{return gmdate('c');}}
-// This fixture verifies the legacy activity/cohort access contract. Workshop-page
-// scoping has its own canonical regression and is deliberately disabled here.
+// This fixture verifies the legacy activity/cohort access fallback. Canonical
+// course/material scoping has dedicated regressions and is disabled here.
 function workshop_course_scope_available(PDO $db): bool{return false;}
 function workshop_lesson_scope_available(PDO $db): bool{return false;}
+function course_domain_available(PDO $db): bool{return false;}
 $root=dirname(__DIR__);
 $studentAdmin=(string)file_get_contents($root.'/admin/student-area.php');
+$courseAdmin=(string)file_get_contents($root.'/admin/courses.php');
 $studentShell=(string)file_get_contents($root.'/app/student_shell.php');
 $site=(string)file_get_contents($root.'/admin/site.php');
 $adminJs=(string)file_get_contents($root.'/assets/admin.js');
@@ -34,8 +36,9 @@ if(!str_contains($submissions,'delete_registration')||!str_contains($submissions
 foreach(['data-cms-access-controls','cms-access-audience','cms-access-availability','cms-visible-from','cms-visible-until','cms-access-lesson'] as $needle)if(!str_contains($editorAccess,$needle))fail_coherence('section access control missing from canonical editor: '.$needle);
 if(!str_contains($editorHtml,'/editor/cms-access-controls.js'))fail_coherence('canonical editor does not load access controls');
 if(!str_contains($index,'cms_access_filter_html'))fail_coherence('public renderer path does not apply generic section authorization');
-if(!str_contains($studentAdmin,"if(\$view==='pages')")||!str_contains($studentAdmin,"'/admin/pages.php'"))fail_coherence('protected-pages direct view is not redirected server-side to CMS pages');
-foreach(['set_page_access','save_section_map','bind_page_media','unbind_page_media'] as $action)if(!str_contains($studentAdmin,"'".$action."'"))fail_coherence('obsolete student-area editorial action is not blocked: '.$action);
+if(!str_contains($studentAdmin,'Escolha o curso')||!str_contains($studentAdmin,'/admin/courses.php?activity='))fail_coherence('student administration does not enter canonical course context');
+if(!str_contains($courseAdmin,"'material'=>'Material'")||!str_contains($courseAdmin,'course_material_add_page')||!str_contains($courseAdmin,'/editor/?page='))fail_coherence('course material is not a contextual view of canonical CMS pages/editor');
+if(str_contains($courseAdmin,'material-editor')||str_contains($courseAdmin,'material_renderer'))fail_coherence('parallel material editor/renderer introduced');
 foreach(['Agendar','Liberar agora','Bloquear','/admin/api/course-lesson-release.php'] as $needle)if(!str_contains($adminJs,$needle))fail_coherence('lesson scheduling missing from existing lessons interface: '.$needle);
 if(!str_contains($media,'admin-media-privacy.js')||!str_contains($mediaPrivacy,"['public','private']"))fail_coherence('media library is not privacy authority');
 
