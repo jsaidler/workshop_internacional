@@ -34,9 +34,10 @@ A regra operacional permanece: correções e melhorias seguem em blocos pequenos
 | Nome interno de nós | `data-cms-editor-label` editável no inspetor | CORRETO | `cms-structure-labels.js` | manter |
 | Inserção interna de componentes | paleta cria componentes antes/depois/dentro e agora preserva o clique nativo do navegador | CORRETO após J1 | PR #118; `cms-inline-reliability.js` não cancela `pointerdown` nem sintetiza `click()` | manter regressões Playwright + runtime |
 | Regressão do runtime real do editor | CI verifica a composição efetivamente carregada pelo editor e contratos críticos de interação/mídia | CORRETO após J1 | PR #118; `tools/test-editor-runtime-integration.php` | ampliar quando novas camadas críticas entrarem |
-| Biblioteca “Adicionar seção” | o caminho ativo abre `pro-components-dialog`; `cms-editor-consolidation.js` renomeia as abas para **Seções prontas** e **Blocos salvos** e intercepta os gatilhos antigos | CORRETO NO CAMINHO ATIVO | `cms-pro-editor.js` + `cms-editor-consolidation.js` | não duplicar implementação |
-| Biblioteca única “Seções prontas + Blocos salvos” | `cms-pro-editor.js` carrega blocos por `admin/api/blocks.php`, insere cópia independente e permite salvar a seção atual como bloco | CORRETO NO CAMINHO ATIVO | a primeira leitura de `cms-editor-v3.js` isoladamente levou a uma classificação incorreta; a camada de consolidação é a autoridade de UI ativa | remover a biblioteca legada apenas em bloco posterior, com regressão |
-| Coerência do inspetor | seção organizada em Identidade, Layout, Audiência e Disponibilidade; página organizada em Identidade, Navegação/aparência, SEO e Audiência; acesso da página com autosave e estados explícitos | IMPLEMENTADO NO J2 | PR #120; `cms-inspector-coherence.js` reorganiza os controles existentes sem duplicar backend nem handlers | validar, integrar e manter regressão |
+| Biblioteca “Adicionar seção” | os dois gatilhos usam `pro-components-dialog`; a consolidação limpa os handlers de propriedade legados antes de assumir o clique | AUTORIDADE ÚNICA ATIVA APÓS J3A | `cms-pro-editor.js` + `cms-editor-consolidation.js`; o `section-dialog` legado deixa de ser enviado no DOM | manter regressão e remover dead code em J3B |
+| Biblioteca única “Seções prontas + Blocos salvos” | `cms-pro-editor.js` carrega blocos por `admin/api/blocks.php`, insere cópia independente e permite salvar a seção atual como bloco | CORRETO NO CAMINHO ATIVO | a camada de consolidação é a autoridade de UI ativa; regressão J3A trava os dois gatilhos e a ausência do diálogo legado | remover apenas o código morto remanescente em J3B |
+| Biblioteca hardcoded histórica de `cms-editor-v3.js` | `templates` e `openSections()` ainda existem no arquivo, mas ficam sem host no DOM e sem handler ativo | DÍVIDA TÉCNICA INATIVA APÓS J3A | J3A remove `section-dialog`/`section-library` do runtime e zera `onclick` antes de instalar a autoridade consolidada | excluir definições em J3B, com regressão verde |
+| Coerência do inspetor | seção organizada em Identidade, Layout, Audiência e Disponibilidade; página organizada em Identidade, Navegação/aparência, SEO e Audiência; acesso da página com autosave e estados explícitos | CORRETO APÓS J2 | PR #120; merge `a9af8ae44b585d7bb24ae39d59441896f8fd4596`; deploy de produção concluído | manter regressão |
 | Autoridade de interação do editor | seleção, estrutura, DnD, hover, promoção legada e inserção continuam distribuídos por módulos sobrepostos | FRÁGIL, MAS COM REGRESSÃO MELHOR | PR #118 passou a travar parte do stack real; ainda há sobreposição | reduzir gradualmente, uma responsabilidade por PR |
 
 ## Correção da auditoria: biblioteca de seções
@@ -45,7 +46,7 @@ A primeira versão desta auditoria classificou a biblioteca única como ausente 
 
 O runtime efetivo também carrega `cms-pro-editor.js` e `cms-editor-consolidation.js`. A camada de consolidação intercepta os dois gatilhos “Adicionar seção”, abre `pro-components-dialog`, renomeia as abas para **Seções prontas** e **Blocos salvos** e esconde o gatilho concorrente do editor Pro. A aba de blocos usa `admin/api/blocks.php` e o mesmo módulo permite salvar a seção selecionada como bloco reutilizável.
 
-Portanto não haverá um novo bloco para “implementar” essa biblioteca. Fazer isso criaria justamente outra autoridade concorrente. A pendência real é futura: remover a implementação legada que continua existindo atrás da camada ativa, depois de cobrir o fluxo consolidado por regressão suficiente.
+Portanto não haverá uma nova biblioteca. Fazer isso criaria justamente outra autoridade concorrente. O trabalho do J3 é retirar o caminho histórico sem reimplementar o caminho atual.
 
 ## J1 concluído — confiabilidade de interação do editor
 
@@ -53,25 +54,41 @@ O PR #118 removeu do runtime o padrão que cancelava `pointerdown` com `preventD
 
 O mesmo PR adicionou `tools/test-editor-runtime-integration.php` ao CI. Essa regressão verifica a ordem das camadas críticas do editor, proíbe a reintrodução do clique sintético/cancelador e confirma que mídia privada e hover continuam ligados ao runtime efetivo.
 
-## J2 — coerência do inspetor
+## J2 concluído e implantado — coerência do inspetor
 
-O PR #120 consolida a apresentação do inspetor sem criar nova autoridade de dados.
+O PR #120 consolidou a apresentação do inspetor sem criar nova autoridade de dados. O merge de produção é `a9af8ae44b585d7bb24ae39d59441896f8fd4596` e o workflow de deploy concluiu validação, build, upload e publicação da branch de produção para o atualizador administrativo.
 
-Na seleção de seção, a interface passa a apresentar quatro grupos editoriais: **Identidade**, **Layout**, **Audiência** e **Disponibilidade**. Os controles já existentes são movidos no DOM, preservando seus listeners e os atributos canônicos da seção. O acesso continua usando `data-cms-access`, `data-cms-cohort-id`, `data-cms-availability`, `data-cms-visible-from`, `data-cms-visible-until` e `data-cms-lesson-id`.
+Na seleção de seção, a interface apresenta quatro grupos editoriais: **Identidade**, **Layout**, **Audiência** e **Disponibilidade**. Os controles já existentes são movidos no DOM, preservando seus listeners e os atributos canônicos da seção. O acesso continua usando `data-cms-access`, `data-cms-cohort-id`, `data-cms-availability`, `data-cms-visible-from`, `data-cms-visible-until` e `data-cms-lesson-id`.
 
-Nas configurações da página, os controles passam a ser organizados em **Identidade**, **Navegação e aparência**, **SEO e compartilhamento** e **Audiência**. O botão isolado **Salvar acesso da página** é removido: alteração de audiência/turma usa a mesma API canônica já existente, com autosave curto e estados visíveis de salvando, salvo e erro.
+Nas configurações da página, os controles são organizados em **Identidade**, **Navegação e aparência**, **SEO e compartilhamento** e **Audiência**. O botão isolado **Salvar acesso da página** foi removido: alteração de audiência/turma usa a mesma API canônica já existente, com autosave curto e estados visíveis de salvando, salvo e erro.
 
 A camada `cms-inspector-coherence.js` é carregada pelo runtime real depois da coerência de seções. Há regressão estática do runtime e regressão Playwright para confirmar os grupos e que mover controles no DOM não elimina os listeners já ligados por outras camadas.
 
-Durante a validação do J2, o Playwright detectou um laço de mutação no próprio organizador do inspetor: o bloco de ações era reapensado ao painel em toda passagem do `MutationObserver`, mesmo quando já era o último filho, impedindo a página de concluir o evento `load`. O código foi corrigido para só mover esse bloco quando sua posição realmente precisa mudar. Esse caso fica registrado como regra para as próximas camadas de consolidação: um reorganizador observado por `MutationObserver` deve ser idempotente e não pode produzir mutações sem mudança efetiva de estado.
+Durante a validação do J2, o Playwright detectou um laço de mutação no próprio organizador do inspetor: o bloco de ações era reapensado ao painel em toda passagem do `MutationObserver`, mesmo quando já era o último filho, impedindo a página de concluir o evento `load`. O código foi corrigido para só mover esse bloco quando sua posição realmente precisa mudar. Regra derivada: um reorganizador observado por `MutationObserver` deve ser idempotente e não pode produzir mutações sem mudança efetiva de estado.
+
+## J3A — autoridade única da biblioteca de seções
+
+Este sub-bloco reduz o J3 para uma alteração pequena e reversível. Ele não apaga ainda as definições históricas de `templates`/`openSections()` de `cms-editor-v3.js`; primeiro elimina qualquer possibilidade de elas participarem do runtime.
+
+O contrato do J3A é:
+
+- os dois gatilhos **Adicionar seção** pertencem exclusivamente a `cms-editor-consolidation.js`;
+- ao assumir cada gatilho, a consolidação limpa explicitamente o `onclick` legado em vez de depender de `stopImmediatePropagation()` para vencê-lo;
+- `section-dialog` e `section-library` deixam de ser enviados em `editor/index.html`;
+- a biblioteca ativa continua sendo `pro-components-dialog`, com as abas **Seções prontas** e **Blocos salvos**;
+- os blocos salvos continuam usando `admin/api/blocks.php`;
+- Playwright comprova que um handler legado artificial é neutralizado, que ambos os gatilhos abrem o diálogo moderno e que o diálogo legado não existe;
+- `test-editor-runtime-integration.php` trava essas condições no runtime de produção.
+
+Depois de J3A validado, integrado e implantado, o J3B pode excluir o dead code `templates`/`openSections()` de `cms-editor-v3.js` sem misturar essa limpeza com a troca de autoridade.
 
 ## Ordem revisada dos próximos blocos
 
-### J3 — coerência da biblioteca e remoção de caminho legado
+### J3B — remoção do dead code da biblioteca histórica
 
-- cobrir por regressão o fluxo consolidado `Seções prontas / Blocos salvos`;
-- só depois desativar/remover a biblioteca hardcoded antiga de `cms-editor-v3.js`, sem criar uma terceira implementação;
-- manter salvar/inserir blocos por `admin/api/blocks.php`.
+- excluir de `cms-editor-v3.js` as definições hardcoded `templates` e `openSections()` e as atribuições antigas aos gatilhos;
+- não tocar em `cms-pro-editor.js`, `admin/api/blocks.php` nem no contrato da biblioteca consolidada;
+- validar novamente o fluxo `Seções prontas / Blocos salvos` antes de integrar.
 
 ### J4 — redução de autoridades concorrentes no front-end
 
