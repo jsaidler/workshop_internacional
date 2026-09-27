@@ -15,13 +15,22 @@ authority_must(str_contains($publicIndex,"if((int)(\$activity['is_root']??0)!==1
 authority_must(str_contains($publicIndex,'legacy_public_renderer_fallback'),'legacy root fallback must remain observable');
 
 $studentAdmin=authority_source($root,'admin/student-area.php');
-foreach(['set_page_access','save_section_map','bind_page_media','unbind_page_media'] as $action)authority_must(str_contains($studentAdmin,$action),'student-area authority guard missing '.$action);
-authority_must(str_contains($studentAdmin,"if(\$view==='pages')"),'legacy protected-pages route must redirect to CMS pages');
+$courseAdmin=authority_source($root,'admin/courses.php');
+authority_must(str_contains($studentAdmin,'Escolha o curso'),'student-area authority must begin with course context');
+authority_must(str_contains($studentAdmin,'/admin/courses.php?activity='),'student-area authority must delegate selected course operations to canonical course admin');
+authority_must(str_contains($courseAdmin,"'material'=>'Material'"),'course admin must own material context');
+authority_must(str_contains($courseAdmin,'course_material_add_page'),'course material must be an association, not a parallel page type');
+authority_must(str_contains($courseAdmin,'/editor/?page='),'course material must edit through canonical CMS editor');
+authority_must(!str_contains($courseAdmin,'material-editor'),'parallel material editor must not exist');
 authority_must(is_file($root.'/admin/student-area-legacy.php'),'legacy student operations implementation must remain explicit during transition');
 
 $migration=authority_source($root,'migrations/067_normalize_page_activity_access.php');
 authority_must(str_contains($migration,"access_level='activity'"),'migration must normalize page access to activity');
 authority_must(str_contains($migration,"access_level='enrolled'"),'migration must target legacy enrolled value');
+$courseMigration=authority_source($root,'migrations/073_course_domain_material.php');
+authority_must(str_contains($courseMigration,'CREATE TABLE IF NOT EXISTS courses'),'course domain migration must create canonical courses');
+authority_must(str_contains($courseMigration,'CREATE TABLE IF NOT EXISTS course_material_pages'),'course domain migration must relate courses to canonical CMS pages');
+authority_must(str_contains($courseMigration,'CREATE TABLE IF NOT EXISTS course_material_sections'),'course domain migration must relate canonical sections to lessons');
 
 $database=authority_source($root,'app/database.php');
 authority_must(str_contains($database,'flock($handle,LOCK_EX)'),'migration runner must be serialized');
