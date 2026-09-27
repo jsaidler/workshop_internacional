@@ -24,11 +24,10 @@
     <p class="inspector-note">Servidor filtra a seção.</p>
   </div>
 </aside>
-<script>
-const frame=document.querySelector('#page-frame');
-frame.srcdoc='<!doctype html><html><body><main data-cms-page-main><section class="cms-section-selected" data-cms-section="aula-1" data-cms-section-name="Aula 1"><p>Conteúdo</p></section></main></body></html>';
-window.fixtureChanges=0;document.querySelector('#s-name').addEventListener('change',()=>window.fixtureChanges++);
-</script>
+<script>window.fixtureChanges=0;document.querySelector('#s-name').addEventListener('change',()=>window.fixtureChanges++);</script>
 <script src="/editor/cms-inspector-coherence.js"></script>
+<script>
+document.querySelector('#page-frame').srcdoc='<!doctype html><html><body><main data-cms-page-main><section class="cms-section-selected" data-cms-section="aula-1" data-cms-section-name="Aula 1"><p>Conteúdo</p></section></main></body></html>';
+</script>
 </body>
 </html>
