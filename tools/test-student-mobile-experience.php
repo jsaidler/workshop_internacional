@@ -11,7 +11,7 @@ $studentAdmin=(string)file_get_contents($root.'/admin/student-area.php');
 $migration=(string)file_get_contents($root.'/migrations/063_student_test_mobile_workflow.php');
 $helper=(string)file_get_contents($root.'/app/student_test_mobile.php');
 
-if(!str_contains($renderer,'class="cms-student-access"')||!str_contains($renderer,'href="/aluno/"'))fail_student_mobile('public header does not expose the student area');
+if(!str_contains($renderer,'class="cms-student-access"')||!str_contains($renderer,'$studentWorkspaceUrl'))fail_student_mobile('public header does not expose the canonical student-area destination');
 if(!str_contains($shell,'student-mobile-nav')||!str_contains($shell,'student-desktop-nav'))fail_student_mobile('student shell lacks responsive navigation');
 if(!str_contains($shell,'cms_design_css')||!str_contains($shell,'cms_design_font_import_css'))fail_student_mobile('student shell does not inherit activity design tokens');
 if(!str_contains($test,"['exposure','development','review']"))fail_student_mobile('test workflow is not staged');
