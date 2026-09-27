@@ -12,7 +12,7 @@ Implementação correspondente à arquitetura `COURSE_DOMAIN_REGISTRATION_MATERI
 - turmas e aulas passam a ter `course_id` canônico;
 - `course_material_pages` associa páginas CMS existentes sem duplicá-las;
 - `course_material_sections` associa seções CMS existentes a aulas do curso sem armazenar HTML;
-- material continua abrindo no editor CMS normal;
+- material didático continua sendo conteúdo de `cms_pages`: mesmo editor, documento, componentes, mídia, histórico, publicação, renderer e sistema visual;
 - `Curso → Material` é somente outro ponto de entrada para as mesmas `cms_pages`, nunca um editor ou renderer paralelo;
 - uma mesma aula pode liberar seções em várias páginas e uma mesma página pode conter seções de várias aulas;
 - seção sem mapeamento de aula permanece disponível ao aluno matriculado; seção mapeada depende da liberação daquela aula para a turma;
@@ -47,4 +47,4 @@ As regressões existentes de CMS/editor continuam obrigatórias, garantindo que 
 
 ## Validação
 
-A suíte completa chegou a verde no run `36348483779` antes desta atualização exclusivamente documental: PHP, JavaScript, smoke/domain tests, Chromium/Playwright, build e dry-run de distribuição passaram integralmente. O head final deve repetir a mesma suíte antes do merge.
+A suíte completa chegou a verde no run `36348483779` antes das atualizações exclusivamente documentais finais: PHP, JavaScript, smoke/domain tests, Chromium/Playwright, build e dry-run de distribuição passaram integralmente. O head final deve repetir a mesma suíte antes do merge.
