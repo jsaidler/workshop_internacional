@@ -20,7 +20,8 @@ Implementação correspondente à arquitetura `COURSE_DOMAIN_REGISTRATION_MATERI
 - Área do aluno consome aulas e páginas de material do curso;
 - compartilhamento de testes com visibilidade `course` passa a significar o mesmo curso canônico;
 - nova administração `Cursos` e `Inscrições` opera com contexto explícito de curso;
-- `Área do aluno` administrativa deixa de apresentar uma lista misturada da activity e passa a escolher o curso.
+- `Área do aluno` administrativa deixa de apresentar uma lista misturada da activity e passa a escolher o curso;
+- respostas de formulários não educacionais permanecem separadas em `Outras respostas`, sem contaminar a gestão de inscrições de curso.
 
 ## Compatibilidade transitória
 
