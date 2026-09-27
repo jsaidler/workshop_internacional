@@ -6,7 +6,8 @@ if(str_contains($login,'student-grid')||str_contains($login,'grid-template-colum
 $loginPos=strpos($login,'id="student-login-title"');$activationPos=strpos($login,'id="student-activation-title"');
 if($loginPos===false||$activationPos===false||$loginPos>=$activationPos)fail_student_login_experience('activated-account login is not the primary flow');
 foreach(['Conta ativada','Primeiro acesso','E-mail da inscrição','CPF','Ativar conta'] as $needle)if(!str_contains($login,$needle))fail_student_login_experience('missing first-access distinction: '.$needle);
-if(!str_contains($login,'student-button student-button-secondary'))fail_student_login_experience('first-access action is not visually secondary');
+if(!str_contains($login,'button button-secondary'))fail_student_login_experience('first-access action is not consuming the global secondary button');
+if(str_contains($login,'student-button'))fail_student_login_experience('login reintroduced a local button primitive');
 if(!str_contains($login,'$mode===\'activate\''))fail_student_login_experience('activation errors are not scoped to the activation flow');
 if(!str_contains($login,'$mode!==\'activate\''))fail_student_login_experience('login errors are not scoped to the login flow');
 echo "student-login-experience: ok\n";
