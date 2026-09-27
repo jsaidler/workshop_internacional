@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Structure selection bridge fixture</title></head>
+<body>
+  <div id="page-structure-tree">
+    <button type="button" data-page-tree-node="0" data-page-tree-section="0">Parágrafo</button>
+  </div>
+  <aside id="inspector"><div class="inspector-section"></div></aside>
+  <iframe id="page-frame" title="Página"></iframe>
+  <script>
+    const frame=document.querySelector('#page-frame');
+    frame.srcdoc='<!doctype html><html><body><main data-cms-page-main><section data-cms-section="aula-1"><div data-cms-component="paragraph" data-cms-node-id="p1">Texto</div></section></main></body></html>';
+    frame.addEventListener('load',()=>{
+      frame.contentDocument.addEventListener('click',event=>{
+        const node=event.target.closest('[data-cms-component]');
+        if(node)document.body.dataset.selectedNode=node.dataset.cmsNodeId||'';
+      },true);
+    });
+  </script>
+  <script src="/editor/cms-structure-authority.js"></script>
+</body>
+</html>
