@@ -90,11 +90,32 @@ Contrato:
 - essa barra pertence ao shell/runtime, não ao documento CMS persistido;
 - desktop e celular precisam permanecer sem overflow horizontal.
 
-**Estado:** implementação em `fix/student-material-context-a4-2026-09-27`.
+**Estado:** concluído no PR #129, merge `e15ec788e5d45bb198d9157c23e53f71a899761e`. A suíte passou completa após ajustar uma regressão estática antiga que exigia literalmente `href="/aluno/"`; o destino agora é contextual sem perder o acesso global. O deploy de produção run `36297361519` concluiu com sucesso e publicou o artefato para o atualizador administrativo.
 
 ### A5 — Entrada e recuperação
 
-Login e primeiro acesso existem e funcionam, mas ainda precisam de melhor hierarquia. Não existe fluxo visível de recuperação de senha; isso exige definição explícita de canal e token antes da implementação.
+O login e o primeiro acesso funcionavam, mas eram apresentados lado a lado com peso visual semelhante. Isso confundia duas situações diferentes: a rotina normal de uma conta já ativada e a ativação única depois da matrícula confirmada.
+
+O bloco foi dividido para não misturar hierarquia visual com um novo subsistema de segurança.
+
+#### A5a — Hierarquia de entrada
+
+Contrato:
+
+- **Entrar** é o fluxo primário e aparece primeiro;
+- **Primeiro acesso / Ativar conta** é explicitamente secundário e aparece depois, não como coluna concorrente;
+- os dois fluxos continuam usando o mesmo backend e o mesmo CSRF já existentes;
+- erros de login permanecem junto do login; erros de ativação permanecem junto da ativação;
+- a tela não cria JavaScript, estado paralelo ou nova forma de autenticação;
+- desktop e celular preservam a mesma ordem e não usam duas colunas concorrentes.
+
+**Estado:** implementação em `fix/student-login-hierarchy-a5a-2026-09-27`.
+
+#### A5b — Recuperação de senha
+
+A auditoria do código não encontrou transporte de e-mail de saída canônico na aplicação: não há serviço SMTP, PHPMailer nem chamada `mail()` que possa ser reutilizada com segurança. Portanto a recuperação não deve ser improvisada com CPF, perguntas pessoais, senha temporária fixa ou outro atalho que reduza a segurança da conta.
+
+**Estado:** bloqueado por decisão/infraestrutura de entrega. A implementação futura exige primeiro uma autoridade de e-mail transacional e um fluxo de token de uso único com validade curta. A ausência desse subsistema não bloqueia A5a.
 
 ### A6 — Índice de testes
 
@@ -121,8 +142,9 @@ A partir do A1, cada bloco que alterar UX combina:
 1. A1 — verdade do dashboard — **concluído**;
 2. A2 — contexto curso/turma — **concluído**;
 3. A3 — Conta completa — **concluído**;
-4. A4 — continuidade do material — **em implementação**;
-5. A5 — entrada e recuperação;
-6. A6 — índice de testes;
-7. A7 — workflow do teste;
-8. revisão transversal final.
+4. A4 — continuidade do material — **concluído**;
+5. A5a — hierarquia de entrada — **em implementação**;
+6. A5b — recuperação de senha — **aguarda infraestrutura de e-mail transacional**;
+7. A6 — índice de testes;
+8. A7 — workflow do teste;
+9. revisão transversal final.
