@@ -109,17 +109,34 @@ Contrato:
 - a tela não cria JavaScript, estado paralelo ou nova forma de autenticação;
 - desktop e celular preservam a mesma ordem e não usam duas colunas concorrentes.
 
-**Estado:** implementação em `fix/student-login-hierarchy-a5a-2026-09-27`.
+**Estado:** concluído no PR #130, merge `7401dd564ea597a11ac1beaf315b9c4bd7da34c0`. A suíte passou completa, incluindo regressão PHP, Playwright/Chromium, build e dry-run. O deploy de produção run `36297747362` concluiu com sucesso e publicou o artefato para o atualizador administrativo.
 
 #### A5b — Recuperação de senha
 
 A auditoria do código não encontrou transporte de e-mail de saída canônico na aplicação: não há serviço SMTP, PHPMailer nem chamada `mail()` que possa ser reutilizada com segurança. Portanto a recuperação não deve ser improvisada com CPF, perguntas pessoais, senha temporária fixa ou outro atalho que reduza a segurança da conta.
 
-**Estado:** bloqueado por decisão/infraestrutura de entrega. A implementação futura exige primeiro uma autoridade de e-mail transacional e um fluxo de token de uso único com validade curta. A ausência desse subsistema não bloqueia A5a.
+**Estado:** bloqueado por decisão/infraestrutura de entrega. A implementação futura exige primeiro uma autoridade de e-mail transacional e um fluxo de token de uso único com validade curta. A ausência desse subsistema não bloqueia os blocos seguintes.
 
 ### A6 — Índice de testes
 
-A tela agrega criação, registros próprios e compartilhados de todos os cursos. Deve ser reorganizada para continuar funcional em uma conta com múltiplas matrículas, sem virar uma interface administrativa.
+A tela de Testes agregava criação, registros próprios e compartilhados de todas as matrículas da conta. Isso ainda funcionava para uma pessoa com um único curso, mas perdia a noção de workspace assim que a conta possuía mais de uma matrícula.
+
+Contrato:
+
+- Testes reutiliza o mesmo contexto de matrícula por `cohort_uuid` já usado em Cursos e Material;
+- uma única matrícula abre diretamente; múltiplas matrículas exigem escolha explícita antes de mostrar criação e registros;
+- `cohort_uuid` desconhecido não escolhe outra matrícula por fallback;
+- o shell recebe a atividade da matrícula selecionada e reaplica os tokens de Design correspondentes;
+- criar teste não oferece um seletor administrativo de todas as turmas: o `cohort_id` fica preso à matrícula selecionada e é validado também no POST;
+- **Seus testes** mostra somente registros pertencentes à turma selecionada;
+- em **Compartilhados com você**, visibilidade `cohort` aparece apenas para a turma selecionada e visibilidade `course` pode incluir outras turmas do mesmo curso;
+- registros e compartilhamentos de outro curso não entram no workspace selecionado;
+- a ação **Abrir meus testes** dentro do workspace de Cursos já leva o `cohort_uuid` correspondente;
+- alteração de visibilidade retorna ao mesmo contexto quando a origem foi um workspace de turma;
+- links de detalhe carregam o `cohort_uuid` como contexto de retorno, sem alterar a autoridade de acesso do teste;
+- a interface não cria filtros administrativos, “curso atual” persistido nem nova entidade de autorização.
+
+**Estado:** implementação em `fix/student-tests-context-a6-2026-09-27`.
 
 ### A7 — Workflow do teste
 
@@ -143,8 +160,8 @@ A partir do A1, cada bloco que alterar UX combina:
 2. A2 — contexto curso/turma — **concluído**;
 3. A3 — Conta completa — **concluído**;
 4. A4 — continuidade do material — **concluído**;
-5. A5a — hierarquia de entrada — **em implementação**;
+5. A5a — hierarquia de entrada — **concluído**;
 6. A5b — recuperação de senha — **aguarda infraestrutura de e-mail transacional**;
-7. A6 — índice de testes;
+7. A6 — índice de testes — **em implementação**;
 8. A7 — workflow do teste;
 9. revisão transversal final.
