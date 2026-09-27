@@ -13,7 +13,10 @@ Implementação correspondente à arquitetura `COURSE_DOMAIN_REGISTRATION_MATERI
 - `course_material_pages` associa páginas CMS existentes sem duplicá-las;
 - `course_material_sections` associa seções CMS existentes a aulas do curso sem armazenar HTML;
 - material continua abrindo no editor CMS normal;
-- liberação progressiva é filtrada no servidor usando matrícula → turma → curso → aula;
+- `Curso → Material` é somente outro ponto de entrada para as mesmas `cms_pages`, nunca um editor ou renderer paralelo;
+- uma mesma aula pode liberar seções em várias páginas e uma mesma página pode conter seções de várias aulas;
+- seção sem mapeamento de aula permanece disponível ao aluno matriculado; seção mapeada depende da liberação daquela aula para a turma;
+- liberação progressiva é filtrada no servidor usando matrícula → turma → curso → aula, removendo do HTML as seções ainda bloqueadas;
 - Área do aluno consome aulas e páginas de material do curso;
 - compartilhamento de testes com visibilidade `course` passa a significar o mesmo curso canônico;
 - nova administração `Cursos` e `Inscrições` opera com contexto explícito de curso;
@@ -36,6 +39,7 @@ Backfills só usam associações existentes que já são inequívocas. Estados a
 ## Regressões novas
 
 - `tools/test-course-domain-material.php`: curso, formulário, turma, aula, material, seções e proibição de matrícula antes da atribuição explícita de turma;
+- `tools/test-course-material-release-filter.php`: garante que Material consome páginas e seções CMS existentes, entra pelo editor canônico e que o renderer filtra no servidor as seções vinculadas a aulas bloqueadas;
 - `tools/test-course-sharing-scope.php`: visibilidade de teste `course` restrita a matrículas do mesmo curso.
 
 As regressões existentes de CMS/editor continuam obrigatórias, garantindo que o novo ponto de entrada de Material não crie editor, renderer ou sistema visual paralelo.
