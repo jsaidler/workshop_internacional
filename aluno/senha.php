@@ -21,10 +21,11 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     }
 }
 student_shell_start(($first?'Ativar conta':'Alterar senha').' · Área do aluno',null,$first?null:$student);?>
+<?php if(!$first):?><div class="student-appbar"><a class="student-back" href="/aluno/perfil.php">← Conta</a></div><?php endif;?>
 <section class="student-login-card">
   <p class="student-kicker"><?=$first?'Primeiro acesso':'Segurança'?></p>
-  <h1 class="student-title" style="font-size:50px"><?=$first?'Crie sua senha':'Sua senha'?></h1>
-  <p class="student-lead" style="font-size:16px;margin-top:18px"><?=$first?'O CPF foi usado somente para confirmar a matrícula. A partir de agora o acesso será feito com seu e-mail e esta senha.':'Altere sua senha de acesso quando quiser.'?></p>
+  <h1 class="student-title" style="font-size:50px"><?=$first?'Crie sua senha':'Alterar senha'?></h1>
+  <p class="student-lead" style="font-size:16px;margin-top:18px"><?=$first?'O CPF foi usado somente para confirmar a matrícula. A partir de agora o acesso será feito com seu e-mail e esta senha.':'Escolha uma nova senha de acesso com pelo menos 12 caracteres.'?></p>
   <?php if($error):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
   <form method="post">
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-password'))?>"><input type="hidden" name="primeiro" value="<?=$first?'1':'0'?>"><input type="hidden" name="next" value="<?=h($next)?>">
