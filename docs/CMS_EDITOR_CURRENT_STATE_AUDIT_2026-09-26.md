@@ -63,6 +63,8 @@ Nas configurações da página, os controles passam a ser organizados em **Ident
 
 A camada `cms-inspector-coherence.js` é carregada pelo runtime real depois da coerência de seções. Há regressão estática do runtime e regressão Playwright para confirmar os grupos e que mover controles no DOM não elimina os listeners já ligados por outras camadas.
 
+Durante a validação do J2, o Playwright detectou um laço de mutação no próprio organizador do inspetor: o bloco de ações era reapensado ao painel em toda passagem do `MutationObserver`, mesmo quando já era o último filho, impedindo a página de concluir o evento `load`. O código foi corrigido para só mover esse bloco quando sua posição realmente precisa mudar. Esse caso fica registrado como regra para as próximas camadas de consolidação: um reorganizador observado por `MutationObserver` deve ser idempotente e não pode produzir mutações sem mudança efetiva de estado.
+
 ## Ordem revisada dos próximos blocos
 
 ### J3 — coerência da biblioteca e remoção de caminho legado
