@@ -95,3 +95,17 @@ function student_enrollment_pages_for_enrollment(PDO $db,array $enrollment): arr
     $q->execute([(int)$enrollment['activity_id'],(int)$enrollment['cohort_id']]);
     return $q->fetchAll();
 }
+
+function student_enrollment_dashboard_context(array $enrollments,string $cohortUuid=''): ?array {
+    $cohortUuid=trim($cohortUuid);
+    if($cohortUuid!==''){
+        foreach($enrollments as $enrollment)if((string)($enrollment['cohort_uuid']??'')===$cohortUuid)return $enrollment;
+        return null;
+    }
+    $values=array_values($enrollments);
+    return count($values)===1?$values[0]:null;
+}
+
+function student_enrollment_cohort_status_label(string $status): string {
+    return match($status){'active'=>'Turma ativa','closed'=>'Turma encerrada',default=>'Estado da turma indisponível'};
+}
