@@ -141,3 +141,30 @@ function student_enrollment_shared_tests_context(array $tests,array $enrollment)
         return $visibility==='cohort'&&(int)($test['cohort_id']??0)===$cohortId;
     }));
 }
+
+function student_enrollment_owned_test_navigation_context(array $enrollments,array $test,string $cohortUuid=''): ?array {
+    $testCohortId=(int)($test['cohort_id']??0);if($testCohortId<1)return null;
+    $match=null;
+    foreach($enrollments as $enrollment){if((int)($enrollment['cohort_id']??0)===$testCohortId){$match=$enrollment;break;}}
+    if(!$match)return null;
+    $cohortUuid=trim($cohortUuid);
+    if($cohortUuid!==''&&(string)($match['cohort_uuid']??'')!==$cohortUuid)return null;
+    return $match;
+}
+
+function student_enrollment_shared_test_navigation_context(array $enrollments,array $test,string $cohortUuid=''): ?array {
+    $activityId=(int)($test['activity_id']??0);$testCohortId=(int)($test['cohort_id']??0);$visibility=(string)($test['visibility']??'private');
+    if($activityId<1||$testCohortId<1||!in_array($visibility,['cohort','course'],true))return null;
+    $eligible=[];
+    foreach($enrollments as $enrollment){
+        if((int)($enrollment['activity_id']??0)!==$activityId)continue;
+        if($visibility==='cohort'&&(int)($enrollment['cohort_id']??0)!==$testCohortId)continue;
+        $eligible[]=$enrollment;
+    }
+    $cohortUuid=trim($cohortUuid);
+    if($cohortUuid!==''){
+        foreach($eligible as $enrollment)if((string)($enrollment['cohort_uuid']??'')===$cohortUuid)return $enrollment;
+        return null;
+    }
+    return count($eligible)===1?$eligible[0]:null;
+}
