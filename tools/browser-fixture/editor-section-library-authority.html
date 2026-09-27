@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Section library authority fixture</title></head>
+<body>
+<button type="button" id="save-page">Salvar</button>
+<button type="button" id="add-section">Adicionar seção</button>
+<button type="button" id="add-section-side">Adicionar seção lateral</button>
+<button type="button" id="pro-add-component">Componentes</button>
+<button type="button" id="pro-save-block">Salvar bloco</button>
+<div id="editor-more"><div class="editor-more-menu"><a id="editor-pages-link" href="#">Páginas</a></div></div>
+<button type="button" data-structure-view="tree" class="is-active">Estrutura</button>
+<iframe id="page-frame" title="Página"></iframe>
+<aside id="inspector"></aside>
+<dialog id="pro-components-dialog">
+  <form method="dialog">
+    <header><div><p>Construtor</p><h2>Componentes e blocos</h2></div><button value="cancel">Fechar</button></header>
+    <div class="pro-tabs">
+      <button type="button" data-pro-tab="components">Componentes</button>
+      <button type="button" data-pro-tab="blocks">Blocos salvos</button>
+    </div>
+    <div id="pro-components">
+      <button type="button" data-pro-component="free2">2 colunas</button>
+      <button type="button" data-pro-component="free3">3 colunas</button>
+      <button type="button" data-pro-component="free4">4 colunas</button>
+    </div>
+    <div id="pro-blocks"></div>
+  </form>
+</dialog>
+<script>
+window.legacySectionLibraryCalls=0;
+window.modernSectionLibraryCalls=0;
+const add=document.querySelector('#add-section');
+const side=document.querySelector('#add-section-side');
+add.onclick=()=>window.legacySectionLibraryCalls++;
+side.onclick=()=>window.legacySectionLibraryCalls++;
+const modern=document.querySelector('#pro-add-component');
+modern.onclick=()=>{window.modernSectionLibraryCalls++;document.querySelector('#pro-components-dialog').showModal()};
+const frame=document.querySelector('#page-frame');
+frame.srcdoc='<!doctype html><html><body><main data-cms-page-main></main></body></html>';
+</script>
+<script src="/editor/cms-editor-consolidation.js"></script>
+</body>
+</html>

@@ -36,7 +36,6 @@ function openModernSectionLibrary(event){
   const dialog=document.querySelector('#pro-components-dialog');
   if(!trigger||!dialog)return;
   event?.preventDefault();
-  event?.stopImmediatePropagation();
   dialog.querySelector('[data-pro-tab="components"]')?.click();
   trigger.click();
 }
@@ -89,6 +88,7 @@ function wireSectionLibrary(){
   for(const id of ['add-section','add-section-side']){
     const button=document.getElementById(id);
     if(button&&button.dataset.cmsUnifiedSectionLibrary!=='1'){
+      button.onclick=null;
       button.dataset.cmsUnifiedSectionLibrary='1';
       button.addEventListener('click',openModernSectionLibrary,true);
     }
