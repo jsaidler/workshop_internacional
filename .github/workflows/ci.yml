@@ -67,6 +67,7 @@ jobs:
           php tools/test-course-admin-context.php
           php tools/test-admin-domain-recovery.php
           php tools/test-course-reconciliation-snapshot.php
+          php tools/test-admin-student-ux-audit.php
           php tools/test-course-sharing-scope.php
           php tools/test-student-tests-context.php
           php tools/test-student-test-workflow.php
