@@ -109,3 +109,18 @@ function student_enrollment_dashboard_context(array $enrollments,string $cohortU
 function student_enrollment_cohort_status_label(string $status): string {
     return match($status){'active'=>'Turma ativa','closed'=>'Turma encerrada',default=>'Estado da turma indisponível'};
 }
+
+function student_enrollment_material_context(PDO $db,array $student,array $page,string $cohortUuid=''): ?array {
+    $access=(string)($page['access_level']??'public');
+    if(!in_array($access,['activity','enrolled','cohort'],true))return null;
+    $studentId=(int)($student['id']??0);$activityId=(int)($page['activity_id']??0);
+    if($studentId<1||$activityId<1)return null;
+
+    if($access==='cohort'){
+        $cohortId=(int)($page['access_cohort_id']??0);if($cohortId<1)return null;
+        $q=$db->prepare("SELECT e.*,c.title cohort_title,c.cohort_uuid,c.activity_id,c.status cohort_status FROM course_enrollments e JOIN course_cohorts c ON c.id=e.cohort_id WHERE e.student_id=? AND e.cohort_id=? AND c.activity_id=? AND e.status='active' AND c.status!='archived' ORDER BY e.confirmed_at DESC,e.id DESC LIMIT 1");
+        $q->execute([$studentId,$cohortId,$activityId]);return $q->fetch()?:null;
+    }
+
+    return student_account_enrollment_for_activity($db,$studentId,$activityId,trim($cohortUuid));
+}
