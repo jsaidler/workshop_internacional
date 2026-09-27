@@ -62,6 +62,7 @@ jobs:
           php tools/test-global-ui-consumption.php
           php tools/test-workshop-page-architecture.php
           php tools/test-workshop-page-enrollment-scope.php
+          php tools/test-course-domain-material.php
           php tools/test-student-tests-context.php
           php tools/test-student-test-workflow.php
           php tools/test-student-area-transversal.php
