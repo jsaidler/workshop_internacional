@@ -64,6 +64,7 @@ jobs:
           php tools/test-workshop-page-enrollment-scope.php
           php tools/test-course-domain-material.php
           php tools/test-course-material-release-filter.php
+          php tools/test-course-admin-context.php
           php tools/test-course-sharing-scope.php
           php tools/test-student-tests-context.php
           php tools/test-student-test-workflow.php
