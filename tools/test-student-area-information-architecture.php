@@ -18,7 +18,7 @@ if(!str_contains($shell,"'courses'=>['Cursos'"))fail('course authority context i
 if(!str_contains($shell,"'registrations'=>['Inscrições'"))fail('course registrations context item missing');
 if(!str_contains($shell,"'students'=>['Área do aluno'"))fail('student area context item missing');
 if(!str_contains($guard,'Escolha o curso'))fail('student administration still starts from a mixed site-wide list');
-if(!str_contains($guard,"'/admin/courses.php?activity='" )||!str_contains($guard,"'&view=students'"))fail('student area does not enter the selected canonical course');
+if(!str_contains($guard,'/admin/courses.php?activity=')||!str_contains($guard,'&view=students'))fail('student area does not enter the selected canonical course');
 foreach(['Turmas','Alunos','Aulas','Material'] as $label)if(!str_contains($courseAdmin,"'".$label."'"))fail('course administration object missing: '.$label);
 if(!str_contains($courseAdmin,'course_material_add_page')||!str_contains($courseAdmin,'/editor/?page='))fail('material is not a contextual view of canonical CMS pages/editor');
 if(!str_contains($registrations,'Escolha o curso')||!str_contains($registrations,'Confirmadas sem turma'))fail('registrations are not separated by course with pending cohort assignment');
