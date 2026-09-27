@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:monospace}</style>
+  <link rel="stylesheet" href="/template/page.css">
+  <link rel="stylesheet" href="/assets/student-area.css">
+  <title>Student tests context fixture</title>
+</head>
+<body class="student-page">
+<div class="student-shell"><main class="student-main" id="app"></main></div>
+<script>
+const app=document.getElementById('app');
+const selected=new URLSearchParams(location.search).get('cohort');
+const path=location.pathname;
+if(!selected){
+  app.innerHTML=`
+    <p class="student-kicker">Área do aluno</p>
+    <h1 class="student-title">Testes por curso</h1>
+    <p class="student-lead">Escolha a turma em que você está trabalhando.</p>
+    <section class="student-section"><div class="student-test-list">
+      <a class="student-test-row" data-testid="tests-course-a" href="${path}?cohort=cohort-a"><div><span class="student-status">Turma ativa</span><h3>Curso A</h3><p>Turma Setembro</p></div><div class="student-test-meta">Abrir testes →</div></a>
+      <a class="student-test-row" data-testid="tests-course-b" href="${path}?cohort=cohort-b"><div><span class="student-status">Turma ativa</span><h3>Curso B</h3><p>Turma Outubro</p></div><div class="student-test-meta">Abrir testes →</div></a>
+    </div></section>`;
+}else{
+  const isB=selected==='cohort-b';
+  const course=isB?'Curso B':'Curso A';
+  const cohort=isB?'Turma Outubro':'Turma Setembro';
+  const cohortId=isB?'20':'10';
+  app.innerHTML=`
+    <div class="student-appbar"><a class="student-back" data-testid="all-tests-courses" href="${path}">← Todos os cursos</a><span class="student-status">Turma ativa</span></div>
+    <p class="student-kicker">${course} · ${cohort}</p>
+    <h1 class="student-title">Testes</h1>
+    <p class="student-lead">Registre as experimentações desta turma.</p>
+    <section class="student-section" data-testid="create-test"><div class="student-section-heading"><div><p class="student-kicker">Novo registro</p><h2 class="student-subtitle">Criar teste</h2></div><p>${course} · ${cohort}</p></div>
+      <form class="student-form-grid"><input type="hidden" name="cohort_id" value="${cohortId}"><label class="student-field">Título do teste<input name="title"></label><label class="student-field">Data<input type="date"></label><label class="student-field">Quem pode ver?<select><option>Somente eu e o professor</option></select></label></form>
+    </section>
+    <section class="student-section" data-testid="owned-tests"><div class="student-section-heading"><div><p class="student-kicker">Meus registros</p><h2 class="student-subtitle">Seus testes</h2></div></div><div class="student-test-list">
+      <a class="student-test-row" data-testid="owned-current"><div><h3>${isB?'Teste B':'Teste A'}</h3><p>${course} · ${cohort}</p></div></a>
+    </div></section>
+    <section class="student-section" data-testid="shared-tests"><div class="student-section-heading"><div><p class="student-kicker">Referências compartilhadas</p><h2 class="student-subtitle">Compartilhados com você</h2></div></div><div class="student-test-list">
+      ${isB?'<a class="student-test-row" data-testid="shared-b"><div><span class="student-status">Turma</span><h3>Compartilhado B</h3></div></a>':'<a class="student-test-row" data-testid="shared-cohort-a"><div><span class="student-status">Turma</span><h3>Compartilhado A</h3></div></a><a class="student-test-row" data-testid="shared-course-a"><div><span class="student-status">Curso</span><h3>Compartilhado de outra turma do Curso A</h3></div></a>'}
+    </div></section>`;
+}
+</script>
+</body>
+</html>

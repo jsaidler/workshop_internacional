@@ -45,7 +45,7 @@ student_shell_start('Área do aluno',$selectedActivity,$student);?>
       <?php if($releases):?><div class="student-release-list" aria-label="Liberação das aulas"><?php foreach($releases as $lesson):$state=$releaseStates[(int)$lesson['id']]??'blocked';$label=match($state){'released'=>'liberada','scheduled'=>'agendada',default=>'aguardando'};$stateClass=match($state){'released'=>'is-released','scheduled'=>'is-scheduled',default=>''};?><span class="<?=h($stateClass)?>"><b><?=h((string)$lesson['title'])?></b><small><?=h($label)?></small></span><?php endforeach;?></div><?php endif;?>
       <div class="student-course-actions">
         <div><span class="student-card-label">Material</span><?php if(!$pages):?><p>Nenhuma página protegida foi publicada para este curso ainda.</p><?php else:?><?php foreach($pages as $page):$url=cms_page_url($activity,$page,(string)$page['locale']);$sep=str_contains($url,'?')?'&':'?';$url.=$sep.'cohort='.rawurlencode((string)$enrollment['cohort_uuid']);?><a class="student-course-primary" href="<?=h($url)?>"><?=h((string)$page['title'])?> →</a><?php endforeach;?><?php endif;?></div>
-        <div><span class="student-card-label">Prática</span><p>Registre exposição, cena, revelação e resultado no telefone.</p><a class="student-course-primary" href="/aluno/testes.php">Abrir meus testes →</a></div>
+        <div><span class="student-card-label">Prática</span><p>Registre exposição, cena, revelação e resultado no telefone.</p><a class="student-course-primary" href="/aluno/testes.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir meus testes →</a></div>
       </div>
     </article>
   </section>

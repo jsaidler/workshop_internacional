@@ -124,3 +124,20 @@ function student_enrollment_material_context(PDO $db,array $student,array $page,
 
     return student_account_enrollment_for_activity($db,$studentId,$activityId,trim($cohortUuid));
 }
+
+function student_enrollment_owned_tests_context(array $tests,array $enrollment): array {
+    $cohortId=(int)($enrollment['cohort_id']??0);
+    if($cohortId<1)return [];
+    return array_values(array_filter($tests,static fn(array $test): bool=>(int)($test['cohort_id']??0)===$cohortId));
+}
+
+function student_enrollment_shared_tests_context(array $tests,array $enrollment): array {
+    $cohortId=(int)($enrollment['cohort_id']??0);$activityId=(int)($enrollment['activity_id']??0);
+    if($cohortId<1||$activityId<1)return [];
+    return array_values(array_filter($tests,static function(array $test) use($cohortId,$activityId): bool {
+        if((int)($test['activity_id']??0)!==$activityId)return false;
+        $visibility=(string)($test['visibility']??'private');
+        if($visibility==='course')return true;
+        return $visibility==='cohort'&&(int)($test['cohort_id']??0)===$cohortId;
+    }));
+}

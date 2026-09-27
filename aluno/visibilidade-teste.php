@@ -10,4 +10,10 @@ try{
     student_test_set_visibility($db,(int)($_POST['id']??0),(int)$student['id'],(string)($_POST['visibility']??'private'));
     $_SESSION['student_tests_notice']='Visibilidade do teste atualizada.';
 }catch(Throwable $e){$_SESSION['student_tests_notice']='Não foi possível alterar a visibilidade: '.$e->getMessage();}
-header('Location: /aluno/testes.php',true,303);exit;
+$cohortUuid=trim((string)($_POST['cohort']??''));$return='/aluno/testes.php';
+if($cohortUuid!==''){
+    $enrollments=student_account_enrollments($db,(int)$student['id']);
+    $context=student_enrollment_dashboard_context($enrollments,$cohortUuid);
+    if($context)$return.='?cohort='.rawurlencode((string)$context['cohort_uuid']);
+}
+header('Location: '.$return,true,303);exit;
