@@ -80,6 +80,21 @@ A Área do aluno não persiste um “curso atual” como nova entidade. O contex
 - `closed` não ganha restrição nova implicitamente: este estado é informativo até que uma política funcional específica seja documentada;
 - quando o curso não possui aulas cadastradas, a interface mostra **Sem aulas cadastradas** em vez de um progresso artificial `0/0`.
 
+### Continuidade dentro do material
+
+O material continua sendo renderizado pela página normal do CMS. Não existe um segundo renderer, template de caderno ou cópia do conteúdo dentro da Área do aluno.
+
+Quando uma pessoa autenticada abre uma página de curso com acesso `activity`/legado `enrolled` ou `cohort`, o renderer público pode acrescentar somente uma camada de **contexto da sessão** ao redor do conteúdo canônico:
+
+- a matrícula é resolvida por `student_enrollment_material_context()`;
+- quando o link veio do workspace, o `cohort_uuid` da URL preserva exatamente aquela matrícula;
+- em página `cohort`, a turma autorizada pela própria página é a autoridade, mesmo que a URL traga outro `cohort_uuid`;
+- páginas `public` e páginas genéricas `authenticated` não recebem contexto de curso;
+- o editor/preview nunca recebe essa UI dependente da sessão do aluno;
+- o link **Área do aluno** do cabeçalho retorna ao workspace da matrícula quando o contexto existe;
+- uma barra discreta oferece **Voltar ao curso**, **Testes** e **Conta**, além de identificar curso e turma;
+- a barra é interface de navegação, não conteúdo editorial, e portanto nunca é persistida no documento CMS.
+
 ## CMS: acesso e disponibilidade de páginas e seções
 
 Estrutura e autorização pertencem ao próprio CMS. Cada elemento `data-cms-section` continua sendo a seção real mostrada no editor; não existe uma lista paralela em “Páginas protegidas”.
@@ -178,6 +193,10 @@ Os testes devem provar que:
 - `Conta` apresenta perfil, alteração de senha e logout em desktop e celular;
 - o formulário de perfil usa a grade responsiva e fica em uma coluna no celular;
 - o logout de `Conta` continua sendo POST + CSRF e a alteração de senha autenticada permite retornar à Conta;
+- página de material `activity` preserva o `cohort_uuid` solicitado quando ele pertence à conta;
+- página `cohort` usa a turma autorizada pela página e não outro contexto sugerido na URL;
+- páginas `public` e `authenticated` genéricas não recebem a barra de curso;
+- a barra de contexto aparece em desktop e celular sem overflow e não entra no editor;
 - a Área do aluno não apresenta “Páginas protegidas” como domínio administrativo;
 - a Biblioteca de mídia continua sendo a autoridade de mídia editorial;
 - o registro de teste persiste e exibe o branqueador;
