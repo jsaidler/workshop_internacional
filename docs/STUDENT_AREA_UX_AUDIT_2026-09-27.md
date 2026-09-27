@@ -146,7 +146,7 @@ Contrato:
 
 - Exposição mantém um único avanço principal: **Salvar exposição e continuar**;
 - Revelação passa a ter um único avanço principal: **Salvar revelação e continuar**;
-- o botão de avanço da Revelação submete o próprio formulário de revelação antes de abrir a revisão, mesmo estando visualmente depois do bloco de fotografia do resultado;
+- o botão de avanço da Revelação submete o próprio formulário de revelação antes de abrir a revisão;
 - deixam de existir o botão secundário **Salvar revelação** e o link concorrente **Revisar teste**;
 - a faixa 01/02/03 é indicador de progresso e etapa atual, não navegação livre enquanto há formulários editáveis; edição de etapas anteriores parte da revisão pelos links explícitos **Editar exposição** e **Editar revelação**;
 - não se inventa uma nova coluna de “etapa concluída” nem se deduz conclusão porque algum campo está preenchido: o estado de ciclo do teste (`draft`, `submitted`, `needs_revision`, `reviewed`) continua sendo a autoridade persistida;
@@ -159,7 +159,27 @@ Contrato:
 - a ficha compartilhada usa o Design da atividade do teste e retorna ao índice de Testes correspondente quando há contexto válido;
 - nenhuma dessas regras altera a autoridade de acesso ao registro: propriedade e visibilidade continuam sendo verificadas pelos serviços canônicos existentes.
 
-**Estado:** implementação em `fix/student-test-workflow-a7-2026-09-27`.
+**Estado:** concluído no PR #132, merge `7e1f5b0f15f8e95183fae3780f8bb7ae71d4a405`. A suíte do PR passou completa, incluindo PHP, Playwright/Chromium, build e dry-run. O deploy de produção run `36299922808` concluiu com sucesso e publicou o artefato para o atualizador administrativo.
+
+### Revisão transversal final
+
+A leitura cruzada das rotas depois de A1–A7 encontrou dois defeitos concretos que os blocos isolados não cobriam:
+
+1. `teste-compartilhado.php` usava `student_review_value()` e `student_test_message_date()`, mas essas funções estavam declaradas apenas ao final de `teste.php`. Como cada rota executa em uma requisição independente, a ficha compartilhada podia chegar a essas chamadas sem que as funções existissem naquele runtime.
+2. upload e remoção de imagens ainda eram formulários independentes dos campos da etapa. Na Revelação, em especial, a ordem natural era preencher os parâmetros e depois fotografar o resultado; escolher a imagem submetia outro formulário e recarregava a página, podendo descartar valores digitados que ainda não haviam sido salvos.
+
+Contrato do fechamento:
+
+- funções de apresentação usadas por mais de uma rota pertencem a módulo carregado pelo `bootstrap`, não a uma página específica;
+- `student_review_value()` e `student_test_message_date()` ficam no serviço compartilhado de workflow/teste e deixam de ser redeclaradas localmente;
+- Exposição e Revelação usam, cada uma, um único formulário `multipart/form-data` que contém os campos da etapa e também as ações de mídia;
+- ao adicionar ou remover uma imagem em uma etapa editável, o servidor salva primeiro os campos atuais daquela etapa e somente depois executa a mutação da mídia;
+- upload/remoção continua na mesma etapa e informa que os dados também foram salvos;
+- o botão **Salvar ... e continuar** continua sendo a única ação que avança de etapa;
+- nenhuma ação de mídia cria nova autorização, novo registro paralelo ou semântica adicional de conclusão;
+- regressão de navegador precisa provar que valores digitados na Revelação sobrevivem à inclusão de uma imagem antes do avanço para Revisão.
+
+**Estado:** implementação em `fix/student-area-transversal-final-2026-09-27`.
 
 ## Cobertura de regressão
 
@@ -171,6 +191,8 @@ A partir do A1, cada bloco que alterar UX combina:
 - Playwright/Chromium para a superfície realmente usada;
 - ao menos um viewport de desktop e um de celular quando a tela for responsiva.
 
+O fechamento transversal adiciona uma trava específica para as funções compartilhadas da ficha e para a ordem **salvar etapa → mutar mídia**, além de interação real que simula digitação seguida de inclusão do resultado.
+
 ## Ordem de execução
 
 1. A1 — verdade do dashboard — **concluído**;
@@ -180,5 +202,5 @@ A partir do A1, cada bloco que alterar UX combina:
 5. A5a — hierarquia de entrada — **concluído**;
 6. A5b — recuperação de senha — **aguarda infraestrutura de e-mail transacional**;
 7. A6 — índice de testes — **concluído**;
-8. A7 — workflow do teste — **em implementação**;
-9. revisão transversal final.
+8. A7 — workflow do teste — **concluído**;
+9. revisão transversal final — **em implementação**.
