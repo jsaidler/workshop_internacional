@@ -44,7 +44,3 @@ Backfills só usam associações existentes que já são inequívocas. Estados a
 - `tools/test-course-sharing-scope.php`: visibilidade de teste `course` restrita a matrículas do mesmo curso.
 
 As regressões existentes de CMS/editor continuam obrigatórias, garantindo que o novo ponto de entrada de Material não crie editor, renderer ou sistema visual paralelo.
-
-## Validação
-
-A suíte completa chegou a verde no run `36348483779` antes das atualizações exclusivamente documentais finais: PHP, JavaScript, smoke/domain tests, Chromium/Playwright, build e dry-run de distribuição passaram integralmente. O head final deve repetir a mesma suíte antes do merge.
