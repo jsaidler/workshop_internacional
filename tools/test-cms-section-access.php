@@ -7,7 +7,9 @@ function utc_now(): string {return gmdate('c');}
 function app_config(): array {return ['timezone'=>'UTC'];}
 function course_cohort_by_id(PDO $db,int $id): ?array {$q=$db->prepare('SELECT * FROM course_cohorts WHERE id=?');$q->execute([$id]);return $q->fetch(PDO::FETCH_ASSOC)?:null;}
 function cms_page_by_id(PDO $db,int $id): ?array {return null;}
-// This fixture covers the legacy activity/cohort section-access contract.
+// This fixture intentionally covers the legacy activity/cohort section-access fallback.
+// Canonical course/material access has dedicated course-domain regressions.
+function course_domain_available(PDO $db): bool{return false;}
 function workshop_course_scope_available(PDO $db): bool{return false;}
 function workshop_lesson_scope_available(PDO $db): bool{return false;}
 
