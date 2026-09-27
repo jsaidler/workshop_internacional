@@ -11,17 +11,18 @@ try{
     $page=$pageSlug!==''?cms_page_by_slug($db,(int)$activity['id'],$locale,$pageSlug):cms_page_home($db,(int)$activity['id'],$locale);
     if($page&&$page['status']!=='archived'&&!empty($page['published_document_json'])){
         $document=cms_page_doc($page,true);$admin=current_admin();$student=student_account_current($db);$pageAccess=(string)($page['access_level']??'public');
+        $materialCourses=course_domain_available($db)?course_material_courses_for_page($db,(int)$page['id']):[];$cohortUuid=trim((string)($_GET['cohort']??''));$materialContext=$student&&$materialCourses?student_enrollment_material_context($db,$student,$page,$cohortUuid):null;
         if(!$admin&&!cms_access_page_allowed($db,$activity,$page,$student)){
-            if(!$student&&$pageAccess!=='public'){$next=student_safe_next((string)($_SERVER['REQUEST_URI']??cms_page_url($activity,$page,$locale)));header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
+            if(!$student&&($pageAccess!=='public'||$materialCourses)){$next=student_safe_next((string)($_SERVER['REQUEST_URI']??cms_page_url($activity,$page,$locale)));header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
             http_response_code(403);student_private_headers();exit('Este conteúdo não está disponível para esta conta.');
         }
         $hasSectionRules=preg_match('~data-cms-(?:access|availability|visible-from|visible-until|lesson-id|cohort-id)=~',(string)($document['html']??''))===1;
-        if($pageAccess!=='public'||$hasSectionRules)student_private_headers();
-        if(!$admin){$document['html']=cms_access_filter_html($db,$activity,(string)$document['html'],$student,false);}
-        if($pageAccess!=='public'){
+        if($pageAccess!=='public'||$hasSectionRules||$materialCourses)student_private_headers();
+        if(!$admin){$document['html']=cms_access_filter_html($db,$activity,(string)$document['html'],$student,false,null,$materialContext);}
+        if($pageAccess!=='public'||$materialCourses){
             if($admin){$document=student_page_resolve_private_media_slots($db,$page,$document);}
             elseif($student){
-                $cohortUuid=trim((string)($_GET['cohort']??''));$enrollment=student_account_page_context($db,$student,$page,$cohortUuid);
+                $enrollment=$materialContext?:student_account_page_context($db,$student,$page,$cohortUuid);
                 if($enrollment){$document=student_page_resolve_private_media_slots($db,$page,$document);$document=student_page_sign_private_media($document,$student,$page,$enrollment);}
             }
         }
