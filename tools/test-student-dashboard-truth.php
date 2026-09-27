@@ -38,6 +38,6 @@ $dashboard=(string)file_get_contents($root.'/aluno/index.php');
 must_student_dashboard_truth(str_contains($dashboard,'cms_access_lesson_release_state'),'student dashboard does not derive lesson state from the canonical access helper');
 must_student_dashboard_truth(str_contains($dashboard,"'scheduled'=>'agendada'")&&str_contains($dashboard,"'released'=>'liberada'"),'student dashboard does not expose scheduled/released labels');
 must_student_dashboard_truth(str_contains($dashboard,'$releasedCount'),'student dashboard does not count only currently released lessons');
-must_student_dashboard_truth(!str_contains($dashboard,"$lesson['released_at']?'liberada':'aguardando'"),'student dashboard returned to raw released_at truthiness');
+must_student_dashboard_truth(!str_contains($dashboard,"\$lesson['released_at']?'liberada':'aguardando'"),'student dashboard returned to raw released_at truthiness');
 
 echo "student-dashboard-truth: ok\n";
