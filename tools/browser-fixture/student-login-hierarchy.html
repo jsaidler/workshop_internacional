@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:monospace}</style>
+  <link rel="stylesheet" href="/template/page.css">
+  <link rel="stylesheet" href="/assets/student-area.css">
+  <title>Student login hierarchy fixture</title>
+</head>
+<body class="student-page">
+<div class="student-shell">
+  <header class="student-topbar"><a class="brand student-wordmark" href="#">JSaidler Fotografia</a></header>
+  <main class="student-main">
+    <p class="student-kicker">Área do aluno</p>
+    <h1 class="student-title">Acesso</h1>
+    <p class="student-lead student-lead-compact">Entre com a conta já ativada. Se esta é a primeira vez que você acessa a área, a ativação fica logo abaixo.</p>
+    <section class="student-login-card" data-testid="login-card">
+      <p class="student-kicker">Conta ativada</p><h2 class="student-subtitle">Entrar</h2>
+      <form><label class="student-field">E-mail<input type="email"></label><label class="student-field">Senha<input type="password"></label><button class="student-button">Entrar</button></form>
+    </section>
+    <section class="student-login-card" data-testid="activation-card">
+      <p class="student-kicker">Primeiro acesso</p><h2 class="student-subtitle">Ativar conta</h2>
+      <p class="student-lead student-lead-compact">Depois que a matrícula for confirmada, use o mesmo e-mail da inscrição e o CPF somente com números.</p>
+      <form><label class="student-field">E-mail da inscrição<input type="email"></label><label class="student-field">CPF<input></label><button class="student-button student-button-secondary">Ativar conta</button></form>
+    </section>
+  </main>
+</div>
+</body>
+</html>
