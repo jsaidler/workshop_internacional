@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:monospace}</style>
+  <link rel="stylesheet" href="/template/page.css">
+  <link rel="stylesheet" href="/assets/student-area.css">
+  <title>Student course context fixture</title>
+</head>
+<body class="student-page">
+<div class="student-shell"><main class="student-main" id="app"></main></div>
+<script>
+const app=document.getElementById('app');
+const selected=new URLSearchParams(location.search).get('cohort');
+const path=location.pathname;
+if(!selected){
+  app.innerHTML=`
+    <p class="student-kicker">Área do aluno</p>
+    <h1 class="student-title">Seus cursos</h1>
+    <p class="student-lead">Escolha o curso ou a turma que deseja abrir. Cada matrícula mantém seu próprio material, aulas e contexto.</p>
+    <section class="student-section" aria-label="Escolher curso ou turma"><div class="student-test-list">
+      <a class="student-test-row" data-testid="course-a" href="${path}?cohort=cohort-a"><div><span class="student-status">Turma ativa</span><h3>Curso A</h3><p>Turma Setembro</p></div><div class="student-test-meta"><span>Abrir curso →</span></div></a>
+      <a class="student-test-row" data-testid="course-b" href="${path}?cohort=cohort-b"><div><span class="student-status">Turma encerrada</span><h3>Curso B</h3><p>Turma Agosto</p></div><div class="student-test-meta"><span>Abrir curso →</span></div></a>
+    </div></section>`;
+}else{
+  const closed=selected==='cohort-b';
+  app.innerHTML=`
+    <div class="student-appbar"><a class="student-back" data-testid="all-courses" href="${path}">← Todos os cursos</a><span class="student-status">${closed?'Turma encerrada':'Turma ativa'}</span></div>
+    <p class="student-kicker">${closed?'Turma Agosto':'Turma Setembro'}</p>
+    <h1 class="student-title">${closed?'Curso B':'Curso A'}</h1>
+    <p class="student-lead">Acesse o material disponível para esta turma e registre as experimentações enquanto fotografa e revela.</p>
+    <section class="student-course-stack"><article class="student-course-card" data-testid="workspace"><header><div><span class="student-card-label">Workspace da turma</span><h2>Material e prática</h2></div><span class="student-course-progress" data-testid="progress">${closed?'Sem aulas cadastradas':'1/3 aulas liberadas'}</span></header>${closed?'':'<div class="student-release-list"><span class="is-released"><b>Aula 1</b><small>liberada</small></span><span class="is-scheduled"><b>Aula 2</b><small>agendada</small></span><span><b>Aula 3</b><small>aguardando</small></span></div>'}<div class="student-course-actions"><div><span class="student-card-label">Material</span><a class="student-course-primary" href="#material">Caderno →</a></div><div><span class="student-card-label">Prática</span><p>Registre exposição, cena, revelação e resultado no telefone.</p><a class="student-course-primary" href="#tests">Abrir meus testes →</a></div></div></article></section>`;
+}
+</script>
+</body>
+</html>

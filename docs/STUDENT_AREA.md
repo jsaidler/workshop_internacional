@@ -53,6 +53,19 @@ A lista de material da matrícula deriva das páginas publicadas do CMS:
 
 Páginas públicas, páginas apenas `authenticated`, páginas de outra turma, páginas arquivadas ou sem documento publicado não são apresentadas como material daquele curso no dashboard. Isso não muda a autoridade de acesso do CMS; apenas impede que a Área do aluno anuncie conteúdo diferente do que a própria matrícula autoriza.
 
+### Contexto de curso e turma
+
+A Área do aluno não persiste um “curso atual” como nova entidade. O contexto é a própria matrícula existente, identificada pelo `cohort_uuid` na navegação.
+
+- com uma única matrícula ativa, o workspace dessa matrícula abre diretamente;
+- com mais de uma matrícula, `Cursos` primeiro funciona como seletor e o usuário escolhe qual matrícula deseja abrir;
+- um `cohort_uuid` só pode selecionar uma matrícula que já esteja presente na lista ativa da conta;
+- trocar de workspace não altera autorização nem matrícula no banco;
+- ao selecionar um curso, o shell recebe a atividade correspondente e usa os tokens de Design desse curso;
+- o estado da turma é mostrado explicitamente: `active` = **Turma ativa**, `closed` = **Turma encerrada**;
+- `closed` não ganha restrição nova implicitamente: este estado é informativo até que uma política funcional específica seja documentada;
+- quando o curso não possui aulas cadastradas, a interface mostra **Sem aulas cadastradas** em vez de um progresso artificial `0/0`.
+
 ## CMS: acesso e disponibilidade de páginas e seções
 
 Estrutura e autorização pertencem ao próprio CMS. Cada elemento `data-cms-section` continua sendo a seção real mostrada no editor; não existe uma lista paralela em “Páginas protegidas”.
@@ -144,6 +157,10 @@ Os testes devem provar que:
 - o dashboard do aluno distingue `blocked`, `scheduled` e `released` sem usar a mera existência de `released_at` como booleano;
 - apenas aulas realmente `released` entram na contagem exibida como liberadas;
 - material `cohort` aparece somente para a matrícula da turma correspondente;
+- uma única matrícula abre diretamente e múltiplas matrículas exigem escolha explícita;
+- `cohort_uuid` desconhecido não seleciona outra matrícula por fallback;
+- `active` e `closed` são comunicados sem mudar silenciosamente a política de acesso;
+- curso sem aulas não aparece como `0/0 aulas liberadas`;
 - a Área do aluno não apresenta “Páginas protegidas” como domínio administrativo;
 - a Biblioteca de mídia continua sendo a autoridade de mídia editorial;
 - o registro de teste persiste e exibe o branqueador;

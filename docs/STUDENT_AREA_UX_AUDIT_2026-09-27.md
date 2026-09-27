@@ -2,7 +2,7 @@
 
 ## Baseline confirmado
 
-A revisão parte da branch de produção `wip/form-response-refinement-2026-07-16` no merge `67fe31d5f1898245ca5b8022f69fe593fa5556d0` (PR #125).
+A revisão partiu da branch de produção `wip/form-response-refinement-2026-07-16` no merge `67fe31d5f1898245ca5b8022f69fe593fa5556d0` (PR #125).
 
 O painel `Admin → Sistema e atualizações` foi conferido em 27/09/2026 e mostrou:
 
@@ -10,7 +10,7 @@ O painel `Admin → Sistema e atualizações` foi conferido em 27/09/2026 e most
 - **Produção disponível:** `67fe31d5f189`
 - timestamp exibido em ambos: `2026-09-27T03:40:41+00:00`
 
-Portanto, neste ponto da revisão, a hospedagem e o canal de produção estavam sincronizados no mesmo `sourceSha` abreviado. O editor permanece pausado nesse estado; a revisão seguinte é da Área do aluno.
+Portanto, naquele ponto da revisão, a hospedagem e o canal de produção estavam sincronizados no mesmo `sourceSha` abreviado. O editor permanece pausado; a revisão seguinte é da Área do aluno.
 
 ## Princípio da revisão
 
@@ -22,7 +22,7 @@ A revisão é dividida em blocos pequenos, cada um com regressão no mesmo níve
 
 ### A1 — Verdade do dashboard
 
-Dois defeitos funcionais aparecem na primeira tela após o login:
+Dois defeitos funcionais apareciam na primeira tela após o login:
 
 1. `released_at` futuro era tratado visualmente como aula liberada, embora a autorização canônica considere esse estado `scheduled`;
 2. a descoberta de material no dashboard listava somente páginas `activity|enrolled`, omitindo páginas `cohort` destinadas exatamente à turma da matrícula.
@@ -36,11 +36,25 @@ Contrato:
 - o material de uma matrícula inclui páginas de atividade e páginas `cohort` cujo `access_cohort_id` seja o da própria matrícula;
 - páginas de outra turma, públicas ou apenas autenticadas não são apresentadas como material do curso.
 
+**Estado:** concluído no PR #126, merge `965169f0129542ea07a232e7707954e6f183f81d`. A suíte do PR passou completa, incluindo PHP, Playwright/Chromium, build e dry-run. O deploy de produção run `36294820849` concluiu com sucesso e publicou o novo artefato para o atualizador administrativo.
+
 ### A2 — Contexto curso/turma
 
-A conta já pode possuir várias matrículas, mas a navegação ainda funciona como lista agregada. A próxima revisão deve transformar `Cursos` em ponto de escolha e tornar a matrícula selecionada um contexto de trabalho claro, sem criar uma nova entidade de autorização.
+A conta já pode possuir várias matrículas, mas a navegação funcionava como lista agregada. Este bloco transforma `Cursos` em ponto de escolha e torna a matrícula selecionada um contexto de trabalho claro, sem criar uma nova entidade de autorização.
 
-Também deve tornar visível o estado da turma (`active|closed`) e tratar explicitamente situações como curso sem aulas cadastradas.
+Contrato:
+
+- uma única matrícula ativa abre diretamente;
+- múltiplas matrículas exigem escolha explícita;
+- o contexto via URL usa o `cohort_uuid` já existente e não persiste um “curso atual” paralelo;
+- UUID desconhecido não seleciona outra matrícula por fallback;
+- o workspace selecionado usa a atividade correspondente também para os tokens de Design do shell;
+- `active` aparece como **Turma ativa** e `closed` como **Turma encerrada**;
+- `closed` permanece informativo: este bloco não inventa uma nova restrição operacional;
+- curso sem aulas mostra **Sem aulas cadastradas**, não `0/0 aulas liberadas`;
+- quando houver mais de uma matrícula, o workspace possui retorno explícito para **Todos os cursos**.
+
+**Estado:** implementação em `refactor/student-course-context-a2-2026-09-27`.
 
 ### A3 — Conta completa
 
@@ -72,23 +86,19 @@ Também devem ser revistos estados de conclusão das etapas e o contexto de curs
 
 A auditoria encontrou que a maior parte dos testes da Área do aluno era estática (`file_get_contents`/`str_contains`). Isso não substitui regressão de interação.
 
-A partir do A1, cada bloco que alterar UX deve combinar:
+A partir do A1, cada bloco que alterar UX combina:
 
-- regressão PHP/SQLite para regra de domínio;
+- regressão PHP/SQLite ou teste de regra de domínio;
 - Playwright/Chromium para a superfície realmente usada;
 - ao menos um viewport de desktop e um de celular quando a tela for responsiva.
 
 ## Ordem de execução
 
-1. A1 — verdade do dashboard;
-2. A2 — contexto curso/turma;
+1. A1 — verdade do dashboard — **concluído**;
+2. A2 — contexto curso/turma — **em implementação**;
 3. A3 — Conta completa;
 4. A4 — continuidade do material;
 5. A5 — entrada e recuperação;
 6. A6 — índice de testes;
 7. A7 — workflow do teste;
 8. revisão transversal final.
-
-## A1 — branch de implementação
-
-A implementação do primeiro bloco ocorre em `fix/student-dashboard-truth-a1-2026-09-27`, sem alterações no editor de páginas.
