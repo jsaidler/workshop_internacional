@@ -55,7 +55,7 @@ function cms_render_public_page(array $activity,array $page,array $document,bool
     $materialContext=null;$currentStudent=null;
     if(!$editor){$currentStudent=student_account_current($db);if($currentStudent){$requestedCohortUuid=is_string($_GET['cohort']??null)?trim((string)$_GET['cohort']):'';$materialContext=student_enrollment_material_context($db,$currentStudent,$page,$requestedCohortUuid);}}
     $body=cms_expand_forms((string)$document['html'],$db,$activity,$page,$locale,$editor);
-    $body=cms_access_filter_html($db,$activity,$body,$currentStudent,$editor);
+    $body=cms_access_filter_html($db,$activity,$body,$currentStudent,$editor,null,$materialContext);
     $body=media_resolve_cms_html($db,$body);$body=media_resolve_cms_video_html($db,$body);
     $studentWorkspaceUrl=$materialContext?'/aluno/?cohort='.rawurlencode((string)$materialContext['cohort_uuid']):'/aluno/';
     $header=$site['header'];$footer=$site['footer'];$headerClass=!empty($header['sticky'])?'topbar cms-topbar':'topbar cms-topbar cms-topbar-static';$menuLabel='Menu';$studentAreaLabel=$locale===PUBLIC_LOCALE_PT_BR?'Área do aluno':'Student area';$assetVersion=cms_public_asset_version();$assetVersionHtml=h($assetVersion);
