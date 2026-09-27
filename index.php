@@ -16,6 +16,7 @@ try{
             if(!$student&&($pageAccess!=='public'||$materialCourses)){$next=student_safe_next((string)($_SERVER['REQUEST_URI']??cms_page_url($activity,$page,$locale)));header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
             http_response_code(403);student_private_headers();exit('Este conteúdo não está disponível para esta conta.');
         }
+        if(!$admin&&$materialCourses&&$student&&!$materialContext){http_response_code(403);student_private_headers();exit('Abra este material a partir do curso correspondente na Área do aluno.');}
         $hasSectionRules=preg_match('~data-cms-(?:access|availability|visible-from|visible-until|lesson-id|cohort-id)=~',(string)($document['html']??''))===1;
         if($pageAccess!=='public'||$hasSectionRules||$materialCourses)student_private_headers();
         if(!$admin){$document['html']=cms_access_filter_html($db,$activity,(string)$document['html'],$student,false,null,$materialContext);}
