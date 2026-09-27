@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Este documento substitui, para fins de estado atual, a fotografia de implementação registrada em `CMS_STUDENT_ACCESS_CONTRACT_2026-09-26.md` antes dos PRs #103–#115. O contrato funcional daquele documento continua válido; esta auditoria registra o que está realmente implementado na branch de produção `wip/form-response-refinement-2026-07-16` no commit `7fdf82df2bf141f12899830fddde10228342761d`.
+Este documento substitui, para fins de estado atual, a fotografia de implementação registrada em `CMS_STUDENT_ACCESS_CONTRACT_2026-09-26.md` antes dos PRs #103–#115. O contrato funcional daquele documento continua válido; esta auditoria registra o que está realmente implementado na branch de produção `wip/form-response-refinement-2026-07-16`.
 
 A regra operacional permanece: correções e melhorias seguem em blocos pequenos, cada um com branch, regressão, PR, merge e deploy antes do próximo.
 
@@ -22,7 +22,7 @@ A regra operacional permanece: correções e melhorias seguem em blocos pequenos
 | Liberação por aula/turma | `cohort_lesson_releases.released_at` é autoridade | CORRETO | PR #106 e serviço em `app/cms_access.php` | manter |
 | Material dividido por aulas | seções do `caderno-positivo-direto` são vinculadas a Aula 1, 2 e 3; capa/índice permanecem imediatos | CORRETO | PR #107 | manter regressão da migração |
 | Lista “Seções” do editor | reflete todas as seções CMS, inclusive sob wrappers | CORRETO após correção | PR #109 | manter |
-| Hover revela alvo de seleção | moldura/etiqueta mostram o elemento que o clique deve selecionar | CORRETO após correção | PR #111 | incluir no runtime integrado |
+| Hover revela alvo de seleção | moldura/etiqueta mostram o elemento que o clique deve selecionar | CORRETO após correção | PR #111 | manter no runtime integrado |
 | Placeholder privado visível só ao admin | slot vazio não produz markup para aluno; editor mostra placeholder | CORRETO | PRs #101/#110/#115 | manter |
 | Placeholder de infográfico como alvo de imagem | placeholder é selecionável e permite escolher/trocar/remover imagem privada sem virar componente público | CORRETO após correção | PR #115 | manter |
 | “Páginas protegidas” como autoridade editorial paralela | rota editorial antiga é redirecionada/retirada e ações antigas retornam 410 | CORRETO no caminho ativo | `admin/student-area.php` | manter legado apenas para compatibilidade de dados |
@@ -32,50 +32,42 @@ A regra operacional permanece: correções e melhorias seguem em blocos pequenos
 | Busca da estrutura | busca existe na visão Estrutura | CORRETO | `cms-structure-navigation.js` | manter |
 | Breadcrumb do inspetor | caminho seção → contêiner/coluna → componente existe | CORRETO | `cms-structure-navigation.js` | melhorar acabamento, não reimplementar |
 | Nome interno de nós | `data-cms-editor-label` editável no inspetor | CORRETO | `cms-structure-labels.js` | manter |
-| Inserção interna de componentes | paleta existe e cria componentes antes/depois/dentro | FUNCIONALIDADE PRESENTE, INTERAÇÃO AINDA INSEGURA | o runtime atual ainda intercepta `pointerdown` com `stopImmediatePropagation()` e sintetiza `button.click()` em `cms-inline-reliability.js`; esse padrão pode competir com os demais handlers do editor | **corrigir primeiro** |
-| Regressão do runtime real do editor | há muitos testes por fixture, mas não existe atualmente uma trava simples que verifique o stack efetivamente carregado em `editor/index.html` e os contratos das camadas críticas | AUSENTE | a tentativa existiu no PR #116, fechado sem merge | **adicionar junto da correção de interação** |
-| Biblioteca “Adicionar seção” | mostra apenas templates hardcoded | PARCIAL / INCORRETO EM RELAÇÃO AO CONTRATO | `admin/api/blocks.php` existe, mas `openSections()` em `cms-editor-v3.js` não carrega Blocos salvos | implementar depois da correção de interação |
-| Biblioteca única “Seções prontas + Blocos salvos” | prevista em `CMS_CONTENT_STRUCTURE.md`, ainda não materializada na UI atual | AUSENTE | API de blocos existe; UI não a consome | bloco próprio |
-| Coerência do inspetor | propriedades funcionais vêm de módulos diferentes e alguns controles são injetados depois do inspetor base | PARCIAL / UX FRAGMENTADA | página, seção, acesso, layout e mídia são compostos por várias camadas JS | consolidar apresentação por etapas, sem reescrever backend |
-| Autoridade de interação do editor | seleção, estrutura, DnD, hover, promoção legada e inserção são distribuídos por vários módulos sobrepostos | FRÁGIL | os PRs #109, #114 e #115 corrigiram falhas de integração que passavam em fixtures isoladas | reduzir sobreposição gradualmente, com teste integrado antes de cada remoção |
+| Inserção interna de componentes | paleta cria componentes antes/depois/dentro e agora preserva o clique nativo do navegador | CORRETO após J1 | PR #118; `cms-inline-reliability.js` não cancela `pointerdown` nem sintetiza `click()` | manter regressões Playwright + runtime |
+| Regressão do runtime real do editor | CI verifica a composição efetivamente carregada pelo editor e contratos críticos de interação/mídia | CORRETO após J1 | PR #118; `tools/test-editor-runtime-integration.php` | ampliar quando novas camadas críticas entrarem |
+| Biblioteca “Adicionar seção” | o caminho ativo abre `pro-components-dialog`; `cms-editor-consolidation.js` renomeia as abas para **Seções prontas** e **Blocos salvos** e intercepta os gatilhos antigos | CORRETO NO CAMINHO ATIVO | `cms-pro-editor.js` + `cms-editor-consolidation.js` | não duplicar implementação |
+| Biblioteca única “Seções prontas + Blocos salvos” | `cms-pro-editor.js` carrega blocos por `admin/api/blocks.php`, insere cópia independente e permite salvar a seção atual como bloco | CORRETO NO CAMINHO ATIVO | a primeira leitura de `cms-editor-v3.js` isoladamente levou a uma classificação incorreta; a camada de consolidação é a autoridade de UI ativa | remover a biblioteca legada apenas em bloco posterior, com regressão |
+| Coerência do inspetor | propriedades funcionais vêm de módulos diferentes e alguns controles são injetados depois do inspetor base | PARCIAL / UX FRAGMENTADA | página, seção, acesso, layout e mídia são compostos por várias camadas JS | **próximo bloco** |
+| Autoridade de interação do editor | seleção, estrutura, DnD, hover, promoção legada e inserção continuam distribuídos por módulos sobrepostos | FRÁGIL, MAS COM REGRESSÃO MELHOR | PR #118 passou a travar parte do stack real; ainda há sobreposição | reduzir gradualmente, uma responsabilidade por PR |
 
-## Achado crítico da auditoria
+## Correção da auditoria: biblioteca de seções
 
-A correção da paleta inline não está fechada no runtime atual.
+A primeira versão desta auditoria classificou a biblioteca única como ausente porque examinou `openSections()` em `cms-editor-v3.js` de forma isolada. Essa classificação estava errada.
 
-`editor/cms-inline-reliability.js` ainda captura `pointerdown` em botões da paleta, chama `preventDefault()`, `stopImmediatePropagation()` e em seguida executa `button.click()` artificialmente. Esse desenho é exatamente o tipo de competição de eventos que pode produzir o sintoma observado no editor real: a paleta aparece, mas a ação não chega de forma confiável ao handler que cria o componente.
+O runtime efetivo também carrega `cms-pro-editor.js` e `cms-editor-consolidation.js`. A camada de consolidação intercepta os dois gatilhos “Adicionar seção”, abre `pro-components-dialog`, renomeia as abas para **Seções prontas** e **Blocos salvos** e esconde o gatilho concorrente do editor Pro. A aba de blocos usa `admin/api/blocks.php` e o mesmo módulo permite salvar a seção selecionada como bloco reutilizável.
 
-A próxima alteração funcional deve corrigir esse ponto antes de acrescentar novas capacidades ao editor.
+Portanto não haverá um novo bloco para “implementar” essa biblioteca. Fazer isso criaria justamente outra autoridade concorrente. A pendência real é futura: remover a implementação legada que continua existindo atrás da camada ativa, depois de cobrir o fluxo consolidado por regressão suficiente.
 
-Contrato para a correção:
+## J1 concluído — confiabilidade de interação do editor
 
-1. a paleta deve ficar acima das demais camadas editoriais;
-2. o botão deve receber o clique nativo do navegador;
-3. a camada de seleção/drag do editor não deve capturar eventos originados na paleta;
-4. não sintetizar `click()` a partir de `pointerdown`;
-5. não usar `stopImmediatePropagation()` de modo que mate o próprio handler do comando;
-6. mouse, touch/pointer e teclado precisam continuar válidos;
-7. o CI deve verificar o stack efetivamente carregado pelo editor de produção, não apenas uma fixture reduzida.
+O PR #118 removeu do runtime o padrão que cancelava `pointerdown` com `preventDefault()`/`stopImmediatePropagation()` e executava `button.click()` artificialmente. A paleta continua acima das demais camadas, mas os botões voltam a usar a ativação nativa do navegador.
+
+O mesmo PR adicionou `tools/test-editor-runtime-integration.php` ao CI. Essa regressão verifica a ordem das camadas críticas do editor, proíbe a reintrodução do clique sintético/cancelador e confirma que mídia privada e hover continuam ligados ao runtime efetivo.
 
 ## Ordem revisada dos próximos blocos
 
-### J1 — confiabilidade de interação do editor
+### J2 — coerência do inspetor
 
-- corrigir `cms-inline-reliability.js` para preservar clique nativo;
-- adicionar regressão do runtime de produção;
-- manter as regressões Playwright de inserção já existentes.
+- organizar a seleção de seção em grupos claros: **Identidade**, **Layout**, **Audiência** e **Disponibilidade**;
+- evitar que controles de módulos diferentes pareçam painéis independentes sem relação;
+- eliminar ações de salvar isoladas quando puderem participar do fluxo normal da página;
+- estados alterado/salvo/erro visíveis e previsíveis;
+- preservar o backend e os atributos canônicos existentes.
 
-### J2 — biblioteca canônica de seções
+### J3 — coerência da biblioteca e remoção de caminho legado
 
-- `Adicionar seção` passa a apresentar **Seções prontas** e **Blocos salvos** na mesma biblioteca;
-- consumir `admin/api/blocks.php` em vez de manter uma API sem superfície correspondente;
-- estados vazio/carregando/erro e ações com hierarquia visual adequada.
-
-### J3 — coerência do inspetor
-
-- agrupar identidade, layout, acesso e disponibilidade com hierarquia consistente;
-- eliminar botões de “salvar” isolados quando a operação puder participar do fluxo normal de salvar página;
-- estados alterado/salvo/erro visíveis e previsíveis.
+- cobrir por regressão o fluxo consolidado `Seções prontas / Blocos salvos`;
+- só depois desativar/remover a biblioteca hardcoded antiga de `cms-editor-v3.js`, sem criar uma terceira implementação;
+- manter salvar/inserir blocos por `admin/api/blocks.php`.
 
 ### J4 — redução de autoridades concorrentes no front-end
 
