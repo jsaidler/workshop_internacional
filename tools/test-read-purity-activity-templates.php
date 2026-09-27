@@ -89,8 +89,10 @@ must_read_purity((string)$db->query('SELECT title FROM cms_forms WHERE id='.(int
 $pagesAdmin=(string)file_get_contents($root.'/admin/pages.php');
 $formsAdmin=(string)file_get_contents($root.'/admin/forms.php');
 $activitiesAdmin=(string)file_get_contents($root.'/admin/activities.php');
+$activityRepo=(string)file_get_contents($root.'/app/activity_repository.php');
 must_read_purity(!str_contains($pagesAdmin,'cms_pages_seed('),'pages admin still seeds on read');
 must_read_purity(!str_contains($formsAdmin,'cms_forms_seed('),'forms admin still seeds on read');
-must_read_purity(str_contains($activitiesAdmin,'name="template"')&&str_contains($activitiesAdmin,'activity_template_options()'),'activity template is not explicit in admin');
+must_read_purity(!str_contains($activitiesAdmin,'name="template"')&&!str_contains($activitiesAdmin,'activity_create('),'normal admin still exposes legacy activity templates as workshop creation');
+must_read_purity(str_contains($activityRepo,'ACTIVITY_TEMPLATE_BLANK')&&str_contains($activityRepo,'ACTIVITY_TEMPLATE_DIRECT_POSITIVE')&&str_contains($activityRepo,'activity_create('),'internal activity template constructor was removed instead of isolated for migrations/tooling');
 
 echo "read-purity-activity-templates: ok\n";
