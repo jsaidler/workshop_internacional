@@ -18,11 +18,11 @@ student_shell_start('Conta · Área do aluno',null,$student);?>
 
 <section class="student-workflow-panel" aria-labelledby="student-profile-heading">
   <header class="student-workflow-heading"><div><p class="student-kicker">Dados pessoais</p><h2 class="student-subtitle" id="student-profile-heading">Perfil</h2></div><p>Estes dados podem preencher novas inscrições automaticamente. Você continua podendo revisá-los no formulário antes de enviar.</p></header>
-  <form method="post" class="student-form-grid">
+  <form method="post" class="student-form-grid" data-student-validate>
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-profile'))?>">
     <label class="student-field student-span-2">Nome completo<input name="name" autocomplete="name" value="<?=h((string)$profile['name'])?>" required></label>
     <label class="student-field">E-mail<input name="email" type="email" autocomplete="email" value="<?=h((string)$profile['email'])?>" required></label>
-    <label class="student-field">CPF<input name="cpf" inputmode="numeric" autocomplete="off" value="<?=h((string)$profile['cpf'])?>" required></label>
+    <label class="student-field">CPF<input name="cpf" inputmode="numeric" autocomplete="off" pattern="[0-9. -]{11,14}" value="<?=h((string)$profile['cpf'])?>" required></label>
     <label class="student-field">WhatsApp / telefone<input name="phone" autocomplete="tel" value="<?=h((string)($profile['phone']??''))?>"></label>
     <label class="student-field">Instagram<input name="instagram" value="<?=h((string)($profile['instagram']??''))?>"></label>
     <label class="student-field student-span-2">Endereço<input name="address" autocomplete="street-address" value="<?=h((string)($profile['address']??''))?>"></label>

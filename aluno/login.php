@@ -25,7 +25,7 @@ student_shell_start('Entrar · Área do aluno',null,null);?>
   <h2 id="student-login-title" class="student-subtitle">Entrar</h2>
   <?php if($error&&$mode!=='activate'):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
   <?php if($notice):?><p class="student-notice"><?=h($notice)?></p><?php endif;?>
-  <form method="post">
+  <form method="post" data-student-validate>
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-login'))?>"><input type="hidden" name="mode" value="login"><input type="hidden" name="next" value="<?=h($next)?>">
     <label class="student-field">E-mail<input name="email" type="email" autocomplete="username" required></label>
     <label class="student-field">Senha<input name="password" type="password" autocomplete="current-password" required></label>
@@ -37,7 +37,7 @@ student_shell_start('Entrar · Área do aluno',null,null);?>
   <h2 id="student-activation-title" class="student-subtitle">Ativar conta</h2>
   <p class="student-lead student-lead-compact">Depois que a matrícula for confirmada, use o mesmo e-mail da inscrição e o CPF somente com números. O CPF é usado apenas neste reconhecimento inicial; em seguida você cria sua própria senha.</p>
   <?php if($error&&$mode==='activate'):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
-  <form method="post">
+  <form method="post" data-student-validate>
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-login'))?>"><input type="hidden" name="mode" value="activate"><input type="hidden" name="next" value="<?=h($next)?>">
     <label class="student-field">E-mail da inscrição<input name="email" type="email" autocomplete="email" required></label>
     <label class="student-field">CPF<input name="cpf" inputmode="numeric" autocomplete="off" pattern="[0-9. -]{11,14}" required></label>
