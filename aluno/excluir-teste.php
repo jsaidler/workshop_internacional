@@ -24,9 +24,9 @@ student_shell_start('Excluir teste',$activity?:null,$student);?>
 <p class="student-kicker">Ação permanente</p>
 <h1 class="student-title student-title-record">Excluir teste</h1>
 <p class="student-lead student-lead-compact">Você está prestes a excluir <strong><?=h((string)$test['title'])?></strong>. Esta ação apaga a ficha, todas as fotografias anexadas e toda a conversa associada ao teste.</p>
-<?php if($error):?><p class="student-error" role="alert"><?=h($error)?></p><?php endif;?>
+<?php if($error):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="student-danger-zone">
   <p>Essa exclusão não pode ser desfeita.</p>
-  <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-delete-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><?php if($cohortUuid!==''):?><input type="hidden" name="cohort" value="<?=h($cohortUuid)?>"><?php endif;?><button class="student-button student-danger-button" type="submit">Excluir teste definitivamente</button></form>
+  <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-delete-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><?php if($cohortUuid!==''):?><input type="hidden" name="cohort" value="<?=h($cohortUuid)?>"><?php endif;?><button class="button button-danger" type="submit">Excluir teste definitivamente</button></form>
 </section>
 <?php student_shell_end();
