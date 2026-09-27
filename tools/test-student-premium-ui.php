@@ -14,6 +14,7 @@ $test=(string)file_get_contents($root.'/aluno/teste.php');
 $login=(string)file_get_contents($root.'/aluno/login.php');
 $password=(string)file_get_contents($root.'/aluno/senha.php');
 $profile=(string)file_get_contents($root.'/aluno/perfil.php');
+$renderer=(string)file_get_contents($root.'/app/cms_renderer.php');
 $header=(string)file_get_contents($root.'/assets/cms-header.css');
 
 must_student_premium_ui(!str_contains($shell,'data-theme="light"'),'student shell still hardcodes the light theme');
@@ -52,6 +53,7 @@ foreach([$login,$password,$profile] as $surface){
 must_student_premium_ui(str_contains($login,'class="form-field"')&&str_contains($login,'button button-primary'),'login does not consume global field/button primitives');
 must_student_premium_ui(str_contains($password,'data-ui-match')&&str_contains($password,'class="check-field"'),'password screen does not consume global match/check primitives');
 must_student_premium_ui(!str_contains($password,'style="font-size:50px"')&&!str_contains($password,'style="display:flex'),'password screen still carries one-off inline visual rules');
-must_student_premium_ui(str_contains($header,'.cms-student-context nav a:first-child'),'protected material context does not distinguish the return-to-course action');
+must_student_premium_ui(str_contains($renderer,'$studentAccessLabel=$materialContext?$contextBackLabel:$studentAreaLabel')&&str_contains($renderer,'/aluno/testes.php?cohort='),'protected material does not reuse the global topbar for return/course actions');
+must_student_premium_ui(!str_contains($renderer,'data-cms-student-context')&&!str_contains($header,'.cms-student-context'),'protected material still owns a second context bar');
 
 echo "student-premium-ui: ok\n";
