@@ -171,6 +171,10 @@ O avanço entre etapas editáveis precisa salvar a etapa atual. A faixa 01/02/03
 - na Revisão, **Editar exposição** e **Editar revelação** são os retornos explícitos para corrigir uma etapa; depois da edição, o avanço volta a passar pelo respectivo salvamento;
 - o sistema não fabrica “etapa concluída” com base em campo preenchido. Os estados persistidos continuam sendo os estados do teste (`draft`, `submitted`, `needs_revision`, `reviewed`).
 
+Cada etapa editável possui um único formulário `multipart/form-data`. Fotografar/anexar ou remover uma imagem é uma ação lateral dentro desse mesmo formulário, não um submit independente que possa descartar texto ainda não salvo. Antes de qualquer mutação da mídia, o servidor persiste os campos atuais da etapa; a ação permanece na mesma etapa e informa que os dados também foram salvos. Somente **Salvar ... e continuar** avança o workflow.
+
+Funções de apresentação reutilizadas por ficha própria e ficha compartilhada também pertencem ao módulo carregado pelo `bootstrap`; uma rota não depende de funções declaradas apenas no arquivo executável de outra rota.
+
 A ficha própria preserva o contexto da matrícula sem torná-lo autoridade do teste:
 
 - o contexto de retorno precisa corresponder à própria turma do teste;
@@ -244,6 +248,8 @@ Os testes devem provar que:
 - o workspace de curso abre Testes já com o seu `cohort_uuid`;
 - Exposição e Revelação avançam somente por uma ação que salva a etapa atual;
 - a faixa de etapas não oferece um atalho que abandone dados editados antes do submit;
+- upload ou remoção de mídia em etapa editável persiste os campos atuais antes de alterar a mídia;
+- ficha própria e compartilhada usam helpers de apresentação carregados pelo bootstrap, sem dependência entre arquivos de rota;
 - a ficha própria rejeita como contexto de retorno um `cohort_uuid` de outra turma;
 - a ficha compartilhada preserva `cohort` apenas na mesma turma e `course` apenas dentro da mesma atividade;
 - a exclusão retorna ao workspace validado quando houver contexto;
