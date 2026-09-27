@@ -13,10 +13,11 @@ $inspector=(string)file_get_contents($root.'/editor/cms-inspector-coherence.js')
 $access=(string)file_get_contents($root.'/editor/cms-access-controls.js');
 $consolidation=(string)file_get_contents($root.'/editor/cms-editor-consolidation.js');
 $proEditor=(string)file_get_contents($root.'/editor/cms-pro-editor.js');
+$structureAuthority=(string)file_get_contents($root.'/editor/cms-structure-authority.js');
 $private=(string)file_get_contents($root.'/editor/cms-private-media-preview.js');
 $endpoint=(string)file_get_contents($root.'/admin/api/cms-private-media-slots.php');
 
-foreach(['cms-component-editor.js','cms-inline-reliability.js','cms-rich-components.js','cms-section-coherence.js','cms-inspector-coherence.js','cms-editor-consolidation.js'] as $script){
+foreach(['cms-component-editor.js','cms-inline-reliability.js','cms-rich-components.js','cms-section-coherence.js','cms-inspector-coherence.js','cms-editor-consolidation.js','cms-structure-authority.js'] as $script){
     must_editor_runtime(str_contains($index,'/editor/'.$script),'production editor does not load '.$script);
 }
 $componentPos=strpos($index,'cms-component-editor.js');
@@ -24,6 +25,8 @@ $reliabilityPos=strpos($index,'cms-inline-reliability.js');
 $richPos=strpos($index,'cms-rich-components.js');
 $sectionCoherencePos=strpos($index,'cms-section-coherence.js');
 $inspectorCoherencePos=strpos($index,'cms-inspector-coherence.js');
+$sidebarPos=strpos($index,'cms-structure-sidebar.js');
+$authorityPos=strpos($index,'cms-structure-authority.js');
 must_editor_runtime(
     $componentPos!==false&&$reliabilityPos!==false&&$richPos!==false&&$componentPos<$reliabilityPos&&$reliabilityPos<$richPos,
     'inline reliability layer is not loaded between component and rich-component layers'
@@ -31,6 +34,10 @@ must_editor_runtime(
 must_editor_runtime(
     $sectionCoherencePos!==false&&$inspectorCoherencePos!==false&&$sectionCoherencePos<$inspectorCoherencePos,
     'inspector coherence layer is not loaded after section coherence'
+);
+must_editor_runtime(
+    $sidebarPos!==false&&$authorityPos!==false&&$sidebarPos<$authorityPos,
+    'structure authority guard is not loaded after the canonical sidebar tree'
 );
 
 must_editor_runtime(!str_contains($reliability,'stopImmediatePropagation'),'inline palette cancels handlers with stopImmediatePropagation');
@@ -70,5 +77,10 @@ must_editor_runtime(str_contains($consolidation,"readyTab.textContent='Seções 
 must_editor_runtime(str_contains($consolidation,"['add-section','add-section-side']"),'both section-add entry points are not governed by the consolidated library');
 must_editor_runtime(str_contains($proEditor,'/admin/api/blocks.php'),'saved blocks do not use the canonical blocks endpoint');
 must_editor_runtime(str_contains($proEditor,'pro-components-dialog'),'modern section library dialog is missing from the active editor layer');
+
+must_editor_runtime(str_contains($structureAuthority,"querySelectorAll('.cms-structure-tree')"),'structure authority guard does not remove duplicate inspector trees');
+must_editor_runtime(str_contains($structureAuthority,"cmsStructureAuthority='sidebar'")||str_contains($structureAuthority,"cmsStructureAuthority = 'sidebar'"),'structure authority guard does not declare the sidebar as canonical');
+must_editor_runtime(str_contains($structureAuthority,'MutationObserver'),'structure authority guard does not prevent duplicate trees from reappearing after inspector changes');
+must_editor_runtime(str_contains($index,'id="page-structure-tree"'),'canonical sidebar structure tree is missing from the editor DOM');
 
 echo "editor-runtime-integration: ok\n";
