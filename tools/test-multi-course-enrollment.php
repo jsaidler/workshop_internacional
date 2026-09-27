@@ -8,6 +8,9 @@ function app_config(): array {return ['app_secret'=>str_repeat('a',40),'ip_hash_
 function h(mixed $value): string {return htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function csrf_token(string $scope): string {return 'csrf-'.$scope;}
 const PUBLIC_LOCALE_PT_BR='pt-BR';const PUBLIC_LOCALE_EN='en';
+// This regression deliberately exercises the pre-page-scope compatibility path.
+// New workshop/page reconciliation is covered by test-workshop-page-enrollment-scope.php.
+function workshop_course_submission_root(PDO $db,array $submission): ?array {return null;}
 
 $_SERVER['REMOTE_ADDR']='127.0.0.1';$_SERVER['REQUEST_METHOD']='GET';$_SESSION=[];
 require __DIR__.'/../app/form_purpose.php';

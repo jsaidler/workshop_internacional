@@ -3,106 +3,58 @@ declare(strict_types=1);
 
 function cms_access_levels(): array {return ['public','authenticated','activity','cohort'];}
 function cms_availability_modes(): array {return ['immediate','scheduled','lesson'];}
-
-function cms_access_parse_local_datetime(string $value): ?int {
-    $value=trim($value);if($value==='')return null;
-    try{$tz=new DateTimeZone((string)(app_config()['timezone']??'UTC'));$dt=new DateTimeImmutable($value,$tz);return $dt->getTimestamp();}catch(Throwable){return null;}
-}
+function cms_access_parse_local_datetime(string $value): ?int {$value=trim($value);if($value==='')return null;try{$tz=new DateTimeZone((string)(app_config()['timezone']??'UTC'));$dt=new DateTimeImmutable($value,$tz);return $dt->getTimestamp();}catch(Throwable){return null;}}
 function cms_access_local_to_utc(string $value): ?string {$ts=cms_access_parse_local_datetime($value);return $ts===null?null:gmdate('c',$ts);}
 function cms_access_local_input_value(?string $utc): string {if(!$utc)return '';try{$dt=new DateTimeImmutable($utc);$tz=new DateTimeZone((string)(app_config()['timezone']??'UTC'));return $dt->setTimezone($tz)->format('Y-m-d\TH:i');}catch(Throwable){return '';}}
-function cms_access_section_rule(DOMElement $section): array {
-    $rawAccess=trim($section->getAttribute('data-cms-access'));$access=$rawAccess===''?'public':(in_array($rawAccess,cms_access_levels(),true)?$rawAccess:'invalid');
-    $rawAvailability=trim($section->getAttribute('data-cms-availability'));$availability=$rawAvailability===''?'immediate':(in_array($rawAvailability,cms_availability_modes(),true)?$rawAvailability:'invalid');
-    return [
-        'access'=>$access,
-        'cohort_id'=>(int)$section->getAttribute('data-cms-cohort-id'),
-        'availability'=>$availability,
-        'lesson_id'=>(int)$section->getAttribute('data-cms-lesson-id'),
-        'visible_from'=>trim($section->getAttribute('data-cms-visible-from')),
-        'visible_until'=>trim($section->getAttribute('data-cms-visible-until')),
-    ];
-}
+function cms_access_section_rule(DOMElement $section): array {$rawAccess=trim($section->getAttribute('data-cms-access'));$access=$rawAccess===''?'public':(in_array($rawAccess,cms_access_levels(),true)?$rawAccess:'invalid');$rawAvailability=trim($section->getAttribute('data-cms-availability'));$availability=$rawAvailability===''?'immediate':(in_array($rawAvailability,cms_availability_modes(),true)?$rawAvailability:'invalid');return ['access'=>$access,'cohort_id'=>(int)$section->getAttribute('data-cms-cohort-id'),'availability'=>$availability,'lesson_id'=>(int)$section->getAttribute('data-cms-lesson-id'),'visible_from'=>trim($section->getAttribute('data-cms-visible-from')),'visible_until'=>trim($section->getAttribute('data-cms-visible-until'))];}
 function cms_access_validate_section_rule(PDO $db,int $activityId,array $rule): void {
     $access=(string)($rule['access']??'invalid');if(!in_array($access,cms_access_levels(),true))throw new RuntimeException('A audiência da seção é inválida.');
-    if($access==='cohort'){
-        $cohortId=(int)($rule['cohort_id']??0);if($cohortId<1)throw new RuntimeException('Escolha a turma que pode ver esta seção.');
-        $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==$activityId||(string)$cohort['status']==='archived')throw new RuntimeException('A turma selecionada não pertence a esta atividade.');
-    }
+    if($access==='cohort'){$cohortId=(int)($rule['cohort_id']??0);if($cohortId<1)throw new RuntimeException('Escolha a turma que pode ver esta seção.');$cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==$activityId||(string)$cohort['status']==='archived')throw new RuntimeException('A turma selecionada não pertence a este site.');}
     $availability=(string)($rule['availability']??'invalid');if(!in_array($availability,cms_availability_modes(),true))throw new RuntimeException('A disponibilidade da seção é inválida.');
-    if($availability==='lesson'){
-        $lessonId=(int)($rule['lesson_id']??0);if($lessonId<1)throw new RuntimeException('Escolha a aula que controla esta seção.');
-        $q=$db->prepare('SELECT 1 FROM course_lessons WHERE id=? AND activity_id=?');$q->execute([$lessonId,$activityId]);if(!$q->fetchColumn())throw new RuntimeException('A aula selecionada não pertence a esta atividade.');
-    }
-    if($availability==='scheduled'){
-        $fromRaw=trim((string)($rule['visible_from']??''));$untilRaw=trim((string)($rule['visible_until']??''));if($fromRaw===''&&$untilRaw==='')throw new RuntimeException('Informe quando a seção agendada deve ficar disponível.');
-        $from=$fromRaw===''?null:cms_access_parse_local_datetime($fromRaw);$until=$untilRaw===''?null:cms_access_parse_local_datetime($untilRaw);if($fromRaw!==''&&$from===null||$untilRaw!==''&&$until===null)throw new RuntimeException('A data de disponibilidade da seção é inválida.');
-        if($from!==null&&$until!==null&&$until<$from)throw new RuntimeException('O encerramento da seção não pode ocorrer antes da liberação.');
-    }
+    if($availability==='lesson'){$lessonId=(int)($rule['lesson_id']??0);if($lessonId<1)throw new RuntimeException('Escolha a aula que controla esta seção.');$q=$db->prepare('SELECT 1 FROM course_lessons WHERE id=? AND activity_id=?');$q->execute([$lessonId,$activityId]);if(!$q->fetchColumn())throw new RuntimeException('A aula selecionada não pertence a este site.');}
+    if($availability==='scheduled'){$fromRaw=trim((string)($rule['visible_from']??''));$untilRaw=trim((string)($rule['visible_until']??''));if($fromRaw===''&&$untilRaw==='')throw new RuntimeException('Informe quando a seção agendada deve ficar disponível.');$from=$fromRaw===''?null:cms_access_parse_local_datetime($fromRaw);$until=$untilRaw===''?null:cms_access_parse_local_datetime($untilRaw);if($fromRaw!==''&&$from===null||$untilRaw!==''&&$until===null)throw new RuntimeException('A data de disponibilidade da seção é inválida.');if($from!==null&&$until!==null&&$until<$from)throw new RuntimeException('O encerramento da seção não pode ocorrer antes da liberação.');}
 }
-function cms_access_validate_document(PDO $db,array $page,array $document): array {
-    $html=(string)($document['html']??'');if($html===''||!str_contains($html,'data-cms-section'))return $document;
-    $previous=libxml_use_internal_errors(true);$dom=new DOMDocument('1.0','UTF-8');$dom->loadHTML('<?xml encoding="utf-8" ?><div id="cms-access-validate-root">'.$html.'</div>',LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);$xpath=new DOMXPath($dom);
-    try{foreach(iterator_to_array($xpath->query('//*[@data-cms-section]')?:[]) as $node){if(!$node instanceof DOMElement)continue;cms_access_validate_section_rule($db,(int)$page['activity_id'],cms_access_section_rule($node));}}finally{libxml_clear_errors();libxml_use_internal_errors($previous);}
-    return $document;
-}
-function cms_access_active_enrollment(PDO $db,int $studentId,int $activityId,?int $cohortId=null): ?array {
-    $sql="SELECT e.*,c.activity_id,c.title cohort_title,c.cohort_uuid FROM course_enrollments e JOIN course_cohorts c ON c.id=e.cohort_id WHERE e.student_id=? AND c.activity_id=? AND e.status='active' AND c.status!='archived'";$args=[$studentId,$activityId];
-    if($cohortId!==null&&$cohortId>0){$sql.=' AND c.id=?';$args[]=$cohortId;}
-    $sql.=' ORDER BY e.confirmed_at DESC,e.id DESC LIMIT 1';$q=$db->prepare($sql);$q->execute($args);return $q->fetch(PDO::FETCH_ASSOC)?:null;
-}
-function cms_access_lesson_released(PDO $db,int $cohortId,int $lessonId,?int $now=null): bool {
-    if($cohortId<1||$lessonId<1)return false;$q=$db->prepare('SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=? AND lesson_id=?');$q->execute([$cohortId,$lessonId]);$value=$q->fetchColumn();if(!is_string($value)||trim($value)==='')return false;
-    $ts=strtotime($value);return $ts!==false&&$ts<=($now??time());
-}
+function cms_access_validate_document(PDO $db,array $page,array $document): array {$html=(string)($document['html']??'');if($html===''||!str_contains($html,'data-cms-section'))return $document;$previous=libxml_use_internal_errors(true);$dom=new DOMDocument('1.0','UTF-8');$dom->loadHTML('<?xml encoding="utf-8" ?><div id="cms-access-validate-root">'.$html.'</div>',LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);$xpath=new DOMXPath($dom);try{foreach(iterator_to_array($xpath->query('//*[@data-cms-section]')?:[]) as $node){if(!$node instanceof DOMElement)continue;cms_access_validate_section_rule($db,(int)$page['activity_id'],cms_access_section_rule($node));}}finally{libxml_clear_errors();libxml_use_internal_errors($previous);}return $document;}
+function cms_access_active_enrollment(PDO $db,int $studentId,int $activityId,?int $cohortId=null): ?array {$hasWorkshop=workshop_course_scope_available($db);$select=$hasWorkshop?',c.workshop_page_id':'';$sql="SELECT e.*,c.activity_id,c.title cohort_title,c.cohort_uuid$select FROM course_enrollments e JOIN course_cohorts c ON c.id=e.cohort_id WHERE e.student_id=? AND c.activity_id=? AND e.status='active' AND c.status!='archived'";$args=[$studentId,$activityId];if($cohortId!==null&&$cohortId>0){$sql.=' AND c.id=?';$args[]=$cohortId;}$sql.=' ORDER BY e.confirmed_at DESC,e.id DESC LIMIT 1';$q=$db->prepare($sql);$q->execute($args);return $q->fetch(PDO::FETCH_ASSOC)?:null;}
+function cms_access_lesson_released(PDO $db,int $cohortId,int $lessonId,?int $now=null): bool {if($cohortId<1||$lessonId<1)return false;$q=$db->prepare('SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=? AND lesson_id=?');$q->execute([$cohortId,$lessonId]);$value=$q->fetchColumn();if(!is_string($value)||trim($value)==='')return false;$ts=strtotime($value);return $ts!==false&&$ts<=($now??time());}
 function cms_access_lesson_release_state(?string $releasedAt,?int $now=null): string {if(!$releasedAt)return 'blocked';$ts=strtotime($releasedAt);if($ts===false)return 'blocked';return $ts<=($now??time())?'released':'scheduled';}
 function cms_access_set_lesson_release(PDO $db,int $activityId,int $cohortId,int $lessonId,string $mode,string $scheduled=''): ?string {
-    $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==$activityId)throw new RuntimeException('Turma inválida.');
-    $q=$db->prepare('SELECT 1 FROM course_lessons WHERE id=? AND activity_id=?');$q->execute([$lessonId,$activityId]);if(!$q->fetchColumn())throw new RuntimeException('Aula inválida.');
-    $releasedAt=match($mode){'release'=>utc_now(),'block'=>null,'schedule'=>cms_access_local_to_utc($scheduled),default=>throw new RuntimeException('Ação de liberação inválida.')};
-    if($mode==='schedule'&&$releasedAt===null)throw new RuntimeException('Informe uma data e hora válidas.');$now=utc_now();
-    $db->prepare('INSERT INTO cohort_lesson_releases(cohort_id,lesson_id,released_at,created_at,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(cohort_id,lesson_id) DO UPDATE SET released_at=excluded.released_at,updated_at=excluded.updated_at')->execute([$cohortId,$lessonId,$releasedAt,$now,$now]);return $releasedAt;
+    $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==$activityId)throw new RuntimeException('Turma inválida.');$q=$db->prepare('SELECT activity_id,workshop_page_id FROM course_lessons WHERE id=?');$q->execute([$lessonId]);$lesson=$q->fetch(PDO::FETCH_ASSOC);if(!$lesson||(int)$lesson['activity_id']!==$activityId)throw new RuntimeException('Aula inválida.');
+    $cohortWorkshop=(int)($cohort['workshop_page_id']??0);$lessonWorkshop=(int)($lesson['workshop_page_id']??0);if($cohortWorkshop>0&&$lessonWorkshop!==$cohortWorkshop)throw new RuntimeException('A aula não pertence ao workshop desta turma.');
+    $releasedAt=match($mode){'release'=>utc_now(),'block'=>null,'schedule'=>cms_access_local_to_utc($scheduled),default=>throw new RuntimeException('Ação de liberação inválida.')};if($mode==='schedule'&&$releasedAt===null)throw new RuntimeException('Informe uma data e hora válidas.');$now=utc_now();$db->prepare('INSERT INTO cohort_lesson_releases(cohort_id,lesson_id,released_at,created_at,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(cohort_id,lesson_id) DO UPDATE SET released_at=excluded.released_at,updated_at=excluded.updated_at')->execute([$cohortId,$lessonId,$releasedAt,$now,$now]);return $releasedAt;
 }
-function cms_access_section_allowed(PDO $db,array $activity,array $rule,?array $user=null,?int $now=null): bool {
+function cms_access_context_enrollment(PDO $db,array $activity,?array $user,?array $enrollmentContext,?int $cohortId=null): ?array {
+    if(!$user)return null;
+    if($enrollmentContext){$contextStudent=(int)($enrollmentContext['student_id']??$enrollmentContext['studentId']??0);if($contextStudent>0&&$contextStudent!==(int)$user['id'])return null;if($cohortId!==null&&$cohortId>0&&(int)($enrollmentContext['cohort_id']??0)!==$cohortId)return null;if((int)($enrollmentContext['activity_id']??0)!==(int)$activity['id'])return null;return $enrollmentContext;}
+    return cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id'],$cohortId);
+}
+function cms_access_section_allowed(PDO $db,array $activity,array $rule,?array $user=null,?int $now=null,?array $enrollmentContext=null): bool {
     $now??=time();$availability=(string)($rule['availability']??'invalid');if(!in_array($availability,cms_availability_modes(),true))return false;
-    if($availability==='scheduled'){
-        $fromRaw=(string)($rule['visible_from']??'');$untilRaw=(string)($rule['visible_until']??'');$from=cms_access_parse_local_datetime($fromRaw);$until=cms_access_parse_local_datetime($untilRaw);
-        if(trim($fromRaw)!==''&&$from===null||trim($untilRaw)!==''&&$until===null)return false;if($from===null&&$until===null)return false;if($from!==null&&$now<$from)return false;if($until!==null&&$now>$until)return false;
-    }
-    $access=(string)($rule['access']??'invalid');
-    if($access==='public')$audience=true;
-    elseif(!$user)$audience=false;
-    elseif($access==='authenticated')$audience=true;
-    elseif($access==='activity')$audience=(bool)cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id']);
-    elseif($access==='cohort')$audience=(int)($rule['cohort_id']??0)>0&&(bool)cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id'],(int)$rule['cohort_id']);
-    else $audience=false;
-    if(!$audience)return false;
+    if($availability==='scheduled'){$fromRaw=(string)($rule['visible_from']??'');$untilRaw=(string)($rule['visible_until']??'');$from=cms_access_parse_local_datetime($fromRaw);$until=cms_access_parse_local_datetime($untilRaw);if(trim($fromRaw)!==''&&$from===null||trim($untilRaw)!==''&&$until===null)return false;if($from===null&&$until===null)return false;if($from!==null&&$now<$from)return false;if($until!==null&&$now>$until)return false;}
+    $access=(string)($rule['access']??'invalid');$cohortConstraint=$access==='cohort'?(int)($rule['cohort_id']??0):null;
+    if($access==='public')$audience=true;elseif(!$user)$audience=false;elseif($access==='authenticated')$audience=true;elseif(in_array($access,['activity','cohort'],true))$audience=(bool)cms_access_context_enrollment($db,$activity,$user,$enrollmentContext,$cohortConstraint);else $audience=false;if(!$audience)return false;
     if($availability==='lesson'){
-        if(!$user)return false;$cohortConstraint=$access==='cohort'?(int)($rule['cohort_id']??0):null;$enrollment=cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id'],$cohortConstraint);if(!$enrollment)return false;
-        return cms_access_lesson_released($db,(int)$enrollment['cohort_id'],(int)($rule['lesson_id']??0),$now);
+        if(!$user)return false;$enrollment=cms_access_context_enrollment($db,$activity,$user,$enrollmentContext,$cohortConstraint);if(!$enrollment)return false;$lessonId=(int)($rule['lesson_id']??0);if($lessonId<1)return false;
+        if(workshop_lesson_scope_available($db)){$q=$db->prepare('SELECT workshop_page_id FROM course_lessons WHERE id=? LIMIT 1');$q->execute([$lessonId]);$lessonWorkshop=(int)($q->fetchColumn()?:0);$contextWorkshop=(int)($enrollment['workshop_page_id']??0);if($contextWorkshop>0&&$lessonWorkshop!==$contextWorkshop)return false;}
+        return cms_access_lesson_released($db,(int)$enrollment['cohort_id'],$lessonId,$now);
     }
     return true;
 }
-function cms_access_filter_html(PDO $db,array $activity,string $html,?array $user=null,bool $editor=false,?int $now=null): string {
-    if($editor||!str_contains($html,'data-cms-section'))return $html;
-    $previous=libxml_use_internal_errors(true);$dom=new DOMDocument('1.0','UTF-8');$dom->loadHTML('<?xml encoding="utf-8" ?><div id="cms-access-root">'.$html.'</div>',LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);$xpath=new DOMXPath($dom);
-    foreach(iterator_to_array($xpath->query('//*[@data-cms-section]')?:[]) as $node){if(!$node instanceof DOMElement)continue;$rule=cms_access_section_rule($node);if(cms_access_section_allowed($db,$activity,$rule,$user,$now))continue;$node->parentNode?->removeChild($node);}
+function cms_access_filter_html(PDO $db,array $activity,string $html,?array $user=null,bool $editor=false,?int $now=null,?array $enrollmentContext=null): string {
+    if($editor||!str_contains($html,'data-cms-section'))return $html;$previous=libxml_use_internal_errors(true);$dom=new DOMDocument('1.0','UTF-8');$dom->loadHTML('<?xml encoding="utf-8" ?><div id="cms-access-root">'.$html.'</div>',LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);$xpath=new DOMXPath($dom);
+    foreach(iterator_to_array($xpath->query('//*[@data-cms-section]')?:[]) as $node){if(!$node instanceof DOMElement)continue;$rule=cms_access_section_rule($node);if(cms_access_section_allowed($db,$activity,$rule,$user,$now,$enrollmentContext))continue;$node->parentNode?->removeChild($node);}
     $root=$dom->getElementById('cms-access-root');$out='';if($root)foreach(iterator_to_array($root->childNodes) as $child)$out.=$dom->saveHTML($child);libxml_clear_errors();libxml_use_internal_errors($previous);return $out;
 }
 function cms_access_page_cohort_id(array $page): int {return (int)($page['access_cohort_id']??0);}
 function cms_access_set_page(PDO $db,array $page,string $access,?int $cohortId=null): array {
-    if($access==='enrolled')$access='activity';if(!in_array($access,cms_access_levels(),true))throw new RuntimeException('Acesso inválido.');
-    $cohortId=(int)($cohortId??0);
-    if($access==='cohort'){
-        if($cohortId<1)throw new RuntimeException('Escolha a turma que pode acessar esta página.');
-        $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==(int)$page['activity_id']||(string)$cohort['status']==='archived')throw new RuntimeException('Turma inválida para esta página.');
-    }else $cohortId=0;
-    $db->prepare('UPDATE cms_pages SET access_level=?,access_cohort_id=?,show_in_nav=CASE WHEN ?="public" THEN show_in_nav ELSE 0 END,updated_at=? WHERE id=?')->execute([$access,$cohortId>0?$cohortId:null,$access,utc_now(),(int)$page['id']]);
-    return cms_page_by_id($db,(int)$page['id'])??array_merge($page,['access_level'=>$access,'access_cohort_id'=>$cohortId?:null]);
+    if($access==='enrolled')$access='activity';if(!in_array($access,cms_access_levels(),true))throw new RuntimeException('Acesso inválido.');$cohortId=(int)($cohortId??0);
+    if($access==='cohort'){if($cohortId<1)throw new RuntimeException('Escolha a turma que pode acessar esta página.');$cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==(int)$page['activity_id']||(string)$cohort['status']==='archived')throw new RuntimeException('Turma inválida para esta página.');$workshopId=(int)($cohort['workshop_page_id']??0);if($workshopId>0&&cms_page_workshop_root_id($db,$page)!==$workshopId)throw new RuntimeException('A turma selecionada pertence a outro workshop.');}else $cohortId=0;
+    $db->prepare('UPDATE cms_pages SET access_level=?,access_cohort_id=?,show_in_nav=CASE WHEN ?="public" THEN show_in_nav ELSE 0 END,updated_at=? WHERE id=?')->execute([$access,$cohortId>0?$cohortId:null,$access,utc_now(),(int)$page['id']]);return cms_page_by_id($db,(int)$page['id'])??array_merge($page,['access_level'=>$access,'access_cohort_id'=>$cohortId?:null]);
 }
 function cms_access_page_allowed(PDO $db,array $activity,array $page,?array $user=null): bool {
     $access=(string)($page['access_level']??'public');if($access==='public')return true;if(!$user)return false;if($access==='authenticated')return true;
-    if(in_array($access,['activity','enrolled'],true))return (bool)cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id']);
-    if($access==='cohort'){ $cohortId=cms_access_page_cohort_id($page);return $cohortId>0&&(bool)cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id'],$cohortId); }
+    if(in_array($access,['activity','enrolled'],true)){$workshopId=cms_page_workshop_root_id($db,$page);if($workshopId>0&&workshop_course_scope_available($db)&&workshop_course_enrollment_for_student($db,(int)$user['id'],$workshopId))return true;return (bool)cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id']);}
+    if($access==='cohort'){$cohortId=cms_access_page_cohort_id($page);if($cohortId<1)return false;$enrollment=cms_access_active_enrollment($db,(int)$user['id'],(int)$activity['id'],$cohortId);if(!$enrollment)return false;$workshopId=(int)($enrollment['workshop_page_id']??0);return $workshopId<1||cms_page_workshop_root_id($db,$page)===$workshopId;}
     return false;
 }
-function cms_access_page_label(string $access): string {return match($access){'authenticated'=>'Usuários autenticados','activity','enrolled'=>'Participantes do curso','cohort'=>'Turma específica',default=>'Público'};}
+function cms_access_page_label(string $access): string {return match($access){'authenticated'=>'Usuários autenticados','activity','enrolled'=>'Participantes do workshop','cohort'=>'Turma específica',default=>'Público'};}

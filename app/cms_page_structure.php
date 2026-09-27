@@ -33,7 +33,7 @@ function cms_page_set_parent(PDO $db,int $pageId,?int $parentId): array {
     if($parentId!==null){
         if($parentId===$pageId)throw new RuntimeException('Uma página não pode ser filha dela mesma.');
         $parent=cms_page_by_id($db,$parentId)??throw new RuntimeException('Página superior não encontrada.');
-        if((int)$parent['activity_id']!==(int)$page['activity_id']||(string)$parent['locale']!==(string)$page['locale'])throw new RuntimeException('A página superior deve pertencer ao mesmo curso e idioma.');
+        if((int)$parent['activity_id']!==(int)$page['activity_id']||(string)$parent['locale']!==(string)$page['locale'])throw new RuntimeException('A página superior deve pertencer ao mesmo site e idioma.');
         if((string)$parent['status']==='archived')throw new RuntimeException('Uma página arquivada não pode ser página superior.');
         if(in_array($parentId,cms_page_descendant_ids($db,$pageId),true))throw new RuntimeException('Essa hierarquia criaria um ciclo.');
     }
@@ -85,7 +85,7 @@ function cms_page_set_translation_peer(PDO $db,int $pageId,?int $peerId): array 
     }
     if($peerId===$pageId)throw new RuntimeException('Selecione uma página de outro idioma.');
     $peer=cms_page_by_id($db,$peerId)??throw new RuntimeException('Página equivalente não encontrada.');
-    if((int)$peer['activity_id']!==(int)$page['activity_id'])throw new RuntimeException('A página equivalente deve pertencer ao mesmo curso.');
+    if((int)$peer['activity_id']!==(int)$page['activity_id'])throw new RuntimeException('A página equivalente deve pertencer ao mesmo site.');
     if((string)$peer['locale']===(string)$page['locale'])throw new RuntimeException('A página equivalente deve estar em outro idioma.');
     if((string)$peer['status']==='archived')throw new RuntimeException('Uma página arquivada não pode ser equivalente.');
     $group=cms_page_translation_group_value($peer)?:cms_page_translation_group_value($page)?:cms_page_uuid();
@@ -97,3 +97,25 @@ function cms_page_set_translation_peer(PDO $db,int $pageId,?int $peerId): array 
     }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
     return cms_page_by_id($db,$pageId)??$page;
 }
+
+/** Resolve the editorial workshop authority for any page.
+ * The workshop is the highest non-archived ancestor in the same site and locale.
+ */
+function cms_page_workshop_root(PDO $db,array|int $page): ?array {
+    $current=is_array($page)?$page:cms_page_by_id($db,$page);if(!$current)return null;
+    $activityId=(int)($current['activity_id']??0);$locale=(string)($current['locale']??'');$seen=[];
+    while(true){
+        $id=(int)($current['id']??0);if($id<1||isset($seen[$id]))throw new RuntimeException('Hierarquia de páginas inválida.');$seen[$id]=true;
+        if((string)($current['status']??'active')==='archived')return null;
+        $parentId=(int)($current['parent_page_id']??0);if($parentId<1)return $current;
+        $parent=cms_page_by_id($db,$parentId);if(!$parent)return $current;
+        if((int)$parent['activity_id']!==$activityId||(string)$parent['locale']!==$locale)throw new RuntimeException('Hierarquia de páginas cruza site ou idioma.');
+        $current=$parent;
+    }
+}
+function cms_page_workshop_root_id(PDO $db,array|int $page): int {return (int)(cms_page_workshop_root($db,$page)['id']??0);}
+function cms_page_workshop_ids(PDO $db,int $workshopPageId): array {
+    $root=cms_page_workshop_root($db,$workshopPageId);if(!$root||(int)$root['id']!==$workshopPageId)return [];
+    return array_values(array_unique(array_merge([$workshopPageId],cms_page_descendant_ids($db,$workshopPageId))));
+}
+function cms_page_belongs_to_workshop(PDO $db,array|int $page,int $workshopPageId): bool {return cms_page_workshop_root_id($db,$page)===$workshopPageId;}
