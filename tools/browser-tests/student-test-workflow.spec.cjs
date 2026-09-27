@@ -15,6 +15,16 @@ test('development has one advancing action and preserves typed data into review'
   await expect(page.getByTestId('saved-notes')).toHaveText('Sombras mais abertas');
 });
 
+test('adding result media saves edited development fields before the reload',async({page})=>{
+  await page.goto(url);
+  await page.locator('input[name="developer"]').fill('Parodinal 1+25');
+  await page.locator('textarea[name="notes"]').fill('Teste ainda não salvo manualmente');
+  await page.getByTestId('result-file').setInputFiles({name:'resultado.jpg',mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,217])});
+  await expect(page.getByTestId('media-notice')).toContainText('também foram salvos');
+  await expect(page.locator('input[name="developer"]')).toHaveValue('Parodinal 1+25');
+  await expect(page.locator('textarea[name="notes"]')).toHaveValue('Teste ainda não salvo manualmente');
+});
+
 test('workflow context remains visible and usable on phone viewport',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto(url);

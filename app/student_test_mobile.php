@@ -58,3 +58,11 @@ function student_test_add_media_phase(PDO $db,int $testId,int $studentId,array $
 function student_test_media_by_phase(array $media,string $phase): array {
     return array_values(array_filter($media,static fn(array $item): bool=>(string)($item['phase']??'result')===$phase));
 }
+
+function student_test_message_date(string $value): string {
+    $ts=strtotime($value);return $ts===false?$value:date('d/m/Y H:i',$ts);
+}
+
+function student_review_value(mixed $value): string {
+    $value=trim((string)$value);return $value===''?'—':h($value);
+}
