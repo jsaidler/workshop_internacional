@@ -29,12 +29,6 @@ function ensureStyle(){
 `;
   document.head.append(style);
 }
-function selectedSection(){
-  const doc=frame.contentDocument;
-  return doc?.querySelector('.cms-section-selected[data-cms-section]')
-    ||doc?.querySelector('.cms-structure-selected')?.closest?.('[data-cms-section]')
-    ||null;
-}
 function group(panel,key,title,description){
   let host=panel.querySelector(`:scope > [data-inspector-group="${key}"]`);
   if(host)return host;
@@ -51,10 +45,9 @@ function labelFor(root,selector){const field=root.querySelector(selector);return
 function moveUnique(target,node){if(node&&node.parentElement!==target)target.append(node)}
 function cleanSeparators(panel){panel.querySelectorAll(':scope > hr').forEach(node=>node.remove())}
 function sectionInspector(){
-  const section=selectedSection();
-  const panel=inspector.querySelector('.inspector-section');
-  const name=panel?.querySelector('#s-name,#section-name');
-  if(!section||!panel||!name)return false;
+  const name=inspector.querySelector('#s-name,#section-name');
+  const panel=name?.closest('.inspector-section');
+  if(!panel||!name)return false;
   inspector.classList.add('cms-inspector-coherent');panel.classList.add('cms-coherent-inspector');panel.dataset.inspectorMode='section';
   const identity=group(panel,'identity','Identidade','Como esta seção é identificada dentro do editor.');
   const layout=group(panel,'layout','Layout','Aparência e comportamento desta seção na página.');
@@ -79,8 +72,8 @@ function sectionInspector(){
   return true;
 }
 function pageInspector(){
-  const panel=inspector.querySelector('.inspector-section');
-  const title=panel?.querySelector('#p-title,#page-title');
+  const title=inspector.querySelector('#p-title,#page-title');
+  const panel=title?.closest('.inspector-section');
   if(!panel||!title)return false;
   inspector.classList.add('cms-inspector-coherent');panel.classList.add('cms-coherent-inspector');panel.dataset.inspectorMode='page';
   const identity=group(panel,'page-identity','Identidade','Título, endereço e idioma desta página.');
