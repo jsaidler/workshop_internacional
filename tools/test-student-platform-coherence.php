@@ -3,6 +3,10 @@ declare(strict_types=1);
 function fail_coherence(string $message): never {fwrite(STDERR,"student-platform-coherence: $message\n");exit(1);}
 if(!function_exists('app_config')){function app_config(): array{return ['timezone'=>'UTC'];}}
 if(!function_exists('utc_now')){function utc_now(): string{return gmdate('c');}}
+// This fixture verifies the legacy activity/cohort access contract. Workshop-page
+// scoping has its own canonical regression and is deliberately disabled here.
+function workshop_course_scope_available(PDO $db): bool{return false;}
+function workshop_lesson_scope_available(PDO $db): bool{return false;}
 $root=dirname(__DIR__);
 $studentAdmin=(string)file_get_contents($root.'/admin/student-area.php');
 $studentShell=(string)file_get_contents($root.'/app/student_shell.php');
