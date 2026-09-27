@@ -12,9 +12,9 @@ require __DIR__.'/../app/student_accounts.php';
 require __DIR__.'/../app/student_enrollments.php';
 
 $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
-$db->exec('CREATE TABLE course_cohorts(id INTEGER PRIMARY KEY,activity_id INTEGER,title TEXT,cohort_uuid TEXT,status TEXT);');
+$db->exec('CREATE TABLE course_cohorts(id INTEGER PRIMARY KEY,activity_id INTEGER,workshop_page_id INTEGER NULL,title TEXT,cohort_uuid TEXT,status TEXT);');
 $db->exec('CREATE TABLE course_enrollments(id INTEGER PRIMARY KEY,student_id INTEGER,cohort_id INTEGER,status TEXT,confirmed_at TEXT);');
-$db->exec("INSERT INTO course_cohorts VALUES(7,1,'Turma A','cohort-a','active'),(8,1,'Turma B','cohort-b','active'),(9,2,'Turma C','cohort-c','active');");
+$db->exec("INSERT INTO course_cohorts(id,activity_id,workshop_page_id,title,cohort_uuid,status) VALUES(7,1,NULL,'Turma A','cohort-a','active'),(8,1,NULL,'Turma B','cohort-b','active'),(9,2,NULL,'Turma C','cohort-c','active');");
 $db->exec("INSERT INTO course_enrollments VALUES(1,10,7,'active','2026-09-01T00:00:00Z'),(2,10,8,'active','2026-09-02T00:00:00Z'),(3,10,9,'active','2026-09-03T00:00:00Z');");
 
 $student=['id'=>10];
