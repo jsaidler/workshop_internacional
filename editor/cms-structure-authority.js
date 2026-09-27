@@ -3,9 +3,9 @@
 const inspector=document.querySelector('#inspector');
 const sidebarTree=document.querySelector('#page-structure-tree');
 const frame=document.querySelector('#page-frame');
-if(!inspector||!sidebarTree||!frame)return;
+if(!inspector||!sidebarTree)return;
 
-const d=()=>frame.contentDocument;
+const d=()=>frame?.contentDocument||null;
 const root=()=>d()?.querySelector('[data-cms-page-main]')||d()?.querySelector('main')||null;
 const sections=()=>root()?[...root().children].filter(node=>node.matches('[data-cms-section]')):[];
 
@@ -30,7 +30,7 @@ function structuralTarget(button){
   return collect(section)[index]?.node||null;
 }
 function activate(node){
-  if(!node?.isConnected)return false;
+  if(!frame||!node?.isConnected)return false;
   node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:frame.contentWindow}));
   setTimeout(()=>node.scrollIntoView({behavior:'smooth',block:'center'}),0);
   return true;
