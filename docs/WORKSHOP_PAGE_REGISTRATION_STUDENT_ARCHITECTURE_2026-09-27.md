@@ -125,6 +125,14 @@ Estado legado sem `workshop_page_id` deve continuar legível durante a transiç�
 8. migrar regras de visibilidade de testes e de páginas protegidas de “activity inteira” para workshop;
 9. somente depois da migração validada, remover compatibilidades sem uso comprovado.
 
+## Estado de implementação em 27/09/2026
+
+Os itens 1–3 foram concluídos no PR #138. O material protegido passou a usar uma única topbar global e o renderer aplica o filtro server-side antes de entregar o HTML.
+
+Os itens 4–6 e a parte estrutural do item 8 foram implementados no bloco seguinte: `workshop_page_id` passa a existir em turmas e aulas; inscrições confirmadas resolvem o workshop por `page_id` + hierarquia; turmas, aulas, material, testes e compartilhamento deixam de usar `activity_id` como fronteira semântica entre workshops. O fallback legado permanece apenas para dados antigos sem associação inequívoca.
+
+O próximo bloco é exclusivamente administrativo: **Inscrições e Área do aluno devem selecionar/agrupar por página de workshop**. Esse trabalho não cria entidade nova de workshop e não reintroduz seletor de activity. Registros cuja origem histórica não permita resolver um workshop devem aparecer explicitamente como não associados, nunca ser atribuídos por heurística.
+
 ## Regressão obrigatória
 
 A suíte deve provar pelo menos:
