@@ -35,6 +35,24 @@ A administração de **Aulas** gerencia somente a aula e seu estado de liberaç�
 
 A interface de Aulas oferece **Bloquear**, **Liberar agora** e **Agendar**. A autorização no servidor compara a data/hora real; um `released_at` futuro não conta como aula liberada.
 
+## Dashboard do aluno
+
+A primeira tela autenticada deve representar as mesmas regras de autorização e disponibilidade usadas pelo backend. Ela não possui interpretação própria de `released_at` nem uma lista paralela de material.
+
+Para cada matrícula:
+
+- `NULL` aparece como aula aguardando/bloqueada;
+- uma data futura aparece como **agendada** e não entra no total de aulas liberadas;
+- uma data passada ou presente aparece como **liberada** e entra no total;
+- a classificação deriva de `cms_access_lesson_release_state()`.
+
+A lista de material da matrícula deriva das páginas publicadas do CMS:
+
+- páginas `activity`/legado `enrolled` da atividade;
+- páginas `cohort` apenas quando `access_cohort_id` corresponde à turma da matrícula.
+
+Páginas públicas, páginas apenas `authenticated`, páginas de outra turma, páginas arquivadas ou sem documento publicado não são apresentadas como material daquele curso no dashboard. Isso não muda a autoridade de acesso do CMS; apenas impede que a Área do aluno anuncie conteúdo diferente do que a própria matrícula autoriza.
+
 ## CMS: acesso e disponibilidade de páginas e seções
 
 Estrutura e autorização pertencem ao próprio CMS. Cada elemento `data-cms-section` continua sendo a seção real mostrada no editor; não existe uma lista paralela em “Páginas protegidas”.
@@ -123,6 +141,9 @@ Os testes devem provar que:
 - `activity` e `cohort` exigem matrícula correspondente;
 - uma seção agendada não aparece antes do início e desaparece depois do encerramento;
 - uma seção controlada por aula não aparece quando `released_at` é `NULL` ou futuro e aparece quando a data já chegou;
+- o dashboard do aluno distingue `blocked`, `scheduled` e `released` sem usar a mera existência de `released_at` como booleano;
+- apenas aulas realmente `released` entram na contagem exibida como liberadas;
+- material `cohort` aparece somente para a matrícula da turma correspondente;
 - a Área do aluno não apresenta “Páginas protegidas” como domínio administrativo;
 - a Biblioteca de mídia continua sendo a autoridade de mídia editorial;
 - o registro de teste persiste e exibe o branqueador;
@@ -132,3 +153,5 @@ Os testes devem provar que:
 ## Auditoria de integração
 
 A integração entre marca global, cursos/workshops, páginas, formulários, contas, turmas, mídia, variáveis comerciais e estruturas legadas está documentada em `docs/SYSTEM_INTEGRATION_AUDIT_2026-09-25.md`. Qualquer refatoração desses domínios deve seguir o plano aditivo e sem perda de dados definido ali.
+
+A auditoria factual de UX da Área do aluno e a ordem dos blocos A1–A7 estão em `docs/STUDENT_AREA_UX_AUDIT_2026-09-27.md`.
