@@ -28,8 +28,8 @@ if(!str_contains($test,'Salvar exposição e continuar →'))fail_student_test_w
 if(!str_contains($test,'id="student-development-form"')||!str_contains($test,'form="student-development-form"')||!str_contains($test,'Salvar revelação e continuar →'))fail_student_test_workflow('development does not have one save-and-continue advance');
 if(str_contains($test,'>Salvar revelação</button>')||str_contains($test,'Revisar teste →'))fail_student_test_workflow('development still exposes a competing save/review path');
 if(!str_contains($test,'aria-disabled="true" tabindex="-1"'))fail_student_test_workflow('step strip still behaves like free navigation instead of progress indication');
-if(!str_contains($test,'student_enrollment_owned_test_navigation_context')||!str_contains($test,"$testsUrl='/aluno/testes.php'"))fail_student_test_workflow('owned test detail does not validate and preserve enrollment context');
+if(!str_contains($test,'student_enrollment_owned_test_navigation_context')||!str_contains($test,"\$testsUrl='/aluno/testes.php'"))fail_student_test_workflow('owned test detail does not validate and preserve enrollment context');
 if(!str_contains($shared,'student_enrollment_shared_test_navigation_context')||!str_contains($shared,'student_shell_start((string)$test[\'title\'].\' · Compartilhado\',$activity?:null,$student)'))fail_student_test_workflow('shared test does not preserve context/design authority');
-if(!str_contains($delete,'student_enrollment_owned_test_navigation_context')||!str_contains($delete,"header('Location: '.$testsUrl"))fail_student_test_workflow('delete flow does not return to the validated tests workspace');
+if(!str_contains($delete,'student_enrollment_owned_test_navigation_context')||!str_contains($delete,"header('Location: '.\$testsUrl"))fail_student_test_workflow('delete flow does not return to the validated tests workspace');
 
 echo "student-test-workflow: ok\n";
