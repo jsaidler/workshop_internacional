@@ -25,7 +25,7 @@ if((student_enrollment_shared_test_navigation_context([$enrollments[0]],$sharedC
 
 $root=dirname(__DIR__);$test=(string)file_get_contents($root.'/aluno/teste.php');$shared=(string)file_get_contents($root.'/aluno/teste-compartilhado.php');$delete=(string)file_get_contents($root.'/aluno/excluir-teste.php');
 if(!str_contains($test,'Salvar exposição e continuar →'))fail_student_test_workflow('exposure no longer advances by saving');
-if(!str_contains($test,'id="student-development-form"')||!str_contains($test,'form="student-development-form"')||!str_contains($test,'Salvar revelação e continuar →'))fail_student_test_workflow('development does not have one save-and-continue advance');
+if(!str_contains($test,'id="student-development-form"')||!str_contains($test,'enctype="multipart/form-data"')||!str_contains($test,'name="action" value="save_development"')||!str_contains($test,'Salvar revelação e continuar →'))fail_student_test_workflow('development does not have one save-and-continue form');
 if(str_contains($test,'>Salvar revelação</button>')||str_contains($test,'Revisar teste →'))fail_student_test_workflow('development still exposes a competing save/review path');
 if(!str_contains($test,'aria-disabled="true" tabindex="-1"'))fail_student_test_workflow('step strip still behaves like free navigation instead of progress indication');
 if(!str_contains($test,'student_enrollment_owned_test_navigation_context')||!str_contains($test,"\$testsUrl='/aluno/testes.php'"))fail_student_test_workflow('owned test detail does not validate and preserve enrollment context');
