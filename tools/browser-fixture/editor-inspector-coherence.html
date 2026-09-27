@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Inspector coherence fixture</title>
+<link rel="stylesheet" href="/editor/cms-inspector-coherence.css">
+<style>body{margin:0;padding:20px;font-family:Arial,sans-serif;background:#eee}.layout{display:grid;grid-template-columns:760px 320px;gap:20px}#page-frame{width:760px;height:620px;border:1px solid #aaa}#inspector{min-height:620px;padding:14px;background:#fff}.inspector-section{display:grid;gap:10px}.button-row{display:flex;gap:6px}label{display:grid;gap:4px;font-size:12px}input,select{min-height:32px}</style>
+</head>
+<body>
+<div class="layout">
+<iframe id="page-frame" title="Página"></iframe>
+<aside id="inspector"><div class="inspector-section"><header><p class="eyebrow">Seção</p><h2>Aula 1</h2></header><label>Nome no editor<input id="s-name" value="Aula 1"></label><label>Largura<select id="s-width"><option value="">Padrão</option><option value="full">Tela inteira</option></select></label><label>Fundo<select id="s-bg"><option value="">Padrão</option><option value="surface">Superfície</option></select></label><label>Espaçamento<select id="s-space"><option value="">Padrão</option><option value="l">Grande</option></select></label><label>Proporção<select id="s-ratio"><option value="">Padrão</option><option value="50-50">50 / 50</option></select></label><label>Alinhamento<select id="s-align"><option value="">Padrão</option><option value="center">Centro</option></select></label><label class="check-row"><input id="s-mobile" type="checkbox"> Inverter ordem no celular</label><div class="button-row"><button id="s-up">Subir</button><button id="s-down">Descer</button><button id="s-copy">Duplicar</button><button id="s-delete">Remover</button></div></div></aside>
+</div>
+<script>
+window.__lastAccessPayload=null;
+window.fetch=async(url,options={})=>{
+ const path=String(url);
+ if(path.includes('cms-access-options.php'))return new Response(JSON.stringify({csrf:'fixture-csrf',timezone:'America/Sao_Paulo',pageAccess:'public',pageCohortId:0,cohorts:[{id:7,title:'Turma setembro'}],lessons:[{id:11,title:'Aula 1'},{id:12,title:'Aula 2'}]}),{status:200,headers:{'Content-Type':'application/json'}});
+ if(path.includes('cms-page-access-save.php')){window.__lastAccessPayload=JSON.parse(options.body||'{}');return new Response(JSON.stringify({access:window.__lastAccessPayload.access,cohortId:window.__lastAccessPayload.cohortId||0}),{status:200,headers:{'Content-Type':'application/json'}})}
+ return new Response('{}',{status:404,headers:{'Content-Type':'application/json'}});
+};
+const frame=document.querySelector('#page-frame');
+frame.srcdoc='<!doctype html><html><body><main data-cms-page-main><section class="cms-section-selected" data-cms-section="lesson-1" data-cms-section-name="Aula 1"><h2>Aula 1</h2></section></main></body></html>';
+</script>
+<script src="/editor/cms-access-controls.js"></script>
+<script src="/editor/cms-inspector-coherence.js"></script>
+</body>
+</html>
