@@ -5,15 +5,16 @@
 Antes de alterar código, conteúdo, CMS, deploy ou fluxo administrativo, ler nesta ordem:
 
 1. `docs/PROJECT_STATE.md`;
-2. `docs/WORKSHOP_PAGE_REGISTRATION_STUDENT_ARCHITECTURE_2026-09-27.md`;
-3. `docs/CMS_PROFESSIONAL.md`;
-4. `docs/UI_CONTENT_RULES.md`;
-5. `docs/DESIGN_TYPOGRAPHY.md`;
-6. `docs/CMS_V3_DEPLOYMENT.md`;
-7. `README.md`;
-8. `DEPLOY.md`.
+2. `docs/COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md`;
+3. `docs/WORKSHOP_PAGE_REGISTRATION_STUDENT_ARCHITECTURE_2026-09-27.md`;
+4. `docs/CMS_PROFESSIONAL.md`;
+5. `docs/UI_CONTENT_RULES.md`;
+6. `docs/DESIGN_TYPOGRAPHY.md`;
+7. `docs/CMS_V3_DEPLOYMENT.md`;
+8. `README.md`;
+9. `DEPLOY.md`.
 
-Quando `CMS_PROFESSIONAL.md`, `README.md` ou documentação histórica ainda descreverem uma `activity` como curso/workshop, a arquitetura de workshops como páginas documentada em `WORKSHOP_PAGE_REGISTRATION_STUDENT_ARCHITECTURE_2026-09-27.md` prevalece até a remoção completa dessas referências legadas.
+Para regras de negócio de curso, inscrição, turma, matrícula, aulas e material didático, `COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md` prevalece. `WORKSHOP_PAGE_REGISTRATION_STUDENT_ARCHITECTURE_2026-09-27.md` permanece como registro da transição que retirou `activity` do papel de curso e continua válido onde não conflitar com a autoridade de Curso. Quando documentação histórica descrever uma `activity` ou uma página CMS como a entidade de negócio curso/workshop, a arquitetura de Curso prevalece.
 
 Não reconstruir decisões pela memória quando os documentos vigentes disserem algo diferente. Quando uma decisão estrutural, editorial ou operacional mudar, atualizar os documentos canônicos no mesmo trabalho; não deixar a documentação para uma etapa futura.
 
