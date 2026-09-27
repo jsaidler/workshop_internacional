@@ -15,9 +15,14 @@ authority_must(str_contains($publicIndex,"if((int)(\$activity['is_root']??0)!==1
 authority_must(str_contains($publicIndex,'legacy_public_renderer_fallback'),'legacy root fallback must remain observable');
 
 $studentAdmin=authority_source($root,'admin/student-area.php');
+$peopleAdmin=authority_source($root,'admin/people.php');
+$integrityAdmin=authority_source($root,'admin/data-integrity.php');
 $courseAdmin=authority_source($root,'admin/courses.php');
-authority_must(str_contains($studentAdmin,'Escolha o curso'),'student-area authority must begin with course context');
-authority_must(str_contains($studentAdmin,'/admin/courses.php?activity='),'student-area authority must delegate selected course operations to canonical course admin');
+authority_must(str_contains($studentAdmin,'/admin/people.php'),'legacy student-area route must delegate global identity administration to People');
+authority_must(str_contains($peopleAdmin,'FROM student_users u'),'people authority must consume global student identity directly');
+authority_must(str_contains($peopleAdmin,'c.course_id IS NULL'),'people authority must expose historical enrollments with incomplete course scope');
+authority_must(str_contains($integrityAdmin,'Somente leitura'),'integrity diagnosis must declare read-only authority');
+authority_must(!str_contains($integrityAdmin,'REQUEST_METHOD'),'integrity diagnosis must not mutate installed data');
 authority_must(str_contains($courseAdmin,"'material'=>'Material'"),'course admin must own material context');
 authority_must(str_contains($courseAdmin,'course_material_add_page'),'course material must be an association, not a parallel page type');
 authority_must(str_contains($courseAdmin,'/editor/?page='),'course material must edit through canonical CMS editor');
