@@ -33,7 +33,7 @@ foreach(['.form-field','.choice-field','.check-field','.button-compact','.button
 must_student_premium_ui(str_contains($uiCss,'appearance:none')&&str_contains($uiCss,'[aria-invalid=true]'),'global field states are incomplete');
 must_student_premium_ui(str_contains($uiJs,"form[data-ui-validate]")&&str_contains($uiJs,'workshop-theme'),'global UI behavior does not own validation and theme');
 must_student_premium_ui(str_contains($uiJs,'aria-invalid')&&str_contains($uiJs,'aria-describedby')&&str_contains($uiJs,'scrollIntoView'),'global validation does not expose accessible persistent errors');
-must_student_premium_ui(str_contains($uiJs,'As senhas não conferem.')&&str_contains($uiJs,'data.uiMatch'),'global validation does not own password matching');
+must_student_premium_ui(str_contains($uiJs,'As senhas não conferem.')&&str_contains($uiJs,'dataset.uiMatch'),'global validation does not own password matching');
 
 must_student_premium_ui(!str_contains($test,'datalist id="bleach-options"'),'bleach still uses the browser datalist popup');
 must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'Solução peroxiacética')&&str_contains($test,'Cloreto férrico'),'bleach does not consume the global choice control');
