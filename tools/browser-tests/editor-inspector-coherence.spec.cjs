@@ -2,8 +2,13 @@ const {test,expect}=require('@playwright/test');
 
 const url='http://127.0.0.1:8099/tools/browser-fixture/editor-inspector-coherence.html';
 
+async function openFixture(page){
+  await page.goto(url,{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#inspector')).toBeVisible();
+}
+
 test('section inspector is grouped by editorial responsibility',async({page})=>{
-  await page.goto(url);
+  await openFixture(page);
   const inspector=page.locator('#inspector');
   await expect(inspector.locator('[data-inspector-group="identity"]')).toContainText('Identidade');
   await expect(inspector.locator('[data-inspector-group="layout"]')).toContainText('Layout');
@@ -17,7 +22,7 @@ test('section inspector is grouped by editorial responsibility',async({page})=>{
 });
 
 test('moving controls into coherent groups preserves their existing listeners',async({page})=>{
-  await page.goto(url);
+  await openFixture(page);
   const name=page.locator('#inspector [data-inspector-group="identity"] #s-name');
   await name.fill('Aula 1 revisada');
   await name.dispatchEvent('change');
