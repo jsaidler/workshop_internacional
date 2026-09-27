@@ -109,27 +109,20 @@ function render(){
 function schedule(){if(ticking)return;ticking=true;requestAnimationFrame(render)}
 function dispatchSection(section){
   if(!section)return;
+  if(window.CmsEditorStructure?.selectSection?.(section))return;
   section.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:frame.contentWindow}));
   setTimeout(()=>section.scrollIntoView({behavior:'smooth',block:'center'}),0);
 }
 function selectNode(section,nodeIndex){
   if(!section)return;
-  const entries=collect(section);
-  const target=entries[nodeIndex]?.node;
+  const target=collect(section)[nodeIndex]?.node;
   if(!target)return;
-  if(activeSection()!==section)dispatchSection(section);
   let attempts=0;
-  const bridge=()=>{
-    const button=inspector.querySelector(`.cms-structure-tree [data-tree-select="${nodeIndex}"]`);
-    if(button){
-      button.click();
-      target.scrollIntoView({behavior:'smooth',block:'center'});
-      schedule();
-      return;
-    }
-    if(attempts++<8)setTimeout(bridge,25);
+  const select=()=>{
+    if(window.CmsEditorStructure?.select?.(target)){schedule();return}
+    if(attempts++<8)setTimeout(select,25);
   };
-  setTimeout(bridge,0);
+  select();
 }
 function bindRows(){
   treeHost.querySelectorAll('[data-page-tree-toggle]').forEach(button=>button.onclick=event=>{
