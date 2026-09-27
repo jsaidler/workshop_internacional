@@ -30,15 +30,19 @@ A regra operacional permanece: correções e melhorias seguem em blocos pequenos
 | `enrolled` como autoridade | caminhos canônicos usam `activity`; leitura de `enrolled` permanece por compatibilidade | PARCIAL / COMPATIBILIDADE | `app/cms_access.php`, `app/student_enrollments.php`, helpers antigos | não usar em código novo; limpar depois |
 | Árvore estrutural de componentes | componentes, contêineres e colunas são navegáveis | CORRETO | `cms-structure-sidebar.js` | manter |
 | Busca da estrutura | busca existe na visão Estrutura | CORRETO | `cms-structure-navigation.js` | manter |
-| Breadcrumb do inspetor | caminho seção → contêiner/coluna → componente existe | CORRETO | `cms-structure-navigation.js` | melhorar acabamento, não reimplementar |
+| Breadcrumb do inspetor | caminho seção → contêiner/coluna → componente existe | CORRETO | `cms-structure-navigation.js` | manter; seleção passa por autoridade canônica no J4A |
 | Nome interno de nós | `data-cms-editor-label` editável no inspetor | CORRETO | `cms-structure-labels.js` | manter |
 | Inserção interna de componentes | paleta cria componentes antes/depois/dentro e agora preserva o clique nativo do navegador | CORRETO após J1 | PR #118; `cms-inline-reliability.js` não cancela `pointerdown` nem sintetiza `click()` | manter regressões Playwright + runtime |
 | Regressão do runtime real do editor | CI verifica a composição efetivamente carregada pelo editor e contratos críticos de interação/mídia | CORRETO após J1 | PR #118; `tools/test-editor-runtime-integration.php` | ampliar quando novas camadas críticas entrarem |
 | Biblioteca “Adicionar seção” | os dois gatilhos usam `pro-components-dialog`; a consolidação limpa defensivamente handlers de propriedade antes de assumir o clique | AUTORIDADE ÚNICA ATIVA APÓS J3A | PR #121; merge `6cc07779469af72ceb0c6736677a63ea11895431`; deploy concluído | manter regressão |
 | Biblioteca única “Seções prontas + Blocos salvos” | `cms-pro-editor.js` carrega blocos por `admin/api/blocks.php`, insere cópia independente e permite salvar a seção atual como bloco | CORRETO APÓS J3A | regressão Playwright trava os dois gatilhos, os nomes das abas e a ausência do diálogo legado | manter |
-| Biblioteca hardcoded histórica de `cms-editor-v3.js` | `templates`, `openSections()`, referências ao diálogo legado e bindings antigos foram removidos | REMOVIDO NO J3B | `cms-editor-v3.js` deixa de conhecer a biblioteca histórica; a regressão de runtime proíbe sua reintrodução | manter `cms-pro-editor.js` como fonte das seções prontas |
-| Coerência do inspetor | seção organizada em Identidade, Layout, Audiência e Disponibilidade; página organizada em Identidade, Navegação/aparência, SEO e Audiência; acesso da página com autosave e estados explícitos | CORRETO APÓS J2 | PR #120; merge `a9af8ae44b585d7bb24ae39d59441896f8fd4596`; deploy de produção concluído | manter regressão |
-| Autoridade de interação do editor | seleção, estrutura, DnD, hover, promoção legada e inserção continuam distribuídos por módulos sobrepostos | FRÁGIL, MAS COM REGRESSÃO MELHOR | PR #118 passou a travar parte do stack real; ainda há sobreposição | reduzir gradualmente, uma responsabilidade por PR |
+| Biblioteca hardcoded histórica de `cms-editor-v3.js` | `templates`, `openSections()`, referências ao diálogo legado e bindings antigos foram removidos | REMOVIDO E IMPLANTADO NO J3B | PR #122; merge `0014b7d0d39cf612d9230c7b30a20f8c0bb46928`; deploy concluído | manter `cms-pro-editor.js` como fonte das seções prontas |
+| Coerência do inspetor | seção organizada em Identidade, Layout, Audiência e Disponibilidade; página organizada em Identidade, Navegação/aparência, SEO e Audiência; acesso da página com autosave e estados explícitos | CORRETO APÓS J2 | PR #120; merge `a9af8ae44b585d7bb24ae39d59441896f8fd4596`; deploy concluído | manter regressão |
+| Seleção estrutural entre módulos | sidebar e breadcrumb dependiam de caminhos indiretos diferentes para chegar ao inspetor estrutural | EM CONSOLIDAÇÃO NO J4A | `cms-structure-sidebar.js` usava a árvore duplicada do inspetor; `cms-structure-navigation.js` disparava clique sintético diretamente | criar uma única fronteira `CmsEditorStructure` |
+| DnD estrutural | `cms-direct-structure-dnd.js` e a árvore interna de `cms-component-editor.js` implementam regras de movimentação concorrentes | DUPLICADO | ambos possuem `canDrop`/drop próprios | J4B: remover DnD/árvore interna depois do J4A |
+| Movimento de seções | núcleo antigo e `cms-section-coherence.js` ainda possuem autoridades sobrepostas | DUPLICADO | coherence intercepta `#s-up/#s-down` com `stopImmediatePropagation()` para superar `moveSection` legado | bloco posterior do J4 |
+| Hover estrutural | `cms-hover-selection.js` só desenha alvo/etiqueta; não altera seleção | CORRETO / SEPARADO | listeners de movimento e overlay editor-only | manter separado |
+| Promoção de nós legados | `cms-legacy-node-promotion.js` adota nós sem componente em `pointerdown`/`focusin`, sem cancelar o evento | CORRETO / SEPARADO | mutação de normalização, não autoridade de seleção | manter; cobrir ordenação com seleção |
 
 ## Correção da auditoria: biblioteca de seções
 
@@ -62,46 +66,84 @@ Na seleção de seção, a interface apresenta quatro grupos editoriais: **Ident
 
 Nas configurações da página, os controles são organizados em **Identidade**, **Navegação e aparência**, **SEO e compartilhamento** e **Audiência**. O botão isolado **Salvar acesso da página** foi removido: alteração de audiência/turma usa a mesma API canônica já existente, com autosave curto e estados visíveis de salvando, salvo e erro.
 
-A camada `cms-inspector-coherence.js` é carregada pelo runtime real depois da coerência de seções. Há regressão estática do runtime e regressão Playwright para confirmar os grupos e que mover controles no DOM não elimina os listeners já ligados por outras camadas.
-
-Durante a validação do J2, o Playwright detectou um laço de mutação no próprio organizador do inspetor: o bloco de ações era reapensado ao painel em toda passagem do `MutationObserver`, mesmo quando já era o último filho, impedindo a página de concluir o evento `load`. O código foi corrigido para só mover esse bloco quando sua posição realmente precisa mudar. Regra derivada: um reorganizador observado por `MutationObserver` deve ser idempotente e não pode produzir mutações sem mudança efetiva de estado.
+Durante a validação do J2, o Playwright detectou um laço de mutação no próprio organizador do inspetor. O código foi corrigido para só mover blocos quando a posição realmente muda. Regra derivada: um reorganizador observado por `MutationObserver` deve ser idempotente e não pode produzir mutações sem mudança efetiva de estado.
 
 ## J3A concluído e implantado — autoridade única da biblioteca de seções
 
 O PR #121 eliminou a concorrência ativa antes de apagar o código morto. O merge de produção é `6cc07779469af72ceb0c6736677a63ea11895431` e o deploy concluiu validação, build, upload e publicação.
 
-O contrato implantado é:
+Os dois gatilhos **Adicionar seção** pertencem a `cms-editor-consolidation.js`; `section-dialog` e `section-library` deixaram de ser enviados no editor; a biblioteca ativa é `pro-components-dialog`, com **Seções prontas** e **Blocos salvos**; blocos continuam usando `admin/api/blocks.php`.
 
-- os dois gatilhos **Adicionar seção** pertencem a `cms-editor-consolidation.js`;
-- ao assumir cada gatilho, a consolidação limpa defensivamente qualquer `onclick` de propriedade antes de instalar seu listener;
-- o fluxo não depende mais de `stopImmediatePropagation()` para vencer outro handler;
-- `section-dialog` e `section-library` não são enviados em `editor/index.html`;
-- a biblioteca ativa é `pro-components-dialog`, com as abas **Seções prontas** e **Blocos salvos**;
-- os blocos salvos continuam usando `admin/api/blocks.php`;
-- Playwright comprova que handlers legados artificiais são neutralizados e que os dois gatilhos abrem somente o diálogo moderno.
+## J3B concluído e implantado — remoção do dead code da biblioteca histórica
 
-## J3B — remoção do dead code da biblioteca histórica
+O PR #122 removeu do núcleo `cms-editor-v3.js` as referências `sectionDialog`/`sectionLibrary`, o array hardcoded `templates`, `openSections()` e os bindings antigos dos gatilhos. O merge de produção é `0014b7d0d39cf612d9230c7b30a20f8c0bb46928`; o workflow de deploy terminou com sucesso em validação, build, upload e publicação.
 
-Com a autoridade ativa já protegida e implantada pelo J3A, este bloco remove do núcleo `cms-editor-v3.js` tudo o que restava da biblioteca anterior:
+A regressão de runtime agora falha se a biblioteca histórica voltar ao núcleo. Não houve reimplementação de `cms-pro-editor.js`, `cms-editor-consolidation.js` ou `admin/api/blocks.php`.
 
-- referências `sectionDialog` e `sectionLibrary`;
-- o array hardcoded `templates`;
-- a função `openSections()`;
-- os bindings `#add-section` e `#add-section-side` para `openSections`.
+## J4 — mapa factual das autoridades de interação
 
-Nenhuma lógica de `cms-pro-editor.js`, `cms-editor-consolidation.js` ou `admin/api/blocks.php` é reimplementada. `test-editor-runtime-integration.php` passa a falhar se qualquer uma das referências históricas voltar ao núcleo do editor. A regressão Playwright criada no J3A continua cobrindo o comportamento funcional da biblioteca consolidada.
+A inspeção do runtime atual mostra cinco responsabilidades distintas que estavam parcialmente confundidas:
 
-## Ordem revisada dos próximos blocos
+1. **Seleção estrutural e inspetor estrutural** — `cms-component-editor.js` é quem efetivamente transforma um contêiner, coluna ou componente em `.cms-structure-selected` e renderiza suas propriedades.
+2. **Navegação estrutural** — `cms-structure-sidebar.js` representa a árvore global; `cms-structure-navigation.js` acrescenta busca e breadcrumb.
+3. **Movimentação estrutural** — `cms-direct-structure-dnd.js` implementa DnD no canvas e na árvore global, mas `cms-component-editor.js` ainda mantém uma segunda árvore interna com DnD próprio.
+4. **Hover** — `cms-hover-selection.js` é apenas visualização e deve permanecer separado da mutação de seleção.
+5. **Adoção de HTML legado** — `cms-legacy-node-promotion.js` promove nós antigos para componentes ao primeiro contato, sem cancelar o evento; é normalização, não seleção.
 
-### J4 — redução de autoridades concorrentes no front-end
+Foi encontrada uma dependência concreta que impede remover imediatamente a árvore interna do inspetor: `cms-structure-sidebar.js` selecionava um nó procurando `.cms-structure-tree [data-tree-select]` dentro do inspetor e clicando nesse botão. O breadcrumb, por outro caminho, disparava diretamente um `MouseEvent('click')` no nó do iframe. Assim, duas interfaces de navegação dependiam de mecanismos privados diferentes.
 
-- mapear os handlers sobrepostos de seleção, estrutura, DnD, hover e promoção legada;
-- escolher uma autoridade por responsabilidade;
-- remover apenas uma sobreposição por PR, sempre com regressão do runtime real.
+A sequência segura foi dividida em sub-blocos.
+
+### J4A — fronteira canônica de seleção estrutural
+
+O J4A introduz `editor/cms-structure-selection.js` como uma fronteira pequena entre interfaces de navegação e o mecanismo atual de seleção. A API pública editor-only é:
+
+```text
+window.CmsEditorStructure.select(node)
+window.CmsEditorStructure.selectSection(section)
+```
+
+Neste estágio ela encaminha a seleção pelo evento do próprio nó, que continua sendo recebido pela autoridade estrutural já existente em `cms-component-editor.js`. A vantagem arquitetural é que sidebar e breadcrumb deixam de conhecer a árvore interna do inspetor e deixam de sintetizar seus próprios caminhos de seleção. A implementação interna dessa fronteira poderá mudar depois sem alterar os consumidores.
+
+Mudanças do J4A:
+
+- `cms-structure-sidebar.js` deixa de procurar/clicar `.cms-structure-tree [data-tree-select]` e usa `CmsEditorStructure.select(target)`;
+- seleção de seção pela sidebar usa `CmsEditorStructure.selectSection(section)`;
+- breadcrumb usa a mesma fronteira para seção e nó estrutural;
+- `cms-structure-selection.js` é carregado logo após `cms-component-editor.js` no runtime;
+- `test-editor-runtime-integration.php` trava a ordem de carga, a exportação da API e proíbe a antiga dependência da sidebar na árvore do inspetor;
+- regressão Playwright valida seleção de nó, seleção de seção e rejeição de alvos fora da estrutura CMS.
+
+### J4B — retirar a árvore/DnD duplicados do inspetor
+
+Só depois de J4A integrado e implantado:
+
+- remover de `cms-component-editor.js` `treeMarkup()`, `bindTree()`, `canDrop()`/`drop()` usados exclusivamente pela árvore interna;
+- manter a árvore global de `cms-structure-sidebar.js` como navegação;
+- manter `cms-direct-structure-dnd.js` como única autoridade de DnD estrutural;
+- preservar ações explícitas do inspetor — mover, duplicar, remover e inserir — quando não forem DnD concorrente.
+
+### J4C — autoridade única para movimento de seções
+
+Depois da estrutura interna consolidada:
+
+- retirar do núcleo antigo a autoridade concorrente de `moveSection`/bindings de `#s-up/#s-down`;
+- deixar `cms-section-coherence.js` governar movimento entre irmãos reais;
+- remover a necessidade de `stopImmediatePropagation()` nesse fluxo.
+
+## Ordem dos próximos blocos
+
+### J4B — árvore/DnD estrutural duplicados
+
+Executar somente após J4A passar CI, merge e deploy.
+
+### J4C — movimento de seções
+
+Executar após J4B estabilizado.
 
 ### J5 — limpeza histórica
 
-- remover `course_page_sections`, helpers `student_page_*` históricos e compatibilidade `enrolled` somente depois de confirmar que não existe instalação/dado que ainda precise de migração.
+Remover `course_page_sections`, helpers `student_page_*` históricos e compatibilidade `enrolled` somente depois de confirmar que não existe instalação/dado que ainda precise de migração.
 
 ## Critério de pronto para o editor
 
