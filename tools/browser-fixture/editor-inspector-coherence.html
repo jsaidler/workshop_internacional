@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Inspector coherence fixture</title><style>body{margin:0;font-family:Arial,sans-serif;display:grid;grid-template-columns:700px 340px;gap:18px;padding:18px}#page-frame{width:700px;height:520px;border:1px solid #aaa}#inspector{border:1px solid #ccc;padding:18px}.inspector-section{display:flex;flex-direction:column;gap:12px}.button-row{display:flex;gap:6px}</style></head>
+<body>
+<iframe id="page-frame" title="Página"></iframe>
+<aside id="inspector">
+  <div class="inspector-section">
+    <header><p class="eyebrow">Seção</p><h2>Aula 1</h2></header>
+    <label>Nome no editor<input id="s-name" value="Aula 1"></label>
+    <label>Largura<select id="s-width"><option>Padrão</option></select></label>
+    <label>Fundo<select id="s-bg"><option>Superfície</option></select></label>
+    <label>Espaçamento<select id="s-space"><option>Grande</option></select></label>
+    <label>Proporção<select id="s-ratio"><option>Padrão</option></select></label>
+    <label>Alinhamento<select id="s-align"><option>Padrão</option></select></label>
+    <label><input id="s-mobile" type="checkbox"> Inverter no celular</label>
+    <div class="button-row"><button id="s-up">Subir</button><button id="s-down">Descer</button></div>
+  </div>
+  <div class="inspector-section" data-cms-access-controls="1">
+    <label>Audiência<select id="cms-access-audience"><option value="public">Todos</option></select></label>
+    <label data-access-cohort hidden>Turma<select id="cms-access-cohort"></select></label>
+    <label>Disponibilidade<select id="cms-access-availability"><option value="immediate">Imediata</option></select></label>
+    <div data-access-schedule hidden><label>Liberar em<input id="cms-visible-from"></label></div>
+    <label data-access-lesson hidden>Aula<select id="cms-access-lesson"></select></label>
+    <p class="inspector-note">Servidor filtra a seção.</p>
+  </div>
+</aside>
+<script>window.fixtureChanges=0;document.querySelector('#s-name').addEventListener('change',()=>window.fixtureChanges++);</script>
+<script src="/editor/cms-inspector-coherence.js"></script>
+<script>
+document.querySelector('#page-frame').srcdoc='<!doctype html><html><body><main data-cms-page-main><section class="cms-section-selected" data-cms-section="aula-1" data-cms-section-name="Aula 1"><p>Conteúdo</p></section></main></body></html>';
+</script>
+</body>
+</html>
