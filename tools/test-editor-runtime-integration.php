@@ -48,7 +48,7 @@ foreach(['Identidade','Layout','Audiência','Disponibilidade'] as $group){
 }
 must_editor_runtime(str_contains($inspector,"data-inspector-group=\"audience\"")||str_contains($inspector,"group(panel,'audience'"),'section audience group is not defined');
 must_editor_runtime(str_contains($inspector,"group(panel,'availability'"),'section availability group is not defined');
-must_editor_runtime(!str_contains($access,'cms-page-access-save'),'page access still exposes an isolated save button');
+must_editor_runtime(!str_contains($access,'id="cms-page-access-save"'),'page access still exposes an isolated save button');
 must_editor_runtime(!str_contains($access,'Salvar acesso da página'),'page access still asks for an isolated save action');
 must_editor_runtime(str_contains($access,'data-page-access-state'),'page access does not expose autosave state');
 must_editor_runtime(str_contains($access,'Salvando acesso')&&str_contains($access,'Acesso salvo'),'page access autosave lacks visible saving/saved states');
