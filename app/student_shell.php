@@ -14,6 +14,10 @@ function student_global_topbar(?array $student=null,?string $active=null): void 
     $brand=function_exists('installation_brand_name')?installation_brand_name():'JSaidler Fotografia';
     ?><header class="student-topbar"><a class="brand student-wordmark" href="/aluno/"><?=h($brand)?></a><?php if($student):?><nav class="student-desktop-nav" aria-label="Área do aluno"><a href="/aluno/"<?=$active==='courses'?' aria-current="page"':''?>>Meus cursos</a><a href="/aluno/perfil.php"<?=$active==='account'?' aria-current="page"':''?>>Conta</a></nav><?php endif;?><span class="student-topbar-spacer"></span><div aria-label="Tema" class="theme-switch student-theme-switch"><button aria-pressed="true" data-theme-value="auto" type="button">Auto</button><button aria-pressed="false" data-theme-value="light" type="button">Light</button><button aria-pressed="false" data-theme-value="dark" type="button">Dark</button></div><?php if($student):?><form method="post" action="/aluno/logout.php" class="student-logout-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-logout'))?>"><button class="student-logout" type="submit">Sair</button></form><?php endif;?></header><?php
 }
+function student_global_mobile_nav(?array $student=null,?string $active=null): void {
+    if(!$student)return;$active=$active??student_shell_global_active();
+    ?><nav class="student-mobile-nav" aria-label="Navegação da área do aluno"><a href="/aluno/"<?=$active==='courses'?' aria-current="page"':''?>>Meus cursos</a><a href="/aluno/perfil.php"<?=$active==='account'?' aria-current="page"':''?>>Conta</a></nav><?php
+}
 function student_course_context_header(array $enrollment,string $active='overview',bool $showBack=false): void {
     $cohortUuid=(string)($enrollment['cohort_uuid']??'');
     $courseTitle=(string)($enrollment['course_title']??'Curso');
@@ -44,4 +48,4 @@ function student_shell_end(): void {
     $student=function_exists('student_account_current')?student_account_current(database()):null;
     $active=student_shell_global_active();
     $assetVersion=function_exists('admin_asset_version')?admin_asset_version():(string)(@filemtime(dirname(__DIR__).'/assets/ui-core.js')?:1);
-    ?></main><?php if($student):?><nav class="student-mobile-nav" aria-label="Navegação da área do aluno"><a href="/aluno/"<?=$active==='courses'?' aria-current="page"':''?>>Meus cursos</a><a href="/aluno/perfil.php"<?=$active==='account'?' aria-current="page"':''?>>Conta</a></nav><?php endif;?></div><script defer src="/assets/ui-core.js?v=<?=h($assetVersion)?>"></script></body></html><?php }
+    ?></main><?php student_global_mobile_nav($student,$active);?></div><script defer src="/assets/ui-core.js?v=<?=h($assetVersion)?>"></script></body></html><?php }
