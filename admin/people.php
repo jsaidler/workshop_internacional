@@ -28,6 +28,12 @@ if($where)$sql.=' WHERE '.implode(' AND ',$where);
 $sql.=' ORDER BY u.name COLLATE NOCASE,u.id LIMIT 500';
 $stmt=$db->prepare($sql);$stmt->execute($params);$people=$stmt->fetchAll();
 
+$summaryQ=$db->query("SELECT
+  (SELECT COUNT(*) FROM student_users) people,
+  (SELECT COUNT(*) FROM student_users WHERE status='active') active_accounts,
+  (SELECT COUNT(*) FROM course_enrollments WHERE status='active') active_enrollments");
+$summary=$summaryQ->fetch()?:['people'=>0,'active_accounts'=>0,'active_enrollments'=>0];
+
 $selected=null;$enrollments=[];$registrations=[];
 if($personId>0){
     $stmt=$db->prepare("SELECT u.id,u.name,u.email,u.status,u.activated_at,u.last_login_at,p.cpf_last4,p.phone,p.instagram,p.city_state
@@ -58,8 +64,12 @@ function people_admin_url(int $personId=0,string $q=''): string {
 
 admin_shell_start('people','Pessoas',$state);
 ?>
-<section class="overview-hero"><div><p class="admin-kicker">Identidade global</p><h2>Pessoas</h2><p>Esta lista vem diretamente de <code>student_users</code>. Uma pessoa continua visível mesmo quando uma matrícula antiga ainda não possui curso associado.</p></div><div class="hero-actions"><a class="admin-button secondary" href="/admin/data-integrity.php<?= $activityId>0?'?activity='.$activityId:'' ?>">Diagnóstico de integridade</a></div></section>
-
+<section class="overview-hero"><div><p class="admin-kicker">Identidade global</p><h2>Pessoas</h2><p>Cada pessoa existe uma única vez. Inscrições e matrículas aparecem como relações dessa identidade com os cursos.</p></div></section>
+<div class="admin-person-summary">
+  <div class="admin-stat"><span>Pessoas</span><strong><?=(int)$summary['people']?></strong></div>
+  <div class="admin-stat"><span>Contas ativas</span><strong><?=(int)$summary['active_accounts']?></strong></div>
+  <div class="admin-stat"><span>Matrículas ativas</span><strong><?=(int)$summary['active_enrollments']?></strong></div>
+</div>
 <form class="admin-data-toolbar" method="get">
     <?php if($activityId>0):?><input type="hidden" name="activity" value="<?=$activityId?>"><?php endif;?>
     <label class="grow">Buscar<input name="q" value="<?=h($q)?>" placeholder="Nome, e-mail ou final do CPF"></label>
@@ -72,17 +82,20 @@ admin_shell_start('people','Pessoas',$state);
 <?php foreach($people as $row):?>
 <a class="submission-row<?=$personId===(int)$row['id']?' selected':''?>" href="<?=h(people_admin_url((int)$row['id'],$q))?>">
     <div class="submission-row-main"><strong><?=h((string)$row['name'])?></strong><span><?=h((string)$row['email'])?></span></div>
-    <div class="submission-row-meta"><small><?=(int)$row['enrollment_count']?> matrícula(s) · <?=(int)$row['registration_count']?> inscrição(ões)</small><?php if((int)$row['orphan_enrollment_count']>0):?><small>⚠ <?=(int)$row['orphan_enrollment_count']?> sem curso</small><?php endif;?></div>
+    <div class="submission-row-meta"><small><?=(int)$row['enrollment_count']?> matrícula(s) · <?=(int)$row['registration_count']?> inscrição(ões)</small><?php if((int)$row['orphan_enrollment_count']>0):?><small>⚠ vínculo incompleto</small><?php endif;?></div>
 </a>
 <?php endforeach;?>
 </section>
 
 <?php if($selected):?>
 <aside class="submission-detail inbox-detail">
-<header class="inbox-detail-header"><div><p>Pessoa #<?=(int)$selected['id']?></p><h2><?=h((string)$selected['name'])?></h2><span><?=h((string)$selected['email'])?></span></div></header>
+<header class="admin-person-identity"><div><p class="admin-kicker">Pessoa</p><h2><?=h((string)$selected['name'])?></h2><p><?=h((string)$selected['email'])?></p></div></header>
 <section class="registration-admin-group"><h3>Conta</h3><dl class="inbox-fields">
 <div><dt>Status</dt><dd><?=h((string)$selected['status'])?></dd></div>
 <div><dt>CPF</dt><dd><?=$selected['cpf_last4']?'***.'.h((string)$selected['cpf_last4']):'—'?></dd></div>
+<?php if(!empty($selected['phone'])):?><div><dt>Telefone</dt><dd><?=h((string)$selected['phone'])?></dd></div><?php endif;?>
+<?php if(!empty($selected['instagram'])):?><div><dt>Instagram</dt><dd><?=h((string)$selected['instagram'])?></dd></div><?php endif;?>
+<?php if(!empty($selected['city_state'])):?><div><dt>Cidade/UF</dt><dd><?=h((string)$selected['city_state'])?></dd></div><?php endif;?>
 <div><dt>Ativação</dt><dd><?=h((string)($selected['activated_at']?:'Pendente'))?></dd></div>
 <div><dt>Último acesso</dt><dd><?=h((string)($selected['last_login_at']?:'—'))?></dd></div>
 </dl></section>
@@ -90,7 +103,7 @@ admin_shell_start('people','Pessoas',$state);
 <section class="registration-admin-group"><h3>Matrículas</h3>
 <?php if(!$enrollments):?><p class="muted">Nenhuma matrícula.</p><?php else:?><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Curso</th><th>Turma</th><th>Origem</th><th>Status</th></tr></thead><tbody>
 <?php foreach($enrollments as $row):?><tr>
-<td><?php if((int)($row['course_id']??0)>0):?><a href="/admin/courses.php?activity=<?=$activityId?>&course=<?=(int)$row['course_id']?>&view=students"><?=h((string)$row['course_title'])?></a><?php else:?><strong>Sem curso associado</strong><?php endif;?></td>
+<td><?php if((int)($row['course_id']??0)>0):?><a href="<?=h(admin_course_context_url($activityId,(int)$row['course_id'],'students'))?>"><?=h((string)$row['course_title'])?></a><?php else:?><strong>Vínculo sem curso</strong><?php endif;?></td>
 <td><?=h((string)$row['cohort_title'])?></td>
 <td><?=($row['source_submission_id']??null)?'Inscrição #'.(int)$row['source_submission_id']:'Importação/manual'?></td>
 <td><?=h((string)$row['status'])?></td>
@@ -101,7 +114,7 @@ admin_shell_start('people','Pessoas',$state);
 <section class="registration-admin-group"><h3>Inscrições</h3>
 <?php if(!$registrations):?><p class="muted">Nenhuma inscrição vinculada a esta identidade.</p><?php else:?><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Curso</th><th>Formulário</th><th>Pagamento</th><th>Turma</th></tr></thead><tbody>
 <?php foreach($registrations as $row):?><tr>
-<td><?=h((string)($row['course_title']?:'Sem curso associado'))?></td>
+<td><?php if((int)($row['course_id']??0)>0):?><a href="/admin/registrations.php?activity=<?=$activityId?>&course=<?=(int)$row['course_id']?>&submission=<?=(int)$row['id']?>"><?=h((string)$row['course_title'])?></a><?php else:?>Sem curso associado<?php endif;?></td>
 <td><?=h((string)$row['form_title'])?></td>
 <td><?=h((string)($row['payment_status']?:$row['status']))?></td>
 <td><?=((int)($row['cohort_id']??0)>0)?'#'.(int)$row['cohort_id']:'Não definida'?></td>
