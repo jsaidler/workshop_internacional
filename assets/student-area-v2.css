@@ -48,14 +48,18 @@
 .student-form-group{padding:var(--student-space-6) 0}
 .student-form-grid{column-gap:var(--student-space-5);row-gap:0}
 .student-actions{gap:var(--student-space-3);margin-top:var(--student-space-5)}
+.student-form-grid>.student-actions{padding-top:var(--student-space-1)}
 .student-sticky-action{margin-top:var(--student-space-4);padding-top:var(--student-space-5)}
 .student-login-card{margin-top:var(--student-space-6);padding:var(--student-space-6)}
 .student-login-card+.student-login-card{margin-top:var(--student-space-5)}
 .student-login-card form>.button{margin-top:var(--student-space-5)}
 .student-login-card .student-lead{margin-top:var(--student-space-3)}
+.student-message-form>.button{margin-top:var(--student-space-5)}
+.student-workflow-panel>.student-actions{margin-top:var(--student-space-5)}
 .student-danger-zone{margin-top:var(--student-space-7);padding-top:var(--student-space-5)}
 .student-danger-zone form{margin-top:var(--student-space-5)}
 .ui-alert+.student-step-nav,.ui-alert+.student-workflow-panel{margin-top:var(--student-space-5)}
+.student-empty{margin-top:var(--student-space-5)}
 
 /* Course overview and material index. */
 .student-overview-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:var(--student-space-4)}
@@ -84,7 +88,7 @@
 .student-test-list{gap:var(--student-space-3);margin-top:var(--student-space-5)}
 .student-test-actions{gap:var(--student-space-4);padding:var(--student-space-4) var(--student-space-5)}
 
-/* Remove legacy second-bar semantics when old markup survives temporarily. */
+/* Remove legacy second-bar semantics if old markup survives in a compatibility path. */
 .student-appbar{position:static;margin:0 0 var(--student-space-5);padding:0;background:transparent;border:0}
 
 @media(max-width:900px){
