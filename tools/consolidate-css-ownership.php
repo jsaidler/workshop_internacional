@@ -6,7 +6,7 @@ require_once __DIR__.'/lib/css-ownership.php';
 $root=dirname(__DIR__);
 $check=in_array('--check',$argv,true);
 $files=css_ownership_authored_files($root);
-$totalRemoved=0;$changed=[];
+$totalRemoved=0;$totalEmptyRules=0;$changed=[];
 
 foreach($files as $relative){
     $path=$root.'/'.$relative;
@@ -26,8 +26,6 @@ foreach($files as $relative){
         if($count<2)continue;
         for($i=0;$i<$count-1;$i++)$removals[]=$items[$i];
     }
-    if(!$removals)continue;
-
     usort($removals,static fn(array $a,array $b): int=>$b['start']<=>$a['start']);
     $nextStart=strlen($css)+1;$removedForFile=0;
     foreach($removals as $removal){
@@ -36,11 +34,27 @@ foreach($files as $relative){
         $nextStart=$removal['start'];
         $removedForFile++;$totalRemoved++;
     }
-    if($removedForFile===0)continue;
+
+    $empty=[];
+    foreach(css_ownership_scan($css) as $rule){
+        $body=substr($css,$rule['bodyStart'],$rule['bodyEnd']-$rule['bodyStart']);
+        $body=preg_replace('~/\*.*?\*/~s','',$body)??$body;
+        if(trim($body)==='')$empty[]=['start'=>$rule['start'],'end'=>$rule['end']];
+    }
+    usort($empty,static fn(array $a,array $b): int=>$b['start']<=>$a['start']);
+    $nextStart=strlen($css)+1;$emptyForFile=0;
+    foreach($empty as $rule){
+        if($rule['end']>$nextStart)continue;
+        $css=substr($css,0,$rule['start']).substr($css,$rule['end']);
+        $nextStart=$rule['start'];
+        $emptyForFile++;$totalEmptyRules++;
+    }
+
+    if($removedForFile===0&&$emptyForFile===0)continue;
     $changed[]=$relative;
-    echo $relative.': obsolete declarations '.$removedForFile."\n";
+    echo $relative.': obsolete declarations '.$removedForFile.', empty rules '.$emptyForFile."\n";
     if(!$check)file_put_contents($path,$css);
 }
 
-echo "Consolidation complete; obsolete declarations: {$totalRemoved}; files: ".count($changed)." of ".count($files).".\n";
+echo "Consolidation complete; obsolete declarations: {$totalRemoved}; empty rules: {$totalEmptyRules}; files: ".count($changed)." of ".count($files).".\n";
 if($check&&$changed)exit(1);
