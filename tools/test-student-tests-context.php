@@ -20,15 +20,16 @@ $shared=[
     ['id'=>15,'cohort_id'=>10,'activity_id'=>100,'workshop_page_id'=>1001,'visibility'=>'private'],
 ];
 $sharedContext=student_enrollment_shared_tests_context($shared,$enrollment);
-if(array_column($sharedContext,'id')!==[11,12])fail_student_tests_context('shared tests do not respect cohort/workshop visibility inside the selected enrollment');
+if(array_column($sharedContext,'id')!==[11,12])fail_student_tests_context('shared tests do not respect cohort/course visibility inside the selected enrollment');
 
 $root=dirname(__DIR__);
 $index=(string)file_get_contents($root.'/aluno/testes.php');
 $dashboard=(string)file_get_contents($root.'/aluno/index.php');
 $visibility=(string)file_get_contents($root.'/aluno/visibilidade-teste.php');
-foreach(['student_enrollment_dashboard_context','Testes por workshop','type="hidden" name="cohort_id"','student_enrollment_owned_tests_context','student_enrollment_shared_tests_context'] as $needle)if(!str_contains($index,$needle))fail_student_tests_context('tests index missing contextual contract: '.$needle);
-if(str_contains($index,'<select name="cohort_id"'))fail_student_tests_context('selected tests workspace still exposes a cross-workshop cohort selector');
-if(!str_contains($dashboard,'/aluno/testes.php?cohort='))fail_student_tests_context('workshop workspace does not preserve context when opening tests');
+foreach(['student_enrollment_dashboard_context','student_course_context_header($enrollment,\'tests\'','type="hidden" name="cohort_id"','student_enrollment_owned_tests_context','student_enrollment_shared_tests_context'] as $needle)if(!str_contains($index,$needle))fail_student_tests_context('tests index missing contextual contract: '.$needle);
+if(str_contains($index,'<select name="cohort_id"'))fail_student_tests_context('selected tests course context still exposes a cross-course cohort selector');
+if(!str_contains($index,'Os testes pertencem ao curso e à turma'))fail_student_tests_context('tests selector does not explain course/turma context');
+if(!str_contains($dashboard,'/aluno/testes.php?cohort='))fail_student_tests_context('course overview does not preserve context when opening tests');
 if(!str_contains($visibility,'student_enrollment_dashboard_context($enrollments,$cohortUuid)'))fail_student_tests_context('visibility update does not validate return context');
 
 echo "student-tests-context: ok\n";

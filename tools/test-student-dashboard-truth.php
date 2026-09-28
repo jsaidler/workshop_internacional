@@ -36,7 +36,8 @@ must_student_dashboard_truth(cms_access_lesson_release_state('2030-01-02T11:00:0
 
 $dashboard=(string)file_get_contents($root.'/aluno/index.php');
 must_student_dashboard_truth(str_contains($dashboard,'cms_access_lesson_release_state'),'student dashboard does not derive lesson state from the canonical access helper');
-must_student_dashboard_truth(str_contains($dashboard,"'scheduled'=>'agendada'")&&str_contains($dashboard,"'released'=>'liberada'"),'student dashboard does not expose scheduled/released labels');
+must_student_dashboard_truth(str_contains($dashboard,"'scheduled'=>'Agendada'")&&str_contains($dashboard,"'released'=>'Disponível'"),'student dashboard does not expose user-facing scheduled/released labels');
+must_student_dashboard_truth(str_contains($dashboard,"'released'=>'is-released'")&&str_contains($dashboard,"'scheduled'=>'is-scheduled'"),'student dashboard lost semantic release-state classes');
 must_student_dashboard_truth(str_contains($dashboard,'$releasedCount'),'student dashboard does not count only currently released lessons');
 must_student_dashboard_truth(!str_contains($dashboard,"\$lesson['released_at']?'liberada':'aguardando'"),'student dashboard returned to raw released_at truthiness');
 

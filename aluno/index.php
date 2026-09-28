@@ -7,16 +7,16 @@ $enrollments=student_enrollment_list($db,(int)$student['id']);
 $requestedCohortUuid=is_string($_GET['cohort']??null)?trim((string)$_GET['cohort']):'';
 $selectedEnrollment=student_enrollment_dashboard_context($enrollments,$requestedCohortUuid);$selectedActivity=null;
 if($selectedEnrollment){$selectedActivity=activity_by_id($db,(int)$selectedEnrollment['activity_id']);if(!$selectedActivity)$selectedEnrollment=null;}
-student_shell_start('Área do aluno',$selectedActivity,$student);?>
+student_shell_start('Meus cursos',$selectedActivity,$student);?>
 <?php if(!$enrollments):?>
   <p class="student-kicker">Área do aluno</p>
-  <h1 class="student-title">Cursos e prática</h1>
-  <p class="student-lead">Acesse o material liberado para sua turma e registre as experimentações enquanto fotografa e revela.</p>
+  <h1 class="student-title">Meus cursos</h1>
+  <p class="student-lead">Seus materiais, aulas e registros de prática aparecem aqui quando uma matrícula estiver ativa.</p>
   <div class="student-empty">Não há matrícula ativa vinculada a esta conta.</div>
 <?php elseif(!$selectedEnrollment):?>
   <p class="student-kicker">Área do aluno</p>
-  <h1 class="student-title">Seus cursos</h1>
-  <p class="student-lead">Escolha o curso e a turma que deseja abrir. Cada matrícula mantém seu próprio material, aulas e contexto.</p>
+  <h1 class="student-title">Meus cursos</h1>
+  <p class="student-lead">Escolha o curso e a turma que deseja abrir.</p>
   <section class="student-section" aria-label="Escolher curso ou turma"><div class="student-test-list">
     <?php foreach($enrollments as $enrollment):$statusLabel=student_enrollment_cohort_status_label((string)$enrollment['cohort_status']);$url='/aluno/?cohort='.rawurlencode((string)$enrollment['cohort_uuid']);?>
       <a class="student-test-row" href="<?=h($url)?>"><div><span class="student-status"><?=h($statusLabel)?></span><h3><?=h((string)$enrollment['course_title'])?></h3><p><?=h((string)$enrollment['cohort_title'])?></p></div><div class="student-test-meta"><span>Abrir curso →</span></div></a>
@@ -28,17 +28,28 @@ student_shell_start('Área do aluno',$selectedActivity,$student);?>
   if($courseId>0)$releases=course_lesson_release_rows_for_course($db,(int)$enrollment['cohort_id'],$courseId);
   elseif($workshopId>0)$releases=workshop_course_lesson_release_rows($db,(int)$enrollment['cohort_id'],$workshopId);
   else $releases=course_lesson_release_rows($db,(int)$enrollment['cohort_id'],(int)$enrollment['activity_id']);
-  $releaseStates=[];$releasedCount=0;foreach($releases as $lesson){$state=cms_access_lesson_release_state(isset($lesson['released_at'])?(string)$lesson['released_at']:null);$releaseStates[(int)$lesson['id']]=$state;if($state==='released')$releasedCount++;}$statusLabel=student_enrollment_cohort_status_label((string)$enrollment['cohort_status']);?>
-  <div class="student-appbar"><?php if(count($enrollments)>1):?><a class="student-back" href="/aluno/">← Todos os cursos</a><?php else:?><span class="student-card-label">Área do aluno</span><?php endif;?><span class="student-status"><?=h($statusLabel)?></span></div>
-  <p class="student-kicker"><?=h((string)$enrollment['cohort_title'])?></p>
-  <h1 class="student-title"><?=h((string)$enrollment['course_title'])?></h1>
-  <p class="student-lead">Material, aulas liberadas e registros de prática ficam reunidos neste workspace.</p>
-  <section class="student-course-stack" aria-label="Curso selecionado"><article class="student-course-card">
-    <header><div><span class="student-card-label">Workspace da turma</span><h2>Material e prática</h2></div><span class="student-course-progress"><?=$releases?$releasedCount.'/'.count($releases).' aulas liberadas':'Sem aulas cadastradas'?></span></header>
-    <?php if($releases):?><div class="student-release-list" aria-label="Liberação das aulas"><?php foreach($releases as $lesson):$state=$releaseStates[(int)$lesson['id']]??'blocked';$label=match($state){'released'=>'liberada','scheduled'=>'agendada',default=>'aguardando'};$stateClass=match($state){'released'=>'is-released','scheduled'=>'is-scheduled',default=>''};?><span class="<?=h($stateClass)?>"><b><?=h((string)$lesson['title'])?></b><small><?=h($label)?></small></span><?php endforeach;?></div><?php endif;?>
+  $releaseStates=[];$releasedCount=0;foreach($releases as $lesson){$state=cms_access_lesson_release_state(isset($lesson['released_at'])?(string)$lesson['released_at']:null);$releaseStates[(int)$lesson['id']]=$state;if($state==='released')$releasedCount++;}
+  $materialUrls=[];foreach($pages as $page){$url=cms_page_url($activity,$page,(string)$page['locale']);$sep=str_contains($url,'?')?'&':'?';$url.=$sep.'cohort='.rawurlencode((string)$enrollment['cohort_uuid']);$materialUrls[(int)$page['id']]=$url;}
+  $allTests=student_tests_for_student($db,(int)$student['id']);$tests=student_enrollment_owned_tests_context($allTests,$enrollment);$testCount=count($tests);
+  student_course_context_header($enrollment,'overview',$pages?($materialUrls[(int)$pages[0]['id']]??''):'');?>
+
+  <section class="student-section" aria-labelledby="student-course-overview">
+    <div class="student-section-heading"><div><p class="student-kicker">Seu curso</p><h2 class="student-subtitle" id="student-course-overview">Visão geral</h2></div><p>Veja o que já está disponível e continue de onde parou.</p></div>
+
+    <?php if($releases):?>
+      <div class="student-release-list" aria-label="Aulas do curso">
+        <?php foreach($releases as $lesson):$state=$releaseStates[(int)$lesson['id']]??'blocked';$label=match($state){'released'=>'Disponível','scheduled'=>'Agendada',default=>'Aguardando'};$stateClass=match($state){'released'=>'is-released','scheduled'=>'is-scheduled',default=>''};?>
+          <span class="<?=h($stateClass)?>"><b><?=h((string)$lesson['title'])?></b><small><?=h($label)?></small></span>
+        <?php endforeach;?>
+      </div>
+    <?php else:?><div class="student-empty">As aulas deste curso ainda não foram cadastradas.</div><?php endif;?>
+  </section>
+
+  <section class="student-course-stack" aria-label="Acessos do curso"><article class="student-course-card">
+    <header><div><span class="student-card-label">Progresso</span><h2><?=$releases?$releasedCount.'/'.count($releases).' aulas disponíveis':'Curso ativo'?></h2></div></header>
     <div class="student-course-actions">
-      <div><span class="student-card-label">Material</span><?php if(!$pages):?><p>Nenhuma página de material foi associada a este curso ainda.</p><?php else:?><p>Acesse o conteúdo disponível para esta turma.</p><?php foreach($pages as $page):$url=cms_page_url($activity,$page,(string)$page['locale']);$sep=str_contains($url,'?')?'&':'?';$url.=$sep.'cohort='.rawurlencode((string)$enrollment['cohort_uuid']);?><a class="button button-primary student-course-primary" href="<?=h($url)?>"><?=h((string)$page['title'])?> →</a><?php endforeach;?><?php endif;?></div>
-      <div><span class="student-card-label">Prática</span><p>Registre cena, exposição, revelação e resultado no mesmo teste.</p><a class="button button-primary student-course-primary" href="/aluno/testes.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir meus testes →</a></div>
+      <div><span class="student-card-label">Material</span><?php if(!$pages):?><p>Nenhuma página de material foi publicada para este curso ainda.</p><?php else:?><p>Acesse o conteúdo liberado para sua turma.</p><?php foreach($pages as $page):?><a class="button button-primary student-course-primary" href="<?=h($materialUrls[(int)$page['id']]??'#')?>"><?=h((string)$page['title'])?> →</a><?php endforeach;?><?php endif;?></div>
+      <div><span class="student-card-label">Seus testes</span><p><?=$testCount===1?'1 registro nesta turma.':$testCount.' registros nesta turma.'?></p><a class="button button-primary student-course-primary" href="/aluno/testes.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir testes →</a></div>
     </div>
   </article></section>
 <?php endif;?>
