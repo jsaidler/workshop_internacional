@@ -16,25 +16,32 @@ A hierarquia deve ser percebida pela navegação, pelo agrupamento visual e pelo
 
 ## Administração — arquitetura de informação canônica
 
-### Uma única árvore de navegação
+### Coleções são o eixo primário
 
-A administração não usa mais a combinação de uma navegação primária e uma segunda barra horizontal de ferramentas. Essa composição criava dois eixos concorrentes e degradava rapidamente quando novos itens eram adicionados.
+A administração não usa o curso como árvore de navegação. `Curso` é uma entidade de catálogo e uma dimensão de filtragem aplicada às coleções operacionais e pedagógicas.
 
-A barra lateral passa a ser a única árvore global, agrupada por função:
+Isso evita que `Inscrições`, `Alunos`, `Turmas`, `Aulas` e `Material` existam simultaneamente como áreas globais e como subáreas paralelas de cada curso. Com vários cursos, essa duplicação obrigaria o administrador a escolher primeiro uma hierarquia artificial antes de conseguir localizar o registro que procura.
+
+A barra lateral é a única árvore global e é agrupada pela natureza do trabalho:
 
 - **Principal**
   - Visão geral
-- **Conteúdo**
+- **Operação**
+  - Inscrições
+  - Turmas
+  - Alunos
+  - Pessoas
+- **Ensino**
+  - Cursos
+  - Aulas
+  - Material
+- **Site**
   - Páginas
   - Formulários
   - Outras respostas
   - Navegação
   - Visual
   - SEO
-- **Cursos**
-  - Cursos
-  - Inscrições
-  - Pessoas
 - **Biblioteca**
   - Mídia
 - **Análise**
@@ -46,24 +53,23 @@ A barra lateral passa a ser a única árvore global, agrupada por função:
 
 `Integridade` é diagnóstico técnico e não participa do fluxo operacional cotidiano.
 
-A navegação deve suportar crescimento vertical e rolagem sem transformar novas funções em abas comprimidas ou em uma terceira camada paralela.
+A navegação suporta crescimento vertical e rolagem. Novas funções não criam uma segunda barra horizontal, uma terceira camada paralela ou uma árvore repetida dentro de cada curso.
 
-### Curso como contexto de trabalho
+### Curso como catálogo e filtro
 
-Ao abrir um curso, a navegação contextual é única e pertence ao conteúdo do curso:
+A tela **Cursos** é um catálogo pesquisável e paginado. Cada linha mostra informação comparável e contagens de relações relevantes. Abrir um curso apresenta uma síntese e links para as coleções globais já filtradas pelo curso.
 
-1. Visão geral
-2. Inscrições
-3. Turmas
-4. Alunos
-5. Aulas
-6. Material
+Assim:
 
-Ela não é uma segunda navegação global. O retorno explícito `← Todos os cursos` restabelece o nível anterior da hierarquia.
+- `Inscrições` abre `/admin/registrations.php?course=...`;
+- `Turmas` abre `/admin/cohorts.php?course=...`;
+- `Alunos` abre `/admin/students.php?course=...`;
+- `Aulas` abre `/admin/lessons.php?course=...`;
+- `Material` abre `/admin/material.php?course=...`.
 
-`Inscrições` não pode aparecer como botão lateral desconectado das demais áreas do curso.
+A página do curso conserva apenas o que realmente pertence ao registro do curso: síntese, relação com página pública, relação com formulário de inscrição e acesso às coleções relacionadas. Não existe mais navegação horizontal `Visão geral / Inscrições / Turmas / Alunos / Aulas / Material`.
 
-A tela de Cursos prioriza cursos existentes. A associação de uma página CMS a um novo curso é operação rara de configuração e deve ter menor peso visual.
+A associação de uma página CMS a um novo curso continua sendo operação rara de configuração e permanece visualmente secundária.
 
 ### Regra para volume de dados
 
@@ -71,38 +77,58 @@ Listagens administrativas são projetadas para o volume futuro, e não para cabe
 
 Invariantes:
 
-- coleções potencialmente grandes usam **busca + paginação**;
+- coleções potencialmente grandes usam **busca + filtros + paginação no servidor**;
 - o servidor consulta apenas a página necessária em vez de carregar uma coleção inteira e ocultar o excedente;
 - não existem limites silenciosos como `LIMIT 500` apresentados ao usuário como se fossem a coleção completa;
 - páginas de listagem usam densidade informacional de tabela/lista, não uma grade de cards por entidade;
-- ações principais permanecem na linha do registro, sem obrigar a percorrer cards altos;
-- contagens e resumos são calculados sem um ciclo de consultas por item quando uma consulta agregada ou correlacionada pode resolver o conjunto;
+- ações principais permanecem na linha do registro;
+- contagens e resumos evitam ciclos de consulta por item quando uma agregação resolve o conjunto;
+- curso e turma são filtros explícitos quando pertencem à dimensão da coleção;
 - filtros, busca e página atual são preservados ao abrir e operar um registro;
-- no mobile, tabelas podem rolar horizontalmente, mas a hierarquia e os controles de busca/paginação continuam utilizáveis.
+- no mobile, tabelas podem rolar horizontalmente, mas hierarquia, filtros e paginação continuam utilizáveis.
 
-A página de **Cursos** usa uma tabela paginada e pesquisável. A visão **Alunos** do curso também é paginada e pesquisável.
-
-**Inscrições** mantém o padrão lista + detalhe, mas a lista é pesquisável, filtrável e paginada. **Pessoas** segue o mesmo princípio e não depende de um teto arbitrário de registros.
+`Cursos`, `Inscrições`, `Turmas`, `Alunos`, `Pessoas`, `Aulas` e `Material` obedecem a esse padrão. A mesma coleção pode ser aberta globalmente ou já filtrada a partir de um curso sem mudar de arquitetura.
 
 ### Inscrições
 
-A tela deve responder imediatamente:
+`Inscrições` é uma coleção operacional global. Curso, turma, estado e busca são filtros da coleção, e não pré-requisitos de navegação.
 
-- quantas inscrições existem;
+A tela responde imediatamente:
+
+- quantas inscrições ativas existem no recorte atual;
 - quantas aguardam pagamento;
 - quantas estão confirmadas sem turma;
-- quantas já possuem turma;
-- como as disponibilidades se distribuem.
+- quantas já possuem turma.
 
 Pagamento, confirmação da inscrição e atribuição de turma são dimensões independentes.
 
-A agregação de disponibilidade é uma ferramenta operacional para formação de turmas, não apenas uma reprodução do formulário individual.
+A agregação de disponibilidade depende de um curso selecionado, porque opções de formulários diferentes não devem ser somadas como se fossem semanticamente idênticas. Quando o curso é filtrado, essa agregação continua sendo ferramenta operacional para formação de turmas.
 
-### Pessoas
+Abrir uma inscrição preserva filtros, busca e página da coleção. O detalhe fica subordinado à listagem, sem transformar a tela em caixa de entrada.
 
-`student_users` permanece a autoridade global de identidade. A tela Pessoas deve apresentar a pessoa como entidade permanente, com conta, inscrições e matrículas, e não como uma caixa de entrada técnica.
+### Turmas
 
-A explicação técnica sobre tabelas e integridade não participa do texto principal da operação. Diagnóstico permanece disponível como ação secundária.
+`Turmas` é uma coleção global filtrável por curso, estado e busca. A contagem de alunos é calculada no conjunto, sem uma consulta adicional para cada linha.
+
+Criar uma turma exige um curso selecionado, porque a criação modifica essa relação específica. A necessidade de contexto para uma ação não transforma a coleção inteira em subpágina do curso.
+
+### Alunos e Pessoas
+
+`Aluno` e `Pessoa` não são sinônimos.
+
+`student_users` permanece a autoridade global de identidade. **Pessoas** apresenta a identidade permanente, conta e histórico relacionado. Uma mesma pessoa pode aparecer em múltiplas matrículas sem ser duplicada.
+
+**Alunos** apresenta participação educacional: matrícula, curso, turma, estado e origem. Curso e turma são filtros dessa coleção. Cada linha pode abrir a identidade correspondente em Pessoas.
+
+Diagnóstico de integridade permanece ação secundária e não participa do texto ou da navegação principal da operação.
+
+### Aulas e Material
+
+**Aulas** é uma coleção pedagógica global e filtrável. Sem filtro de curso, a tabela permite localizar e comparar aulas entre cursos. Com curso selecionado, a mesma superfície passa a oferecer o controle de liberação por turma e a criação de uma aula para aquele curso.
+
+**Material** lista relações entre cursos e páginas CMS. O conteúdo continua pertencendo ao CMS; a administração pedagógica controla somente associação e liberação. O filtro de curso habilita operações contextuais como associar uma página ou mapear seções a aulas.
+
+Nenhum conteúdo editorial é duplicado para sustentar a arquitetura administrativa.
 
 ## Área do aluno — arquitetura de informação canônica
 
@@ -152,11 +178,13 @@ A administração estabelece o ritmo entre blocos de primeiro nível em `.admin-
 
 Invariantes:
 
+- controles de filtro formam uma faixa única e previsível antes da coleção;
+- resumo do recorte aparece entre filtros e dados, sem card ornamental;
+- tabela/lista é o corpo principal das coleções;
 - nenhum título de seção fica colado no bloco anterior;
 - nenhum botão de ação fica colado ao último campo;
 - labels, inputs, ajuda e erro preservam relação visual;
 - fieldsets consecutivos mantêm espaço consistente;
-- navegação contextual não encosta no conteúdo seguinte;
 - cards consecutivos e estados vazios têm separação explícita;
 - ações destrutivas ficam visualmente separadas das ações de fluxo normal;
 - breakpoints mobile não podem zerar o ritmo vertical.
@@ -165,7 +193,11 @@ Invariantes:
 
 A área do aluno mantém a identidade visual do site, mas funciona como aplicação recorrente. Títulos de aplicação não devem herdar automaticamente a escala monumental de uma landing page.
 
-Na administração, coleções são superfícies de trabalho e não vitrines. Cards altos são reservados para sínteses ou decisões isoladas; listas de entidades usam linhas densas e comparáveis.
+Na administração, coleções são superfícies de trabalho e não vitrines. O padrão principal é:
+
+**título → filtros/ações → resumo do recorte → dados → paginação → detalhe contextual quando aberto**.
+
+Cards altos ficam reservados para sínteses, configuração ou decisão isolada. Entidades comparáveis permanecem em linhas densas.
 
 Prioridades visuais:
 
@@ -181,24 +213,29 @@ Antes de criar qualquer componente local:
 
 **procurar → consumir → identificar lacuna → ampliar globalmente somente se necessário → consumir**.
 
-Primitivas de espaçamento, tabs, cards, formulários, alertas, estados, tabelas, busca, paginação e navegação pertencem ao sistema global. Código local deve conter apenas composição ou fluxo específico da área.
+Primitivas de espaçamento, cards, formulários, alertas, estados, tabelas, busca, filtros, paginação e navegação pertencem ao sistema global. Código local contém composição ou fluxo específico da área.
+
+Esta revisão reutiliza `admin-data-toolbar`, `admin-data-table`, `admin-list-summary`, `admin-pagination`, `admin-stat-grid`, `admin-card`, `admin-form-grid` e `admin-inline-actions`; não cria uma nova folha corretiva para a arquitetura de coleções.
 
 ## Critérios de regressão
 
 A revisão deve cobrir desktop e mobile e verificar:
 
-- uma única árvore global de navegação administrativa, sem barra horizontal concorrente de ferramentas;
-- cursos, inscrições, pessoas e alunos do curso continuam utilizáveis com volume por meio de busca e paginação;
+- uma única árvore global de navegação administrativa, organizada em Operação, Ensino, Site, Biblioteca, Análise e Sistema;
+- curso não volta a funcionar como árvore horizontal de navegação;
+- Cursos abre as coleções relacionadas por filtros explícitos;
+- cursos, inscrições, turmas, alunos, pessoas, aulas e material continuam utilizáveis com volume por meio de busca/filtros e paginação;
 - nenhuma listagem canônica finge completude por meio de um teto silencioso de 500 registros;
-- ritmo vertical de primeiro nível controlado globalmente;
+- Inscrições funciona sem obrigar a escolher um curso antes de listar dados;
+- disponibilidade agregada só combina respostas quando existe um curso definido;
+- Pessoa continua identidade global e Aluno continua participação educacional;
+- ritmo vertical de primeiro nível permanece controlado globalmente;
 - uma única topbar global do aluno;
 - Testes subordinado ao curso;
 - curso preservado ao navegar entre visão geral e testes;
 - Conta global;
-- curso administrativo com uma única navegação contextual;
-- Inscrições dentro do contexto do curso;
 - formulários sem campos/botões/títulos colados;
 - nenhuma regressão de acesso ao material;
 - mesma pessoa em múltiplos cursos sem duplicação;
 - inscrições pagas sem turma continuam válidas;
-- alunos históricos importados continuam visíveis no curso e em Pessoas.
+- alunos históricos importados continuam visíveis em Alunos e em Pessoas.
