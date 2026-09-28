@@ -10,7 +10,7 @@ $nextParams=['id'=>$id,'step'=>$step];if($requestedCohortUuid!=='')$nextParams['
 if(!$student){header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
 $studentId=(int)$student['id'];$test=student_test_for_student($db,$id,$studentId);
 if(!$test){http_response_code(404);student_shell_start('Teste não encontrado',null,$student);?><div class="student-empty">Teste não encontrado.</div><?php student_shell_end();exit;}
-$enrollments=student_account_enrollments($db,$studentId);$testContext=student_enrollment_owned_test_navigation_context($enrollments,$test,$requestedCohortUuid);$cohortUuid=$testContext?(string)$testContext['cohort_uuid']:'';$activity=activity_by_id($db,(int)$test['activity_id']);
+$enrollments=student_enrollment_list($db,$studentId);$testContext=student_enrollment_owned_test_navigation_context($enrollments,$test,$requestedCohortUuid);$cohortUuid=$testContext?(string)$testContext['cohort_uuid']:'';$activity=activity_by_id($db,(int)$test['activity_id']);
 $testStepUrl=static function(string $targetStep) use($id,$cohortUuid): string {$params=['id'=>$id,'step'=>$targetStep];if($cohortUuid!=='')$params['cohort']=$cohortUuid;return '/aluno/teste.php?'.http_build_query($params);};
 $testsUrl='/aluno/testes.php'.($cohortUuid!==''?'?cohort='.rawurlencode($cohortUuid):'');
 $error='';
@@ -47,10 +47,8 @@ $test=student_test_for_student($db,$id,$studentId)??$test;$media=student_test_me
 $steps=['exposure'=>['01','Exposição'],'development'=>['02','Revelação'],'review'=>['03','Revisar e enviar']];
 $bleachValue=(string)($test['bleach']??'');$knownBleaches=['Solução peroxiacética','Cloreto férrico'];
 student_shell_start((string)$test['title'].' · Teste',$activity?:null,$student);?>
-<div class="student-appbar"><a class="student-back" href="<?=h($testsUrl)?>">← Testes</a><span class="student-status student-status-<?=h((string)$test['status'])?>"><?=h(student_test_status_label((string)$test['status']))?></span></div>
-<p class="student-kicker"><?=h((string)$test['public_title'])?> · <?=h((string)$test['cohort_title'])?></p>
-<h1 class="student-title student-title-record"><?=h((string)$test['title'])?></h1>
-<p class="student-lead student-lead-compact">Registre o teste no momento em que ele acontece: primeiro a cena e a exposição, depois a revelação e o resultado.</p>
+<?php if($testContext)student_course_context_header($testContext,'tests',count($enrollments)>1);?>
+<div class="student-page-heading"><div class="student-page-heading-main"><a class="student-page-back" href="<?=h($testsUrl)?>">← Testes</a><p class="student-kicker">Teste</p><h1 class="student-title student-title-record"><?=h((string)$test['title'])?></h1><p class="student-lead student-lead-compact">Registre o teste no momento em que ele acontece: primeiro a cena e a exposição, depois a revelação e o resultado.</p></div><span class="student-status student-status-<?=h((string)$test['status'])?>"><?=h(student_test_status_label((string)$test['status']))?></span></div>
 <?php if($notice):?><p class="ui-alert ui-alert-notice"><?=h((string)$notice)?></p><?php endif;?><?php if($error):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
 <nav class="student-step-nav" aria-label="Etapas do teste"><?php foreach($steps as $key=>[$number,$label]):?><a aria-disabled="true" tabindex="-1"<?=$step===$key?' aria-current="step"':''?>><span><?=$number?></span><strong><?=h($label)?></strong></a><?php endforeach;?></nav>
 
