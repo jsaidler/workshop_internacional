@@ -173,16 +173,16 @@
   background:transparent;
   color:inherit;
   font-family:var(--mono);
-  font-size:14px!important;
+  font-size:14px;
   line-height:1.6;
   letter-spacing:.01em;
   text-transform:none;
   font-variant-numeric:tabular-nums;
 }
-.cms-public .study-unit .technical-note.study-equation{font-size:16px!important;line-height:1.45;letter-spacing:.015em}
-.cms-public .study-unit .technical-note.study-quote{font-family:inherit;font-size:18px!important;line-height:1.55;letter-spacing:0}
-.cms-public .study-unit .technical-note.study-summary{font-family:inherit;font-size:16.5px!important;line-height:1.58;letter-spacing:0}
-.cms-public .study-unit .technical-note.study-instruction{font-size:14.5px!important}
+.cms-public .study-unit .technical-note.study-equation{font-size:16px;line-height:1.45;letter-spacing:.015em}
+.cms-public .study-unit .technical-note.study-quote{font-family:inherit;font-size:18px;line-height:1.55;letter-spacing:0}
+.cms-public .study-unit .technical-note.study-summary{font-family:inherit;font-size:16.5px;line-height:1.58;letter-spacing:0}
+.cms-public .study-unit .technical-note.study-instruction{font-size:14.5px}
 
 /* Generic reference grids are intentionally restrained. The semantic variants
    below decide whether a set deserves a matrix, comparison, compact value list
@@ -322,10 +322,10 @@
   .cms-public .study-unit h3,.cms-public .study-unit .statement-copy h3{font-size:clamp(23px,6.8vw,28px)}
   .cms-public .study-unit .statement-copy{font-size:17.5px;line-height:1.66;letter-spacing:0}
   .cms-public .study-unit .statement-copy p{margin-bottom:.9em}
-  .cms-public .study-unit .technical-note{margin-top:32px;margin-bottom:32px;padding:7px 0 7px 14px;font-size:13.5px!important}
-  .cms-public .study-unit .technical-note.study-equation{font-size:15px!important}
-  .cms-public .study-unit .technical-note.study-quote{font-size:17.5px!important}
-  .cms-public .study-unit .technical-note.study-summary{font-size:16px!important}
+  .cms-public .study-unit .technical-note{margin-top:32px;margin-bottom:32px;padding:7px 0 7px 14px;font-size:13.5px}
+  .cms-public .study-unit .technical-note.study-equation{font-size:15px}
+  .cms-public .study-unit .technical-note.study-quote{font-size:17.5px}
+  .cms-public .study-unit .technical-note.study-summary{font-size:16px}
   .cms-public .study-unit>.format-grid{grid-template-columns:1fr;margin-top:34px;margin-bottom:34px}
   .cms-public .study-unit>.study-data-strip{grid-template-columns:1fr}
   .cms-public .study-unit>.study-data-strip .format-card{min-height:0;border-left:0;border-bottom:1px solid var(--line)}
