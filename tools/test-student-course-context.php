@@ -19,9 +19,10 @@ must_student_course_context(student_enrollment_cohort_status_label('closed')==='
 must_student_course_context(student_enrollment_cohort_status_label('unexpected')==='Estado da turma indisponível','unknown cohort status must not be presented as active');
 
 $dashboard=(string)file_get_contents($root.'/aluno/index.php');
+$shell=(string)file_get_contents($root.'/app/student_shell.php');
 must_student_course_context(str_contains($dashboard,'student_enrollment_dashboard_context'),'dashboard bypasses the canonical workspace selector');
-must_student_course_context(str_contains($dashboard,'← Todos os cursos'),'selected workspace has no route back to the course selector');
-must_student_course_context(str_contains($dashboard,'Sem aulas cadastradas'),'empty lesson state still renders a misleading 0/0 progress');
-must_student_course_context(str_contains($dashboard,"student_shell_start('Área do aluno',\$selectedActivity,\$student)"),'selected course design context is not passed to the student shell');
+must_student_course_context(str_contains($dashboard,"student_course_context_header(\$enrollment,'overview'")&&str_contains($shell,'← Meus cursos'),'selected course has no canonical route back to the course selector');
+must_student_course_context(str_contains($dashboard,'As aulas deste curso ainda não foram cadastradas.'),'empty lesson state still renders a misleading progress state');
+must_student_course_context(str_contains($dashboard,"student_shell_start('Meus cursos',\$selectedActivity,\$student)"),'selected course design context is not passed to the student shell');
 
 echo "student-course-context: ok\n";
