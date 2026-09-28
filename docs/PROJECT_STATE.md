@@ -63,7 +63,7 @@ O saneamento estrutural de 28/09/2026 substitui a antiga cascata cronológica po
 - `editor/editor-system.css` é a autoridade do shell do editor; folhas adicionais só permanecem para features reais.
 - Folhas de correção cronológica (`v2`, `v3`, `fix`, `hotfix`, `override`, `refinement` e equivalentes) são proibidas.
 - `tools/test-css-architecture.php` bloqueia `!important`, autoridades aposentadas e regressões de carregamento.
-- `tools/audit-css-ownership.php --strict` bloqueia redefinição da mesma propriedade no mesmo seletor e contexto de cascata. `tools/consolidate-css-ownership.php --check` bloqueia consolidações determinísticas pendentes.
+- `tools/audit-css-ownership.php --strict` bloqueia redefinição da mesma propriedade no mesmo seletor e contexto de cascata. `tools/consolidate-css-ownership.php --check` bloqueia consolidações determinísticas pendentes e `tools/consolidate-css-selectors.php --check` bloqueia divisões de seletor que ainda podem ser reunidas sem alterar a ordem efetiva da cascata.
 
 ### Identidade de cache das derivadas de imagem
 
