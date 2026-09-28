@@ -21,6 +21,7 @@ Este trabalho é estrutural e cobre **administração, área do aluno, site púb
 9. **O CSS adicional do usuário continua soberano no site público.** CSS de sistema permanece na camada `cms-system`; `#cms-custom-css` permanece fora dela e por último.
 10. **Comportamento visual é validado por regressão.** A limpeza estrutural não pode depender apenas de busca textual.
 11. **Uma propriedade não pode se autocorrigir no mesmo seletor e contexto de cascata.** Para uma combinação `contexto + seletor + propriedade`, existe uma única declaração proprietária no CSS autoral. Variações reais devem aparecer em outro contexto explícito, como uma media query, ou em outro contrato semântico.
+12. **Um seletor não é reaberto sem necessidade de ordem.** Declarações separadas de um mesmo seletor/contexto são consolidadas quando a movimentação é neutra para a cascata; divisões que dependem de source order não são movidas automaticamente e exigem refatoração deliberada do componente.
 
 ## Propriedade por superfície
 
@@ -71,15 +72,17 @@ A política passa a ser simples: **nenhum CSS autoral versionado pode conter `!i
 
 A regressão `tools/test-css-architecture.php` faz essa regra falhar no CI.
 
-## Ownership de declarações
+## Ownership de declarações e seletores
 
-Consolidar arquivos não é suficiente se uma folha canônica continuar contendo a história das correções anteriores. Por isso a auditoria passou a operar também no nível da declaração.
+Consolidar arquivos não é suficiente se uma folha canônica continuar contendo a história das correções anteriores. Por isso a auditoria opera também no nível da declaração e da distribuição interna dos seletores.
 
 `tools/audit-css-ownership.php --strict` percorre todo o CSS autoral de `assets/`, `editor/`, `template/` e `admin/` e falha quando a mesma propriedade é declarada mais de uma vez para o mesmo seletor dentro do mesmo contexto de cascata. O objetivo não é proibir variações responsivas ou contratos semânticos diferentes: uma regra dentro de `@media`, `@supports`, `@container`, `@layer` ou `@scope` possui contexto próprio.
 
 `tools/consolidate-css-ownership.php --check` é a segunda trava. Ele verifica se ainda existe uma consolidação determinística pendente. A migração inicial removeu declarações anteriores que eram necessariamente anuladas por uma declaração posterior idêntica em seletor, contexto e propriedade e removeu regras que ficaram realmente vazias. A última declaração foi preservada, mantendo a precedência efetiva da cascata sem recorrer a `!important`.
 
-Reabrir o mesmo seletor apenas para acrescentar propriedades continua sendo algo a evitar. Quando não há necessidade real de ordem de cascata, a definição deve ser consolidada no bloco proprietário do componente. O auditor continua exibindo seletores repetidos como sinal de revisão, enquanto o gate rígido bloqueia a forma objetivamente corretiva: a mesma propriedade sendo redefinida no mesmo seletor/contexto.
+`tools/consolidate-css-selectors.php --check` é a terceira trava. Ela detecta declarações de um seletor reaberto que poderiam ser movidas para a ocorrência proprietária posterior sem atravessar nenhuma declaração concorrente da mesma família de propriedade. A passagem inicial consolidou 42 declarações desse tipo em cinco folhas autorais. O algoritmo é propositalmente conservador: `margin` e seus longhands, `border`, `font`, `grid`, `flex`, `background` e outras famílias são tratados como potencialmente concorrentes; qualquer dúvida de precedência bloqueia a movimentação automática.
+
+Assim, um seletor ainda pode aparecer mais de uma vez no relatório sem configurar autocorreção. Depois das passagens determinísticas, seletores repetidos remanescentes têm propriedades distintas e/ou uma dependência possível de source order. Eles são sinal de refatoração manual de componente, não justificativa para uma transformação mecânica capaz de alterar a cascata.
 
 ## Espaçamento e reaproveitamento
 
@@ -95,7 +98,7 @@ O princípio é:
 
 ## Estratégia de migração
 
-A primeira passagem consolidou as autoridades e preservou a ordem efetiva das regras existentes para reduzir risco de regressão. A segunda passagem consolidou a propriedade das declarações: uma propriedade deixa de existir em cadeia de correções dentro do mesmo seletor/contexto e passa a possuir uma única decisão efetiva.
+A primeira passagem consolidou as autoridades e preservou a ordem efetiva das regras existentes para reduzir risco de regressão. A segunda passagem consolidou a propriedade das declarações: uma propriedade deixa de existir em cadeia de correções dentro do mesmo seletor/contexto e passa a possuir uma única decisão efetiva. A terceira passagem reuniu automaticamente apenas declarações separadas cuja movimentação foi demonstrada como neutra em relação à ordem da cascata.
 
 Os testes também fazem parte da arquitetura. Uma regressão não pode continuar lendo uma folha aposentada apenas porque o comportamento que verifica foi preservado. Os testes de formulário, páginas, material didático, página Pinhole e cascata de Design foram realinhados para verificar diretamente as autoridades canônicas. `test-css-architecture.php` falha se qualquer teste voltar a citar uma autoridade CSS aposentada.
 
@@ -105,6 +108,7 @@ A limpeza só está concluída quando:
 - não existe `!important` no CSS autoral;
 - não existem patches visuais inline nos shells;
 - não existe redefinição da mesma propriedade no mesmo seletor/contexto;
+- não existe consolidação determinística ou order-safe pendente;
 - uma feature não redefine primitivas compartilhadas sem necessidade semântica;
 - a suíte funcional e os testes de navegador passam;
 - build e dry-run de distribuição passam;
