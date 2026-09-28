@@ -116,6 +116,12 @@ A limpeza só está concluída quando:
 
 O `PROJECT_STATE.md` foi reconciliado com essas regras: a antiga exceção para `!important` funcional e a antiga autorização de patch estrutural inline no shell foram removidas, e as autoridades e gates atuais foram registradas no documento canônico de estado.
 
+## Estado final verificado
+
+Na validação de encerramento, a auditoria percorreu 27 folhas CSS autorais e encontrou **0 colisões de propriedade**. As duas consolidações de ownership retornaram **0 trabalho pendente**: nenhuma declaração obsoleta, nenhuma regra vazia e nenhuma movimentação order-safe adicional. Permanecem 137 ocorrências de seletor/contexto repetido, mas sem repetir a mesma propriedade; portanto não constituem a antiga cadeia de autocorreção e não são fundidas automaticamente quando sua posição relativa pode participar da cascata.
+
+A regressão funcional em navegador executou 75 testes e todos passaram. Sintaxe PHP/JavaScript, arquitetura CSS, ownership, smoke tests do CMS, testes de build e dry-run de distribuição também concluíram com sucesso.
+
 ## Regra para trabalho futuro
 
 Antes de criar ou alterar CSS: **localizar proprietário → reutilizar a primitiva existente → ampliar o proprietário se a lacuna for sistêmica → criar CSS de feature apenas quando a responsabilidade for realmente específica**.
