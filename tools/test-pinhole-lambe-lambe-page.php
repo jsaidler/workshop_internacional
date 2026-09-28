@@ -165,10 +165,10 @@ if(($site['header']['showLanguageSwitch']??null)!==true)throw new RuntimeExcepti
 
 $renderer=(string)file_get_contents(dirname(__DIR__).'/app/cms_renderer.php');
 if(!str_contains($renderer,'return $candidate?cms_page_url($activity,$candidate,$targetLocale):\'\';'))throw new RuntimeException('language_switch_still_falls_back_to_home');
-if(!str_contains($renderer,'cms-ui-refinements.css'))throw new RuntimeException('ui_refinement_css_not_loaded');
+if(!str_contains($renderer,'cms-editorial.css'))throw new RuntimeException('ui_refinement_css_not_loaded');
 if(!str_contains($renderer,'&&$langUrl!==\'\''))throw new RuntimeException('language_switch_not_hidden_without_counterpart');
 
-$uiCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms-ui-refinements.css');
+$uiCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms-editorial.css');
 foreach(['.format-grid.cols-3','.section-compact','.hero-image>.cms-media-placeholder','.cms-project-preview'] as $needle){
     if(!str_contains($uiCss,$needle))throw new RuntimeException('ui_refinement_missing: '.$needle);
 }

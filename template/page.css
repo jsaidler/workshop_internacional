@@ -315,7 +315,7 @@
       padding-top: 18px;
       border-top: 1px solid color-mix(in srgb, var(--inverse) 30%, transparent);
       font-family: var(--mono);
-      font-size: 10px !important;
+      font-size: 10px;
       letter-spacing: .05em;
       text-transform: uppercase;
       color: color-mix(in srgb, var(--inverse) 70%, transparent);
@@ -507,9 +507,9 @@
     .radio-grid input { position: absolute; opacity: 0; }
     .radio-grid strong { display: block; margin-bottom: 26px; font-family: var(--title); font-size: 35px; font-weight: 500; text-transform: uppercase; }
     .radio-grid label:has(input:checked) { color: var(--inverse-bg); background: var(--inverse); }
-    .consent { display: flex !important; align-items: flex-start; gap: 12px; margin: 0 0 28px; }
+    .consent { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 28px; }
     .consent input { width: 18px; min-height: 18px; margin-top: 2px; accent-color: var(--inverse); }
-    .consent span { margin: 0 !important; }
+    .consent span { margin: 0; }
     .interest .button { color: var(--inverse-bg); background: var(--inverse); border-color: var(--inverse); }
     .interest .button:hover { color: var(--inverse); background: transparent; }
     .form-status { min-height: 24px; color: color-mix(in srgb, var(--inverse) 70%, transparent); }
@@ -517,8 +517,8 @@
     .form-error { margin: -12px 0 18px; color: #ffb3a7; font-size: 13px; }
     .form-error-summary { margin: 0 0 24px; padding: 12px 14px; border-left: 2px solid #ffb3a7; background: color-mix(in srgb, #ffb3a7 14%, transparent); }
     .form-error-summary p { margin: 0; }
-    .day-question { margin: 0 0 22px !important; }
-    .day-question legend { margin-bottom: 10px !important; padding: 0 !important; border: 0 !important; font-family: var(--mono) !important; font-size: 10px !important; letter-spacing: .05em; }
+    .day-question { margin: 0 0 22px; }
+    .day-question legend { margin-bottom: 10px; padding: 0; border: 0; font-family: var(--mono); font-size: 10px; letter-spacing: .05em; }
     .day-grid { display: flex; flex-wrap: wrap; gap: 8px; }
     .day-grid label { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--inverse) 45%, transparent); cursor: pointer; font: 11px var(--mono); text-transform: uppercase; }
     .day-grid input { width: 16px; min-height: 16px; margin: 0; accent-color: var(--inverse); }
@@ -586,7 +586,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+      *, *::before, *::after { scroll-behavior: auto; transition: none; animation: none; }
     }
     .interest-confirmation { align-self: start; padding: clamp(28px,4vw,58px); border: 1px solid color-mix(in srgb, var(--inverse) 45%, transparent); }
     .interest-confirmation .section-label { margin-bottom: 18px; }

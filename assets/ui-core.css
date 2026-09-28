@@ -1,3 +1,14 @@
+:root{
+  --ux-space-1:4px;
+  --ux-space-2:8px;
+  --ux-space-3:12px;
+  --ux-space-4:16px;
+  --ux-space-5:24px;
+  --ux-space-6:32px;
+  --ux-space-7:48px;
+  --ux-space-8:64px;
+}
+
 /* Global reusable UI primitives.
    Surfaces consume these rules; feature styles must not recreate them locally. */
 
@@ -29,7 +40,7 @@
 .check-field input{width:18px;height:18px;min-width:18px;margin:2px 0 0;accent-color:var(--focus)}
 .check-field .form-field-error{flex-basis:100%}
 
-.button-compact{min-height:40px!important;padding:0 13px!important;font-size:9px!important}
+.button-compact{min-height:40px;padding:0 13px;font-size:9px}
 .button-danger{color:#8b2727;border-color:#8b2727;background:transparent}
 .button-danger:hover{color:var(--inverse);background:#8b2727;border-color:#8b2727}
 button.button:disabled,.button[aria-disabled=true]{opacity:.48;cursor:not-allowed}

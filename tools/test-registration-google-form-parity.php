@@ -6,7 +6,7 @@ $content=(string)file_get_contents(__DIR__.'/../app/workshop_registration_conten
 $admin=(string)file_get_contents(__DIR__.'/../admin/submissions.php');
 $public=(string)file_get_contents(__DIR__.'/../assets/public.js');
 $registrationCss=(string)file_get_contents(__DIR__.'/../assets/registration.css');
-$globalCss=(string)file_get_contents(__DIR__.'/../assets/cms-ui-refinements.css');
+$globalCss=(string)file_get_contents(__DIR__.'/../assets/cms-editorial.css');
 $qr=(string)file_get_contents(__DIR__.'/../assets/media/pix-workshop.svg');
 foreach(['Nome Completo','CPF','Whatsapp com DDD','E-mail','Instagram','Qual o tamanho do suporte que você quer receber?','Endereço completo','Cidade/UF','CEP','Disponibilidade para a turma','Forma de pagamento',"'id'=>'terms'"] as $label)expect_registration(str_contains($setup,$label),"missing canonical field/text: $label");
 foreach(['Terças, 19h — 6, 13 e 20 de outubro','Quintas, 19h — 8, 15 e 22 de outubro','Sábados, 9h — 3, 10 e 24 de outubro','Sábados, 14h — 3, 10 e 24 de outubro'] as $date)expect_registration(str_contains($setup,$date),"missing date: $date");

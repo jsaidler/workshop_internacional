@@ -40,10 +40,10 @@
 .cms-form .cms-choice-grid label:hover{background:color-mix(in srgb,currentColor 5%,transparent)}
 .cms-form .cms-consent{grid-column:1/-1;border:1px solid color-mix(in srgb,currentColor 62%,transparent);padding:17px 18px;margin-bottom:18px;align-items:flex-start}
 .cms-form .cms-consent label,.cms-form .cms-consent span{font-size:14px;line-height:1.5}
-.cms-form>.button,.cms-form button[type=submit]{min-width:min(100%,320px);min-height:60px;padding:0 24px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--inverse-bg)!important;border-radius:0;color:var(--inverse)!important;background:var(--inverse-bg)!important;opacity:1!important;visibility:visible!important;cursor:pointer}
-.cms-form>.button:hover,.cms-form button[type=submit]:hover{color:var(--text)!important;background:transparent!important;border-color:var(--line-strong)!important;opacity:1!important;visibility:visible!important}
-.cms-form>.button:focus-visible,.cms-form button[type=submit]:focus-visible{color:var(--text)!important;background:transparent!important;border-color:var(--line-strong)!important;opacity:1!important;visibility:visible!important;outline:3px solid var(--focus);outline-offset:4px}
-.cms-form [aria-invalid=true]{border-color:#b22929!important}
+.cms-form>.button,.cms-form button[type=submit]{min-width:min(100%,320px);min-height:60px;padding:0 24px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--inverse-bg);border-radius:0;color:var(--inverse);background:var(--inverse-bg);opacity:1;visibility:visible;cursor:pointer}
+.cms-form>.button:hover,.cms-form button[type=submit]:hover{color:var(--text);background:transparent;border-color:var(--line-strong);opacity:1;visibility:visible}
+.cms-form>.button:focus-visible,.cms-form button[type=submit]:focus-visible{color:var(--text);background:transparent;border-color:var(--line-strong);opacity:1;visibility:visible;outline:3px solid var(--focus);outline-offset:4px}
+.cms-form [aria-invalid=true]{border-color:#b22929}
 .cms-form .form-error{margin-top:-8px;margin-bottom:6px}
 
 /* Global long-form editorial system.
@@ -77,7 +77,7 @@
 .cms-public .editorial-unit>.statement-copy{margin-left:auto;margin-right:auto}
 .cms-public .editorial-unit>.statement-grid+.statement-grid{margin-top:clamp(42px,5vw,72px)}
 .cms-public .editorial-unit .statement-copy h3{margin:44px 0 16px;font-size:clamp(28px,2.8vw,42px);font-weight:500;line-height:1;text-transform:uppercase}
-.cms-public .editorial-unit .technical-note{max-width:840px;margin:clamp(30px,4vw,52px) auto;padding:16px 0;border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line);color:inherit;font-family:var(--mono);font-size:11px!important;line-height:1.65;letter-spacing:.04em;text-transform:none}
+.cms-public .editorial-unit .technical-note{max-width:840px;margin:clamp(30px,4vw,52px) auto;padding:16px 0;border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line);color:inherit;font-family:var(--mono);font-size:11px;line-height:1.65;letter-spacing:.04em;text-transform:none}
 .cms-public .editorial-unit>.format-grid{max-width:1120px;margin:clamp(34px,4.6vw,58px) auto 0;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
 .cms-public .editorial-unit .format-card{min-height:150px;padding:18px}
 .cms-public .editorial-unit .format-card h3{margin:32px 0 8px;font-size:clamp(22px,2vw,30px);line-height:1.05}
@@ -139,7 +139,7 @@
 .cms-public .study-unit .statement-copy p:last-child{margin-bottom:0}
 .cms-public .study-unit .statement-copy :where(ul,ol){margin:1.1em 0;padding-left:1.35em}
 .cms-public .study-unit .statement-copy li+li{margin-top:.5em}
-.cms-public .study-unit .technical-note{grid-column:2;max-width:var(--study-reading);margin:30px 0;padding:16px 18px;border:0;border-block:1px solid var(--line);border-left:3px solid var(--line-strong);background:color-mix(in srgb,var(--surface-2) 72%,var(--surface));color:inherit;font-family:var(--mono);font-size:12.5px!important;line-height:1.62;letter-spacing:.015em;text-transform:none;font-variant-numeric:tabular-nums}
+.cms-public .study-unit .technical-note{grid-column:2;max-width:var(--study-reading);margin:30px 0;padding:16px 18px;border:0;border-block:1px solid var(--line);border-left:3px solid var(--line-strong);background:color-mix(in srgb,var(--surface-2) 72%,var(--surface));color:inherit;font-family:var(--mono);font-size:12.5px;line-height:1.62;letter-spacing:.015em;text-transform:none;font-variant-numeric:tabular-nums}
 .cms-public .study-unit>.format-grid{grid-column:2/-1;max-width:var(--study-wide);margin:34px 0 2px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;border:1px solid var(--line);background:var(--line)}
 .cms-public .study-unit .format-card{min-height:118px;padding:18px;border:0;background:var(--surface)}
 .cms-public .study-unit .format-card .number{font-size:11px;line-height:1.35;font-variant-numeric:tabular-nums}
@@ -198,7 +198,7 @@
   .cms-public .study-unit h2{font-size:clamp(34px,10vw,46px)}
   .cms-public .study-unit h3{font-size:clamp(26px,8vw,33px)}
   .cms-public .study-unit .statement-copy{font-size:17px;line-height:1.7;letter-spacing:0}
-  .cms-public .study-unit .technical-note{margin-top:26px;margin-bottom:26px;padding:14px 15px;font-size:12.5px!important}
+  .cms-public .study-unit .technical-note{margin-top:26px;margin-bottom:26px;padding:14px 15px;font-size:12.5px}
   .cms-public .study-unit>.format-grid{grid-template-columns:1fr}
   .cms-public .study-unit>.media-figure{margin-top:34px;margin-bottom:34px}
   .cms-public .study-unit>.media-figure .cms-media-placeholder{min-height:220px}

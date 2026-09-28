@@ -7,6 +7,7 @@ $page=(string)file_get_contents($root.'/admin/submissions.php');
 $inbox=(string)file_get_contents($root.'/assets/admin-inbox.css');
 $registration=(string)file_get_contents($root.'/assets/admin-registration.css');
 $shell=(string)file_get_contents($root.'/app/admin_shell.php');
+$adminCss=(string)file_get_contents($root.'/assets/admin-system.css');
 
 submissions_ui_expect(str_contains($page,'function submission_display_value('),'registration values must have a presentation formatter');
 submissions_ui_expect(str_contains($page,"\$key==='cpf'")&&str_contains($page,"\$key==='postal_code'")&&str_contains($page,"\$key==='phone'"),'CPF, CEP and phone formatting must remain explicit');
@@ -30,6 +31,7 @@ submissions_ui_expect(str_contains($registration,'[data-field="address"]{grid-co
 submissions_ui_expect(str_contains($registration,'.registration-admin-status.is-pending')&&str_contains($registration,'.registration-admin-status.is-paid'),'pending and confirmed states must remain visually distinct');
 submissions_ui_expect(str_contains($registration,'@media(max-width:1180px){.registration-admin-group .inbox-fields{grid-template-columns:1fr}}'),'field units must collapse before their values become compressed');
 
-submissions_ui_expect(str_contains($shell,'admin-wordmark-context')&&str_contains($shell,'.admin-sidebar .admin-wordmark-context{display:block'),'Administração must be structurally separated from the wordmark');
+submissions_ui_expect(str_contains($shell,'admin-wordmark-context'),'Administração must remain a distinct structural element next to the installation wordmark');
+submissions_ui_expect(str_contains($adminCss,'.admin-sidebar .admin-wordmark-context{display:block'),'wordmark context styling must live in the canonical admin CSS authority');
 
 echo "Admin submissions layout tests passed\n";

@@ -14,7 +14,7 @@
 .registration-program article+article{border-top:1px solid var(--line);padding-top:18px;margin-top:18px}
 .registration-program h3,.registration-payment-panel h3{font-family:var(--sans);font-size:18px;line-height:1.35;margin:0 0 8px}
 .registration-program p,.registration-payment-panel p,.registration-terms p{margin:0 0 10px}
-.registration-payment-panel[hidden],.cms-form-content[hidden]{display:none!important}
+.registration-payment-panel[hidden],.cms-form-content[hidden]{display:none}
 .registration-pix-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;align-items:start}
 .registration-pix-layout img{display:block;width:100%;height:auto;background:#fff;padding:10px}
 .registration-pix-code{display:block;max-width:100%;padding:12px;background:var(--surface);border:1px solid var(--line);font-family:var(--mono);font-size:11px;line-height:1.45;overflow-wrap:anywhere;margin:8px 0 14px}

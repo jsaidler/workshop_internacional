@@ -66,7 +66,7 @@ foreach(['editorial-cover','editorial-index','editorial-chapter','editorial-unit
 foreach(['study-material','study-cover','study-index','study-chapter','study-unit'] as $class)if(!str_contains($html,$class))handbook_fail('global study component missing: '.$class);
 $map=$db->query("SELECT s.section_key,l.lesson_key FROM course_page_sections s JOIN course_lessons l ON l.id=s.lesson_id ORDER BY s.section_key")->fetchAll(PDO::FETCH_KEY_PAIR);
 foreach(['caderno-04-energia'=>'aula-1','caderno-10-imagem-latente'=>'aula-2','caderno-21-leitura-resultados'=>'aula-3'] as $section=>$lesson)if(($map[$section]??'')!==$lesson)handbook_fail('wrong lesson mapping: '.$section);
-$css=(string)file_get_contents(__DIR__.'/../assets/cms-ui-refinements.css');
+$css=(string)file_get_contents(__DIR__.'/../assets/cms-editorial.css');
 foreach(['.study-material','.study-cover','.study-index','.study-chapter','.study-unit'] as $selector)if(!str_contains($css,$selector))handbook_fail('global study CSS missing: '.$selector);
 foreach(['caderno-positivo-direto','caderno-aula-','caderno-04-energia'] as $needle)if(str_contains($css,$needle))handbook_fail('page slug/section leaked into global study CSS: '.$needle);
 $studyCss=(string)file_get_contents(__DIR__.'/../assets/cms-study.css');

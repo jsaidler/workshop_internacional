@@ -56,7 +56,7 @@ function renderedForm(form){
 }
 
 function previewHtml(form){
-  return `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/cms.css"><style>body{font-family:sans-serif;padding:24px}.cms-form-grid{display:grid;gap:18px}.cms-form-content{padding:12px;border:1px solid #aaa}.registration-pix-layout{display:grid;grid-template-columns:120px 1fr;gap:12px}.registration-pix-layout img{width:100px;height:auto}</style></head><body class="cms-public cms-editor-preview"><main data-cms-page-main><section data-cms-section="registration" data-cms-section-name="Inscrição"><p data-cms-editable>Texto comum da página</p>${renderedForm(form)}</section></main></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/cms-core.css"><style>body{font-family:sans-serif;padding:24px}.cms-form-grid{display:grid;gap:18px}.cms-form-content{padding:12px;border:1px solid #aaa}.registration-pix-layout{display:grid;grid-template-columns:120px 1fr;gap:12px}.registration-pix-layout img{width:100px;height:auto}</style></head><body class="cms-public cms-editor-preview"><main data-cms-page-main><section data-cms-section="registration" data-cms-section-name="Inscrição"><p data-cms-editable>Texto comum da página</p>${renderedForm(form)}</section></main></body></html>`;
 }
 
 async function installFormRoutes(page,state){

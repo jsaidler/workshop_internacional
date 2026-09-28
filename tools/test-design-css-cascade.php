@@ -75,27 +75,24 @@ design_css_expect(($fontSettings['advanced']['customCss']??'')==='.keep-me{displ
 $renderer=(string)file_get_contents(dirname(__DIR__).'/app/cms_renderer.php');
 $systemStyles=strpos($renderer,'id="cms-system-styles"');
 $vars=strpos($renderer,'id="cms-design-vars"');
-$systemControls=strpos($renderer,'id="cms-system-choice-controls"');
 $customStyle=strpos($renderer,'id="cms-custom-css"');
-design_css_expect($systemStyles!==false&&$vars!==false&&$systemControls!==false&&$customStyle!==false,'renderer must expose all design style stages');
-design_css_expect($systemStyles<$vars&&$vars<$systemControls&&$systemControls<$customStyle,'additional CSS must be the final author style in the rendered head');
+design_css_expect($systemStyles!==false&&$vars!==false&&$customStyle!==false,'renderer must expose system, design-token and additional-CSS stages');
+design_css_expect($systemStyles<$vars&&$vars<$customStyle,'additional CSS must be the final author style in the rendered head');
+design_css_expect(!str_contains($renderer,'id="cms-system-choice-controls"'),'renderer must not carry a corrective inline choice-control stylesheet');
 design_css_expect(str_contains($renderer,'cms_public_system_css_imports($assetVersion,$design)'),'public system stylesheet loader must receive the current Design selection');
 design_css_expect(str_contains($renderer,'cms_design_font_import_css($design)'),'public renderer must load the selected Google Fonts before local system CSS');
+design_css_expect(str_contains($renderer,"'/assets/cms-core.css'"),'public renderer must consume the canonical CMS core stylesheet');
 design_css_expect(str_contains($renderer,'layer(cms-system)'),'external public system CSS must live in the lower cms-system cascade layer');
 design_css_expect(str_contains($renderer,'@layer cms-system{<?=cms_design_system_css($design)?>}'),'generated design CSS must live in the lower system layer');
 design_css_expect(str_contains($renderer,'cms_design_custom_css($design)'),'additional CSS must remain unlayered and therefore outrank normal system declarations regardless of specificity');
-$choiceStart=strpos($renderer,'id="cms-system-choice-controls"');
-$choiceEnd=strpos($renderer,'</style>',$choiceStart?:0);
-$choiceCss=$choiceStart!==false&&$choiceEnd!==false?substr($renderer,$choiceStart,$choiceEnd-$choiceStart):'';
-design_css_expect(!str_contains($choiceCss,'!important'),'system choice geometry must not block a later intentional additional-CSS override');
 
-$cmsCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms.css');
+$cmsCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms-core.css');
 $cmsPro=(string)file_get_contents(dirname(__DIR__).'/assets/cms-pro.css');
 $responsive=(string)file_get_contents(dirname(__DIR__).'/assets/cms-responsive.css');
+design_css_expect(str_contains($cmsCss,'.cms-public input[type="checkbox"],.cms-public input[type="radio"]'),'choice-control geometry must live in canonical public CSS, not in renderer patches');
+design_css_expect(!str_contains($cmsCss,'!important'),'canonical CMS core must not use !important');
 design_css_expect(!str_contains($cmsPro,'!important'),'professional visual controls must remain overridable inside the system layer');
 design_css_expect(!str_contains($responsive,'!important'),'responsive visual controls must remain overridable inside the system layer');
-$cmsWithoutHoneypot=preg_replace('/\.honeypot\{[^}]+\}/','',$cmsCss)??$cmsCss;
-design_css_expect(!str_contains($cmsWithoutHoneypot,'!important'),'layout/design rules must not use !important; only the honeypot invariant may retain it here');
 
 $publicJs=(string)file_get_contents(dirname(__DIR__).'/assets/public.js');
 design_css_expect(str_contains($publicJs,'@import url("/assets/registration.css") layer(cms-system);'),'registration.css must be dynamically loaded inside the lower cms-system layer');

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-$uiCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms-ui-refinements.css');
+$uiCss=(string)file_get_contents(dirname(__DIR__).'/assets/cms-editorial.css');
 $registrationCss=(string)file_get_contents(dirname(__DIR__).'/assets/registration.css');
 $formRenderer=(string)file_get_contents(dirname(__DIR__).'/app/cms_forms.php');
 
@@ -13,16 +13,17 @@ foreach([
     '.cms-form .cms-consent',
     '.cms-form button[type=submit]',
     '.cms-form button[type=submit]:hover',
-    'background:var(--inverse-bg)!important',
-    'border:1px solid var(--inverse-bg)!important',
-    'background:transparent!important',
-    'color:var(--text)!important',
-    'border-color:var(--line-strong)!important',
-    'opacity:1!important',
-    'visibility:visible!important',
+    'background:var(--inverse-bg)',
+    'border:1px solid var(--inverse-bg)',
+    'background:transparent',
+    'color:var(--text)',
+    'border-color:var(--line-strong)',
+    'opacity:1',
+    'visibility:visible',
 ] as $needle){
     if(!str_contains($uiCss,$needle))throw new RuntimeException('global_form_ux_missing: '.$needle);
 }
+if(str_contains($uiCss,'!important'))throw new RuntimeException('global_form_ux_uses_important');
 
 foreach([
     '.interest .cms-form',

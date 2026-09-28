@@ -10,9 +10,10 @@ Antes de alterar código, conteúdo, CMS, deploy ou fluxo administrativo, ler ne
 4. `docs/CMS_PROFESSIONAL.md`;
 5. `docs/UI_CONTENT_RULES.md`;
 6. `docs/DESIGN_TYPOGRAPHY.md`;
-7. `docs/CMS_V3_DEPLOYMENT.md`;
-8. `README.md`;
-9. `DEPLOY.md`.
+7. `docs/CSS_SYSTEM_SANITIZATION_2026-09-28.md`;
+8. `docs/CMS_V3_DEPLOYMENT.md`;
+9. `README.md`;
+10. `DEPLOY.md`.
 
 Para regras de negócio de curso, inscrição, turma, matrícula, aulas e material didático, `COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md` prevalece. `WORKSHOP_PAGE_REGISTRATION_STUDENT_ARCHITECTURE_2026-09-27.md` permanece como registro da transição que retirou `activity` do papel de curso e continua válido onde não conflitar com a autoridade de Curso. Quando documentação histórica descrever uma `activity` ou uma página CMS como a entidade de negócio curso/workshop, a arquitetura de Curso prevalece.
 
@@ -29,6 +30,19 @@ Não encerrar um defeito com uma contenção quando a causa raiz estiver no pró
 - Não considerar um problema resolvido apenas porque o sintoma deixou de aparecer em uma página específica.
 - Quando existirem dois caminhos diferentes para produzir o mesmo artefato, consolidar o comportamento em uma implementação canônica em vez de manter algoritmos paralelos que possam divergir.
 - Migrações corretivas devem ser não destrutivas: preservar originais e dados editoriais, reconstruir somente artefatos derivados e invalidar derivados defeituosos quando a reconstrução falhar.
+
+### Arquitetura CSS e reaproveitamento
+
+CSS é tratado como sistema, não como sequência de correções locais. A especificação completa está em `docs/CSS_SYSTEM_SANITIZATION_2026-09-28.md`.
+
+- Cada responsabilidade visual possui um proprietário canônico. Antes de criar regra nova: localizar proprietário → reutilizar → ampliar a primitiva compartilhada quando a lacuna for sistêmica → criar CSS de feature apenas quando a responsabilidade for realmente específica.
+- É proibido criar folhas cronológicas/corretivas como `*-v2.css`, `*-v3.css`, `*-fix.css`, `*-hotfix.css`, `*-override.css`, `*-refinement.css` ou equivalentes para vencer a cascata anterior.
+- O CSS autoral versionado não usa `!important`. Invariantes de geometria, acessibilidade, segurança ou estado devem ser resolvidos pelo DOM, escopo, seletor e proprietário corretos; `!important` não é uma ferramenta de precedência aceita no projeto.
+- Não inserir `<style>` visual em shells ou páginas para corrigir componente global. Valores dinâmicos/editoriais que fazem parte do contrato do CMS continuam permitidos somente nas camadas previstas do renderer.
+- CSS de feature não é carregado globalmente. Se a regra só pertence à biblioteca de mídia, editor de estrutura ou outra feature isolada, o consumidor explícito carrega essa folha; ela não redefine primitivas globais.
+- Espaçamento compartilhado usa a escala canônica, mas a responsabilidade continua semântica: componente controla espaço interno; container controla relação entre filhos; página compõe. Não zerar margens globalmente para reconstruir ritmo por uma camada posterior.
+- Uma primitiva compartilhada não pode ter implementações concorrentes em admin, editor e páginas específicas quando o comportamento é o mesmo. Divergência visual deliberada deve possuir nome/contrato próprios, não seletor corretivo.
+- `tools/test-css-architecture.php` é regressão obrigatória. Não enfraquecê-la para fazer CI passar; uma exceção estrutural exige decisão documentada e alteração explícita da arquitetura.
 
 ### Pipeline de imagens
 
@@ -50,7 +64,7 @@ O campo `Design → CSS adicional` é a última camada editorial de CSS do site.
 - `#cms-custom-css` deve ser o último estilo autoral renderizado no `<head>` público e no preview normal.
 - A prévia ao vivo de Design deve reaplicar seu estilo adicional no fim do `<head>` em cada atualização.
 - Tokens de Design em prévia não podem ser escritos como estilo inline no `<html>`/`:root`, pois estilo inline ultrapassa a precedência de um stylesheet normal. Devem ser aplicados pela camada `cms-system`, e resíduos inline de implementações antigas precisam ser removidos.
-- Regras visuais do sistema não devem usar `!important` quando isso impedir uma sobrescrita deliberada pelo CSS adicional. `!important` fica reservado a invariantes funcionais, de segurança ou acessibilidade que deliberadamente não são controles editoriais.
+- Regras visuais do sistema não usam `!important`; a precedência é resolvida pela arquitetura da cascata e pelos proprietários canônicos.
 - Propriedades visuais calculadas pelo renderer, inclusive `object-fit` e ponto focal de mídia, não devem ser gravadas como propriedades CSS inline que bloqueiem o CSS adicional. Quando precisarem viajar no elemento, usar custom properties consumidas pelo CSS da camada de sistema.
 - Qualquer novo estilo inline ou dinâmico do CMS deve respeitar essa precedência ou ser inserido na camada inferior do sistema.
 
