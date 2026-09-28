@@ -1,0 +1,31 @@
+name: css-consolidate-once
+on:
+  push:
+    branches:
+      - refactor/css-system-sanitization-2026-09-28
+permissions:
+  contents: write
+jobs:
+  consolidate:
+    if: ${{ !contains(github.event.head_commit.message, '[css-consolidated]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/css-system-sanitization-2026-09-28
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Consolidate duplicate property ownership
+        run: php tools/consolidate-css-ownership.php
+      - name: Commit deterministic CSS cleanup
+        run: |
+          if git diff --quiet -- '*.css'; then
+            echo 'No CSS ownership changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.css'
+          git commit -m 'Consolidate CSS property ownership [css-consolidated]'
+          git push origin HEAD:refactor/css-system-sanitization-2026-09-28
