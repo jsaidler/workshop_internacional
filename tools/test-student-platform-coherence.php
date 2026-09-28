@@ -12,6 +12,7 @@ $root=dirname(__DIR__);
 $studentAdmin=(string)file_get_contents($root.'/admin/student-area.php');
 $peopleAdmin=(string)file_get_contents($root.'/admin/people.php');
 $courseAdmin=(string)file_get_contents($root.'/admin/courses.php');
+$adminShell=(string)file_get_contents($root.'/app/admin_shell.php');
 $studentShell=(string)file_get_contents($root.'/app/student_shell.php');
 $site=(string)file_get_contents($root.'/admin/site.php');
 $adminJs=(string)file_get_contents($root.'/assets/admin.js');
@@ -28,6 +29,7 @@ $submissions=(string)file_get_contents($root.'/admin/submissions.php');
 
 foreach(['cms_design_font_import_css','cms_design_css','/template/page.css'] as $needle)if(!str_contains($studentShell,$needle))fail_coherence('student shell does not consume canonical design authority: '.$needle);
 if(!str_contains($studentShell,'installation_brand_name()')||str_contains($studentShell,'student_account_enrollments('))fail_coherence('student shell still conflates global identity/design with first enrollment');
+if(!str_contains($studentShell,'student_course_context_header')||!str_contains($studentShell,'Meus cursos'))fail_coherence('student course context/topbar architecture missing');
 if(!str_contains($site,'name="course_public_title"')||!str_contains($site,'Nome público do curso'))fail_coherence('course public title is not editable in Site identity');
 foreach(['private','cohort','course'] as $visibility)if(!str_contains($sharing,"'".$visibility."'"))fail_coherence('missing test visibility: '.$visibility);
 if(!str_contains($sharedTest,'student_test_messages($db,$id)')||!str_contains($sharedTest,'segue a mesma visibilidade do teste'))fail_coherence('shared conversation does not follow test visibility');
@@ -39,7 +41,7 @@ if(!str_contains($editorHtml,'/editor/cms-access-controls.js'))fail_coherence('c
 if(!str_contains($index,'cms_access_filter_html'))fail_coherence('public renderer path does not apply generic section authorization');
 if(!str_contains($studentAdmin,'/admin/people.php'))fail_coherence('legacy student administration route does not delegate to global people authority');
 if(!str_contains($peopleAdmin,'FROM student_users u')||!str_contains($peopleAdmin,'c.course_id IS NULL'))fail_coherence('global people administration hides identities when course links are incomplete');
-if(!str_contains($courseAdmin,"'material'=>'Material'")||!str_contains($courseAdmin,'course_material_add_page')||!str_contains($courseAdmin,'/editor/?page='))fail_coherence('course material is not a contextual view of canonical CMS pages/editor');
+if(!str_contains($adminShell,"'material'=>'Material'")||!str_contains($courseAdmin,'course_material_add_page')||!str_contains($courseAdmin,'/editor/?page='))fail_coherence('course material is not a contextual view of canonical CMS pages/editor');
 if(str_contains($courseAdmin,'material-editor')||str_contains($courseAdmin,'material_renderer'))fail_coherence('parallel material editor/renderer introduced');
 foreach(['Agendar','Liberar agora','Bloquear','/admin/api/course-lesson-release.php'] as $needle)if(!str_contains($adminJs,$needle))fail_coherence('lesson scheduling missing from existing lessons interface: '.$needle);
 if(!str_contains($media,'admin-media-privacy.js')||!str_contains($mediaPrivacy,"['public','private']"))fail_coherence('media library is not privacy authority');
