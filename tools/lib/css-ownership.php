@@ -6,6 +6,23 @@ declare(strict_types=1);
  * It deliberately does not rewrite selectors or values; it only identifies
  * style-rule context and declaration source ranges.
  */
+function css_ownership_authored_files(string $root): array {
+    $files=[];
+    foreach(['assets','editor','template','admin'] as $relativeRoot){
+        $dir=$root.'/'.$relativeRoot;
+        if(!is_dir($dir))continue;
+        $iterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir,FilesystemIterator::SKIP_DOTS));
+        foreach($iterator as $file){
+            if(!$file->isFile()||strtolower($file->getExtension())!=='css')continue;
+            $relative=str_replace('\\','/',substr($file->getPathname(),strlen($root)+1));
+            if(str_contains($relative,'/vendor/')||str_contains($relative,'/node_modules/'))continue;
+            $files[]=$relative;
+        }
+    }
+    sort($files,SORT_STRING);
+    return $files;
+}
+
 function css_ownership_normalize(string $value): string {
     $value=preg_replace('/\s+/',' ',trim($value))??trim($value);
     return preg_replace('/\s*([>+~,:])\s*/','$1',$value)??$value;
