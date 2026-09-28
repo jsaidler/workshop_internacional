@@ -86,6 +86,8 @@ O princípio é:
 
 A primeira passagem consolida as autoridades e preserva a ordem efetiva das regras existentes para reduzir risco de regressão. A segunda passagem é uma auditoria de composição: remover declarações obsoletas, detectar seletores duplicados que ainda representam história de override e transferir cada decisão ao proprietário correto.
 
+Os testes também fazem parte da arquitetura. Uma regressão não pode continuar lendo uma folha aposentada apenas porque o comportamento que verifica foi preservado. Os testes de formulário, páginas, material didático, página Pinhole e cascata de Design foram realinhados para verificar diretamente as autoridades canônicas. `test-css-architecture.php` falha se qualquer teste voltar a citar uma autoridade CSS aposentada.
+
 A limpeza só está concluída quando:
 
 - não existem arquivos globais de correção cronológica;
