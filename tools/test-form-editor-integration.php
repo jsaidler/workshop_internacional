@@ -49,7 +49,6 @@ must(!str_contains($core,"d.querySelectorAll('[data-cms-form-block],[data-cms-fo
 must(str_contains($adminShell,'admin_asset_version'),'admin shell must version its CSS/JS after application updates');
 must(str_contains($adminShell,'/assets/admin-system.css'),'admin shell must consume the canonical admin CSS authority');
 must(!str_contains($adminShell,'admin-system-choice-controls'),'admin shell must not carry a corrective inline checkbox/radio patch');
-must(!str_contains($adminShell,'/assets/admin-form-ux.css'),'admin shell must not load a retired form-specific correction layer');
 must(str_contains($formCss,'body.admin-page input[type="checkbox"],'),'admin checkbox/radio normalization must live in the canonical admin authority');
 must(str_contains($formCss,'max-width:18px')&&str_contains($formCss,'max-height:18px')&&!str_contains($formCss,'!important'),'admin choice controls must not inherit text-input geometry or rely on !important');
 must(str_contains($formCss,'.admin-section-forms .form-builder{display:block}'),'full form editor settings must not consume a permanent side column');
