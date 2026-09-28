@@ -16,9 +16,9 @@ $submissions=(string)file_get_contents($root.'/admin/submissions.php');
 $media=(string)file_get_contents($root.'/admin/media.php');
 $mediaTask=(string)file_get_contents($root.'/assets/admin-media-task.js');
 $mediaLibrary=(string)file_get_contents($root.'/editor/media-library.js');
-$publicCss=(string)file_get_contents($root.'/assets/cms-v3.css');
+$publicCss=(string)file_get_contents($root.'/assets/cms-core.css');
 $renderer=(string)file_get_contents($root.'/app/cms_renderer.php');
-$adminCss=(string)file_get_contents($root.'/admin/pro-admin.css');
+$adminCss=(string)file_get_contents($root.'/assets/admin-system.css');
 
 must(!str_contains($admin,"Location: /editor/?page="),'admin entry point must not bypass the dashboard');
 must(str_contains($admin,"admin_shell_start('overview','Visão geral'"),'admin entry point must render the overview dashboard');
@@ -65,15 +65,15 @@ must(str_contains($videoEditor,"video.dataset.mediaVersionMode='latest'"),'manag
 must(str_contains($videoEditor,'delete video.dataset.mediaAssetId'),'switching to an external URL must remove the managed-asset binding so the resolver cannot overwrite it');
 must(str_contains($videoEditor,'accept="video/mp4,video/webm,video/quicktime"'),'video dialog must upload video media, not images');
 must(str_contains($videoEditor,"video.classList.add('cms-selection')"),'video selection must reuse the core transient selection class that is stripped during serialization');
-must(str_contains($publicCss,'.cms-public input[type="checkbox"],.cms-public input[type="radio"]'),'native public choice controls must be normalized at the shared page layer, not in one page or form instance');
+must(str_contains($publicCss,'.cms-public input[type="checkbox"],.cms-public input[type="radio"]'),'native public choice controls must be normalized in the canonical public CSS authority');
 must(str_contains($publicCss,'min-height:18px'),'public choice controls must override legacy text-input height');
 must(str_contains($renderer,'cms_public_asset_version'),'public renderer must version shared assets after application updates');
-must(str_contains($renderer,'cms-system-choice-controls'),'public renderer must enforce choice-control geometry independently of cached external CSS');
+must(!str_contains($renderer,'cms-system-choice-controls'),'public renderer must not carry an inline choice-control CSS patch');
 must(str_contains($renderer,'cms_public_system_css_imports($assetVersion,$design)'),'public stylesheets must be rendered through the versioned system import helper with current Design settings');
-must(str_contains($renderer,"'/template/page.css'")&&str_contains($renderer,'rawurlencode($assetVersion)'),'public base stylesheet must use the installed application version in its layered import URL');
+must(str_contains($renderer,"'/template/page.css'")&&str_contains($renderer,"'/assets/cms-core.css'")&&str_contains($renderer,'rawurlencode($assetVersion)'),'public base and canonical core stylesheets must use the installed application version in layered import URLs');
 must(str_contains($renderer,'layer(cms-system)'),'public stylesheets must remain in the lower system cascade layer');
 must(str_contains($renderer,'public.js?v=<?=$assetVersionHtml?>'),'public JavaScript must use the escaped installed application version in its URL');
-must(str_contains($adminCss,'.admin-page input[type="checkbox"],.admin-page input[type="radio"]'),'admin must explicitly size native choice controls');
+must(str_contains($adminCss,'body.admin-page input[type="checkbox"],'),'admin must explicitly size native choice controls in the canonical admin authority');
 must(str_contains($adminCss,'min-height:18px'),'admin choice controls must override generic admin input height');
 
 echo "Task-centric admin tests passed\n";
