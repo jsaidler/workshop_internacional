@@ -29,14 +29,7 @@ function css_delete(string $relative): void {
     $path=css_path($relative);
     if(is_file($path)&&!unlink($path))throw new RuntimeException('Cannot delete '.$relative);
 }
-function text_replace_file(string $relative,array $replace): void {
-    $content=css_read($relative);
-    $updated=str_replace(array_keys($replace),array_values($replace),$content);
-    if($updated===$content)throw new RuntimeException('Expected replacement not applied in '.$relative);
-    css_write($relative,$updated);
-}
 
-// Shared spacing tokens belong to the primitive layer, not to a late UX patch.
 $experience=css_read('assets/experience-ux.css');
 $adminMarker=strpos($experience,'/* Admin shell:');
 $studentMarker=strpos($experience,'/* Student shell:');
@@ -49,7 +42,6 @@ $uiCore=css_read('assets/ui-core.css');
 if(!str_contains($uiCore,'--ux-space-1:'))$uiCore=$spacing."\n\n".$uiCore;
 css_write('assets/ui-core.css',css_strip_important($uiCore));
 
-// ADMIN: collapse chronological global layers into one canonical surface stylesheet.
 $adminSystem='';
 $adminSystem.=css_segment('Admin foundations, shell and legacy component baseline',css_read('admin/admin.css'));
 $adminSystem.=css_segment('Administrative CMS components',css_read('admin/cms-admin.css'));
@@ -77,7 +69,6 @@ body.admin-page input[type="radio"]{
 CSS);
 css_write('assets/admin-system.css',css_strip_important($adminSystem));
 
-// Media is a genuine admin feature: keep its CSS out of every other admin page.
 $adminMedia=css_segment('Media maintenance components',css_read('assets/admin-media-maintenance.css'))
     .css_segment('Media task interface',css_read('assets/admin-media-task.css'));
 css_write('assets/admin-media.css',css_strip_important($adminMedia));
@@ -98,7 +89,7 @@ foreach($legacyAdminLinks as $asset){
         $adminShell=str_replace($tag,'',$adminShell);
     }
 }
-$adminShell=str_replace("$root.'/assets/admin-ux-v3.css'","$root.'/assets/admin-system.css'",$adminShell);
+$adminShell=str_replace("\$root.'/assets/admin-ux-v3.css'","\$root.'/assets/admin-system.css'",$adminShell);
 $adminShell=(string)preg_replace('~<style id="admin-system-choice-controls">.*?</style>~s','',$adminShell);
 $adminShell=(string)preg_replace('~<style id="admin-shell-structure">.*?</style>~s','',$adminShell);
 css_write('app/admin_shell.php',$adminShell);
@@ -111,7 +102,6 @@ $media=css_read('admin/media.php');
 $media=str_replace('/assets/admin-media-task.css','/assets/admin-media.css',$media);
 css_write('admin/media.php',$media);
 
-// STUDENT: absorb the late experience patch into the canonical student surface.
 $student=css_read('assets/student-area.css');
 $student.=css_segment('Course context and application rhythm',$studentExperience);
 css_write('assets/student-area.css',css_strip_important($student));
@@ -119,20 +109,18 @@ $studentShell=css_read('app/student_shell.php');
 $studentShell=str_replace('<link rel="stylesheet" href="/assets/experience-ux.css?v=<?=h($assetVersion)?>">','',$studentShell);
 css_write('app/student_shell.php',$studentShell);
 
-// PUBLIC CMS: merge only adjacent chronological core layers; keep real feature modules semantic.
 $cmsCore=css_segment('CMS public core',css_read('assets/cms.css'))
     .css_segment('CMS public core refinements',css_read('assets/cms-v3.css'));
 css_write('assets/cms-core.css',css_strip_important($cmsCore));
 css_write('assets/cms-editorial.css',css_strip_important(css_read('assets/cms-ui-refinements.css')));
 
 $renderer=css_read('app/cms_renderer.php');
-$renderer=str_replace("$root.'/assets/cms-v3.css'","$root.'/assets/cms-core.css'",$renderer);
+$renderer=str_replace("\$root.'/assets/cms-v3.css'","\$root.'/assets/cms-core.css'",$renderer);
 $renderer=str_replace("'/assets/cms.css','/assets/cms-v3.css'","'/assets/cms-core.css'",$renderer);
 $renderer=str_replace("'/assets/cms-ui-refinements.css'","'/assets/cms-editorial.css'",$renderer);
 $renderer=(string)preg_replace('~<style id="cms-system-choice-controls">.*?</style>~s','',$renderer);
 css_write('app/cms_renderer.php',$renderer);
 
-// EDITOR: collapse versioned/corrective shell layers; keep actual feature modules separate.
 $editorSystem=css_segment('Editor foundations',css_read('editor/cms-editor.css'))
     .css_segment('Editor advanced baseline',css_read('editor/cms-pro-editor.css'))
     .css_segment('Editor application shell',css_read('editor/cms-ux-v2.css')."\n".css_read('editor/cms-ux-v3.css'))
@@ -152,7 +140,6 @@ foreach($editorLegacy as $i=>$tag){
 }
 css_write('editor/index.html',$editorIndex);
 
-// Remove !important from every remaining authored stylesheet. The canonical source order now owns precedence.
 $iterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS));
 foreach($iterator as $file){
     if(!$file->isFile()||strtolower($file->getExtension())!=='css')continue;
@@ -163,7 +150,6 @@ foreach($iterator as $file){
     if($clean!==$css)file_put_contents($file->getPathname(),$clean);
 }
 
-// Retire chronological/correction files. New code cannot accidentally start consuming them again.
 foreach([
     'admin/admin.css','admin/cms-admin.css','admin/pro-admin.css',
     'assets/admin-ux-v2.css','assets/admin-ux-v3.css','assets/admin-data-ux.css','assets/admin-form-ux.css','assets/experience-ux.css',
@@ -172,7 +158,6 @@ foreach([
     'editor/cms-editor.css','editor/cms-pro-editor.css','editor/cms-ux-v2.css','editor/cms-ux-v3.css','editor/task-centric.css'
 ] as $legacy)css_delete($legacy);
 
-// Fail the migration itself if a runtime source still points to a retired stylesheet.
 $retiredNames=[
     'admin.css','cms-admin.css','pro-admin.css','admin-ux-v2.css','admin-ux-v3.css','admin-data-ux.css','admin-form-ux.css','experience-ux.css',
     'admin-media-maintenance.css','admin-media-task.css','cms-v3.css','cms-ui-refinements.css','cms-editor.css','cms-pro-editor.css','cms-ux-v2.css','cms-ux-v3.css','task-centric.css'
