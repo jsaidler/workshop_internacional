@@ -28,17 +28,17 @@ student_shell_start('Área do aluno',$selectedActivity,$student);?>
   if($courseId>0)$releases=course_lesson_release_rows_for_course($db,(int)$enrollment['cohort_id'],$courseId);
   elseif($workshopId>0)$releases=workshop_course_lesson_release_rows($db,(int)$enrollment['cohort_id'],$workshopId);
   else $releases=course_lesson_release_rows($db,(int)$enrollment['cohort_id'],(int)$enrollment['activity_id']);
-  $releaseStates=[];$releasedCount=0;foreach($releases as $lesson){$state=cms_access_lesson_release_state(isset($lesson['released_at'])?(string)$lesson['released_at']:null);$releaseStates[(int)$lesson['id']]=$state;if($state==='released')$releasedCount++;}$statusLabel=student_enrollment_cohort_status_label((string)$enrollment['cohort_status']);?>
-  <div class="student-appbar"><?php if(count($enrollments)>1):?><a class="student-back" href="/aluno/">← Todos os cursos</a><?php else:?><span class="student-card-label">Área do aluno</span><?php endif;?><span class="student-status"><?=h($statusLabel)?></span></div>
-  <p class="student-kicker"><?=h((string)$enrollment['cohort_title'])?></p>
-  <h1 class="student-title"><?=h((string)$enrollment['course_title'])?></h1>
-  <p class="student-lead">Veja o que já está liberado para a sua turma e acesse o material ou os registros de prática sem sair deste contexto.</p>
+  $releaseStates=[];$releasedCount=0;foreach($releases as $lesson){$state=cms_access_lesson_release_state(isset($lesson['released_at'])?(string)$lesson['released_at']:null);$releaseStates[(int)$lesson['id']]=$state;if($state==='released')$releasedCount++;}?>
+  <?=student_course_context_markup($enrollment,'overview')?>
+  <p class="student-kicker">Visão geral</p>
+  <h1 class="student-title">Seu curso</h1>
+  <p class="student-lead">Veja o que já está liberado para a sua turma e continue pelo material ou pelos seus testes.</p>
   <section class="student-course-stack" aria-label="Curso selecionado"><article class="student-course-card">
-    <header><div><span class="student-card-label">Progresso da turma</span><h2>Conteúdo disponível</h2></div><span class="student-course-progress"><?=$releases?$releasedCount.' de '.count($releases).' aulas liberadas':'Sem aulas cadastradas'?></span></header>
+    <header><div><span class="student-card-label">Aulas</span><h2>Conteúdo disponível</h2></div><span class="student-course-progress"><?=$releases?$releasedCount.' de '.count($releases).' aulas liberadas':'Sem aulas cadastradas'?></span></header>
     <?php if($releases):?><div class="student-release-list" aria-label="Liberação das aulas"><?php foreach($releases as $lesson):$state=$releaseStates[(int)$lesson['id']]??'blocked';$label=match($state){'released'=>'Liberada','scheduled'=>'Agendada',default=>'Aguardando'};$stateClass=match($state){'released'=>'is-released','scheduled'=>'is-scheduled',default=>''};?><span class="<?=h($stateClass)?>"><b><?=h((string)$lesson['title'])?></b><small><?=h($label)?></small></span><?php endforeach;?></div><?php endif;?>
     <div class="student-course-actions">
-      <div><span class="student-card-label">Material</span><?php if(!$pages):?><p>Nenhuma página de material foi associada a este curso ainda.</p><?php else:?><p>Abra uma página para continuar pelo conteúdo já liberado.</p><div class="student-resource-list"><?php foreach($pages as $page):$url=cms_page_url($activity,$page,(string)$page['locale']);$sep=str_contains($url,'?')?'&':'?';$url.=$sep.'cohort='.rawurlencode((string)$enrollment['cohort_uuid']);?><a class="student-resource-row" href="<?=h($url)?>"><span><?=h((string)$page['title'])?></span><strong>Abrir →</strong></a><?php endforeach;?></div><?php endif;?></div>
-      <div><span class="student-card-label">Prática</span><p>Registre cena, exposição, revelação e resultado no mesmo teste.</p><a class="button button-primary student-course-primary" href="/aluno/testes.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir meus testes →</a></div>
+      <div id="material"><span class="student-card-label">Material</span><?php if(!$pages):?><p>Nenhuma página de material foi associada a este curso ainda.</p><?php else:?><p>Abra uma página para continuar pelo conteúdo já liberado.</p><div class="student-resource-list"><?php foreach($pages as $page):$url=cms_page_url($activity,$page,(string)$page['locale']);$sep=str_contains($url,'?')?'&':'?';$url.=$sep.'cohort='.rawurlencode((string)$enrollment['cohort_uuid']);?><a class="student-resource-row" href="<?=h($url)?>"><span><?=h((string)$page['title'])?></span><strong>Abrir →</strong></a><?php endforeach;?></div><?php endif;?></div>
+      <div><span class="student-card-label">Testes</span><p>Registre cena, exposição, revelação e resultado no mesmo teste.</p><a class="button button-primary student-course-primary" href="/aluno/testes.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir meus testes →</a></div>
     </div>
   </article></section>
 <?php endif;?>
