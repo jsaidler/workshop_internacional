@@ -22,6 +22,8 @@ jobs:
         run: find assets editor admin tools -name '*.js' -o -name '*.cjs' | xargs -r -n1 node --check
       - name: CSS architecture
         run: php tools/test-css-architecture.php
+      - name: CSS selector ownership audit
+        run: php tools/audit-css-ownership.php
       - name: CMS smoke tests
         run: |
           php tools/test-cms.php
