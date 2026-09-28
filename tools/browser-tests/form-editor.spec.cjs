@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 
 const clone=value=>JSON.parse(JSON.stringify(value));
-const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[char]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
 
 function fixtureState(){
   return {
