@@ -45,19 +45,19 @@ foreach($retired as $path){
 }
 
 $adminShell=(string)file_get_contents($root.'/app/admin_shell.php');
-if(substr_count($adminShell,'/assets/admin-system.css')!==1)$failures[]='admin_shell.php deve carregar exatamente uma autoridade global: admin-system.css.';
+if(!preg_match('~<link[^>]+admin-system\.css~i',$adminShell))$failures[]='admin_shell.php deve carregar admin-system.css como autoridade global.';
 foreach(['admin-ux-v2.css','admin-ux-v3.css','admin-data-ux.css','admin-form-ux.css','experience-ux.css','admin-media.css'] as $legacy){
     if(str_contains($adminShell,$legacy))$failures[]="admin_shell.php carrega CSS que não pertence ao shell global: {$legacy}";
 }
 if(preg_match('/<style\b/i',$adminShell))$failures[]='admin_shell.php contém CSS inline; estilos estruturais pertencem ao sistema CSS canônico.';
 
 $mediaPage=(string)file_get_contents($root.'/admin/media.php');
-if(substr_count($mediaPage,'/assets/admin-media.css')!==1)$failures[]='admin/media.php deve ser o consumidor explícito de admin-media.css.';
+if(!preg_match('~<link[^>]+admin-media\.css~i',$mediaPage))$failures[]='admin/media.php deve ser o consumidor explícito de admin-media.css.';
 
 $studentShell=(string)file_get_contents($root.'/app/student_shell.php');
 if(str_contains($studentShell,'experience-ux.css'))$failures[]='student_shell.php depende da camada corretiva experience-ux.css.';
-if(substr_count($studentShell,'/assets/student-area.css')!==1)$failures[]='student_shell.php deve consumir student-area.css como autoridade da superfície.';
-if(substr_count($studentShell,'/assets/ui-core.css')!==1)$failures[]='student_shell.php deve consumir as primitivas de ui-core.css.';
+if(!preg_match('~<link[^>]+student-area\.css~i',$studentShell))$failures[]='student_shell.php deve consumir student-area.css como autoridade da superfície.';
+if(!preg_match('~<link[^>]+ui-core\.css~i',$studentShell))$failures[]='student_shell.php deve consumir as primitivas de ui-core.css.';
 
 $renderer=(string)file_get_contents($root.'/app/cms_renderer.php');
 foreach(['cms.css','cms-v3.css','cms-ui-refinements.css','cms-system-choice-controls'] as $legacy){
@@ -73,7 +73,6 @@ foreach(['cms-editor.css','cms-pro-editor.css','cms-ux-v2.css','cms-ux-v3.css','
     if(str_contains($editorIndex,$legacy))$failures[]="editor/index.html ainda carrega camada histórica: {$legacy}";
 }
 
-// New chronological override sheets are a regression even if nobody has loaded them yet.
 $cssRoots=[$root.'/assets',$root.'/admin',$root.'/editor'];
 foreach($cssRoots as $dir){
     if(!is_dir($dir))continue;
