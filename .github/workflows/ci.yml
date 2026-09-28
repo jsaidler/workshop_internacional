@@ -20,6 +20,8 @@ jobs:
         run: find . -path './dist' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: JavaScript syntax
         run: find assets editor admin tools -name '*.js' -o -name '*.cjs' | xargs -r -n1 node --check
+      - name: CSS architecture
+        run: php tools/test-css-architecture.php
       - name: CMS smoke tests
         run: |
           php tools/test-cms.php
