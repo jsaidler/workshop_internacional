@@ -1,0 +1,29 @@
+name: css-test-authorities-once
+on:
+  push:
+    branches:
+      - 'refactor/css-system-sanitization-2026-09-28'
+permissions:
+  contents: write
+jobs:
+  align:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/css-system-sanitization-2026-09-28
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Align tests with canonical CSS authorities
+        run: php tools/align-css-test-authorities.php
+      - name: Remove one-shot alignment machinery
+        run: rm .github/workflows/css-test-authorities-once.yml tools/align-css-test-authorities.php
+      - name: Commit aligned regressions
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Align remaining regressions with canonical CSS authorities'
+          git push origin HEAD:refactor/css-system-sanitization-2026-09-28
