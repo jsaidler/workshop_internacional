@@ -73,17 +73,18 @@ foreach(['cms-editor.css','cms-pro-editor.css','cms-ux-v2.css','cms-ux-v3.css','
     if(str_contains($editorIndex,$legacy))$failures[]="editor/index.html ainda carrega camada histórica: {$legacy}";
 }
 
-// Tests are part of the architecture contract too: they must assert canonical ownership,
-// not keep retired files alive conceptually after the runtime has been consolidated.
+// Regressions and browser fixtures are part of the architecture contract too.
+// They must exercise the same canonical CSS authorities used in production.
 $retiredBasenames=array_values(array_unique(array_map('basename',$retired)));
-foreach(glob($root.'/tools/*.php')?:[] as $testPath){
-    if(basename($testPath)==='test-css-architecture.php')continue;
-    $source=(string)file_get_contents($testPath);
+$toolsIterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/tools',FilesystemIterator::SKIP_DOTS));
+foreach($toolsIterator as $testPath){
+    if(!$testPath->isFile())continue;
+    $relative=str_replace('\\','/',substr($testPath->getPathname(),strlen($root)+1));
+    if($relative==='tools/test-css-architecture.php')continue;
+    if(!in_array(strtolower($testPath->getExtension()),['php','html','js','cjs','mjs'],true))continue;
+    $source=(string)file_get_contents($testPath->getPathname());
     foreach($retiredBasenames as $basename){
-        if(str_contains($source,$basename)){
-            $relative=str_replace('\\','/',substr($testPath,strlen($root)+1));
-            $failures[]="Teste ainda referencia autoridade CSS aposentada: {$relative} -> {$basename}";
-        }
+        if(str_contains($source,$basename))$failures[]="Teste/fixture ainda referencia autoridade CSS aposentada: {$relative} -> {$basename}";
     }
 }
 
