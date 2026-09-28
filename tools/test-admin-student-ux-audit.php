@@ -15,7 +15,7 @@ ux_expect(str_contains($adminShell,"'courses'=>['Cursos'"),'navegação primári
 ux_expect(str_contains($adminShell,"'forms'=>['Formulários'"),'Formulários deve ficar em Conteúdo');
 ux_expect(str_contains($adminShell,"'integrity'=>['Integridade'"),'Integridade deve ficar em Configurações');
 ux_expect(str_contains($adminShell,'function admin_course_context'),'curso precisa de uma única navegação contextual compartilhada');
-ux_expect(str_contains($courses,"'overview'=>'overview'"),'curso deve abrir em visão geral');
+ux_expect(str_contains($courses,"\$view=(string)(\$_GET['view']??'overview')")&&str_contains($courses,"['overview','setup','cohorts','students','lessons','material']"),'curso deve abrir em visão geral');
 ux_expect(str_contains($courses,'admin_course_context($course'),'administração do curso deve consumir a navegação contextual global');
 ux_expect(str_contains($courses,'Configuração avançada'),'criação/associação de curso deve ser secundária');
 ux_expect(str_contains($registrations,"admin_course_context($course,$activityId,'registrations'"),'Inscrições deve pertencer ao contexto do curso');
