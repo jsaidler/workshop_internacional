@@ -46,11 +46,24 @@ Defeitos que aparecem em várias páginas, idiomas ou instâncias de um mesmo co
 - Adicionar teste/regressão no mesmo nível de escopo da correção para impedir que o problema reapareça em outra página.
 - Uma exceção só é aceitável quando o comportamento diferente daquela página for deliberado e documentado como tal.
 
-Checkbox e radio são um único componente nativo em três contextos: site público, preview/editor e administração. A geometria deve permanecer 18 × 18 px em todos eles. Regras genéricas de `input` não podem lhes impor largura total, altura de campo de texto, padding ou flex expansivo. A área administrativa aplica essa regra globalmente em `body.admin-page`, com limites mínimos e máximos e uma garantia estrutural no shell, não apenas no editor de formulários.
+Checkbox e radio são um único componente nativo em três contextos: site público, preview/editor e administração. A geometria deve permanecer 18 × 18 px em todos eles. Regras genéricas de `input` não podem lhes impor largura total, altura de campo de texto, padding ou flex expansivo. Essa geometria pertence ao proprietário CSS canônico de cada superfície; o shell não contém patch visual inline nem duplicação estrutural do componente.
 
 A captura de 13/09 mostrou um detalhe importante: o círculo/quadrado nativo podia parecer pequeno, mas o elemento `input` continuava ocupando a largura inteira da linha por causa do CSS legado de campos de texto. O sintoma visual era o marcador centralizado e o texto empurrado para a direita. Portanto o critério de correção não é apenas o diâmetro visível; a caixa do próprio `input` precisa estar efetivamente limitada a 18 × 18 px.
 
-Como uma atualização de CSS pode ficar mascarada por cache antigo do navegador, os renderers público, editor e admin versionam seus assets com a versão instalada (`deploy-info.json`). Invariantes visuais críticos podem ter uma regra estrutural inline no shell correspondente, sempre em escopo global da aplicação e nunca por página específica.
+Como uma atualização de CSS pode ficar mascarada por cache antigo do navegador, os renderers público, editor e admin versionam seus assets com a versão instalada (`deploy-info.json`). Invariantes visuais críticos são implementados no proprietário CSS canônico, com escopo semântico e sem `!important`; CSS inline visual em shells não é um mecanismo aceito de precedência.
+
+### Arquitetura CSS canônica
+
+O saneamento estrutural de 28/09/2026 substitui a antiga cascata cronológica por autoridades explícitas. A especificação completa está em `docs/CSS_SYSTEM_SANITIZATION_2026-09-28.md`.
+
+- `assets/ui-core.css` contém primitivas compartilhadas.
+- `assets/admin-system.css` é a autoridade global da administração; `assets/admin-media.css` é feature CSS consumida apenas pela mídia.
+- `assets/student-area.css` é a autoridade da área do aluno.
+- `template/page.css`, `assets/cms-core.css`, `assets/cms-editorial.css` e as features públicas explícitas compõem o CMS dentro de `cms-system`.
+- `editor/editor-system.css` é a autoridade do shell do editor; folhas adicionais só permanecem para features reais.
+- Folhas de correção cronológica (`v2`, `v3`, `fix`, `hotfix`, `override`, `refinement` e equivalentes) são proibidas.
+- `tools/test-css-architecture.php` bloqueia `!important`, autoridades aposentadas e regressões de carregamento.
+- `tools/audit-css-ownership.php --strict` bloqueia redefinição da mesma propriedade no mesmo seletor e contexto de cascata. `tools/consolidate-css-ownership.php --check` bloqueia consolidações determinísticas pendentes.
 
 ### Identidade de cache das derivadas de imagem
 
@@ -76,7 +89,7 @@ O original enviado é imutável e as derivadas responsivas são reconstruíveis.
 - Tokens de design como cores, tipografia e layout podem continuar específicos por locale, mas `advanced.customCss` é persistido em um escopo compartilhado do site (`cms_design_settings.locale = '__site__'`). Salvar o CSS adicional a partir de PT ou EN atualiza esse mesmo valor global.
 - A migração `027_site_wide_additional_css.php` promove para o escopo compartilhado um CSS adicional legado já existente, priorizando conteúdo não vazio para não apagar uma personalização válida durante a atualização.
 - A prévia ao vivo não escreve tokens de Design com `root.style.setProperty()`, porque estilo inline ultrapassa um stylesheet normal. Tokens ao vivo são emitidos em stylesheet dentro de `cms-system` e resíduos inline de versões antigas são removidos.
-- Regras visuais controláveis pelo usuário não usam `!important`. O uso de `!important` fica restrito a invariantes funcionais deliberados, como o honeypot.
+- Nenhum CSS autoral versionado usa `!important`, inclusive invariantes funcionais. Geometria, acessibilidade, segurança e estado devem ser resolvidos por DOM, escopo, seletor e proprietário canônico; `!important` não é ferramenta de precedência aceita no projeto.
 - Ajuste e ponto focal de mídia gerenciada viajam como custom properties no elemento e são consumidos por CSS em `cms-system`; `object-fit` e `object-position` não são gravados como propriedades inline que bloqueiem o CSS adicional.
 - A regressão dessa precedência é validada em Chromium com `getComputedStyle()`, tanto na prévia de Design quanto em uma página pública. O escopo global do CSS adicional é validado também entre PT/EN e entre atividades distintas para impedir vazamento entre sites.
 
