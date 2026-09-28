@@ -18,15 +18,15 @@ ux_expect(str_contains($adminShell,'function admin_course_context'),'curso preci
 ux_expect(str_contains($courses,"\$view=(string)(\$_GET['view']??'overview')")&&str_contains($courses,"['overview','setup','cohorts','students','lessons','material']"),'curso deve abrir em visão geral');
 ux_expect(str_contains($courses,'admin_course_context($course'),'administração do curso deve consumir a navegação contextual global');
 ux_expect(str_contains($courses,'Configuração avançada'),'criação/associação de curso deve ser secundária');
-ux_expect(str_contains($registrations,"admin_course_context($course,$activityId,'registrations'"),'Inscrições deve pertencer ao contexto do curso');
+ux_expect(str_contains($registrations,'admin_course_context($course,$activityId,\'registrations\''),'Inscrições deve pertencer ao contexto do curso');
 ux_expect(str_contains($registrations,'Disponibilidade agregada'),'Inscrições deve oferecer leitura agregada de disponibilidade');
 ux_expect(str_contains($registrations,'Confirmadas sem turma'),'Inscrições deve manter estado operacional sem turma');
 
 ux_expect(str_contains($studentShell,'function student_course_context_header'),'área do aluno precisa de cabeçalho contextual canônico do curso');
 ux_expect(str_contains($studentShell,'>Meus cursos</a>'),'topbar global deve expor Meus cursos');
 ux_expect(!str_contains($studentShell,'student-desktop-nav" aria-label="Área do aluno"><a href="/aluno/"') || !str_contains($studentShell,'>Testes</a><a href="/aluno/perfil.php"'),'Testes não pode continuar como item global paralelo ao curso');
-ux_expect(str_contains($studentIndex,"student_course_context_header($enrollment,'overview'"),'visão geral deve usar contexto canônico do curso');
-ux_expect(str_contains($studentTests,"student_course_context_header($enrollment,'tests'"),'testes deve usar o mesmo contexto canônico do curso');
+ux_expect(str_contains($studentIndex,'student_course_context_header($enrollment,\'overview\''),'visão geral deve usar contexto canônico do curso');
+ux_expect(str_contains($studentTests,'student_course_context_header($enrollment,\'tests\''),'testes deve usar o mesmo contexto canônico do curso');
 ux_expect(str_contains($studentTests,'Todo o curso'),'linguagem deve usar curso, não workshop, no compartilhamento contextual');
 
 ux_expect(str_contains($css,'--ux-space-7:48px'),'sistema deve possuir escala global de espaçamento');
