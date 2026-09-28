@@ -88,7 +88,7 @@ foreach($toolsIterator as $testPath){
     }
 }
 
-$cssRoots=[$root.'/assets',$root.'/admin',$root.'/editor'];
+$cssRoots=[$root.'/assets',$root.'/admin',$root.'/editor',$root.'/template'];
 foreach($cssRoots as $dir){
     if(!is_dir($dir))continue;
     foreach(new DirectoryIterator($dir) as $file){
@@ -98,6 +98,17 @@ foreach($cssRoots as $dir){
             $failures[]='Folha CSS com semântica de correção cronológica proibida: '.$file->getPathname();
         }
     }
+}
+
+// The ownership gates themselves are architectural invariants. A future CI edit
+// must not silently remove the checks and reopen the same cascade debt.
+$ci=(string)file_get_contents($root.'/.github/workflows/ci.yml');
+foreach([
+    'php tools/audit-css-ownership.php --strict',
+    'php tools/consolidate-css-ownership.php --check',
+    'php tools/consolidate-css-selectors.php --check',
+] as $gate){
+    if(!str_contains($ci,$gate))$failures[]='CI deixou de executar gate CSS obrigatório: '.$gate;
 }
 
 if($failures){
