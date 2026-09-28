@@ -73,6 +73,20 @@ foreach(['cms-editor.css','cms-pro-editor.css','cms-ux-v2.css','cms-ux-v3.css','
     if(str_contains($editorIndex,$legacy))$failures[]="editor/index.html ainda carrega camada histórica: {$legacy}";
 }
 
+// Tests are part of the architecture contract too: they must assert canonical ownership,
+// not keep retired files alive conceptually after the runtime has been consolidated.
+$retiredBasenames=array_values(array_unique(array_map('basename',$retired)));
+foreach(glob($root.'/tools/*.php')?:[] as $testPath){
+    if(basename($testPath)==='test-css-architecture.php')continue;
+    $source=(string)file_get_contents($testPath);
+    foreach($retiredBasenames as $basename){
+        if(str_contains($source,$basename)){
+            $relative=str_replace('\\','/',substr($testPath,strlen($root)+1));
+            $failures[]="Teste ainda referencia autoridade CSS aposentada: {$relative} -> {$basename}";
+        }
+    }
+}
+
 $cssRoots=[$root.'/assets',$root.'/admin',$root.'/editor'];
 foreach($cssRoots as $dir){
     if(!is_dir($dir))continue;
