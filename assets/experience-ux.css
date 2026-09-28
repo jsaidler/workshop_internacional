@@ -9,36 +9,28 @@
   --ux-space-8:64px;
 }
 
-/* Shared application rhythm ------------------------------------------------ */
-.admin-content>.overview-hero+.admin-subtabs,
-.admin-content>.overview-hero+.admin-context-card,
-.admin-content>.overview-hero+.admin-stat-grid,
-.admin-content>.overview-hero+.overview-grid,
-.admin-content>.overview-hero+.submissions-layout,
-.admin-content>.admin-subtabs+.admin-card,
-.admin-content>.admin-subtabs+.admin-stat-grid,
-.admin-content>.admin-subtabs+.submissions-layout,
-.admin-content>.admin-stat-grid+.admin-card,
-.admin-content>.admin-stat-grid+.submissions-layout,
-.admin-content>.admin-card+.admin-card,
-.admin-content>.overview-grid+.admin-card,
-.admin-content>.admin-notice+.overview-hero,
-.admin-content>.admin-notice+.admin-card{
-  margin-top:var(--ux-space-6);
-}
+/* Admin shell: one navigation hierarchy ---------------------------------- */
+.admin-sidebar{width:264px;padding:var(--ux-space-6) var(--ux-space-5);overflow-y:auto}
+.admin-main{width:min(1280px,calc(100% - 328px));margin-left:296px;padding-top:var(--ux-space-6)}
+.admin-nav{display:grid;gap:var(--ux-space-5);margin:var(--ux-space-6) 0}
+.admin-nav-group{display:grid;gap:var(--ux-space-2)}
+.admin-nav-label{margin:0;padding:0 var(--ux-space-2);color:var(--admin-muted);font:600 10px/1.2 var(--admin-body);letter-spacing:.11em;text-transform:uppercase}
+.admin-nav-links{display:grid;gap:var(--ux-space-1)}
+.admin-nav-links a{padding:var(--ux-space-2) var(--ux-space-3);font-size:13px;font-weight:600}
+.admin-nav-links a[aria-current=page]{border-color:var(--admin-ink);background:var(--admin-surface)}
+.admin-secondary{padding-top:var(--ux-space-4);border-top:1px solid var(--admin-line)}
 
-.admin-context-nav{margin-bottom:var(--ux-space-5)}
-.admin-subtabs{margin-top:var(--ux-space-5);margin-bottom:var(--ux-space-6)}
-.admin-card>header{gap:var(--ux-space-5)}
-.admin-card>header+*{margin-top:var(--ux-space-5)}
+/* Shared application rhythm ---------------------------------------------- */
+.admin-content{display:flex;flex-direction:column;gap:var(--ux-space-6);align-items:stretch}
+.admin-content>*{margin-block-start:0!important;margin-block-end:0!important}
+.admin-card>header{margin-bottom:0}
 .admin-card h2,.admin-card h3{scroll-margin-top:100px}
 .admin-card h2+p,.admin-card h3+p{margin-top:var(--ux-space-3)}
-.admin-form-grid{row-gap:var(--ux-space-5)}
 .admin-form-grid label,.registration-payment-form label{display:grid;gap:var(--ux-space-2)}
 .admin-form-actions,.registration-payment-actions,.admin-inline-actions{gap:var(--ux-space-3)}
 .admin-form-actions{margin-top:var(--ux-space-2)}
 .admin-inline-actions{align-items:center}
-.admin-empty{margin-top:var(--ux-space-4)}
+.admin-empty{margin-top:0}
 .registration-admin-group+.registration-admin-group,
 .registration-admin-status+.registration-admin-group,
 .registration-admin-group+.registration-admin-payment,
@@ -47,20 +39,24 @@
 .registration-payment-actions{margin-top:var(--ux-space-5)}
 .registration-admin-delete{padding-top:var(--ux-space-6);border-top:1px solid var(--line,#d7d7d2)}
 
-/* Admin information architecture ----------------------------------------- */
-.admin-course-context{padding:var(--ux-space-5) var(--ux-space-6);border:1px solid var(--line,#d7d7d2);background:var(--surface,#fff)}
-.admin-course-context h2{margin:0;font-size:clamp(24px,3vw,36px);line-height:1.05}
-.admin-course-context p{margin:var(--ux-space-2) 0 0;color:var(--muted,#666)}
+/* Admin course context ---------------------------------------------------- */
+.admin-course-context{padding:0 0 var(--ux-space-5);border:0;border-bottom:1px solid var(--line,#d7d7d2);background:transparent}
+.admin-course-back{display:inline-flex;margin-bottom:var(--ux-space-4);color:var(--admin-muted);font-size:12px;font-weight:600;text-decoration:none}
+.admin-course-back:hover{color:var(--admin-ink);text-decoration:underline;text-underline-offset:4px}
+.admin-course-context-head{display:flex;align-items:end;justify-content:space-between;gap:var(--ux-space-5)}
+.admin-course-context h2{margin:0;font-size:clamp(26px,3vw,36px);line-height:1.05}
+.admin-course-context p{margin:var(--ux-space-2) 0 0;max-width:72ch;color:var(--muted,#666)}
 .admin-course-nav{display:flex;gap:var(--ux-space-2);flex-wrap:wrap;margin-top:var(--ux-space-5);padding-top:var(--ux-space-4);border-top:1px solid var(--line,#d7d7d2)}
-.admin-course-nav a{display:inline-flex;align-items:center;min-height:38px;padding:0 12px;text-decoration:none;border:1px solid transparent;color:inherit}
+.admin-course-nav a{display:inline-flex;align-items:center;min-height:38px;padding:0 var(--ux-space-3);text-decoration:none;border:1px solid transparent;color:inherit}
 .admin-course-nav a:hover{background:var(--surface-2,#f2f2ef)}
 .admin-course-nav a[aria-current=page]{background:var(--inverse-bg,#111);color:var(--inverse,#fff)}
-.admin-stat-grid{gap:var(--ux-space-4)}
 .admin-availability-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--ux-space-3);margin-top:var(--ux-space-5)}
 .admin-availability-item{padding:var(--ux-space-4);border:1px solid var(--line,#d7d7d2);background:var(--surface,#fff)}
 .admin-availability-item strong{display:block;font-size:24px;line-height:1}
 .admin-availability-item span{display:block;margin-top:var(--ux-space-2);color:var(--muted,#666);font-size:13px;line-height:1.35}
-.admin-secondary-setup{margin-top:var(--ux-space-7);padding-top:var(--ux-space-6);border-top:1px solid var(--line,#d7d7d2)}
+.admin-secondary-setup{padding-top:var(--ux-space-5);border-top:1px solid var(--line,#d7d7d2)}
+.admin-secondary-setup>summary{cursor:pointer;font-size:12px;font-weight:600}
+.admin-secondary-setup[open]>summary{margin-bottom:var(--ux-space-5)}
 
 /* Student shell: one global topbar ---------------------------------------- */
 .student-topbar{min-height:64px!important}
@@ -99,15 +95,16 @@
 .student-test-list{margin-top:var(--ux-space-5)!important;gap:var(--ux-space-4)!important}
 .student-danger-zone{margin-top:var(--ux-space-7)!important}
 
-@media(max-width:760px){
-  .admin-content>.overview-hero+.admin-subtabs,
-  .admin-content>.overview-hero+.admin-stat-grid,
-  .admin-content>.overview-hero+.submissions-layout,
-  .admin-content>.admin-subtabs+.admin-card,
-  .admin-content>.admin-card+.admin-card{margin-top:var(--ux-space-5)}
-  .admin-course-context{padding:var(--ux-space-4)}
+@media(max-width:800px){
+  .admin-sidebar{width:100%;padding:var(--ux-space-5);overflow:visible}
+  .admin-main{width:min(100% - 28px,var(--admin-content));margin:0 auto;padding-top:var(--ux-space-5)}
+  .admin-nav{gap:var(--ux-space-5);margin:var(--ux-space-5) 0}
+  .admin-content{gap:var(--ux-space-5)}
   .admin-course-nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
   .admin-course-nav a{white-space:nowrap}
+}
+
+@media(max-width:760px){
   .student-main{padding-top:var(--ux-space-6)!important}
   .student-course-context{margin-bottom:var(--ux-space-6)}
   .student-course-context-head{grid-template-columns:1fr;gap:var(--ux-space-3)}
