@@ -110,6 +110,8 @@ A limpeza só está concluída quando:
 - build e dry-run de distribuição passam;
 - a documentação de estado registra a nova autoridade.
 
+O `PROJECT_STATE.md` foi reconciliado com essas regras: a antiga exceção para `!important` funcional e a antiga autorização de patch estrutural inline no shell foram removidas, e as autoridades e gates atuais foram registradas no documento canônico de estado.
+
 ## Regra para trabalho futuro
 
 Antes de criar ou alterar CSS: **localizar proprietário → reutilizar a primitiva existente → ampliar o proprietário se a lacuna for sistêmica → criar CSS de feature apenas quando a responsabilidade for realmente específica**.
