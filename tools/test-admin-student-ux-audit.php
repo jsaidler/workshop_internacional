@@ -9,8 +9,9 @@ $registrations=(string)file_get_contents($root.'/admin/registrations.php');
 $people=(string)file_get_contents($root.'/admin/people.php');
 $studentIndex=(string)file_get_contents($root.'/aluno/index.php');
 $studentTests=(string)file_get_contents($root.'/aluno/testes.php');
-$css=(string)file_get_contents($root.'/assets/experience-ux.css');
-$dataCss=(string)file_get_contents($root.'/assets/admin-data-ux.css');
+$uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
+$adminCss=(string)file_get_contents($root.'/assets/admin-system.css');
+$studentCss=(string)file_get_contents($root.'/assets/student-area.css');
 $doc=(string)file_get_contents($root.'/docs/ADMIN_STUDENT_UX_AUDIT_2026-09-28.md');
 
 ux_expect(str_contains($adminShell,'function admin_navigation_groups'),'administração precisa de uma árvore global explícita');
@@ -39,12 +40,12 @@ ux_expect(str_contains($studentIndex,'student_course_context_header($enrollment,
 ux_expect(str_contains($studentTests,'student_course_context_header($enrollment,\'tests\''),'testes deve usar o mesmo contexto canônico do curso');
 ux_expect(str_contains($studentTests,'Todo o curso'),'linguagem deve usar curso, não workshop, no compartilhamento contextual');
 
-ux_expect(str_contains($css,'--ux-space-7:48px'),'sistema deve possuir escala global de espaçamento');
-ux_expect(str_contains($css,'.admin-content{display:flex;flex-direction:column;gap:var(--ux-space-6)'),'ritmo de primeiro nível da administração deve ser global');
-ux_expect(str_contains($dataCss,'row-gap:var(--ux-space-5,24px)'),'formulários administrativos devem consumir a escala global');
-ux_expect(str_contains($dataCss,'gap:var(--ux-space-4,16px)'),'componentes de dados devem usar tokens da escala, não valores intermediários arbitrários');
-ux_expect(str_contains($css,'.student-form-grid{row-gap:'),'forms do aluno devem consumir ritmo global');
-ux_expect(str_contains($css,'.student-course-context-nav'),'navegação contextual do aluno deve possuir primitiva visual global');
+ux_expect(str_contains($uiCss,'--ux-space-7:48px'),'sistema deve possuir escala global de espaçamento na camada de primitivas');
+ux_expect(str_contains($adminCss,'.admin-content{display:flex;flex-direction:column;gap:var(--ux-space-6)'),'ritmo de primeiro nível da administração deve pertencer à autoridade administrativa');
+ux_expect(str_contains($adminCss,'row-gap:var(--ux-space-5,24px)'),'formulários administrativos devem consumir a escala global');
+ux_expect(str_contains($adminCss,'gap:var(--ux-space-4,16px)'),'componentes de dados devem usar tokens da escala, não valores intermediários arbitrários');
+ux_expect(str_contains($studentCss,'.student-form-grid{row-gap:'),'forms do aluno devem consumir ritmo global');
+ux_expect(str_contains($studentCss,'.student-course-context-nav'),'navegação contextual do aluno deve possuir primitiva visual global');
 ux_expect(str_contains($doc,'Regra para volume de dados'),'documentação deve projetar a administração para volume futuro');
 ux_expect(str_contains($doc,'uma única árvore global de navegação administrativa'),'documentação deve fechar a hierarquia administrativa única');
 ux_expect(str_contains($doc,'procurar → consumir → identificar lacuna'),'documentação deve preservar política de consumo global');
