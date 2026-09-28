@@ -36,6 +36,17 @@ function admin_context_items(string $workspace,?array $activity): array {return 
     ],
     default=>[],
 };}
+function admin_course_context_nav(int $activityId,int $courseId,string $active): void {
+    $items=[
+        'overview'=>['Visão geral','/admin/courses.php?'.http_build_query(['activity'=>$activityId,'course'=>$courseId,'view'=>'overview'])],
+        'registrations'=>['Inscrições','/admin/registrations.php?'.http_build_query(['activity'=>$activityId,'course'=>$courseId])],
+        'cohorts'=>['Turmas','/admin/courses.php?'.http_build_query(['activity'=>$activityId,'course'=>$courseId,'view'=>'cohorts'])],
+        'students'=>['Alunos','/admin/courses.php?'.http_build_query(['activity'=>$activityId,'course'=>$courseId,'view'=>'students'])],
+        'lessons'=>['Aulas','/admin/courses.php?'.http_build_query(['activity'=>$activityId,'course'=>$courseId,'view'=>'lessons'])],
+        'material'=>['Material','/admin/courses.php?'.http_build_query(['activity'=>$activityId,'course'=>$courseId,'view'=>'material'])],
+    ];
+    echo '<nav class="admin-subtabs admin-course-nav" aria-label="Curso">';foreach($items as $key=>[$label,$href])echo '<a href="'.h($href).'"'.($key===$active?' aria-current="page"':'').'>'.h($label).'</a>';echo '</nav>';
+}
 function admin_shell_start(string $section,string $title,array $state): void {
     $activity=$state['activity']??null;$workspace=admin_workspace($section);$brand=function_exists('installation_brand_name')?installation_brand_name():'JSaidler Fotografia';
     $items=['site'=>['Conteúdo','/admin/'],'courses'=>['Cursos',admin_shell_url('/admin/courses.php',$activity)],'analytics'=>['Métricas',admin_shell_url('/admin/analytics.php',$activity)],'media'=>['Mídia',admin_shell_url('/admin/media.php',$activity)],'settings'=>['Configurações','/admin/system.php']];
