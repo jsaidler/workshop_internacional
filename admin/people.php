@@ -11,6 +11,8 @@ $activity=$state['activity']??null;
 $activityId=(int)($activity['id']??0);
 
 $q=trim((string)($_GET['q']??''));
+$page=max(1,(int)($_GET['page']??1));
+$pageSize=50;
 $personId=(int)($_GET['person']??0);
 
 $where=[];$params=[];
@@ -18,14 +20,16 @@ if($q!==''){
     $where[]='(u.name LIKE ? OR u.email LIKE ? OR p.cpf_last4 LIKE ?)';
     $like='%'.$q.'%';$params=[$like,$like,$like];
 }
+$whereSql=$where?' WHERE '.implode(' AND ',$where):'';
+$count=$db->prepare("SELECT COUNT(*) FROM student_users u LEFT JOIN student_profiles p ON p.student_id=u.id".$whereSql);
+$count->execute($params);$total=(int)$count->fetchColumn();$pages=max(1,(int)ceil($total/$pageSize));if($page>$pages)$page=$pages;$offset=($page-1)*$pageSize;
 $sql="SELECT u.id,u.name,u.email,u.status,u.activated_at,u.last_login_at,p.cpf_last4,
     (SELECT COUNT(*) FROM course_enrollments e WHERE e.student_id=u.id AND e.status='active') enrollment_count,
     (SELECT COUNT(*) FROM course_enrollments e JOIN course_cohorts c ON c.id=e.cohort_id WHERE e.student_id=u.id AND e.status='active' AND c.course_id IS NULL) orphan_enrollment_count,
     (SELECT COUNT(*) FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.student_id=u.id AND f.purpose='enrollment') registration_count
     FROM student_users u
-    LEFT JOIN student_profiles p ON p.student_id=u.id";
-if($where)$sql.=' WHERE '.implode(' AND ',$where);
-$sql.=' ORDER BY u.name COLLATE NOCASE,u.id LIMIT 500';
+    LEFT JOIN student_profiles p ON p.student_id=u.id".$whereSql.
+    " ORDER BY u.name COLLATE NOCASE,u.id LIMIT $pageSize OFFSET $offset";
 $stmt=$db->prepare($sql);$stmt->execute($params);$people=$stmt->fetchAll();
 
 $selected=null;$enrollments=[];$registrations=[];
@@ -51,26 +55,28 @@ if($personId>0){
     }
 }
 
-function people_admin_url(int $personId=0,string $q=''): string {
-    $args=[];if($personId>0)$args['person']=$personId;if($q!=='')$args['q']=$q;
+function people_admin_url(int $personId=0,string $q='',int $page=1): string {
+    $args=[];if($personId>0)$args['person']=$personId;if($q!=='')$args['q']=$q;if($page>1)$args['page']=$page;
     return '/admin/people.php'.($args?'?'.http_build_query($args):'');
 }
 
 admin_shell_start('people','Pessoas',$state);
 ?>
-<section class="overview-hero"><div><p class="admin-kicker">Identidade global</p><h2>Pessoas</h2><p>Esta lista vem diretamente de <code>student_users</code>. Uma pessoa continua visível mesmo quando uma matrícula antiga ainda não possui curso associado.</p></div><div class="hero-actions"><a class="admin-button secondary" href="/admin/data-integrity.php<?= $activityId>0?'?activity='.$activityId:'' ?>">Diagnóstico de integridade</a></div></section>
+<section class="overview-hero"><div><p class="admin-kicker">Identidade global</p><h2>Pessoas</h2><p>Uma pessoa pode ter inscrições e matrículas em cursos diferentes. Busque a identidade primeiro e abra o histórico somente quando precisar.</p></div><div class="hero-actions"><a class="admin-button secondary" href="/admin/data-integrity.php<?= $activityId>0?'?activity='.$activityId:'' ?>">Diagnóstico de integridade</a></div></section>
 
 <form class="admin-data-toolbar" method="get">
     <?php if($activityId>0):?><input type="hidden" name="activity" value="<?=$activityId?>"><?php endif;?>
     <label class="grow">Buscar<input name="q" value="<?=h($q)?>" placeholder="Nome, e-mail ou final do CPF"></label>
     <button class="admin-button secondary" type="submit">Buscar</button>
+    <?php if($q!==''):?><a class="admin-button secondary" href="<?=h(people_admin_url())?>">Limpar</a><?php endif;?>
 </form>
+<div class="admin-list-summary"><span><?php if($total>0):?>Mostrando <?=($offset+1)?>–<?=min($offset+$pageSize,$total)?> de <?=$total?> pessoa(s)<?php else:?>Nenhuma pessoa encontrada<?php endif;?></span></div>
 
 <div class="submissions-layout inbox-layout">
 <section class="submission-list inbox-list" aria-label="Pessoas">
 <?php if(!$people):?><div class="admin-empty compact">Nenhuma pessoa encontrada.</div><?php endif;?>
 <?php foreach($people as $row):?>
-<a class="submission-row<?=$personId===(int)$row['id']?' selected':''?>" href="<?=h(people_admin_url((int)$row['id'],$q))?>">
+<a class="submission-row<?=$personId===(int)$row['id']?' selected':''?>" href="<?=h(people_admin_url((int)$row['id'],$q,$page))?>">
     <div class="submission-row-main"><strong><?=h((string)$row['name'])?></strong><span><?=h((string)$row['email'])?></span></div>
     <div class="submission-row-meta"><small><?=(int)$row['enrollment_count']?> matrícula(s) · <?=(int)$row['registration_count']?> inscrição(ões)</small><?php if((int)$row['orphan_enrollment_count']>0):?><small>⚠ <?=(int)$row['orphan_enrollment_count']?> sem curso</small><?php endif;?></div>
 </a>
@@ -111,6 +117,7 @@ admin_shell_start('people','Pessoas',$state);
 </aside>
 <?php endif;?>
 </div>
+<div class="admin-pagination"><span>Página <?=$page?> de <?=$pages?></span><?php if($pages>1):?><nav aria-label="Paginação de pessoas"><?php if($page>1):?><a href="<?=h(people_admin_url(0,$q,$page-1))?>">← Anterior</a><?php endif;?><?php if($page<$pages):?><a href="<?=h(people_admin_url(0,$q,$page+1))?>">Próxima →</a><?php endif;?></nav><?php endif;?></div>
 <link rel="stylesheet" href="<?=h(admin_asset_url('/assets/admin-inbox.css'))?>">
 <link rel="stylesheet" href="<?=h(admin_asset_url('/assets/admin-registration.css'))?>">
 <?php admin_shell_end();
