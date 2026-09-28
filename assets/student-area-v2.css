@@ -18,6 +18,9 @@
 .student-desktop-nav{margin-left:var(--student-space-5)}
 .student-theme-switch{opacity:.8;transform:scale(.92);transform-origin:right center}
 .student-main{padding-top:var(--student-space-6)}
+.cms-student-material .student-material-shell,.cms-student-material .student-material-course-shell{width:min(var(--student-content,1200px),calc(100% - 48px));margin-inline:auto}
+.cms-student-material .student-material-course-shell{padding-top:var(--student-space-6)}
+.cms-student-material .student-topbar{font-family:var(--body);color:var(--text)}
 
 /* Product hierarchy: application titles are intentionally smaller than landing-page titles. */
 .student-title{font-size:clamp(42px,5vw,66px);line-height:.95}
@@ -120,4 +123,6 @@
   .student-material-link{grid-template-columns:1fr}
   .student-mobile-nav{grid-template-columns:repeat(2,1fr)}
   .student-mobile-nav a{justify-content:center}
+  .cms-student-material .student-material-shell,.cms-student-material .student-material-course-shell{width:100%;padding-inline:16px;box-sizing:border-box}
+  .cms-student-material .student-material-course-shell{padding-top:var(--student-space-5)}
 }
