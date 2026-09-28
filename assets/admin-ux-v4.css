@@ -1,0 +1,106 @@
+/* Canonical admin application rhythm and course-context layer.
+   This file intentionally overrides earlier admin UX layers instead of creating
+   page-local spacing fixes. */
+:root{
+  --admin-space-1:4px;
+  --admin-space-2:8px;
+  --admin-space-3:12px;
+  --admin-space-4:16px;
+  --admin-space-5:24px;
+  --admin-space-6:32px;
+  --admin-space-7:48px;
+  --admin-space-8:64px;
+}
+
+/* Vertical rhythm */
+.admin-content{padding-top:var(--admin-space-6)}
+.admin-content>.admin-notice+*,
+.admin-content>.overview-hero+*,
+.admin-content>.admin-subtabs+*,
+.admin-content>.admin-stat-grid+*,
+.admin-content>.admin-data-toolbar+*,
+.admin-content>.admin-card+*,
+.admin-content>.overview-grid+*{margin-top:var(--admin-space-5)}
+.admin-card+.admin-card{margin-top:var(--admin-space-5)}
+.admin-card>.admin-card{margin-top:var(--admin-space-4);box-shadow:none}
+.admin-card>header{margin-bottom:var(--admin-space-5)}
+.admin-card>header:only-child{margin-bottom:0}
+.admin-card>header h2,.admin-card>header h3{margin:0}
+.admin-card>header p{margin-top:var(--admin-space-2)}
+.admin-card-actions{margin-top:var(--admin-space-4)}
+.admin-card>header .admin-card-actions{margin-top:0}
+.admin-empty{margin-top:var(--admin-space-4)}
+.admin-card>.admin-empty:first-child{margin-top:0}
+.admin-table-scroll+.admin-card-actions,.admin-table-scroll+.admin-inline-actions{margin-top:var(--admin-space-4)}
+
+/* Forms: labels belong to their control, groups belong to the form. */
+.admin-form-grid{column-gap:var(--admin-space-4);row-gap:var(--admin-space-5);align-items:end}
+.admin-form-grid label{gap:var(--admin-space-2)}
+.admin-form-grid .admin-form-actions{gap:var(--admin-space-2);padding-top:var(--admin-space-1)}
+.admin-inline-actions{column-gap:var(--admin-space-2);row-gap:var(--admin-space-3)}
+.admin-data-toolbar{gap:var(--admin-space-3);margin-bottom:var(--admin-space-4)}
+.admin-data-toolbar label{gap:var(--admin-space-2)}
+.registration-admin-group+.registration-admin-group,
+.registration-admin-group+.registration-admin-payment,
+.registration-admin-payment+.registration-admin-delete{margin-top:var(--admin-space-6)}
+.registration-admin-payment form,.registration-admin-delete form{margin-top:var(--admin-space-4)}
+.registration-payment-actions{margin-top:var(--admin-space-4)}
+
+/* Course is a persistent administrative context. */
+.admin-course-header{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--admin-space-5);padding-bottom:var(--admin-space-4)}
+.admin-course-header-main{min-width:0}
+.admin-course-header h2{margin:0;font-size:30px;line-height:1.15}
+.admin-course-header p:not(.admin-kicker){max-width:72ch;margin:var(--admin-space-2) 0 0;color:var(--admin-muted);font-size:14px}
+.admin-course-nav{margin-bottom:var(--admin-space-6)}
+.admin-course-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--admin-space-3)}
+.admin-course-summary .admin-stat{margin:0}
+.admin-course-primary-action{display:flex;gap:var(--admin-space-2);flex-wrap:wrap;justify-content:flex-end}
+.admin-course-config{margin-top:var(--admin-space-7)}
+.admin-course-config>summary{cursor:pointer;color:var(--admin-muted);font-weight:600;font-size:13px}
+.admin-course-config[open]>summary{margin-bottom:var(--admin-space-4);color:var(--admin-ink)}
+
+/* Courses list: operational state first, rare creation/configuration second. */
+.admin-course-list{display:grid;gap:var(--admin-space-4)}
+.admin-course-list-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--admin-space-5);align-items:center;padding:var(--admin-space-5);border:1px solid var(--admin-line);border-radius:var(--admin-radius);background:#fff;box-shadow:var(--admin-shadow)}
+.admin-course-list-card h2{margin:0;font-size:21px}
+.admin-course-list-card p{margin:var(--admin-space-2) 0 0;color:var(--admin-muted);font-size:13px}
+.admin-course-list-meta{display:flex;gap:var(--admin-space-3);flex-wrap:wrap;margin-top:var(--admin-space-3);color:var(--admin-muted);font-size:12px}
+.admin-course-creation{margin-top:var(--admin-space-7)}
+.admin-course-creation>summary{cursor:pointer;color:var(--admin-muted);font-weight:600;font-size:13px}
+.admin-course-creation[open]>summary{margin-bottom:var(--admin-space-4);color:var(--admin-ink)}
+
+/* Registration operations. */
+.admin-registration-summary{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:var(--admin-space-5)}
+.admin-availability{margin-top:var(--admin-space-5)}
+.admin-availability-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--admin-space-3);margin-top:var(--admin-space-4)}
+.admin-availability-item{display:flex;align-items:center;justify-content:space-between;gap:var(--admin-space-4);padding:var(--admin-space-3) var(--admin-space-4);border:1px solid var(--admin-line);border-radius:var(--admin-radius);background:#fff}
+.admin-availability-item span{font-size:13px}.admin-availability-item strong{font-size:18px}
+.admin-subtabs.admin-registration-filters{margin-bottom:var(--admin-space-5)}
+
+/* People: permanent identity instead of an inbox-like technical record. */
+.admin-person-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--admin-space-3);margin-bottom:var(--admin-space-5)}
+.admin-person-identity{padding-bottom:var(--admin-space-5);border-bottom:1px solid var(--admin-line)}
+.admin-person-identity h2{margin:0;font-size:24px}
+.admin-person-identity p{margin:var(--admin-space-2) 0 0;color:var(--admin-muted)}
+
+/* Destructive actions always detach visually from normal work. */
+.registration-admin-delete,.admin-danger-zone{padding-top:var(--admin-space-5);border-top:1px solid var(--admin-line)}
+
+@media(max-width:1050px){
+  .admin-course-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .admin-registration-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .admin-content{width:min(var(--admin-content),calc(100% - 28px));padding-top:var(--admin-space-5)}
+  .admin-content>.admin-notice+*,.admin-content>.overview-hero+*,.admin-content>.admin-subtabs+*,.admin-content>.admin-stat-grid+*,.admin-content>.admin-data-toolbar+*,.admin-content>.admin-card+*,.admin-content>.overview-grid+*{margin-top:var(--admin-space-5)}
+  .admin-course-header{align-items:flex-start;flex-direction:column}
+  .admin-course-header h2{font-size:26px}
+  .admin-course-primary-action{justify-content:flex-start}
+  .admin-course-summary,.admin-registration-summary,.admin-person-summary{grid-template-columns:1fr 1fr}
+  .admin-course-list-card{grid-template-columns:1fr;align-items:start}
+  .admin-form-grid{row-gap:var(--admin-space-5)}
+  .admin-form-grid .admin-form-actions{padding-top:var(--admin-space-2);flex-wrap:wrap}
+}
+@media(max-width:520px){
+  .admin-course-summary,.admin-registration-summary,.admin-person-summary{grid-template-columns:1fr}
+}
