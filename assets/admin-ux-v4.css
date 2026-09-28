@@ -44,7 +44,7 @@
 .registration-admin-group+.registration-admin-payment,
 .registration-admin-payment+.registration-admin-delete{margin-top:var(--admin-space-6)}
 .registration-admin-payment form,.registration-admin-delete form{margin-top:var(--admin-space-4)}
-.registration-payment-actions{margin-top:var(--admin-space-4)}
+.admin-page .registration-payment-actions{margin-top:var(--admin-space-4)}
 
 /* Course is a persistent administrative context. */
 .admin-course-header{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--admin-space-5);padding-bottom:var(--admin-space-4)}
@@ -58,6 +58,10 @@
 .admin-course-config{margin-top:var(--admin-space-7)}
 .admin-course-config>summary{cursor:pointer;color:var(--admin-muted);font-weight:600;font-size:13px}
 .admin-course-config[open]>summary{margin-bottom:var(--admin-space-4);color:var(--admin-ink)}
+.admin-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--admin-space-3)}
+.admin-quick-grid>a{display:grid;gap:var(--admin-space-2);padding:var(--admin-space-4);border:1px solid var(--admin-line);border-radius:var(--admin-radius);background:#fff;color:var(--admin-ink);text-decoration:none}
+.admin-quick-grid>a:hover{border-color:var(--admin-accent);box-shadow:var(--admin-shadow)}
+.admin-quick-grid strong{font-size:15px}.admin-quick-grid span{color:var(--admin-muted);font-size:12px}
 
 /* Courses list: operational state first, rare creation/configuration second. */
 .admin-course-list{display:grid;gap:var(--admin-space-4)}
@@ -97,6 +101,7 @@
   .admin-course-header h2{font-size:26px}
   .admin-course-primary-action{justify-content:flex-start}
   .admin-course-summary,.admin-registration-summary,.admin-person-summary{grid-template-columns:1fr 1fr}
+  .admin-quick-grid{grid-template-columns:1fr}
   .admin-course-list-card{grid-template-columns:1fr;align-items:start}
   .admin-form-grid{row-gap:var(--admin-space-5)}
   .admin-form-grid .admin-form-actions{padding-top:var(--admin-space-2);flex-wrap:wrap}
