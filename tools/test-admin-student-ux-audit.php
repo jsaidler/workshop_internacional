@@ -24,7 +24,7 @@ foreach(['Visão geral','Inscrições','Turmas','Alunos','Aulas','Material'] as 
 
 ux_audit_expect(!str_contains($courses,"action==='create_from_page'"),'Cursos não deve criar curso a partir de um formulário paralelo.');
 ux_audit_expect(!str_contains($courses,'Associar página como curso'),'Tela Cursos não deve oferecer criação paralela de curso.');
-ux_audit_expect(str_contains($courses,"??'overview'")&&str_contains($courses,"$view==='setup'"),'Curso deve abrir pela Visão geral e manter compatibilidade da rota antiga.');
+ux_audit_expect(str_contains($courses,"??'overview'")&&str_contains($courses,"view==='setup'"),'Curso deve abrir pela Visão geral e manter compatibilidade da rota antiga.');
 ux_audit_expect(str_contains($courses,'admin_course_context_nav'),'Curso deve consumir a navegação contextual compartilhada.');
 ux_audit_expect(str_contains($courses,'course-summary-stats'),'Visão geral do curso deve expor indicadores operacionais.');
 ux_audit_expect(str_contains($pages,"action==='course'"),'Páginas deve ser o ponto de entrada explícito para atribuir papel de curso.');
