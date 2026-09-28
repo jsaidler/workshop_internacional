@@ -17,7 +17,10 @@ jobs:
         with:
           php-version: '8.2'
       - name: Apply CSS architecture migration
-        run: php tools/refactor-css-system.php
+        run: |
+          rm -rf dist
+          php tools/refactor-css-system.php
+          git checkout -- dist
       - name: Remove one-shot migration machinery
         run: rm .github/workflows/css-refactor-once.yml tools/refactor-css-system.php
       - name: Commit migrated CSS architecture
