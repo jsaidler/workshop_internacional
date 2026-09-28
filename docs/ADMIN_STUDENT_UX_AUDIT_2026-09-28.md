@@ -4,6 +4,8 @@
 
 A reconciliação de domínio foi concluída antes desta revisão. O estado instalado confirmado possui um curso canônico, quatro turmas, nove matrículas ativas, três aulas e uma página CMS de material, sem turmas, matrículas, aulas ou inscrições órfãs.
 
+Esse estado é apenas um **snapshot de validação de integridade**. Ele não é premissa de projeto da interface. A administração deve continuar legível e operacional com dezenas de cursos e centenas ou milhares de inscrições, pessoas e matrículas.
+
 Esta etapa não altera a modelagem de dados. Ela reorganiza a experiência de uso sobre a autoridade já corrigida.
 
 ## Objetivo
@@ -14,8 +16,14 @@ A hierarquia deve ser percebida pela navegação, pelo agrupamento visual e pelo
 
 ## Administração — arquitetura de informação canônica
 
-A navegação primária passa a ser:
+### Uma única árvore de navegação
 
+A administração não usa mais a combinação de uma navegação primária e uma segunda barra horizontal de ferramentas. Essa composição criava dois eixos concorrentes e degradava rapidamente quando novos itens eram adicionados.
+
+A barra lateral passa a ser a única árvore global, agrupada por função:
+
+- **Principal**
+  - Visão geral
 - **Conteúdo**
   - Páginas
   - Formulários
@@ -27,18 +35,22 @@ A navegação primária passa a ser:
   - Cursos
   - Inscrições
   - Pessoas
-- **Mídia**
-- **Métricas**
-- **Configurações**
+- **Biblioteca**
+  - Mídia
+- **Análise**
+  - Métricas
+- **Sistema**
   - Sistema e atualizações
   - Estrutura do site
   - Integridade
 
 `Integridade` é diagnóstico técnico e não participa do fluxo operacional cotidiano.
 
+A navegação deve suportar crescimento vertical e rolagem sem transformar novas funções em abas comprimidas ou em uma terceira camada paralela.
+
 ### Curso como contexto de trabalho
 
-Ao abrir um curso, a navegação contextual é única e persistente:
+Ao abrir um curso, a navegação contextual é única e pertence ao conteúdo do curso:
 
 1. Visão geral
 2. Inscrições
@@ -47,9 +59,30 @@ Ao abrir um curso, a navegação contextual é única e persistente:
 5. Aulas
 6. Material
 
+Ela não é uma segunda navegação global. O retorno explícito `← Todos os cursos` restabelece o nível anterior da hierarquia.
+
 `Inscrições` não pode aparecer como botão lateral desconectado das demais áreas do curso.
 
 A tela de Cursos prioriza cursos existentes. A associação de uma página CMS a um novo curso é operação rara de configuração e deve ter menor peso visual.
+
+### Regra para volume de dados
+
+Listagens administrativas são projetadas para o volume futuro, e não para caber no conjunto atual.
+
+Invariantes:
+
+- coleções potencialmente grandes usam **busca + paginação**;
+- o servidor consulta apenas a página necessária em vez de carregar uma coleção inteira e ocultar o excedente;
+- não existem limites silenciosos como `LIMIT 500` apresentados ao usuário como se fossem a coleção completa;
+- páginas de listagem usam densidade informacional de tabela/lista, não uma grade de cards por entidade;
+- ações principais permanecem na linha do registro, sem obrigar a percorrer cards altos;
+- contagens e resumos são calculados sem um ciclo de consultas por item quando uma consulta agregada ou correlacionada pode resolver o conjunto;
+- filtros, busca e página atual são preservados ao abrir e operar um registro;
+- no mobile, tabelas podem rolar horizontalmente, mas a hierarquia e os controles de busca/paginação continuam utilizáveis.
+
+A página de **Cursos** usa uma tabela paginada e pesquisável. A visão **Alunos** do curso também é paginada e pesquisável.
+
+**Inscrições** mantém o padrão lista + detalhe, mas a lista é pesquisável, filtrável e paginada. **Pessoas** segue o mesmo princípio e não depende de um teto arbitrário de registros.
 
 ### Inscrições
 
@@ -68,6 +101,8 @@ A agregação de disponibilidade é uma ferramenta operacional para formação d
 ### Pessoas
 
 `student_users` permanece a autoridade global de identidade. A tela Pessoas deve apresentar a pessoa como entidade permanente, com conta, inscrições e matrículas, e não como uma caixa de entrada técnica.
+
+A explicação técnica sobre tabelas e integridade não participa do texto principal da operação. Diagnóstico permanece disponível como ação secundária.
 
 ## Área do aluno — arquitetura de informação canônica
 
@@ -111,6 +146,10 @@ Escala de referência:
 - 48 px — seções principais;
 - 64 px ou mais — mudança grande de contexto.
 
+Valores intermediários arbitrários como 10, 14 e 18 px não devem reaparecer em primitivas compartilhadas quando a mesma relação já é representada pela escala.
+
+A administração estabelece o ritmo entre blocos de primeiro nível em `.admin-content`; componentes deixam de depender de margens incidentais de cada tela. Cards e formulários usam a mesma escala para padding, gaps, cabeçalhos e ações.
+
 Invariantes:
 
 - nenhum título de seção fica colado no bloco anterior;
@@ -126,6 +165,8 @@ Invariantes:
 
 A área do aluno mantém a identidade visual do site, mas funciona como aplicação recorrente. Títulos de aplicação não devem herdar automaticamente a escala monumental de uma landing page.
 
+Na administração, coleções são superfícies de trabalho e não vitrines. Cards altos são reservados para sínteses ou decisões isoladas; listas de entidades usam linhas densas e comparáveis.
+
 Prioridades visuais:
 
 1. contexto atual;
@@ -140,12 +181,16 @@ Antes de criar qualquer componente local:
 
 **procurar → consumir → identificar lacuna → ampliar globalmente somente se necessário → consumir**.
 
-Primitivas de espaçamento, tabs, cards, formulários, alertas, estados e navegação pertencem ao sistema global. Código local deve conter apenas composição ou fluxo específico da área.
+Primitivas de espaçamento, tabs, cards, formulários, alertas, estados, tabelas, busca, paginação e navegação pertencem ao sistema global. Código local deve conter apenas composição ou fluxo específico da área.
 
 ## Critérios de regressão
 
 A revisão deve cobrir desktop e mobile e verificar:
 
+- uma única árvore global de navegação administrativa, sem barra horizontal concorrente de ferramentas;
+- cursos, inscrições, pessoas e alunos do curso continuam utilizáveis com volume por meio de busca e paginação;
+- nenhuma listagem canônica finge completude por meio de um teto silencioso de 500 registros;
+- ritmo vertical de primeiro nível controlado globalmente;
 - uma única topbar global do aluno;
 - Testes subordinado ao curso;
 - curso preservado ao navegar entre visão geral e testes;
