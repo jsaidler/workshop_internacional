@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * Small dependency-free CSS scanner used by architecture tooling.
  * It deliberately does not rewrite selectors or values; it only identifies
- * style-rule context and declaration source ranges.
+ * style-rule context, declaration ownership and source ranges.
  */
 function css_ownership_authored_files(string $root): array {
     $files=[];
@@ -125,11 +125,7 @@ function css_ownership_declarations(string $css,int $bodyStart,int $bodyEnd): ar
         if($propertyStart<$segmentEnd&&preg_match('/\G([A-Za-z_-][A-Za-z0-9_-]*)\s*:/A',substr($css,$propertyStart,$segmentEnd-$propertyStart),$match)){
             $property=$match[1];
             if(!str_starts_with($property,'--'))$property=strtolower($property);
-            $declarations[]=[
-                'property'=>$property,
-                'start'=>$propertyStart,
-                'end'=>$atEnd?$segmentEnd:$i+1,
-            ];
+            $declarations[]=['property'=>$property,'start'=>$propertyStart,'end'=>$atEnd?$segmentEnd:$i+1];
         }
         $segmentStart=$i+1;
     }
@@ -138,7 +134,7 @@ function css_ownership_declarations(string $css,int $bodyStart,int $bodyEnd): ar
 
 /**
  * @param list<string> $contexts
- * @param list<array{context:string,selector:string,declarations:list<array{property:string,start:int,end:int}>}> $rules
+ * @param list<array{context:string,selector:string,start:int,end:int,bodyStart:int,bodyEnd:int,declarations:list<array{property:string,start:int,end:int}>}> $rules
  */
 function css_ownership_parse_range(string $css,int $start,int $end,array $contexts,array &$rules): void {
     $cursor=$start;$segmentStart=$start;
@@ -160,6 +156,10 @@ function css_ownership_parse_range(string $css,int $start,int $end,array $contex
                 $rules[]=[
                     'context'=>implode(' > ',$contexts),
                     'selector'=>$prelude,
+                    'start'=>css_ownership_skip_leading($css,$segmentStart,$index),
+                    'end'=>$close+1,
+                    'bodyStart'=>$index+1,
+                    'bodyEnd'=>$close,
                     'declarations'=>css_ownership_declarations($css,$index+1,$close),
                 ];
             }
@@ -168,7 +168,6 @@ function css_ownership_parse_range(string $css,int $start,int $end,array $contex
     }
 }
 
-/** @return list<array{context:string,selector:string,declarations:list<array{property:string,start:int,end:int}>}> */
 function css_ownership_scan(string $css): array {
     $rules=[];
     css_ownership_parse_range($css,0,strlen($css),[],$rules);
