@@ -4,6 +4,7 @@ declare(strict_types=1);
 function student_shell_activity(?array $activity,?array $student): ?array {
     return $activity;
 }
+function student_quantity_label(int $quantity,string $singular,string $plural): string {return $quantity.' '.($quantity===1?$singular:$plural);}
 function student_shell_global_active(): string {
     $path=(string)parse_url((string)($_SERVER['REQUEST_URI']??'/aluno/'),PHP_URL_PATH);
     return str_contains($path,'perfil')||str_contains($path,'senha')?'account':'courses';
