@@ -26,16 +26,12 @@
     const blockHtml=block=>`<div class="cms-form-content" data-cms-form-content-id="${esc(block.id)}" data-cms-form-content-label="${esc(block.label||block.id)}"${block.condition?` data-cms-content-condition-source="${esc(block.condition.source||'')}" data-cms-content-condition-operator="${esc(block.condition.operator||'equals')}" data-cms-content-condition-value="${esc(block.condition.value||'')}"`:''}>${block.html||''}</div>`;
     let content=(byAfter['']||[]).map(blockHtml).join('');
     for(const field of form.schema.fields||[]){content+=fieldHtml(field);content+=(byAfter[field.id]||[]).map(blockHtml).join('');}
-    return `<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;padding:24px}.cms-form-grid{display:grid;gap:18px}.cms-form-content{padding:12px;border:1px solid #aaa}.registration-pix-layout{display:grid;grid-template-columns:120px 1fr;gap:12px}.registration-pix-layout img{width:100px;height:auto}</style></head><body class="cms-editor-preview"><div data-cms-form-block="${form.id}"><form class="cms-form" data-cms-form-preview="1"><div class="cms-form-grid">${content}</div><button class="button" type="button">${esc(form.schema.submitLabel)} <span aria-hidden="true">↗</span></button></form></div></body></html>`;
+    return `<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;padding:24px}.cms-form-grid{display:grid;gap:18px}.cms-form-content{padding:12px;border:1px solid #aaa}.registration-pix-layout{display:grid;grid-template-columns:120px 1fr;gap:12px}.registration-pix-layout img{width:100px;height:auto}</style></head><body class="cms-editor-preview"><div data-cms-form-block="${form.id}" onclick="parent.document.body.dataset.legacy='hit'"><form class="cms-form" data-cms-form-preview="1"><div class="cms-form-grid">${content}</div><button class="button" type="button">${esc(form.schema.submitLabel)} <span aria-hidden="true">↗</span></button></form></div></body></html>`;
   }
   async function boot(){
     const data=await fetch('/admin/api/cms-form-load.php?form=1').then(response=>response.json());
     const iframe=document.querySelector('#page-frame');
     iframe.srcdoc=renderForm(data.form);
-    iframe.addEventListener('load',()=>{
-      const block=iframe.contentDocument.querySelector('[data-cms-form-block]');
-      if(block)block.onclick=()=>document.body.dataset.legacy='hit';
-    },{once:true});
     const script=document.createElement('script');script.src='/editor/cms-form-editor.js';document.body.append(script);
   }
   boot();
