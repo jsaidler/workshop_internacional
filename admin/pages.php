@@ -40,6 +40,12 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             header('Location: /editor/?page='.(int)$page['id']);
             exit;
         }
+        if($action==='course'){
+            $pageId=(int)($_POST['page_id']??0);$existing=course_by_public_page($db,$pageId);$course=$existing?:course_create_from_page($db,$pageId);
+            $_SESSION['admin_notice']='Página vinculada ao curso. Configure o formulário e as turmas no contexto do curso.';
+            header('Location: /admin/courses.php?'.http_build_query(['activity'=>$activityId,'course'=>(int)$course['id'],'view'=>'setup']),true,303);
+            exit;
+        }
         if($action==='home')admin_set_cms_home($db,(int)($_POST['page_id']??0));
         if($action==='archive')cms_page_archive($db,(int)($_POST['page_id']??0));
         if($action==='up')cms_page_move_sibling($db,(int)($_POST['page_id']??0),-1);
@@ -85,7 +91,7 @@ admin_shell_start('pages','Páginas',$state);?>
 <section class="overview-hero pages-hero">
     <div>
         <h2>Páginas do site</h2>
-        <p>Organize páginas e subpáginas sem alterar seus endereços. A navegação pública continua sendo configurada separadamente em Navegação.</p>
+        <p>Organize páginas e subpáginas. Quando uma página representar um curso, atribua esse papel no menu da própria página; ela continuará usando o mesmo editor.</p>
     </div>
     <div class="hero-actions">
         <button class="admin-button" type="button" data-dialog-open="new-page">Nova página</button>
@@ -111,6 +117,7 @@ admin_shell_start('pages','Páginas',$state);?>
             $page=$treeRow['page'];
             $depth=(int)$treeRow['depth'];
             $pageId=(int)$page['id'];
+            $pageCourse=course_by_public_page($db,$pageId);
             $unpublished=$page['published_revision']===null||(int)$page['draft_revision']!==(int)$page['published_revision'];
             $url=cms_page_url($activity,$page,$page['locale']);
             $parentId=(int)($page['parent_page_id']??0);
@@ -133,6 +140,7 @@ admin_shell_start('pages','Páginas',$state);?>
                         <div class="page-title-line">
                             <strong><?=h((string)$page['title'])?></strong>
                             <?php if((int)$page['is_home']===1):?><span class="page-chip">Inicial</span><?php endif;?>
+                            <?php if($pageCourse):?><span class="page-chip">Curso</span><?php endif;?>
                         </div>
                         <a class="page-url" href="<?=h($url)?>" target="_blank" rel="noopener"><?=h($url)?></a>
                         <div class="page-hierarchy">
@@ -171,6 +179,9 @@ admin_shell_start('pages','Páginas',$state);?>
                             <input type="hidden" name="_csrf" value="<?=h(csrf_token('cms-pages'))?>">
                             <input type="hidden" name="page_id" value="<?=$pageId?>">
                             <a class="page-menu-link" href="/admin/page-history.php?page=<?=$pageId?>">Histórico</a>
+                            <div class="page-menu-section">
+                                <?php if($pageCourse):?><a class="page-menu-link" href="/admin/courses.php?activity=<?=$activityId?>&course=<?=(int)$pageCourse['id']?>&view=setup">Administrar curso</a><?php else:?><button name="action" value="course">Usar esta página como curso</button><?php endif;?>
+                            </div>
                             <div class="page-menu-section">
                                 <label class="admin-field">Equivalente em outro idioma
                                     <select name="translation_page_id">

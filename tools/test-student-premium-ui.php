@@ -7,6 +7,7 @@ function must_student_premium_ui(bool $condition,string $message): void {if(!$co
 $root=dirname(__DIR__);
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
+$shellCss=(string)file_get_contents($root.'/assets/student-shell.css');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $uiJs=(string)file_get_contents($root.'/assets/ui-core.js');
 $tests=(string)file_get_contents($root.'/aluno/testes.php');
@@ -20,6 +21,7 @@ $header=(string)file_get_contents($root.'/assets/cms-header.css');
 must_student_premium_ui(!str_contains($shell,'data-theme="light"'),'student shell still hardcodes the light theme');
 must_student_premium_ui(str_contains($shell,'data-theme-value="auto"')&&str_contains($shell,'data-theme-value="dark"'),'student shell does not expose the canonical theme choices');
 must_student_premium_ui(str_contains($shell,'/assets/ui-core.css')&&str_contains($shell,'/assets/ui-core.js'),'student shell does not consume the global UI authority');
+must_student_premium_ui(str_contains($shell,'/assets/student-shell.css'),'student shell does not load its shared composition layer');
 must_student_premium_ui(!str_contains($shell,'/assets/student-area.js'),'student shell still loads student-specific interaction behavior');
 must_student_premium_ui(!is_file($root.'/assets/student-area.js'),'student-specific validation implementation still exists');
 
@@ -27,6 +29,7 @@ foreach(['.student-field','.student-choice-','.student-check-field','.student-bu
     must_student_premium_ui(!str_contains($css,$forbidden),'student stylesheet still owns global primitive '.$forbidden);
 }
 must_student_premium_ui(str_contains($css,'.student-step-nav')&&str_contains($css,'.student-workflow-panel')&&str_contains($css,'.student-course-card'),'student stylesheet lost application-specific composition');
+must_student_premium_ui(str_contains($shellCss,'.student-topbar')&&str_contains($shellCss,'.student-course-context'),'shared student shell lost global bar or course context composition');
 
 foreach(['.form-field','.choice-field','.check-field','.button-compact','.button-danger','.ui-alert'] as $global){
     must_student_premium_ui(str_contains($uiCss,$global),'global UI stylesheet is missing '.$global);
@@ -53,7 +56,8 @@ foreach([$login,$password,$profile] as $surface){
 must_student_premium_ui(str_contains($login,'class="form-field"')&&str_contains($login,'button button-primary'),'login does not consume global field/button primitives');
 must_student_premium_ui(str_contains($password,'data-ui-match')&&str_contains($password,'class="check-field"'),'password screen does not consume global match/check primitives');
 must_student_premium_ui(!str_contains($password,'style="font-size:50px"')&&!str_contains($password,'style="display:flex'),'password screen still carries one-off inline visual rules');
-must_student_premium_ui(str_contains($renderer,'$studentAccessLabel=$materialContext?$contextBackLabel:$studentAreaLabel')&&str_contains($renderer,'/aluno/testes.php?cohort='),'protected material does not reuse the global topbar for return/course actions');
-must_student_premium_ui(!str_contains($renderer,'data-cms-student-context')&&!str_contains($header,'.cms-student-context'),'protected material still owns a second context bar');
+must_student_premium_ui(str_contains($renderer,'student_shell_topbar_markup')&&str_contains($renderer,'student_course_context_markup'),'protected material does not reuse canonical student shell/context');
+must_student_premium_ui(str_contains($renderer,'if($materialContext&&$currentStudent)')&&str_contains($renderer,'data-cms-public-header'),'protected material does not make public and student topbars mutually exclusive');
+must_student_premium_ui(!str_contains($renderer,'data-cms-student-context')&&!str_contains($header,'.cms-student-context'),'protected material still owns a second legacy context bar');
 
 echo "student-premium-ui: ok\n";

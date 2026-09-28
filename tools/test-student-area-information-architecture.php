@@ -19,11 +19,13 @@ if(str_contains($shell,'Operações e testes'))fail('artificial Operations and t
 if(!str_contains($shell,"'courses'=>['Cursos'"))fail('course authority context item missing');
 if(!str_contains($shell,"'registrations'=>['Inscrições'"))fail('course registrations context item missing');
 if(!str_contains($shell,"'people'=>['Pessoas'"))fail('global people context item missing');
-if(!str_contains($shell,"'integrity'=>['Integridade'"))fail('read-only integrity context item missing');
+if(!str_contains($shell,"'integrity'=>['Diagnóstico de dados'"))fail('read-only integrity diagnostic missing from settings');
 if(!str_contains($guard,'/admin/people.php'))fail('legacy student admin route does not redirect to global people');
-if(!str_contains($people,'FROM student_users u')||!str_contains($people,'c.course_id IS NULL'))fail('global people view depends on course completeness');
+if(!str_contains($people,'FROM student_users u')||str_contains($people,'WHERE c.course_id='))fail('global people view depends on course completeness');
 if(!str_contains($integrity,'Somente leitura')||str_contains($integrity,'REQUEST_METHOD'))fail('integrity view is not strictly read-only');
-foreach(['Turmas','Alunos','Aulas','Material'] as $label)if(!str_contains($courseAdmin,"'".$label."'"))fail('course administration object missing: '.$label);
+if(!str_contains($shell,'admin_course_context_nav'))fail('shared course context navigation is missing');
+foreach(['Visão geral','Inscrições','Turmas','Alunos','Aulas','Material'] as $label)if(!str_contains($shell,$label))fail('course administration navigation missing: '.$label);
+if(!str_contains($courseAdmin,'admin_course_context_nav'))fail('course administration does not consume shared course context navigation');
 if(!str_contains($courseAdmin,'course_material_add_page')||!str_contains($courseAdmin,'/editor/?page='))fail('material is not a contextual view of canonical CMS pages/editor');
 if(!str_contains($registrations,'Escolha o curso')||!str_contains($registrations,'Confirmadas sem turma'))fail('registrations are not separated by course with pending cohort assignment');
 if(str_contains($legacy,'admin_shell_start('))fail('legacy operations page still renders a parallel admin surface');

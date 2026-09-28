@@ -40,6 +40,7 @@ if(!str_contains($shell,"/assets/admin-data-ux.css")||str_contains($shell,"/asse
 if(str_contains($admin,'style='))fail_material('student admin contains page-local inline style');
 foreach(['view=','admin-subtabs','admin-data-toolbar','LIMIT ? OFFSET ?','slot_key'] as $needle)if(!str_contains($admin,$needle))fail_material('scalable student operations contract missing: '.$needle);
 if(!str_contains($guard,'/admin/people.php')||!str_contains($people,'FROM student_users u'))fail_material('global student identity administration is not canonical');
-if(!str_contains($courseAdmin,"'material'=>'Material'")||!str_contains($courseAdmin,'course_material_add_page')||!str_contains($courseAdmin,'/editor/?page='))fail_material('course material does not consume canonical CMS pages/editor');
+if(!str_contains($shell,'admin_course_context_nav')||!str_contains($shell,'Material'))fail_material('shared course material navigation is not canonical');
+if(!str_contains($courseAdmin,'course_material_add_page')||!str_contains($courseAdmin,'/editor/?page='))fail_material('course material does not consume canonical CMS pages/editor');
 if(str_contains($courseAdmin,'material-editor')||str_contains($courseAdmin,'material_renderer'))fail_material('parallel material editor/renderer leaked');
 echo "student-material-system: ok\n";

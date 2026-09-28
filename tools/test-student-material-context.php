@@ -36,13 +36,16 @@ must_student_material_context(student_enrollment_material_context($db,$student,$
 must_student_material_context(student_enrollment_material_context($db,$student,$authenticatedPage,'cohort-a')===null,'generic authenticated page incorrectly received a course workspace context');
 
 $renderer=(string)file_get_contents(__DIR__.'/../app/cms_renderer.php');
+$studentShell=(string)file_get_contents(__DIR__.'/../app/student_shell.php');
 $css=(string)file_get_contents(__DIR__.'/../assets/cms-header.css');
 must_student_material_context(str_contains($renderer,'student_enrollment_material_context'),'public renderer does not derive context from the canonical enrollment helper');
 must_student_material_context(str_contains($renderer,'cms_access_filter_html($db,$activity,$body,$currentStudent,$editor,null,$materialContext)'),'public renderer does not apply the canonical section access filter with enrollment context');
-must_student_material_context(!str_contains($renderer,'data-cms-student-context')&&!str_contains($css,'.cms-student-context'),'protected material still creates a second header bar');
-must_student_material_context(str_contains($renderer,"'/aluno/?cohort='"),'course return link does not preserve the cohort uuid');
-must_student_material_context(str_contains($renderer,'/aluno/testes.php?cohort=')&&str_contains($renderer,'href="/aluno/perfil.php"'),'single topbar does not expose tests and account');
-must_student_material_context(str_contains($renderer,'$studentAccessLabel=$materialContext?$contextBackLabel:$studentAreaLabel'),'single topbar does not turn the student action into the course return action');
+must_student_material_context(!str_contains($renderer,'data-cms-student-context')&&!str_contains($css,'.cms-student-context'),'protected material still creates a second legacy header bar');
+must_student_material_context(str_contains($renderer,'student_shell_topbar_markup'),'course material does not consume the canonical student topbar');
+must_student_material_context(str_contains($renderer,'student_course_context_markup')&&str_contains($renderer,"'material'"),'course material does not expose course-local material navigation');
+must_student_material_context(str_contains($studentShell,'href="/aluno/perfil.php"'),'canonical student topbar does not expose the global account destination');
+must_student_material_context(str_contains($studentShell,'/aluno/testes.php?cohort=')&&str_contains($studentShell,'Visão geral')&&str_contains($studentShell,'Material'),'course context does not expose tests and material as course-local destinations');
+must_student_material_context(str_contains($renderer,'if($materialContext&&$currentStudent)')&&str_contains($renderer,'data-cms-public-header'),'public and student topbars are not mutually exclusive');
 must_student_material_context(str_contains($renderer,'if(!$editor)'),'editor preview is not protected from student-session context UI');
 
 echo "student-material-context: ok\n";
