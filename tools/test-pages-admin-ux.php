@@ -6,7 +6,7 @@ function must_pages_admin_ux(bool $condition,string $message): void {if(!$condit
 
 $root=dirname(__DIR__);
 $pages=(string)file_get_contents($root.'/admin/pages.php');
-$css=(string)file_get_contents($root.'/admin/cms-admin.css');
+$css=(string)file_get_contents($root.'/assets/admin-system.css');
 
 must_pages_admin_ux(str_contains($pages,'pages-locale-group'),'pages are not grouped by locale');
 must_pages_admin_ux(str_contains($pages,'page-tree-row')&&str_contains($pages,'style="--page-depth:'),'hierarchy depth is not represented visually');

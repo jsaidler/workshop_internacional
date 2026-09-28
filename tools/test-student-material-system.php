@@ -31,12 +31,12 @@ $map=$db->query("SELECT s.section_key,l.lesson_key FROM course_page_sections s J
 $expected=['caderno-aula-1'=>'aula-1','caderno-04-energia'=>'aula-1','caderno-07-ei'=>'aula-1','caderno-aula-2'=>'aula-2','caderno-10-imagem-latente'=>'aula-2','caderno-16-fecl3-amonia'=>'aula-2','caderno-19-duas-chapas'=>'aula-2','caderno-aula-3'=>'aula-3','caderno-21-leitura-resultados'=>'aula-3','caderno-22-registro'=>'aula-3'];
 foreach($expected as $section=>$lesson)if(($map[$section]??'')!==$lesson)fail_material('lesson mapping wrong: '.$section);
 
-$css=(string)file_get_contents(__DIR__.'/../assets/cms.css');
+$css=(string)file_get_contents(__DIR__.'/../assets/cms-core.css');
 foreach(['.cms-document{','.cms-document-page{','.cms-lesson-divider{','.cms-document-index{','Shared long-form document system'] as $needle)if(str_contains($css,$needle))fail_material('handbook-specific CSS leaked into shared stylesheet: '.$needle);
 $index=(string)file_get_contents(__DIR__.'/../index.php');$media=(string)file_get_contents(__DIR__.'/../aluno/media.php');$shell=(string)file_get_contents(__DIR__.'/../app/admin_shell.php');$guard=(string)file_get_contents(__DIR__.'/../admin/student-area.php');$people=(string)file_get_contents(__DIR__.'/../admin/people.php');$admin=(string)file_get_contents(__DIR__.'/../admin/student-area-legacy.php');$courseAdmin=(string)file_get_contents(__DIR__.'/../admin/courses.php');
 if(!str_contains($index,'$admin=current_admin()')||!str_contains($index,'if($admin)'))fail_material('admin protected-page bypass missing');
 if(!str_contains($media,'if(current_admin())')||!str_contains($media,'student_private_media_admin_asset'))fail_material('admin private-media bypass missing');
-if(!str_contains($shell,"/assets/admin-data-ux.css")||str_contains($shell,"/assets/admin-student-area.css"))fail_material('admin shared UX stylesheet not canonical');
+if(!str_contains($shell,"/assets/admin-system.css")||str_contains($shell,"/assets/admin-student-area.css"))fail_material('admin shared UX stylesheet not canonical');
 if(str_contains($admin,'style='))fail_material('student admin contains page-local inline style');
 foreach(['view=','admin-subtabs','admin-data-toolbar','LIMIT ? OFFSET ?','slot_key'] as $needle)if(!str_contains($admin,$needle))fail_material('scalable student operations contract missing: '.$needle);
 if(!str_contains($guard,'/admin/people.php')||!str_contains($people,'FROM student_users u'))fail_material('global student identity administration is not canonical');
