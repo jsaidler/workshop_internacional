@@ -101,7 +101,7 @@ $renderer=(string)file_get_contents($root.'/app/cms_renderer.php');
 $discovery=(string)file_get_contents($root.'/app/cms_discovery.php');
 must_identity_hierarchy(str_contains($adminPages,'name="parent_page_id"')&&str_contains($adminPages,'Página superior'),'canonical Pages admin does not expose hierarchy as a primary property');
 must_identity_hierarchy(str_contains($adminPages,'cms_page_tree_rows')&&str_contains($adminPages,'cms_page_move_sibling'),'canonical Pages admin does not render/order the real hierarchy');
-must_identity_hierarchy(str_contains($adminPages,'data-page-depth'),'canonical Pages admin does not expose hierarchy depth');
+must_identity_hierarchy(str_contains($adminPages,'$depth=(int)$treeRow[\'depth\']')&&str_contains($adminPages,'style="--page-depth:<?=$depth?>"'),'canonical Pages admin does not expose hierarchy depth to presentation');
 must_identity_hierarchy(str_contains($adminPages,'name="translation_page_id"'),'canonical Pages admin does not expose translation equivalence');
 must_identity_hierarchy(str_contains($adminActivities,'public_title_pt')&&str_contains($adminActivities,'public_title_en'),'canonical activity admin does not expose localized titles');
 must_identity_hierarchy(str_contains($renderer,'cms_page_translation_counterpart'),'language switch does not use explicit translation identity');
