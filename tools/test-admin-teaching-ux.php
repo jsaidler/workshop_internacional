@@ -16,7 +16,7 @@ teaching_ux_expect(str_contains($collectionCss,'.admin-filter-chip')&&str_contai
 teaching_ux_expect(str_contains($courses,"['/assets/admin-teaching.css']"),'Cursos deve consumir a camada visual de Ensino');
 teaching_ux_expect(str_contains($courses,'admin-active-filters'),'Cursos deve expor busca ativa como filtro reversível');
 teaching_ux_expect(str_contains($courses,'tabindex="0" role="region" aria-label="Lista de cursos"'),'tabela de cursos deve ser navegável quando houver overflow');
-teaching_ux_expect(str_contains($courses,"course_catalog_url($activityId,(int)$row['id'],'overview',$q,$page)"),'abrir curso deve preservar busca e página do catálogo');
+teaching_ux_expect(str_contains($courses,'course_catalog_url($activityId,(int)$row[\'id\'],\'overview\',$q,$page)'),'abrir curso deve preservar busca e página do catálogo');
 teaching_ux_expect(str_contains($courses,'admin-teaching-summary'),'detalhe do curso deve resumir relações sem recriar grade de cards');
 teaching_ux_expect(!str_contains($courses,'admin-stat-grid'),'Cursos não deve voltar a empilhar cards métricos no detalhe');
 
