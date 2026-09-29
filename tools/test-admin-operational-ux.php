@@ -6,12 +6,15 @@ $read=static fn(string $path): string=>(string)file_get_contents($root.'/'.$path
 $assert=static function(bool $condition,string $message): void {if(!$condition){fwrite(STDERR,$message."\n");exit(1);}};
 
 $css=$read('assets/admin-operations.css');
+$collectionCss=$read('assets/admin-collection-ux.css');
 $assert($css!=='','Shared operational stylesheet must exist.');
-$assert(!str_contains($css,'!important'),'Operational stylesheet must not use !important.');
-$assert(str_contains($css,'.admin-active-filters'),'Operational stylesheet must own active filter presentation.');
-$assert(str_contains($css,'.admin-operation-detail'),'Operational stylesheet must own detail presentation.');
+$assert($collectionCss!=='','Shared collection stylesheet must exist.');
+$assert(!str_contains($css,'!important')&&!str_contains($collectionCss,'!important'),'Administrative workflow stylesheets must not use !important.');
+$assert(str_contains($collectionCss,'.admin-active-filters'),'Shared collection stylesheet must own active filter presentation.');
+$assert(str_contains($css,'.admin-operation-detail'),'Operational stylesheet must own operation-specific detail presentation.');
 
 $shell=$read('app/admin_shell.php');
+$assert(str_contains($shell,'/assets/admin-collection-ux.css'),'Admin shell must load collection primitives globally.');
 foreach(['function admin_badge(','function admin_filter_chip(','function admin_status_label(','function admin_status_tone('] as $needle){
     $assert(str_contains($shell,$needle),'Missing shared admin presentation helper: '.$needle);
 }
@@ -19,7 +22,7 @@ foreach(['function admin_badge(','function admin_filter_chip(','function admin_s
 $pages=['registrations','cohorts','students','people'];
 foreach($pages as $page){
     $content=$read('admin/'.$page.'.php');
-    $assert(str_contains($content,"'/assets/admin-operations.css'"),'Operational page must load shared stylesheet through admin_shell_start: '.$page);
+    $assert(str_contains($content,"'/assets/admin-operations.css'"),'Operational page must load operation-specific stylesheet through admin_shell_start: '.$page);
     $assert(!preg_match('/<link[^>]+admin-operations\.css/i',$content),'Operational stylesheet must not be injected from page body: '.$page);
     $assert(str_contains($content,'admin-active-filters'),'Operational page must expose reversible active filters: '.$page);
     $assert(str_contains($content,'tabindex="0"'),'Scrollable operational tables must be keyboard focusable: '.$page);
