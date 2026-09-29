@@ -15,6 +15,34 @@ function admin_quantity_label(int $quantity,string $singular,string $plural): st
 function admin_media_summary(int $images,int $videos): string {return admin_quantity_label($images,'imagem','imagens').' · '.admin_quantity_label($videos,'vídeo','vídeos');}
 function admin_public_activity_url(?array $activity): string {if(!$activity)return '/';return (int)($activity['is_root']??0)===1?'/':'/'.rawurlencode((string)$activity['slug']).'/';}
 
+function admin_badge(string $label,string $tone='neutral'): string {
+    $allowed=['neutral','good','attention','danger','muted'];
+    if(!in_array($tone,$allowed,true))$tone='neutral';
+    return '<span class="admin-badge admin-badge--'.h($tone).'">'.h($label).'</span>';
+}
+function admin_filter_chip(string $label,string $value,string $removeUrl): string {
+    $text=trim($label).': '.trim($value);
+    return '<a class="admin-filter-chip" href="'.h($removeUrl).'" aria-label="Remover filtro '.h($text).'"><span>'.h($text).'</span><b aria-hidden="true">×</b></a>';
+}
+function admin_status_label(string $scope,string $value): string {
+    $key=strtolower(trim($value));
+    $maps=[
+        'payment'=>['paid'=>'Pago','pending'=>'Pendente','refunded'=>'Reembolsado','cancelled'=>'Cancelado','canceled'=>'Cancelado'],
+        'enrollment'=>['active'=>'Ativa','inactive'=>'Inativa','archived'=>'Arquivada','cancelled'=>'Cancelada','canceled'=>'Cancelada'],
+        'account'=>['active'=>'Ativa','pending'=>'Pendente','inactive'=>'Inativa','blocked'=>'Bloqueada','archived'=>'Arquivada'],
+        'cohort'=>['active'=>'Ativa','archived'=>'Arquivada','inactive'=>'Inativa'],
+    ];
+    return $maps[$scope][$key]??($value!==''?$value:'—');
+}
+function admin_status_tone(string $scope,string $value): string {
+    $key=strtolower(trim($value));
+    if(in_array($key,['paid','active'],true))return 'good';
+    if(in_array($key,['pending'],true))return 'attention';
+    if(in_array($key,['cancelled','canceled','blocked'],true))return 'danger';
+    if(in_array($key,['inactive','archived','refunded'],true))return 'muted';
+    return 'neutral';
+}
+
 function admin_workspace(string $section): string {return match($section){
     'overview'=>'overview',
     'registrations','cohorts','students','people','studentops'=>'operation',
