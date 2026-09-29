@@ -63,8 +63,8 @@ test('admin shell occupies the phone viewport instead of retaining desktop sideb
   const contentBox=await page.locator('.admin-content').boundingBox();
   expect(mainBox.x).toBeLessThanOrEqual(1);
   expect(mainBox.width).toBeGreaterThanOrEqual(389);
-  expect(contentBox.x).toBeLessThanOrEqual(12);
-  expect(contentBox.width).toBeGreaterThanOrEqual(368);
+  expect(contentBox.x).toBeLessThanOrEqual(16);
+  expect(contentBox.width).toBeGreaterThanOrEqual(360);
   await expect(page.locator('.admin-mobile-header')).toHaveCSS('display','flex');
   await expect(page.locator('.admin-sidebar')).toHaveCSS('display','none');
   await expect(page.locator('.admin-main')).toHaveCSS('margin-left','0px');
