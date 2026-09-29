@@ -2,6 +2,7 @@
 .admin-teaching-detail{border-top:3px solid var(--admin-ink)}
 .admin-teaching-detail>header{align-items:center}
 .admin-teaching-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;color:var(--admin-muted);font-size:12px}
+.admin-teaching-note{max-width:72ch;color:var(--admin-muted);font-size:12px;line-height:1.5}
 .admin-teaching-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;border:1px solid var(--admin-line);border-radius:var(--admin-radius);overflow:hidden;background:var(--admin-line)}
 .admin-teaching-summary>div{min-width:0;padding:12px 14px;background:var(--admin-surface)}
 .admin-teaching-summary dt{color:var(--admin-muted);font-size:10px;font-weight:600}
@@ -11,6 +12,9 @@
 .admin-teaching-section:first-of-type{padding-top:0;border-top:0}
 .admin-teaching-section>h3{margin:0 0 12px;font-size:15px}
 .admin-teaching-section>p{margin:0 0 12px;color:var(--admin-muted);font-size:12px;line-height:1.5}
+.admin-teaching-danger{padding-top:20px;border-top:1px solid #d7aaa5}
+.admin-teaching-danger h3{margin:0 0 6px;color:var(--admin-danger);font-size:15px}
+.admin-teaching-danger p{max-width:68ch;margin:0 0 12px;color:var(--admin-muted);font-size:12px;line-height:1.5}
 .admin-teaching-create{display:flex;justify-content:flex-end}
 .admin-teaching-create details{width:min(100%,760px)}
 .admin-teaching-create details>summary{list-style:none;cursor:pointer}
