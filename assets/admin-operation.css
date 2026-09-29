@@ -1,0 +1,48 @@
+/* Shared UI for operational collections: registrations, cohorts, students and people. */
+.admin-workspace-operation .admin-stat-grid{gap:12px}
+.admin-workspace-operation .admin-stat{padding:14px 16px;box-shadow:none}
+.admin-workspace-operation .admin-stat strong{font-size:20px}
+.admin-workspace-operation .admin-data-toolbar{padding:16px;border:1px solid var(--admin-line);border-radius:var(--admin-radius);background:#fff}
+.admin-workspace-operation .admin-data-toolbar label{min-width:150px}
+.admin-workspace-operation .admin-data-toolbar .grow{min-width:min(100%,260px)}
+.admin-workspace-operation .admin-data-toolbar select:has(option:not(:first-child):checked),
+.admin-workspace-operation .admin-data-toolbar input:not([value=""]){border-color:var(--admin-ink);background:#fafaf7}
+.admin-active-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-8px 0 0}
+.admin-active-filters>span:first-child{color:var(--admin-muted);font-size:11px;font-weight:600}
+.admin-filter-chip{display:inline-flex;align-items:center;min-height:30px;padding:5px 9px;border:1px solid var(--admin-line);border-radius:999px;background:#fff;color:var(--admin-ink);font-size:11px;text-decoration:none}
+.admin-filter-chip:hover{border-color:var(--admin-ink)}
+.admin-list-summary{min-height:24px}
+.admin-workspace-operation .admin-table-scroll{box-shadow:none}
+.admin-workspace-operation .admin-data-table th,.admin-workspace-operation .admin-data-table td{padding:11px 14px}
+.admin-workspace-operation .admin-data-table tbody tr[data-selected="true"]{background:#f1f3ee;box-shadow:inset 3px 0 0 var(--admin-ink)}
+.admin-status-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 7px;border:1px solid var(--admin-line);border-radius:999px;background:#f7f7f4;color:var(--admin-muted);font-size:10px;font-weight:600;line-height:1.2;white-space:nowrap}
+.admin-status-badge[data-tone="good"]{border-color:#a8c6b1;background:#eef6f0;color:#28533f}
+.admin-status-badge[data-tone="attention"]{border-color:#d9be91;background:#fbf4e7;color:#7b4d0d}
+.admin-status-badge[data-tone="danger"]{border-color:#d4aaa5;background:#fbefed;color:#8b2b22}
+.admin-status-badge[data-tone="info"]{border-color:#aebdca;background:#f0f4f7;color:#425c6e}
+.admin-detail-card{scroll-margin-top:20px}
+.admin-detail-card>header{padding-bottom:16px;border-bottom:1px solid var(--admin-line)}
+.admin-detail-card .admin-kicker{margin:0 0 5px}
+.admin-detail-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;color:var(--admin-muted);font-size:12px}
+.admin-danger-zone{padding-top:20px;border-top:1px solid #d7aaa5}
+.admin-danger-zone h3{margin:0 0 6px;color:#7e2922;font-size:15px}
+.admin-danger-zone p{margin:0 0 14px;max-width:68ch;color:var(--admin-muted);font-size:12px;line-height:1.5}
+.admin-workspace-operation .admin-button.danger{border-color:#a24a42;background:#fff;color:#8b2b22}
+.admin-workspace-operation .admin-button.danger:hover{background:#8b2b22;color:#fff}
+.admin-operational-note{margin:0;color:var(--admin-muted);font-size:12px;line-height:1.5}
+@media(max-width:800px){
+  .admin-workspace-operation .admin-data-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
+  .admin-workspace-operation .admin-data-toolbar label,.admin-workspace-operation .admin-data-toolbar .grow{min-width:0}
+  .admin-workspace-operation .admin-data-toolbar .grow,.admin-workspace-operation .admin-data-toolbar .admin-inline-actions{grid-column:1/-1}
+  .admin-workspace-operation .admin-data-toolbar .admin-inline-actions .admin-button{flex:1 1 0}
+  .admin-workspace-operation .admin-data-table{min-width:680px}
+}
+@media(max-width:520px){
+  .admin-workspace-operation .admin-data-toolbar{grid-template-columns:1fr;padding:14px}
+  .admin-workspace-operation .admin-data-toolbar .grow,.admin-workspace-operation .admin-data-toolbar .admin-inline-actions{grid-column:auto}
+  .admin-workspace-operation .admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-workspace-operation .admin-stat{padding:12px}
+  .admin-workspace-operation .admin-stat strong{font-size:18px}
+  .admin-detail-card>header{align-items:stretch;flex-direction:column}
+  .admin-detail-card>header .admin-button{width:100%}
+}
