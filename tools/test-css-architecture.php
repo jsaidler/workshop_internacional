@@ -62,7 +62,7 @@ foreach($adminIterator as $adminFile){
 }
 
 $mediaPage=(string)file_get_contents($root.'/admin/media.php');
-if(!preg_match('~<link[^>]+admin-media\.css~i',$mediaPage))$failures[]='admin/media.php deve ser o consumidor explícito de admin-media.css.';
+if(!str_contains($mediaPage,"'/assets/admin-media.css'"))$failures[]='admin/media.php deve declarar admin-media.css ao shell como estilo específico da página.';
 
 $studentShell=(string)file_get_contents($root.'/app/student_shell.php');
 if(str_contains($studentShell,'experience-ux.css'))$failures[]='student_shell.php depende da camada corretiva experience-ux.css.';
