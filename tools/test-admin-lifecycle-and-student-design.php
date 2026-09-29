@@ -9,7 +9,7 @@ $activities=(string)file_get_contents($root.'/admin/activities.php');
 $activityRepo=(string)file_get_contents($root.'/app/activity_repository.php');
 $testsPage=(string)file_get_contents($root.'/aluno/testes.php');
 $deletePage=(string)file_get_contents($root.'/aluno/excluir-teste.php');
-$submissions=(string)file_get_contents($root.'/admin/submissions.php');
+$registrations=(string)file_get_contents($root.'/admin/registrations.php');
 
 if(!str_contains($shell,'/template/page.css'))fail_lifecycle('student area does not inherit the global public stylesheet');
 foreach(['fonts.googleapis.com','student-dashboard.css'] as $needle)if(str_contains($shell,$needle))fail_lifecycle('student shell still owns a parallel design dependency: '.$needle);
@@ -18,7 +18,7 @@ foreach(['var(--title)','var(--body)','var(--mono)','var(--bg)','var(--surface)'
 if(!str_contains($activities,'Identidade da instalação')||!str_contains($activityRepo,'activity_update_localized_identity'))fail_lifecycle('site identity is not editable from canonical structure settings');
 if(str_contains($activities,'Novo curso ou workshop')||str_contains($activities,'activity_create('))fail_lifecycle('activity maintenance still creates workshops outside the page hierarchy');
 if(!str_contains($testsPage,'/aluno/excluir-teste.php?id=')||!str_contains($deletePage,'student_test_delete_owned'))fail_lifecycle('student cannot reach permanent test deletion');
-if(!str_contains($submissions,"value=\"delete_registration\"")||!str_contains($submissions,'admin_registration_delete'))fail_lifecycle('admin cannot permanently delete a registration');
+if(!str_contains($registrations,'name="action" value="delete_registration"')||!str_contains($registrations,'admin_registration_delete'))fail_lifecycle('admin cannot permanently delete a registration from the canonical registration workspace');
 
 $tmp=sys_get_temp_dir().'/student-lifecycle-'.bin2hex(random_bytes(5));
 mkdir($tmp,0770,true);
