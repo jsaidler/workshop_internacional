@@ -23,7 +23,7 @@ if(student_enrollment_shared_test_navigation_context($enrollments,$sharedCourse,
 if(student_enrollment_shared_test_navigation_context($enrollments,$sharedCourse)!==null)fail_student_test_workflow('ambiguous course-shared test invented a cohort without an explicit context');
 if((student_enrollment_shared_test_navigation_context([$enrollments[0]],$sharedCourse)['cohort_uuid']??'')!=='cohort-a')fail_student_test_workflow('single eligible course enrollment did not resolve naturally');
 
-$root=dirname(__DIR__);$test=(string)file_get_contents($root.'/aluno/teste.php');$shared=(string)file_get_contents($root.'/aluno/teste-compartilhado.php');$delete=(string)file_get_contents($root.'/aluno/excluir-teste.php');
+$root=dirname(__DIR__);$test=(string)file_get_contents($root.'/aluno/teste.php');$shared=(string)file_get_contents($root.'/aluno/teste-compartilhado.php');$delete=(string)file_get_contents($root.'/aluno/excluir-teste.php');$shell=(string)file_get_contents($root.'/app/student_shell.php');$reciprocity=(string)file_get_contents($root.'/assets/student-reciprocity.js');
 if(!str_contains($test,'Salvar exposição e continuar →'))fail_student_test_workflow('exposure no longer advances by saving');
 if(!str_contains($test,'id="student-development-form"')||!str_contains($test,'enctype="multipart/form-data"')||!str_contains($test,'name="action" value="save_development"')||!str_contains($test,'Salvar revelação e continuar →'))fail_student_test_workflow('development does not have one save-and-continue form');
 if(str_contains($test,'>Salvar revelação</button>')||str_contains($test,'Revisar teste →'))fail_student_test_workflow('development still exposes a competing save/review path');
@@ -31,5 +31,9 @@ if(!str_contains($test,'aria-disabled="true" tabindex="-1"'))fail_student_test_w
 if(!str_contains($test,'student_enrollment_owned_test_navigation_context')||!str_contains($test,"\$testsUrl='/aluno/testes.php'"))fail_student_test_workflow('owned test detail does not validate and preserve enrollment context');
 if(!str_contains($shared,'student_enrollment_shared_test_navigation_context')||!str_contains($shared,'student_shell_start((string)$test[\'title\'].\' · Compartilhado\',$activity?:null,$student)'))fail_student_test_workflow('shared test does not preserve context/design authority');
 if(!str_contains($delete,'student_enrollment_owned_test_navigation_context')||!str_contains($delete,"header('Location: '.\$testsUrl"))fail_student_test_workflow('delete flow does not return to the validated tests workspace');
+if(!str_contains($test,'name="calculated_time"')||!str_contains($test,'name="reciprocity_time"'))fail_student_test_workflow('exposure no longer exposes the calculated and reciprocity time pair');
+if(!str_contains($shell,'/assets/student-reciprocity.js'))fail_student_test_workflow('student shell does not load the client-side reciprocity calculator');
+if(!str_contains($reciprocity,'const RECIPROCITY_EXPONENT=1.38542662'))fail_student_test_workflow('reciprocity research exponent changed or disappeared');
+if(!str_contains($reciprocity,'input[name="calculated_time"]')||!str_contains($reciprocity,'input[name="reciprocity_time"]'))fail_student_test_workflow('reciprocity calculator is no longer bound to the exposure fields');
 
 echo "student-test-workflow: ok\n";
