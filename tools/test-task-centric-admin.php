@@ -46,7 +46,7 @@ must(str_contains($shell,'function admin_navigation_groups')&&str_contains($shel
 must(str_contains($shell,'installation_brand_name()'),'admin shell must use installation brand authority');
 must(str_contains($registrations,'function registration_name(array $row): string')&&str_contains($registrations,"\$p['name']??\$p['full_name']"),'registration operations must identify participants before fallback metadata');
 must(str_contains($registrations,'Aguardando pagamento'),'registration operations must expose payment state directly');
-must(str_contains($registrations,'Confirmar inscrição e pagamento'),'registration admin must make confirmation the primary operational action');
+must(str_contains($registrations,"if(\$action==='confirm')")&&str_contains($registrations,"payment_status='paid'")&&str_contains($registrations,'name="action" value="confirm"'),'registration admin must expose the payment confirmation operation as a direct primary action');
 must(str_contains($submissions,"COALESCE(f.purpose,'common')!='enrollment'"),'generic responses must not duplicate enrollment registrations');
 must(str_contains($media,'id="media-selection-toggle"'),'bulk media actions must be an explicit mode');
 must(str_contains($mediaTask,'previewSrc(item,480)'),'media grid must use thumbnail-sized sources');
