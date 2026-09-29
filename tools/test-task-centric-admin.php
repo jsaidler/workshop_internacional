@@ -44,7 +44,7 @@ must(str_contains($context,"status='new'"),'editor context must surface new insc
 must(!str_contains($shell,"'overview'=>['Início'"),'overview must remain a dashboard, not a redundant context-tab entry');
 must(str_contains($shell,'function admin_navigation_groups')&&str_contains($shell,"'Principal'=>")&&!str_contains($shell,'class="admin-context-nav"'),'admin must expose the dashboard and tools through one navigation hierarchy');
 must(str_contains($shell,'installation_brand_name()'),'admin shell must use installation brand authority');
-must(str_contains($registrations,"foreach(['name','full_name','email','phone']")||str_contains($registrations,"['name','full_name']"),'registration operations must identify participants before fallback metadata');
+must(str_contains($registrations,'function registration_name(array $row): string')&&str_contains($registrations,"\$p['name']??\$p['full_name']"),'registration operations must identify participants before fallback metadata');
 must(str_contains($registrations,'Aguardando pagamento'),'registration operations must expose payment state directly');
 must(str_contains($registrations,'Confirmar inscrição e pagamento'),'registration admin must make confirmation the primary operational action');
 must(str_contains($submissions,"COALESCE(f.purpose,'common')!='enrollment'"),'generic responses must not duplicate enrollment registrations');
