@@ -45,7 +45,7 @@ ux_expect(!str_contains($registrations,'LIMIT 500'),'Inscrições não pode trun
 ux_expect(str_contains($cohorts,'Todos os cursos')&&str_contains($cohorts,'LIMIT $pageSize OFFSET $offset'),'Turmas deve ser coleção global filtrável e paginada');
 ux_expect(str_contains($cohorts,"SUM(CASE WHEN e.status='active'"),'contagem de alunos por turma deve ser agregada sem N+1');
 ux_expect(str_contains($students,'Todos os cursos')&&str_contains($students,'Todas as turmas')&&str_contains($students,'LIMIT $pageSize OFFSET $offset'),'Alunos deve ser coleção global com curso, turma e paginação');
-ux_expect(str_contains($students,'Pessoa</a>'),'Alunos deve abrir a identidade global correspondente');
+ux_expect(str_contains($students,'/admin/people.php?')&&str_contains($students,"'person'=>(int)\$row['student_id']"),'Alunos deve abrir a identidade global correspondente');
 ux_expect(str_contains($people,'LIMIT $pageSize OFFSET $offset')&&str_contains($people,'admin-pagination'),'Pessoas deve possuir paginação real');
 ux_expect(str_contains($people,'Todos os cursos')&&str_contains($people,'EXISTS (SELECT 1 FROM course_enrollments'),'Pessoas deve permitir filtrar identidade por participação em curso');
 ux_expect(!str_contains($people,'submissions-layout inbox-layout'),'Pessoas não deve ser tratada como caixa de entrada');
