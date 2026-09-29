@@ -26,16 +26,17 @@ $testMobile=(string)file_get_contents($root.'/app/student_test_mobile.php');
 $editorAccess=(string)file_get_contents($root.'/editor/cms-access-controls.js');
 $editorHtml=(string)file_get_contents($root.'/editor/index.html');
 $index=(string)file_get_contents($root.'/index.php');
-$submissions=(string)file_get_contents($root.'/admin/submissions.php');
+$registrations=(string)file_get_contents($root.'/admin/registrations.php');
 
 foreach(['cms_design_font_import_css','cms_design_css','/template/page.css'] as $needle)if(!str_contains($studentShell,$needle))fail_coherence('student shell does not consume canonical design authority: '.$needle);
 if(!str_contains($studentShell,'installation_brand_name()')||str_contains($studentShell,'student_account_enrollments('))fail_coherence('student shell still conflates global identity/design with first enrollment');
 if(!str_contains($studentShell,'student_course_context_header')||!str_contains($studentShell,'Meus cursos'))fail_coherence('student course context/topbar architecture missing');
-if(!str_contains($site,'name="course_public_title"')||!str_contains($site,'Nome público do curso'))fail_coherence('course public title is not editable in Site identity');
+if(!str_contains($courseAdmin,'name="title"')||!str_contains($courseAdmin,'course_update($db,$courseId,$_POST)'))fail_coherence('course title is not editable from the canonical course configuration');
+if(str_contains($site,'name="course_public_title"')||str_contains($site,'Nome público do curso'))fail_coherence('Site navigation still owns course identity instead of the course domain');
 foreach(['private','cohort','course'] as $visibility)if(!str_contains($sharing,"'".$visibility."'"))fail_coherence('missing test visibility: '.$visibility);
 if(!str_contains($sharedTest,'student_test_messages($db,$id)')||!str_contains($sharedTest,'segue a mesma visibilidade do teste'))fail_coherence('shared conversation does not follow test visibility');
 if(str_contains($sharedTest,'name="message"'))fail_coherence('shared students can write into another student test');
-if(!str_contains($submissions,'delete_registration')||!str_contains($submissions,'admin_registration_delete'))fail_coherence('permanent registration deletion missing');
+if(!str_contains($registrations,'name="action" value="delete_registration"')||!str_contains($registrations,'admin_registration_delete'))fail_coherence('permanent registration deletion missing from canonical registration workspace');
 
 foreach(['data-cms-access-controls','cms-access-audience','cms-access-availability','cms-visible-from','cms-visible-until','cms-access-lesson'] as $needle)if(!str_contains($editorAccess,$needle))fail_coherence('section access control missing from canonical editor: '.$needle);
 if(!str_contains($editorHtml,'/editor/cms-access-controls.js'))fail_coherence('canonical editor does not load access controls');
