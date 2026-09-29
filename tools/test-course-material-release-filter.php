@@ -8,13 +8,13 @@ $access=file_get_contents(__DIR__.'/../app/cms_access.php');
 $renderer=file_get_contents(__DIR__.'/../app/cms_renderer.php');
 $enrollments=file_get_contents(__DIR__.'/../app/student_enrollments.php');
 $courses=file_get_contents(__DIR__.'/../app/courses.php');
-$admin=file_get_contents(__DIR__.'/../admin/courses.php');
+$material=file_get_contents(__DIR__.'/../admin/material.php');
 
 must_course_material_filter(str_contains($courses,'course_material_pages'),'course material is not represented as a relation to CMS pages');
 must_course_material_filter(str_contains($courses,'course_material_sections'),'course material sections are not mapped to canonical course lessons');
 must_course_material_filter(str_contains($courses,'course_material_sections_from_page'),'material admin does not read sections from the existing CMS page document');
-must_course_material_filter(str_contains($admin,'/editor/?page='),'material editing does not enter the existing CMS editor');
-must_course_material_filter(str_contains($admin,'Sempre disponível'),'unmapped sections are not represented as generally available course material');
+must_course_material_filter(str_contains($material,'/editor/?page='),'material editing does not enter the existing CMS editor');
+must_course_material_filter(str_contains($material,'Sempre disponível'),'unmapped sections are not represented as generally available course material');
 must_course_material_filter(str_contains($enrollments,"['material_page_id']"),'material enrollment context does not carry the canonical CMS page id');
 must_course_material_filter(str_contains($access,'course_material_section_map'),'server-side access filter does not consume course section-to-lesson mapping');
 must_course_material_filter(str_contains($access,"'lesson':'immediate'"),'unmapped material sections are not treated as immediate while mapped sections require lesson release');

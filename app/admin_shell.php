@@ -17,16 +17,28 @@ function admin_public_activity_url(?array $activity): string {if(!$activity)retu
 
 function admin_workspace(string $section): string {return match($section){
     'overview'=>'overview',
-    'pages','blocks','design','site','seo','forms','responses'=>'content',
-    'courses','registrations','people','students','studentops'=>'courses',
+    'registrations','cohorts','students','people','studentops'=>'operation',
+    'courses','lessons','material'=>'teaching',
+    'pages','blocks','design','site','seo','forms','responses'=>'site',
     'analytics'=>'analytics',
     'media'=>'media',
     'system','activities','integrity'=>'settings',
-    default=>'content',
+    default=>'site',
 };}
 
 function admin_context_items(string $workspace,?array $activity): array {return match($workspace){
-    'content'=>[
+    'operation'=>[
+        'registrations'=>['Inscrições',admin_shell_url('/admin/registrations.php',$activity)],
+        'cohorts'=>['Turmas',admin_shell_url('/admin/cohorts.php',$activity)],
+        'students'=>['Alunos',admin_shell_url('/admin/students.php',$activity)],
+        'people'=>['Pessoas',admin_shell_url('/admin/people.php',$activity)],
+    ],
+    'teaching'=>[
+        'courses'=>['Cursos',admin_shell_url('/admin/courses.php',$activity)],
+        'lessons'=>['Aulas',admin_shell_url('/admin/lessons.php',$activity)],
+        'material'=>['Material',admin_shell_url('/admin/material.php',$activity)],
+    ],
+    'site','content'=>[
         'pages'=>['Páginas',admin_shell_url('/admin/pages.php',$activity)],
         'forms'=>['Formulários',admin_shell_url('/admin/forms.php',$activity)],
         'responses'=>['Outras respostas',admin_shell_url('/admin/submissions.php',$activity)],
@@ -34,11 +46,7 @@ function admin_context_items(string $workspace,?array $activity): array {return 
         'design'=>['Visual',admin_shell_url('/admin/design.php',$activity)],
         'seo'=>['SEO',admin_shell_url('/admin/seo.php',$activity)],
     ],
-    'courses'=>[
-        'courses'=>['Cursos',admin_shell_url('/admin/courses.php',$activity)],
-        'registrations'=>['Inscrições',admin_shell_url('/admin/registrations.php',$activity)],
-        'people'=>['Pessoas',admin_shell_url('/admin/people.php',$activity)],
-    ],
+    'courses'=>array_merge(admin_context_items('operation',$activity),admin_context_items('teaching',$activity)),
     'settings'=>[
         'system'=>['Sistema e atualizações','/admin/system.php'],
         'activities'=>['Estrutura do site','/admin/activities.php'],
@@ -51,8 +59,9 @@ function admin_navigation_groups(?array $activity): array {return [
     'Principal'=>[
         'overview'=>['Visão geral','/admin/'],
     ],
-    'Conteúdo'=>admin_context_items('content',$activity),
-    'Cursos'=>admin_context_items('courses',$activity),
+    'Operação'=>admin_context_items('operation',$activity),
+    'Ensino'=>admin_context_items('teaching',$activity),
+    'Site'=>admin_context_items('site',$activity),
     'Biblioteca'=>[
         'media'=>['Mídia',admin_shell_url('/admin/media.php',$activity)],
     ],
@@ -64,22 +73,27 @@ function admin_navigation_groups(?array $activity): array {return [
 
 function admin_navigation_active_key(string $section): string {return match($section){
     'blocks'=>'pages',
-    'students','studentops'=>'people',
+    'studentops'=>'people',
     default=>$section,
 };}
 
 function admin_course_url(int $activityId,int $courseId,string $area='overview'): string {
-    if($area==='registrations')return '/admin/registrations.php?'.http_build_query(['activity'=>$activityId,'course'=>$courseId]);
-    $view=match($area){'overview'=>'overview','cohorts'=>'cohorts','students'=>'students','lessons'=>'lessons','material'=>'material','setup'=>'setup',default=>'overview'};
-    return '/admin/courses.php?'.http_build_query(['activity'=>$activityId,'course'=>$courseId,'view'=>$view]);
+    $args=['activity'=>$activityId,'course'=>$courseId];
+    return match($area){
+        'registrations'=>'/admin/registrations.php?'.http_build_query($args),
+        'cohorts'=>'/admin/cohorts.php?'.http_build_query($args),
+        'students'=>'/admin/students.php?'.http_build_query($args),
+        'lessons'=>'/admin/lessons.php?'.http_build_query($args),
+        'material'=>'/admin/material.php?'.http_build_query($args),
+        'setup'=>'/admin/courses.php?'.http_build_query($args+['view'=>'setup']),
+        default=>'/admin/courses.php?'.http_build_query($args),
+    };
 }
 
 function admin_course_context(array $course,int $activityId,string $active='overview',?string $description=null): void {
-    $courseId=(int)$course['id'];$items=['overview'=>'Visão geral','registrations'=>'Inscrições','cohorts'=>'Turmas','students'=>'Alunos','lessons'=>'Aulas','material'=>'Material'];
-    ?><section class="admin-course-context">
-      <a class="admin-course-back" href="<?=h(admin_shell_url('/admin/courses.php',['id'=>$activityId]))?>">← Todos os cursos</a>
-      <div class="admin-course-context-head"><div><p class="admin-kicker">Curso</p><h2><?=h((string)$course['title'])?></h2><?php if($description):?><p><?=h($description)?></p><?php endif;?></div></div>
-      <nav class="admin-course-nav" aria-label="Administração do curso"><?php foreach($items as $key=>$label):?><a href="<?=h(admin_course_url($activityId,$courseId,$key))?>"<?=$active===$key?' aria-current="page"':''?>><?=h($label)?></a><?php endforeach;?></nav>
+    ?><section class="admin-scope-strip" aria-label="Curso filtrado">
+      <div><span class="admin-scope-label">Curso</span><strong><?=h((string)$course['title'])?></strong><?php if($description):?><small><?=h($description)?></small><?php endif;?></div>
+      <a href="<?=h(admin_course_url($activityId,(int)$course['id'],'overview'))?>">Ver curso</a>
     </section><?php
 }
 
