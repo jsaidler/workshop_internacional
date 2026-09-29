@@ -22,7 +22,7 @@ $adminCss=(string)file_get_contents($root.'/assets/admin-system.css');
 
 must(!str_contains($admin,"Location: /editor/?page="),'admin entry point must not bypass the dashboard');
 must(str_contains($admin,"admin_shell_start('overview','Visão geral'"),'admin entry point must render the overview dashboard');
-must(str_contains($admin,'admin-dashboard-status'),'dashboard must surface operational status');
+must(str_contains($admin,'admin-stat-grid'),'dashboard must surface operational status through the canonical summary primitive');
 must(str_contains($admin,'Editar página inicial'),'dashboard must keep direct editing as an explicit action');
 must(str_contains($editor,'id="editor-page-switcher"'),'editor must expose page switching in context');
 must(str_contains($editor,'id="editor-submissions"'),'editor must expose inscriptions without leaving the site mental model');
