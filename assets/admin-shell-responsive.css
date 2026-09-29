@@ -2,25 +2,26 @@
    Admin shell responsive authority
    -------------------------------------------------------------------------- */
 @media(max-width:800px){
-  .admin-sidebar{
+  body.admin-page .admin-sidebar{
     position:fixed;
     z-index:50;
     display:none;
     width:min(320px,88vw);
     padding:16px;
   }
-  .admin-sidebar.is-open{display:flex}
-  .admin-main{
+  body.admin-page .admin-sidebar.is-open{display:flex}
+  body.admin-page .admin-main{
     width:100%;
+    max-width:none;
     margin-left:0;
     padding-top:0;
   }
-  .admin-nav{
+  body.admin-page .admin-nav{
     gap:16px;
     margin:16px 0;
   }
-  .admin-content{gap:24px}
+  body.admin-page .admin-content{gap:24px}
 }
 @media(max-width:520px){
-  .admin-content{width:calc(100% - 20px)}
+  body.admin-page .admin-content{width:calc(100% - 20px)}
 }
