@@ -1,0 +1,27 @@
+/* --------------------------------------------------------------------------
+   Admin shell responsive authority
+   -------------------------------------------------------------------------- */
+@media(max-width:800px){
+  body.admin-page .admin-sidebar{
+    position:fixed;
+    z-index:50;
+    display:none;
+    width:min(320px,88vw);
+    padding:16px;
+  }
+  body.admin-page .admin-sidebar.is-open{display:flex}
+  body.admin-page .admin-main{
+    width:100%;
+    max-width:none;
+    margin-left:0;
+    padding-top:0;
+  }
+  body.admin-page .admin-nav{
+    gap:16px;
+    margin:16px 0;
+  }
+  body.admin-page .admin-content{gap:24px}
+}
+@media(max-width:520px){
+  body.admin-page .admin-content{width:calc(100% - 20px)}
+}

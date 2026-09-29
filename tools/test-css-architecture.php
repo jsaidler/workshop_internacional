@@ -23,6 +23,7 @@ if($important)$failures[]="CSS autoral ainda contém !important:\n - ".implode("
 $canonical=[
     'assets/ui-core.css',
     'assets/admin-system.css',
+    'assets/admin-shell-responsive.css',
     'assets/admin-media.css',
     'assets/student-area.css',
     'assets/cms-core.css',
@@ -46,6 +47,7 @@ foreach($retired as $path){
 
 $adminShell=(string)file_get_contents($root.'/app/admin_shell.php');
 if(!preg_match('~<link[^>]+admin-system\.css~i',$adminShell))$failures[]='admin_shell.php deve carregar admin-system.css como autoridade global.';
+if(!preg_match('~<link[^>]+admin-shell-responsive\.css~i',$adminShell))$failures[]='admin_shell.php deve carregar a autoridade responsiva do shell administrativo.';
 foreach(['admin-ux-v2.css','admin-ux-v3.css','admin-data-ux.css','admin-form-ux.css','experience-ux.css','admin-media.css'] as $legacy){
     if(str_contains($adminShell,$legacy))$failures[]="admin_shell.php carrega CSS que não pertence ao shell global: {$legacy}";
 }

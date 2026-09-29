@@ -54,3 +54,19 @@ test('registration fields and master-detail collapse before values become unread
   await expect.poll(()=>page.locator('.inbox-layout').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(1);
   await expect(page.locator('.inbox-list')).toHaveCSS('position','static');
 });
+
+test('admin shell occupies the phone viewport instead of retaining desktop sidebar geometry',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('http://127.0.0.1:8099/tools/browser-fixture/admin-submissions-layout.html');
+
+  const mainBox=await page.locator('.admin-main').boundingBox();
+  const contentBox=await page.locator('.admin-content').boundingBox();
+  expect(mainBox.x).toBeLessThanOrEqual(1);
+  expect(mainBox.width).toBeGreaterThanOrEqual(389);
+  expect(contentBox.x).toBeLessThanOrEqual(16);
+  expect(contentBox.width).toBeGreaterThanOrEqual(360);
+  await expect(page.locator('.admin-mobile-header')).toHaveCSS('display','flex');
+  await expect(page.locator('.admin-sidebar')).toHaveCSS('display','none');
+  await expect(page.locator('.admin-main')).toHaveCSS('margin-left','0px');
+  await expect(page.locator('.admin-main')).toHaveCSS('padding-top','0px');
+});
