@@ -70,3 +70,20 @@ test('admin shell occupies the phone viewport instead of retaining desktop sideb
   await expect(page.locator('.admin-main')).toHaveCSS('margin-left','0px');
   await expect(page.locator('.admin-main')).toHaveCSS('padding-top','0px');
 });
+
+test('mobile admin keeps one sticky shell header and lets the route title scroll normally',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('http://127.0.0.1:8099/tools/browser-fixture/admin-submissions-layout.html');
+
+  const mobileHeader=page.locator('.admin-mobile-header');
+  const toolbar=page.locator('.admin-toolbar');
+  await expect(mobileHeader).toHaveCSS('position','sticky');
+  await expect(mobileHeader).toHaveCSS('top','0px');
+  await expect(toolbar).toHaveCSS('position','static');
+
+  await page.evaluate(()=>window.scrollTo(0,420));
+  const headerBox=await mobileHeader.boundingBox();
+  const toolbarBox=await toolbar.boundingBox();
+  expect(headerBox.y).toBeLessThanOrEqual(1);
+  expect(toolbarBox.y).toBeLessThan(0);
+});
