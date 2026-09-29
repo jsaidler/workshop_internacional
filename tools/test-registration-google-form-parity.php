@@ -3,7 +3,7 @@ declare(strict_types=1);
 function fail_registration(string $message): never {fwrite(STDERR,"test-registration-google-form-parity: $message\n");exit(1);}function expect_registration(bool $value,string $message): void {if(!$value)fail_registration($message);}
 $setup=(string)file_get_contents(__DIR__.'/../app/workshop_cms_setup.php');
 $content=(string)file_get_contents(__DIR__.'/../app/workshop_registration_content.php');
-$admin=(string)file_get_contents(__DIR__.'/../admin/submissions.php');
+$admin=(string)file_get_contents(__DIR__.'/../admin/registrations.php');
 $public=(string)file_get_contents(__DIR__.'/../assets/public.js');
 $registrationCss=(string)file_get_contents(__DIR__.'/../assets/registration.css');
 $globalCss=(string)file_get_contents(__DIR__.'/../assets/cms-editorial.css');
@@ -15,7 +15,7 @@ foreach(['https://mpago.la/1xvBsPV','20.179.548/0001-58','00020101021126690014br
 foreach(["'experience'","'equipment_format'","'equipment'","'payment_preference'","'notes'"] as $removed)expect_registration(!str_contains($setup,$removed),"invented field remains: $removed");
 expect_registration(!str_contains($setup,'WORKSHOP_PIX_KEY')&&!str_contains($setup,'workshop_registration_payment_html'),'registration setup must not own operational Pix content outside the CMS schema');
 expect_registration(str_contains($content,"'id'=>'payment_pix'")&&str_contains($content,"'id'=>'payment_card'")&&str_contains($content,'data-cms-image'),'payment panels and QR must be native CMS content');
-expect_registration(str_contains($admin,"payment_status='paid'")&&str_contains($admin,'Confirmar inscrição e pagamento'),'admin does not support direct payment confirmation');
+expect_registration(str_contains($admin,"if(\$action==='confirm')")&&str_contains($admin,"payment_status='paid'")&&str_contains($admin,'name="action" value="confirm"'),'admin does not support direct payment confirmation');
 expect_registration(str_contains($public,'data-copy-pix')&&str_contains($public,'data-cms-condition-field')&&str_contains($public,"operator==='contains'"),'public payment branching missing');
 expect_registration(str_contains($globalCss,'.cms-form .cms-form-grid')&&str_contains($globalCss,'.cms-form .cms-field input')&&str_contains($globalCss,'.cms-form .cms-consent'),'canonical form UX must live in the global CMS stylesheet');
 expect_registration(!str_contains($registrationCss,'.registration-canonical-form .cms-form-grid'),'registration stylesheet must not own shared form-field UX');
