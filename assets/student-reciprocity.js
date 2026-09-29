@@ -24,8 +24,9 @@
       const denominator=decimalValue(fraction[2]);
       if(!finitePositive(numerator)||!Number.isFinite(denominator)||denominator<=0)return null;
       return {
+        raw,
         seconds:numerator/denominator,
-        format:{kind:'fraction',raw,suffix:fraction[3]??'',separator:fraction[1].includes(',')||fraction[2].includes(',')?',':'.'}
+        format:{kind:'fraction',suffix:fraction[3]??'',separator:fraction[1].includes(',')||fraction[2].includes(',')?',':'.'}
       };
     }
 
@@ -41,6 +42,7 @@
       const secondPart=parts[parts.length-1];
       const integerPart=secondPart.split(/[.,]/)[0];
       return {
+        raw,
         seconds,
         format:{
           kind:'clock',
@@ -59,6 +61,7 @@
       const token=unit[3].toLowerCase();
       const factor=(token==='h'||token==='hora'||token==='horas')?3600:(token==='m'||token==='min'||token==='mins'||token==='minuto'||token==='minutos')?60:1;
       return {
+        raw,
         seconds:value*factor,
         format:{kind:'unit',factor,space:unit[2],unit:unit[3],separator:unit[1].includes(',')?',':'.'}
       };
@@ -67,7 +70,7 @@
     if(/^\d+(?:[.,]\d+)?$/.test(raw)){
       const seconds=decimalValue(raw);
       if(!finitePositive(seconds))return null;
-      return {seconds,format:{kind:'plain',separator:raw.includes(',')?',':'.'}};
+      return {raw,seconds,format:{kind:'plain',separator:raw.includes(',')?',':'.'}};
     }
 
     return null;
@@ -79,9 +82,9 @@
   }
 
   function formatClock(seconds,format){
-    let totalMilliseconds=Math.round(seconds*1000);
+    const totalMilliseconds=Math.round(seconds*1000);
     const totalSeconds=Math.floor(totalMilliseconds/1000);
-    let milliseconds=totalMilliseconds%1000;
+    const milliseconds=totalMilliseconds%1000;
     const fields=format.fields;
     let first;
     let middle=null;
@@ -114,7 +117,7 @@
 
   function formatAdjusted(parsed,adjusted){
     const format=parsed.format;
-    if(adjusted===parsed.seconds&&parsed.seconds<=1)return format.raw??null;
+    if(parsed.seconds<=1)return parsed.raw;
     if(format.kind==='clock')return formatClock(adjusted,format);
     if(format.kind==='unit')return `${decimalString(adjusted/format.factor,format.separator)}${format.space}${format.unit}`;
     if(format.kind==='fraction')return `${decimalString(adjusted,format.separator)}${format.suffix}`;
@@ -138,6 +141,7 @@
     output.setAttribute('aria-readonly','true');
     output.dataset.reciprocityCalculated='true';
     output.title='Calculado automaticamente a partir do tempo informado.';
+    if(!source.placeholder)source.placeholder='Ex.: 4 s, 02:30 ou 00:00:04';
 
     const update=()=>{
       const raw=source.value.trim();
