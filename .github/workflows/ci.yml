@@ -35,6 +35,7 @@ jobs:
           php tools/test-task-centric-admin.php
           php tools/test-admin-product-ux-foundation.php
           php tools/test-admin-operational-ux.php
+          php tools/test-admin-teaching-ux.php
           php tools/test-admin-submissions-layout.php
           php tools/test-analytics-dashboard.php
           php tools/test-responsive-layout-contract.php
