@@ -53,6 +53,14 @@ foreach(['admin-ux-v2.css','admin-ux-v3.css','admin-data-ux.css','admin-form-ux.
 }
 if(preg_match('/<style\b/i',$adminShell))$failures[]='admin_shell.php contém CSS inline; estilos estruturais pertencem ao sistema CSS canônico.';
 
+$adminIterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/admin',FilesystemIterator::SKIP_DOTS));
+foreach($adminIterator as $adminFile){
+    if(!$adminFile->isFile()||strtolower($adminFile->getExtension())!=='php')continue;
+    $relative=str_replace('\\','/',substr($adminFile->getPathname(),strlen($root)+1));
+    $source=(string)file_get_contents($adminFile->getPathname());
+    if(preg_match('/<style\b/i',$source))$failures[]='Rota administrativa contém bloco <style> local: '.$relative;
+}
+
 $mediaPage=(string)file_get_contents($root.'/admin/media.php');
 if(!preg_match('~<link[^>]+admin-media\.css~i',$mediaPage))$failures[]='admin/media.php deve ser o consumidor explícito de admin-media.css.';
 
