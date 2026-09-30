@@ -18,7 +18,7 @@ must_global_ui(str_contains($shell,'/assets/ui-core.css')&&str_contains($shell,'
 
 $forbiddenCss=['.student-field','.student-choice-','.student-check-field','.student-button','.student-error','.student-notice','.student-danger-button','--student-control-height'];
 foreach($forbiddenCss as $needle)must_global_ui(!str_contains($studentCss,$needle),'student stylesheet recreates global primitive '.$needle);
-foreach(['.student-step-nav','.student-workflow-panel','.student-course-card','.student-mobile-nav'] as $layout)must_global_ui(str_contains($studentCss,$layout),'student stylesheet lost application composition '.$layout);
+foreach(['.student-step-nav','.student-workflow-panel','.student-home-grid','.student-course-list','.student-mobile-nav'] as $layout)must_global_ui(str_contains($studentCss,$layout),'student stylesheet lost application composition '.$layout);
 
 foreach(['.form-field','.form-field-error','.choice-field','.choice-option','.check-field','.ui-alert','.button-danger'] as $primitive)must_global_ui(str_contains($uiCss,$primitive),'global stylesheet missing '.$primitive);
 foreach(['workshop-theme','form[data-ui-validate]','dataset.uiMatch','aria-describedby','scrollIntoView'] as $behavior)must_global_ui(str_contains($uiJs,$behavior),'global UI runtime missing '.$behavior);
