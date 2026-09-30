@@ -6,6 +6,7 @@ $root=dirname(__DIR__);
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
 $experienceCss=(string)file_get_contents($root.'/assets/student-experience.css');
+$renderedCss=(string)file_get_contents($root.'/assets/student-rendered-fixes.css');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $uiJs=(string)file_get_contents($root.'/assets/ui-core.js');
 $home=(string)file_get_contents($root.'/aluno/index.php');
@@ -22,6 +23,7 @@ must_student_premium_ui(!str_contains($shell,'data-theme="light"'),'student shel
 must_student_premium_ui(str_contains($shell,'data-theme-value="auto"')&&str_contains($shell,'data-theme-value="dark"'),'student shell does not expose canonical theme choices');
 must_student_premium_ui(str_contains($shell,'/assets/ui-core.css')&&str_contains($shell,'/assets/ui-core.js'),'student shell does not consume global UI authority');
 must_student_premium_ui(str_contains($shell,'/assets/student-experience.css')&&str_contains($shell,'/assets/student-experience.js'),'student shell does not load the experience layer');
+must_student_premium_ui(str_contains($shell,'/assets/student-rendered-fixes.css')&&str_contains($shell,'data-student-rendered-fixes'),'student shell does not load the rendered visual polish layer');
 foreach(['.student-field','.student-choice-','.student-check-field','.student-button','.student-error','.student-notice','.student-danger-button','--student-control-height'] as $forbidden)must_student_premium_ui(!str_contains($css,$forbidden),'student stylesheet still owns global primitive '.$forbidden);
 
 foreach(['>Início</a>','>Curso</a>','>Caderno</a>'] as $destination)must_student_premium_ui(str_contains($shell,$destination),'student primary navigation is missing '.$destination);
@@ -53,7 +55,8 @@ must_student_premium_ui(str_contains($test,"if(\$stageKey==='dry')")&&str_contai
 must_student_premium_ui(str_contains($test,'Desfazer última etapa')&&!str_contains($test,'remover daqui'),'destructive process correction is still repeated on every step');
 must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'data-process-step-form'),'guided process does not consume global choice controls');
 must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record workflow is not consuming global validation');
-must_student_premium_ui(str_contains($experienceCss,'.student-workflow-panel .student-sticky-action{margin-top:28px;padding-top:22px}'),'primary form actions can collapse against fields');
+must_student_premium_ui(str_contains($renderedCss,'.student-sticky-action{margin-top:30px;padding-top:22px')&&str_contains($renderedCss,'.student-form-grid{gap:28px 20px}'),'primary form actions can collapse against fields');
+must_student_premium_ui(str_contains($renderedCss,'.student-create-dialog .student-actions{justify-content:flex-end;gap:12px;margin-top:10px;padding-top:22px'),'new-record action still collapses against preceding fields');
 
 foreach([$login,$password,$profile] as $surface){must_student_premium_ui(str_contains($surface,'data-ui-validate'),'an account form is not consuming global validation');must_student_premium_ui(!str_contains($surface,'data-student-validate'),'an account form still uses a local validation contract');}
 must_student_premium_ui(str_contains($login,'class="form-field"')&&str_contains($login,'button button-primary'),'login does not consume global field/button primitives');

@@ -11,9 +11,22 @@ $totalPropertyCollisions=0;
 
 foreach($files as $relative){
     $path=$root.'/'.$relative;
-    $counts=css_ownership_counts((string)file_get_contents($path));
-    $repeatedRules=array_filter($counts['rules'],static fn(int $count): bool=>$count>1);
-    $propertyCollisions=array_filter($counts['properties'],static fn(int $count): bool=>$count>1);
+    $css=(string)file_get_contents($path);
+    $rules=css_ownership_scan($css);
+    $ruleCounts=[];$propertyValues=[];
+    foreach($rules as $rule){
+        $ruleKey=$rule['context'].' || '.$rule['selector'];
+        $ruleCounts[$ruleKey]=($ruleCounts[$ruleKey]??0)+1;
+        foreach($rule['declarations'] as $declaration){
+            $propertyKey=$ruleKey.' || '.$declaration['property'];
+            $authored=substr($css,$declaration['start'],$declaration['end']-$declaration['start']);
+            $authored=css_ownership_normalize(rtrim(trim($authored),';'));
+            $propertyValues[$propertyKey][$authored]=true;
+        }
+    }
+    $repeatedRules=array_filter($ruleCounts,static fn(int $count): bool=>$count>1);
+    $propertyCollisions=[];
+    foreach($propertyValues as $key=>$values)if(count($values)>1)$propertyCollisions[$key]=count($values);
     arsort($repeatedRules);arsort($propertyCollisions);
     $totalRepeatedRules+=count($repeatedRules);
     $totalPropertyCollisions+=count($propertyCollisions);
@@ -21,15 +34,15 @@ foreach($files as $relative){
 
     echo "\n[$relative]\n";
     echo ' repeated selector/context keys: '.count($repeatedRules)."\n";
-    echo ' repeated property ownership keys: '.count($propertyCollisions)."\n";
+    echo ' conflicting property ownership keys: '.count($propertyCollisions)."\n";
     $shown=0;
     foreach($propertyCollisions as $key=>$count){
-        echo str_pad((string)$count,3,' ',STR_PAD_LEFT).' × '.$key."\n";
+        echo str_pad((string)$count,3,' ',STR_PAD_LEFT).' distinct declarations × '.$key."\n";
         if(++$shown>=60){echo "... property collisions truncated ...\n";break;}
     }
 }
 
-echo "\nCSS ownership audit complete; files: ".count($files)."; repeated rules: {$totalRepeatedRules}; repeated property keys: {$totalPropertyCollisions}.\n";
+echo "\nCSS ownership audit complete; files: ".count($files)."; repeated rules: {$totalRepeatedRules}; conflicting property keys: {$totalPropertyCollisions}.\n";
 if($strict&&$totalPropertyCollisions>0){
     fwrite(STDERR,"Strict CSS ownership failed: declarations still self-correct the same property for the same selector/context.\n");
     exit(1);

@@ -21,6 +21,7 @@ $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $adminCss=(string)file_get_contents($root.'/assets/admin-system.css');
 $studentCss=(string)file_get_contents($root.'/assets/student-area.css');
 $experienceCss=(string)file_get_contents($root.'/assets/student-experience.css');
+$renderedCss=(string)file_get_contents($root.'/assets/student-rendered-fixes.css');
 $doc=(string)file_get_contents($root.'/docs/ADMIN_STUDENT_UX_AUDIT_2026-09-28.md');
 $studentDoc=(string)file_get_contents($root.'/docs/STUDENT_AREA_WORKFLOW_REDESIGN_2026-09-30.md');
 
@@ -83,7 +84,7 @@ ux_expect(str_contains($adminCss,'row-gap:var(--ux-space-5,24px)'),'formulários
 ux_expect(str_contains($adminCss,'gap:var(--ux-space-4,16px)'),'componentes de dados devem usar tokens da escala');
 ux_expect(str_contains($studentCss,'gap:var(--ux-space-5) 20px'),'forms do aluno devem consumir ritmo global');
 ux_expect(str_contains($experienceCss,'.student-process-now')&&str_contains($experienceCss,'.student-toolbox')&&str_contains($experienceCss,'.student-bench-grid'),'camada de experiência deve expressar foco operacional e ferramentas contextuais');
-ux_expect(str_contains($experienceCss,'.student-workflow-panel .student-sticky-action{margin-top:28px;padding-top:22px}'),'ação principal não pode ficar colada aos campos');
+ux_expect(str_contains($renderedCss,'.student-sticky-action{margin-top:30px;padding-top:22px')&&str_contains($renderedCss,'.student-form-grid{gap:28px 20px}'),'ação principal não pode ficar colada aos campos');
 ux_expect(str_contains($studentCss,'.student-link{display:inline-flex;min-height:40px'),'ações textuais do aluno devem ter affordance explícita');
 ux_expect(str_contains($doc,'Coleções são o eixo primário'),'documentação administrativa deve fixar a arquitetura por coleções');
 ux_expect(str_contains($doc,'Curso como catálogo e filtro'),'documentação administrativa deve impedir retorno da árvore local de curso');

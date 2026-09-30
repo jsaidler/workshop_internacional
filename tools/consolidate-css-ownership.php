@@ -16,6 +16,8 @@ foreach($files as $relative){
         $ruleKey=$rule['context'].' || '.$rule['selector'];
         foreach($rule['declarations'] as $declaration){
             $key=$ruleKey.' || '.$declaration['property'];
+            $authored=substr($css,$declaration['start'],$declaration['end']-$declaration['start']);
+            $declaration['normalized']=css_ownership_normalize(rtrim(trim($authored),';'));
             $occurrences[$key][]=$declaration;
         }
     }
@@ -24,6 +26,8 @@ foreach($files as $relative){
     foreach($occurrences as $items){
         $count=count($items);
         if($count<2)continue;
+        $distinct=[];foreach($items as $item)$distinct[$item['normalized']]=true;
+        if(count($distinct)<2)continue;
         for($i=0;$i<$count-1;$i++)$removals[]=$items[$i];
     }
     usort($removals,static fn(array $a,array $b): int=>$b['start']<=>$a['start']);
@@ -52,9 +56,9 @@ foreach($files as $relative){
 
     if($removedForFile===0&&$emptyForFile===0)continue;
     $changed[]=$relative;
-    echo $relative.': obsolete declarations '.$removedForFile.', empty rules '.$emptyForFile."\n";
+    echo $relative.': obsolete conflicting declarations '.$removedForFile.', empty rules '.$emptyForFile."\n";
     if(!$check)file_put_contents($path,$css);
 }
 
-echo "Consolidation complete; obsolete declarations: {$totalRemoved}; empty rules: {$totalEmptyRules}; files: ".count($changed)." of ".count($files).".\n";
+echo "Consolidation complete; obsolete conflicting declarations: {$totalRemoved}; empty rules: {$totalEmptyRules}; files: ".count($changed).' of '.count($files).".\n";
 if($check&&$changed)exit(1);
