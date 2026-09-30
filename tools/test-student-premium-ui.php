@@ -48,7 +48,7 @@ must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/cade
 
 must_student_premium_ui(str_contains($test,'student-process-now')&&str_contains($test,'student-process-history'),'processing does not prioritize now over history');
 must_student_premium_ui(str_contains($test,'data-lab-timer'),'record workflow lost contextual timer');
-must_student_premium_ui(str_contains($test,"if($stageKey==='dry')")&&str_contains($test,"$view='review'"),'drying does not move directly to result');
+must_student_premium_ui(str_contains($test,"if(\$stageKey==='dry')")&&str_contains($test,"\$view='review'"),'drying does not move directly to result');
 must_student_premium_ui(str_contains($test,'Desfazer última etapa')&&!str_contains($test,'remover daqui'),'destructive process correction is still repeated on every step');
 must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'data-process-step-form'),'guided process does not consume global choice controls');
 must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record workflow is not consuming global validation');
