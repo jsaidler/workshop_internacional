@@ -24,11 +24,11 @@ $db->exec("INSERT INTO course_lessons(activity_id,workshop_page_id,lesson_key,ti
 must_workshop_scope((int)$db->query('SELECT COUNT(*) FROM course_cohorts')->fetchColumn()===2,'legacy bridge cannot preserve independent page-scoped cohorts');
 must_workshop_scope((int)$db->query('SELECT COUNT(*) FROM course_lessons')->fetchColumn()===2,'legacy bridge cannot preserve independent page-scoped lessons');
 
-$enrollments=(string)file_get_contents(dirname(__DIR__).'/app/student_enrollments.php');$sharing=(string)file_get_contents(dirname(__DIR__).'/app/student_sharing.php');$index=(string)file_get_contents(dirname(__DIR__).'/aluno/index.php');$architecture=(string)file_get_contents(dirname(__DIR__).'/docs/COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md');
+$enrollments=(string)file_get_contents(dirname(__DIR__).'/app/student_enrollments.php');$sharing=(string)file_get_contents(dirname(__DIR__).'/app/student_sharing.php');$courses=(string)file_get_contents(dirname(__DIR__).'/aluno/cursos.php');$architecture=(string)file_get_contents(dirname(__DIR__).'/docs/COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md');
 must_workshop_scope(str_contains($architecture,'`courses` é a identidade estável do curso'),'canonical course-domain document does not supersede page roots as business identity');
 must_workshop_scope(str_contains($enrollments,'course_registration_course_for_form'),'registration reconciliation does not resolve the canonical course');
 must_workshop_scope(str_contains($enrollments,'student_enrollment_list'),'student workspace has no canonical enrollment list');
 must_workshop_scope(str_contains($sharing,'ec.course_id=c.course_id'),'course-level test sharing is not constrained to the canonical course');
-must_workshop_scope(str_contains($index,'course_lesson_release_rows_for_course'),'student dashboard does not prefer canonical course lessons');
+must_workshop_scope(str_contains($courses,'course_lesson_release_rows_for_course'),'student course workspace does not prefer canonical course lessons');
 
 echo "workshop-page-scope: ok\n";
