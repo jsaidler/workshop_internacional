@@ -25,7 +25,7 @@ if(array_column($sharedContext,'id')!==[11,12])fail_student_tests_context('share
 $root=dirname(__DIR__);
 $notebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $legacy=(string)file_get_contents($root.'/aluno/testes.php');
-$dashboard=(string)file_get_contents($root.'/aluno/index.php');
+$dashboard=(string)file_get_contents($root.'/aluno/cursos.php');
 $visibility=(string)file_get_contents($root.'/aluno/visibilidade-teste.php');
 $workbench=(string)file_get_contents($root.'/app/student_workbench.php');
 
