@@ -33,7 +33,7 @@ student_shell_start('Meus cursos',$selectedActivity,$student);?>
   student_course_context_header($enrollment,'overview',$pages?($materialUrls[(int)$pages[0]['id']]??''):'');?>
 
   <section class="student-section" aria-labelledby="student-course-overview">
-    <div class="student-section-heading"><div><p class="student-kicker">Seu curso</p><h2 class="student-subtitle" id="student-course-overview">Visão geral</h2></div><p>Veja o que já está disponível e continue de onde parou.</p></div>
+    <div class="student-section-heading"><div><p class="student-kicker">Seu curso</p><h2 class="student-subtitle" id="student-course-overview">Visão geral</h2></div><?php if($releases):?><p><?=$releasedCount?> de <?=count($releases)?> aulas disponíveis para esta turma.</p><?php else:?><p>O conteúdo liberado para a turma aparece aqui.</p><?php endif;?></div>
 
     <?php if($releases):?>
       <div class="student-release-list" aria-label="Aulas do curso">
@@ -45,10 +45,10 @@ student_shell_start('Meus cursos',$selectedActivity,$student);?>
   </section>
 
   <section class="student-course-stack" aria-label="Acessos do curso"><article class="student-course-card">
-    <header><div><span class="student-card-label">Progresso</span><h2><?=$releases?$releasedCount.'/'.count($releases).' aulas disponíveis':'Curso ativo'?></h2></div></header>
+    <header><div><span class="student-card-label">Acesso ao curso</span><h2>Material e acompanhamento</h2></div></header>
     <div class="student-course-actions">
       <div><span class="student-card-label">Material</span><?php if(!$pages):?><p>Nenhuma página de material foi publicada para este curso ainda.</p><?php else:?><p>Acesse o conteúdo liberado para sua turma.</p><?php foreach($pages as $page):?><a class="button button-primary student-course-primary" href="<?=h($materialUrls[(int)$page['id']]??'#')?>"><?=h((string)$page['title'])?> →</a><?php endforeach;?><?php endif;?></div>
-      <div><span class="student-card-label">Dúvidas</span><p>Converse sobre o conteúdo e os processos desta turma.</p><a class="button button-primary student-course-primary" href="/aluno/duvidas.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir dúvidas →</a></div>
+      <div><span class="student-card-label">Dúvidas</span><p>Converse sobre o conteúdo e os processos desta turma.</p><a class="button button-secondary student-course-primary" href="/aluno/duvidas.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir dúvidas →</a></div>
     </div>
   </article></section>
 <?php endif;?>
