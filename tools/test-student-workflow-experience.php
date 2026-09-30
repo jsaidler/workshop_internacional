@@ -21,7 +21,7 @@ must_student_workflow(str_contains($notebook,'Mais ações')&&str_contains($note
 must_student_workflow(!str_contains($notebook,'student-process-compare'),'notebook reintroduced permanent comparison controls');
 must_student_workflow(str_contains($experience,"['stage_key']??'')==='dry'"),'drying is not recognized as the terminal processing state');
 must_student_workflow(str_contains($hardening,'O processamento terminou na secagem. Registre o resultado.'),'server-side processing still permits steps after drying');
-must_student_workflow(str_contains($record,"if($stageKey==='dry')")&&str_contains($record,"$view='review'"),'drying does not send the workflow directly to result');
+must_student_workflow(str_contains($record,"if(\$stageKey==='dry')")&&str_contains($record,"\$view='review'"),'drying does not send the workflow directly to result');
 must_student_workflow(str_contains($record,'student-process-history')&&str_contains($record,'Desfazer última etapa'),'processing history/correction hierarchy regressed');
 must_student_workflow(str_contains($record,'data-lab-timer'),'processing lost its contextual timer');
 must_student_workflow(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity')&&str_contains($bench,'data-lab-timer'),'workbench sends small tools back to separate pages');
