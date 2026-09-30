@@ -1,0 +1,47 @@
+/* Personal annotations are a student layer inside protected study material. */
+.cms-public .student-material-note{
+  width:min(100%,var(--study-reading,840px));
+  margin:30px auto 0;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+  color:var(--text);
+}
+.cms-public .student-material-note>summary{
+  width:max-content;
+  cursor:pointer;
+  color:var(--muted);
+  font:500 10px/1.3 var(--mono);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.cms-public .student-material-note[data-has-note="1"]>summary{color:var(--focus)}
+.cms-public .student-material-note form{display:grid;gap:10px;margin-top:14px}
+.cms-public .student-material-note textarea{
+  width:100%;
+  min-height:108px;
+  resize:vertical;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:0;
+  background:var(--surface);
+  color:var(--text);
+  font:400 15px/1.55 var(--body);
+}
+.cms-public .student-material-note textarea:focus{outline:2px solid var(--focus);outline-offset:2px}
+.cms-public .student-material-note-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cms-public .student-material-note-actions .button{margin:0}
+.cms-public .student-material-note-remove{
+  border:0;
+  padding:8px 0;
+  background:none;
+  color:var(--muted);
+  cursor:pointer;
+  font:500 10px/1.2 var(--mono);
+  text-decoration:underline;
+  text-underline-offset:4px;
+}
+.cms-public .student-material-note-remove:hover{color:var(--text)}
+@media(max-width:760px){
+  .cms-public .student-material-note{margin-top:24px}
+  .cms-public .student-material-note-actions .button{min-height:44px}
+}
