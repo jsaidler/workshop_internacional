@@ -74,7 +74,7 @@ ux_expect(str_contains($uiCss,'--ux-space-7:48px'),'sistema deve possuir escala 
 ux_expect(str_contains($adminCss,'.admin-content{display:flex;flex-direction:column;gap:var(--ux-space-6)'),'ritmo de primeiro nível da administração deve pertencer à autoridade administrativa');
 ux_expect(str_contains($adminCss,'row-gap:var(--ux-space-5,24px)'),'formulários administrativos devem consumir a escala global');
 ux_expect(str_contains($adminCss,'gap:var(--ux-space-4,16px)'),'componentes de dados devem usar tokens da escala');
-ux_expect(str_contains($studentCss,'.student-form-grid{row-gap:'),'forms do aluno devem consumir ritmo global');
+ux_expect(str_contains($studentCss,'.student-form-grid{row-gap:')||str_contains($studentCss,'.student-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ux-space-5)'),'forms do aluno devem consumir ritmo global');
 ux_expect(str_contains($studentCss,'.student-course-context-nav'),'navegação contextual do aluno deve possuir primitiva visual global');
 ux_expect(str_contains($doc,'Coleções são o eixo primário'),'documentação deve fixar a arquitetura por coleções');
 ux_expect(str_contains($doc,'Curso como catálogo e filtro'),'documentação deve impedir retorno da árvore local de curso');
