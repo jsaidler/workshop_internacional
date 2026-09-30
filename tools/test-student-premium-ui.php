@@ -33,17 +33,18 @@ foreach(['.form-field','.choice-field','.check-field','.button-compact','.button
 must_student_premium_ui(str_contains($uiCss,'appearance:none')&&str_contains($uiCss,'[aria-invalid=true]'),'global field states are incomplete');
 must_student_premium_ui(str_contains($uiJs,"form[data-ui-validate]")&&str_contains($uiJs,'workshop-theme'),'global UI behavior does not own validation and theme');
 
-must_student_premium_ui(str_contains($home,'student_experience_process_state')&&str_contains($home,'Continue de onde faz sentido'),'student home is not a continuation surface');
+must_student_premium_ui(str_contains($home,'student_experience_process_state')&&str_contains($home,'<h1 class="student-title">Início</h1>'),'student home is not a continuation surface');
 must_student_premium_ui(!str_contains($home,'Escolha o que você veio fazer')&&!str_contains($home,'Abrir laboratório'),'student home regressed to a duplicate navigation catalog');
 must_student_premium_ui(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment still requires a course-selector click');
 must_student_premium_ui(str_contains($courses,'student-course-dashboard')&&str_contains($courses,'Dúvidas e respostas'),'course workspace is not flattened around study tasks');
 must_student_premium_ui(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity')&&str_contains($bench,'data-lab-timer'),'workbench lost inline simple tools');
-must_student_premium_ui(str_contains($bench,'Receitas e preparo')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
+must_student_premium_ui(str_contains($bench,'<h2>Receitas</h2>')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
+foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual','registre apenas os dados que usou'] as $internalCopy)must_student_premium_ui(!str_contains($home.$bench.$test,$internalCopy),'internal design commentary leaked into student UI: '.$internalCopy);
 
 must_student_premium_ui(str_contains($notebook,'student-process-card')&&str_contains($notebook,'Mais ações'),'notebook does not subordinate administrative actions');
 must_student_premium_ui(!str_contains($notebook,'student-process-compare'),'notebook reintroduced permanent compare checkboxes');
 must_student_premium_ui(str_contains($notebook,'button button-danger button-compact')&&str_contains($notebook,'name="visibility"'),'secondary/destructive notebook controls are not explicit inside secondary actions');
-must_student_premium_ui(str_contains($notebook,'data-ui-validate')&&!str_contains($notebook,'data-student-validate'),'new-record form is not consuming global validation');
+must_student_premium_ui(str_contains($notebook,'data-ui-validate')&&str_contains($notebook,'data-record-create-dialog'),'new-record flow must be one-click and consume global validation');
 must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route does not redirect to notebook');
 
 must_student_premium_ui(str_contains($test,'student-process-now')&&str_contains($test,'student-process-history'),'processing does not prioritize now over history');
@@ -52,6 +53,7 @@ must_student_premium_ui(str_contains($test,"if(\$stageKey==='dry')")&&str_contai
 must_student_premium_ui(str_contains($test,'Desfazer última etapa')&&!str_contains($test,'remover daqui'),'destructive process correction is still repeated on every step');
 must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'data-process-step-form'),'guided process does not consume global choice controls');
 must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record workflow is not consuming global validation');
+must_student_premium_ui(str_contains($experienceCss,'.student-sticky-action{display:flex')&&str_contains($experienceCss,'margin-top:28px'),'primary form actions can collapse against fields');
 
 foreach([$login,$password,$profile] as $surface){must_student_premium_ui(str_contains($surface,'data-ui-validate'),'an account form is not consuming global validation');must_student_premium_ui(!str_contains($surface,'data-student-validate'),'an account form still uses a local validation contract');}
 must_student_premium_ui(str_contains($login,'class="form-field"')&&str_contains($login,'button button-primary'),'login does not consume global field/button primitives');
