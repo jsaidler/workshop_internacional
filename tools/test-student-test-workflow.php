@@ -30,7 +30,7 @@ if(!str_contains($test,'data-saved-preparation')||!str_contains($test,'student_s
 if(!str_contains($test,'student_process_inventory_select_html')||!str_contains($workbench,'student_inventory'))fail_student_test_workflow('guided workflow lost inventory integration');
 if(!str_contains($test,'view=exposure')||!str_contains($test,'view=process')||!str_contains($test,'view=review'))fail_student_test_workflow('record no longer exposes exposure, processing and result views');
 if(!str_contains($test,'href="/aluno/caderno.php"'))fail_student_test_workflow('owned record no longer returns to the global process notebook');
-if(!str_contains($shared,'student_enrollment_shared_test_navigation_context'))fail_student_test_workflow('shared record lost enrollment-aware sharing access');
+if(!str_contains($shared,'student_test_accessible_to_student')||!str_contains($shared,'href="/aluno/caderno.php"'))fail_student_test_workflow('shared record lost canonical sharing authorization or notebook return');
 if(!str_contains($test,'name="calculated_time"')||!str_contains($test,'name="reciprocity_time"'))fail_student_test_workflow('exposure no longer exposes the calculated and reciprocity time pair');
 if(!str_contains($shell,'/assets/student-reciprocity.js'))fail_student_test_workflow('student shell does not load the client-side reciprocity calculator');
 if(!str_contains($reciprocity,'const RECIPROCITY_EXPONENT=1.38542662'))fail_student_test_workflow('reciprocity research exponent changed or disappeared');
