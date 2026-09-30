@@ -14,6 +14,7 @@ body.student-page{font-size:17px}
 .form-field>input,.form-field>select,.form-field>textarea,.choice-field select{min-height:var(--student-control);font-size:16px}
 .button{min-height:44px;padding:0 18px;font-size:10px;letter-spacing:.035em}
 .button.button-compact{min-height:36px;padding-inline:12px}
+.student-main>.student-page-heading{margin-bottom:30px}
 
 .student-tools-trigger{min-height:38px;margin-left:auto}
 .student-user-menu{position:relative;margin-left:0}
@@ -26,7 +27,7 @@ body.student-page{font-size:17px}
 .student-user-menu-panel .button,.student-user-menu-panel form,.student-user-menu-panel button{width:100%}
 
 .student-toolbox{width:min(760px,calc(100vw - 28px));max-height:min(88vh,900px);margin:auto 20px auto auto;padding:0;border:1px solid var(--line);background:var(--bg);color:var(--text)}
-.student-toolbox::backdrop{background:rgba(0,0,0,.58);backdrop-filter:blur(3px)}
+.student-toolbox::backdrop,.student-create-dialog::backdrop{background:rgba(0,0,0,.58);backdrop-filter:blur(3px)}
 .student-toolbox-head{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 22px;border-bottom:1px solid var(--line);background:var(--bg)}
 .student-toolbox-head h2{margin:0;font-family:var(--title);font-size:32px;font-weight:500}
 .student-toolbox-body{display:grid;gap:18px;padding:22px}
@@ -36,6 +37,13 @@ body.student-page{font-size:17px}
 .student-toolbox-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .student-toolbox-links a{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:0 14px;border:1px solid var(--line);color:inherit;text-decoration:none;font-weight:600}
 .student-toolbox-links a:hover{border-color:var(--focus)}
+
+.student-create-dialog{width:min(620px,calc(100vw - 28px));padding:0;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+.student-create-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;border-bottom:1px solid var(--student-line-soft)}
+.student-create-dialog-head h2{margin:0;font-family:var(--title);font-size:34px;font-weight:500}
+.student-create-dialog>form{padding:24px}
+.student-create-dialog>form.student-form-grid{row-gap:22px}
+.student-create-dialog .student-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;padding-top:4px}
 
 .student-home-primary{margin-top:34px;padding:28px;border:1px solid var(--line);background:var(--surface)}
 .student-home-primary-head{display:flex;align-items:flex-start;justify-content:space-between;gap:28px}
@@ -61,7 +69,7 @@ body.student-page{font-size:17px}
 .student-course-side{display:grid;align-content:start;gap:12px}
 .student-course-side .button{width:100%}
 
-.student-process-list{display:grid;gap:12px;border:0}
+.student-process-list{display:grid;gap:14px;border:0}
 .student-process-card{position:relative;padding:0;border:1px solid var(--line);background:var(--surface)}
 .student-process-card-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;padding:20px;color:inherit;text-decoration:none}
 .student-process-card-main:hover{background:var(--surface-2)}
@@ -74,8 +82,9 @@ body.student-page{font-size:17px}
 .student-record-menu{position:relative;margin-left:auto}
 .student-record-menu>summary{cursor:pointer;list-style:none;font:500 10px/1 var(--mono);text-transform:uppercase}
 .student-record-menu>summary::-webkit-details-marker{display:none}
-.student-record-menu-panel{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--student-line-soft)}
-.student-record-menu-panel form{margin:0}
+.student-record-menu-panel{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--student-line-soft)}
+.student-record-menu-panel form{margin:0;display:flex;align-items:flex-end;gap:10px}
+.student-record-menu-panel .form-field{min-width:180px}
 .student-compare-picker{display:none;padding:12px 20px;border-top:1px solid var(--student-line-soft)}
 .student-process-card.is-compare .student-compare-picker{display:block}
 .student-shared-section:empty{display:none}
@@ -85,45 +94,55 @@ body.student-page{font-size:17px}
 .student-step-nav{margin-top:24px}
 .student-step-nav a{min-height:50px;cursor:pointer}
 .student-step-nav a[aria-disabled=true]{opacity:.35;pointer-events:none}
-.student-process-now{margin-top:24px;padding:26px;border:1px solid var(--focus);background:color-mix(in srgb,var(--focus) 6%,var(--surface))}
+.student-workflow-panel{margin-top:28px}
+.student-workflow-panel>.student-section-heading{margin-bottom:24px}
+.student-process-now{margin-top:0;padding:24px;border:1px solid var(--focus);background:color-mix(in srgb,var(--focus) 6%,var(--surface))}
 .student-process-now-label{margin:0 0 7px;color:var(--focus);font:600 11px/1.2 var(--mono);text-transform:uppercase}
 .student-process-now h2{margin:0;font-family:var(--title);font-size:38px;font-weight:500}
-.student-process-now>p{max-width:700px;margin:10px 0 0;color:var(--muted)}
-.student-process-step-form{margin-top:18px;padding-top:0;border-top:0}
-.student-process-choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.student-process-step-form{margin-top:24px;padding-top:0;border-top:0}
+.student-process-choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px}
 .student-process-choice-row .choice-option{flex:0 1 auto}
 .student-process-stage-fields{margin-top:0}
-.student-process-history{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.student-process-stage-fields>.student-form-grid{row-gap:22px}
+.student-process-history{margin-top:30px;padding-top:20px;border-top:1px solid var(--line)}
 .student-process-history>summary{cursor:pointer;font-weight:600;list-style:none}
 .student-process-history>summary::-webkit-details-marker{display:none}
 .student-process-summary{margin-top:14px}
 .student-process-summary li{padding:12px 0}
 .student-process-summary .student-danger-link{display:none}
-.student-process-history-actions{display:flex;justify-content:flex-end;margin-top:12px}
-.student-context-timer{margin-top:18px;padding:18px;border:1px solid var(--student-line-soft);background:var(--surface)}
+.student-process-history-actions{display:flex;justify-content:flex-end;margin-top:16px}
+.student-context-timer{margin-top:28px;padding:20px;border:1px solid var(--student-line-soft);background:var(--surface)}
 .student-context-timer .student-timer-display{font-size:clamp(58px,10vw,92px);margin:20px 0 8px}
-.student-process-complete{margin-top:24px;padding:28px;border:1px solid var(--focus);background:color-mix(in srgb,var(--focus) 6%,var(--surface))}
-.student-process-complete h2{margin:0;font-family:var(--title);font-size:40px;font-weight:500}
-.student-process-complete p{margin:10px 0 20px;color:var(--muted)}
-.student-result-flow{display:grid;gap:18px;margin-top:24px}
-.student-result-actions{display:flex;flex-wrap:wrap;gap:10px}
-.student-review-thread{margin-top:30px}
+.student-context-timer .student-actions{margin-top:18px;gap:10px}
+.student-workflow-panel .student-sticky-action{margin-top:28px;padding-top:22px}
+.student-process-complete{margin-top:0;padding:28px;border:1px solid var(--focus);background:color-mix(in srgb,var(--focus) 6%,var(--surface))}
+.student-process-complete h2{margin:0 0 22px;font-family:var(--title);font-size:40px;font-weight:500}
+.student-result-flow{display:grid;gap:26px;margin-top:24px}
+.student-result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.student-review-thread{margin-top:34px;padding-top:26px;border-top:1px solid var(--student-line-soft)}
 .student-review-thread>details>summary{cursor:pointer;font-weight:600}
+.student-review-thread form.student-form-grid{margin-top:18px;row-gap:22px}
 
 .student-bench-intro{display:flex;align-items:end;justify-content:space-between;gap:24px;padding-bottom:22px;border-bottom:1px solid var(--line)}
-.student-bench-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:24px}
-.student-bench-tool{padding:20px;border:1px solid var(--line);background:var(--surface)}
+.student-bench-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:28px}
+.student-bench-tool{padding:22px;border:1px solid var(--student-line-soft);background:var(--surface)}
 .student-bench-tool.is-wide{grid-column:1/-1}
-.student-bench-tool h2{margin:0 0 14px;font-family:var(--title);font-size:30px;font-weight:500}
+.student-bench-tool h2{margin:0 0 18px;font-family:var(--title);font-size:30px;font-weight:500}
 .student-bench-tool p{color:var(--muted);font-size:14px;line-height:1.5}
+.student-bench-tool>.student-form-grid{margin-top:4px;row-gap:22px}
+.student-tool-result{margin-top:20px}
+.student-solution-formula{margin-top:22px;padding-top:22px;border-top:1px solid var(--student-line-soft)}
+.student-solution-ingredients{display:grid;gap:10px;margin-top:14px}
+.student-solution-ingredients>div{display:flex;justify-content:space-between;gap:18px;padding:10px 0;border-bottom:1px solid var(--student-line-soft)}
 .student-recipe-list{display:grid;gap:10px}
 .student-recipe-card{border:1px solid var(--student-line-soft)}
 .student-recipe-card>summary{display:flex;justify-content:space-between;gap:14px;padding:14px 16px;cursor:pointer;font-weight:600;list-style:none}
 .student-recipe-card>summary::-webkit-details-marker{display:none}
 .student-recipe-card-body{padding:0 16px 16px}
-.student-recipe-preparation{margin-top:14px;padding-top:14px;border-top:1px solid var(--student-line-soft)}
-.student-recipe-preparation strong{display:block;margin-bottom:6px}
-.student-recipe-preparation p{margin:0}
+.student-recipe-preparation{margin-top:20px;padding-top:18px;border-top:1px solid var(--student-line-soft)}
+.student-recipe-preparation strong{display:block;margin-bottom:8px}
+.student-recipe-preparation p{margin:0 0 12px}
+.student-recipe-warning{padding-top:10px}
 
 .student-material-note{margin-top:20px;padding:14px 0;border-top:1px solid var(--student-line-soft)}
 .student-material-note>summary{font-size:14px;font-weight:600;color:var(--focus)}
@@ -135,7 +154,7 @@ body.student-page{font-size:17px}
   .student-topbar{position:sticky;gap:8px}
   .student-wordmark{font-size:18px}
   .student-tools-trigger{margin-left:auto}
-  .student-home-primary-head,.student-bench-intro{display:grid}
+  .student-home-primary-head,.student-bench-intro,.student-page-heading{display:grid;align-items:start}
   .student-home-secondary,.student-course-dashboard,.student-bench-grid{grid-template-columns:1fr}
   .student-bench-tool.is-wide{grid-column:auto}
   .student-process-card-main{grid-template-columns:1fr}
@@ -145,6 +164,9 @@ body.student-page{font-size:17px}
   .student-form-grid{grid-template-columns:1fr}
   .student-span-2{grid-column:auto}
   .student-course-side{border-top:1px solid var(--line);padding-top:20px}
+  .student-create-dialog{width:calc(100vw - 20px)}
+  .student-record-menu-panel,.student-record-menu-panel form{align-items:stretch;flex-direction:column}
+  .student-record-menu-panel .form-field{min-width:0}
 }
 
 @media(max-width:560px){
@@ -163,4 +185,7 @@ body.student-page{font-size:17px}
   .student-step-nav a strong{font-size:9px}
   .student-toolbox-body{padding:16px}
   .student-toolbox-tool{padding:16px}
+  .student-create-dialog-head,.student-create-dialog>form{padding:18px}
+  .student-workflow-panel .student-sticky-action{justify-content:stretch}
+  .student-workflow-panel .student-sticky-action .button{width:100%}
 }
