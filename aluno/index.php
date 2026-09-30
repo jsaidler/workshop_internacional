@@ -11,7 +11,7 @@ student_shell_start('Meus cursos',$selectedActivity,$student);?>
 <?php if(!$enrollments):?>
   <p class="student-kicker">Área do aluno</p>
   <h1 class="student-title">Meus cursos</h1>
-  <p class="student-lead">Seus materiais, aulas e registros de prática aparecem aqui quando uma matrícula estiver ativa.</p>
+  <p class="student-lead">Seus materiais e aulas aparecem aqui quando uma matrícula estiver ativa.</p>
   <div class="student-empty">Não há matrícula ativa vinculada a esta conta.</div>
 <?php elseif(!$selectedEnrollment):?>
   <p class="student-kicker">Área do aluno</p>
@@ -30,7 +30,6 @@ student_shell_start('Meus cursos',$selectedActivity,$student);?>
   else $releases=course_lesson_release_rows($db,(int)$enrollment['cohort_id'],(int)$enrollment['activity_id']);
   $releaseStates=[];$releasedCount=0;foreach($releases as $lesson){$state=cms_access_lesson_release_state(isset($lesson['released_at'])?(string)$lesson['released_at']:null);$releaseStates[(int)$lesson['id']]=$state;if($state==='released')$releasedCount++;}
   $materialUrls=[];foreach($pages as $page){$url=cms_page_url($activity,$page,(string)$page['locale']);$sep=str_contains($url,'?')?'&':'?';$url.=$sep.'cohort='.rawurlencode((string)$enrollment['cohort_uuid']);$materialUrls[(int)$page['id']]=$url;}
-  $allTests=student_tests_for_student($db,(int)$student['id']);$tests=student_enrollment_owned_tests_context($allTests,$enrollment);$testCount=count($tests);
   student_course_context_header($enrollment,'overview',$pages?($materialUrls[(int)$pages[0]['id']]??''):'');?>
 
   <section class="student-section" aria-labelledby="student-course-overview">
@@ -49,7 +48,7 @@ student_shell_start('Meus cursos',$selectedActivity,$student);?>
     <header><div><span class="student-card-label">Progresso</span><h2><?=$releases?$releasedCount.'/'.count($releases).' aulas disponíveis':'Curso ativo'?></h2></div></header>
     <div class="student-course-actions">
       <div><span class="student-card-label">Material</span><?php if(!$pages):?><p>Nenhuma página de material foi publicada para este curso ainda.</p><?php else:?><p>Acesse o conteúdo liberado para sua turma.</p><?php foreach($pages as $page):?><a class="button button-primary student-course-primary" href="<?=h($materialUrls[(int)$page['id']]??'#')?>"><?=h((string)$page['title'])?> →</a><?php endforeach;?><?php endif;?></div>
-      <div><span class="student-card-label">Seus testes</span><p><?=$testCount===1?'1 registro nesta turma.':$testCount.' registros nesta turma.'?></p><a class="button button-primary student-course-primary" href="/aluno/testes.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir testes →</a></div>
+      <div><span class="student-card-label">Dúvidas</span><p>Converse sobre o conteúdo e os processos desta turma.</p><a class="button button-primary student-course-primary" href="/aluno/duvidas.php?cohort=<?=h(rawurlencode((string)$enrollment['cohort_uuid']))?>">Abrir dúvidas →</a></div>
     </div>
   </article></section>
 <?php endif;?>
