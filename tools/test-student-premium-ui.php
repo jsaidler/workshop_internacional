@@ -53,7 +53,7 @@ must_student_premium_ui(str_contains($test,"if(\$stageKey==='dry')")&&str_contai
 must_student_premium_ui(str_contains($test,'Desfazer última etapa')&&!str_contains($test,'remover daqui'),'destructive process correction is still repeated on every step');
 must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'data-process-step-form'),'guided process does not consume global choice controls');
 must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record workflow is not consuming global validation');
-must_student_premium_ui(str_contains($experienceCss,'.student-sticky-action{display:flex')&&str_contains($experienceCss,'margin-top:28px'),'primary form actions can collapse against fields');
+must_student_premium_ui(str_contains($experienceCss,'.student-workflow-panel .student-sticky-action{margin-top:28px;padding-top:22px}'),'primary form actions can collapse against fields');
 
 foreach([$login,$password,$profile] as $surface){must_student_premium_ui(str_contains($surface,'data-ui-validate'),'an account form is not consuming global validation');must_student_premium_ui(!str_contains($surface,'data-student-validate'),'an account form still uses a local validation contract');}
 must_student_premium_ui(str_contains($login,'class="form-field"')&&str_contains($login,'button button-primary'),'login does not consume global field/button primitives');
