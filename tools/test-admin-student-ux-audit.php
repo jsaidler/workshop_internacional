@@ -64,15 +64,17 @@ foreach([$courses,$registrations,$cohorts,$students,$people,$lessons,$material] 
 foreach(['>Início</a>','>Curso</a>','>Caderno</a>'] as $destination)ux_expect(str_contains($studentShell,$destination),'navegação principal do aluno perdeu '.$destination);
 ux_expect(str_contains($studentShell,'data-student-toolbox')&&str_contains($studentShell,'data-toolbox-open'),'ferramentas pequenas deixaram de ser contextuais');
 ux_expect(str_contains($studentShell,'student-user-menu')&&str_contains($studentShell,'Gerenciar conta'),'conta, tema e sessão devem ficar subordinados');
-ux_expect(str_contains($studentHome,'student_experience_process_state')&&str_contains($studentHome,'Continue de onde faz sentido'),'Início deve continuar trabalho real, não repetir o menu');
+ux_expect(str_contains($studentHome,'student_experience_process_state')&&str_contains($studentHome,'<h1 class="student-title">Início</h1>'),'Início deve continuar trabalho real sem texto de bastidor');
 ux_expect(str_contains($studentCourses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'uma única matrícula não pode exigir página intermediária');
 ux_expect(str_contains($studentCourses,'student-course-dashboard')&&str_contains($studentCourses,'Dúvidas e respostas'),'curso deve reunir material, aulas e dúvidas no mesmo workspace');
 ux_expect(str_contains($studentNotebook,'Mais ações')&&str_contains($studentNotebook,'student_experience_process_state'),'Caderno deve priorizar estado e continuação do registro');
+ux_expect(str_contains($studentNotebook,'data-record-create-dialog'),'novo registro deve abrir diretamente em diálogo, sem etapa intermediária');
 ux_expect(!str_contains($studentNotebook,'student-process-compare'),'comparação não pode ocupar permanentemente cada registro');
 ux_expect(str_contains($studentRecord,'student-process-now')&&str_contains($studentRecord,'student-process-history'),'processamento deve priorizar o passo atual sobre o histórico');
 ux_expect(str_contains($studentRecord,'data-lab-timer')&&str_contains($studentRecord,'Desfazer última etapa'),'processamento deve integrar temporizador e subordinar correções');
-ux_expect(str_contains($studentBench,'data-exposure-tool')&&str_contains($studentBench,'data-quick-reciprocity')&&str_contains($studentBench,'data-lab-timer'),'bancada não pode transformar ferramentas pequenas em subpáginas');
+ux_expect(str_contains($studentBench,'data-exposure-tool')&&str_contains($studentBench,'data-quick-reciprocity')&&str_contains($studentBench,'data-lab-timer'),'ferramentas pequenas não podem virar subpáginas');
 ux_expect(str_contains($studentBench,'Modo de preparo')&&str_contains($studentBench,'student_experience_recipe_notes'),'receitas devem reunir cálculo e modo de preparo');
+foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual'] as $internalCopy)ux_expect(!str_contains($studentHome.$studentBench.$studentRecord,$internalCopy),'texto interno vazou para a interface do aluno: '.$internalCopy);
 ux_expect(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'rota legada de testes deve convergir para o Caderno global');
 
 ux_expect(str_contains($uiCss,'--ux-space-7:48px'),'sistema deve possuir escala global de espaçamento na camada de primitivas');
@@ -81,6 +83,7 @@ ux_expect(str_contains($adminCss,'row-gap:var(--ux-space-5,24px)'),'formulários
 ux_expect(str_contains($adminCss,'gap:var(--ux-space-4,16px)'),'componentes de dados devem usar tokens da escala');
 ux_expect(str_contains($studentCss,'gap:var(--ux-space-5) 20px'),'forms do aluno devem consumir ritmo global');
 ux_expect(str_contains($experienceCss,'.student-process-now')&&str_contains($experienceCss,'.student-toolbox')&&str_contains($experienceCss,'.student-bench-grid'),'camada de experiência deve expressar foco operacional e ferramentas contextuais');
+ux_expect(str_contains($experienceCss,'.student-sticky-action{display:flex')&&str_contains($experienceCss,'margin-top:28px'),'ação principal não pode ficar colada aos campos');
 ux_expect(str_contains($studentCss,'.student-link{display:inline-flex;min-height:40px'),'ações textuais do aluno devem ter affordance explícita');
 ux_expect(str_contains($doc,'Coleções são o eixo primário'),'documentação administrativa deve fixar a arquitetura por coleções');
 ux_expect(str_contains($doc,'Curso como catálogo e filtro'),'documentação administrativa deve impedir retorno da árvore local de curso');
