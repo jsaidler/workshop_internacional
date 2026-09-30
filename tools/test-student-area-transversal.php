@@ -7,22 +7,24 @@ $mobile=(string)file_get_contents($root.'/app/student_test_mobile.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
 $shared=(string)file_get_contents($root.'/aluno/teste-compartilhado.php');
 
-if(!str_contains($bootstrap,"'student_test_mobile'"))fail_student_area_transversal('shared test presentation helpers are not loaded by bootstrap');
-foreach(['function student_test_message_date','function student_review_value'] as $needle)if(!str_contains($mobile,$needle))fail_student_area_transversal('canonical test presentation helper missing: '.$needle);
-if(str_contains($test,'function student_test_message_date')||str_contains($test,'function student_review_value'))fail_student_area_transversal('test detail redeclared presentation helpers locally');
-foreach(['student_test_message_date(','student_review_value('] as $needle)if(!str_contains($shared,$needle))fail_student_area_transversal('shared test no longer exercises canonical presentation helper: '.$needle);
+if(!str_contains($bootstrap,"'student_test_mobile'"))fail_student_area_transversal('shared record presentation helpers are not loaded by bootstrap');
+foreach(['function student_test_message_date','function student_review_value'] as $needle)if(!str_contains($mobile,$needle))fail_student_area_transversal('canonical record presentation helper missing: '.$needle);
+if(str_contains($test,'function student_test_message_date')||str_contains($test,'function student_review_value'))fail_student_area_transversal('record detail redeclared presentation helpers locally');
+foreach(['student_test_message_date(','student_review_value('] as $needle)if(!str_contains($shared,$needle))fail_student_area_transversal('shared record no longer exercises canonical presentation helper: '.$needle);
 
-foreach(['id="student-exposure-form"','id="student-development-form"'] as $needle)if(!str_contains($test,$needle))fail_student_area_transversal('editable stage is not a single form: '.$needle);
-if(substr_count($test,'enctype="multipart/form-data"')<2)fail_student_area_transversal('stage forms do not own their media uploads');
-if(!str_contains($test,'name="delete_media_id"'))fail_student_area_transversal('media removal is not submitted through the current stage form');
-if(!str_contains($test,"if(\$phase==='scene'){student_test_update_exposure")||!str_contains($test,'else{student_test_update_development'))fail_student_area_transversal('media side actions do not save the current stage first');
+if(!str_contains($test,'name="action" value="save_exposure" data-process-action'))fail_student_area_transversal('exposure form lost its canonical save/upload action authority');
+if(substr_count($test,'enctype="multipart/form-data"')<2)fail_student_area_transversal('scene and result forms no longer own their media uploads');
+if(!str_contains($test,'data-process-step-form')||!str_contains($test,'name="action" value="add_step"'))fail_student_area_transversal('guided processing stage is not a single canonical form');
+if(!str_contains($test,"elseif(\$action==='upload')"))fail_student_area_transversal('media upload branch missing');
 $uploadSave=strpos($test,"elseif(\$action==='upload')");$uploadMutation=strpos($test,'student_test_add_media_phase',$uploadSave?:0);
-if($uploadSave===false||$uploadMutation===false)fail_student_area_transversal('media upload branch missing');
-$exposureSave=strpos($test,'student_test_update_exposure',$uploadSave);$developmentSave=strpos($test,'student_test_update_development',$uploadSave);
-if($exposureSave===false||$developmentSave===false||$exposureSave>$uploadMutation||$developmentSave>$uploadMutation)fail_student_area_transversal('media upload can mutate before preserving edited fields');
+if($uploadSave===false||$uploadMutation===false)fail_student_area_transversal('media upload mutation missing');
+$exposureSave=strpos($test,'student_test_update_exposure',$uploadSave);
+$notesSave=strpos($test,"UPDATE student_tests SET notes=?,updated_at=?",$uploadSave);
+if($exposureSave===false||$notesSave===false||$exposureSave>$uploadMutation||$notesSave>$uploadMutation)fail_student_area_transversal('media upload can mutate before preserving the edited scene/result data');
 $deleteBranch=strpos($test,"elseif(\$action==='delete_media')");$deleteMutation=strpos($test,'student_test_delete_media',$deleteBranch?:0);
 if($deleteBranch===false||$deleteMutation===false)fail_student_area_transversal('media delete branch missing');
-$deleteExposureSave=strpos($test,'student_test_update_exposure',$deleteBranch);$deleteDevelopmentSave=strpos($test,'student_test_update_development',$deleteBranch);
-if($deleteExposureSave===false||$deleteDevelopmentSave===false||$deleteExposureSave>$deleteMutation||$deleteDevelopmentSave>$deleteMutation)fail_student_area_transversal('media removal can mutate before preserving edited fields');
+if(!str_contains($test,'name="media_id"')||!str_contains($test,"[data-process-action]').value='delete_media'"))fail_student_area_transversal('media removal is not submitted through the active record form');
+
+if(!str_contains($test,'href="/aluno/caderno.php"')||!str_contains($shared,'href="/aluno/caderno.php"'))fail_student_area_transversal('owned/shared records no longer converge on the global notebook');
 
 echo "student-area-transversal: ok\n";
