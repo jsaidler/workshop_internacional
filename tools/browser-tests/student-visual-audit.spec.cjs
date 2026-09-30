@@ -7,7 +7,12 @@ for(const [device,viewport] of Object.entries(viewports)){
     test(`visual audit ${device} ${screen}`,async({page})=>{
       await page.setViewportSize(viewport);
       await page.goto(`${base}?screen=${encodeURIComponent(screen)}`,{waitUntil:'networkidle'});
-      await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      await page.addStyleTag({url:'/assets/student-rendered-fixes.css'});
+      await page.evaluate(screenName=>{
+        document.documentElement.setAttribute('data-theme','dark');
+        const selector=screenName==='new-record'?'.student-create-dialog':screenName==='toolbox'?'.student-toolbox':'';
+        if(selector){const dialog=document.querySelector(selector);if(dialog){if(dialog.open)dialog.removeAttribute('open');if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');}}
+      },screen);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${screen} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await page.screenshot({path:`student-visual-audit/${device}/${screen}.png`,fullPage:true,animations:'disabled'});
