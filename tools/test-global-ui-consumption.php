@@ -36,12 +36,15 @@ $requiredConsumers=[
     'login.php'=>['form-field','button button-primary','data-ui-validate'],
     'perfil.php'=>['form-field','button button-primary','data-ui-validate'],
     'senha.php'=>['form-field','check-field','data-ui-match','data-ui-validate'],
-    'testes.php'=>['form-field','choice-field','button button-primary','data-ui-validate'],
+    'caderno.php'=>['form-field','choice-field','button button-primary','data-ui-validate'],
     'teste.php'=>['form-field','choice-field','button button-primary','data-ui-validate'],
 ];
 foreach($requiredConsumers as $file=>$needles){
     $source=(string)file_get_contents($root.'/aluno/'.$file);
     foreach($needles as $needle)must_global_ui(str_contains($source,$needle),$file.' does not consume global primitive '.$needle);
 }
+
+$legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
+must_global_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route no longer redirects to the global notebook');
 
 echo "global-ui-consumption: ok\n";
