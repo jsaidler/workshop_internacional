@@ -1,0 +1,38 @@
+name: student-visual-audit
+on:
+  pull_request:
+    paths:
+      - 'aluno/**'
+      - 'app/student_*.php'
+      - 'assets/student-*.css'
+      - 'assets/student-*.js'
+      - 'assets/ui-core.css'
+      - 'assets/ui-core.js'
+      - 'tools/browser-fixture/student-visual-audit.html'
+      - 'tools/browser-tests/student-visual-audit.spec.cjs'
+      - '.github/workflows/student-visual-audit.yml'
+  workflow_dispatch:
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Render student visual audit
+        run: |
+          php -S 127.0.0.1:8099 -t . >/tmp/student-visual-audit.log 2>&1 &
+          PHP_SERVER_PID=$!
+          trap 'kill $PHP_SERVER_PID' EXIT
+          sleep 1
+          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs --workers=1
+      - name: Upload rendered student screens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-visual-audit-${{ github.sha }}
+          path: student-visual-audit
+          if-no-files-found: error
