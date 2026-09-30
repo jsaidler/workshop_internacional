@@ -43,28 +43,33 @@ function student_experience_recipe_notes(): array {
     return [
         'parodinal'=>[
             'label'=>'Parodinal',
-            'preparation'=>'A ficha de preparo deve apresentar, junto das quantidades calculadas, a sequência de mistura, a maturação e o armazenamento descritos na pesquisa do curso.',
+            'preparation'=>'Aqueça a água e desligue na ebulição. Quando chegar a cerca de 60 °C, misture primeiro o paracetamol, depois o sulfito e, por último, o hidróxido aos poucos. Mantenha o recipiente fechado por 3 dias, agitando uma vez ao dia; depois filtre e guarde em vidro âmbar.',
             'source'=>'Pesquisa João Saidler · Químicos - Receitas',
+            'warning'=>'Use proteção para olhos e pele ao manipular hidróxido de sódio.',
         ],
         'brewed-caffenol'=>[
             'label'=>'Brewed Caffenol',
-            'preparation'=>'A ficha deve mostrar o preparo do café separado da solução dos demais ingredientes, a filtração e a complementação do volume final, conforme a pesquisa do curso.',
+            'preparation'=>'Ferva metade da água com o café por 5 minutos e deixe descansar por 10. Na outra parte de água, dissolva os demais ingredientes na ordem da receita. Una as duas partes através de filtro, mantendo a borra fora da solução, e complete o volume final.',
             'source'=>'Pesquisa João Saidler · Químicos - Receitas',
+            'warning'=>'Preparo para uso imediato.',
         ],
         'peracetic'=>[
             'label'=>'Solução peroxiacética',
-            'preparation'=>'A ficha deve manter a ordem de mistura e o período de maturação registrados na pesquisa, com aviso de segurança visível antes do preparo.',
+            'preparation'=>'A pesquisa registra a ordem de mistura como água, vinagre e peróxido, com maturação da solução entre 2 e 7 dias antes do uso.',
             'source'=>'Pesquisa João Saidler · Químicos - Receitas',
+            'warning'=>'Peróxido concentrado exige proteção adequada, recipiente compatível e cuidado com respingos.',
         ],
         'ferric'=>[
             'label'=>'Cloreto férrico',
-            'preparation'=>'A ficha deve apresentar o preparo da solução de trabalho usada no processo do workshop, sem obrigar o aluno a procurar a explicação em outra página.',
+            'preparation'=>'Prepare apenas o volume de trabalho necessário usando a proporção indicada na ficha. Dissolva completamente e espere a solução estabilizar antes do uso.',
             'source'=>'Processo do workshop',
+            'warning'=>'O cloreto férrico é corrosivo e mancha superfícies; use recipiente compatível e proteção para olhos e pele.',
         ],
         'ammonia'=>[
             'label'=>'Amônia',
-            'preparation'=>'A ficha deve apresentar a diluição de trabalho usada no processo do workshop e um aviso de ventilação e incompatibilidades.',
+            'preparation'=>'Prepare a diluição de trabalho indicada na ficha em local bem ventilado e mantenha o recipiente fechado quando não estiver em uso.',
             'source'=>'Processo do workshop',
+            'warning'=>'Evite inalar vapores e nunca misture amônia com produtos clorados.',
         ],
     ];
 }
