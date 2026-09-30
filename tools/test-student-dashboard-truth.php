@@ -24,21 +24,21 @@ $db->exec("INSERT INTO cms_pages(id,activity_id,title,sort_order,status,publishe
 
 $pagesA=student_enrollment_pages_for_enrollment($db,['activity_id'=>10,'cohort_id'=>101]);
 $idsA=array_map(static fn(array $page): int=>(int)$page['id'],$pagesA);
-must_student_dashboard_truth($idsA===[1,2],'dashboard discovery must expose activity pages plus only the matching cohort page');
+must_student_dashboard_truth($idsA===[1,2],'course discovery must expose activity pages plus only the matching cohort page');
 $pagesB=student_enrollment_pages_for_enrollment($db,['activity_id'=>10,'cohort_id'=>102]);
 $idsB=array_map(static fn(array $page): int=>(int)$page['id'],$pagesB);
-must_student_dashboard_truth($idsB===[1,3],'dashboard discovery leaked or omitted a cohort-scoped page');
+must_student_dashboard_truth($idsB===[1,3],'course discovery leaked or omitted a cohort-scoped page');
 
 $now=strtotime('2030-01-02T12:00:00Z');
 must_student_dashboard_truth(cms_access_lesson_release_state(null,$now)==='blocked','NULL lesson release is not blocked');
 must_student_dashboard_truth(cms_access_lesson_release_state('2030-01-02T13:00:00Z',$now)==='scheduled','future lesson release is not scheduled');
 must_student_dashboard_truth(cms_access_lesson_release_state('2030-01-02T11:00:00Z',$now)==='released','past lesson release is not released');
 
-$dashboard=(string)file_get_contents($root.'/aluno/index.php');
-must_student_dashboard_truth(str_contains($dashboard,'cms_access_lesson_release_state'),'student dashboard does not derive lesson state from the canonical access helper');
-must_student_dashboard_truth(str_contains($dashboard,"'scheduled'=>'Agendada'")&&str_contains($dashboard,"'released'=>'Disponível'"),'student dashboard does not expose user-facing scheduled/released labels');
-must_student_dashboard_truth(str_contains($dashboard,"'released'=>'is-released'")&&str_contains($dashboard,"'scheduled'=>'is-scheduled'"),'student dashboard lost semantic release-state classes');
-must_student_dashboard_truth(str_contains($dashboard,'$releasedCount'),'student dashboard does not count only currently released lessons');
-must_student_dashboard_truth(!str_contains($dashboard,"\$lesson['released_at']?'liberada':'aguardando'"),'student dashboard returned to raw released_at truthiness');
+$courses=(string)file_get_contents($root.'/aluno/cursos.php');
+must_student_dashboard_truth(str_contains($courses,'cms_access_lesson_release_state'),'courses surface does not derive lesson state from the canonical access helper');
+must_student_dashboard_truth(str_contains($courses,"'scheduled'=>'Agendada'")&&str_contains($courses,"'released'=>'Disponível'"),'courses surface does not expose user-facing scheduled/released labels');
+must_student_dashboard_truth(str_contains($courses,"'released'=>'is-released'")&&str_contains($courses,"'scheduled'=>'is-scheduled'"),'courses surface lost semantic release-state classes');
+must_student_dashboard_truth(str_contains($courses,'$releasedCount'),'courses surface does not count only currently released lessons');
+must_student_dashboard_truth(!str_contains($courses,"\$lesson['released_at']?'liberada':'aguardando'"),'courses surface returned to raw released_at truthiness');
 
 echo "student-dashboard-truth: ok\n";

@@ -18,11 +18,13 @@ must_student_course_context(student_enrollment_cohort_status_label('active')==='
 must_student_course_context(student_enrollment_cohort_status_label('closed')==='Turma encerrada','closed cohort label is incorrect');
 must_student_course_context(student_enrollment_cohort_status_label('unexpected')==='Estado da turma indisponível','unknown cohort status must not be presented as active');
 
-$dashboard=(string)file_get_contents($root.'/aluno/index.php');
+$courses=(string)file_get_contents($root.'/aluno/cursos.php');
+$home=(string)file_get_contents($root.'/aluno/index.php');
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
-must_student_course_context(str_contains($dashboard,'student_enrollment_dashboard_context'),'dashboard bypasses the canonical workspace selector');
-must_student_course_context(str_contains($dashboard,"student_course_context_header(\$enrollment,'overview'")&&str_contains($shell,'← Meus cursos'),'selected course has no canonical route back to the course selector');
-must_student_course_context(str_contains($dashboard,'As aulas deste curso ainda não foram cadastradas.'),'empty lesson state still renders a misleading progress state');
-must_student_course_context(str_contains($dashboard,"student_shell_start('Meus cursos',\$selectedActivity,\$student)"),'selected course design context is not passed to the student shell');
+must_student_course_context(str_contains($courses,'student_enrollment_dashboard_context'),'courses surface bypasses the canonical workspace selector');
+must_student_course_context(str_contains($courses,"student_course_context_header(\$enrollment,'overview'")&&str_contains($shell,'← Cursos'),'selected course has no canonical route back to the course selector');
+must_student_course_context(str_contains($courses,'As aulas deste curso ainda não foram cadastradas.'),'empty lesson state still renders a misleading progress state');
+must_student_course_context(str_contains($courses,"student_shell_start('Cursos',\$selectedActivity,\$student)"),'selected course design context is not passed to the student shell');
+must_student_course_context(str_contains($home,'Abrir cursos')&&!str_contains($home,'student_course_context_header'),'student home must not double as the course workspace');
 
 echo "student-course-context: ok\n";

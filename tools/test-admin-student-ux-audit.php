@@ -11,13 +11,15 @@ $students=(string)file_get_contents($root.'/admin/students.php');
 $people=(string)file_get_contents($root.'/admin/people.php');
 $lessons=(string)file_get_contents($root.'/admin/lessons.php');
 $material=(string)file_get_contents($root.'/admin/material.php');
-$studentIndex=(string)file_get_contents($root.'/aluno/index.php');
+$studentHome=(string)file_get_contents($root.'/aluno/index.php');
+$studentCourses=(string)file_get_contents($root.'/aluno/cursos.php');
 $studentNotebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $adminCss=(string)file_get_contents($root.'/assets/admin-system.css');
 $studentCss=(string)file_get_contents($root.'/assets/student-area.css');
 $doc=(string)file_get_contents($root.'/docs/ADMIN_STUDENT_UX_AUDIT_2026-09-28.md');
+$studentDoc=(string)file_get_contents($root.'/docs/STUDENT_AREA_EXPERIENCE_CANONICAL_2026-09-30.md');
 
 ux_expect(str_contains($adminShell,'function admin_navigation_groups'),'administração precisa de uma árvore global explícita');
 ux_expect(str_contains($adminShell,"'Principal'=>")&&str_contains($adminShell,"'Operação'=>")&&str_contains($adminShell,"'Ensino'=>")&&str_contains($adminShell,"'Site'=>")&&str_contains($adminShell,"'Sistema'=>"),'sidebar deve refletir trabalho operacional, pedagógico, site e sistema');
@@ -54,18 +56,14 @@ ux_expect(!str_contains($people,'LIMIT 500'),'Pessoas não pode truncar silencio
 ux_expect(str_contains($lessons,'Todos os cursos')&&str_contains($lessons,'LIMIT $pageSize OFFSET $offset'),'Aulas deve ser coleção global filtrável e paginada');
 ux_expect(str_contains($material,'Todos os cursos')&&str_contains($material,'LIMIT $pageSize OFFSET $offset'),'Material deve ser coleção global filtrável e paginada');
 ux_expect(str_contains($material,'course_material_add_page'),'Material deve preservar a relação canônica com páginas CMS');
-
-foreach([$courses,$registrations,$cohorts,$students,$people,$lessons,$material] as $collection){
-    ux_expect(str_contains($collection,'admin-data-toolbar'),'coleções devem consumir a barra de dados canônica');
-    ux_expect(str_contains($collection,'admin-data-table'),'coleções devem usar tabela densa canônica');
-}
+foreach([$courses,$registrations,$cohorts,$students,$people,$lessons,$material] as $collection){ux_expect(str_contains($collection,'admin-data-toolbar'),'coleções devem consumir a barra de dados canônica');ux_expect(str_contains($collection,'admin-data-table'),'coleções devem usar tabela densa canônica');}
 
 ux_expect(str_contains($studentShell,'function student_course_context_header'),'área do aluno precisa de cabeçalho contextual canônico do curso');
-ux_expect(str_contains($studentShell,'>Meus cursos</a>'),'topbar global deve expor Meus cursos');
-ux_expect(str_contains($studentShell,'/aluno/caderno.php')&&str_contains($studentShell,'>Caderno</a>'),'Caderno deve ser área global independente de curso');
-ux_expect(str_contains($studentShell,'/aluno/ferramentas.php')&&str_contains($studentShell,'>Ferramentas</a>'),'Ferramentas deve ser área global independente de curso');
-ux_expect(!str_contains($studentShell,'>Testes</a>'),'Testes não pode continuar como item global ou contextual');
-ux_expect(str_contains($studentIndex,'student_course_context_header($enrollment,\'overview\''),'visão geral deve usar contexto canônico do curso');
+foreach(['>Início</a>','>Cursos</a>','>Caderno</a>','>Laboratório</a>'] as $destination)ux_expect(str_contains($studentShell,$destination),'navegação principal do aluno perdeu '.$destination);
+ux_expect(!str_contains($studentShell,'>Meus cursos</a>')&&!str_contains($studentShell,'>Ferramentas</a>'),'rótulos antigos voltaram à navegação principal');
+ux_expect(str_contains($studentShell,'student-account-link')&&str_contains($studentShell,'>Conta</a>'),'Conta deve ser secundária no cabeçalho');
+ux_expect(str_contains($studentHome,'Escolha o que você veio fazer')&&!str_contains($studentHome,'student_course_context_header'),'Início deve orientar tarefas sem virar workspace de curso');
+ux_expect(str_contains($studentCourses,"student_course_context_header(\$enrollment,'overview'"),'visão geral deve usar contexto canônico do curso');
 ux_expect(str_contains($studentNotebook,'Caderno de Processos')&&str_contains($studentNotebook,'context_scope'),'Caderno deve aceitar registros globais com contexto opcional');
 ux_expect(str_contains($studentNotebook,'value="course"')&&str_contains($studentNotebook,'>Curso</option>'),'compartilhamento contextual deve usar curso, não workshop');
 ux_expect(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'rota legada de testes deve convergir para o Caderno global');
@@ -74,10 +72,12 @@ ux_expect(str_contains($uiCss,'--ux-space-7:48px'),'sistema deve possuir escala 
 ux_expect(str_contains($adminCss,'.admin-content{display:flex;flex-direction:column;gap:var(--ux-space-6)'),'ritmo de primeiro nível da administração deve pertencer à autoridade administrativa');
 ux_expect(str_contains($adminCss,'row-gap:var(--ux-space-5,24px)'),'formulários administrativos devem consumir a escala global');
 ux_expect(str_contains($adminCss,'gap:var(--ux-space-4,16px)'),'componentes de dados devem usar tokens da escala');
-ux_expect(str_contains($studentCss,'.student-form-grid{row-gap:')||str_contains($studentCss,'.student-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ux-space-5)'),'forms do aluno devem consumir ritmo global');
-ux_expect(str_contains($studentCss,'.student-course-context-nav'),'navegação contextual do aluno deve possuir primitiva visual global');
-ux_expect(str_contains($doc,'Coleções são o eixo primário'),'documentação deve fixar a arquitetura por coleções');
-ux_expect(str_contains($doc,'Curso como catálogo e filtro'),'documentação deve impedir retorno da árvore local de curso');
+ux_expect(str_contains($studentCss,'gap:var(--ux-space-5) 20px'),'forms do aluno devem consumir ritmo global');
+ux_expect(str_contains($studentCss,'.student-course-context-nav'),'navegação contextual do aluno deve possuir composição visual própria');
+ux_expect(str_contains($studentCss,'.student-link{display:inline-flex;min-height:40px'),'ações textuais do aluno devem ter affordance explícita');
+ux_expect(str_contains($doc,'Coleções são o eixo primário'),'documentação administrativa deve fixar a arquitetura por coleções');
+ux_expect(str_contains($doc,'Curso como catálogo e filtro'),'documentação administrativa deve impedir retorno da árvore local de curso');
 ux_expect(str_contains($doc,'procurar → consumir → identificar lacuna'),'documentação deve preservar política de consumo global');
+ux_expect(str_contains($studentDoc,'Início')&&str_contains($studentDoc,'Laboratório')&&str_contains($studentDoc,'botões têm aparência de botão'),'documentação canônica da experiência do aluno está incompleta');
 
 echo "ux-audit: ok\n";
