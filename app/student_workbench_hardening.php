@@ -6,18 +6,20 @@ declare(strict_types=1);
  *
  * These helpers keep compatibility with the first workbench implementation
  * while enforcing the product contracts that depend on context: a fresh
- * Caffenol preparation is never inventory stock, deleting an earlier process
- * step also removes the now-invalid tail of the route, and cohort questions
- * are only readable/repliable by students enrolled in that exact cohort.
+ * Caffenol preparation is never inventory stock, drying closes processing,
+ * deleting an earlier process step also removes the now-invalid tail of the
+ * route, and cohort questions are only readable/repliable by students
+ * enrolled in that exact cohort.
  */
 function student_process_add_guided_step(PDO $db,int $testId,int $studentId,array $input): array {
+    $steps=student_process_steps($db,$testId);
+    if(student_experience_process_complete($steps))throw new RuntimeException('O processamento terminou na secagem. Registre o resultado.');
     $stageKey=(string)($input['stage_key']??'');
+    $allowed=student_experience_next_choices($steps);
+    if($stageKey!=='custom'&&!isset($allowed[$stageKey]))throw new RuntimeException('Esta etapa não corresponde ao próximo passo do processo.');
     if(in_array($stageKey,['first_development','second_development'],true)){
         $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));
         if((string)$developer['mode']==='fresh'){
-            // Fresh Caffenol is made for immediate use. Never treat a raw
-            // inventory item as a stock solution merely because it was chosen
-            // in a tampered request.
             unset($input['inventory_item_id'],$input['inventory_amount']);
         }
     }
@@ -56,8 +58,6 @@ function student_process_delete_from_step(PDO $db,int $testId,int $stepId,int $s
 function student_saved_preparation_create_guided(PDO $db,int $studentId,array $input): array {
     $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));
     if((string)$developer['mode']==='fresh'){
-        // Reuse developer_amount internally as the prepared volume so the
-        // existing schema can remember the student's usual fresh batch size.
         $input['developer_amount']=$input['fresh_volume']??null;
         $input['water_amount']=null;
     }

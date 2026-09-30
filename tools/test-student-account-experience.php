@@ -19,7 +19,7 @@ must_student_account_experience(str_contains($profile,'action="/aluno/logout.php
 must_student_account_experience(str_contains($profile,"csrf_token('student-logout')"),'Conta logout does not use the canonical CSRF scope');
 must_student_account_experience(str_contains($password,'href="/aluno/perfil.php"')&&str_contains($password,'← Conta'),'password management has no route back to Conta');
 must_student_account_experience(str_contains($password,'if(!$first)'),'activation flow does not remain separate from authenticated account navigation');
-must_student_account_experience(str_contains($shell,'href="/aluno/perfil.php"')&&str_contains($shell,'>Conta</a>'),'student navigation no longer points Conta to the account destination');
+must_student_account_experience(str_contains($shell,'student-user-menu')&&str_contains($shell,'href="/aluno/perfil.php"')&&str_contains($shell,'Gerenciar conta'),'student account destination is not discoverable from the secondary settings menu');
 must_student_account_experience(str_contains($logout,"verify_csrf('student-logout'")&&str_contains($logout,"REQUEST_METHOD")&&str_contains($logout,"POST"),'logout endpoint lost its POST/CSRF contract');
 
 echo "student-account-experience: ok\n";
