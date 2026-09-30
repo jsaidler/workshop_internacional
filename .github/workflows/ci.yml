@@ -83,6 +83,7 @@ jobs:
           php tools/test-student-test-workflow.php
           php tools/test-student-area-transversal.php
           php tools/test-student-workspace.php
+          php tools/test-student-workflow-experience.php
           php tools/test-student-area-information-architecture.php
           php tools/test-student-mobile-experience.php
           php tools/test-admin-lifecycle-and-student-design.php
