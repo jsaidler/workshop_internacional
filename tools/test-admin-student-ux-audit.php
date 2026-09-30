@@ -83,7 +83,7 @@ ux_expect(str_contains($adminCss,'row-gap:var(--ux-space-5,24px)'),'formulários
 ux_expect(str_contains($adminCss,'gap:var(--ux-space-4,16px)'),'componentes de dados devem usar tokens da escala');
 ux_expect(str_contains($studentCss,'gap:var(--ux-space-5) 20px'),'forms do aluno devem consumir ritmo global');
 ux_expect(str_contains($experienceCss,'.student-process-now')&&str_contains($experienceCss,'.student-toolbox')&&str_contains($experienceCss,'.student-bench-grid'),'camada de experiência deve expressar foco operacional e ferramentas contextuais');
-ux_expect(str_contains($experienceCss,'.student-sticky-action{display:flex')&&str_contains($experienceCss,'margin-top:28px'),'ação principal não pode ficar colada aos campos');
+ux_expect(str_contains($experienceCss,'.student-workflow-panel .student-sticky-action{margin-top:28px;padding-top:22px}'),'ação principal não pode ficar colada aos campos');
 ux_expect(str_contains($studentCss,'.student-link{display:inline-flex;min-height:40px'),'ações textuais do aluno devem ter affordance explícita');
 ux_expect(str_contains($doc,'Coleções são o eixo primário'),'documentação administrativa deve fixar a arquitetura por coleções');
 ux_expect(str_contains($doc,'Curso como catálogo e filtro'),'documentação administrativa deve impedir retorno da árvore local de curso');
