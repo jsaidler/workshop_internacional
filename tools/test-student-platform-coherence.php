@@ -34,7 +34,7 @@ if(!str_contains($studentShell,'student_course_context_header')||!str_contains($
 if(!str_contains($courseAdmin,'name="title"')||!str_contains($courseAdmin,'course_update($db,$courseId,$_POST)'))fail_coherence('course title is not editable from the canonical course configuration');
 if(str_contains($site,'name="course_public_title"')||str_contains($site,'Nome público do curso'))fail_coherence('Site navigation still owns course identity instead of the course domain');
 foreach(['private','cohort','course'] as $visibility)if(!str_contains($sharing,"'".$visibility."'"))fail_coherence('missing record visibility: '.$visibility);
-if(!str_contains($sharedTest,'student_test_messages($db,$id)')||!str_contains($sharedTest,'segue a mesma visibilidade do teste'))fail_coherence('shared conversation does not follow record visibility');
+if(!str_contains($sharedTest,'student_test_messages($db,$id)')||!str_contains($sharedTest,'A conversa acompanha o registro compartilhado.'))fail_coherence('shared conversation does not follow record visibility');
 if(str_contains($sharedTest,'name="message"'))fail_coherence('shared students can write into another student record');
 if(!str_contains($registrations,'name="action" value="delete_registration"')||!str_contains($registrations,'admin_registration_delete'))fail_coherence('permanent registration deletion missing from canonical registration workspace');
 
