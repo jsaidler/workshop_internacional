@@ -12,7 +12,8 @@ $people=(string)file_get_contents($root.'/admin/people.php');
 $lessons=(string)file_get_contents($root.'/admin/lessons.php');
 $material=(string)file_get_contents($root.'/admin/material.php');
 $studentIndex=(string)file_get_contents($root.'/aluno/index.php');
-$studentTests=(string)file_get_contents($root.'/aluno/testes.php');
+$studentNotebook=(string)file_get_contents($root.'/aluno/caderno.php');
+$legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $adminCss=(string)file_get_contents($root.'/assets/admin-system.css');
 $studentCss=(string)file_get_contents($root.'/assets/student-area.css');
@@ -61,10 +62,13 @@ foreach([$courses,$registrations,$cohorts,$students,$people,$lessons,$material] 
 
 ux_expect(str_contains($studentShell,'function student_course_context_header'),'área do aluno precisa de cabeçalho contextual canônico do curso');
 ux_expect(str_contains($studentShell,'>Meus cursos</a>'),'topbar global deve expor Meus cursos');
-ux_expect(!str_contains($studentShell,'student-desktop-nav" aria-label="Área do aluno"><a href="/aluno/"') || !str_contains($studentShell,'>Testes</a><a href="/aluno/perfil.php"'),'Testes não pode continuar como item global paralelo ao curso');
+ux_expect(str_contains($studentShell,'/aluno/caderno.php')&&str_contains($studentShell,'>Caderno</a>'),'Caderno deve ser área global independente de curso');
+ux_expect(str_contains($studentShell,'/aluno/ferramentas.php')&&str_contains($studentShell,'>Ferramentas</a>'),'Ferramentas deve ser área global independente de curso');
+ux_expect(!str_contains($studentShell,'>Testes</a>'),'Testes não pode continuar como item global ou contextual');
 ux_expect(str_contains($studentIndex,'student_course_context_header($enrollment,\'overview\''),'visão geral deve usar contexto canônico do curso');
-ux_expect(str_contains($studentTests,'student_course_context_header($enrollment,\'tests\''),'testes deve usar o mesmo contexto canônico do curso');
-ux_expect(str_contains($studentTests,'Todo o curso'),'linguagem deve usar curso, não workshop, no compartilhamento contextual');
+ux_expect(str_contains($studentNotebook,'Caderno de Processos')&&str_contains($studentNotebook,'context_scope'),'Caderno deve aceitar registros globais com contexto opcional');
+ux_expect(str_contains($studentNotebook,'value="course"')&&str_contains($studentNotebook,'>Curso</option>'),'compartilhamento contextual deve usar curso, não workshop');
+ux_expect(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'rota legada de testes deve convergir para o Caderno global');
 
 ux_expect(str_contains($uiCss,'--ux-space-7:48px'),'sistema deve possuir escala global de espaçamento na camada de primitivas');
 ux_expect(str_contains($adminCss,'.admin-content{display:flex;flex-direction:column;gap:var(--ux-space-6)'),'ritmo de primeiro nível da administração deve pertencer à autoridade administrativa');

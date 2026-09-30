@@ -9,8 +9,9 @@ $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $uiJs=(string)file_get_contents($root.'/assets/ui-core.js');
-$tests=(string)file_get_contents($root.'/aluno/testes.php');
+$notebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
+$legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 $login=(string)file_get_contents($root.'/aluno/login.php');
 $password=(string)file_get_contents($root.'/aluno/senha.php');
 $profile=(string)file_get_contents($root.'/aluno/perfil.php');
@@ -20,8 +21,8 @@ $header=(string)file_get_contents($root.'/assets/cms-header.css');
 must_student_premium_ui(!str_contains($shell,'data-theme="light"'),'student shell still hardcodes the light theme');
 must_student_premium_ui(str_contains($shell,'data-theme-value="auto"')&&str_contains($shell,'data-theme-value="dark"'),'student shell does not expose the canonical theme choices');
 must_student_premium_ui(str_contains($shell,'/assets/ui-core.css')&&str_contains($shell,'/assets/ui-core.js'),'student shell does not consume the global UI authority');
-must_student_premium_ui(!str_contains($shell,'/assets/student-area.js'),'student shell still loads student-specific interaction behavior');
-must_student_premium_ui(!is_file($root.'/assets/student-area.js'),'student-specific validation implementation still exists');
+must_student_premium_ui(!str_contains($shell,'/assets/student-area.js'),'student shell still loads obsolete student-area.js behavior');
+must_student_premium_ui(!is_file($root.'/assets/student-area.js'),'obsolete student-area.js still exists');
 
 foreach(['.student-field','.student-choice-','.student-check-field','.student-button','.student-error','.student-notice','.student-danger-button','--student-control-height'] as $forbidden){
     must_student_premium_ui(!str_contains($css,$forbidden),'student stylesheet still owns global primitive '.$forbidden);
@@ -36,15 +37,15 @@ must_student_premium_ui(str_contains($uiJs,"form[data-ui-validate]")&&str_contai
 must_student_premium_ui(str_contains($uiJs,'aria-invalid')&&str_contains($uiJs,'aria-describedby')&&str_contains($uiJs,'scrollIntoView'),'global validation does not expose accessible persistent errors');
 must_student_premium_ui(str_contains($uiJs,'As senhas não conferem.')&&str_contains($uiJs,'dataset.uiMatch'),'global validation does not own password matching');
 
-must_student_premium_ui(!str_contains($test,'datalist id="bleach-options"'),'bleach still uses the browser datalist popup');
-must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'Solução peroxiacética')&&str_contains($test,'Cloreto férrico'),'bleach does not consume the global choice control');
-must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'test workflow is not consuming global validation');
-must_student_premium_ui(str_contains($test,'button button-primary'),'test workflow is not consuming global buttons');
+must_student_premium_ui(!str_contains($test,'datalist id="bleach-options"'),'guided process regressed to browser datalist');
+must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'data-process-step-form')&&str_contains($test,'name="stage_key"'),'guided process does not consume the global choice control');
+must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record workflow is not consuming global validation');
+must_student_premium_ui(str_contains($test,'button button-primary'),'record workflow is not consuming global buttons');
 
-must_student_premium_ui(!str_contains($tests,'onchange="this.form.requestSubmit()"'),'test visibility still autosaves through an opaque select change');
-must_student_premium_ui(str_contains($tests,'Salvar acesso')&&str_contains($tests,'name="visibility" value="course"'),'test sharing does not expose an explicit save action');
-must_student_premium_ui(str_contains($tests,'data-ui-validate')&&!str_contains($tests,'data-student-validate'),'new-test form is not consuming global validation');
-must_student_premium_ui(str_contains($tests,'choice-field')&&str_contains($tests,'button button-secondary button-compact'),'tests workspace is not consuming global choice/button primitives');
+must_student_premium_ui(str_contains($notebook,'Caderno de Processos')&&str_contains($notebook,'Novo registro'),'global notebook surface is missing');
+must_student_premium_ui(str_contains($notebook,'Salvar acesso')&&str_contains($notebook,'name="visibility"'),'notebook sharing does not expose an explicit save action');
+must_student_premium_ui(str_contains($notebook,'data-ui-validate')&&!str_contains($notebook,'data-student-validate'),'new-record form is not consuming global validation');
+must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route does not redirect to the notebook');
 
 foreach([$login,$password,$profile] as $surface){
     must_student_premium_ui(str_contains($surface,'data-ui-validate'),'an account form is not consuming global validation');
@@ -53,7 +54,7 @@ foreach([$login,$password,$profile] as $surface){
 must_student_premium_ui(str_contains($login,'class="form-field"')&&str_contains($login,'button button-primary'),'login does not consume global field/button primitives');
 must_student_premium_ui(str_contains($password,'data-ui-match')&&str_contains($password,'class="check-field"'),'password screen does not consume global match/check primitives');
 must_student_premium_ui(!str_contains($password,'style="font-size:50px"')&&!str_contains($password,'style="display:flex'),'password screen still carries one-off inline visual rules');
-must_student_premium_ui(str_contains($renderer,'$studentAccessLabel=$materialContext?$contextBackLabel:$studentAreaLabel')&&str_contains($renderer,'/aluno/testes.php?cohort='),'protected material does not reuse the global topbar for return/course actions');
+must_student_premium_ui(str_contains($renderer,'$studentAccessLabel=$materialContext?$contextBackLabel:$studentAreaLabel')&&str_contains($renderer,'/aluno/caderno.php')&&str_contains($renderer,'/aluno/duvidas.php?cohort='),'protected material does not expose the current student-area destinations');
 must_student_premium_ui(!str_contains($renderer,'data-cms-student-context')&&!str_contains($header,'.cms-student-context'),'protected material still owns a second context bar');
 
 echo "student-premium-ui: ok\n";

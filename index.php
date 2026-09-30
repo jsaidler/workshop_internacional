@@ -28,6 +28,7 @@ try{
             }
         }
         if($student)student_page_prefill_for_page($db,$student,$page,$document);
+        if($student&&$materialContext)$document=student_material_inject_notes($db,$student,$page,$document);
         try{analytics_record_pageview($db,$activity,$page,$locale);}catch(Throwable $analyticsError){error_log('Analytics pageview failed: '.$analyticsError->getMessage());}
         cms_render_public_page($activity,$page,$document,false);exit;
     }
