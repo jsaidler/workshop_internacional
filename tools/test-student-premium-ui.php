@@ -7,8 +7,11 @@ function must_student_premium_ui(bool $condition,string $message): void {if(!$co
 $root=dirname(__DIR__);
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
+$workbenchCss=(string)file_get_contents($root.'/assets/student-workbench.css');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $uiJs=(string)file_get_contents($root.'/assets/ui-core.js');
+$courses=(string)file_get_contents($root.'/aluno/index.php');
+$tools=(string)file_get_contents($root.'/aluno/ferramentas.php');
 $notebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
@@ -28,6 +31,10 @@ foreach(['.student-field','.student-choice-','.student-check-field','.student-bu
     must_student_premium_ui(!str_contains($css,$forbidden),'student stylesheet still owns global primitive '.$forbidden);
 }
 must_student_premium_ui(str_contains($css,'.student-step-nav')&&str_contains($css,'.student-workflow-panel')&&str_contains($css,'.student-course-card'),'student stylesheet lost application-specific composition');
+must_student_premium_ui(str_contains($css,'grid-template-columns:repeat(4,1fr)'),'mobile global navigation is not sized for all four student areas');
+must_student_premium_ui(str_contains($css,'.student-desktop-nav a[aria-current=page]::after'),'desktop student navigation lost the restrained active marker');
+must_student_premium_ui(str_contains($workbenchCss,'counter-reset:student-tools')&&str_contains($workbenchCss,'.student-process-row'),'student workbench lost notebook/tool hierarchy');
+must_student_premium_ui(!str_contains($workbenchCss,'transform:translateY(-2px)'),'student tools regressed to promotional hover cards');
 
 foreach(['.form-field','.choice-field','.check-field','.button-compact','.button-danger','.ui-alert'] as $global){
     must_student_premium_ui(str_contains($uiCss,$global),'global UI stylesheet is missing '.$global);
@@ -46,6 +53,10 @@ must_student_premium_ui(str_contains($notebook,'Caderno de Processos')&&str_cont
 must_student_premium_ui(str_contains($notebook,'Salvar acesso')&&str_contains($notebook,'name="visibility"'),'notebook sharing does not expose an explicit save action');
 must_student_premium_ui(str_contains($notebook,'data-ui-validate')&&!str_contains($notebook,'data-student-validate'),'new-record form is not consuming global validation');
 must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route does not redirect to the notebook');
+
+must_student_premium_ui(!str_contains($courses,'>Progresso<'),'course overview still mislabels lesson availability as student progress');
+must_student_premium_ui(str_contains($courses,'aulas disponíveis para esta turma')&&str_contains($courses,'Material e acompanhamento'),'course overview lost the polished availability/access hierarchy');
+must_student_premium_ui(str_contains($tools,'Instrumentos de cálculo e laboratório')&&str_contains($tools,'Preparos salvos'),'tools catalog lost the instrument-oriented presentation');
 
 foreach([$login,$password,$profile] as $surface){
     must_student_premium_ui(str_contains($surface,'data-ui-validate'),'an account form is not consuming global validation');
