@@ -44,6 +44,8 @@ try{
             if(!$resolved['exists'])throw new RuntimeException('O novo trecho não existe mais no material. Selecione-o novamente.');
             student_material_annotation_reanchor($db,$annotationId,$studentId,$pageId,$resolved['lesson_id'],$_POST);
         }elseif($action==='detach'){
+            $postedBody=(string)($_POST['body']??'');
+            if(trim($postedBody)!=='')student_material_annotation_update_body($db,$annotationId,$studentId,$pageId,$postedBody);
             student_material_annotation_detach($db,$annotationId,$studentId,$pageId);
         }elseif($action==='remove'){
             student_material_annotation_delete($db,$annotationId,$studentId,$pageId);
