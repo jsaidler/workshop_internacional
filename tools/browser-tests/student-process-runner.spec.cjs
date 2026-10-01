@@ -21,7 +21,7 @@ test('lab runner keeps screen awake and never auto advances',async({page})=>{
   await expect(page.locator('[data-runner-cue]')).toHaveText('Tempo concluído');
   await expect(page.locator('[data-runner-complete]')).not.toHaveAttribute('aria-disabled','true');
   expect(page.url()).toBe(initialUrl);
-  await expect(page.getByText('Lavagem',{exact:true})).toBeVisible();
+  await expect(page.locator('.student-process-runner-next').getByText('Lavagem',{exact:true})).toBeVisible();
   expect(await page.evaluate(()=>window.__vibrations.length)).toBeGreaterThan(0);
 });
 
