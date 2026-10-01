@@ -76,6 +76,19 @@ test('touch selection survives a transient collapsed selection event long enough
   await expect(page.locator('[data-anchor-preview]')).toHaveText('trecho permanece disponível');
 });
 
+test('saving an inline annotation returns to the same reading position instead of the top',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(url,{waitUntil:'networkidle'});
+  const block=page.locator('[data-student-anchor-block="processo:p:1"]');
+  await block.evaluate(element=>element.scrollIntoView({block:'center'}));
+  const before=await block.evaluate(element=>({top:element.getBoundingClientRect().top,y:window.scrollY,path:location.pathname}));
+  await page.evaluate(before=>sessionStorage.setItem('student.annotation.return.v1',JSON.stringify({path:before.path,revision:'rev-2',blockKey:'processo:p:1',top:before.top,y:before.y,ts:Date.now()})),before);
+  await page.goto(url+'?anotacoes=1#anotacoes',{waitUntil:'networkidle'});
+  await expect(page.locator('[data-student-notes-panel]')).not.toHaveAttribute('open','');
+  await expect.poll(async()=>Math.abs((await block.evaluate(element=>element.getBoundingClientRect().top))-before.top)).toBeLessThan(4);
+  await expect(page).not.toHaveURL(/anotacoes/);
+});
+
 test('orphaned notes can be reassociated without changing their body',async({page})=>{
   await page.goto(url,{waitUntil:'networkidle'});
   await page.locator('[data-student-notes-panel]>summary').click();
