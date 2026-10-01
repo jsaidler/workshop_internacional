@@ -10,6 +10,8 @@ ensureStyle('/assets/student-process-ux.css','data-student-process-ux-style');
 const toolbox=document.querySelector('[data-student-toolbox]');
 document.querySelectorAll('[data-toolbox-open]').forEach(button=>button.addEventListener('click',event=>{if(!toolbox)return;if(button.tagName==='A')event.preventDefault();if(typeof toolbox.showModal==='function')toolbox.showModal();else toolbox.setAttribute('open','');}));
 document.querySelectorAll('[data-toolbox-close]').forEach(button=>button.addEventListener('click',()=>{if(!toolbox)return;if(typeof toolbox.close==='function')toolbox.close();else toolbox.removeAttribute('open');}));
+document.querySelectorAll('a[href="/aluno/preparos.php"] span:first-child').forEach(span=>span.textContent='Predefinições de revelação');
+document.querySelectorAll('a[href="/aluno/calibracao.php"] span:first-child').forEach(span=>span.textContent='Referências de calibração');
 const createDialog=document.querySelector('[data-record-create-dialog]');
 const openCreate=()=>{if(!createDialog)return;if(typeof createDialog.showModal==='function'){if(!createDialog.open)createDialog.showModal();}else createDialog.setAttribute('open','');};
 const closeCreate=()=>{if(!createDialog)return;if(typeof createDialog.close==='function')createDialog.close();else createDialog.removeAttribute('open');};
