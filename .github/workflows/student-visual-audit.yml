@@ -9,6 +9,7 @@ on:
       - 'assets/ui-core.css'
       - 'assets/ui-core.js'
       - 'tools/browser-fixture/student-visual-audit.html'
+      - 'tools/browser-fixture/student-auth-visual-audit.html'
       - 'tools/browser-tests/student-visual-audit.spec.cjs'
       - '.github/workflows/student-visual-audit.yml'
   workflow_dispatch:

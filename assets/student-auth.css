@@ -1,0 +1,39 @@
+.student-auth-page{width:min(920px,100%);margin:0 auto}
+.student-auth-intro{max-width:760px;margin-bottom:30px}
+.student-auth-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);border:1px solid var(--student-border);background:var(--student-panel-quiet)}
+.student-auth-section{min-width:0;padding:30px 32px 32px}
+.student-auth-section+.student-auth-section{border-left:1px solid var(--student-border)}
+.student-auth-section .student-kicker{margin-bottom:10px}
+.student-auth-section .student-subtitle{margin-bottom:0}
+.student-auth-copy{max-width:46ch;margin:16px 0 0;color:var(--muted);font-size:14px;line-height:1.65}
+.student-auth-form{margin-top:24px}
+.student-auth-form .form-field:first-of-type{margin-top:0}
+.student-auth-actions{display:flex;align-items:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--student-border)}
+.student-auth-actions .button{min-width:132px;margin:0}
+.student-auth-primary{background:color-mix(in srgb,var(--surface) 72%,transparent)}
+.student-auth-secondary{background:transparent}
+
+.student-login-card{width:min(620px,100%);margin:24px auto 0;padding:30px 32px 32px;border:1px solid var(--student-border);background:var(--student-panel-quiet)}
+.student-login-card .student-auth-title{font-size:clamp(36px,4vw,48px)}
+.student-login-card .student-auth-copy{margin-top:14px}
+.student-login-card form{margin-top:24px}
+.student-login-card form>.form-field:first-of-type{margin-top:0}
+.student-login-card form>.button{margin-top:24px}
+
+@media(max-width:760px){
+  .student-auth-page{width:100%}
+  .student-auth-intro{margin-bottom:22px}
+  .student-auth-grid{grid-template-columns:1fr}
+  .student-auth-section{padding:24px 20px 26px}
+  .student-auth-section+.student-auth-section{border-left:0;border-top:1px solid var(--student-border)}
+  .student-auth-copy{font-size:14px;line-height:1.6}
+  .student-auth-form{margin-top:20px}
+  .student-auth-actions{margin-top:20px;padding-top:18px}
+  .student-auth-actions .button{width:100%;min-height:50px}
+  .student-login-card{width:100%;margin-top:18px;padding:24px 20px 26px}
+  .student-login-card form>.button{width:100%;min-height:50px}
+}
+
+@media(max-width:420px){
+  .student-auth-section,.student-login-card{padding-left:16px;padding-right:16px}
+}
