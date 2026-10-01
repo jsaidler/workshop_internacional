@@ -1,6 +1,8 @@
 (()=>{
 'use strict';
 const replaceLabelText=(control,text)=>{const label=control?.closest('.form-field');if(!label)return;const node=[...label.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim());if(node)node.textContent=text;};
+const groupDeveloperSelect=select=>{if(!select||select.dataset.developerGrouped==='1')return;const options=[...select.options];if(!options.length)return;const primary=document.createElement('optgroup'),common=document.createElement('optgroup'),custom=document.createElement('optgroup');primary.label='Pesquisa / curso';common.label='Outros reveladores';custom.label='Personalizado';options.forEach(option=>{if(['parodinal','brewed-caffenol'].includes(option.value))primary.appendChild(option);else if(option.value==='other')custom.appendChild(option);else common.appendChild(option);});select.replaceChildren();if(primary.children.length)select.appendChild(primary);if(common.children.length)select.appendChild(common);if(custom.children.length)select.appendChild(custom);select.dataset.developerGrouped='1';};
+document.querySelectorAll('[data-developer-select]').forEach(groupDeveloperSelect);
 const params=new URLSearchParams(window.location.search),testId=params.get('id');
 const history=document.querySelector('.student-process-history');
 const now=document.querySelector('.student-process-now');
