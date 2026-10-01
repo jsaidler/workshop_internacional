@@ -39,8 +39,9 @@ foreach($standards as $key=>$standard){
         if($stage==='peracetic')$hasPeracetic=true;
     }
     must_student_process_manager(is_array($first)&&is_array($second),$key.' must contain two development stages');
-    $firstProfile=$first;$secondProfile=$second;unset($firstProfile['stage_key'],$secondProfile['stage_key']);
-    must_student_process_manager($firstProfile===$secondProfile,$key.' second development must exactly mirror first development');
+    $firstProfile=$first;$secondProfile=$second;unset($firstProfile['stage_key'],$firstProfile['notes'],$secondProfile['stage_key'],$secondProfile['notes']);
+    must_student_process_manager($firstProfile===$secondProfile,$key.' second development must exactly mirror first development parameters');
+    must_student_process_manager(str_contains((string)($second['notes']??''),'Reutilizar o mesmo banho de revelador'),$key.' second development must explicitly reuse the first developer bath');
     must_student_process_manager(($first['developer_key']??'')==='parodinal',$key.' must use Parodinal');
     must_student_process_manager(($first['temperature']??'')==='26 °C',$key.' development temperature must be 26 °C');
     must_student_process_manager(($first['duration']??'')==='7:00',$key.' development time must be seven minutes');
@@ -54,12 +55,13 @@ foreach($standards as $key=>$standard){
 must_student_process_manager(student_process_standard_duration_summary($standards['positive-ferric-ammonia-ei200']['steps'])==='19:30 + etapas livres','ferric standard fixed-time summary is wrong');
 must_student_process_manager(student_process_standard_duration_summary($standards['positive-peracetic-ei200']['steps'])==='18:30 + etapas livres','peracetic standard fixed-time summary is wrong');
 must_student_process_manager(str_contains($standardsSource,"'water_amount'=>(string)(550-\$developerAmount)"),'standard dilution must encode water as the complement to 550 ml');
-must_student_process_manager(str_contains($standardsSource,"foreach(['developer_key','developer_amount','water_amount','temperature','agitation','agitation_interval']"),'standard copy must persist the complete development profile');
+must_student_process_manager(str_contains($standardsSource,"foreach(['developer_key','developer_amount','water_amount','temperature','agitation','agitation_interval','notes']"),'standard copy must persist the complete development profile and reuse note');
 must_student_process_manager(str_contains($bootstrap,"'student_process_standards'"),'standard process catalog is not loaded by bootstrap');
 must_student_process_manager(str_contains($manager,"action==='copy_standard'")&&str_contains($manager,'Padrões do workshop'),'process manager does not expose workshop standards');
 must_student_process_manager(str_contains($manager,'Escolha o EI e a rota de branqueamento. As duas revelações usam exatamente os mesmos parâmetros.'),'process manager does not explain the fixed workshop presets');
 must_student_process_manager(!str_contains($manager,'$standardDevelopers'),'current workshop standard cards must not expose a developer selector');
 must_student_process_manager(str_contains($manager,'student_process_template_duration_summary'),'saved templates still present partial timed sums as complete totals');
+must_student_process_manager(str_contains($doc,'mesmo banho de revelador preparado para a primeira revelação é reaproveitado na segunda'),'developer reuse is not documented canonically');
 
 foreach(['student_process_templates','student_process_template_steps','student_process_plans','student_process_plan_steps'] as $table)must_student_process_manager(str_contains($migration,'CREATE TABLE IF NOT EXISTS '.$table),'missing migration table '.$table);
 must_student_process_manager(str_contains($domain,'student_process_plan_apply_template')&&str_contains($domain,'payload_json'),'template snapshot authority is missing');
