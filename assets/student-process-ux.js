@@ -28,14 +28,18 @@ if(form){
   const fieldset=form.querySelector('.choice-field');
   const radios=[...form.querySelectorAll('[data-stage-choice]')];
   if(fieldset&&radios.length){
-    const chooser=document.createElement('label');chooser.className='form-field student-process-stage-select';chooser.appendChild(document.createTextNode('Adicionar etapa'));
-    const select=document.createElement('select');select.setAttribute('aria-label','Etapa a adicionar');
-    radios.forEach((radio,index)=>{
-      const option=document.createElement('option');option.value=radio.value;const label=radio.closest('label')?.querySelector('span')?.textContent.trim()||radio.value;option.textContent=label+(index===0?' — sugestão':'');option.selected=radio.checked;select.appendChild(option);
-    });
-    const help=document.createElement('span');help.className='form-field-help';help.textContent='A sugestão acompanha o processo registrado, mas você pode escolher outra etapa.';
-    chooser.append(select,help);fieldset.insertAdjacentElement('beforebegin',chooser);fieldset.hidden=true;
-    select.addEventListener('change',()=>{const radio=radios.find(item=>item.value===select.value);if(!radio)return;radio.checked=true;radio.dispatchEvent(new Event('change',{bubbles:true}));const label=radio.closest('label')?.querySelector('span')?.textContent.trim();const headline=now?.querySelector('h2');if(headline&&label)headline.textContent=label;});
+    const labelFor=radio=>radio.closest('label')?.querySelector('span')?.textContent.trim()||radio.value;
+    const customIndex=radios.findIndex(radio=>radio.value==='custom');
+    const legacySuggested=(customIndex>=0?radios.slice(0,customIndex+1):radios.slice(0,1));
+    const suggested=legacySuggested.filter(radio=>radio.value!=='custom');
+    const suggestedValues=new Set(suggested.map(radio=>radio.value));
+    const alternatives=radios.filter(radio=>!suggestedValues.has(radio.value));
+    const decision=document.createElement('div');decision.className='student-process-decision';
+    const heading=document.createElement('p');heading.className='student-process-decision-label';heading.textContent=suggested.length>1?'Próxima decisão':'Etapa sugerida';decision.appendChild(heading);
+    if(suggested.length===1){const fixed=document.createElement('strong');fixed.className='student-process-suggested-stage';fixed.textContent=labelFor(suggested[0]);decision.appendChild(fixed);}
+    else if(suggested.length>1){const choices=document.createElement('div');choices.className='student-process-guided-choices';suggested.forEach(radio=>{const button=document.createElement('button');button.type='button';button.className='student-process-choice-button';button.textContent=labelFor(radio);button.setAttribute('aria-pressed',radio.checked?'true':'false');button.addEventListener('click',()=>{suggested.forEach(item=>{item.checked=item===radio;});radio.dispatchEvent(new Event('change',{bubbles:true}));choices.querySelectorAll('button').forEach(item=>item.setAttribute('aria-pressed',item===button?'true':'false'));const headline=now?.querySelector('h2');if(headline)headline.textContent=labelFor(radio);});choices.appendChild(button);});decision.appendChild(choices);}
+    if(alternatives.length){const other=document.createElement('details');other.className='student-process-other-stage';const summary=document.createElement('summary');summary.textContent='Registrar outra etapa';const select=document.createElement('select');select.setAttribute('aria-label','Outra etapa');const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Escolha…';select.appendChild(placeholder);alternatives.forEach(radio=>{const option=document.createElement('option');option.value=radio.value;option.textContent=labelFor(radio);select.appendChild(option);});select.addEventListener('change',()=>{if(!select.value)return;const radio=radios.find(item=>item.value===select.value);if(!radio)return;radios.forEach(item=>{item.checked=item===radio;});radio.dispatchEvent(new Event('change',{bubbles:true}));const headline=now?.querySelector('h2');if(headline)headline.textContent=labelFor(radio);other.open=false;summary.textContent='Outra etapa: '+labelFor(radio);decision.classList.add('has-alternative');});other.append(summary,select);decision.appendChild(other);}
+    fieldset.insertAdjacentElement('beforebegin',decision);fieldset.hidden=true;
   }
 
   const nowLabel=now?.querySelector('.student-process-now-label');if(nowLabel)nowLabel.textContent='Sugestão para continuar';
