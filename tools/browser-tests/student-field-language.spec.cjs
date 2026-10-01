@@ -130,6 +130,7 @@ test('static student labels are server-rendered; JavaScript only relabels state-
   const processUx=read('assets/student-process-ux.js');
   const mechanics=read('assets/student-mechanics.js');
   const workbench=read('assets/student-workbench.js');
+  const experience=read('assets/student-experience.js');
   expect(processUx).not.toContain("replaceLabelText(preset,'Predefinição de revelação')");
   expect(processUx).not.toContain("replaceLabelText(input,'Outro revelador')");
   expect(processUx).toContain("kind==='wash'?'Tempo de lavagem':kind==='dry'?'Tempo de secagem (opcional)':'Tempo'");
@@ -137,6 +138,8 @@ test('static student labels are server-rendered; JavaScript only relabels state-
   expect(mechanics).not.toContain('solutionSpan');
   expect(mechanics).toContain("'Tempo com reciprocidade: '+formatDuration(corrected)");
   expect(workbench).toContain("'Tempo com reciprocidade: '+pretty(window.StudentReciprocity.adjustedSeconds(seconds))+' s'");
+  expect(experience).not.toContain("span.textContent='Predefinições de revelação'");
+  expect(experience).not.toContain("span.textContent='Referências de calibração'");
 });
 
 test('form labels and choice legends share the same visual hierarchy',async({page})=>{
