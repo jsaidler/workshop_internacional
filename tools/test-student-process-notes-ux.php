@@ -15,6 +15,8 @@ $index=(string)file_get_contents($root.'/index.php');
 $noteEndpoint=(string)file_get_contents($root.'/aluno/material-anotacao.php');
 $notes=(string)file_get_contents($root.'/app/student_notes_experience.php');
 $notesCss=(string)file_get_contents($root.'/assets/cms-student-notes.css');
+$notesJs=(string)file_get_contents($root.'/assets/student-inline-annotations.js');
+$notesMigration=(string)file_get_contents($root.'/migrations/077_student_inline_annotations.php');
 $processJs=(string)file_get_contents($root.'/assets/student-process-ux.js');
 $presets=(string)file_get_contents($root.'/aluno/preparos.php');
 
@@ -28,7 +30,10 @@ must_process_notes(str_contains($processJs,'student-process-step-edit')&&str_con
 must_process_notes(str_contains($processJs,"primary.label='Pesquisa / curso'")&&str_contains($processJs,"common.label='Outros reveladores'")&&str_contains($processJs,"custom.label='Personalizado'"),'developer catalog is not grouped by relevance');
 must_process_notes(str_contains($index,'student_material_render_notebook')&&!str_contains($index,'student_material_inject_notes'),'material still injects note editors into content sections');
 must_process_notes(str_contains($notes,'student-notes-panel')&&!str_contains($notes,"appendChild(\$details)"),'notes are not centralized in a page notebook');
-must_process_notes(str_contains($notes,"'pagina'=>['key'=>'pagina'")&&str_contains($noteEndpoint,"\$sectionKey!=='pagina'"),'annotations are still forced to belong to a CMS section');
+must_process_notes(str_contains($notesMigration,'CREATE TABLE IF NOT EXISTS student_material_annotations')&&str_contains($notesMigration,'quote_exact')&&str_contains($notesMigration,'quote_prefix')&&str_contains($notesMigration,'quote_suffix')&&str_contains($notesMigration,'block_key')&&str_contains($notesMigration,'source_page_revision'),'inline annotations do not persist resilient selection anchors');
+must_process_notes(str_contains($notes,'data-inline-note-compose')&&str_contains($notes,'data-student-anchor-block')&&str_contains($notes,"name=\"annotation_action\" value=\"create_page\"")&&!str_contains($notes,'<select name="section_key">'),'new annotations still depend on a manual CMS-section selector');
+must_process_notes(str_contains($noteEndpoint,"\$action==='create_selection'")&&str_contains($noteEndpoint,"\$action==='create_page'")&&str_contains($noteEndpoint,"\$action==='reanchor'")&&str_contains($noteEndpoint,"\$action==='detach'"),'annotation endpoint does not support selection, page, reassociation and detach flows');
+must_process_notes(str_contains($notesJs,'Trecho alterado')&&str_contains($notesJs,'Trecho original removido')&&str_contains($notesJs,'não identificado com segurança')&&str_contains($notesJs,'student-inline-note-mark'),'annotation client does not preserve changed, removed or ambiguous source states');
 must_process_notes(str_contains($notesCss,'.student-notes-panel[open]')&&str_contains($notesCss,'position:fixed'),'annotation notebook is not an independent study layer');
 must_process_notes(str_contains($presets,'Predefinições de revelação')&&!str_contains($presets,'salvo(s)')&&str_contains($presets,'student_saved_preparation_update_guided')&&str_contains($presets,'?editar='),'reusable development presets cannot be edited coherently');
 must_process_notes(str_contains($auxiliary,'student_saved_preparation_update_guided')&&str_contains($auxiliary,'student_inventory_update_metadata'),'persisted laboratory helpers do not have update services');
