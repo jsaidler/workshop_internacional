@@ -1,3 +1,11 @@
+.student-process-stage-fields .form-field[hidden],
+.student-process-stage-fields input[hidden],
+.student-process-stage-fields select[hidden],
+.student-process-stage-fields textarea[hidden],
+.student-process-edit-form .form-field[hidden],
+.student-process-edit-form input[hidden],
+.student-process-edit-form select[hidden],
+.student-process-edit-form textarea[hidden]{display:none!important}
 .student-process-log{margin:0 0 30px;border:1px solid var(--student-border);background:var(--student-panel-quiet)}
 .student-process-log>summary{min-height:48px;padding:0 16px;display:flex;align-items:center;color:var(--text);font-size:13px;font-weight:600;cursor:pointer}
 .student-process-log .student-process-summary{margin:0;border:0;border-top:1px solid var(--student-border)}
