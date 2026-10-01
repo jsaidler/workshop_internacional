@@ -49,15 +49,15 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
     $root=$dom->getElementById('student-notes-root');$out='';
     if($root)foreach(iterator_to_array($root->childNodes) as $child)$out.=$dom->saveHTML($child);
     libxml_clear_errors();libxml_use_internal_errors($previous);
-    if(count($sections)===1&&$html===''){$document['html']=$out;return $document;}
 
     $returnTo=student_notes_return_url();$visibleNotes=[];
     foreach($sections as $key=>$section)if(isset($notes[$key]))$visibleNotes[$key]=$notes[$key];
     $freeSections=array_diff_key($sections,$visibleNotes);$count=count($visibleNotes);$open=isset($_GET['anotacoes']);
 
+    $entry='<div class="student-notes-entry"><a href="'.h($returnTo).'" aria-controls="anotacoes"><span>Anotações</span>'.($count>0?'<b>'.$count.'</b>':'').'</a></div>';
     $panel='<details class="student-notes-panel" id="anotacoes" data-student-notes-panel'.($open?' open':'').'>';
     $panel.='<summary><span>Anotações</span>'.($count>0?'<b>'.$count.'</b>':'').'</summary>';
-    $panel.='<div class="student-notes-sheet"><header class="student-notes-head"><div><span>Material</span><h2>Suas anotações</h2></div><p>Um só lugar para consultar e editar o que você registrou nesta página.</p></header>';
+    $panel.='<div class="student-notes-sheet"><header class="student-notes-head"><div><span>Material</span><h2>Suas anotações</h2></div><p>Registre uma observação geral da página ou associe-a a um trecho do material.</p></header>';
 
     if($visibleNotes){
         $panel.='<div class="student-notes-list">';
@@ -78,13 +78,13 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
             .'<input type="hidden" name="_csrf" value="'.h(csrf_token('student-material-note')).'">'
             .'<input type="hidden" name="page_id" value="'.(int)$page['id'].'">'
             .'<input type="hidden" name="return_to" value="'.h($returnTo).'">'
-            .'<label>Contexto<select name="section_key">';
+            .'<label>Onde esta anotação se aplica?<select name="section_key">';
         foreach($freeSections as $section)$panel.='<option value="'.h((string)$section['key']).'">'.h((string)$section['title']).'</option>';
         $panel.='</select></label><label>Anotação<textarea name="body" rows="5" maxlength="5000" placeholder="Escreva o que você quer guardar."></textarea></label>'
             .'<button class="button" type="submit">Adicionar anotação</button></form>';
     }
 
     $panel.='</div></details>';
-    $document['html']=$out.$panel;
+    $document['html']=$entry.$out.$panel;
     return $document;
 }
