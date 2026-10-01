@@ -10,7 +10,9 @@ on:
       - 'assets/ui-core.js'
       - 'tools/browser-fixture/student-visual-audit.html'
       - 'tools/browser-fixture/student-auth-visual-audit.html'
+      - 'tools/browser-fixture/student-tools-mechanics-audit.html'
       - 'tools/browser-tests/student-visual-audit.spec.cjs'
+      - 'tools/browser-tests/student-tools-mechanics-audit.spec.cjs'
       - '.github/workflows/student-visual-audit.yml'
   workflow_dispatch:
 jobs:
@@ -29,7 +31,7 @@ jobs:
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
-          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs --workers=1
       - name: Upload rendered student screens
         if: always()
         uses: actions/upload-artifact@v4

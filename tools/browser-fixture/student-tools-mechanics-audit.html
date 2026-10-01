@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/template/page.css">
+<link rel="stylesheet" href="/assets/ui-core.css">
+<link rel="stylesheet" href="/assets/student-area.css">
+<link rel="stylesheet" href="/assets/student-workbench.css">
+<link rel="stylesheet" href="/assets/student-experience.css">
+<link rel="stylesheet" href="/assets/student-rendered-fixes.css" data-student-rendered-fixes>
+<style>.audit-wrap{width:min(1080px,calc(100% - 32px));margin:32px auto 100px}.audit-screen[hidden]{display:none!important}.audit-screen{margin-bottom:32px}</style>
+<title>Student tools mechanics audit</title>
+</head>
+<body class="student-page"><main class="audit-wrap">
+<section class="audit-screen student-bench-tool" data-screen="exposure" data-exposure-tool>
+  <p class="student-kicker">Exposição</p><h2>Exposição equivalente</h2>
+  <div class="student-form-grid">
+    <label class="form-field">Tempo de partida (s)<input type="number" value="1" data-exposure-time></label>
+    <label class="form-field">Abertura inicial<input type="number" value="8" data-exposure-f-start></label>
+    <label class="form-field">EI inicial<input type="number" value="100" data-exposure-ei-start></label>
+    <label class="form-field">Abertura desejada<input type="number" value="5.6" data-exposure-f-target></label>
+    <label class="form-field">EI desejado<input type="number" value="100" data-exposure-ei-target></label>
+    <label class="form-field">Compensação (EV)<input type="number" value="0" data-exposure-ev></label>
+  </div>
+  <div class="student-tool-result"><span>Tempo equivalente</span><strong data-exposure-result>—</strong><small data-exposure-reciprocity></small></div>
+</section>
+
+<section class="audit-screen student-bench-tool is-wide" data-screen="timer" data-lab-timer>
+  <p class="student-kicker">Processamento</p><h2>Temporizador</h2>
+  <div class="student-form-grid student-timer-settings">
+    <label class="form-field">Tempo total<input type="text" value="0:05" data-timer-duration></label>
+    <label class="form-field">Agitação a cada<input type="text" value="1:00" data-timer-interval></label>
+  </div>
+  <output class="student-timer-display" data-timer-display>00:05</output>
+  <p class="student-timer-cue" data-timer-cue aria-live="polite"></p>
+  <div class="student-actions"><button class="button button-primary" type="button" data-timer-start>Iniciar</button><button class="button button-secondary" type="button" data-timer-pause>Pausar</button><button class="button button-secondary" type="button" data-timer-reset>Reiniciar</button></div>
+</section>
+
+<section class="audit-screen student-bench-tool is-wide" data-screen="recipe" data-solution-tool>
+  <p class="student-kicker">Química</p><h2>Receitas</h2>
+  <div class="student-form-grid"><label class="form-field">Receita<select data-solution-select><option value="parodinal">Parodinal · concentrado</option></select></label><label class="form-field">Volume desejado (ml)<input type="number" value="250" data-solution-volume></label></div>
+  <article class="student-solution-formula" data-solution-formula="parodinal" data-base-volume="250"><div class="student-record-context"><h3>Parodinal · concentrado</h3></div><div class="student-solution-ingredients"><div><span>Água destilada/desmineralizada</span><strong data-solution-amount="250" data-unit="ml">250 ml</strong></div><div><span>Paracetamol</span><strong data-solution-amount="15" data-unit="g">15 g</strong></div><div><span>Sulfito de sódio</span><strong data-solution-amount="50" data-unit="g">50 g</strong></div><div><span>Hidróxido de sódio</span><strong data-solution-amount="20" data-unit="g">20 g</strong></div></div><div class="student-recipe-preparation"><strong>Modo de preparo</strong><p>Aqueça a água e siga a ordem de mistura indicada.</p><small>Fonte: Pesquisa João Saidler · Químicos - Receitas</small></div></article>
+  <div class="student-toolbox-links"><a href="/aluno/inventario.php"><span>Inventário</span><span>→</span></a></div>
+</section>
+
+<section class="audit-screen" data-screen="inventory">
+  <button class="button button-primary" type="button" data-inventory-new-toggle>Novo item</button>
+  <section class="student-section" data-inventory-new-panel hidden><div class="student-section-heading"><div><p class="student-kicker">Entrada</p><h2 class="student-subtitle">Novo item</h2></div></div><form class="student-form-grid">
+    <fieldset class="choice-field student-span-2"><legend>Tipo</legend><div class="choice-row"><label class="choice-option"><input type="radio" name="item_kind" value="raw" checked><span>Insumo</span></label><label class="choice-option"><input type="radio" name="item_kind" value="solution"><span>Solução armazenável</span></label></div></fieldset>
+    <label class="form-field student-span-2">Nome<input name="name" required></label>
+    <label class="form-field">Quantidade<input type="number" name="quantity" value="0"></label><label class="form-field">Unidade<select name="unit"><option>ml</option><option>g</option></select></label>
+    <label class="form-field">Categoria<input name="category"></label><label class="form-field">Lote / identificação<input name="lot_code"></label>
+    <label class="form-field">Entrada / preparo<input type="date" name="acquired_or_prepared_at"></label><label class="form-field">Validade<input type="date" name="expires_at"></label>
+    <label class="form-field">Quantidade mínima<input type="number" name="minimum_quantity"></label><label class="form-field">Local<input name="location"></label>
+    <details class="student-optional-fields student-span-2"><summary>Anotações</summary><label class="form-field"><textarea name="notes"></textarea></label></details>
+    <div class="student-actions student-span-2"><button class="button button-primary">Adicionar ao inventário</button><button class="button button-secondary" type="button" data-inventory-new-cancel>Cancelar</button></div>
+  </form></section>
+</section>
+</main>
+<script src="/assets/student-reciprocity.js"></script>
+<script src="/assets/student-workbench.js"></script>
+<script src="/assets/student-experience.js"></script>
+<script>
+const selected=new URLSearchParams(location.search).get('screen')||'exposure';document.querySelectorAll('[data-screen]').forEach(el=>{el.hidden=el.dataset.screen!==selected;});
+</script>
+</body></html>
