@@ -1,6 +1,10 @@
 (()=>{
 'use strict';
-const self=document.currentScript;const version=self?new URL(self.src,window.location.href).searchParams.get('v'):'';if(!document.querySelector('link[data-student-rendered-fixes]')){const link=document.createElement('link');link.rel='stylesheet';link.href='/assets/student-rendered-fixes.css'+(version?'?v='+encodeURIComponent(version):'');link.dataset.studentRenderedFixes='';document.head.appendChild(link);}
+const self=document.currentScript;const version=self?new URL(self.src,window.location.href).searchParams.get('v'):'';
+const suffix=version?'?v='+encodeURIComponent(version):'';
+const ensureStyle=(href,key)=>{if(document.querySelector(`link[${key}]`))return;const link=document.createElement('link');link.rel='stylesheet';link.href=href+suffix;link.setAttribute(key,'');document.head.appendChild(link);};
+ensureStyle('/assets/student-rendered-fixes.css','data-student-rendered-fixes');
+ensureStyle('/assets/student-mechanics.css','data-student-mechanics-style');
 const toolbox=document.querySelector('[data-student-toolbox]');
 document.querySelectorAll('[data-toolbox-open]').forEach(button=>button.addEventListener('click',event=>{if(!toolbox)return;if(button.tagName==='A')event.preventDefault();if(typeof toolbox.showModal==='function')toolbox.showModal();else toolbox.setAttribute('open','');}));
 document.querySelectorAll('[data-toolbox-close]').forEach(button=>button.addEventListener('click',()=>{if(!toolbox)return;if(typeof toolbox.close==='function')toolbox.close();else toolbox.removeAttribute('open');}));
@@ -12,4 +16,5 @@ document.querySelectorAll('[data-record-create-close]').forEach(button=>button.a
 if(createDialog&&new URLSearchParams(window.location.search).get('novo')==='1')openCreate();
 document.querySelectorAll('[data-quick-reciprocity]').forEach(root=>{const source=root.querySelector('[data-quick-reciprocity-source]'),target=root.querySelector('[data-quick-reciprocity-target]');if(!source||!target)return;const update=()=>{const raw=source.value.trim();target.value=raw&&window.StudentReciprocity?(window.StudentReciprocity.calculate(raw)||''):'';};source.addEventListener('input',update);source.addEventListener('change',update);update();});
 document.querySelectorAll('.student-material-note>summary').forEach(summary=>{const text=summary.textContent.trim();if(text==='Anotar')summary.textContent='Adicionar anotação';if(text==='Sua anotação')summary.textContent='Anotação';});
+if(!document.querySelector('script[data-student-mechanics]')){const script=document.createElement('script');script.src='/assets/student-mechanics.js'+suffix;script.dataset.studentMechanics='';document.body.appendChild(script);}
 })();
