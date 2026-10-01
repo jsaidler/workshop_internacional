@@ -7,6 +7,7 @@ const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
 const studentUiFiles=[
   'aluno/caderno.php',
   'aluno/calibracao.php',
+  'aluno/comparar-processos.php',
   'aluno/duvidas.php',
   'aluno/ferramentas.php',
   'aluno/inventario.php',
@@ -14,6 +15,7 @@ const studentUiFiles=[
   'aluno/perfil.php',
   'aluno/preparos.php',
   'aluno/teste.php',
+  'aluno/teste-compartilhado.php',
   'aluno/teste-etapa.php',
   'app/student_shell.php',
 ];
@@ -22,8 +24,10 @@ test('student fields use one canonical vocabulary at the source',()=>{
   const source=studentUiFiles.map(read).join('\n');
   const forbidden=[
     'EI / ISO',
+    'Diafragma',
     'Tempo medido / calculado',
     '>Com reciprocidade<input',
+    'Após reciprocidade',
     'Condição da luz',
     'Faixa tonal / intenção',
     '>Preparo salvo<select',
@@ -60,6 +64,19 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Volume preparado (ml)<input',
       "student_process_inventory_select_html($inventory,'Item do inventário')",
       '>Aviso de agitação<input type="text"',
+    ],
+    'aluno/teste-compartilhado.php':[
+      '<dt>EI</dt>',
+      '<dt>Abertura</dt>',
+      '<dt>Tempo sem reciprocidade</dt>',
+      '<dt>Tempo com reciprocidade</dt>',
+    ],
+    'aluno/comparar-processos.php':[
+      "'EI'=>'iso_reference'",
+      "'Abertura'=>'aperture'",
+      "'Tempo sem reciprocidade'=>'calculated_time'",
+      "'Tempo com reciprocidade'=>'reciprocity_time'",
+      "'Faixa tonal e intenção'=>'tonal_range'",
     ],
     'aluno/teste-etapa.php':[
       '>Predefinição de revelação<select name="saved_preparation_id"',
