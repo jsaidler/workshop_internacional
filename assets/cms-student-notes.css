@@ -42,7 +42,7 @@
 .cms-public .student-inline-note-selected{display:grid;gap:7px}
 .cms-public mark.student-inline-note-mark{margin:0;padding:.04em .12em;background:color-mix(in srgb,var(--focus) 32%,transparent);color:inherit;box-decoration-break:clone;-webkit-box-decoration-break:clone;cursor:pointer;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--focus) 72%,transparent);text-decoration-thickness:1px;text-underline-offset:3px}
 .cms-public mark.student-inline-note-mark:hover,.cms-public mark.student-inline-note-mark:focus{background:color-mix(in srgb,var(--focus) 48%,transparent);outline:none}
-.cms-public .student-selection-note-action{position:fixed;z-index:520;min-height:36px;padding:0 12px;border:1px solid var(--focus);background:var(--bg);color:var(--text);box-shadow:0 9px 28px rgba(0,0,0,.32);cursor:pointer;font:600 10px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.cms-public .student-selection-note-action{position:fixed;z-index:520;box-sizing:border-box;min-height:36px;padding:0 12px;border:1px solid var(--focus);background:var(--bg);color:var(--text);box-shadow:0 9px 28px rgba(0,0,0,.32);cursor:pointer;font:600 10px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase}
 .cms-public .student-selection-note-action[hidden]{display:none}
 .cms-public .student-reanchor-hint{position:fixed;left:50%;bottom:24px;z-index:510;display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);padding:11px 14px;border:1px solid var(--focus);background:var(--bg);color:var(--text);box-shadow:0 12px 34px rgba(0,0,0,.32);transform:translateX(-50%);font-size:12px}
 .cms-public .student-reanchor-hint[hidden]{display:none}
@@ -54,7 +54,7 @@
   .cms-public .student-notes-sheet{padding:18px 16px calc(30px + env(safe-area-inset-bottom,0px))}
   .cms-public .student-notes-head h2{font-size:28px}
   .cms-public .student-material-note-actions .button,.cms-public .student-note-new .button{min-height:44px}
-  .cms-public .student-selection-note-action.is-touch-selection{left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:calc(100% - 24px);min-height:50px;padding:0 18px;text-align:center;font-size:11px}
+  .cms-public .student-selection-note-action.is-touch-selection{left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:auto;min-height:50px;padding:0 18px;text-align:center;font-size:11px}
   .student-selection-active .cms-public .student-notes-panel:not([open])>summary{visibility:hidden;pointer-events:none}
   .cms-public .student-reanchor-hint{bottom:calc(76px + env(safe-area-inset-bottom,0px));width:calc(100vw - 24px);justify-content:space-between}
 }
