@@ -5,8 +5,16 @@
 .student-process-step-edit{align-self:center;min-height:34px;display:inline-flex;align-items:center;padding:0 11px;border:1px solid var(--student-border);color:var(--text);font:600 10px/1 var(--mono);letter-spacing:.04em;text-decoration:none;text-transform:uppercase}
 .student-process-step-edit:hover{border-color:var(--focus)}
 .student-process-log .student-process-history-actions{padding:12px 16px 16px;border-top:1px solid var(--student-border)}
-.student-process-stage-select{margin:0 0 24px}
-.student-process-stage-select .form-field-help{display:block;margin-top:7px;color:var(--muted);font-size:12px;line-height:1.45}
+.student-process-decision{display:grid;gap:12px;margin:0 0 28px;padding:18px 20px;border:1px solid var(--student-border);background:var(--student-panel-quiet)}
+.student-process-decision-label{margin:0;color:var(--muted);font:500 10px/1.2 var(--mono);letter-spacing:.055em;text-transform:uppercase}
+.student-process-suggested-stage{font-size:20px;line-height:1.2}
+.student-process-guided-choices{display:flex;gap:8px;flex-wrap:wrap}
+.student-process-choice-button{min-height:42px;padding:0 14px;border:1px solid var(--student-border);background:transparent;color:var(--text);font:600 11px/1 var(--mono);cursor:pointer}
+.student-process-choice-button[aria-pressed=true]{border-color:var(--focus);background:color-mix(in srgb,var(--focus) 10%,transparent)}
+.student-process-other-stage{margin-top:2px;padding-top:12px;border-top:1px solid var(--student-border)}
+.student-process-other-stage>summary{display:inline-flex;min-height:34px;align-items:center;color:var(--muted);cursor:pointer;font-size:12px}
+.student-process-other-stage>select{width:min(100%,420px);min-height:46px;margin-top:10px;padding:0 12px;border:1px solid var(--student-border);background:var(--surface);color:var(--text);font-size:14px}
+.student-process-decision.has-alternative{border-left:3px solid var(--focus)}
 .student-process-now{margin-top:0}
 .student-step-editor-header{max-width:920px}
 .student-step-editor{max-width:920px}
@@ -27,6 +35,10 @@
   .student-process-log{margin-bottom:24px}
   .student-process-log .student-process-summary li{grid-template-columns:minmax(0,1fr) auto;padding:14px 12px}
   .student-process-step-edit{min-height:40px}
+  .student-process-decision{padding:16px 14px}
+  .student-process-guided-choices{display:grid;grid-template-columns:1fr}
+  .student-process-choice-button{width:100%;text-align:left}
+  .student-process-other-stage>select{width:100%}
   .student-process-edit-form .student-sticky-action{display:grid}
   .student-process-edit-form .student-sticky-action .button{width:100%}
   .student-step-danger>div{padding:15px}
