@@ -63,7 +63,7 @@ for(const [device,viewport] of Object.entries(viewports)){
   test(`mechanics visual audit ${device} material notes`,async({page})=>{
     await page.setViewportSize(viewport);
     await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-material-notes.html',{waitUntil:'networkidle'});
-    await page.locator('.student-notes-entry a').click();
+    await page.locator('[data-student-notes-panel]>summary').click();
     await expect(page.locator('#anotacoes')).toHaveAttribute('open','');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow,'notes horizontal overflow').toBeLessThanOrEqual(1);
@@ -74,7 +74,7 @@ for(const [device,viewport] of Object.entries(viewports)){
     await page.setViewportSize(viewport);
     await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-inline-annotations.html',{waitUntil:'networkidle'});
     await expect(page.locator('mark.student-inline-note-mark')).toHaveCount(1);
-    await page.locator('.student-notes-entry a').click();
+    await page.locator('[data-student-notes-panel]>summary').click();
     await expect(page.locator('#anotacoes')).toHaveAttribute('open','');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow,'inline notes horizontal overflow').toBeLessThanOrEqual(1);

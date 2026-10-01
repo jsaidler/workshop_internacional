@@ -112,7 +112,7 @@ jobs:
       - name: Install browser test dependencies
         run: |
           npm install --no-audit --no-fund
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
       - name: Browser interaction regression
         run: |
           php -S 127.0.0.1:8099 -t . >/tmp/workshop-browser.log 2>&1 &
@@ -120,6 +120,7 @@ jobs:
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
           npm run test:browser
+          npx playwright test tools/browser-tests/student-inline-annotations.spec.cjs --browser=webkit
       - name: Build script tests
         run: php tools/test-build-dist.php
       - name: Distribution dry run
