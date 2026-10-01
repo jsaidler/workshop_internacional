@@ -29,7 +29,7 @@ must_process_notes(str_contains($index,'student_material_render_notebook')&&!str
 must_process_notes(str_contains($notes,'student-notes-panel')&&!str_contains($notes,"appendChild(\$details)"),'notes are not centralized in a page notebook');
 must_process_notes(str_contains($notes,"'pagina'=>['key'=>'pagina'")&&str_contains($noteEndpoint,"\$sectionKey!=='pagina'"),'annotations are still forced to belong to a CMS section');
 must_process_notes(str_contains($notesCss,'.student-notes-panel[open]')&&str_contains($notesCss,'position:fixed'),'annotation notebook is not an independent study layer');
-must_process_notes(str_contains($presets,'Predefinições de revelação')&&!str_contains($presets,'salvo(s)')&&str_contains($presets,"action\" value=\"update"),'reusable development presets cannot be edited coherently');
+must_process_notes(str_contains($presets,'Predefinições de revelação')&&!str_contains($presets,'salvo(s)')&&str_contains($presets,'student_saved_preparation_update_guided')&&str_contains($presets,'?editar='),'reusable development presets cannot be edited coherently');
 must_process_notes(str_contains($auxiliary,'student_saved_preparation_update_guided')&&str_contains($auxiliary,'student_inventory_update_metadata'),'persisted laboratory helpers do not have update services');
 must_process_notes(str_contains($inventoryEditor,'O saldo continua sendo controlado pelas movimentações.')&&str_contains($inventoryEditor,'Salvar alterações'),'inventory metadata cannot be corrected without inventing a stock movement');
 must_process_notes(str_contains($calibration,'?editar=')&&str_contains($calibration,'Salvar alterações'),'calibration references remain write-once records');
