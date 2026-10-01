@@ -5,13 +5,14 @@ const params=new URLSearchParams(window.location.search),testId=params.get('id')
 const history=document.querySelector('.student-process-history');
 const now=document.querySelector('.student-process-now');
 const processPanel=history?.closest('.student-workflow-panel')||document.querySelector('.student-workflow-panel');
+const processLocked=Boolean(document.querySelector('.student-status-reviewed'));
 if(history){
   history.open=true;
   history.classList.add('student-process-log');
   const summary=history.querySelector(':scope>summary');
   if(summary)summary.textContent=summary.textContent.replace('Histórico do processamento','Processo registrado');
   if(processPanel){const anchor=now||processPanel.querySelector('.student-process-complete');if(anchor)processPanel.insertBefore(history,anchor);}
-  history.querySelectorAll('.student-process-summary>li').forEach(item=>{
+  if(!processLocked)history.querySelectorAll('.student-process-summary>li').forEach(item=>{
     if(item.querySelector('.student-process-step-edit'))return;
     const raw=item.querySelector('.student-process-step-number')?.textContent.trim()||'';
     const position=String(parseInt(raw,10)||'');if(!position||!testId)return;
