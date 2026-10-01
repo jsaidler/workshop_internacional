@@ -19,3 +19,19 @@ for(const [device,viewport] of Object.entries(viewports)){
     });
   }
 }
+
+const authBase='http://127.0.0.1:8099/tools/browser-fixture/student-auth-visual-audit.html';
+const authScreens=['login','password'];
+const authViewports={desktop:{width:1440,height:1000},compact:{width:560,height:900},phone:{width:390,height:844}};
+for(const [device,viewport] of Object.entries(authViewports)){
+  for(const screen of authScreens){
+    test(`auth visual audit ${device} ${screen}`,async({page})=>{
+      await page.setViewportSize(viewport);
+      await page.goto(`${authBase}?screen=${encodeURIComponent(screen)}`,{waitUntil:'networkidle'});
+      await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+      expect(overflow,`${screen} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
+      await page.screenshot({path:`student-visual-audit/${device}/auth-${screen}.png`,fullPage:true,animations:'disabled'});
+    });
+  }
+}
