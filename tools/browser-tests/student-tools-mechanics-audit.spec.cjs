@@ -40,7 +40,7 @@ test('inventory editor exposes essentials and collapses metadata',async({page})=
   await page.setViewportSize({width:1180,height:820});
   await page.goto(base+'?screen=inventory&novo=1&tipo=solution&nome=Parodinal%20%C2%B7%20concentrado&quantidade=250&unidade=ml',{waitUntil:'networkidle'});await waitMechanics(page);
   const panel=page.locator('[data-inventory-new-panel]');await expect(panel).toBeVisible();
-  await expect(page.getByText('Solução preparada',{exact:true})).toBeVisible();
+  await expect(page.locator('input[name="item_kind"][value="solution"]')).toBeChecked();
   await expect(page.locator('input[name="name"]')).toHaveValue('Parodinal · concentrado');
   await expect(page.locator('input[name="quantity"]')).toHaveValue('250');
   await expect(page.getByText('Detalhes do item',{exact:true})).toBeVisible();
