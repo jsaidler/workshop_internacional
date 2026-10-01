@@ -27,14 +27,14 @@ function student_process_step_inventory_amount(PDO $db,int $stepId,int $itemId):
 function student_process_stage_data(string $stageKey,array $input): array {
     $catalog=student_process_stage_catalog();
     if(!isset($catalog[$stageKey]))throw new RuntimeException('Etapa inválida.');
-    $stage=$catalog[$stageKey];
+    $stage=$catalog[$stageKey];$stageType=(string)$stage['type'];
     $label=$stageKey==='custom'?student_workspace_text($input['custom_label']??'',120):(string)$stage['label'];
     if($label==='')throw new RuntimeException('Informe o nome da etapa.');
 
     $chemicalKey='';$chemicalName='';$developerAmount=null;$waterAmount=null;$unit='ml';$dilution='';$total=null;
     $savedPrepId=(int)($input['saved_preparation_id']??0)?:null;
 
-    if(in_array($stageKey,['first_development','second_development'],true)){
+    if($stageType==='development'){
         $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));
         $chemicalKey=(string)$developer['key'];
         $chemicalName=(string)$developer['label'];
@@ -59,19 +59,22 @@ function student_process_stage_data(string $stageKey,array $input): array {
         $savedPrepId=null;
     }
 
-    $inventoryItemId=(int)($input['inventory_item_id']??0)?:null;
-    $usedAmount=student_workbench_float($input['inventory_amount']??null);
-    if($inventoryItemId&&$usedAmount===null&&$developerAmount!==null&&in_array($stageKey,['first_development','second_development'],true))$usedAmount=$developerAmount;
+    $inventoryAllowed=in_array($stageType,['development','chemical','custom'],true);
+    $inventoryItemId=$inventoryAllowed?((int)($input['inventory_item_id']??0)?:null):null;
+    $usedAmount=$inventoryAllowed?student_workbench_float($input['inventory_amount']??null):null;
+    if($inventoryItemId&&$usedAmount===null&&$developerAmount!==null&&$stageType==='development')$usedAmount=$developerAmount;
     if($usedAmount!==null&&$usedAmount<0)throw new RuntimeException('A quantidade utilizada não pode ser negativa.');
 
+    $temperature=$stageType==='dry'?'':student_workspace_text($input['temperature']??'',80);
+    $agitation=$stageType==='dry'?'':student_workspace_text($input['agitation']??'',600);
     return [
-        'stage_type'=>(string)$stage['type'],'stage_key'=>$stageKey,'label'=>$label,
+        'stage_type'=>$stageType,'stage_key'=>$stageKey,'label'=>$label,
         'chemical_key'=>$chemicalKey,'chemical_name'=>$chemicalName,'inventory_item_id'=>$inventoryItemId,
         'saved_preparation_id'=>$savedPrepId,'developer_amount'=>$developerAmount,'water_amount'=>$waterAmount,
         'amount_unit'=>$unit,'calculated_dilution'=>$dilution,'total_volume'=>$total,
-        'temperature'=>student_workspace_text($input['temperature']??'',80),
+        'temperature'=>$temperature,
         'duration'=>student_workspace_text($input['duration']??'',120),
-        'agitation'=>student_workspace_text($input['agitation']??'',600),
+        'agitation'=>$agitation,
         'notes'=>student_workspace_text($input['notes']??'',3000),
         'used_amount'=>$usedAmount,
     ];
