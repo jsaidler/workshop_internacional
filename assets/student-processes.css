@@ -1,5 +1,10 @@
 .student-process-library-heading{align-items:flex-start}
 .student-process-context{max-width:760px;margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
+.student-process-standards{margin-top:var(--ux-space-6);padding:var(--ux-space-6) 0;border-bottom:1px solid var(--line)}
+.student-process-standard-heading>p:last-child{max-width:720px;margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.5}
+.student-process-standard-actions{align-items:end}
+.student-process-standard-actions .form-field{min-width:180px;margin:0}
+.student-process-standard-actions select{min-height:38px}
 .student-process-create{display:grid;grid-template-columns:minmax(180px,.55fr) minmax(0,1fr);gap:var(--ux-space-6);margin-top:var(--ux-space-6);padding:var(--ux-space-6) 0;border-bottom:1px solid var(--line)}
 .student-process-create .student-subtitle{margin-top:6px}
 .student-process-library{display:grid;margin-top:var(--ux-space-6);border-top:1px solid var(--line)}
@@ -70,6 +75,8 @@
   .student-process-template-main>strong{grid-column:2}
   .student-process-template-actions{display:grid;grid-template-columns:1fr 1fr}
   .student-process-template-actions .button{width:100%}
+  .student-process-standard-actions{grid-template-columns:1fr}
+  .student-process-standard-actions .form-field{min-width:0}
   .student-process-step-card{grid-template-columns:32px minmax(0,1fr)}
   .student-process-step-actions{grid-column:2;justify-content:flex-start}
   .student-process-runner{padding-top:var(--ux-space-5)}
