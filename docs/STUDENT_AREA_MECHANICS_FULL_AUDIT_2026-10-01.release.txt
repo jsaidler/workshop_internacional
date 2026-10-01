@@ -1,0 +1,1 @@
+Release intent: corrigir mecânicas incoerentes observadas na UI dos alunos sem adicionar copy de bastidor ao produto. Critério de aceite: campos coerentes com o tipo de etapa, anotações encontráveis, comparação acessível, metadados internos ausentes da UI e regressões de interação passando.
