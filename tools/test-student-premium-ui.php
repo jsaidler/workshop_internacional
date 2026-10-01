@@ -14,6 +14,8 @@ $courses=(string)file_get_contents($root.'/aluno/cursos.php');
 $bench=(string)file_get_contents($root.'/aluno/ferramentas.php');
 $notebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
+$processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
+$processRunner=(string)file_get_contents($root.'/aluno/processar.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 $login=(string)file_get_contents($root.'/aluno/login.php');
 $password=(string)file_get_contents($root.'/aluno/senha.php');
@@ -39,7 +41,10 @@ must_student_premium_ui(str_contains($home,'student_experience_process_state')&&
 must_student_premium_ui(!str_contains($home,'Escolha o que você veio fazer')&&!str_contains($home,'Abrir laboratório'),'student home regressed to a duplicate navigation catalog');
 must_student_premium_ui(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment still requires a course-selector click');
 must_student_premium_ui(str_contains($courses,'student-course-dashboard')&&str_contains($courses,'Dúvidas e respostas'),'course workspace is not flattened around study tasks');
-must_student_premium_ui(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity')&&str_contains($bench,'data-lab-timer'),'workbench lost inline simple tools');
+must_student_premium_ui(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity'),'workbench lost inline simple exposure tools');
+must_student_premium_ui(!str_contains($bench,'data-lab-timer')&&str_contains($bench,'/aluno/processamentos.php'),'workbench did not replace the isolated timer with the process manager');
+must_student_premium_ui(str_contains($processManager,'Usar neste registro')&&str_contains($processManager,'Iniciar processamento'),'process manager is not reusable across notebook and laboratory contexts');
+must_student_premium_ui(str_contains($processRunner,'data-process-runner')&&str_contains($processRunner,'Concluir etapa'),'laboratory runner is missing explicit stage execution');
 must_student_premium_ui(str_contains($bench,'<h2>Receitas</h2>')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
 foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual','registre apenas os dados que usou'] as $internalCopy)must_student_premium_ui(!str_contains($home.$bench.$test,$internalCopy),'internal design commentary leaked into student UI: '.$internalCopy);
 
@@ -50,7 +55,7 @@ must_student_premium_ui(str_contains($notebook,'data-ui-validate')&&str_contains
 must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route does not redirect to notebook');
 
 must_student_premium_ui(str_contains($test,'student-process-now')&&str_contains($test,'student-process-history'),'processing does not prioritize now over history');
-must_student_premium_ui(str_contains($test,'data-lab-timer'),'record workflow lost contextual timer');
+must_student_premium_ui(str_contains($shell,'/assets/student-process-entry.js')&&str_contains($processManager,'?test='),'record workflow does not expose the reusable process manager');
 must_student_premium_ui(str_contains($test,"if(\$stageKey==='dry')")&&str_contains($test,"\$view='review'"),'drying does not move directly to result');
 must_student_premium_ui(str_contains($test,'Desfazer última etapa')&&!str_contains($test,'remover daqui'),'destructive process correction is still repeated on every step');
 must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'data-process-step-form'),'guided process does not consume global choice controls');
