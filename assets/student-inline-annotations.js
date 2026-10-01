@@ -17,11 +17,12 @@ action.type='button';action.className='student-selection-note-action';action.hid
 const reanchorHint=document.createElement('div');
 reanchorHint.className='student-reanchor-hint';reanchorHint.hidden=true;reanchorHint.innerHTML='<span>Selecione o novo trecho no material.</span><button type="button">Cancelar</button>';document.body.appendChild(reanchorHint);
 
-let pendingAnchor=null;let reanchorId=0;
+let pendingAnchor=null;let reanchorId=0;let selectionTimer=0;
 const textNodes=block=>{const out=[];const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT,{acceptNode(node){return node.nodeValue?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});while(walker.nextNode())out.push(walker.currentNode);return out;};
 const closestBlock=node=>{const element=node?.nodeType===Node.ELEMENT_NODE?node:node?.parentElement;return element?.closest?.('[data-student-anchor-block]')||null;};
 const offsetWithin=(block,node,offset)=>{const range=document.createRange();range.selectNodeContents(block);try{range.setEnd(node,offset);return range.toString().length;}catch(_){return -1;}};
 const fingerprint=text=>{let hash=2166136261;for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}return (hash>>>0).toString(16).padStart(8,'0');};
+const nodeInsideRoot=node=>{if(!node)return false;const target=node.nodeType===Node.ELEMENT_NODE?node:node.parentNode;return !!target&&root.contains(target);};
 
 const captureSelection=()=>{
   const selection=window.getSelection();if(!selection||selection.rangeCount<1||selection.isCollapsed)return null;
@@ -40,14 +41,23 @@ const positionAction=anchor=>{
   const selection=window.getSelection();if(!anchor||!selection||selection.rangeCount<1){action.hidden=true;return;}
   const rect=selection.getRangeAt(0).getBoundingClientRect();if(!rect.width&&!rect.height){action.hidden=true;return;}
   action.textContent=reanchorId?'Reassociar':'Anotar';action.hidden=false;
-  const width=action.offsetWidth||82;let left=rect.left+(rect.width/2)-(width/2);left=Math.max(8,Math.min(window.innerWidth-width-8,left));
-  let top=rect.top-46;if(top<8)top=rect.bottom+8;
+  const width=action.offsetWidth||82,height=action.offsetHeight||42;let left=rect.left+(rect.width/2)-(width/2);left=Math.max(8,Math.min(window.innerWidth-width-8,left));
+  let top=rect.top-height-8;if(top<8)top=rect.bottom+8;top=Math.max(8,Math.min(window.innerHeight-height-8,top));
   action.style.left=`${Math.round(left)}px`;action.style.top=`${Math.round(top)}px`;
 };
 const refreshSelectionAction=()=>{window.requestAnimationFrame(()=>{pendingAnchor=captureSelection();positionAction(pendingAnchor);});};
-root.addEventListener('mouseup',refreshSelectionAction);root.addEventListener('keyup',refreshSelectionAction);root.addEventListener('touchend',()=>setTimeout(refreshSelectionAction,40),{passive:true});
-document.addEventListener('selectionchange',()=>{const selection=window.getSelection();if(!selection||selection.isCollapsed){action.hidden=true;pendingAnchor=null;}});
-window.addEventListener('scroll',()=>{if(!action.hidden)refreshSelectionAction();},{passive:true});
+const scheduleSelectionRefresh=(delay=0)=>{window.clearTimeout(selectionTimer);selectionTimer=window.setTimeout(refreshSelectionAction,delay);};
+root.addEventListener('mouseup',()=>scheduleSelectionRefresh());
+root.addEventListener('keyup',()=>scheduleSelectionRefresh());
+root.addEventListener('pointerup',event=>{if(event.pointerType==='touch'||event.pointerType==='pen')scheduleSelectionRefresh(80);});
+root.addEventListener('touchend',()=>{scheduleSelectionRefresh(90);window.setTimeout(refreshSelectionAction,260);},{passive:true});
+document.addEventListener('selectionchange',()=>{
+  const selection=window.getSelection();
+  if(!selection||selection.isCollapsed){action.hidden=true;pendingAnchor=null;return;}
+  if(nodeInsideRoot(selection.anchorNode)||nodeInsideRoot(selection.focusNode))scheduleSelectionRefresh(120);
+});
+window.addEventListener('scroll',()=>{if(!action.hidden)scheduleSelectionRefresh(20);},{passive:true});
+window.visualViewport?.addEventListener('resize',()=>{if(!action.hidden)scheduleSelectionRefresh(20);},{passive:true});
 
 const fillCompose=(anchor,annotationId=0)=>{
   if(!compose||!anchor)return;

@@ -1,16 +1,17 @@
 const {test,expect}=require('@playwright/test');
 const url='http://127.0.0.1:8099/tools/browser-fixture/student-inline-annotations.html';
 
-async function selectSubstring(page,selector,needle){
-  await page.evaluate(({selector,needle})=>{
+async function selectSubstring(page,selector,needle,{mouseUp=true}={}){
+  await page.evaluate(({selector,needle,mouseUp})=>{
     const block=document.querySelector(selector);if(!block)throw new Error('block missing');
     const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);let node=null,index=-1;
     while(walker.nextNode()){const candidate=walker.currentNode;index=(candidate.nodeValue||'').indexOf(needle);if(index>=0){node=candidate;break;}}
     if(!node)throw new Error('text missing');
     const range=document.createRange();range.setStart(node,index);range.setEnd(node,index+needle.length);
     const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
-    block.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,clientX:100,clientY:100}));
-  },{selector,needle});
+    if(mouseUp)block.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,clientX:100,clientY:100}));
+    else document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
+  },{selector,needle,mouseUp});
 }
 
 test('annotations relink to stable text and preserve altered or removed sources',async({page})=>{
@@ -41,9 +42,26 @@ test('selecting source text opens an annotation composer with redundant anchors'
   await expect(compose.locator('[data-annotation-action]')).toHaveValue('create_selection');
 });
 
+test('mobile-style selectionchange exposes the annotation action without mouseup',async({page})=>{
+  await page.setViewportSize({width:412,height:915});
+  await page.goto(url,{waitUntil:'networkidle'});
+  await expect(page.locator('.student-notes-entry')).toBeHidden();
+  await expect(page.locator('[data-student-notes-panel]>summary')).toBeVisible();
+  await selectSubstring(page,'[data-student-anchor-block="introducao:p:2"]','trecho permanece disponível',{mouseUp:false});
+  const action=page.locator('.student-selection-note-action');
+  await expect(action).toBeVisible();
+  await expect(action).toHaveText('Anotar');
+  const box=await action.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.x+box.width).toBeLessThanOrEqual(412);
+  expect(box.y+box.height).toBeLessThanOrEqual(915);
+});
+
 test('orphaned notes can be reassociated without changing their body',async({page})=>{
   await page.goto(url,{waitUntil:'networkidle'});
-  await page.locator('.student-notes-entry a').click();
+  await page.locator('[data-student-notes-panel]>summary').click();
   await expect(page.locator('[data-student-notes-panel]')).toHaveAttribute('open','');
   await page.locator('[data-annotation-item="2"]').evaluate(element=>element.scrollIntoView({block:'center'}));
   await page.locator('[data-annotation-reanchor="2"]').dispatchEvent('click');
