@@ -1,8 +1,8 @@
 const {test,expect}=require('@playwright/test');
 const url='http://127.0.0.1:8099/tools/browser-fixture/student-inline-annotations.html';
 
-async function selectSubstring(page,selector,needle,{mouseUp=true}={}){
-  await page.evaluate(({selector,needle,mouseUp})=>{
+async function selectSubstring(page,selector,needle,{mouseUp=true,selectionChange=false}={}){
+  await page.evaluate(({selector,needle,mouseUp,selectionChange})=>{
     const block=document.querySelector(selector);if(!block)throw new Error('block missing');
     const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);let node=null,index=-1;
     while(walker.nextNode()){const candidate=walker.currentNode;index=(candidate.nodeValue||'').indexOf(needle);if(index>=0){node=candidate;break;}}
@@ -10,8 +10,8 @@ async function selectSubstring(page,selector,needle,{mouseUp=true}={}){
     const range=document.createRange();range.setStart(node,index);range.setEnd(node,index+needle.length);
     const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
     if(mouseUp)block.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,clientX:100,clientY:100}));
-    else document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
-  },{selector,needle,mouseUp});
+    if(selectionChange)document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
+  },{selector,needle,mouseUp,selectionChange});
 }
 
 test('annotations relink to stable text and preserve altered or removed sources',async({page})=>{
@@ -29,7 +29,7 @@ test('selecting source text opens an annotation composer with redundant anchors'
   await page.goto(url,{waitUntil:'networkidle'});
   await selectSubstring(page,'[data-student-anchor-block="introducao:p:2"]','trecho permanece disponível');
   const action=page.locator('.student-selection-note-action');
-  await expect(action).toBeVisible();await expect(action).toHaveText('Anotar');await action.click();
+  await expect(action).toBeVisible();await expect(action).toHaveText('Anotar seleção');await action.click();
   const compose=page.locator('[data-inline-note-compose]');
   await expect(compose).toBeVisible();
   await expect(compose.locator('[data-anchor-preview]')).toHaveText('trecho permanece disponível');
@@ -42,21 +42,35 @@ test('selecting source text opens an annotation composer with redundant anchors'
   await expect(compose.locator('[data-annotation-action]')).toHaveValue('create_selection');
 });
 
-test('mobile-style selectionchange exposes the annotation action without mouseup',async({page})=>{
+test('touch layout detects a selection even when the browser emits no mouseup or synthetic selectionchange',async({page})=>{
   await page.setViewportSize({width:412,height:915});
   await page.goto(url,{waitUntil:'networkidle'});
   await expect(page.locator('.student-notes-entry')).toBeHidden();
   await expect(page.locator('[data-student-notes-panel]>summary')).toBeVisible();
-  await selectSubstring(page,'[data-student-anchor-block="introducao:p:2"]','trecho permanece disponível',{mouseUp:false});
+  await selectSubstring(page,'[data-student-anchor-block="introducao:p:2"]','trecho permanece disponível',{mouseUp:false,selectionChange:false});
   const action=page.locator('.student-selection-note-action');
-  await expect(action).toBeVisible();
-  await expect(action).toHaveText('Anotar');
+  await expect(action).toBeVisible({timeout:2000});
+  await expect(action).toHaveText('Anotar seleção');
+  await expect(action).toHaveClass(/is-touch-selection/);
   const box=await action.boundingBox();
   expect(box).not.toBeNull();
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.x+box.width).toBeLessThanOrEqual(412);
   expect(box.y+box.height).toBeLessThanOrEqual(915);
+  await expect(page.locator('[data-student-notes-panel]>summary')).toBeHidden();
+});
+
+test('touch selection survives a transient collapsed selection event long enough to tap annotate',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(url,{waitUntil:'networkidle'});
+  await selectSubstring(page,'[data-student-anchor-block="introducao:p:2"]','trecho permanece disponível',{mouseUp:false,selectionChange:true});
+  const action=page.locator('.student-selection-note-action');await expect(action).toBeVisible({timeout:2000});
+  await page.evaluate(()=>{const selection=window.getSelection();selection.removeAllRanges();document.dispatchEvent(new Event('selectionchange'));});
+  await expect(action).toBeVisible();
+  await action.click();
+  await expect(page.locator('[data-inline-note-compose]')).toBeVisible();
+  await expect(page.locator('[data-anchor-preview]')).toHaveText('trecho permanece disponível');
 });
 
 test('orphaned notes can be reassociated without changing their body',async({page})=>{
@@ -67,7 +81,7 @@ test('orphaned notes can be reassociated without changing their body',async({pag
   await page.locator('[data-annotation-reanchor="2"]').dispatchEvent('click');
   await expect(page.locator('.student-reanchor-hint')).toBeVisible();
   await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado');
-  const action=page.locator('.student-selection-note-action');await expect(action).toHaveText('Reassociar');await action.click();
+  const action=page.locator('.student-selection-note-action');await expect(action).toHaveText('Reassociar seleção');await action.click();
   const compose=page.locator('[data-inline-note-compose]');
   await expect(compose).toBeVisible();
   await expect(compose.locator('[data-annotation-action]')).toHaveValue('reanchor');
