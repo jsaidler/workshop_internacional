@@ -39,7 +39,11 @@ test('process log is editable and branching requires an explicit decision',async
 
 test('developer catalog keeps course developers prominent and explains custom developer input',async({page})=>{
   await page.goto(base,{waitUntil:'networkidle'});
+  await page.locator('.student-process-other-stage summary').click();
+  await page.locator('.student-process-other-stage select').selectOption('second_development');
   const select=page.locator('[data-developer-select]');
+  await expect(select).toBeVisible();
+  await expect(select).toBeEnabled();
   await expect(select.locator('optgroup')).toHaveCount(3);
   await expect(select.locator('optgroup').nth(0)).toHaveAttribute('label','Pesquisa / curso');
   await expect(select.locator('optgroup').nth(0).locator('option')).toHaveCount(2);
