@@ -2,7 +2,7 @@
 
 ## Decisão canônica
 
-O temporizador isolado deixa de ser o modelo de trabalho para processamento químico. **Processamento** passa a ser a entidade central: uma sequência reutilizável de etapas que pode ser usada tanto pelo Caderno quanto pelo modo laboratório.
+O temporizador isolado deixa de ser o modelo de trabalho para processamento químico. Processamento passa a ser a entidade central: uma sequência reutilizável de etapas que pode ser usada tanto pelo Caderno quanto pelo modo laboratório.
 
 A arquitetura distingue três objetos com responsabilidades diferentes:
 
