@@ -69,4 +69,15 @@ for(const [device,viewport] of Object.entries(viewports)){
     expect(overflow,'notes horizontal overflow').toBeLessThanOrEqual(1);
     await page.screenshot({path:`student-visual-audit/${device}/mechanics-notes.png`,fullPage:true,animations:'disabled'});
   });
+
+  test(`mechanics visual audit ${device} inline annotations`,async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-inline-annotations.html',{waitUntil:'networkidle'});
+    await expect(page.locator('mark.student-inline-note-mark')).toHaveCount(1);
+    await page.locator('.student-notes-entry a').click();
+    await expect(page.locator('#anotacoes')).toHaveAttribute('open','');
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow,'inline notes horizontal overflow').toBeLessThanOrEqual(1);
+    await page.screenshot({path:`student-visual-audit/${device}/mechanics-inline-notes.png`,fullPage:true,animations:'disabled'});
+  });
 }
