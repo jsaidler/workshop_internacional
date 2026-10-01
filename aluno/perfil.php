@@ -23,10 +23,10 @@ student_shell_start('Conta · Área do aluno',null,$student);?>
     <label class="form-field student-span-2">Nome completo<input name="name" autocomplete="name" value="<?=h((string)$profile['name'])?>" required></label>
     <label class="form-field">E-mail<input name="email" type="email" autocomplete="email" value="<?=h((string)$profile['email'])?>" required></label>
     <label class="form-field">CPF<input name="cpf" inputmode="numeric" autocomplete="off" pattern="[0-9. -]{11,14}" value="<?=h((string)$profile['cpf'])?>" required></label>
-    <label class="form-field">WhatsApp / telefone<input name="phone" autocomplete="tel" value="<?=h((string)($profile['phone']??''))?>"></label>
+    <label class="form-field">Telefone para contato<input name="phone" autocomplete="tel" value="<?=h((string)($profile['phone']??''))?>"></label>
     <label class="form-field">Instagram<input name="instagram" value="<?=h((string)($profile['instagram']??''))?>"></label>
     <label class="form-field student-span-2">Endereço<input name="address" autocomplete="street-address" value="<?=h((string)($profile['address']??''))?>"></label>
-    <label class="form-field">Cidade/UF<input name="city_state" autocomplete="address-level2" value="<?=h((string)($profile['city_state']??''))?>"></label>
+    <label class="form-field">Cidade e UF<input name="city_state" autocomplete="address-level2" value="<?=h((string)($profile['city_state']??''))?>"></label>
     <label class="form-field">CEP<input name="postal_code" autocomplete="postal-code" value="<?=h((string)($profile['postal_code']??''))?>"></label>
     <div class="student-actions student-span-2"><button class="button button-primary" type="submit">Salvar dados</button></div>
   </form>
