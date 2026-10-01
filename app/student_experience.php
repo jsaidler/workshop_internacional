@@ -11,9 +11,21 @@ function student_experience_process_complete(array $steps): bool {
     return is_array($last)&&(string)($last['stage_key']??'')==='dry';
 }
 
+/**
+ * Suggested stages come first, but the Caderno remains a laboratory record:
+ * the student may register another valid stage instead of being trapped in a
+ * hard-coded reversal route.
+ */
 function student_experience_next_choices(array $steps): array {
     if(student_experience_process_complete($steps))return [];
-    return student_process_next_choices($steps);
+    $suggested=student_process_next_choices($steps);$catalog=student_process_stage_catalog();$out=[];
+    foreach($suggested as $key=>$stage)$out[$key]=$stage+['suggested'=>true];
+    foreach($catalog as $key=>$stage){
+        if(isset($out[$key]))continue;
+        if($key==='first_development'&&$steps)continue;
+        $out[$key]=$stage+['suggested'=>false];
+    }
+    return $out;
 }
 
 function student_experience_process_view(array $record,array $steps): string {

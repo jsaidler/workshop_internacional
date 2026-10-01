@@ -16,14 +16,14 @@ function student_process_add_guided_step(PDO $db,int $testId,int $studentId,arra
     if(student_experience_process_complete($steps))throw new RuntimeException('O processamento terminou na secagem. Registre o resultado.');
     $stageKey=(string)($input['stage_key']??'');
     $allowed=student_experience_next_choices($steps);
-    if($stageKey!=='custom'&&!isset($allowed[$stageKey]))throw new RuntimeException('Esta etapa não corresponde ao próximo passo do processo.');
+    if(!isset($allowed[$stageKey]))throw new RuntimeException('Escolha uma etapa válida.');
     if(in_array($stageKey,['first_development','second_development'],true)){
         $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));
         if((string)$developer['mode']==='fresh'){
             unset($input['inventory_item_id'],$input['inventory_amount']);
         }
     }
-    return student_process_add_step($db,$testId,$studentId,$input);
+    return student_process_add_flexible_step($db,$testId,$studentId,$input);
 }
 
 function student_process_delete_from_step(PDO $db,int $testId,int $stepId,int $studentId): void {
