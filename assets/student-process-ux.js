@@ -10,7 +10,7 @@ qsa('[data-custom-developer] input[name="developer_name"]').forEach(input=>{repl
 const washKeys=new Set(['wash_after_first','wash_after_bleach','wash_after_ammonia','wash_after_clearing','final_wash']);
 const chemicalKeys=new Set(['stop_after_first','fixer','peracetic','ferric','dichromate','permanganate','ammonia','clearing']);
 const stageKind=key=>key==='dry'?'dry':washKeys.has(key)?'wash':chemicalKeys.has(key)?'chemical':['first_development','second_development'].includes(key)?'development':key==='custom'?'custom':'other';
-const setFieldVisible=(control,visible)=>{const field=control?.closest('.form-field');if(field)field.hidden=!visible;if(control)control.disabled=!visible;};
+const setFieldVisible=(control,visible)=>{if(!control)return;const field=control.closest('.form-field');if(field)field.hidden=!visible;control.hidden=!visible;control.disabled=!visible;};
 const bindInventoryAmount=(select,amount,allowed=true)=>{if(!amount)return;const sync=()=>{const visible=Boolean(allowed&&select&&select.value);setFieldVisible(amount,visible);};select?.addEventListener('change',sync);sync();return sync;};
 
 const params=new URLSearchParams(window.location.search),testId=params.get('id');
