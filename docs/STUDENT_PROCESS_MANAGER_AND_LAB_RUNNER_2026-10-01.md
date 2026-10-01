@@ -44,7 +44,8 @@ Contrato das revelações nesses quatro padrões:
 
 - EI 200: **10 ml de Parodinal + água até 550 ml, 26 °C, 7 min, agitação leve**;
 - EI 400: **20 ml de Parodinal + água até 550 ml, 26 °C, 7 min, agitação leve**;
-- **a segunda revelação repete exatamente os parâmetros da primeira revelação** do mesmo padrão.
+- **a segunda revelação repete exatamente os parâmetros da primeira revelação** do mesmo padrão;
+- **o mesmo banho de revelador preparado para a primeira revelação é reaproveitado na segunda**. Não se prepara uma segunda solução e esse reaproveitamento não deve ser contabilizado como novo consumo de revelador.
 
 Contrato das demais etapas:
 
@@ -141,6 +142,6 @@ Esta primeira implementação deliberadamente mantém o escopo controlado:
 - templates permitem reordenação, remoção e adição; edição detalhada de uma etapa existente pode ser evoluída depois;
 - padrões complexos de agitação (agitação inicial + duração de cada ciclo) ainda não fazem parte do schema; o primeiro contrato usa intervalo de aviso;
 - execução avulsa de um template usa o runner sem gerar registro no Caderno;
-- consumo de inventário não é vinculado automaticamente pelo template nesta primeira tranche; o registro real continua sendo a autoridade para consumo.
+- consumo de inventário não é vinculado automaticamente pelo template nesta primeira tranche; o registro real continua sendo a autoridade para consumo. Quando essa integração for implementada, a segunda revelação dos padrões de positivo direto deve reutilizar o consumo da primeira e nunca gerar uma segunda baixa do mesmo banho.
 
 Esses limites não alteram a arquitetura. Evoluções devem preservar a separação **template → snapshot do registro → execução real**.
