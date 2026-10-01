@@ -14,6 +14,16 @@ async function selectSubstring(page,selector,needle,{mouseUp=true,selectionChang
   },{selector,needle,mouseUp,selectionChange});
 }
 
+async function scrollBlockIntoViewInstantly(block){
+  await block.evaluate(element=>{
+    const root=document.documentElement;
+    const previous=root.style.scrollBehavior;
+    root.style.scrollBehavior='auto';
+    element.scrollIntoView({block:'center',behavior:'auto'});
+    root.style.scrollBehavior=previous;
+  });
+}
+
 test('annotations relink to stable text and preserve altered or removed sources',async({page})=>{
   await page.goto(url,{waitUntil:'networkidle'});
   await expect(page.locator('mark.student-inline-note-mark')).toHaveCount(1);
@@ -86,7 +96,7 @@ test('saving an inline annotation stays on the same page and reading position',a
   });
   await page.goto(url,{waitUntil:'networkidle'});
   const block=page.locator('[data-student-anchor-block="processo:p:1"]');
-  await block.evaluate(element=>element.scrollIntoView({block:'center'}));
+  await scrollBlockIntoViewInstantly(block);
   const before=await block.evaluate(element=>({top:element.getBoundingClientRect().top,y:window.scrollY,url:location.href}));
   await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado',{mouseUp:false,selectionChange:true});
   const action=page.locator('.student-selection-note-action');await expect(action).toBeVisible({timeout:2000});await action.click();
@@ -105,7 +115,7 @@ test('orphaned notes can be reassociated without changing their body',async({pag
   await page.goto(url,{waitUntil:'networkidle'});
   await page.locator('[data-student-notes-panel]>summary').click();
   await expect(page.locator('[data-student-notes-panel]')).toHaveAttribute('open','');
-  await page.locator('[data-annotation-item="2"]').evaluate(element=>element.scrollIntoView({block:'center'}));
+  await scrollBlockIntoViewInstantly(page.locator('[data-annotation-item="2"]'));
   await page.locator('[data-annotation-reanchor="2"]').dispatchEvent('click');
   await expect(page.locator('.student-reanchor-hint')).toBeVisible();
   await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado');
