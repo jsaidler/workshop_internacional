@@ -100,7 +100,7 @@ Ação estrutural. Deve pedir confirmação e, depois de confirmada, remover o i
 
 ## Predefinições de revelação
 
-Criar e editar são tarefas locais do mesmo catálogo. A implementação atual em que “Editar” navega para a própria página com `?editar=` e o salvamento volta ao topo é aceitável tecnicamente, mas ruim como instrumento de laboratório. O modelo desejado é lista + editor contextual (dialog/painel), preservando a posição.
+Criar e editar são tarefas locais do mesmo catálogo. O modelo é lista + editor contextual (dialog/painel), preservando a posição. O parâmetro `?editar=` permanece somente como fallback/endereço capaz de renderizar o mesmo editor quando JavaScript não está disponível; não é a mecânica principal.
 
 Remover é destrutivo e deve pedir confirmação.
 
@@ -115,6 +115,48 @@ Calculadoras, reciprocidade e temporizador são utilidades locais. Devem respond
 ## Curso e material
 
 Navegação entre aulas/seções é navegação real e pode trocar URL/página. Ferramentas auxiliares do estudo — anotações, progresso local, ações sobre trecho — não devem deslocar a leitura.
+
+## Arquitetura executada nesta revisão
+
+A implementação adota **progressive enhancement**: o backend mantém POST + redirect como fallback sem JavaScript, mas a experiência normal da Área do aluno trata edições locais sem navegação do navegador.
+
+### Camada comum
+
+`assets/student-local-actions.js` passou a ser carregado pelo shell da Área do aluno e estabelece uma mecânica comum para mutações locais. Ele envia o formulário por `fetch`, deixa o servidor executar a mesma validação e persistência já existentes e, quando necessário, substitui somente a região da interface afetada. Os runtimes de bancada e processamento foram tornados reinicializáveis e recebem `student:local-update` depois de uma substituição parcial.
+
+### Estado por área
+
+| Área / ação | Classe | Implementação desta revisão |
+|---|---|---|
+| Material: criar/editar/remover/reassociar/desvincular anotação | edição local | JSON + atualização direta do DOM; sem reload; posição de leitura preservada |
+| Material: transformar anotação em dúvida | transição deliberada | navega para Dúvidas com vínculo persistente à anotação e à citação |
+| Caderno: visibilidade Privado/Turma/Curso | edição local | atualização do cartão sem reload e sem fechar o contexto |
+| Caderno: criar registro | transição deliberada | cria e abre o registro |
+| Caderno: duplicar registro | transição deliberada | cria e abre a cópia |
+| Caderno: excluir | destrutiva | fluxo separado permanece |
+| Exposição: salvar e seguir | transição deliberada | navegação para Processamento permanece explícita |
+| Exposição/Resultado: anexar ou remover imagem | edição local | upload/remoção interceptados e região do registro atualizada localmente |
+| Processamento: adicionar/desfazer etapa | edição local / estrutural | atualização local do log, próxima decisão e formulário; confirmação quando destrutiva |
+| Processamento: editar etapa | edição local | editor contextual em dialog; salva no endpoint original e atualiza o registro sem navegar |
+| Processamento: cronômetro | estado efêmero | permanece no cliente; navegação acidental com timer ativo recebe proteção |
+| Resultado: salvar texto | edição local | atualização local |
+| Resultado: enviar para avaliação | transição de estado | estado e interface atualizados no próprio registro |
+| Resultado: mensagem | edição local | conversa atualizada sem reload |
+| Dúvidas: criar | transição deliberada | abre a discussão criada |
+| Dúvidas: responder/resolver | edição local | thread/estado atualizados sem reload |
+| Inventário: criar item | edição local | lista e histórico atualizados localmente |
+| Inventário: entrada/saída | edição local | saldo e histórico atualizados sem fechar item |
+| Inventário: arquivar | estrutural | confirmação + atualização local |
+| Predefinições: criar/editar | edição local | editor contextual + lista atualizada sem reload |
+| Predefinições: remover | destrutiva | confirmação + atualização local |
+| Calibração: criar/editar | edição local | editor contextual + lista atualizada sem reload |
+| Ferramentas rápidas | edição local | permanecem client-side |
+
+### Contrato de regressão
+
+`tools/test-student-interaction-continuity.php` impede regressões arquiteturais básicas: runtime comum no shell, cobertura das mutações locais do registro, upload via `requestSubmit`, editor contextual de etapa apontando para seu endpoint original, regiões locais de Inventário/Dúvidas/Predefinições/Calibração e anotações sem mecanismo de reload/sessionStorage.
+
+A suíte de navegador das anotações também verifica Chromium e WebKit e deve comprovar que salvar uma anotação não altera URL nem posição de leitura.
 
 ## Critério de revisão para toda mudança
 
