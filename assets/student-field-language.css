@@ -1,0 +1,8 @@
+/* Student field-language contract.
+   Labels and choice legends at the same semantic tier must render with the same typographic hierarchy. */
+body.student-page .choice-field>legend{
+  font:inherit;
+  color:inherit;
+  letter-spacing:inherit;
+  text-transform:inherit;
+}
