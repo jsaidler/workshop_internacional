@@ -1,5 +1,5 @@
 /* Student annotations are one notebook layer for the material page, not widgets glued to sections. */
-.cms-public .student-notes-entry{display:flex;justify-content:flex-end;max-width:1200px;margin:18px auto 0;padding:0 24px}
+.cms-public .student-notes-entry{display:none}
 .cms-public .student-notes-entry>a{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:600 10px/1 var(--mono);letter-spacing:.05em;text-decoration:none;text-transform:uppercase}
 .cms-public .student-notes-entry>a:hover{border-color:var(--focus)}
 .cms-public .student-notes-entry b{display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--focus);color:var(--bg);font-size:10px}
