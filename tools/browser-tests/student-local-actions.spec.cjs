@@ -46,3 +46,13 @@ test('validation error keeps contextual editor and its unsaved value',async({pag
   await expect(input).toHaveValue('Valor ainda não salvo');
   await expect(dialog.locator('[data-local-status]')).toContainText('Nome inválido.');
 });
+
+test('expired session is reported explicitly and preserves the unsaved local value',async({page})=>{
+  await page.route('**/fixture/save',route=>route.fulfill({status:401,contentType:'text/html',body:'Autenticação necessária.'}));
+  await page.goto(url,{waitUntil:'networkidle'});
+  const input=page.locator('form[data-student-local-form] input[name="value"]');
+  await input.fill('ainda não salvo');
+  await page.locator('form[data-student-local-form] button[type="submit"]').click();
+  await expect(page.locator('form[data-student-local-form] [data-local-status]')).toHaveText('Sua sessão expirou. Entre novamente para continuar.');
+  await expect(input).toHaveValue('ainda não salvo');
+});
