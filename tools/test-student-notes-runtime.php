@@ -10,11 +10,13 @@ function student_uuid(): string {return 'annotation-test-uuid';}
 function utc_now(): string {return '2026-10-01T00:00:00Z';}
 function student_material_notes_for_page(PDO $db,int $studentId,int $pageId): array {return ['introducao'=>['section_key'=>'introducao','body'=>'Minha observação anterior']];}
 require dirname(__DIR__).'/app/student_notes_experience.php';
+require dirname(__DIR__).'/app/student_question_annotations.php';
 
 $db=new PDO('sqlite::memory:');$db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE,PDO::FETCH_ASSOC);
 $db->exec("CREATE TABLE student_material_annotations(id INTEGER PRIMARY KEY AUTOINCREMENT,annotation_uuid TEXT,student_id INTEGER,page_id INTEGER,lesson_id INTEGER,section_key TEXT,anchor_type TEXT,body TEXT,quote_exact TEXT,quote_prefix TEXT,quote_suffix TEXT,block_key TEXT,start_offset INTEGER,end_offset INTEGER,source_block_hash TEXT,source_page_revision TEXT,created_at TEXT,updated_at TEXT)");
+$db->exec("CREATE TABLE student_questions(id INTEGER PRIMARY KEY AUTOINCREMENT,student_id INTEGER,source_annotation_id INTEGER)");
 $db->exec("INSERT INTO student_material_annotations(annotation_uuid,student_id,page_id,section_key,anchor_type,body,quote_exact,quote_prefix,quote_suffix,block_key,start_offset,end_offset,source_block_hash,source_page_revision,created_at,updated_at) VALUES('a1',7,11,'introducao','selection','Nota incorporada','Conteúdo didático.','','','introducao:p:1',0,18,'abc','rev-1','2026-10-01','2026-10-01')");
-$_SERVER['REQUEST_URI']='/?page=material&cohort=turma-1';
+$_SERVER['REQUEST_URI']='/?page=material&cohort=turma-1';$_GET=['page'=>'material','cohort'=>'turma-1'];
 $document=['html'=>'<section data-cms-section="introducao"><h2>Introdução</h2><p>Conteúdo didático.</p></section><section data-cms-section="processo"><h2>Processo</h2><p>Outro conteúdo.</p></section>'];
 $out=student_material_render_notebook($db,['id'=>7],['id'=>11,'updated_at'=>'rev-1'],$document);$html=(string)$out['html'];
 $panelPos=strpos($html,'class="student-notes-panel"');$lastSectionPos=strrpos($html,'</section>');$entryPos=strpos($html,'class="student-notes-entry"');$firstSectionPos=strpos($html,'<section');
@@ -28,9 +30,11 @@ must_notes_runtime(!str_contains($html,'<select name="section_key">'),'new annot
 must_notes_runtime(str_contains($html,'Nota incorporada')&&str_contains($html,'Conteúdo didático.'),'selection annotation is not rendered in the notebook');
 must_notes_runtime(str_contains($html,'data-student-annotation-data'),'client anchor payload is missing');
 must_notes_runtime(str_contains($html,'Minha observação anterior'),'legacy annotations were lost during the migration');
+must_notes_runtime(str_contains($html,'Virar dúvida')&&str_contains($html,'/aluno/duvidas.php?cohort=turma-1&amp;annotation=1'),'annotation cannot be promoted into the course question flow');
 must_notes_runtime(!str_contains($html,'<section data-cms-section="introducao" data-student-note-context="introducao" id="nota-trecho-introducao"><h2 data-student-anchor-block="introducao:h2:0">Introdução</h2><p data-student-anchor-block="introducao:p:1">Conteúdo didático.</p><form'),'note form is still glued to the section body');
 must_notes_runtime(str_contains($html,'anotacoes=1')&&str_contains($html,'#anotacoes'),'note save does not return to the open notebook');
-$index=(string)file_get_contents(dirname(__DIR__).'/index.php');$publicJs=(string)file_get_contents(dirname(__DIR__).'/assets/public.js');
+$index=(string)file_get_contents(dirname(__DIR__).'/index.php');$publicJs=(string)file_get_contents(dirname(__DIR__).'/assets/public.js');$annotationJs=(string)file_get_contents(dirname(__DIR__).'/assets/student-inline-annotations.js');
 must_notes_runtime(!str_contains($index,'student-inline-annotations.js'),'annotation runtime is injected into CMS HTML and will be stripped by the sanitizer');
 must_notes_runtime(str_contains($publicJs,"document.querySelector('[data-student-notes-panel]')")&&str_contains($publicJs,'student-inline-annotations.js'),'public shell does not load the annotation runtime for material pages');
+must_notes_runtime(str_contains($annotationJs,'student.annotation.return.v1')&&str_contains($annotationJs,'captureReadingOrigin')&&str_contains($annotationJs,'applyReadingOrigin'),'selection-note save does not preserve the reading position');
 echo "student-notes-runtime: ok\n";
