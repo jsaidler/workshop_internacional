@@ -14,6 +14,16 @@ async function selectSubstring(page,selector,needle,{mouseUp=true,selectionChang
   },{selector,needle,mouseUp,selectionChange});
 }
 
+async function scrollBlockIntoViewInstantly(block){
+  await block.evaluate(element=>{
+    const root=document.documentElement;
+    const previous=root.style.scrollBehavior;
+    root.style.scrollBehavior='auto';
+    element.scrollIntoView({block:'center',behavior:'auto'});
+    root.style.scrollBehavior=previous;
+  });
+}
+
 test('annotations relink to stable text and preserve altered or removed sources',async({page})=>{
   await page.goto(url,{waitUntil:'networkidle'});
   await expect(page.locator('mark.student-inline-note-mark')).toHaveCount(1);
@@ -76,11 +86,36 @@ test('touch selection survives a transient collapsed selection event long enough
   await expect(page.locator('[data-anchor-preview]')).toHaveText('trecho permanece disponível');
 });
 
+test('saving an inline annotation stays on the same page and reading position',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.route('**/aluno/material-anotacao.php',async route=>{
+    const request=route.request();
+    expect(request.method()).toBe('POST');
+    expect(request.headers().accept).toContain('application/json');
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,action:'create_selection',annotation_id:4,annotation:{id:4,anchorType:'selection',sectionKey:'processo',body:'Minha nota sem reload',quoteExact:'parágrafo foi alterado',quotePrefix:'Este ',quoteSuffix:' depois da anotação original.',blockKey:'processo:p:1',start:5,end:26,sourceBlockHash:'fixture4',sourcePageRevision:'rev-2'}})});
+  });
+  await page.goto(url,{waitUntil:'networkidle'});
+  const block=page.locator('[data-student-anchor-block="processo:p:1"]');
+  await scrollBlockIntoViewInstantly(block);
+  const before=await block.evaluate(element=>({top:element.getBoundingClientRect().top,y:window.scrollY,url:location.href}));
+  await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado',{mouseUp:false,selectionChange:true});
+  const action=page.locator('.student-selection-note-action');await expect(action).toBeVisible({timeout:2000});await action.click();
+  const compose=page.locator('[data-inline-note-compose]');await expect(compose).toBeVisible();
+  await compose.locator('textarea[name="body"]').fill('Minha nota sem reload');
+  await compose.locator('[data-inline-note-submit]').click();
+  await expect(compose).toBeHidden();
+  await expect(page.locator('[data-annotation-item="4"] textarea[name="body"]')).toHaveValue('Minha nota sem reload');
+  await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="4"]')).toContainText('parágrafo foi alterado');
+  expect(await page.evaluate(()=>location.href)).toBe(before.url);
+  await expect.poll(async()=>block.evaluate((element,top)=>Math.abs(element.getBoundingClientRect().top-top),before.top)).toBeLessThan(4);
+  await expect.poll(async()=>page.evaluate(y=>Math.abs(window.scrollY-y),before.y)).toBeLessThan(4);
+});
+
 test('orphaned notes can be reassociated without changing their body',async({page})=>{
   await page.goto(url,{waitUntil:'networkidle'});
   await page.locator('[data-student-notes-panel]>summary').click();
   await expect(page.locator('[data-student-notes-panel]')).toHaveAttribute('open','');
-  await page.locator('[data-annotation-item="2"]').evaluate(element=>element.scrollIntoView({block:'center'}));
+  await scrollBlockIntoViewInstantly(page.locator('[data-annotation-item="2"]'));
   await page.locator('[data-annotation-reanchor="2"]').dispatchEvent('click');
   await expect(page.locator('.student-reanchor-hint')).toBeVisible();
   await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado');

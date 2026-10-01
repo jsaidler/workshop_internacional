@@ -1,0 +1,7 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;margin:0}.spacer{height:900px}.region{padding:24px;border:1px solid #ccc}dialog{width:min(500px,90vw)}</style><title>Student local action fixture</title></head><body>
+<div class="spacer"></div>
+<section class="region" data-student-local-key="fixture-list"><h2>Lista</h2><p data-list-value>Valor antigo</p><a href="/fixture/editor" data-student-editor-link>Editar</a></section>
+<form action="/fixture/save" method="post" data-student-local-form data-local-refresh="fixture-list" data-local-success="reset"><label>Valor<input name="value" value="rascunho"></label><button type="submit">Salvar localmente</button></form>
+<dialog data-student-editor-dialog><div data-student-editor></div></dialog>
+<script defer src="/assets/student-local-actions.js"></script>
+</body></html>
