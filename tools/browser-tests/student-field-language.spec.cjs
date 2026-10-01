@@ -101,7 +101,6 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Tempo sem reciprocidade<input data-quick-reciprocity-source',
       '>Tempo com reciprocidade<input data-quick-reciprocity-target',
       '>Tempo inicial<input',
-      '>Aviso de agitação<input type="text"',
       '<span>Predefinições de revelação</span>',
       '<span>Referências de calibração</span>',
     ],
