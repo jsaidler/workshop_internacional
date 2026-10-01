@@ -96,10 +96,9 @@ test('saving an inline annotation stays on the same page and reading position',a
   await expect(compose).toBeHidden();
   await expect(page.locator('[data-annotation-item="4"] textarea[name="body"]')).toHaveValue('Minha nota sem reload');
   await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="4"]')).toContainText('parágrafo foi alterado');
-  const after=await block.evaluate(element=>({top:element.getBoundingClientRect().top,y:window.scrollY,url:location.href}));
-  expect(after.url).toBe(before.url);
-  expect(Math.abs(after.top-before.top)).toBeLessThan(4);
-  expect(Math.abs(after.y-before.y)).toBeLessThan(4);
+  expect(await page.evaluate(()=>location.href)).toBe(before.url);
+  await expect.poll(async()=>block.evaluate((element,top)=>Math.abs(element.getBoundingClientRect().top-top),before.top)).toBeLessThan(4);
+  await expect.poll(async()=>page.evaluate(y=>Math.abs(window.scrollY-y),before.y)).toBeLessThan(4);
 });
 
 test('orphaned notes can be reassociated without changing their body',async({page})=>{
