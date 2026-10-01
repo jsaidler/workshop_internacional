@@ -4,7 +4,7 @@ Esta auditoria complementa `STUDENT_AREA_WORKFLOW_REDESIGN_2026-09-30.md`. O cri
 
 ## Critério de produto
 
-A Área do aluno deve operar como três ambientes coerentes: estudar no Curso, registrar a prática no Caderno e recorrer a utilidades de apoio quando necessário. Uma função isolada não deve virar destino de navegação por padrão. Dados salvos só merecem interface própria quando voltam a ser usados em outra tarefa.
+A Área do aluno deve operar como três ambientes coerentes: estudar no Curso, registrar a prática no Caderno e recorrer a utilidades de apoio quando necessário. Uma função isolada não deve virar destino de navegação por padrão. Dados salvos só merecem interface própria quando voltam a ser usados em outra tarefa. Qualquer dado persistente que o aluno possa criar precisa ter uma forma coerente de correção posterior; “salvar e nunca mais editar” não é uma mecânica aceitável para um caderno de pesquisa.
 
 ## Processamento — corrigido nesta revisão
 
@@ -16,7 +16,8 @@ Contrato atual:
 - edição comum preserva todas as etapas posteriores;
 - o sistema sugere uma continuação, mas não a transforma em obrigação;
 - corrigir a sequência é uma operação separada, claramente destrutiva, que remove a etapa escolhida e as seguintes;
-- consumo de inventário é reconciliado quando uma etapa é editada.
+- consumo de inventário é reconciliado quando uma etapa é editada;
+- registros já revisados permanecem bloqueados para alteração.
 
 ## Anotações do material — corrigido nesta revisão
 
@@ -47,13 +48,19 @@ Receita precisa reunir fórmula, redimensionamento, modo de preparo e segurança
 
 O Inventário tem função real porque é consumido pelo registro de processamento e recebe preparos armazenáveis. Não é uma planilha administrativa: cadastro expõe primeiro tipo, nome, quantidade e unidade; lote, validade, local e limites são detalhes opcionais.
 
+A correção de um item não deve ser falsificada como uma movimentação de estoque. Nome, lote, validade, local, categoria e anotações agora podem ser editados separadamente; quantidade continua sendo alterada apenas por entradas e saídas para que o histórico de saldo permaneça íntegro.
+
 ## “Preparos salvos” — redefinido como Predefinições de revelação
 
 O objeto salvo não representa necessariamente um frasco ou lote físico. Ele guarda uma configuração reutilizável de revelação — revelador, diluição/volume, temperatura, tempo e agitação — e é reaplicado ao preencher uma etapa. Portanto, a interface passa a chamá-lo de **Predefinição de revelação**. Soluções físicas continuam pertencendo ao Inventário.
 
-## Calibrações — funcionalidade isolada a rever
+Predefinições existentes agora podem ser editadas sem criar outra entrada e sem quebrar a identidade do registro salvo. Isso é importante porque etapas de processo podem apontar para uma predefinição já existente.
 
-Hoje a calibração salva referências pessoais de filme, revelador, preparo, temperatura, pré-banho e tempo do branco, mas esse registro não é consumido automaticamente por Exposição, Processamento ou outra ferramenta. Portanto ela não deve ganhar mais destaque até existir uma função clara de reaproveitamento. A rota pode permanecer por compatibilidade e pelos dados já salvos, mas sua integração deve ser decidida antes de ampliar a interface.
+## Referências de calibração — editáveis, mas ainda isoladas
+
+A calibração salva referências pessoais de filme, revelador, preparo, temperatura, pré-banho e tempo do branco. Esses registros agora podem ser corrigidos depois de criados, eliminando o comportamento anterior de “salvar uma vez e conviver com o erro”.
+
+Ainda assim, a calibração não é consumida automaticamente por Exposição, Processamento ou outra ferramenta. Portanto ela continua sendo uma referência de consulta e não deve ganhar mais destaque até existir uma função clara de reaproveitamento. Integrar a referência ao fluxo ou demotá-la ainda é uma decisão de produto pendente.
 
 ## Catálogo de reveladores — dívida de produto
 
