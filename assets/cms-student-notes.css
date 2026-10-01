@@ -1,4 +1,8 @@
 /* Student annotations are one notebook layer for the material page, not widgets glued to sections. */
+.cms-public .student-notes-entry{display:flex;justify-content:flex-end;max-width:1200px;margin:18px auto 0;padding:0 24px}
+.cms-public .student-notes-entry>a{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:600 10px/1 var(--mono);letter-spacing:.05em;text-decoration:none;text-transform:uppercase}
+.cms-public .student-notes-entry>a:hover{border-color:var(--focus)}
+.cms-public .student-notes-entry b{display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--focus);color:var(--bg);font-size:10px}
 .cms-public .student-notes-panel{
   position:fixed;
   right:24px;
@@ -92,6 +96,8 @@
 .cms-public .student-note-new label{display:grid;gap:7px;color:var(--muted);font:500 10px/1.3 var(--mono);letter-spacing:.04em;text-transform:uppercase}
 .cms-public [data-student-note-context]{scroll-margin-top:90px}
 @media(max-width:760px){
+  .cms-public .student-notes-entry{padding:0 14px;margin-top:12px}
+  .cms-public .student-notes-entry>a{min-height:42px}
   .cms-public .student-notes-panel{right:12px;bottom:74px}
   .cms-public .student-notes-panel[open]{inset:0;width:100%;height:100%;border:0;z-index:400}
   .cms-public .student-notes-panel[open]>summary{min-height:58px;padding:0 16px}
