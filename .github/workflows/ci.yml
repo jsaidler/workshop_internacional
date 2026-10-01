@@ -86,6 +86,7 @@ jobs:
           php tools/test-student-workflow-experience.php
           php tools/test-student-process-notes-ux.php
           php tools/test-student-notes-runtime.php
+          php tools/test-student-question-annotation.php
           php tools/test-student-mechanics-audit.php
           php tools/test-student-area-information-architecture.php
           php tools/test-student-mobile-experience.php
