@@ -16,6 +16,8 @@ $studentCourses=(string)file_get_contents($root.'/aluno/cursos.php');
 $studentNotebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $studentRecord=(string)file_get_contents($root.'/aluno/teste.php');
 $studentBench=(string)file_get_contents($root.'/aluno/ferramentas.php');
+$processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
+$processRunner=(string)file_get_contents($root.'/aluno/processar.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $adminCss=(string)file_get_contents($root.'/assets/admin-system.css');
@@ -24,6 +26,7 @@ $experienceCss=(string)file_get_contents($root.'/assets/student-experience.css')
 $renderedCss=(string)file_get_contents($root.'/assets/student-rendered-fixes.css');
 $doc=(string)file_get_contents($root.'/docs/ADMIN_STUDENT_UX_AUDIT_2026-09-28.md');
 $studentDoc=(string)file_get_contents($root.'/docs/STUDENT_AREA_WORKFLOW_REDESIGN_2026-09-30.md');
+$processDoc=(string)file_get_contents($root.'/docs/STUDENT_PROCESS_MANAGER_AND_LAB_RUNNER_2026-10-01.md');
 
 ux_expect(str_contains($adminShell,'function admin_navigation_groups'),'administração precisa de uma árvore global explícita');
 ux_expect(str_contains($adminShell,"'Principal'=>")&&str_contains($adminShell,"'Operação'=>")&&str_contains($adminShell,"'Ensino'=>")&&str_contains($adminShell,"'Site'=>")&&str_contains($adminShell,"'Sistema'=>"),'sidebar deve refletir trabalho operacional, pedagógico, site e sistema');
@@ -72,8 +75,10 @@ ux_expect(str_contains($studentNotebook,'Mais ações')&&str_contains($studentNo
 ux_expect(str_contains($studentNotebook,'data-record-create-dialog'),'novo registro deve abrir diretamente em diálogo, sem etapa intermediária');
 ux_expect(!str_contains($studentNotebook,'student-process-compare'),'comparação não pode ocupar permanentemente cada registro');
 ux_expect(str_contains($studentRecord,'student-process-now')&&str_contains($studentRecord,'student-process-history'),'processamento deve priorizar o passo atual sobre o histórico');
-ux_expect(str_contains($studentRecord,'data-lab-timer')&&str_contains($studentRecord,'Desfazer última etapa'),'processamento deve integrar temporizador e subordinar correções');
-ux_expect(str_contains($studentBench,'data-exposure-tool')&&str_contains($studentBench,'data-quick-reciprocity')&&str_contains($studentBench,'data-lab-timer'),'ferramentas pequenas não podem virar subpáginas');
+ux_expect(str_contains($studentShell,'/assets/student-process-entry.js')&&str_contains($studentRecord,'Desfazer última etapa'),'processamento deve oferecer modo laboratório e subordinar correções');
+ux_expect(str_contains($studentBench,'data-exposure-tool')&&str_contains($studentBench,'data-quick-reciprocity'),'ferramentas pequenas de exposição devem continuar inline');
+ux_expect(!str_contains($studentBench,'data-lab-timer')&&str_contains($studentBench,'/aluno/processamentos.php'),'processamento multietapas não pode permanecer reduzido a um temporizador inline');
+ux_expect(str_contains($processManager,'student-process-step-list')&&str_contains($processRunner,'data-process-runner'),'processamento multietapas deve ter gerenciador e superfície operacional próprias');
 ux_expect(str_contains($studentBench,'Modo de preparo')&&str_contains($studentBench,'student_experience_recipe_notes'),'receitas devem reunir cálculo e modo de preparo');
 foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual'] as $internalCopy)ux_expect(!str_contains($studentHome.$studentBench.$studentRecord,$internalCopy),'texto interno vazou para a interface do aluno: '.$internalCopy);
 ux_expect(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'rota legada de testes deve convergir para o Caderno global');
@@ -90,5 +95,6 @@ ux_expect(str_contains($doc,'Coleções são o eixo primário'),'documentação 
 ux_expect(str_contains($doc,'Curso como catálogo e filtro'),'documentação administrativa deve impedir retorno da árvore local de curso');
 ux_expect(str_contains($doc,'procurar → consumir → identificar lacuna'),'documentação deve preservar política de consumo global');
 ux_expect(str_contains($studentDoc,'Secagem encerra o processamento')&&str_contains($studentDoc,'Uma utilidade simples não ganha subpágina'),'documentação canônica da experiência do aluno está incompleta');
+ux_expect(str_contains($processDoc,'Processamento passa a ser a entidade central')&&str_contains($processDoc,'template → snapshot do registro → execução real'),'documentação do novo fluxo deve distinguir workflow operacional de utilidade simples');
 
 echo "ux-audit: ok\n";
