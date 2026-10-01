@@ -65,15 +65,28 @@ if(form){
     const headline=now?.querySelector('h2'),nowLabel=now?.querySelector('.student-process-now-label');
     const activate=radio=>{radios.forEach(item=>{item.checked=item===radio;});radio.dispatchEvent(new Event('change',{bubbles:true}));if(primary)primary.disabled=false;};
     let choices=null,other=null,otherSummary=null,otherSelect=null;
-    const resetAlternative=()=>{decision.classList.remove('has-alternative');if(choices)choices.hidden=false;if(otherSummary)otherSummary.textContent='Registrar outra etapa';if(otherSelect)otherSelect.value='';};
+    const showGuidedChoicePrompt=()=>{
+      decision.classList.remove('has-alternative');decision.classList.toggle('is-secondary-only',suggested.length===1);
+      if(choices)choices.hidden=false;if(otherSummary)otherSummary.textContent='Registrar outra etapa';if(otherSelect)otherSelect.value='';
+      if(suggested.length>1){radios.forEach(item=>{item.checked=false;});if(primary)primary.disabled=true;if(nowLabel)nowLabel.textContent='Próxima decisão';if(headline)headline.textContent='Escolha como continuar';}
+    };
     if(suggested.length===1){if(nowLabel)nowLabel.textContent='Próxima etapa sugerida';if(headline)headline.textContent=labelFor(suggested[0]);decision.classList.add('is-secondary-only');}
     else if(suggested.length>1){
       radios.forEach(item=>{item.checked=false;});suggested[0].dispatchEvent(new Event('change',{bubbles:true}));if(primary)primary.disabled=true;
       if(nowLabel)nowLabel.textContent='Próxima decisão';if(headline)headline.textContent='Escolha como continuar';
       choices=document.createElement('div');choices.className='student-process-guided-choices';
-      suggested.forEach(radio=>{const button=document.createElement('button');button.type='button';button.className='student-process-choice-button';button.textContent=labelFor(radio);button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>{resetAlternative();activate(radio);choices.querySelectorAll('button').forEach(item=>item.setAttribute('aria-pressed',item===button?'true':'false'));if(headline)headline.textContent=labelFor(radio);if(nowLabel)nowLabel.textContent='Etapa escolhida';});choices.appendChild(button);});decision.appendChild(choices);
+      suggested.forEach(radio=>{const button=document.createElement('button');button.type='button';button.className='student-process-choice-button';button.textContent=labelFor(radio);button.setAttribute('aria-pressed','false');button.addEventListener('click',()=>{showGuidedChoicePrompt();activate(radio);choices.querySelectorAll('button').forEach(item=>item.setAttribute('aria-pressed',item===button?'true':'false'));if(headline)headline.textContent=labelFor(radio);if(nowLabel)nowLabel.textContent='Etapa escolhida';});choices.appendChild(button);});decision.appendChild(choices);
     }
-    if(alternatives.length){other=document.createElement('details');other.className='student-process-other-stage';otherSummary=document.createElement('summary');otherSummary.textContent='Registrar outra etapa';otherSelect=document.createElement('select');otherSelect.setAttribute('aria-label','Outra etapa');const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Escolha…';otherSelect.appendChild(placeholder);alternatives.forEach(radio=>{const option=document.createElement('option');option.value=radio.value;option.textContent=labelFor(radio);otherSelect.appendChild(option);});otherSelect.addEventListener('change',()=>{if(!otherSelect.value)return;const radio=radios.find(item=>item.value===otherSelect.value);if(!radio)return;activate(radio);if(headline)headline.textContent=labelFor(radio);if(nowLabel)nowLabel.textContent='Etapa escolhida';other.open=false;otherSummary.textContent='Alterar etapa';decision.classList.add('has-alternative');if(choices)choices.hidden=true;decision.querySelectorAll('.student-process-choice-button').forEach(item=>item.setAttribute('aria-pressed','false'));});other.append(otherSummary,otherSelect);decision.appendChild(other);}
+    if(alternatives.length){
+      other=document.createElement('details');other.className='student-process-other-stage';otherSummary=document.createElement('summary');otherSummary.textContent='Registrar outra etapa';otherSelect=document.createElement('select');otherSelect.setAttribute('aria-label','Outra etapa');
+      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Escolha…';otherSelect.appendChild(placeholder);
+      if(suggested.length>1){const back=document.createElement('option');back.value='__suggested__';back.textContent='Voltar às etapas sugeridas';otherSelect.appendChild(back);}
+      alternatives.forEach(radio=>{const option=document.createElement('option');option.value=radio.value;option.textContent=labelFor(radio);otherSelect.appendChild(option);});
+      otherSelect.addEventListener('change',()=>{
+        if(otherSelect.value==='__suggested__'){showGuidedChoicePrompt();other.open=false;return;}
+        if(!otherSelect.value)return;const radio=radios.find(item=>item.value===otherSelect.value);if(!radio)return;activate(radio);if(headline)headline.textContent=labelFor(radio);if(nowLabel)nowLabel.textContent='Etapa escolhida';other.open=false;otherSummary.textContent='Alterar etapa';decision.classList.add('has-alternative','is-secondary-only');if(choices)choices.hidden=true;decision.querySelectorAll('.student-process-choice-button').forEach(item=>item.setAttribute('aria-pressed','false'));
+      });other.append(otherSummary,otherSelect);decision.appendChild(other);
+    }
     if(decision.childElementCount)fieldset.insertAdjacentElement('beforebegin',decision);fieldset.hidden=true;
   }
 }
