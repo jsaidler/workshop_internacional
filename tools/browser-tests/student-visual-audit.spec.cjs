@@ -8,6 +8,7 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.setViewportSize(viewport);
       await page.goto(`${base}?screen=${encodeURIComponent(screen)}`,{waitUntil:'networkidle'});
       await page.addStyleTag({url:'/assets/student-rendered-fixes.css'});
+      await page.addStyleTag({url:'/assets/student-field-language.css'});
       await page.evaluate(screenName=>{
         document.documentElement.setAttribute('data-theme','dark');
         const selector=screenName==='new-record'?'.student-create-dialog':screenName==='toolbox'?'.student-toolbox':'';
