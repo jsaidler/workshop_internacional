@@ -13,13 +13,20 @@ function student_process_standard_development(int $ei): array {
     ];
 }
 
+function student_process_standard_reused_development(array $development): array {
+    $development['notes']='Reutilizar o mesmo banho de revelador da primeira revelação; não preparar uma nova solução.';
+    return $development;
+}
+
 function student_process_standard_catalog(): array {
     $ei200=student_process_standard_development(200);
     $ei400=student_process_standard_development(400);
+    $ei200Second=student_process_standard_reused_development($ei200);
+    $ei400Second=student_process_standard_reused_development($ei400);
     return [
         'positive-ferric-ammonia-ei200'=>[
             'name'=>'Positivo direto — Parodinal EI 200 — FeCl₃ + amônia',
-            'description'=>'Parodinal 10 ml + água até 550 ml, 26 °C, 7 min e agitação leve nas duas revelações. Lavagens de 1 min e cloreto férrico por 1 min 30 s.',
+            'description'=>'Parodinal 10 ml + água até 550 ml, 26 °C, 7 min e agitação leve. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e cloreto férrico por 1 min 30 s.',
             'steps'=>[
                 ['stage_key'=>'first_development']+$ei200,
                 ['stage_key'=>'wash_after_first','duration'=>'1:00'],
@@ -27,14 +34,14 @@ function student_process_standard_catalog(): array {
                 ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
                 ['stage_key'=>'ammonia','duration'=>''],
                 ['stage_key'=>'wash_after_ammonia','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$ei200,
+                ['stage_key'=>'second_development']+$ei200Second,
                 ['stage_key'=>'final_wash','duration'=>'1:00'],
                 ['stage_key'=>'dry','duration'=>''],
             ],
         ],
         'positive-ferric-ammonia-ei400'=>[
             'name'=>'Positivo direto — Parodinal EI 400 — FeCl₃ + amônia',
-            'description'=>'Parodinal 20 ml + água até 550 ml, 26 °C, 7 min e agitação leve nas duas revelações. Lavagens de 1 min e cloreto férrico por 1 min 30 s.',
+            'description'=>'Parodinal 20 ml + água até 550 ml, 26 °C, 7 min e agitação leve. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e cloreto férrico por 1 min 30 s.',
             'steps'=>[
                 ['stage_key'=>'first_development']+$ei400,
                 ['stage_key'=>'wash_after_first','duration'=>'1:00'],
@@ -42,33 +49,33 @@ function student_process_standard_catalog(): array {
                 ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
                 ['stage_key'=>'ammonia','duration'=>''],
                 ['stage_key'=>'wash_after_ammonia','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$ei400,
+                ['stage_key'=>'second_development']+$ei400Second,
                 ['stage_key'=>'final_wash','duration'=>'1:00'],
                 ['stage_key'=>'dry','duration'=>''],
             ],
         ],
         'positive-peracetic-ei200'=>[
             'name'=>'Positivo direto — Parodinal EI 200 — peracética',
-            'description'=>'Parodinal 10 ml + água até 550 ml, 26 °C, 7 min e agitação leve nas duas revelações. Lavagens de 1 min e branqueamento peracético por 1 min 30 s.',
+            'description'=>'Parodinal 10 ml + água até 550 ml, 26 °C, 7 min e agitação leve. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e branqueamento peracético por 1 min 30 s.',
             'steps'=>[
                 ['stage_key'=>'first_development']+$ei200,
                 ['stage_key'=>'wash_after_first','duration'=>'1:00'],
                 ['stage_key'=>'peracetic','duration'=>'1:30'],
                 ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$ei200,
+                ['stage_key'=>'second_development']+$ei200Second,
                 ['stage_key'=>'final_wash','duration'=>'1:00'],
                 ['stage_key'=>'dry','duration'=>''],
             ],
         ],
         'positive-peracetic-ei400'=>[
             'name'=>'Positivo direto — Parodinal EI 400 — peracética',
-            'description'=>'Parodinal 20 ml + água até 550 ml, 26 °C, 7 min e agitação leve nas duas revelações. Lavagens de 1 min e branqueamento peracético por 1 min 30 s.',
+            'description'=>'Parodinal 20 ml + água até 550 ml, 26 °C, 7 min e agitação leve. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e branqueamento peracético por 1 min 30 s.',
             'steps'=>[
                 ['stage_key'=>'first_development']+$ei400,
                 ['stage_key'=>'wash_after_first','duration'=>'1:00'],
                 ['stage_key'=>'peracetic','duration'=>'1:30'],
                 ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$ei400,
+                ['stage_key'=>'second_development']+$ei400Second,
                 ['stage_key'=>'final_wash','duration'=>'1:00'],
                 ['stage_key'=>'dry','duration'=>''],
             ],
@@ -107,7 +114,7 @@ function student_process_standard_copy(PDO $db,int $studentId,string $standardKe
         $templateId=(int)($template['id']??0);if($templateId<1)throw new RuntimeException('Não foi possível criar o processamento padrão.');
         foreach((array)$standard['steps'] as $step){
             $input=['stage_key'=>(string)$step['stage_key'],'duration'=>(string)($step['duration']??'')];
-            foreach(['developer_key','developer_amount','water_amount','temperature','agitation','agitation_interval'] as $field)if(array_key_exists($field,$step))$input[$field]=$step[$field];
+            foreach(['developer_key','developer_amount','water_amount','temperature','agitation','agitation_interval','notes'] as $field)if(array_key_exists($field,$step))$input[$field]=$step[$field];
             student_process_template_add_step($db,$templateId,$studentId,$input);
         }
         $db->commit();
