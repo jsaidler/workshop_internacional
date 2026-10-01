@@ -1,26 +1,26 @@
 (()=>{
 'use strict';
 const replaceLabelText=(control,text)=>{const label=control?.closest('.form-field');if(!label)return;const node=[...label.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim());if(node)node.textContent=text;};
+const params=new URLSearchParams(window.location.search),testId=params.get('id');
+const history=document.querySelector('.student-process-history');
+const now=document.querySelector('.student-process-now');
+const processPanel=history?.closest('.student-workflow-panel')||document.querySelector('.student-workflow-panel');
+if(history){
+  history.open=true;
+  history.classList.add('student-process-log');
+  const summary=history.querySelector(':scope>summary');
+  if(summary)summary.textContent=summary.textContent.replace('Histórico do processamento','Processo registrado');
+  if(processPanel){const anchor=now||processPanel.querySelector('.student-process-complete');if(anchor)processPanel.insertBefore(history,anchor);}
+  history.querySelectorAll('.student-process-summary>li').forEach(item=>{
+    if(item.querySelector('.student-process-step-edit'))return;
+    const raw=item.querySelector('.student-process-step-number')?.textContent.trim()||'';
+    const position=String(parseInt(raw,10)||'');if(!position||!testId)return;
+    const edit=document.createElement('a');edit.className='student-process-step-edit';edit.href=`/aluno/teste-etapa.php?registro=${encodeURIComponent(testId)}&etapa=${encodeURIComponent(position)}`;edit.textContent='Editar';edit.setAttribute('aria-label',`Editar etapa ${position}`);item.appendChild(edit);
+  });
+}
+
 const form=document.querySelector('.student-process-step-form');
 if(form){
-  const params=new URLSearchParams(window.location.search),testId=params.get('id');
-  const history=document.querySelector('.student-process-history');
-  const now=document.querySelector('.student-process-now');
-  const section=form.closest('.student-workflow-panel');
-  if(history){
-    history.open=true;
-    history.classList.add('student-process-log');
-    const summary=history.querySelector(':scope>summary');
-    if(summary)summary.textContent=summary.textContent.replace('Histórico do processamento','Processo registrado');
-    if(section&&now)section.insertBefore(history,now);
-    history.querySelectorAll('.student-process-summary>li').forEach(item=>{
-      if(item.querySelector('.student-process-step-edit'))return;
-      const raw=item.querySelector('.student-process-step-number')?.textContent.trim()||'';
-      const position=String(parseInt(raw,10)||'');if(!position||!testId)return;
-      const edit=document.createElement('a');edit.className='student-process-step-edit';edit.href=`/aluno/teste-etapa.php?registro=${encodeURIComponent(testId)}&etapa=${encodeURIComponent(position)}`;edit.textContent='Editar';edit.setAttribute('aria-label',`Editar etapa ${position}`);item.appendChild(edit);
-    });
-  }
-
   const preset=form.querySelector('select[name="saved_preparation_id"]');if(preset)replaceLabelText(preset,'Predefinição de revelação');
   const fieldset=form.querySelector('.choice-field');
   const radios=[...form.querySelectorAll('[data-stage-choice]')];
