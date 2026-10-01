@@ -1,0 +1,29 @@
+.student-process-log{margin:0 0 30px;border:1px solid var(--student-border);background:var(--student-panel-quiet)}
+.student-process-log>summary{min-height:48px;padding:0 16px;display:flex;align-items:center;color:var(--text);font-size:13px;font-weight:600;cursor:pointer}
+.student-process-log .student-process-summary{margin:0;border:0;border-top:1px solid var(--student-border)}
+.student-process-log .student-process-summary li{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start;padding:15px 16px}
+.student-process-step-edit{align-self:center;min-height:34px;display:inline-flex;align-items:center;padding:0 11px;border:1px solid var(--student-border);color:var(--text);font:600 10px/1 var(--mono);letter-spacing:.04em;text-decoration:none;text-transform:uppercase}
+.student-process-step-edit:hover{border-color:var(--focus)}
+.student-process-log .student-process-history-actions{padding:12px 16px 16px;border-top:1px solid var(--student-border)}
+.student-process-stage-select{margin:0 0 24px}
+.student-process-stage-select .form-field-help{display:block;margin-top:7px;color:var(--muted);font-size:12px;line-height:1.45}
+.student-process-now{margin-top:0}
+.student-step-editor-header{max-width:920px}
+.student-step-editor{max-width:920px}
+.student-step-fixed{display:grid;gap:5px;padding:16px 0;border-top:1px solid var(--student-border);border-bottom:1px solid var(--student-border)}
+.student-step-fixed>span{color:var(--muted);font:500 10px/1.2 var(--mono);letter-spacing:.05em;text-transform:uppercase}
+.student-step-fixed>strong{font-size:18px}
+.student-step-fixed>small{color:var(--muted);font-size:12px}
+.student-process-edit-form .student-sticky-action{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.student-step-danger{margin-top:46px;border-top:1px solid color-mix(in srgb,var(--line) 72%,transparent);padding-top:14px}
+.student-step-danger>summary{cursor:pointer;color:var(--muted);font:500 11px/1.3 var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.student-step-danger>div{max-width:680px;margin-top:16px;padding:18px;border:1px solid var(--student-border);background:var(--student-panel-quiet)}
+.student-step-danger p{margin:0 0 16px;font-size:13px;line-height:1.55}
+@media(max-width:760px){
+  .student-process-log{margin-bottom:24px}
+  .student-process-log .student-process-summary li{grid-template-columns:minmax(0,1fr) auto;padding:14px 12px}
+  .student-process-step-edit{min-height:40px}
+  .student-process-edit-form .student-sticky-action{display:grid}
+  .student-process-edit-form .student-sticky-action .button{width:100%}
+  .student-step-danger>div{padding:15px}
+}
