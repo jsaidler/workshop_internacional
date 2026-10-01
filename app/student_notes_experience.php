@@ -127,6 +127,12 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
 
     $returnTo=student_notes_return_url();$count=count($legacyNotes)+count($annotations);$open=isset($_GET['anotacoes']);
     $revision=trim((string)($page['updated_at']??''));if($revision==='')$revision=substr(hash('sha256',$html),0,24);
+    $cohortUuid=student_workspace_text($_GET['cohort']??'',120);
+    $questionUrl=static function(int $annotationId,int $questionId=0) use($cohortUuid): string {
+        $params=[];if($cohortUuid!=='')$params['cohort']=$cohortUuid;
+        if($questionId>0)$params['id']=$questionId;else $params['annotation']=$annotationId;
+        return '/aluno/duvidas.php?'.http_build_query($params);
+    };
     $entry='<div class="student-notes-entry"><a href="'.h($returnTo).'" aria-controls="anotacoes"><span>Anotações</span>'.($count>0?'<b>'.$count.'</b>':'').'</a></div>';
     $panel='<details class="student-notes-panel" id="anotacoes" data-student-notes-panel data-student-page-revision="'.h($revision).'"'.($open?' open':'').'>';
     $panel.='<summary><span>Anotações</span>'.($count>0?'<b>'.$count.'</b>':'').'</summary>';
@@ -155,6 +161,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         $panel.='<div class="student-notes-list">';
         foreach($annotations as $note){
             $id=(int)$note['id'];$selection=(string)$note['anchor_type']==='selection';
+            $linkedQuestion=function_exists('student_question_from_annotation')?student_question_from_annotation($db,(int)$student['id'],$id):null;
             $panel.='<article class="student-note-item'.($selection?' is-selection':' is-page').'" id="anotacao-'.$id.'" data-annotation-item="'.$id.'">'
                 .'<header><span>'.($selection?'Trecho':'Página').'</span><strong>'.($selection?'Anotação vinculada ao texto':'Anotação geral').'</strong>'.($selection?'<small data-annotation-status="'.$id.'">Localizando trecho…</small>':'').'</header>';
             if($selection)$panel.='<blockquote class="student-note-quote">'.h((string)$note['quote_exact']).'</blockquote>';
@@ -162,6 +169,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
                 .'<input type="hidden" name="annotation_id" value="'.$id.'"><textarea name="body" rows="5" maxlength="5000" aria-label="Anotação">'.h((string)$note['body']).'</textarea>'
                 .'<div class="student-material-note-actions"><button class="button" type="submit" name="annotation_action" value="update">Salvar</button>';
             if($selection)$panel.='<button class="student-material-note-secondary" type="button" data-annotation-reanchor="'.$id.'">Reassociar</button><button class="student-material-note-secondary" type="submit" name="annotation_action" value="detach">Tornar geral</button>';
+            $panel.='<a class="student-material-note-secondary" href="'.h($questionUrl($id,(int)($linkedQuestion['id']??0))).'">'.($linkedQuestion?'Ver dúvida':'Virar dúvida').'</a>';
             $panel.='<button class="student-material-note-remove" type="submit" name="annotation_action" value="remove">Remover</button></div></form></article>';
         }
         foreach($legacyNotes as $key=>$note){
