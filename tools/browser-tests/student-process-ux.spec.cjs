@@ -31,6 +31,8 @@ test('process log is editable and branching requires an explicit decision',async
   await page.locator('.student-process-other-stage select').selectOption('dry');
   await expect(page.locator('input[name="stage_key"][value="dry"]')).toBeChecked();
   await expect(page.locator('.student-process-now h2')).toHaveText('Secagem');
+  await expect(guided.first()).toBeHidden();
+  await expect(page.locator('.student-process-other-stage summary')).toHaveText('Alterar etapa');
   await expect(inventory).toBeHidden();
   await expect(amount).toBeHidden();
   await expect(page.locator('[data-lab-timer]')).toBeHidden();
