@@ -62,9 +62,11 @@ A calibração salva referências pessoais de filme, revelador, preparo, tempera
 
 Ainda assim, a calibração não é consumida automaticamente por Exposição, Processamento ou outra ferramenta. Portanto ela continua sendo uma referência de consulta e não deve ganhar mais destaque até existir uma função clara de reaproveitamento. Integrar a referência ao fluxo ou demotá-la ainda é uma decisão de produto pendente.
 
-## Catálogo de reveladores — dívida de produto
+## Catálogo de reveladores — manter, organizar melhor
 
-O catálogo atual contém vários reveladores comerciais genéricos além dos processos centrais da pesquisa. Isso torna selects longos e mistura “o que o curso trabalha” com “o que tecnicamente pode existir”. A próxima revisão deve separar opções documentadas pelo curso de uma opção explícita **Outro revelador**, em vez de transformar o formulário em catálogo de mercado. Esta mudança exige verificar o material didático e os dados já gravados antes de retirar chaves existentes.
+O catálogo ampliado de reveladores é intencional: além de Parodinal e Brewed Caffenol, o aluno pode registrar reveladores analógicos comuns e usar **Outro** quando necessário. O problema não é a existência dessas opções, e sim apresentá-las como uma lista indiferenciada.
+
+Parodinal e Brewed Caffenol devem permanecer primeiro, por serem os processos diretamente trabalhados na pesquisa/curso. Os demais reveladores comuns devem aparecer como grupo secundário e **Outro** como saída explícita. Assim o Caderno continua aceitando pesquisa fora do processo principal sem transformar a interface em catálogo de mercado.
 
 ## Regra para novas funções
 
