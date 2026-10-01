@@ -17,13 +17,29 @@ action.type='button';action.className='student-selection-note-action';action.hid
 const reanchorHint=document.createElement('div');
 reanchorHint.className='student-reanchor-hint';reanchorHint.hidden=true;reanchorHint.innerHTML='<span>Selecione o novo trecho no material.</span><button type="button">Cancelar</button>';document.body.appendChild(reanchorHint);
 
-let pendingAnchor=null;let reanchorId=0;let selectionTimer=0;let lastValidSelectionAt=0;let selectionPoll=0;
+let pendingAnchor=null;let reanchorId=0;let selectionTimer=0;let lastValidSelectionAt=0;let selectionPoll=0;let readingOrigin=null;
 const coarsePointer=window.matchMedia?.('(pointer: coarse)').matches||window.matchMedia?.('(max-width: 760px)').matches;
 const textNodes=block=>{const out=[];const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT,{acceptNode(node){return node.nodeValue?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});while(walker.nextNode())out.push(walker.currentNode);return out;};
 const closestBlock=node=>{const element=node?.nodeType===Node.ELEMENT_NODE?node:node?.parentElement;return element?.closest?.('[data-student-anchor-block]')||null;};
 const offsetWithin=(block,node,offset)=>{const range=document.createRange();range.selectNodeContents(block);try{range.setEnd(node,offset);return range.toString().length;}catch(_){return -1;}};
 const fingerprint=text=>{let hash=2166136261;for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}return (hash>>>0).toString(16).padStart(8,'0');};
 const nodeInsideRoot=node=>{if(!node)return false;const target=node.nodeType===Node.ELEMENT_NODE?node:node.parentNode;return !!target&&root.contains(target);};
+
+const readingStorageKey='student.annotation.return.v1';
+const readingBlock=blockKey=>{
+  if(blockKey){const exact=root.querySelector(`[data-student-anchor-block="${CSS.escape(blockKey)}"]`);if(exact)return exact;}
+  let best=null,bestDistance=Infinity;root.querySelectorAll('[data-student-anchor-block]').forEach(block=>{const rect=block.getBoundingClientRect();if(rect.bottom<0||rect.top>window.innerHeight)return;const distance=Math.abs(rect.top-Math.min(120,window.innerHeight*.18));if(distance<bestDistance){best=block;bestDistance=distance;}});return best;
+};
+const captureReadingOrigin=(blockKey='')=>{const block=readingBlock(blockKey);const rect=block?.getBoundingClientRect();return {path:location.pathname,revision:panel.getAttribute('data-student-page-revision')||'',blockKey:block?.getAttribute('data-student-anchor-block')||blockKey||'',top:rect?.top??null,y:window.scrollY,ts:Date.now()};};
+const cleanAnnotationLocation=()=>{const url=new URL(location.href);url.searchParams.delete('anotacoes');if(url.hash==='#anotacoes')url.hash='';history.replaceState(history.state,'',url.pathname+(url.searchParams.toString()?`?${url.searchParams}`:'')+url.hash);};
+const applyReadingOrigin=(origin,{cleanUrl=false}={})=>{
+  if(!origin)return;panel.open=false;
+  const restore=()=>{const block=readingBlock(origin.blockKey||'');if(block&&Number.isFinite(origin.top)){const delta=block.getBoundingClientRect().top-origin.top;if(Math.abs(delta)>.5)window.scrollBy(0,delta);}else if(Number.isFinite(origin.y))window.scrollTo(0,origin.y);if(cleanUrl)cleanAnnotationLocation();};
+  window.requestAnimationFrame(()=>window.requestAnimationFrame(restore));
+};
+const saveReadingOrigin=origin=>{if(!origin)return;try{sessionStorage.setItem(readingStorageKey,JSON.stringify(origin));}catch(_){}};
+const restoreSavedReadingOrigin=()=>{let saved=null;try{saved=JSON.parse(sessionStorage.getItem(readingStorageKey)||'null');sessionStorage.removeItem(readingStorageKey);}catch(_){saved=null;}if(!saved||saved.path!==location.pathname||Date.now()-Number(saved.ts||0)>120000)return;const revision=panel.getAttribute('data-student-page-revision')||'';if(saved.revision&&revision&&saved.revision!==revision&& !saved.blockKey)return;applyReadingOrigin(saved,{cleanUrl:true});};
+restoreSavedReadingOrigin();
 
 const captureSelection=()=>{
   const selection=window.getSelection();if(!selection||selection.rangeCount<1||selection.isCollapsed)return null;
@@ -87,10 +103,11 @@ const fillCompose=(anchor,annotationId=0)=>{
   const preview=compose.querySelector('[data-anchor-preview]');if(preview)preview.textContent=anchor.exact;
   const bodyWrap=compose.querySelector('[data-inline-note-body]'),body=bodyWrap?.querySelector('textarea');if(bodyWrap)bodyWrap.hidden=isRelink;if(body)body.disabled=isRelink;
   const submit=compose.querySelector('[data-inline-note-submit]');if(submit)submit.textContent=isRelink?'Confirmar reassociação':'Adicionar anotação';
-  compose.hidden=false;panel.open=true;compose.scrollIntoView({block:'nearest',behavior:'smooth'});if(!isRelink)window.setTimeout(()=>body?.focus(),80);
+  compose.hidden=false;panel.open=true;const sheet=panel.querySelector('.student-notes-sheet');if(sheet)sheet.scrollTo({top:Math.max(0,compose.offsetTop-20),behavior:'smooth'});if(!isRelink)window.setTimeout(()=>body?.focus({preventScroll:true}),80);
 };
 const activateSelectionAction=()=>{
   const anchor=pendingAnchor;if(!anchor)return false;
+  readingOrigin=captureReadingOrigin(anchor.blockKey);
   fillCompose(anchor,reanchorId);action.hidden=true;setSelectionActive(false);reanchorHint.hidden=true;window.getSelection()?.removeAllRanges();return true;
 };
 // On Android/iOS/WebKit, focusing the action button can collapse the native text selection
@@ -98,7 +115,8 @@ const activateSelectionAction=()=>{
 action.addEventListener('pointerdown',event=>{event.preventDefault();event.stopPropagation();activateSelectionAction();});
 action.addEventListener('touchstart',event=>{event.preventDefault();event.stopPropagation();activateSelectionAction();},{passive:false});
 action.addEventListener('click',event=>{event.preventDefault();activateSelectionAction();});
-compose?.querySelector('[data-inline-note-cancel]')?.addEventListener('click',()=>{compose.hidden=true;reanchorId=0;reanchorHint.hidden=true;const body=compose.querySelector('textarea');if(body){body.disabled=false;body.value='';}});
+compose?.addEventListener('submit',()=>{saveReadingOrigin(readingOrigin||captureReadingOrigin(compose.querySelector('[data-anchor-block]')?.value||''));});
+compose?.querySelector('[data-inline-note-cancel]')?.addEventListener('click',()=>{compose.hidden=true;reanchorId=0;reanchorHint.hidden=true;const body=compose.querySelector('textarea');if(body){body.disabled=false;body.value='';}const origin=readingOrigin;readingOrigin=null;applyReadingOrigin(origin);});
 
 panel.querySelectorAll('[data-annotation-reanchor]').forEach(button=>button.addEventListener('click',()=>{
   reanchorId=Number(button.getAttribute('data-annotation-reanchor')||0);if(!reanchorId)return;
