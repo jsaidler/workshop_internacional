@@ -94,7 +94,7 @@ test('saving an inline annotation stays on the same page and reading position',a
   await compose.locator('textarea[name="body"]').fill('Minha nota sem reload');
   await compose.locator('[data-inline-note-submit]').click();
   await expect(compose).toBeHidden();
-  await expect(page.locator('[data-annotation-item="4"]')).toContainText('Minha nota sem reload');
+  await expect(page.locator('[data-annotation-item="4"] textarea[name="body"]')).toHaveValue('Minha nota sem reload');
   await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="4"]')).toContainText('parágrafo foi alterado');
   const after=await block.evaluate(element=>({top:element.getBoundingClientRect().top,y:window.scrollY,url:location.href}));
   expect(after.url).toBe(before.url);
