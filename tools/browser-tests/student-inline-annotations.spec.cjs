@@ -25,11 +25,14 @@ test('annotations relink to stable text and preserve altered or removed sources'
   await expect(page.locator('[data-student-notes-panel]')).toHaveAttribute('open','');
 });
 
-test('selecting source text opens an annotation composer with redundant anchors',async({page})=>{
+test('selecting source text opens an annotation composer even if focus collapses the native selection before click',async({page})=>{
   await page.goto(url,{waitUntil:'networkidle'});
   await selectSubstring(page,'[data-student-anchor-block="introducao:p:2"]','trecho permanece disponível');
   const action=page.locator('.student-selection-note-action');
-  await expect(action).toBeVisible();await expect(action).toHaveText('Anotar seleção');await action.click();
+  await expect(action).toBeVisible();await expect(action).toHaveText('Anotar seleção');
+  await page.evaluate(()=>{window.getSelection()?.removeAllRanges();document.dispatchEvent(new Event('selectionchange'));});
+  await expect(action).toBeVisible();
+  await action.click();
   const compose=page.locator('[data-inline-note-compose]');
   await expect(compose).toBeVisible();
   await expect(compose.locator('[data-anchor-preview]')).toHaveText('trecho permanece disponível');

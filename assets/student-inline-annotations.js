@@ -89,8 +89,15 @@ const fillCompose=(anchor,annotationId=0)=>{
   const submit=compose.querySelector('[data-inline-note-submit]');if(submit)submit.textContent=isRelink?'Confirmar reassociação':'Adicionar anotação';
   compose.hidden=false;panel.open=true;compose.scrollIntoView({block:'nearest',behavior:'smooth'});if(!isRelink)window.setTimeout(()=>body?.focus(),80);
 };
-action.addEventListener('pointerdown',event=>event.stopPropagation());
-action.addEventListener('click',()=>{if(!pendingAnchor)return;const anchor=pendingAnchor;fillCompose(anchor,reanchorId);action.hidden=true;setSelectionActive(false);reanchorHint.hidden=true;window.getSelection()?.removeAllRanges();});
+const activateSelectionAction=()=>{
+  const anchor=pendingAnchor;if(!anchor)return false;
+  fillCompose(anchor,reanchorId);action.hidden=true;setSelectionActive(false);reanchorHint.hidden=true;window.getSelection()?.removeAllRanges();return true;
+};
+// On Android/iOS/WebKit, focusing the action button can collapse the native text selection
+// before `click`. Consume the already-captured plain-data anchor on pointerdown instead.
+action.addEventListener('pointerdown',event=>{event.preventDefault();event.stopPropagation();activateSelectionAction();});
+action.addEventListener('touchstart',event=>{event.preventDefault();event.stopPropagation();activateSelectionAction();},{passive:false});
+action.addEventListener('click',event=>{event.preventDefault();activateSelectionAction();});
 compose?.querySelector('[data-inline-note-cancel]')?.addEventListener('click',()=>{compose.hidden=true;reanchorId=0;reanchorHint.hidden=true;const body=compose.querySelector('textarea');if(body){body.disabled=false;body.value='';}});
 
 panel.querySelectorAll('[data-annotation-reanchor]').forEach(button=>button.addEventListener('click',()=>{

@@ -3,6 +3,13 @@
 
 const assetQuery=(()=>{try{return new URL(document.currentScript?.src||location.href).search}catch{return ''}})();
 import(`/assets/ui-core.js${assetQuery}`).catch(()=>{});
+if(document.querySelector('[data-student-notes-panel]')&&!document.querySelector('[data-student-inline-annotations-script]')){
+  const notesScript=document.createElement('script');
+  notesScript.src=`/assets/student-inline-annotations.js${assetQuery}`;
+  notesScript.async=false;
+  notesScript.dataset.studentInlineAnnotationsScript='1';
+  document.head.append(notesScript);
+}
 if(!document.querySelector('[data-ui-core-css]')){
   const uiCore=document.createElement('style');
   uiCore.dataset.uiCoreCss='1';

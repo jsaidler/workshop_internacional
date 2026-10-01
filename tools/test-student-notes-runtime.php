@@ -30,4 +30,7 @@ must_notes_runtime(str_contains($html,'data-student-annotation-data'),'client an
 must_notes_runtime(str_contains($html,'Minha observação anterior'),'legacy annotations were lost during the migration');
 must_notes_runtime(!str_contains($html,'<section data-cms-section="introducao" data-student-note-context="introducao" id="nota-trecho-introducao"><h2 data-student-anchor-block="introducao:h2:0">Introdução</h2><p data-student-anchor-block="introducao:p:1">Conteúdo didático.</p><form'),'note form is still glued to the section body');
 must_notes_runtime(str_contains($html,'anotacoes=1')&&str_contains($html,'#anotacoes'),'note save does not return to the open notebook');
+$index=(string)file_get_contents(dirname(__DIR__).'/index.php');$publicJs=(string)file_get_contents(dirname(__DIR__).'/assets/public.js');
+must_notes_runtime(!str_contains($index,'student-inline-annotations.js'),'annotation runtime is injected into CMS HTML and will be stripped by the sanitizer');
+must_notes_runtime(str_contains($publicJs,"document.querySelector('[data-student-notes-panel]')")&&str_contains($publicJs,'student-inline-annotations.js'),'public shell does not load the annotation runtime for material pages');
 echo "student-notes-runtime: ok\n";
