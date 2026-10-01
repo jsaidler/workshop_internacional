@@ -43,6 +43,8 @@ test('selecting source text opens an annotation composer with redundant anchors'
 
 test('orphaned notes can be reassociated without changing their body',async({page})=>{
   await page.goto(url,{waitUntil:'networkidle'});
+  await page.locator('.student-notes-entry a').click();
+  await expect(page.locator('[data-student-notes-panel]')).toHaveAttribute('open','');
   await page.locator('[data-annotation-reanchor="2"]').click();
   await expect(page.locator('.student-reanchor-hint')).toBeVisible();
   await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado');
