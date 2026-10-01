@@ -186,6 +186,6 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
     $client=[];foreach($annotations as $note)$client[]=['id'=>(int)$note['id'],'anchorType'=>(string)$note['anchor_type'],'blockKey'=>(string)$note['block_key'],'sectionKey'=>(string)$note['section_key'],'exact'=>(string)$note['quote_exact'],'prefix'=>(string)$note['quote_prefix'],'suffix'=>(string)$note['quote_suffix'],'start'=>$note['start_offset']===null?null:(int)$note['start_offset'],'end'=>$note['end_offset']===null?null:(int)$note['end_offset'],'sourceBlockHash'=>(string)$note['source_block_hash']];
     $json=json_encode($client,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT)?:'[]';
     $panel.='<script type="application/json" data-student-annotation-data>'.$json.'</script></div></details>';
-    $document['html']=$entry.'<div data-student-annotations-root>'.$out.'</div>'.$panel;
+    $document['html']=$entry.$out.$panel;
     return $document;
 }
