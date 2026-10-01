@@ -29,6 +29,29 @@ Cada processamento possui:
 
 As etapas podem ser adicionadas, removidas e reordenadas. O processamento salvo pode ser iniciado diretamente no modo laboratório ou aplicado a um registro do Caderno.
 
+## Padrões do workshop
+
+O gerenciador oferece processamentos padrão como pontos de partida canônicos do workshop. Eles não são objetos compartilhados mutáveis: ao escolher um padrão, o sistema cria uma cópia pertencente ao aluno. A partir daí ela é um processamento salvo normal, que pode ser editado sem alterar o padrão de origem.
+
+Os padrões iniciais representam as duas rotas de branqueamento trabalhadas na plataforma:
+
+- **Positivo direto — FeCl₃ + amônia:** primeira revelação → lavagem → cloreto férrico → lavagem → banho de amônia → lavagem → segunda revelação → lavagem final → secagem.
+- **Positivo direto — peracética:** primeira revelação → lavagem → solução peroxiacética → lavagem → segunda revelação → lavagem final → secagem.
+
+Contrato de tempo desses padrões:
+
+- todas as lavagens: **1 min**;
+- banho de branqueamento: **1 min 30 s**;
+- primeira e segunda revelações: sem tempo padrão fixo;
+- banho de amônia: sem tempo padrão fixo;
+- secagem: sem tempo padrão fixo.
+
+Os tempos não fixados permanecem deliberadamente como etapas livres no executor: o padrão não deve inventar uma duração para operações cujo ponto final depende da imagem ou do procedimento adotado.
+
+Ao copiar um padrão, o aluno escolhe **Parodinal** ou **Brewed Caffenol** como revelador das etapas de revelação. Quantidade, diluição, temperatura, agitação e duração continuam editáveis no processamento copiado.
+
+Quando o padrão é escolhido a partir de um registro do Caderno, primeiro é criada a cópia do aluno e em seguida o sistema aplica um snapshot dessa cópia ao registro. Alterações posteriores no padrão canônico ou no processamento salvo não reescrevem o plano já associado à fotografia.
+
 ## Integração com o Caderno
 
 A tela de processamento do Caderno mantém o modo livre existente. Ele continua adequado quando o aluno quer construir o processo conforme trabalha.
