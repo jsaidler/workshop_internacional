@@ -6,6 +6,7 @@ body.student-page .student-process-edit-form .form-field[hidden],
 body.student-page .student-process-edit-form input[hidden],
 body.student-page .student-process-edit-form select[hidden],
 body.student-page .student-process-edit-form textarea[hidden],
+body.student-page .student-process-decision [hidden],
 body.student-page .student-page-heading [hidden],
 body.student-page .student-compare-selection[hidden],
 body.student-page .student-compare-pick[hidden]{display:none}
