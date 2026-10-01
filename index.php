@@ -28,7 +28,10 @@ try{
             }
         }
         if($student)student_page_prefill_for_page($db,$student,$page,$document);
-        if($student&&$materialContext)$document=student_material_render_notebook($db,$student,$page,$document);
+        if($student&&$materialContext){
+            $document=student_material_render_notebook($db,$student,$page,$document);
+            $document['html'].='<script defer src="/assets/student-inline-annotations.js?v='.h(cms_public_asset_version()).'"></script>';
+        }
         try{analytics_record_pageview($db,$activity,$page,$locale);}catch(Throwable $analyticsError){error_log('Analytics pageview failed: '.$analyticsError->getMessage());}
         cms_render_public_page($activity,$page,$document,false);exit;
     }
