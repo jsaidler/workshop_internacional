@@ -1,5 +1,6 @@
 (()=>{
 'use strict';
+const replaceLabelText=(control,text)=>{const label=control?.closest('.form-field');if(!label)return;const node=[...label.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim());if(node)node.textContent=text;};
 const form=document.querySelector('.student-process-step-form');
 if(form){
   const params=new URLSearchParams(window.location.search),testId=params.get('id');
@@ -20,6 +21,7 @@ if(form){
     });
   }
 
+  const preset=form.querySelector('select[name="saved_preparation_id"]');if(preset)replaceLabelText(preset,'Predefinição de revelação');
   const fieldset=form.querySelector('.choice-field');
   const radios=[...form.querySelectorAll('[data-stage-choice]')];
   if(fieldset&&radios.length){
@@ -35,5 +37,13 @@ if(form){
 
   const nowLabel=now?.querySelector('.student-process-now-label');if(nowLabel)nowLabel.textContent='Sugestão para continuar';
   const primary=form.querySelector('.student-sticky-action .button-primary');if(primary&&primary.textContent.includes('Registrar etapa'))primary.textContent='Adicionar ao processo →';
+}
+
+const editForm=document.querySelector('.student-developer-edit-form');
+if(editForm){
+  const preset=editForm.querySelector('select[name="saved_preparation_id"]');if(preset)replaceLabelText(preset,'Predefinição de revelação');
+  const developer=editForm.querySelector('[data-developer-select]'),inventory=editForm.querySelector('select[name="inventory_item_id"]'),amount=editForm.querySelector('input[name="inventory_amount"]');
+  const syncInventory=()=>{const fresh=developer?.selectedOptions[0]?.dataset.preparationMode==='fresh';[inventory,amount].forEach(control=>{if(!control)return;control.disabled=fresh;control.closest('.form-field')?.toggleAttribute('hidden',fresh);});};
+  developer?.addEventListener('change',syncInventory);syncInventory();
 }
 })();
