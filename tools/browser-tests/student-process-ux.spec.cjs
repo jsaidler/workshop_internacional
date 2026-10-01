@@ -20,16 +20,40 @@ test('process log is editable and branching requires an explicit decision',async
   await expect(primary).toBeEnabled();
   await expect(page.locator('input[name="stage_key"][value="stop_after_first"]')).toBeChecked();
   await expect(page.locator('[data-stage-fields="simple"]')).toBeVisible();
+  const inventory=page.locator('select[name="inventory_item_id_simple"]');
+  const amount=page.locator('input[name="inventory_amount_simple"]');
+  await expect(inventory).toBeVisible();
+  await expect(amount).toBeHidden();
+  await inventory.selectOption('4');
+  await expect(amount).toBeVisible();
 
-  await page.locator('.student-process-other-stage summary').click();
-  await page.locator('.student-process-other-stage select').selectOption('ferric');
-  await expect(page.locator('input[name="stage_key"][value="ferric"]')).toBeChecked();
-  await expect(page.locator('.student-process-now h2')).toHaveText('Cloreto férrico');
+  const other=page.locator('.student-process-other-stage');
+  const otherSelect=other.locator('select');
+  await other.locator('summary').click();
+  await otherSelect.selectOption('dry');
+  await expect(page.locator('input[name="stage_key"][value="dry"]')).toBeChecked();
+  await expect(page.locator('.student-process-now h2')).toHaveText('Secagem');
+  await expect(guided.first()).toBeHidden();
+  await expect(other.locator('summary')).toHaveText('Alterar etapa');
+  await expect(inventory).toBeHidden();
+  await expect(amount).toBeHidden();
+  await expect(page.locator('[data-lab-timer]')).toBeHidden();
+  await expect(page.locator('input[name="duration_simple"]').locator('xpath=..')).toContainText('Tempo de secagem');
+
+  await other.locator('summary').click();
+  await otherSelect.selectOption('__suggested__');
+  await expect(guided.first()).toBeVisible();
+  await expect(primary).toBeDisabled();
+  await expect(page.locator('.student-process-now h2')).toHaveText('Escolha como continuar');
 });
 
-test('developer catalog keeps course developers prominent without removing the wider catalog',async({page})=>{
+test('developer catalog keeps course developers prominent and explains custom developer input',async({page})=>{
   await page.goto(base,{waitUntil:'networkidle'});
+  await page.locator('.student-process-other-stage summary').click();
+  await page.locator('.student-process-other-stage select').selectOption('second_development');
   const select=page.locator('[data-developer-select]');
+  await expect(select).toBeVisible();
+  await expect(select).toBeEnabled();
   await expect(select.locator('optgroup')).toHaveCount(3);
   await expect(select.locator('optgroup').nth(0)).toHaveAttribute('label','Pesquisa / curso');
   await expect(select.locator('optgroup').nth(0).locator('option')).toHaveCount(2);
@@ -37,4 +61,9 @@ test('developer catalog keeps course developers prominent without removing the w
   await expect(select.locator('option[value="d76"]')).toHaveCount(1);
   await expect(select.locator('optgroup').nth(2)).toHaveAttribute('label','Personalizado');
   await expect(select.locator('option[value="other"]')).toHaveCount(1);
+  await select.selectOption('other');
+  const custom=page.locator('[data-custom-developer]');
+  await expect(custom).toBeVisible();
+  await expect(custom).toContainText('Outro revelador');
+  await expect(custom).toContainText('Preencha somente quando “Outro” estiver selecionado.');
 });

@@ -35,3 +35,38 @@ for(const [device,viewport] of Object.entries(authViewports)){
     });
   }
 }
+
+for(const [device,viewport] of Object.entries(viewports)){
+  test(`mechanics visual audit ${device} drying`,async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-process-ux.html?id=17',{waitUntil:'networkidle'});
+    await page.locator('.student-process-other-stage summary').click();
+    await page.locator('.student-process-other-stage select').selectOption('dry');
+    await expect(page.locator('input[name="inventory_amount_simple"]')).toBeHidden();
+    await expect(page.locator('[data-lab-timer]')).toBeHidden();
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow,'drying horizontal overflow').toBeLessThanOrEqual(1);
+    await page.screenshot({path:`student-visual-audit/${device}/mechanics-drying.png`,fullPage:true,animations:'disabled'});
+  });
+
+  test(`mechanics visual audit ${device} compare mode`,async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-notebook-compare.html',{waitUntil:'networkidle'});
+    await page.locator('[data-compare-mode-open]').click();
+    await page.locator('.student-compare-pick input').nth(0).check();
+    await page.locator('.student-compare-pick input').nth(1).check();
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow,'compare horizontal overflow').toBeLessThanOrEqual(1);
+    await page.screenshot({path:`student-visual-audit/${device}/mechanics-compare.png`,fullPage:true,animations:'disabled'});
+  });
+
+  test(`mechanics visual audit ${device} material notes`,async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-material-notes.html',{waitUntil:'networkidle'});
+    await page.locator('.student-notes-entry a').click();
+    await expect(page.locator('#anotacoes')).toHaveAttribute('open','');
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow,'notes horizontal overflow').toBeLessThanOrEqual(1);
+    await page.screenshot({path:`student-visual-audit/${device}/mechanics-notes.png`,fullPage:true,animations:'disabled'});
+  });
+}

@@ -1,3 +1,15 @@
+body.student-page .student-process-stage-fields .form-field[hidden],
+body.student-page .student-process-stage-fields input[hidden],
+body.student-page .student-process-stage-fields select[hidden],
+body.student-page .student-process-stage-fields textarea[hidden],
+body.student-page .student-process-edit-form .form-field[hidden],
+body.student-page .student-process-edit-form input[hidden],
+body.student-page .student-process-edit-form select[hidden],
+body.student-page .student-process-edit-form textarea[hidden],
+body.student-page .student-process-decision [hidden],
+body.student-page .student-page-heading [hidden],
+body.student-page .student-compare-selection[hidden],
+body.student-page .student-compare-pick[hidden]{display:none}
 .student-process-log{margin:0 0 30px;border:1px solid var(--student-border);background:var(--student-panel-quiet)}
 .student-process-log>summary{min-height:48px;padding:0 16px;display:flex;align-items:center;color:var(--text);font-size:13px;font-weight:600;cursor:pointer}
 .student-process-log .student-process-summary{margin:0;border:0;border-top:1px solid var(--student-border)}
@@ -31,6 +43,14 @@
 .student-simple-row-actions form{margin:0}
 .student-tool-workspace>.student-section-heading{margin-bottom:24px}
 .student-tool-workspace>.student-step-fixed+form{margin-top:24px}
+.student-compare-selection{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 18px;padding:12px 14px;border:1px solid var(--student-border);background:var(--student-panel-quiet)}
+.student-compare-selection>span{font-size:13px;font-weight:600}
+.student-compare-selection>div{display:flex;gap:8px;flex-wrap:wrap}
+.student-compare-pick{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font:600 10px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.student-compare-pick input{width:18px;height:18px;margin:0;accent-color:var(--focus)}
+.student-compare-mode .student-process-card{outline:1px solid transparent}
+.student-compare-mode .student-process-card:has(.student-compare-pick input:checked){outline-color:var(--focus)}
+.student-compare-mode .student-process-card-main{cursor:pointer}
 @media(max-width:760px){
   .student-process-log{margin-bottom:24px}
   .student-process-log .student-process-summary li{grid-template-columns:minmax(0,1fr) auto;padding:14px 12px}
@@ -44,4 +64,7 @@
   .student-process-edit-form .student-sticky-action .button{width:100%}
   .student-step-danger>div{padding:15px}
   .student-simple-row-actions{justify-content:flex-start}
+  .student-compare-selection{align-items:stretch;flex-direction:column}
+  .student-compare-selection>div{display:grid;grid-template-columns:1fr 1fr}
+  .student-compare-selection .button{width:100%}
 }

@@ -1,0 +1,1 @@
+Pendências deliberadamente não promovidas a UI nesta rodada: integrar referências de calibração a algum fluxo real antes de dar mais destaque; evitar novas ferramentas isoladas sem destino para o dado produzido; continuar auditoria visual sobre estados reais renderizados após publicação.
