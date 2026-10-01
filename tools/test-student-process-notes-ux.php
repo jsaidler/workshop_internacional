@@ -24,7 +24,8 @@ $updateOffset=strpos($domain,'function student_process_update_step');must_proces
 must_process_notes(str_contains($hardening,'student_process_add_flexible_step'),'process creation still delegates to the rigid legacy stage adder');
 must_process_notes(str_contains($experience,'student_process_next_choices($steps)')&&str_contains($experience,'student_process_stage_catalog()'),'next-step suggestion no longer exposes alternative valid stages');
 must_process_notes(str_contains($editor,'Salvar alterações')&&str_contains($editor,'Remover esta etapa e as seguintes'),'stage editor does not separate ordinary editing from destructive sequence correction');
-must_process_notes(str_contains($processJs,'student-process-step-edit')&&str_contains($processJs,'Sugestão para continuar')&&str_contains($processJs,'student-status-reviewed'),'process screen still behaves as a one-way or unlocked wizard');
+must_process_notes(str_contains($processJs,'student-process-step-edit')&&str_contains($processJs,'Registrar outra etapa')&&str_contains($processJs,'Próxima decisão')&&str_contains($processJs,'student-status-reviewed'),'process screen still behaves as a one-way or unlocked wizard');
+must_process_notes(str_contains($processJs,"primary.label='Pesquisa / curso'")&&str_contains($processJs,"common.label='Outros reveladores'")&&str_contains($processJs,"custom.label='Personalizado'"),'developer catalog is not grouped by relevance');
 must_process_notes(str_contains($index,'student_material_render_notebook')&&!str_contains($index,'student_material_inject_notes'),'material still injects note editors into content sections');
 must_process_notes(str_contains($notes,'student-notes-panel')&&!str_contains($notes,"appendChild(\$details)"),'notes are not centralized in a page notebook');
 must_process_notes(str_contains($notes,"'pagina'=>['key'=>'pagina'")&&str_contains($noteEndpoint,"\$sectionKey!=='pagina'"),'annotations are still forced to belong to a CMS section');
