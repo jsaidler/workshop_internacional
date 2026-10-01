@@ -23,7 +23,7 @@
 .cms-public .student-note-item header small{color:var(--muted);font-size:11px;line-height:1.4}
 .cms-public .student-note-item header small[data-anchor-state=altered],.cms-public .student-note-item header small[data-anchor-state=removed]{color:color-mix(in srgb,#e0a45d 78%,var(--text))}
 .cms-public .student-note-item form,.cms-public .student-note-new,.cms-public .student-inline-note-compose{display:grid;gap:10px}
-.cms-public .student-inline-note-compose[hidden]{display:none}
+.cms-public .student-inline-note-compose[hidden],.cms-public .student-inline-note-compose [data-inline-note-body][hidden]{display:none}
 .cms-public .student-notes-panel textarea,.cms-public .student-notes-panel select{width:100%;border:1px solid var(--line);border-radius:0;background:var(--surface);color:var(--text);font:400 14px/1.55 var(--body)}
 .cms-public .student-notes-panel textarea{min-height:112px;resize:vertical;padding:12px 13px}
 .cms-public .student-notes-panel select{min-height:44px;padding:0 12px}
