@@ -54,7 +54,7 @@
   .cms-public .student-notes-sheet{padding:18px 16px calc(30px + env(safe-area-inset-bottom,0px))}
   .cms-public .student-notes-head h2{font-size:28px}
   .cms-public .student-material-note-actions .button,.cms-public .student-note-new .button{min-height:44px}
-  .cms-public .student-selection-note-action.is-touch-selection{left:12px!important;right:12px!important;top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:calc(100% - 24px);min-height:50px;padding:0 18px;text-align:center;font-size:11px}
+  .cms-public .student-selection-note-action.is-touch-selection{left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:calc(100% - 24px);min-height:50px;padding:0 18px;text-align:center;font-size:11px}
   .student-selection-active .cms-public .student-notes-panel:not([open])>summary{visibility:hidden;pointer-events:none}
   .cms-public .student-reanchor-hint{bottom:calc(76px + env(safe-area-inset-bottom,0px));width:calc(100vw - 24px);justify-content:space-between}
 }
