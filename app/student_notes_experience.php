@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 /**
  * Material annotations live in one notebook layer for the page.
- * They may still reference a section, but the editor is not injected into every
- * CMS section. This keeps study content readable and makes annotations a single
- * predictable destination.
+ * Notes may be about the whole page or linked to a section, but the editor is
+ * never injected into the CMS section itself.
  */
 function student_notes_return_url(): string {
     $uri=(string)($_SERVER['REQUEST_URI']??'/aluno/');
@@ -38,18 +37,19 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
     $previous=libxml_use_internal_errors(true);
     $dom=new DOMDocument('1.0','UTF-8');
     $dom->loadHTML('<?xml encoding="utf-8" ?><div id="student-notes-root">'.$html.'</div>',LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);
-    $xpath=new DOMXPath($dom);$sections=[];$index=0;
+    $xpath=new DOMXPath($dom);$sections=['pagina'=>['key'=>'pagina','title'=>'Página inteira','whole_page'=>true]];$index=0;
     foreach(iterator_to_array($xpath->query('//*[@data-cms-section]')?:[]) as $section){
         if(!$section instanceof DOMElement)continue;
         $key=activity_slug($section->getAttribute('data-cms-section'));if($key==='')continue;
-        $sections[$key]=['key'=>$key,'title'=>student_notes_section_title($xpath,$section,$index++)];
+        $sections[$key]=['key'=>$key,'title'=>student_notes_section_title($xpath,$section,$index++),'whole_page'=>false];
         $section->setAttribute('data-student-note-context',$key);
+        if(!$section->hasAttribute('id'))$section->setAttribute('id','nota-trecho-'.$key);
     }
 
     $root=$dom->getElementById('student-notes-root');$out='';
     if($root)foreach(iterator_to_array($root->childNodes) as $child)$out.=$dom->saveHTML($child);
     libxml_clear_errors();libxml_use_internal_errors($previous);
-    if(!$sections){$document['html']=$out;return $document;}
+    if(count($sections)===1&&$html===''){$document['html']=$out;return $document;}
 
     $returnTo=student_notes_return_url();$visibleNotes=[];
     foreach($sections as $key=>$section)if(isset($notes[$key]))$visibleNotes[$key]=$notes[$key];
@@ -61,8 +61,8 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
 
     if($visibleNotes){
         $panel.='<div class="student-notes-list">';
-        foreach($visibleNotes as $key=>$note){$title=(string)($sections[$key]['title']??$key);
-            $panel.='<article class="student-note-item"><header><span>Trecho</span><strong>'.h($title).'</strong></header>';
+        foreach($visibleNotes as $key=>$note){$meta=$sections[$key]??['title'=>$key,'whole_page'=>false];$title=(string)$meta['title'];$context=!empty($meta['whole_page'])?'Geral':'Trecho';
+            $panel.='<article class="student-note-item"><header><span>'.h($context).'</span><strong>'.h($title).'</strong></header>';
             $panel.='<form method="post" action="/aluno/material-anotacao.php">'.student_notes_hidden_fields((int)$page['id'],$key,$returnTo)
                 .'<textarea name="body" rows="5" maxlength="5000" aria-label="Anotação sobre '.h($title).'">'.h((string)$note['body']).'</textarea>'
                 .'<div class="student-material-note-actions"><button class="button" type="submit">Salvar</button>'
@@ -78,9 +78,9 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
             .'<input type="hidden" name="_csrf" value="'.h(csrf_token('student-material-note')).'">'
             .'<input type="hidden" name="page_id" value="'.(int)$page['id'].'">'
             .'<input type="hidden" name="return_to" value="'.h($returnTo).'">'
-            .'<label>Vincular ao trecho<select name="section_key">';
+            .'<label>Contexto<select name="section_key">';
         foreach($freeSections as $section)$panel.='<option value="'.h((string)$section['key']).'">'.h((string)$section['title']).'</option>';
-        $panel.='</select></label><label>Anotação<textarea name="body" rows="5" maxlength="5000" placeholder="Registre aqui o que você quer guardar deste trecho."></textarea></label>'
+        $panel.='</select></label><label>Anotação<textarea name="body" rows="5" maxlength="5000" placeholder="Escreva o que você quer guardar."></textarea></label>'
             .'<button class="button" type="submit">Adicionar anotação</button></form>';
     }
 
