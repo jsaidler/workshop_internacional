@@ -9,6 +9,8 @@ $courses=(string)file_get_contents($root.'/aluno/cursos.php');
 $notebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $record=(string)file_get_contents($root.'/aluno/teste.php');
 $bench=(string)file_get_contents($root.'/aluno/ferramentas.php');
+$processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
+$processRunner=(string)file_get_contents($root.'/aluno/processar.php');
 $experience=(string)file_get_contents($root.'/app/student_experience.php');
 $hardening=(string)file_get_contents($root.'/app/student_workbench_hardening.php');
 
@@ -23,8 +25,12 @@ must_student_workflow(str_contains($experience,"['stage_key']??'')==='dry'"),'dr
 must_student_workflow(str_contains($hardening,'O processamento terminou na secagem. Registre o resultado.'),'server-side processing still permits steps after drying');
 must_student_workflow(str_contains($record,"if(\$stageKey==='dry')")&&str_contains($record,"\$view='review'"),'drying does not send the workflow directly to result');
 must_student_workflow(str_contains($record,'student-process-history')&&str_contains($record,'Desfazer última etapa'),'processing history/correction hierarchy regressed');
-must_student_workflow(str_contains($record,'data-lab-timer'),'processing lost its contextual timer');
-must_student_workflow(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity')&&str_contains($bench,'data-lab-timer'),'workbench sends small tools back to separate pages');
+must_student_workflow(str_contains($shell,'/assets/student-process-entry.js')&&str_contains($processManager,'?test='),'processing lost the contextual path into the reusable laboratory workflow');
+must_student_workflow(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity'),'small exposure tools were sent back to separate pages');
+must_student_workflow(!str_contains($bench,'data-lab-timer')&&str_contains($bench,'/aluno/processamentos.php'),'multi-stage processing regressed to the isolated inline timer');
+must_student_workflow(str_contains($processManager,'student-process-step-list')&&str_contains($processRunner,'data-process-runner'),'multi-stage processing is missing its manager or laboratory execution surface');
 must_student_workflow(str_contains($bench,'Modo de preparo')&&str_contains($bench,'student_experience_recipe_notes'),'recipe quantities and preparation instructions are separated again');
-foreach(['exposicao.php'=>'#exposicao','reciprocidade.php'=>'#reciprocidade','temporizador.php'=>'#temporizador','preparo-solucoes.php'=>'#receitas'] as $file=>$anchor){$source=(string)file_get_contents($root.'/aluno/'.$file);must_student_workflow(str_contains($source,'/aluno/ferramentas.php'.$anchor),'legacy utility route '.$file.' no longer converges to integrated workbench');}
+foreach(['exposicao.php'=>'#exposicao','reciprocidade.php'=>'#reciprocidade','preparo-solucoes.php'=>'#receitas'] as $file=>$anchor){$source=(string)file_get_contents($root.'/aluno/'.$file);must_student_workflow(str_contains($source,'/aluno/ferramentas.php'.$anchor),'legacy utility route '.$file.' no longer converges to integrated workbench');}
+$legacyTimer=(string)file_get_contents($root.'/aluno/temporizador.php');
+must_student_workflow(str_contains($legacyTimer,'/aluno/processamentos.php'),'legacy timer route must converge to the process manager');
 echo "student-workflow-experience: ok\n";
