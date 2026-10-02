@@ -68,7 +68,7 @@
 .student-result-context-grid dd{margin:0;font:600 11px/1.35 var(--mono);text-align:right}
 .student-result-context-grid article>p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
 .student-result-context-grid article>a{display:inline-block;margin-top:14px;color:var(--text);font-size:12px;text-underline-offset:4px}
-.student-result-form{padding:0!important;border:0!important;background:transparent!important}
+.student-result-flow>form.student-result-form{padding:0;border:0;background:transparent}
 .student-field-help,.student-review-help{max-width:760px;margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.55}
 .student-review-help{margin:-4px 0 var(--ux-space-4);font-size:13px}
 
