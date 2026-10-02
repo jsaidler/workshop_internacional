@@ -12,19 +12,15 @@ function student_experience_process_complete(array $steps): bool {
 }
 
 /**
- * Suggested stages come first, but the Caderno remains a laboratory record:
- * the student may register another valid stage instead of being trapped in a
- * hard-coded reversal route.
+ * Manual Caderno entry records facts. It must not infer a mandatory laboratory
+ * sequence from PHP. The administrable stage catalog defines what can be
+ * recorded; a previously associated plan is responsible for showing a planned
+ * next step when one exists.
  */
 function student_experience_next_choices(array $steps): array {
     if(student_experience_process_complete($steps))return [];
-    $suggested=student_process_next_choices($steps);$catalog=student_process_stage_catalog();$out=[];
-    foreach($suggested as $key=>$stage)$out[$key]=$stage+['suggested'=>true];
-    foreach($catalog as $key=>$stage){
-        if(isset($out[$key]))continue;
-        if($key==='first_development'&&$steps)continue;
-        $out[$key]=$stage+['suggested'=>false];
-    }
+    $catalog=student_process_managed_stage_catalog(database(),true);$out=[];
+    foreach($catalog as $key=>$stage)$out[$key]=$stage+['suggested'=>!$steps&&$key==='first_development'];
     return $out;
 }
 
