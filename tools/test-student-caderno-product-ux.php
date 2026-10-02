@@ -31,6 +31,7 @@ must_student_caderno_product_ux(str_contains($bridge,"processEntry='server'")&&!
 
 must_student_caderno_product_ux(str_contains($shell,"\$notebookFeature")&&str_contains($shell,'/assets/student-caderno.css'),'shell does not load the Caderno UX layer');
 foreach(['.student-record-progress','.student-process-path-choice','.student-caderno-plan-card','.student-plan-intent-grid','.student-result-context'] as $selector)must_student_caderno_product_ux(str_contains($css,$selector),'Caderno UX stylesheet is missing '.$selector);
+must_student_caderno_product_ux(str_contains($css,'.student-process-path-options .button-primary,.student-plan-intent-grid .button-primary,.student-plan-resume-actions .button-primary'),'valid processing paths do not preserve equivalent visual hierarchy');
 must_student_caderno_product_ux(str_contains($doc,'exposição → processamento → resultado'),'Caderno canonical document lost the research sequence');
 must_student_caderno_product_ux(str_contains($doc,'inspeção visual humana'),'Caderno canonical document does not require human visual inspection');
 echo "student-caderno-product-ux: ok\n";
