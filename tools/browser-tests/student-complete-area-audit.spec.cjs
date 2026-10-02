@@ -18,10 +18,10 @@ const screens=[
   ['process-plan','student-caderno-product-audit.html?screen=process-plan'],
   ['process-partial','student-caderno-product-audit.html?screen=process-partial'],
   ['process-intent','student-process-intent-audit.html'],
-  ['recording-start','student-secondary-screens-audit.html?screen=recording-start'],
+  ['recording-start','student-recording-states-audit.html?screen=start'],
   ['recording-associated','student-recording-associated-audit.html'],
-  ['recording-partial','student-secondary-screens-audit.html?screen=recording-partial'],
-  ['recording-complete','student-secondary-screens-audit.html?screen=recording-complete'],
+  ['recording-partial','student-recording-states-audit.html?screen=partial'],
+  ['recording-complete','student-recording-states-audit.html?screen=complete'],
   ['result','student-caderno-product-audit.html?screen=result'],
   ['step-editor','student-secondary-screens-audit.html?screen=step-editor'],
   ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
@@ -91,11 +91,15 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('Registrar o processamento realizado',{exact:true})).toBeVisible();
       }
       if(name==='recording-start'){
-        await expect(page.getByText('Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:false})).toBeVisible();
+        await expect(page.getByText('Qual roteiro você usou?',{exact:true})).toBeVisible();
+        await expect(page.getByText('Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:false}).first()).toBeVisible();
       }
       if(name==='recording-associated'){
         await expect(page.getByText('Roteiro associado',{exact:true})).toBeVisible();
+        await expect(page.getByRole('button',{name:'Registrar processo como realizado'})).toBeVisible();
       }
+      if(name==='recording-partial')await expect(page.getByRole('button',{name:'Registrar etapas restantes'})).toBeVisible();
+      if(name==='recording-complete')await expect(page.getByRole('button',{name:'Registrar resultado →'})).toBeVisible();
       if(device==='phone'&&name!=='login'&&name!=='activation-password'&&name!=='material'){
         const mobileChrome=await page.evaluate(()=>{
           const nav=document.querySelector('.student-mobile-nav');const top=document.querySelector('.student-topbar');const main=document.querySelector('.student-main');
