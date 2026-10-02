@@ -1,128 +1,13 @@
 <?php
 declare(strict_types=1);
 
-function student_process_standard_development(int $ei): array {
-    $developerAmount=$ei===400?20:10;
-    return [
-        'developer_key'=>'parodinal',
-        'developer_amount'=>(string)$developerAmount,
-        'water_amount'=>(string)(550-$developerAmount),
-        'temperature'=>'26 °C',
-        'duration'=>'7:00',
-        'agitation'=>'leve',
-    ];
-}
-
-function student_process_standard_caffenol_ei400(): array {
-    return [
-        'developer_key'=>'brewed-caffenol',
-        'temperature'=>'35,7 °C',
-        'duration'=>'5:00',
-        'notes'=>'Brewed Caffenol preparado fresco. Receita de referência para aproximadamente 1 L: 37 g de café torrado e moído extra-forte, 54 g de carbonato de sódio e 20 g de ácido ascórbico; completar com água até 1 L.',
-    ];
-}
-
-function student_process_standard_reused_development(array $development): array {
-    $development['reuse_source_stage_key']='first_development';
-    $existing=trim((string)($development['notes']??''));
-    $reuse='Reutilizar o mesmo banho de revelador da primeira revelação; não preparar uma nova solução.';
-    $development['notes']=$existing!==''?$existing.' '.$reuse:$reuse;
-    return $development;
-}
-
+/**
+ * Public workshop standards are persisted, versioned domain data.
+ * This compatibility layer keeps the student-facing API stable while removing
+ * recipes and route definitions from PHP source code.
+ */
 function student_process_standard_catalog(): array {
-    $ei200=student_process_standard_development(200);
-    $ei400=student_process_standard_development(400);
-    $caffenol400=student_process_standard_caffenol_ei400();
-    $ei200Second=student_process_standard_reused_development($ei200);
-    $ei400Second=student_process_standard_reused_development($ei400);
-    $caffenol400Second=student_process_standard_reused_development($caffenol400);
-    return [
-        'positive-ferric-ammonia-ei200'=>[
-            'name'=>'Positivo direto — Parodinal EI 200 — FeCl₃ + amônia',
-            'description'=>'Parodinal 10 ml + água até 550 ml, 26 °C, 7 min e agitação leve. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e cloreto férrico por 1 min 30 s.',
-            'steps'=>[
-                ['stage_key'=>'first_development']+$ei200,
-                ['stage_key'=>'wash_after_first','duration'=>'1:00'],
-                ['stage_key'=>'ferric','duration'=>'1:30'],
-                ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
-                ['stage_key'=>'ammonia','duration'=>''],
-                ['stage_key'=>'wash_after_ammonia','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$ei200Second,
-                ['stage_key'=>'final_wash','duration'=>'1:00'],
-                ['stage_key'=>'dry','duration'=>''],
-            ],
-        ],
-        'positive-ferric-ammonia-ei400'=>[
-            'name'=>'Positivo direto — Parodinal EI 400 — FeCl₃ + amônia',
-            'description'=>'Parodinal 20 ml + água até 550 ml, 26 °C, 7 min e agitação leve. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e cloreto férrico por 1 min 30 s.',
-            'steps'=>[
-                ['stage_key'=>'first_development']+$ei400,
-                ['stage_key'=>'wash_after_first','duration'=>'1:00'],
-                ['stage_key'=>'ferric','duration'=>'1:30'],
-                ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
-                ['stage_key'=>'ammonia','duration'=>''],
-                ['stage_key'=>'wash_after_ammonia','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$ei400Second,
-                ['stage_key'=>'final_wash','duration'=>'1:00'],
-                ['stage_key'=>'dry','duration'=>''],
-            ],
-        ],
-        'positive-peracetic-ei200'=>[
-            'name'=>'Positivo direto — Parodinal EI 200 — peracética',
-            'description'=>'Parodinal 10 ml + água até 550 ml, 26 °C, 7 min e agitação leve. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e branqueamento peracético por 1 min 30 s.',
-            'steps'=>[
-                ['stage_key'=>'first_development']+$ei200,
-                ['stage_key'=>'wash_after_first','duration'=>'1:00'],
-                ['stage_key'=>'peracetic','duration'=>'1:30'],
-                ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$ei200Second,
-                ['stage_key'=>'final_wash','duration'=>'1:00'],
-                ['stage_key'=>'dry','duration'=>''],
-            ],
-        ],
-        'positive-peracetic-ei400'=>[
-            'name'=>'Positivo direto — Parodinal EI 400 — peracética',
-            'description'=>'Parodinal 20 ml + água até 550 ml, 26 °C, 7 min e agitação leve. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e branqueamento peracético por 1 min 30 s.',
-            'steps'=>[
-                ['stage_key'=>'first_development']+$ei400,
-                ['stage_key'=>'wash_after_first','duration'=>'1:00'],
-                ['stage_key'=>'peracetic','duration'=>'1:30'],
-                ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$ei400Second,
-                ['stage_key'=>'final_wash','duration'=>'1:00'],
-                ['stage_key'=>'dry','duration'=>''],
-            ],
-        ],
-        'positive-ferric-ammonia-ei400-caffenol'=>[
-            'name'=>'Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia',
-            'description'=>'Brewed Caffenol fresco, EI 400, 35,7 °C e 5 min. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e cloreto férrico por 1 min 30 s.',
-            'steps'=>[
-                ['stage_key'=>'first_development']+$caffenol400,
-                ['stage_key'=>'wash_after_first','duration'=>'1:00'],
-                ['stage_key'=>'ferric','duration'=>'1:30'],
-                ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
-                ['stage_key'=>'ammonia','duration'=>''],
-                ['stage_key'=>'wash_after_ammonia','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$caffenol400Second,
-                ['stage_key'=>'final_wash','duration'=>'1:00'],
-                ['stage_key'=>'dry','duration'=>''],
-            ],
-        ],
-        'positive-peracetic-ei400-caffenol'=>[
-            'name'=>'Positivo direto — Brewed Caffenol EI 400 — peracética',
-            'description'=>'Brewed Caffenol fresco, EI 400, 35,7 °C e 5 min. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e branqueamento peracético por 1 min 30 s.',
-            'steps'=>[
-                ['stage_key'=>'first_development']+$caffenol400,
-                ['stage_key'=>'wash_after_first','duration'=>'1:00'],
-                ['stage_key'=>'peracetic','duration'=>'1:30'],
-                ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
-                ['stage_key'=>'second_development']+$caffenol400Second,
-                ['stage_key'=>'final_wash','duration'=>'1:00'],
-                ['stage_key'=>'dry','duration'=>''],
-            ],
-        ],
-    ];
+    return student_global_process_catalog(database());
 }
 
 function student_process_standard_developers(): array {
@@ -132,7 +17,7 @@ function student_process_standard_developers(): array {
 }
 
 function student_process_standard_for_key(string $key): ?array {
-    $catalog=student_process_standard_catalog();return $catalog[$key]??null;
+    return student_global_process_for_key(database(),$key);
 }
 
 function student_process_standard_duration_summary(array $steps): string {
@@ -147,9 +32,8 @@ function student_process_template_duration_summary(PDO $db,int $templateId): str
 }
 
 function student_process_standard_copy(PDO $db,int $studentId,string $standardKey,string $developerKey=''): array {
-    $standard=student_process_standard_for_key($standardKey)??throw new RuntimeException('Processamento padrão não encontrado.');
-    $name=(string)$standard['name'];
-    $description=(string)$standard['description'];
+    $standard=student_global_process_for_key($db,$standardKey)??throw new RuntimeException('Processamento padrão não encontrado.');
+    $name=(string)$standard['name'];$description=(string)$standard['description'];
 
     $db->beginTransaction();
     try{
@@ -157,7 +41,7 @@ function student_process_standard_copy(PDO $db,int $studentId,string $standardKe
         $templateId=(int)($template['id']??0);if($templateId<1)throw new RuntimeException('Não foi possível criar o processamento padrão.');
         foreach((array)$standard['steps'] as $step){
             $input=['stage_key'=>(string)$step['stage_key'],'duration'=>(string)($step['duration']??'')];
-            foreach(['developer_key','developer_amount','water_amount','temperature','agitation','agitation_interval','notes','reuse_source_stage_key'] as $field)if(array_key_exists($field,$step))$input[$field]=$step[$field];
+            foreach(['developer_key','developer_name','developer_amount','water_amount','fresh_volume','temperature','agitation','agitation_interval','notes','reuse_source_stage_key','chemical_name'] as $field)if(array_key_exists($field,$step))$input[$field]=$step[$field];
             student_process_template_add_step($db,$templateId,$studentId,$input);
         }
         $db->commit();
