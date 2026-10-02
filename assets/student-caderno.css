@@ -38,6 +38,8 @@
 .student-process-path-options h4{margin:12px 0 0;font-family:var(--title);font-size:28px;font-weight:500;line-height:1.04;text-transform:none}
 .student-process-path-options p{margin:10px 0 var(--ux-space-5);color:var(--muted);font-size:13px;line-height:1.55}
 .student-process-path-options .button,.student-process-path-options .student-link{margin-top:auto;align-self:flex-start}
+.student-process-path-options .button-primary,.student-plan-intent-grid .button-primary,.student-plan-resume-actions .button-primary{color:var(--text);background:transparent}
+.student-process-path-options .button-primary:hover,.student-plan-intent-grid .button-primary:hover,.student-plan-resume-actions .button-primary:hover{color:var(--inverse);background:var(--inverse-bg)}
 .student-caderno-plan-card{margin-top:var(--ux-space-5);padding:var(--ux-space-5);border-left:3px solid var(--focus);background:var(--surface)}
 .student-caderno-plan-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--ux-space-5)}
 .student-caderno-plan-head h3{margin:7px 0 0;font-family:var(--title);font-size:clamp(30px,3.6vw,44px);font-weight:500;line-height:1.02;text-transform:none}
