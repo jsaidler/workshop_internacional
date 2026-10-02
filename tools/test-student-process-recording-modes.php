@@ -54,7 +54,7 @@ must_process_recording(str_contains($entry,"processEntry='server'")&&!str_contai
 must_process_recording(str_contains($progressive,'data-recorded-stage')&&str_contains($progressive,"type!=='development'"),'manual retroactive form does not hide irrelevant developer fields');
 must_process_recording(str_contains($shell,'student-process-recording.css')&&str_contains($shell,'student-process-recording.js'),'recording UI assets are not loaded');
 must_process_recording(str_contains($shell,'student-quality-pass.css'),'corrective quality layer is not loaded');
-must_process_recording(str_contains($quality,'.student-mobile-nav')&&str_contains($quality,'position:static!important'),'mobile navigation can still cover process content');
+must_process_recording(str_contains($quality,'.student-mobile-nav')&&str_contains($quality,'position:static;'),'mobile navigation can still cover process content');
 must_process_recording(str_contains($shell,"str_contains(\$path,'processamento-realizado')")&&str_contains($shell,"return 'notebook'"),'retroactive recording is not part of the Caderno navigation domain');
 must_process_recording(str_contains($rules,'Não presumir caminho único'),'canonical multipath UX rule is missing');
 must_process_recording(str_contains($rules,'A interface deve perguntar uma decisão apenas quando ela muda a próxima ação'),'canonical rules do not prevent repeated decision gates');
