@@ -23,12 +23,12 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(screen==='process-choice'){
         await expect(page.getByRole('heading',{name:'Usar um processamento salvo'})).toBeVisible();
         await expect(page.getByRole('heading',{name:'Registrar etapas manualmente'})).toBeVisible();
-        await expect(page.getByRole('link',{name:'Escolher processamento'})).toBeVisible();
+        await expect(page.getByText('Escolher processamento',{exact:true})).toBeVisible();
       }
       if(screen==='process-plan'){
         await expect(page.getByText('5 / 9 etapas')).toBeVisible();
         await expect(page.getByText('Lavagem após branqueamento')).toBeVisible();
-        await expect(page.getByRole('link',{name:'Continuar no modo laboratório'})).toBeVisible();
+        await expect(page.getByText('Continuar no modo laboratório',{exact:true})).toBeVisible();
       }
       if(screen==='result'){
         await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();
