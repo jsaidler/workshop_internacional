@@ -187,6 +187,136 @@ Antes de implementar:
 9. validar tecnicamente;
 10. somente então considerar merge.
 
+## Plano de implementação
+
+O redesign será executado como refatoração progressiva do produto. Não haverá reescrita total nem substituição de todos os fluxos de uma vez. Cada tranche deve preservar os dados existentes e entregar um fluxo operacional completo.
+
+### Etapa 0 — contrato e baseline
+
+- consolidar este documento como autoridade canônica da UX do aluno;
+- registrar o estado de produção usado como baseline;
+- não iniciar nova funcionalidade isolada antes da auditoria;
+- preservar compatibilidade com registros, matrículas, Caderno e processamentos existentes.
+
+### Etapa 1 — auditoria funcional e visual real
+
+Auditar todas as superfícies do aluno em desktop e mobile, cobrindo:
+
+- navegação e retorno de contexto;
+- hierarquia visual;
+- orientação pedagógica;
+- estados vazios e com conteúdo;
+- criação, leitura, edição, duplicação e exclusão;
+- mensagens de confirmação, sucesso e erro;
+- consistência das ações entre entidades;
+- formulários e densidade de informação;
+- tarefas que exigem conhecimento implícito ou descoberta acidental;
+- inadequações específicas de uso no laboratório.
+
+O resultado deve ser uma matriz de problemas por fluxo, com severidade, evidência, correção proposta e dependências. A auditoria não é aprovação: ela define o backlog do redesign.
+
+### Etapa 2 — fundação global da interface
+
+Corrigir primeiro as primitivas e o shell compartilhado para impedir que cada tela receba remendos locais. Devem ser consolidados:
+
+- largura e ritmo vertical do conteúdo;
+- tipografia de aplicação;
+- cabeçalhos de página e contexto;
+- ação primária, secundária e destrutiva;
+- menus de ações;
+- formulários, ajuda, erro e confirmação;
+- alertas e feedback de operação;
+- estados vazios;
+- listas e cartões de entidade;
+- navegação contextual e retorno;
+- comportamento mobile e alvos de toque.
+
+Uma primitiva nova só deve existir quando a lacuna for global. CSS local fica restrito à composição específica do fluxo.
+
+### Etapa 3 — núcleo Caderno → Processamentos → Laboratório
+
+É a primeira tranche funcional prioritária.
+
+**Caderno** deve organizar o registro segundo a lógica de pesquisa: exposição → processamento → resultado → análise, deixando evidente o estado de cada parte e o próximo passo.
+
+**Processamentos** deve funcionar como biblioteca pessoal e incluir, de forma clara e completa:
+
+- padrões do workshop;
+- processamentos próprios;
+- identificação resumida por EI, revelador, rota e duração quando aplicável;
+- visualização da sequência;
+- criar;
+- editar;
+- duplicar;
+- excluir;
+- aplicar a um registro;
+- iniciar no laboratório.
+
+Um fluxo de Processamentos não é considerado concluído se alguma dessas ações permanecer oculta, inconsistente ou ausente quando semanticamente aplicável.
+
+**Modo laboratório** deve ser uma superfície operacional própria, com leitura rápida e controles grandes. A interface deve mostrar apenas o contexto necessário para executar a etapa atual com segurança e antecipar a próxima, sem iniciar etapas automaticamente.
+
+### Etapa 4 — domínio e inventário
+
+Após o fluxo de processamento estar semanticamente correto, revisar Inventário e Preparações para representar o uso real de materiais e soluções.
+
+A modelagem e a UI devem distinguir preparação, uso, reutilização e consumo. Em particular, a segunda revelação com Parodinal reutiliza o mesmo banho da primeira e não pode ser representada como nova preparação nem gerar segunda baixa de inventário.
+
+### Etapa 5 — Dashboard, Cursos e Material
+
+Com o núcleo experimental estabilizado:
+
+- Dashboard passa a priorizar continuidade do trabalho e próximos passos reais;
+- Cursos e Material adotam a mesma linguagem visual e pedagógica;
+- atalhos sem função de continuidade deixam de competir pela atenção;
+- a interface preserva contexto de curso sem criar navegações paralelas.
+
+### Etapa 6 — Dúvidas, comunicação e Conta
+
+As áreas restantes são trazidas para a mesma gramática de navegação, ação, orientação e feedback, sem criar um segundo design system.
+
+### Etapa 7 — revisão global e remoção de legado
+
+Somente depois que um fluxo novo substituir integralmente o anterior:
+
+- remover superfícies e CSS legados sem consumidores;
+- revisar links e rotas antigas;
+- executar nova auditoria transversal;
+- verificar consistência desktop/mobile entre todos os fluxos;
+- documentar exceções remanescentes.
+
+## Estratégia de entrega
+
+A unidade de entrega é um **fluxo utilizável de ponta a ponta**, e não uma tela isolada.
+
+Exemplo: uma tranche de Processamentos deve entregar listagem, estado vazio, criação, detalhe, edição, duplicação, exclusão e caminhos relevantes de uso. Redesenhar apenas a lista e deixar gerenciamento incompleto não satisfaz este contrato.
+
+Cada PR estrutural da área do aluno deve:
+
+1. declarar qual tarefa do aluno está sendo corrigida;
+2. listar os estados e ações cobertos;
+3. registrar evidência da inspeção visual em desktop e mobile;
+4. registrar correções feitas após a primeira inspeção;
+5. executar testes de comportamento do fluxo, além dos testes técnicos existentes;
+6. somente ser mesclado quando o head final possuir os gates obrigatórios verdes.
+
+## Critério de conclusão por tranche
+
+Uma tranche só está pronta quando for simultaneamente:
+
+- correta no domínio;
+- funcional de ponta a ponta;
+- compreensível para um aluno;
+- pedagogicamente orientada no ponto necessário;
+- consistente com o restante do produto;
+- adequada a desktop e mobile;
+- inspecionada visualmente de forma humana;
+- corrigida após essa inspeção quando necessário;
+- coberta por testes relevantes;
+- sem regressão de dados ou acesso.
+
+`validate` ou `student-visual-audit` verdes isoladamente não significam conclusão.
+
 ## Ordem de trabalho
 
 A revisão começa por uma auditoria da área inteira, seguida pela definição de uma arquitetura de interação comum.
