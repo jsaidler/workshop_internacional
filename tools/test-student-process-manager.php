@@ -41,7 +41,8 @@ $expectedKeys=[
 foreach($expectedKeys as $key)must_student_process_manager(str_contains($migration81,"'$key'"),'global-process seed is missing '.$key);
 foreach(['student_process_stage_catalog','student_process_developer_catalog','student_global_processes','student_global_process_versions','student_global_process_version_steps','student_process_execution_sessions','student_process_change_log'] as $table)must_student_process_manager(str_contains($migration81,'CREATE TABLE IF NOT EXISTS '.$table),'migration 081 is missing '.$table);
 must_student_process_manager(str_contains($migration81,"ADD COLUMN source_global_version_id"),'plan snapshot does not preserve its global version origin');
-foreach(["'26 °C'","'7:00'","'35,7 °C'","'5:00'","'1:30'","'1:00'","'reuse_source_stage_key'=>'first_development'"] as $fragment)must_student_process_manager(str_contains($migration81,$fragment),'migrated workshop routes lost canonical value '.$fragment);
+foreach(["'26 °C'","'7:00'","'35,7 °C'","'5:00'","'1:30'","'1:00'"] as $fragment)must_student_process_manager(str_contains($migration81,$fragment),'migrated workshop routes lost canonical value '.$fragment);
+must_student_process_manager(str_contains($migration81,"\$base['reuse_source_stage_key']='first_development'")&&str_contains($migration81,"['second_development',\$reuse("),'migrated workshop routes lost explicit reuse of the first development bath');
 must_student_process_manager(str_contains($migration81,"'developer_amount'=>(string)\$amount")&&str_contains($migration81,"'water_amount'=>(string)(550-\$amount)"),'Parodinal migration must preserve developer amount and water complement to 550 ml');
 foreach(['37 g','54 g','20 g','1 L'] as $recipePart)must_student_process_manager(str_contains($migration81,$recipePart),'Caffenol migration note missing '.$recipePart);
 
