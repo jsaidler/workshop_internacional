@@ -3,9 +3,10 @@ declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';
 security_headers();student_private_headers();
 
-function student_process_template_href(int $id,int $testId=0,int $stepId=0): string {
+function student_process_template_href(int $id,int $testId=0,int $stepId=0,string $intent=''): string {
     $url='/aluno/processamentos.php?id='.$id;
     if($testId>0)$url.='&test='.$testId;
+    if($intent==='live')$url.='&intent=live';
     if($stepId>0)$url.='&step='.$stepId;
     return $url;
 }
@@ -35,7 +36,7 @@ function student_process_render_step_form(array $catalog,array $developers,array
       </label>
       <div class="student-span-2 student-form-grid" data-process-template-development<?=in_array($stageKey,['first_development','second_development'],true)?'':' hidden'?>>
         <label class="form-field">Revelador
-          <select name="developer_key"><?php foreach($developers as $key=>$developer):?><option value="<?=h((string)$key)?>"<?=$developerKey===(string)$key?' selected':''?>><?=h((string)$developer['label'])?></option><?php endforeach;?></select>
+          <select name="developer_key"><?php foreach($developers as $key=>$developer):?><option value="<?=h($key)?>"<?=$developerKey===(string)$key?' selected':''?>><?=h((string)$developer['label'])?></option><?php endforeach;?></select>
         </label>
         <label class="form-field">Predefinição de revelação
           <select name="saved_preparation_id"><option value="">Nenhuma</option><?php foreach($preparations as $prep):?><option value="<?=(int)$prep['id']?>"<?=$savedPreparationId===(int)$prep['id']?' selected':''?>><?=h((string)$prep['label'])?></option><?php endforeach;?></select>
@@ -64,7 +65,7 @@ function student_process_render_step_form(array $catalog,array $developers,array
 $db=database();$student=student_account_current($db);$next='/aluno/processamentos.php';
 if(!$student){header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
 $studentId=(int)$student['id'];student_tool_require($db,$studentId,'lab_timer');
-$testId=(int)($_GET['test']??$_POST['test_id']??0);$test=$testId>0?student_test_for_student($db,$testId,$studentId):null;
+$testId=(int)($_GET['test']??$_POST['test_id']??0);$test=$testId>0?student_test_for_student($db,$testId,$studentId):null;$intent=(string)($_GET['intent']??$_POST['intent']??'');if($intent!=='live')$intent='';
 if($testId>0&&!$test){http_response_code(404);student_shell_start('Registro não encontrado',null,$student);?><div class="student-empty">Registro não encontrado.</div><?php student_shell_end();exit;}
 $id=(int)($_GET['id']??$_POST['template_id']??0);$editStepId=(int)($_GET['step']??0);$error='';
 $notice=(string)($_SESSION['student_process_template_notice']??'');unset($_SESSION['student_process_template_notice']);
@@ -81,7 +82,8 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             if($testId>0){
                 student_process_plan_apply_template($db,$id,$testId,$studentId);
                 $_SESSION['student_process_notice']='Roteiro associado ao registro. Nenhuma execução foi iniciada.';
-                header('Location: /aluno/teste.php?id='.$testId.'&view=process',true,303);exit;
+                $target=$intent==='live'?'/aluno/processar.php?test='.$testId.'&intent=live':'/aluno/teste.php?id='.$testId.'&view=process';
+                header('Location: '.$target,true,303);exit;
             }
             $_SESSION['student_process_template_notice']='Padrão adicionado aos seus processamentos. Você pode editar a cópia sem alterar o padrão do workshop.';
         }elseif($action==='save'){
@@ -102,9 +104,10 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $id=(int)($_POST['template_id']??0);if($testId<1)throw new RuntimeException('Escolha um registro do Caderno.');
             student_process_plan_apply_template($db,$id,$testId,$studentId);
             $_SESSION['student_process_notice']='Roteiro associado ao registro. Nenhuma execução foi iniciada.';
-            header('Location: /aluno/teste.php?id='.$testId.'&view=process',true,303);exit;
+            $target=$intent==='live'?'/aluno/processar.php?test='.$testId.'&intent=live':'/aluno/teste.php?id='.$testId.'&view=process';
+            header('Location: '.$target,true,303);exit;
         }else throw new RuntimeException('Ação inválida.');
-        $url=$id>0?student_process_template_href($id,$testId):'/aluno/processamentos.php'.($testId>0?'?test='.$testId:'');header('Location: '.$url,true,303);exit;
+        $url=$id>0?student_process_template_href($id,$testId,0,$intent):'/aluno/processamentos.php'.($testId>0?'?test='.$testId.($intent==='live'?'&intent=live':''):'');header('Location: '.$url,true,303);exit;
     }catch(Throwable $e){$error=$e->getMessage();}
 }
 
@@ -118,17 +121,19 @@ student_shell_start('Processamentos',null,$student);
 ?>
 <header class="student-page-heading student-process-library-heading">
   <div>
-    <p class="student-kicker">Laboratório</p>
-    <h1 class="student-title">Processamentos</h1>
-    <?php if($test):?>
-      <p class="student-process-context">Escolha o roteiro que ficará associado a <strong><?=h((string)$test['title'])?></strong>. Isso apenas cria uma cópia do plano dentro do Caderno; a execução no modo laboratório só começa se você a escolher depois.</p>
+    <p class="student-kicker"><?=$test&&$intent==='live'?'Modo laboratório':'Laboratório'?></p>
+    <h1 class="student-title"><?=$test&&$intent==='live'?'Escolha o roteiro':'Processamentos'?></h1>
+    <?php if($test&&$intent==='live'):?>
+      <p class="student-process-context">Escolha o roteiro que você vai usar agora em <strong><?=h((string)$test['title'])?></strong>.</p>
+    <?php elseif($test):?>
+      <p class="student-process-context">Escolha o roteiro para <strong><?=h((string)$test['title'])?></strong>.</p>
     <?php elseif(!$template):?>
-      <p class="student-process-context">Um processamento é a sequência de banhos que você usa no laboratório. Salve o roteiro uma vez, ajuste quando precisar e reutilize em novos registros.</p>
+      <p class="student-process-context">Salve e reutilize as sequências de processamento que você usa no laboratório.</p>
     <?php else:?>
-      <p class="student-process-context">Edite o roteiro antes de iniciar. Alterações aqui não reescrevem planos já associados a registros do Caderno.</p>
+      <p class="student-process-context">Edite este roteiro sem alterar cópias já registradas no Caderno.</p>
     <?php endif;?>
   </div>
-  <?php if($template):?><a class="button button-secondary" href="/aluno/processamentos.php<?=$testId>0?'?test='.$testId:''?>">← Meus processamentos</a><?php endif;?>
+  <?php if($template):?><a class="button button-secondary" href="/aluno/processamentos.php<?=$testId>0?'?test='.$testId.($intent==='live'?'&intent=live':''):''?>">← Meus processamentos</a><?php endif;?>
 </header>
 <?php if($notice!==''):?><p class="ui-alert ui-alert-notice"><?=h($notice)?></p><?php endif;?>
 <?php if($error!==''):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
@@ -137,27 +142,27 @@ student_shell_start('Processamentos',null,$student);
 <section class="student-process-section" aria-labelledby="student-process-owned-title">
   <div class="student-process-section-heading">
     <div><p class="student-kicker">Sua biblioteca</p><h2 class="student-subtitle" id="student-process-owned-title">Meus processamentos</h2></div>
-    <p>Use um roteiro salvo como está ou abra para ajustar etapas, tempos e observações.</p>
+    <?php if(!$test):?><p>Use um roteiro salvo como está ou abra para ajustar etapas, tempos e observações.</p><?php endif;?>
   </div>
   <?php if(!$templates):?>
     <div class="student-process-empty">
       <strong>Você ainda não tem um processamento salvo.</strong>
-      <p>Para começar com segurança, escolha abaixo um dos padrões trabalhados no workshop. Ele será copiado para a sua biblioteca e poderá ser editado depois.</p>
+      <p>Escolha abaixo um dos padrões do workshop para começar.</p>
       <a class="button button-primary button-compact" href="#padroes-workshop">Ver padrões do workshop</a>
     </div>
   <?php else:?><div class="student-process-library" aria-label="Processamentos salvos">
-    <?php foreach($templates as $item):$href=student_process_template_href((int)$item['id'],$testId);$hasSteps=(int)$item['step_count']>0;?>
+    <?php foreach($templates as $item):$href=student_process_template_href((int)$item['id'],$testId,0,$intent);$hasSteps=(int)$item['step_count']>0;?>
       <article class="student-process-template-card">
         <a class="student-process-template-main" href="<?=h($href)?>">
           <span class="student-process-step-number"><?=str_pad((string)(int)$item['step_count'],2,'0',STR_PAD_LEFT)?></span>
-          <div><h3><?=h((string)$item['name'])?></h3><p><?=h((string)($item['description']!==''?$item['description']:'Roteiro pessoal. Abra para revisar as etapas e parâmetros.'))?></p><div class="student-process-summary"><span><?=(int)$item['step_count']?> <?=((int)$item['step_count']===1?'etapa':'etapas')?></span><span><?=h(student_process_template_duration_summary($db,(int)$item['id']))?></span></div></div>
+          <div><h3><?=h((string)$item['name'])?></h3><p><?=h((string)($item['description']!==''?$item['description']:'Roteiro pessoal.'))?></p><div class="student-process-summary"><span><?=(int)$item['step_count']?> <?=((int)$item['step_count']===1?'etapa':'etapas')?></span><span><?=h(student_process_template_duration_summary($db,(int)$item['id']))?></span></div></div>
         </a>
         <div class="student-process-template-actions">
-          <?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary button-compact" type="submit"<?=$hasSteps?'':' disabled'?>>Associar ao registro</button></form>
+          <?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><button class="button button-primary button-compact" type="submit"<?=$hasSteps?'':' disabled'?>><?=$intent==='live'?'Usar no laboratório':'Associar ao registro'?></button></form>
           <?php elseif($hasSteps):?><a class="button button-primary button-compact" href="/aluno/processar.php?template=<?=(int)$item['id']?>">Iniciar no laboratório</a><?php else:?><span class="button button-primary button-compact is-disabled" aria-disabled="true">Adicione uma etapa</span><?php endif;?>
-          <a class="button button-secondary button-compact" href="<?=h($href)?>">Editar</a>
+          <?php if($testId===0):?><a class="button button-secondary button-compact" href="<?=h($href)?>">Editar</a>
           <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="duplicate"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-secondary button-compact" type="submit">Duplicar</button></form>
-          <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Os planos já associados ao Caderno não serão apagados.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="student-danger-action" type="submit">Excluir</button></form>
+          <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Os planos já associados ao Caderno não serão apagados.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="student-danger-action" type="submit">Excluir</button></form><?php endif;?>
         </div>
       </article>
     <?php endforeach;?>
@@ -166,17 +171,17 @@ student_shell_start('Processamentos',null,$student);
 
 <section class="student-process-section student-process-standards" id="padroes-workshop" aria-labelledby="student-process-standards-title">
   <div class="student-process-section-heading">
-    <div><p class="student-kicker">Padrões do workshop</p><h2 class="student-subtitle" id="student-process-standards-title">Começar por um roteiro conhecido</h2></div>
-    <p>Escolha o EI e a rota de branqueamento. Nos quatro padrões, a segunda revelação reutiliza o mesmo banho de Parodinal da primeira.</p>
+    <div><p class="student-kicker">Padrões do workshop</p><h2 class="student-subtitle" id="student-process-standards-title">Roteiros conhecidos</h2></div>
+    <?php if(!$test):?><p>Escolha o EI e a rota de branqueamento. Nos quatro padrões, a segunda revelação reutiliza o mesmo banho de Parodinal da primeira.</p><?php endif;?>
   </div>
   <div class="student-process-standard-grid">
     <?php foreach($standards as $standardKey=>$standard):$ei=str_contains((string)$standardKey,'ei400')?'EI 400':'EI 200';$route=str_contains((string)$standardKey,'ferric-ammonia')?'FeCl₃ + amônia':'Peracética';?>
       <article class="student-process-standard-card">
         <div class="student-process-standard-meta"><span><?=h($ei)?></span><span>Parodinal</span><span><?=h($route)?></span></div>
         <h3><?=h((string)$standard['name'])?></h3>
-        <p><?=h((string)$standard['description'])?></p>
+        <?php if(!$test):?><p><?=h((string)$standard['description'])?></p><?php endif;?>
         <div class="student-process-standard-footer"><span><?=count((array)$standard['steps'])?> etapas · <?=h(student_process_standard_duration_summary((array)$standard['steps']))?></span>
-          <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="copy_standard"><input type="hidden" name="standard_key" value="<?=h((string)$standardKey)?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary button-compact" type="submit"><?=$testId>0?'Associar ao registro':'Adicionar aos meus'?></button></form>
+          <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="copy_standard"><input type="hidden" name="standard_key" value="<?=h((string)$standardKey)?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><button class="button button-primary button-compact" type="submit"><?=$testId>0?($intent==='live'?'Usar no laboratório':'Associar ao registro'):'Adicionar aos meus'?></button></form>
         </div>
       </article>
     <?php endforeach;?>
@@ -185,7 +190,7 @@ student_shell_start('Processamentos',null,$student);
 
 <details class="student-process-create">
   <summary><span><strong>Criar um processamento do zero</strong><small>Use esta opção quando o roteiro não parte de um padrão do workshop.</small></span><span aria-hidden="true">＋</span></summary>
-  <form method="post" class="student-form-grid"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="create"><input type="hidden" name="test_id" value="<?=$testId?>"><label class="form-field student-span-2">Nome<input name="name" required maxlength="160" placeholder="Ex.: Positivo direto — teste de branqueamento"></label><label class="form-field student-span-2">Descrição<textarea name="description" rows="2" maxlength="1000" placeholder="O que diferencia este roteiro?"></textarea></label><div class="student-actions student-span-2"><button class="button button-primary" type="submit">Criar e montar roteiro</button></div></form>
+  <form method="post" class="student-form-grid"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="create"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><label class="form-field student-span-2">Nome<input name="name" required maxlength="160" placeholder="Ex.: Positivo direto — teste de branqueamento"></label><label class="form-field student-span-2">Descrição<textarea name="description" rows="2" maxlength="1000" placeholder="O que diferencia este roteiro?"></textarea></label><div class="student-actions student-span-2"><button class="button button-primary" type="submit">Criar e montar roteiro</button></div></form>
 </details>
 
 <?php else:?>
@@ -195,13 +200,13 @@ student_shell_start('Processamentos',null,$student);
     <div class="student-process-editor-stats"><span><strong><?=count($steps)?></strong><?=count($steps)===1?'etapa':'etapas'?></span><span><strong><?=h(student_process_template_duration_summary($db,(int)$template['id']))?></strong>tempo programado</span></div>
   </div>
   <div class="student-process-editor-actions">
-    <?php if($steps):?><?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary" type="submit">Associar ao registro</button></form><?php else:?><a class="button button-primary" href="/aluno/processar.php?template=<?=(int)$template['id']?>">Iniciar no laboratório</a><?php endif;?><?php endif;?>
-    <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="duplicate"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-secondary" type="submit">Duplicar processamento</button></form>
+    <?php if($steps):?><?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><button class="button button-primary" type="submit"><?=$intent==='live'?'Usar no laboratório':'Associar ao registro'?></button></form><?php else:?><a class="button button-primary" href="/aluno/processar.php?template=<?=(int)$template['id']?>">Iniciar no laboratório</a><?php endif;?><?php endif;?>
+    <?php if($testId===0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="duplicate"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-secondary" type="submit">Duplicar processamento</button></form><?php endif;?>
   </div>
 
   <details class="student-process-meta-panel">
     <summary>Editar nome e descrição</summary>
-    <form method="post" class="student-form-grid"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="save"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><label class="form-field student-span-2">Nome<input name="name" required maxlength="160" value="<?=h((string)$template['name'])?>"></label><label class="form-field student-span-2">Descrição<textarea name="description" rows="2" maxlength="1000"><?=h((string)$template['description'])?></textarea></label><div class="student-actions student-span-2"><button class="button button-primary" type="submit">Salvar</button></div></form>
+    <form method="post" class="student-form-grid"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="save"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><label class="form-field student-span-2">Nome<input name="name" required maxlength="160" value="<?=h((string)$template['name'])?>"></label><label class="form-field student-span-2">Descrição<textarea name="description" rows="2" maxlength="1000"><?=h((string)$template['description'])?></textarea></label><div class="student-actions student-span-2"><button class="button button-primary" type="submit">Salvar</button></div></form>
   </details>
 
   <div class="student-process-editor-heading"><div><p class="student-kicker">Sequência</p><h2 class="student-subtitle">Etapas do processamento</h2><p>Revise a ordem e os parâmetros antes de usar o roteiro. Associá-lo a um registro não inicia a execução.</p></div></div>
@@ -218,10 +223,10 @@ student_shell_start('Processamentos',null,$student);
           <?php if((string)($payload['notes']??'')!==''&&$reuse!=='first_development'):?><small class="student-process-step-note"><?=h((string)$payload['notes'])?></small><?php endif;?>
         </div>
         <div class="student-process-step-actions">
-          <a class="button button-secondary button-compact" href="<?=h(student_process_template_href((int)$template['id'],$testId,(int)$step['id']))?>#editar-etapa">Editar</a>
-          <?php if($index>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="move_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><input type="hidden" name="direction" value="-1"><button class="student-link" type="submit">Subir</button></form><?php endif;?>
-          <?php if($index<count($steps)-1):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="move_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><input type="hidden" name="direction" value="1"><button class="student-link" type="submit">Descer</button></form><?php endif;?>
-          <form method="post" onsubmit="return confirm('Remover esta etapa do roteiro?')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><button class="student-danger-action" type="submit">Remover</button></form>
+          <a class="button button-secondary button-compact" href="<?=h(student_process_template_href((int)$template['id'],$testId,(int)$step['id'],$intent))?>#editar-etapa">Editar</a>
+          <?php if($index>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="move_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><input type="hidden" name="direction" value="-1"><button class="student-link" type="submit">Subir</button></form><?php endif;?>
+          <?php if($index<count($steps)-1):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="move_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><input type="hidden" name="direction" value="1"><button class="student-link" type="submit">Descer</button></form><?php endif;?>
+          <form method="post" onsubmit="return confirm('Remover esta etapa do roteiro?')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><button class="student-danger-action" type="submit">Remover</button></form>
         </div>
         <?php if($isEditing):?><div class="student-process-step-editor" id="editar-etapa"><div class="student-process-inline-help"><strong>Editar etapa</strong><span>Altere somente o que muda neste ponto do roteiro. A ordem continua preservada.</span></div><?php student_process_render_step_form($catalog,$developers,$preparations,$csrf,(int)$template['id'],$testId,$step);?></div><?php endif;?>
       </li>
@@ -236,7 +241,7 @@ student_shell_start('Processamentos',null,$student);
   <section class="student-danger-zone student-process-danger-zone">
     <h2>Excluir processamento</h2>
     <p>Exclui este roteiro da sua biblioteca. Registros do Caderno que já receberam uma cópia do plano não serão alterados.</p>
-    <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Esta ação não pode ser desfeita.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="student-danger-action" type="submit">Excluir processamento</button></form>
+    <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Esta ação não pode ser desfeita.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="intent" value="<?=h($intent)?>"><button class="student-danger-action" type="submit">Excluir processamento</button></form>
   </section>
 </section>
 <?php endif;?>
