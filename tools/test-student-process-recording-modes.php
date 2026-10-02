@@ -26,6 +26,8 @@ must_process_recording(str_contains($page,'Registrar o que já foi feito'),'retr
 must_process_recording(str_contains($page,'não movimenta o inventário automaticamente'),'retroactive page does not explain inventory consequence');
 must_process_recording(str_contains($page,'não modifica o processamento da sua biblioteca'),'retroactive page does not explain snapshot independence');
 must_process_recording(str_contains($page,'Registrar etapas restantes como realizadas'),'partial tracking cannot be completed without replaying timers');
+must_process_recording(str_contains($page,'Registrar todo o processamento como realizado'),'fully retroactive associated plan is still presented as a partial resumption');
+must_process_recording(str_contains($page,"\$planCompleted>0?'Retomar um registro parcial':'Roteiro associado'"),'retroactive page does not distinguish an untouched associated plan from partial execution');
 must_process_recording(str_contains($page,'Editar etapa'),'recorded snapshot cannot expose deviation correction');
 must_process_recording(str_contains($page,'data-recorded-process-form'),'manual retroactive entry lacks progressive form contract');
 
