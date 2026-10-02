@@ -12,10 +12,31 @@
 <nav class="student-mobile-nav"><a>Início</a><a>Curso</a><a aria-current="page">Caderno</a><button>Ferramentas</button></nav>
 </div>
 <script>
+const standards=[
+ 'Positivo direto — Parodinal EI 200 — FeCl₃ + amônia',
+ 'Positivo direto — Parodinal EI 400 — FeCl₃ + amônia',
+ 'Positivo direto — Parodinal EI 200 — peracética',
+ 'Positivo direto — Parodinal EI 400 — peracética',
+ 'Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia',
+ 'Positivo direto — Brewed Caffenol EI 400 — peracética'
+];
+const steps=[
+ ['01','Primeira revelação','Brewed Caffenol · 05:00 · 35,7 °C'],
+ ['02','Lavagem','01:00'],
+ ['03','Branqueamento — cloreto férrico','01:30'],
+ ['04','Lavagem após branqueamento','01:00'],
+ ['05','Limpeza — amônia','Sem tempo definido'],
+ ['06','Lavagem após amônia','01:00'],
+ ['07','Segunda revelação','Brewed Caffenol · 05:00 · 35,7 °C'],
+ ['08','Lavagem final','01:00'],
+ ['09','Secagem','Sem tempo definido']
+];
 const head=`<div class="student-appbar"><a class="student-back">← Processamento</a></div><header class="student-page-heading student-recording-heading"><div><p class="student-kicker">Caderno</p><h1 class="student-title">Registrar processamento</h1><p class="student-lead">Registre a sequência que você realmente realizou.</p></div></header><details class="student-recording-help"><summary>Como funciona este registro</summary><div><p>Não há baixa automática no inventário.</p><p>Um roteiro usado aqui vira uma cópia própria deste registro e pode ser ajustado sem alterar sua biblioteca.</p></div></details><form class="student-recording-context student-form-grid"><label class="form-field">Data do processamento<input type="date" value="2026-10-01"></label><label class="form-field student-span-2">Observações gerais<textarea rows="2" placeholder="Desvios ou condições importantes."></textarea></label></form>`;
-const history=count=>`<section class="student-section"><div class="student-section-heading"><div><p class="student-kicker">Sequência registrada</p><h2 class="student-subtitle">${count} etapas</h2></div></div><div class="student-process-history"><article><div><span>01</span><div><strong>Primeira revelação</strong><p>Brewed Caffenol · 5:00 · 35,7 °C</p></div></div><button class="button button-secondary button-compact">Editar etapa</button></article>${count>5?`<article><div><span>07</span><div><strong>Segunda revelação</strong><p>Brewed Caffenol · 5:00 · 35,7 °C</p></div></div><button class="button button-secondary button-compact">Editar etapa</button></article>`:''}</div></section>`;
+const history=count=>`<section class="student-section"><div class="student-section-heading"><div><p class="student-kicker">Sequência registrada</p><h2 class="student-subtitle">${count} etapas</h2></div></div><div class="student-process-history">${steps.slice(0,count).map(([n,name,meta])=>`<article data-history-stage="${n}"><div><span>${n}</span><div><strong>${name}</strong><p>${meta}</p></div></div><button class="button button-secondary button-compact">Editar etapa</button></article>`).join('')}</div></section>`;
+const personal=['Brewed Caffenol EI 400 — FeCl₃ + amônia','Parodinal EI 200 — peracética'];
+const option=(name,kind)=>`<article class="student-recording-option" data-kind="${kind}"><h4>${name}</h4><form><button class="button ${kind==='personal'?'button-primary':'button-secondary'} button-compact">Usar</button></form></article>`;
 const screens={
-start:`${head}<section class="student-workflow-panel student-recording-source"><div class="student-section-heading"><div><p class="student-kicker">Processo usado</p><h2 class="student-subtitle">Qual roteiro você usou?</h2></div></div><h3 class="student-recording-group-title">Meus processamentos</h3><div class="student-recording-grid"><article class="student-recording-option"><h4>Brewed Caffenol EI 400 — FeCl₃ + amônia</h4><button class="button button-primary button-compact">Usar</button></article><article class="student-recording-option"><h4>Parodinal EI 200 — peracética</h4><button class="button button-primary button-compact">Usar</button></article></div><h3 class="student-recording-group-title">Padrões do workshop</h3><div class="student-recording-grid"><article class="student-recording-option"><h4>Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia</h4><button class="button button-secondary button-compact">Usar</button></article><article class="student-recording-option"><h4>Positivo direto — Parodinal EI 400 — peracética</h4><button class="button button-secondary button-compact">Usar</button></article></div></section><details class="student-manual-process student-recording-manual"><summary><span><strong>Registrar etapa por etapa</strong><small>Para um processo diferente dos roteiros acima.</small></span><span>＋</span></summary></details>`,
+start:`${head}<section class="student-workflow-panel student-recording-source"><div class="student-section-heading"><div><p class="student-kicker">Processo usado</p><h2 class="student-subtitle">Qual roteiro você usou?</h2></div></div><h3 class="student-recording-group-title">Meus processamentos</h3><div class="student-recording-grid">${personal.map(n=>option(n,'personal')).join('')}</div><h3 class="student-recording-group-title">Padrões do workshop</h3><div class="student-recording-grid" data-workshop-standards>${standards.map(n=>option(n,'standard')).join('')}</div></section><details class="student-manual-process student-recording-manual"><summary><span><strong>Registrar etapa por etapa</strong><small>Para um processo diferente dos roteiros acima.</small></span><span>＋</span></summary></details>`,
 partial:`${head}<section class="student-workflow-panel student-recording-plan"><p class="student-kicker">Registro parcial</p><h2 class="student-subtitle">Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia</h2><p class="student-recording-plan-status">5 de 9 etapas registradas.</p><button class="button button-primary">Registrar etapas restantes</button></section>${history(5)}`,
 complete:`${head}<section class="student-workflow-panel"><div class="student-process-complete"><p class="student-process-now-label">Registro completo</p><h2>Processamento registrado</h2><p>Agora registre o resultado.</p><div class="student-actions"><button class="button button-primary">Registrar resultado →</button><button class="button button-secondary">Voltar</button></div></div></section>${history(9)}`
 };
