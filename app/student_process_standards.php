@@ -11,7 +11,7 @@ function student_process_standard_catalog(): array {
 }
 
 function student_process_standard_developers(): array {
-    $catalog=student_process_developer_catalog();$out=[];
+    $catalog=student_process_managed_developer_catalog(database(),true);$out=[];
     foreach(['parodinal','brewed-caffenol'] as $key)if(isset($catalog[$key]))$out[$key]=$catalog[$key];
     return $out;
 }
