@@ -4,7 +4,7 @@ require __DIR__.'/../app/bootstrap.php';
 security_headers();student_private_headers();
 $db=database();$student=student_account_current($db);$next='/aluno/processar.php';
 if(!$student){header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
-$studentId=(int)$student['id'];student_tool_require($db,$studentId,'lab_timer');$testId=(int)($_GET['test']??$_POST['test_id']??0);$templateId=(int)($_GET['template']??$_POST['template_id']??0);$error='';
+$studentId=(int)$student['id'];student_tool_require($db,$studentId,'lab_timer');$testId=(int)($_GET['test']??$_POST['test_id']??0);$templateId=(int)($_GET['template']??$_POST['template_id']??0);$intent=(string)($_GET['intent']??'');$error='';
 if($testId>0){
     $test=student_test_for_student($db,$testId,$studentId);if(!$test){http_response_code(404);student_shell_start('Registro não encontrado',null,$student);?><div class="student-empty">Registro não encontrado.</div><?php student_shell_end();exit;}
     $plan=student_process_plan_for_test($db,$testId,$studentId);
@@ -18,16 +18,34 @@ if($testId>0){
         }catch(Throwable $e){$error=$e->getMessage();if((string)($_POST['ajax']??'')==='1'){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['error'=>$error],JSON_UNESCAPED_UNICODE);exit;}}
     }
     $plan=student_process_plan_for_test($db,$testId,$studentId);$allSteps=$plan?student_process_plan_steps($db,(int)$plan['id']):[];$current=$plan?student_process_plan_next_step($db,$plan):null;$currentIndex=0;if($current)foreach($allSteps as $i=>$row)if((int)$row['id']===(int)$current['id']){$currentIndex=$i;break;}
+    $completedCount=0;foreach($allSteps as $row)if((string)($row['status']??'')==='completed')$completedCount++;
+    $planStarted=$plan&&((string)($plan['status']??'planned')!=='planned'||$completedCount>0);
     $sourceName=(string)($plan['source_name']??'Processamento');$backUrl='/aluno/teste.php?id='.$testId.'&view=process';$managerUrl='/aluno/processamentos.php?test='.$testId;
+    $showIntentChoice=$plan&&!$planStarted&&$intent!=='live';
 }else{
-    $test=null;$plan=null;$template=student_process_template_for_student($db,$templateId,$studentId);if(!$template){http_response_code(404);student_shell_start('Processamento não encontrado',null,$student);?><div class="student-empty">Processamento não encontrado.</div><?php student_shell_end();exit;}
+    $test=null;$plan=null;$planStarted=false;$showIntentChoice=false;$template=student_process_template_for_student($db,$templateId,$studentId);if(!$template){http_response_code(404);student_shell_start('Processamento não encontrado',null,$student);?><div class="student-empty">Processamento não encontrado.</div><?php student_shell_end();exit;}
     $allSteps=student_process_template_steps($db,$templateId);if(!$allSteps){header('Location: /aluno/processamentos.php?id='.$templateId,true,303);exit;}$requested=max(1,(int)($_GET['step']??1));$currentIndex=min(count($allSteps)-1,$requested-1);$current=$allSteps[$currentIndex];$sourceName=(string)$template['name'];$backUrl='/aluno/processamentos.php?id='.$templateId;$managerUrl=$backUrl;
 }
+
+if($showIntentChoice){
+    student_shell_start('Processamento',null,$student);?>
+    <header class="student-process-runner-head"><a class="student-back" href="<?=h($backUrl)?>">← Caderno</a><div><p class="student-kicker">Roteiro associado</p><h1 class="student-title"><?=h($sourceName)?></h1></div></header>
+    <section class="student-process-intent-gate" aria-labelledby="student-process-intent-title">
+      <div class="student-process-choice-intro"><p class="student-kicker">Nenhuma execução iniciada</p><h2 id="student-process-intent-title">O que aconteceu com este processamento?</h2><p>O roteiro já está ligado ao registro, mas isso não significa que o laboratório começou. Escolha agora se você vai executar com acompanhamento ou apenas documentar algo que já fez.</p></div>
+      <div class="student-process-intent-options">
+        <article><span>Executar agora</span><h3>Usar o modo laboratório</h3><p>Acompanhe a sequência etapa a etapa, com temporização e registro conforme a execução acontece.</p><a class="button button-primary" href="/aluno/processar.php?test=<?=$testId?>&amp;intent=live">Entrar no modo laboratório</a></article>
+        <article><span>Já foi feito</span><h3>Registrar o processamento realizado</h3><p>Documente a sequência real sem reproduzir cronômetros ou simular uma execução que já terminou.</p><a class="button button-secondary" href="/aluno/processamento-realizado.php?test=<?=$testId?>">Registrar o que já foi feito</a></article>
+      </div>
+      <div class="student-process-intent-secondary"><a class="student-link" href="<?=h($managerUrl)?>">Trocar roteiro</a></div>
+    </section>
+    <?php student_shell_end();exit;
+}
+
 $payload=$current?student_process_json_array((string)$current['payload_json']):[];$durationSeconds=$current?student_process_time_seconds((string)$current['duration']):null;$agitationSeconds=$current?student_process_time_seconds((string)$current['agitation_interval']):null;$nextStep=$current&&isset($allSteps[$currentIndex+1])?$allSteps[$currentIndex+1]:null;$storageKey=$current?($testId>0?'plan-'.$plan['id'].'-step-'.$current['id']:'template-'.$templateId.'-step-'.$current['id']):'';$csrf=$testId>0?csrf_token('student-process-runner-'.$testId):'';$reuseSource=(string)($payload['reuse_source_stage_key']??'');
 student_shell_start('Modo laboratório',null,$student);?>
 <header class="student-process-runner-head"><a class="student-back" href="<?=h($backUrl)?>">← <?=$testId>0?'Caderno':'Processamentos'?></a><div><p class="student-kicker">Modo laboratório</p><h1 class="student-title"><?=h($sourceName)?></h1></div></header>
 <?php if($error!==''):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
-<?php if(!$plan&&$testId>0):?><section class="student-process-runner-empty"><p class="student-kicker">Nenhum roteiro selecionado</p><h2>Escolha um processamento antes de iniciar.</h2><p>O roteiro define a sequência que será executada e registrada nesta fotografia.</p><a class="button button-primary" href="<?=h($managerUrl)?>">Escolher processamento</a></section>
+<?php if(!$plan&&$testId>0):?><section class="student-process-runner-empty"><p class="student-kicker">Nenhum roteiro selecionado</p><h2>Escolha um processamento antes de iniciar.</h2><p>O roteiro define a sequência que poderá ser executada ou registrada nesta fotografia.</p><a class="button button-primary" href="<?=h($managerUrl)?>">Escolher processamento</a></section>
 <?php elseif(!$current):?><section class="student-process-runner-complete"><p class="student-kicker">Processamento concluído</p><h2>Sequência finalizada.</h2><p>As etapas executadas ficaram registradas no Caderno.</p><a class="button button-primary" href="<?=h($backUrl)?>">Voltar ao Caderno</a></section>
 <?php else:?>
 <section class="student-process-runner" data-process-runner data-duration-seconds="<?=$durationSeconds===null?'':$durationSeconds?>" data-agitation-seconds="<?=$agitationSeconds===null?'':$agitationSeconds?>" data-storage-key="<?=h($storageKey)?>" data-final-stage="<?=$nextStep?'0':'1'?>"<?=$testId>0?' data-start-endpoint="/aluno/processar.php?test='.$testId.'" data-start-csrf="'.h($csrf).'"':''?>>
