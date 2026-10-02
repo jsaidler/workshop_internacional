@@ -43,12 +43,35 @@ function student_experience_process_state(array $record,array $steps): array {
         $last=$steps[array_key_last($steps)];
         $name=trim((string)($last['chemical_name']??''));
         if($name==='')$name=trim((string)($last['label']??''));
-        return ['label'=>$name!==''?'Última etapa: '.$name:'Processamento em andamento','view'=>'process','action'=>'Continuar processamento'];
+        return ['label'=>$name!==''?'Última etapa: '.$name:'Processamento em andamento','view'=>'process','action'=>'Continuar registro'];
     }
     $view=student_experience_process_view($record,$steps);
     return $view==='process'
-        ?['label'=>'Exposição registrada','view'=>'process','action'=>'Iniciar processamento']
+        ?['label'=>'Exposição registrada','view'=>'process','action'=>'Registrar processamento']
         :['label'=>'Exposição ainda não registrada','view'=>'exposure','action'=>'Registrar exposição'];
+}
+
+/**
+ * State shown by the Caderno list. A saved plan is documentation/preparation,
+ * not proof that laboratory execution has begun.
+ */
+function student_experience_process_state_with_plan(array $record,array $steps,?array $plan,array $planSteps=[],?array $recordingMeta=null): array {
+    $state=student_experience_process_state($record,$steps);
+    if(!$plan||student_experience_process_complete($steps))return $state;
+
+    $completed=0;
+    foreach($planSteps as $planStep)if((string)($planStep['status']??'')==='completed')$completed++;
+    $started=(string)($plan['status']??'planned')!=='planned'||$completed>0;
+    $name=trim((string)($plan['source_name']??'Processamento'));
+    $mode=(string)($recordingMeta['entry_mode']??'');
+
+    if(!$started){
+        return ['label'=>'Roteiro associado: '.$name,'view'=>'process','action'=>'Definir como registrar'];
+    }
+    if($mode==='mixed'||$mode==='retroactive'){
+        return ['label'=>'Registro em andamento: '.$name,'view'=>'process','action'=>'Completar registro'];
+    }
+    return ['label'=>'Processamento em andamento: '.$name,'view'=>'process','action'=>'Continuar processamento'];
 }
 
 function student_experience_recipe_notes(): array {

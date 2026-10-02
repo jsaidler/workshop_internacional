@@ -1,20 +1,19 @@
 const {test,expect}=require('@playwright/test');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-caderno-product-audit.html';
-const screens=['notebook','exposure','process-choice','process-plan','result'];
+const screens=['notebook','exposure','process-choice','process-plan','process-partial','result'];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 for(const [device,viewport] of Object.entries(viewports)){
   for(const screen of screens){
     test(`caderno product visual audit ${device} ${screen}`,async({page})=>{
       await page.setViewportSize(viewport);
-      const suffix=screen==='process-choice'||screen==='process-plan'?'&id=17':'';
-      await page.goto(`${base}?screen=${screen}${suffix}`,{waitUntil:'networkidle'});
+      await page.goto(`${base}?screen=${screen}`,{waitUntil:'networkidle'});
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
-      if(screen==='process-choice'||screen==='process-plan')await page.addScriptTag({url:'/assets/student-process-entry.js'});
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${screen} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       if(screen==='notebook'){
         await expect(page.getByText('como você expôs',{exact:false}).first()).toBeVisible();
         await expect(page.locator('.student-record-progress').first()).toBeVisible();
+        await expect(page.getByText('Definir como registrar →',{exact:true})).toBeVisible();
         await expect(page.getByRole('button',{name:'Novo registro'})).toBeVisible();
       }
       if(screen==='exposure'){
@@ -23,17 +22,24 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByRole('button',{name:'Salvar exposição e continuar →'})).toBeVisible();
       }
       if(screen==='process-choice'){
-        await expect(page.getByRole('heading',{name:'Usar um processamento salvo'})).toBeVisible();
-        await expect(page.getByRole('heading',{name:'Registrar etapas manualmente'})).toBeVisible();
+        await expect(page.getByRole('heading',{name:'Associar um processamento salvo'})).toBeVisible();
         await expect(page.getByRole('heading',{name:'Registrar um processamento já realizado'})).toBeVisible();
-        await expect(page.getByText('Escolher processamento',{exact:true})).toBeVisible();
-        await expect(page.getByText('Registrar o que já foi feito',{exact:true})).toBeVisible();
+        await expect(page.getByRole('heading',{name:'Registrar etapas manualmente'})).toBeVisible();
+        await expect(page.getByText('Associá-lo não inicia o modo laboratório',{exact:false})).toBeVisible();
+        await expect(page.locator('.student-process-path-options article')).toHaveCount(3);
       }
       if(screen==='process-plan'){
+        await expect(page.getByText('0 / 9 etapas')).toBeVisible();
+        await expect(page.getByText('nenhuma execução foi iniciada',{exact:false})).toBeVisible();
+        await expect(page.getByText('Executar agora',{exact:true}).last()).toBeVisible();
+        await expect(page.getByText('Registrar o que já foi feito',{exact:true})).toBeVisible();
+        await expect(page.getByText('Trocar roteiro',{exact:true})).toBeVisible();
+      }
+      if(screen==='process-partial'){
         await expect(page.getByText('5 / 9 etapas')).toBeVisible();
         await expect(page.getByText('Lavagem após branqueamento')).toBeVisible();
         await expect(page.getByText('Continuar no modo laboratório',{exact:true})).toBeVisible();
-        await expect(page.getByText('Já executei etapas fora do sistema',{exact:false})).toBeVisible();
+        await expect(page.getByText('Registrar etapas já realizadas',{exact:true})).toBeVisible();
       }
       if(screen==='result'){
         await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();

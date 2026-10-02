@@ -78,7 +78,11 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $_SESSION['student_process_template_notice']='Processamento criado. Agora monte a sequência de etapas.';
         }elseif($action==='copy_standard'){
             $template=student_process_standard_copy($db,$studentId,(string)($_POST['standard_key']??''));$id=(int)$template['id'];
-            if($testId>0){student_process_plan_apply_template($db,$id,$testId,$studentId);header('Location: /aluno/processar.php?test='.$testId,true,303);exit;}
+            if($testId>0){
+                student_process_plan_apply_template($db,$id,$testId,$studentId);
+                $_SESSION['student_process_notice']='Roteiro associado ao registro. Nenhuma execução foi iniciada.';
+                header('Location: /aluno/teste.php?id='.$testId.'&view=process',true,303);exit;
+            }
             $_SESSION['student_process_template_notice']='Padrão adicionado aos seus processamentos. Você pode editar a cópia sem alterar o padrão do workshop.';
         }elseif($action==='save'){
             $id=(int)($_POST['template_id']??0);student_process_template_update($db,$id,$studentId,$_POST);$_SESSION['student_process_template_notice']='Nome e descrição salvos.';
@@ -95,7 +99,10 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         }elseif($action==='delete'){
             $deleteId=(int)($_POST['template_id']??0);student_process_template_delete($db,$deleteId,$studentId);$id=0;$_SESSION['student_process_template_notice']='Processamento excluído.';
         }elseif($action==='apply_template'){
-            $id=(int)($_POST['template_id']??0);if($testId<1)throw new RuntimeException('Escolha um registro do Caderno.');student_process_plan_apply_template($db,$id,$testId,$studentId);header('Location: /aluno/processar.php?test='.$testId,true,303);exit;
+            $id=(int)($_POST['template_id']??0);if($testId<1)throw new RuntimeException('Escolha um registro do Caderno.');
+            student_process_plan_apply_template($db,$id,$testId,$studentId);
+            $_SESSION['student_process_notice']='Roteiro associado ao registro. Nenhuma execução foi iniciada.';
+            header('Location: /aluno/teste.php?id='.$testId.'&view=process',true,303);exit;
         }else throw new RuntimeException('Ação inválida.');
         $url=$id>0?student_process_template_href($id,$testId):'/aluno/processamentos.php'.($testId>0?'?test='.$testId:'');header('Location: '.$url,true,303);exit;
     }catch(Throwable $e){$error=$e->getMessage();}
@@ -114,11 +121,11 @@ student_shell_start('Processamentos',null,$student);
     <p class="student-kicker">Laboratório</p>
     <h1 class="student-title">Processamentos</h1>
     <?php if($test):?>
-      <p class="student-process-context">Escolha o roteiro que será usado em <strong><?=h((string)$test['title'])?></strong>. Ao aplicar, o Caderno guarda uma cópia desse plano para este registro.</p>
+      <p class="student-process-context">Escolha o roteiro que ficará associado a <strong><?=h((string)$test['title'])?></strong>. Isso apenas cria uma cópia do plano dentro do Caderno; a execução no modo laboratório só começa se você a escolher depois.</p>
     <?php elseif(!$template):?>
       <p class="student-process-context">Um processamento é a sequência de banhos que você usa no laboratório. Salve o roteiro uma vez, ajuste quando precisar e reutilize em novos registros.</p>
     <?php else:?>
-      <p class="student-process-context">Edite o roteiro antes de iniciar. Alterações aqui não reescrevem planos já aplicados a registros do Caderno.</p>
+      <p class="student-process-context">Edite o roteiro antes de iniciar. Alterações aqui não reescrevem planos já associados a registros do Caderno.</p>
     <?php endif;?>
   </div>
   <?php if($template):?><a class="button button-secondary" href="/aluno/processamentos.php<?=$testId>0?'?test='.$testId:''?>">← Meus processamentos</a><?php endif;?>
@@ -146,11 +153,11 @@ student_shell_start('Processamentos',null,$student);
           <div><h3><?=h((string)$item['name'])?></h3><p><?=h((string)($item['description']!==''?$item['description']:'Roteiro pessoal. Abra para revisar as etapas e parâmetros.'))?></p><div class="student-process-summary"><span><?=(int)$item['step_count']?> <?=((int)$item['step_count']===1?'etapa':'etapas')?></span><span><?=h(student_process_template_duration_summary($db,(int)$item['id']))?></span></div></div>
         </a>
         <div class="student-process-template-actions">
-          <?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary button-compact" type="submit"<?=$hasSteps?'':' disabled'?>>Usar neste registro</button></form>
+          <?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary button-compact" type="submit"<?=$hasSteps?'':' disabled'?>>Associar ao registro</button></form>
           <?php elseif($hasSteps):?><a class="button button-primary button-compact" href="/aluno/processar.php?template=<?=(int)$item['id']?>">Iniciar no laboratório</a><?php else:?><span class="button button-primary button-compact is-disabled" aria-disabled="true">Adicione uma etapa</span><?php endif;?>
           <a class="button button-secondary button-compact" href="<?=h($href)?>">Editar</a>
           <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="duplicate"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-secondary button-compact" type="submit">Duplicar</button></form>
-          <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Os planos já aplicados ao Caderno não serão apagados.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="student-danger-action" type="submit">Excluir</button></form>
+          <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Os planos já associados ao Caderno não serão apagados.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="student-danger-action" type="submit">Excluir</button></form>
         </div>
       </article>
     <?php endforeach;?>
@@ -169,7 +176,7 @@ student_shell_start('Processamentos',null,$student);
         <h3><?=h((string)$standard['name'])?></h3>
         <p><?=h((string)$standard['description'])?></p>
         <div class="student-process-standard-footer"><span><?=count((array)$standard['steps'])?> etapas · <?=h(student_process_standard_duration_summary((array)$standard['steps']))?></span>
-          <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="copy_standard"><input type="hidden" name="standard_key" value="<?=h((string)$standardKey)?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary button-compact" type="submit"><?=$testId>0?'Usar neste registro':'Adicionar aos meus'?></button></form>
+          <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="copy_standard"><input type="hidden" name="standard_key" value="<?=h((string)$standardKey)?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary button-compact" type="submit"><?=$testId>0?'Associar ao registro':'Adicionar aos meus'?></button></form>
         </div>
       </article>
     <?php endforeach;?>
@@ -188,7 +195,7 @@ student_shell_start('Processamentos',null,$student);
     <div class="student-process-editor-stats"><span><strong><?=count($steps)?></strong><?=count($steps)===1?'etapa':'etapas'?></span><span><strong><?=h(student_process_template_duration_summary($db,(int)$template['id']))?></strong>tempo programado</span></div>
   </div>
   <div class="student-process-editor-actions">
-    <?php if($steps):?><?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary" type="submit">Usar neste registro</button></form><?php else:?><a class="button button-primary" href="/aluno/processar.php?template=<?=(int)$template['id']?>">Iniciar no laboratório</a><?php endif;?><?php endif;?>
+    <?php if($steps):?><?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary" type="submit">Associar ao registro</button></form><?php else:?><a class="button button-primary" href="/aluno/processar.php?template=<?=(int)$template['id']?>">Iniciar no laboratório</a><?php endif;?><?php endif;?>
     <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="duplicate"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-secondary" type="submit">Duplicar processamento</button></form>
   </div>
 
@@ -197,7 +204,7 @@ student_shell_start('Processamentos',null,$student);
     <form method="post" class="student-form-grid"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="save"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><label class="form-field student-span-2">Nome<input name="name" required maxlength="160" value="<?=h((string)$template['name'])?>"></label><label class="form-field student-span-2">Descrição<textarea name="description" rows="2" maxlength="1000"><?=h((string)$template['description'])?></textarea></label><div class="student-actions student-span-2"><button class="button button-primary" type="submit">Salvar</button></div></form>
   </details>
 
-  <div class="student-process-editor-heading"><div><p class="student-kicker">Sequência</p><h2 class="student-subtitle">Etapas do processamento</h2><p>Revise a ordem e os parâmetros antes de levar o roteiro para o laboratório.</p></div></div>
+  <div class="student-process-editor-heading"><div><p class="student-kicker">Sequência</p><h2 class="student-subtitle">Etapas do processamento</h2><p>Revise a ordem e os parâmetros antes de usar o roteiro. Associá-lo a um registro não inicia a execução.</p></div></div>
   <?php if(!$steps):?><div class="student-process-empty"><strong>Este roteiro ainda está vazio.</strong><p>Adicione a primeira etapa abaixo. Para um processo já trabalhado no workshop, pode ser mais simples voltar e começar por um padrão.</p></div>
   <?php else:?><ol class="student-process-step-list">
     <?php foreach($steps as $index=>$step):$payload=student_process_json_array((string)$step['payload_json']);$reuse=(string)($payload['reuse_source_stage_key']??'');$isEditing=$editStep&&(int)$editStep['id']===(int)$step['id'];?>

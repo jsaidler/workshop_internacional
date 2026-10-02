@@ -1,5 +1,6 @@
 const {test,expect}=require('@playwright/test');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-process-product-audit.html';
+const intentBase='http://127.0.0.1:8099/tools/browser-fixture/student-process-intent-audit.html';
 const screens=['library','editor','runner'];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 for(const [device,viewport] of Object.entries(viewports)){
@@ -35,4 +36,17 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.screenshot({path:`student-visual-audit/${device}/process-${screen}.png`,fullPage:true,animations:'disabled'});
     });
   }
+  test(`process intent visual audit ${device}`,async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.goto(intentBase,{waitUntil:'networkidle'});
+    await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+    await expect(page.getByText('Nenhuma execução iniciada',{exact:true})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Usar o modo laboratório'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Registrar o processamento realizado'})).toBeVisible();
+    await expect(page.getByText('Trocar roteiro',{exact:true})).toBeVisible();
+    await expect(page.locator('.student-topbar')).toBeVisible();
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow,`intent horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
+    await page.screenshot({path:`student-visual-audit/${device}/process-intent.png`,fullPage:true,animations:'disabled'});
+  });
 }

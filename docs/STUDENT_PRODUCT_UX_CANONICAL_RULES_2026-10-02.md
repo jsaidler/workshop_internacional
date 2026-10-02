@@ -18,6 +18,18 @@ Para processamento, pelo menos estes caminhos são canônicos:
 
 Nenhum desses caminhos deve ser tratado como erro ou exceção improvisada. A interface deve deixar a escolha explícita quando ela for relevante.
 
+### Invariante: associar não é executar
+
+**Selecionar, aplicar ou associar um processamento salvo a um registro nunca significa iniciar o laboratório.** Essa ação apenas cria o snapshot do roteiro dentro do Caderno.
+
+O Modo laboratório só pode ser iniciado por uma ação explícita do aluno, apresentada como execução — por exemplo, **Executar agora** ou **Entrar no modo laboratório**. Depois de associado um roteiro e antes de qualquer etapa ser executada, o estado do registro deve permanecer neutro e oferecer, com hierarquia equivalente, pelo menos:
+
+- executar agora com acompanhamento;
+- registrar o processamento como já realizado;
+- trocar o roteiro.
+
+Um roteiro associado e ainda não iniciado não pode aparecer no Caderno como “em execução”, “processamento iniciado” ou equivalente.
+
 ## 2. Registro retroativo de processamento
 
 Ao registrar um processamento já realizado:
