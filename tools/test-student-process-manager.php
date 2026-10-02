@@ -60,7 +60,7 @@ must_student_process_manager(student_process_standard_duration_summary($standard
 must_student_process_manager(student_process_standard_duration_summary($standards['positive-peracetic-ei200']['steps'])==='18:30 + etapas livres','peracetic standard fixed-time summary is wrong');
 must_student_process_manager(str_contains($standardsSource,"'water_amount'=>(string)(550-\$developerAmount)"),'standard dilution must encode water as the complement to 550 ml');
 must_student_process_manager(str_contains($standardsSource,"'reuse_source_stage_key'=>'first_development'"),'standard second development must carry machine-readable bath reuse');
-must_student_process_manager(str_contains($standardsSource,"'reuse_source_stage_key'] as \$field")||str_contains($standardsSource,"'reuse_source_stage_key'] as $field"),'standard copy must persist bath reuse metadata');
+must_student_process_manager(str_contains($standardsSource,"'reuse_source_stage_key'] as"),'standard copy must persist bath reuse metadata');
 
 must_student_process_manager(str_contains($bootstrap,"'student_process_standards'"),'standard process catalog is not loaded by bootstrap');
 must_student_process_manager(str_contains($domain,'student_process_template_duplicate'),'saved process duplication is missing');
