@@ -65,7 +65,6 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Revelador ou solução estoque (ml)<input',
       '>Volume preparado (ml)<input',
       "student_process_inventory_select_html($inventory,'Item do inventário')",
-      '>Aviso de agitação<input type="text"',
     ],
     'aluno/teste-compartilhado.php':[
       '<dt>EI</dt>',

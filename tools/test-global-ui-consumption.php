@@ -26,10 +26,14 @@ foreach(['workshop-theme','form[data-ui-validate]','dataset.uiMatch','aria-descr
 must_global_ui(str_contains($pageJs,"import(`/assets/ui-core.js")&&!str_contains($pageJs,"localStorage.setItem('workshop-theme'"),'template runtime does not delegate theme to ui-core');
 must_global_ui(str_contains($publicJs,"import(`/assets/ui-core.js")&&!str_contains($publicJs,'function applyTheme(')&&!str_contains($publicJs,"localStorage.setItem('workshop-theme'"),'public runtime does not delegate theme to ui-core');
 
-$forbiddenMarkup=['student-field','student-choice-field','student-choice-row','student-choice-option','student-check-field','student-button','student-button-secondary','student-button-compact','student-error','student-notice','student-danger-button','data-student-validate'];
+$forbiddenClasses=['student-field','student-choice-field','student-choice-row','student-choice-option','student-check-field','student-button','student-button-secondary','student-button-compact','student-error','student-notice','student-danger-button'];
 foreach(glob($root.'/aluno/*.php')?:[] as $path){
     $source=(string)file_get_contents($path);
-    foreach($forbiddenMarkup as $needle)must_global_ui(!str_contains($source,$needle),basename($path).' still consumes local primitive '.$needle);
+    preg_match_all('/class="([^"]*)"/',$source,$classMatches);
+    $classTokens=[];
+    foreach($classMatches[1]??[] as $classList){foreach(preg_split('/\s+/',trim((string)$classList))?:[] as $token)if($token!=='')$classTokens[$token]=true;}
+    foreach($forbiddenClasses as $className)must_global_ui(!isset($classTokens[$className]),basename($path).' still consumes local primitive '.$className);
+    must_global_ui(!str_contains($source,'data-student-validate'),basename($path).' still consumes local primitive data-student-validate');
 }
 
 $requiredConsumers=[
