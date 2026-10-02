@@ -30,13 +30,13 @@ if($testId>0){
 if($showIntentChoice){
     student_shell_start('Processamento',null,$student);?>
     <header class="student-process-runner-head"><a class="student-back" href="<?=h($backUrl)?>">← Caderno</a><div><p class="student-kicker">Roteiro associado</p><h1 class="student-title"><?=h($sourceName)?></h1></div></header>
-    <section class="student-process-intent-gate" aria-labelledby="student-process-intent-title">
-      <div class="student-process-choice-intro"><p class="student-kicker">Nenhuma execução iniciada</p><h2 id="student-process-intent-title">O que aconteceu com este processamento?</h2><p>O roteiro já está ligado ao registro, mas isso não significa que o laboratório começou. Escolha agora se você vai executar com acompanhamento ou apenas documentar algo que já fez.</p></div>
-      <div class="student-process-intent-options">
-        <article><span>Executar agora</span><h3>Usar o modo laboratório</h3><p>Acompanhe a sequência etapa a etapa, com temporização e registro conforme a execução acontece.</p><a class="button button-primary" href="/aluno/processar.php?test=<?=$testId?>&amp;intent=live">Entrar no modo laboratório</a></article>
-        <article><span>Já foi feito</span><h3>Registrar o processamento realizado</h3><p>Documente a sequência real sem reproduzir cronômetros ou simular uma execução que já terminou.</p><a class="button button-secondary" href="/aluno/processamento-realizado.php?test=<?=$testId?>">Registrar o que já foi feito</a></article>
+    <section class="student-process-section student-process-intent-gate" aria-labelledby="student-process-intent-title">
+      <div class="student-process-editor-overview"><div><p class="student-kicker">Nenhuma execução iniciada</p><h2 id="student-process-intent-title">O que aconteceu com este processamento?</h2><p>O roteiro já está ligado ao registro, mas isso não significa que o laboratório começou. Escolha se você vai executar com acompanhamento ou documentar algo que já fez.</p></div></div>
+      <div class="student-process-standard-grid student-process-intent-options">
+        <article class="student-process-standard-card"><div class="student-process-standard-meta"><span>Executar agora</span></div><h3>Usar o modo laboratório</h3><p>Acompanhe a sequência etapa a etapa, com temporização e registro conforme a execução acontece.</p><div class="student-process-standard-footer"><span>Execução acompanhada</span><a class="button button-secondary button-compact" href="/aluno/processar.php?test=<?=$testId?>&amp;intent=live">Entrar no modo laboratório</a></div></article>
+        <article class="student-process-standard-card"><div class="student-process-standard-meta"><span>Já foi feito</span></div><h3>Registrar o processamento realizado</h3><p>Documente a sequência real sem reproduzir cronômetros ou simular uma execução que já terminou.</p><div class="student-process-standard-footer"><span>Registro retroativo</span><a class="button button-secondary button-compact" href="/aluno/processamento-realizado.php?test=<?=$testId?>">Registrar o que já foi feito</a></div></article>
       </div>
-      <div class="student-process-intent-secondary"><a class="student-link" href="<?=h($managerUrl)?>">Trocar roteiro</a></div>
+      <div class="student-process-editor-actions"><a class="student-link" href="<?=h($managerUrl)?>">Trocar roteiro</a></div>
     </section>
     <?php student_shell_end();exit;
 }
