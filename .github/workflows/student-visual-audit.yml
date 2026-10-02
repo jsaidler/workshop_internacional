@@ -6,6 +6,7 @@ on:
       - 'app/student_*.php'
       - 'assets/student-*.css'
       - 'assets/student-*.js'
+      - 'assets/cms-student-notes.css'
       - 'assets/ui-core.css'
       - 'assets/ui-core.js'
       - 'tools/browser-fixture/student-visual-audit.html'
@@ -25,6 +26,7 @@ on:
       - 'tools/browser-tests/student-tools-mechanics-audit.spec.cjs'
       - 'tools/browser-tests/student-process-product-audit.spec.cjs'
       - 'tools/browser-tests/student-process-routes-audit.spec.cjs'
+      - 'tools/browser-tests/student-material-notes-audit.spec.cjs'
       - 'tools/browser-tests/student-caderno-product-audit.spec.cjs'
       - 'tools/browser-tests/student-lab-stock-product-audit.spec.cjs'
       - 'tools/browser-tests/student-complete-area-audit.spec.cjs'
@@ -46,7 +48,7 @@ jobs:
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
-          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
       - name: Upload rendered student screens
         if: always()
         uses: actions/upload-artifact@v4
