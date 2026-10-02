@@ -30,7 +30,8 @@ for(const [device,viewport] of Object.entries(viewports)){
         expect(chrome.navTop,'mobile nav must begin after main content').toBeGreaterThanOrEqual(chrome.mainBottom-1);
       }
       if(screen==='notebook'){
-        await expect(page.getByText('como você expôs',{exact:false}).first()).toBeVisible();
+        if(device==='phone')await expect(page.locator('.student-notebook-intro')).toBeHidden();
+        else await expect(page.getByText('como você expôs',{exact:false}).first()).toBeVisible();
         await expect(page.locator('.student-record-progress').first()).toBeVisible();
         await expect(page.getByText('Definir como registrar →',{exact:true})).toBeVisible();
         await expect(page.getByRole('button',{name:'Novo registro'})).toBeVisible();
