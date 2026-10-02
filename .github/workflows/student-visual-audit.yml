@@ -14,11 +14,15 @@ on:
       - 'tools/browser-fixture/student-process-product-audit.html'
       - 'tools/browser-fixture/student-caderno-product-audit.html'
       - 'tools/browser-fixture/student-lab-stock-product-audit.html'
+      - 'tools/browser-fixture/student-secondary-screens-audit.html'
+      - 'tools/browser-fixture/student-material-notes.html'
+      - 'tools/browser-fixture/student-notebook-compare.html'
       - 'tools/browser-tests/student-visual-audit.spec.cjs'
       - 'tools/browser-tests/student-tools-mechanics-audit.spec.cjs'
       - 'tools/browser-tests/student-process-product-audit.spec.cjs'
       - 'tools/browser-tests/student-caderno-product-audit.spec.cjs'
       - 'tools/browser-tests/student-lab-stock-product-audit.spec.cjs'
+      - 'tools/browser-tests/student-complete-area-audit.spec.cjs'
       - '.github/workflows/student-visual-audit.yml'
   workflow_dispatch:
 jobs:
@@ -31,13 +35,13 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - name: Render student visual audit
+      - name: Render every student-area screen
         run: |
           php -S 127.0.0.1:8099 -t . >/tmp/student-visual-audit.log 2>&1 &
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
-          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
       - name: Upload rendered student screens
         if: always()
         uses: actions/upload-artifact@v4
