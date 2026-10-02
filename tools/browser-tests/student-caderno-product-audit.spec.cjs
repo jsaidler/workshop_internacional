@@ -10,6 +10,25 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${screen} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
+      if(device==='phone'){
+        const chrome=await page.evaluate(()=>{
+          const nav=document.querySelector('.student-mobile-nav');
+          const top=document.querySelector('.student-topbar');
+          const step=document.querySelector('.student-step-nav');
+          const main=document.querySelector('.student-main');
+          const ns=nav?getComputedStyle(nav):null;
+          const ts=top?getComputedStyle(top):null;
+          const ss=step?getComputedStyle(step):null;
+          const nr=nav?.getBoundingClientRect();
+          const mr=main?.getBoundingClientRect();
+          return {navPosition:ns?.position,navBackdrop:ns?.backdropFilter||ns?.webkitBackdropFilter||'none',topPosition:ts?.position,stepPosition:ss?.position||null,navTop:nr?.top||0,mainBottom:mr?.bottom||0};
+        });
+        expect(chrome.navPosition,'mobile nav must participate in normal document flow').toBe('static');
+        expect(['none',''].includes(chrome.navBackdrop),'mobile nav must not blur content underneath').toBe(true);
+        expect(chrome.topPosition,'mobile topbar must not occupy viewport while scrolling').toBe('static');
+        if(screen!=='notebook')expect(chrome.stepPosition,'record step navigation must not stick over content').toBe('static');
+        expect(chrome.navTop,'mobile nav must begin after main content').toBeGreaterThanOrEqual(chrome.mainBottom-1);
+      }
       if(screen==='notebook'){
         await expect(page.getByText('como você expôs',{exact:false}).first()).toBeVisible();
         await expect(page.locator('.student-record-progress').first()).toBeVisible();
@@ -18,28 +37,26 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(screen==='exposure'){
         await expect(page.getByRole('heading',{name:'Como expus'})).toBeVisible();
-        await expect(page.getByText('confrontados com o processamento',{exact:false})).toBeVisible();
         await expect(page.getByRole('button',{name:'Salvar exposição e continuar →'})).toBeVisible();
       }
       if(screen==='process-choice'){
-        await expect(page.getByRole('heading',{name:'Associar um processamento salvo'})).toBeVisible();
-        await expect(page.getByRole('heading',{name:'Registrar um processamento já realizado'})).toBeVisible();
-        await expect(page.getByRole('heading',{name:'Registrar etapas manualmente'})).toBeVisible();
-        await expect(page.getByText('Associá-lo não inicia o modo laboratório',{exact:false})).toBeVisible();
-        await expect(page.locator('.student-process-path-options article')).toHaveCount(3);
+        await expect(page.getByRole('heading',{name:'O processamento já aconteceu?'})).toBeVisible();
+        await expect(page.getByRole('heading',{name:'Vou revelar agora'})).toBeVisible();
+        await expect(page.getByRole('heading',{name:'Já revelei'})).toBeVisible();
+        await expect(page.getByText('Registrar etapa por etapa, sem roteiro',{exact:true})).toBeVisible();
+        await expect(page.locator('.student-process-path-options article')).toHaveCount(2);
       }
       if(screen==='process-plan'){
         await expect(page.getByText('0 / 9 etapas')).toBeVisible();
-        await expect(page.getByText('nenhuma execução foi iniciada',{exact:false})).toBeVisible();
-        await expect(page.getByText('Executar agora',{exact:true}).last()).toBeVisible();
-        await expect(page.getByText('Registrar o que já foi feito',{exact:true})).toBeVisible();
+        await expect(page.getByText('Abrir laboratório',{exact:true})).toBeVisible();
+        await expect(page.getByText('Registrar',{exact:true})).toBeVisible();
         await expect(page.getByText('Trocar roteiro',{exact:true})).toBeVisible();
       }
       if(screen==='process-partial'){
         await expect(page.getByText('5 / 9 etapas')).toBeVisible();
         await expect(page.getByText('Lavagem após branqueamento')).toBeVisible();
-        await expect(page.getByText('Continuar no modo laboratório',{exact:true})).toBeVisible();
-        await expect(page.getByText('Registrar etapas já realizadas',{exact:true})).toBeVisible();
+        await expect(page.getByText('Continuar laboratório',{exact:true})).toBeVisible();
+        await expect(page.getByText('Completar registro',{exact:true})).toBeVisible();
       }
       if(screen==='result'){
         await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();

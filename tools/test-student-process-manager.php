@@ -101,8 +101,9 @@ must_student_process_manager(str_contains($manager,'segunda revelação reutiliz
 must_student_process_manager(str_contains($manager,'Reutilizar o banho da primeira revelação'),'step editor does not expose bath reuse choice');
 must_student_process_manager(str_contains($manager,'Excluir processamento')&&str_contains($manager,'Excluir este processamento salvo?'),'process deletion is not discoverable');
 must_student_process_manager(str_contains($manager,'student_process_template_duration_summary'),'saved templates still present partial timed sums as complete totals');
-must_student_process_manager(str_contains($manager,'Associar ao registro')&&str_contains($manager,'Nenhuma execução foi iniciada.'),'process manager still conflates association and execution');
-must_student_process_manager(!str_contains($manager,"header('Location: /aluno/processar.php?test='.\$testId"),'process manager still redirects record association into laboratory execution');
+must_student_process_manager(str_contains($manager,'Associar ao registro')&&str_contains($manager,'Nenhuma execução foi iniciada.'),'process manager lost neutral association semantics');
+must_student_process_manager(str_contains($manager,'Usar no laboratório')&&str_contains($manager,"\$intent==='live'"),'process manager does not preserve an explicit live intent');
+must_student_process_manager(str_contains($manager,"\$target=\$intent==='live'?'/aluno/processar.php?test='.\$testId.'&intent=live':'/aluno/teste.php?id='.\$testId.'&view=process'"),'process manager does not route according to the already-declared intent');
 
 foreach(['student_process_templates','student_process_template_steps','student_process_plans','student_process_plan_steps'] as $table)must_student_process_manager(str_contains($migration,'CREATE TABLE IF NOT EXISTS '.$table),'missing migration table '.$table);
 must_student_process_manager(str_contains($domain,'student_process_plan_apply_template')&&str_contains($domain,'payload_json'),'template snapshot authority is missing');
@@ -113,13 +114,15 @@ must_student_process_manager(str_contains($runner,'state.endAt-Date.now()'),'tim
 must_student_process_manager(!preg_match('/remaining\s*[-]{2}|remaining\s*=\s*remaining\s*-\s*1/',$runner),'timer regressed to decrement-per-tick timing');
 must_student_process_manager(str_contains($runner,"root.dataset.finalStage==='1'")&&str_contains($runPage,'data-final-stage'),'final stage does not end the wake-lock session');
 must_student_process_manager(str_contains($runPage,'Reutilize o banho da primeira revelação')&&str_contains($runPage,'não registre novo consumo'),'runner does not surface the reuse instruction');
-must_student_process_manager(str_contains($runPage,"\$intent!=='live'")&&str_contains($runPage,'Registrar o processamento realizado'),'unstarted plan can still enter laboratory mode without an explicit intent');
+must_student_process_manager(str_contains($runPage,"\$intent!=='live'")&&str_contains($runPage,'Registrar o processamento realizado'),'neutral associated plan can enter laboratory mode without an explicit intent gate');
+must_student_process_manager(str_contains($runPage,"if(\$action==='start'){student_process_plan_start")&&str_contains($runPage,'data-runner-start>Iniciar'),'laboratory execution no longer requires the explicit Start action');
 must_student_process_manager(str_contains($manager,'Associar ao registro')&&str_contains($manager,'Iniciar no laboratório'),'process library no longer supports both record association and standalone execution');
-must_student_process_manager(str_contains($recordPage,'/aluno/processamentos.php?test=<?=$id?>')&&str_contains($recordPage,'Associar um processamento salvo'),'Caderno does not server-render reusable process association');
-must_student_process_manager(str_contains($recordPage,'student_process_plan_for_test')&&str_contains($recordPage,'Executar agora')&&str_contains($recordPage,'Registrar o que já foi feito'),'Caderno does not expose neutral choices for an associated process plan');
-must_student_process_manager(str_contains($recordPage,'Continuar no modo laboratório')&&str_contains($recordPage,'Registrar etapas já realizadas'),'Caderno does not support partial live/retroactive continuation');
+must_student_process_manager(str_contains($recordPage,'/aluno/processamentos.php?test=<?=$id?>&amp;intent=live')&&str_contains($recordPage,'Vou revelar agora'),'Caderno does not preserve the live intent through reusable process selection');
+must_student_process_manager(str_contains($recordPage,'Já revelei')&&str_contains($recordPage,'/aluno/processamento-realizado.php?test=<?=$id?>'),'Caderno does not expose retroactive process recording as the other primary path');
+must_student_process_manager(str_contains($recordPage,'student_process_plan_for_test')&&str_contains($recordPage,'Abrir laboratório')&&str_contains($recordPage,'Trocar roteiro'),'Caderno does not expose compact choices for a neutral associated process plan');
+must_student_process_manager(str_contains($recordPage,'Continuar laboratório')&&str_contains($recordPage,'Completar registro'),'Caderno does not support compact partial live/retroactive continuation');
 must_student_process_manager(str_contains($notebookBridge,"processEntry='server'")&&!str_contains($notebookBridge,'article.innerHTML'),'legacy notebook bridge is still injecting process UI');
-must_student_process_manager(str_contains($recordPage,'Registrar um processamento já realizado'),'Caderno does not expose retroactive process recording');
+must_student_process_manager(!str_contains($recordPage,'Como este processamento aconteceu?')&&!str_contains($recordPage,'Associar um processamento salvo'),'Caderno still exposes the old verbose decision gate');
 must_student_process_manager(!str_contains($tools,'data-lab-timer'),'standalone timer is still the primary tools UI');
 must_student_process_manager(str_contains($doc,'mesmo banho de revelador preparado para a primeira revelação é reaproveitado na segunda'),'developer reuse is not documented canonically');
 must_student_process_manager(str_contains($doc,'template → snapshot do registro → execução real'),'architecture decision is not documented');

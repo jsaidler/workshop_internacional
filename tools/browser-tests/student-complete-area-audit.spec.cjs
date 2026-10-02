@@ -18,10 +18,10 @@ const screens=[
   ['process-plan','student-caderno-product-audit.html?screen=process-plan'],
   ['process-partial','student-caderno-product-audit.html?screen=process-partial'],
   ['process-intent','student-process-intent-audit.html'],
-  ['recording-start','student-secondary-screens-audit.html?screen=recording-start'],
+  ['recording-start','student-recording-states-audit.html?screen=start'],
   ['recording-associated','student-recording-associated-audit.html'],
-  ['recording-partial','student-secondary-screens-audit.html?screen=recording-partial'],
-  ['recording-complete','student-secondary-screens-audit.html?screen=recording-complete'],
+  ['recording-partial','student-recording-states-audit.html?screen=partial'],
+  ['recording-complete','student-recording-states-audit.html?screen=complete'],
   ['result','student-caderno-product-audit.html?screen=result'],
   ['step-editor','student-secondary-screens-audit.html?screen=step-editor'],
   ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
@@ -57,6 +57,9 @@ async function ensureCanonicalShellStyles(page){
         head.insertBefore(link,anchor);
       });
     }
+    if(![...head.querySelectorAll('link[rel="stylesheet"]')].some(link=>(link.getAttribute('href')||'').split('?')[0]==='/assets/student-quality-pass.css')){
+      await new Promise((resolve,reject)=>{const link=document.createElement('link');link.rel='stylesheet';link.href='/assets/student-quality-pass.css';link.onload=resolve;link.onerror=reject;head.appendChild(link);});
+    }
   },shellStyles);
 }
 for(const [device,viewport] of Object.entries(viewports)){
@@ -71,31 +74,53 @@ for(const [device,viewport] of Object.entries(viewports)){
         await page.evaluate(sel=>{const d=document.querySelector(sel);if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}},selector);
       }
       if(name==='process-choice'){
-        await expect(page.getByText('Registrar um processamento já realizado',{exact:true})).toBeVisible();
-        await expect(page.locator('.student-process-path-options article')).toHaveCount(3);
+        await expect(page.getByText('O processamento já aconteceu?',{exact:true})).toBeVisible();
+        await expect(page.locator('.student-process-path-options article')).toHaveCount(2);
       }
       if(name==='process-plan'){
         await expect(page.getByText('0 / 9 etapas')).toBeVisible();
-        await expect(page.getByText('Registrar o que já foi feito',{exact:true})).toBeVisible();
+        await expect(page.getByText('Abrir laboratório',{exact:true})).toBeVisible();
+        await expect(page.getByText('Registrar',{exact:true})).toBeVisible();
       }
       if(name==='process-partial'){
         await expect(page.getByText('5 / 9 etapas')).toBeVisible();
-        await expect(page.getByText('Registrar etapas já realizadas',{exact:true})).toBeVisible();
+        await expect(page.getByText('Completar registro',{exact:true})).toBeVisible();
       }
       if(name==='process-intent'){
         await expect(page.getByText('Nenhuma execução iniciada',{exact:true})).toBeVisible();
         await expect(page.getByText('Registrar o processamento realizado',{exact:true})).toBeVisible();
       }
       if(name==='recording-start'){
-        await expect(page.getByText('Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:false})).toBeVisible();
-        await expect(page.getByText('não movimenta o inventário automaticamente',{exact:false})).toBeVisible();
+        await expect(page.getByText('Qual roteiro você usou?',{exact:true})).toBeVisible();
+        await expect(page.getByText('Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:false}).first()).toBeVisible();
       }
       if(name==='recording-associated'){
         await expect(page.getByText('Roteiro associado',{exact:true})).toBeVisible();
-        await expect(page.getByRole('button',{name:'Registrar todo o processamento como realizado'})).toBeVisible();
-        await expect(page.getByText('ainda estão apenas planejadas',{exact:false})).toBeVisible();
+        await expect(page.getByRole('button',{name:'Registrar processo como realizado'})).toBeVisible();
       }
-      if(name==='recording-partial')await expect(page.getByRole('button',{name:'Registrar etapas restantes como realizadas'})).toBeVisible();
+      if(name==='recording-partial')await expect(page.getByRole('button',{name:'Registrar etapas restantes'})).toBeVisible();
+      if(name==='recording-complete')await expect(page.getByRole('button',{name:'Registrar resultado →'})).toBeVisible();
+      if(device==='phone'&&name!=='login'&&name!=='activation-password'&&name!=='material'){
+        const mobileChrome=await page.evaluate(()=>{
+          const nav=document.querySelector('.student-mobile-nav');const top=document.querySelector('.student-topbar');const main=document.querySelector('.student-main');
+          if(!nav||!top||!main)return null;
+          const ns=getComputedStyle(nav),ts=getComputedStyle(top),nr=nav.getBoundingClientRect(),mr=main.getBoundingClientRect();
+          return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBackdrop:ns.backdropFilter||ns.webkitBackdropFilter||'none',topPosition:ts.position,navTop:nr.top,mainBottom:mr.bottom};
+        });
+        if(mobileChrome){
+          if(name==='lab-runner'){
+            expect(mobileChrome.navDisplay,'lab-runner: mobile navigation must be hidden during execution').toBe('none');
+            expect(mobileChrome.topDisplay,'lab-runner: topbar must be hidden during execution').toBe('none');
+          }else{
+            expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');
+            expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');
+            expect(mobileChrome.navPosition,`${name}: mobile nav overlays content`).toBe('static');
+            expect(['none',''].includes(mobileChrome.navBackdrop),`${name}: mobile nav remains translucent/blurred`).toBe(true);
+            expect(mobileChrome.topPosition,`${name}: topbar remains sticky`).toBe('static');
+            expect(mobileChrome.navTop,`${name}: mobile nav begins before main ends`).toBeGreaterThanOrEqual(mobileChrome.mainBottom-1);
+          }
+        }
+      }
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${name} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await page.screenshot({path:`student-visual-audit/complete/${device}/${name}.png`,fullPage:true,animations:'disabled'});
