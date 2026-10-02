@@ -41,11 +41,27 @@ const screens=[
   ['password-change','student-secondary-screens-audit.html?screen=password-change'],
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
+const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
+async function ensureCanonicalShellStyles(page){
+  await page.evaluate(async styles=>{
+    const featurePattern=/\/assets\/student-(?:auth|caderno|processes|lab-stock|process-recording)\.css(?:\?|$)/;
+    const head=document.head;
+    let anchor=[...head.querySelectorAll('link[rel="stylesheet"]')].find(link=>featurePattern.test(link.getAttribute('href')||''))||null;
+    for(const href of styles){
+      if([...head.querySelectorAll('link[rel="stylesheet"]')].some(link=>(link.getAttribute('href')||'').split('?')[0]===href))continue;
+      await new Promise((resolve,reject)=>{
+        const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.onload=resolve;link.onerror=reject;
+        head.insertBefore(link,anchor);
+      });
+    }
+  },shellStyles);
+}
 for(const [device,viewport] of Object.entries(viewports)){
   for(const [name,path] of screens){
     test(`complete student area visual audit ${device} ${name}`,async({page})=>{
       await page.setViewportSize(viewport);
       await page.goto(fixture(path),{waitUntil:'networkidle'});
+      if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
       if(name==='new-record'||name==='toolbox'){
         const selector=name==='new-record'?'.student-create-dialog':'.student-toolbox';
