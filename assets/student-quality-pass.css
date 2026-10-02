@@ -47,6 +47,9 @@
   .student-main>.student-page-heading{margin-bottom:22px}
   .student-section{margin-top:26px}
 
+  .student-notebook-intro{display:none}
+  .student-notebook-section-heading>p{display:none}
+
   .student-record-header{margin-bottom:14px}
   .student-record-purpose{display:none}
   .student-record-step-nav a small{display:none}
@@ -67,7 +70,7 @@
   .student-process-path-options article{
     display:grid;
     grid-template-columns:minmax(0,1fr) auto;
-    gap:4px 14px;
+    gap:4px 12px;
     align-items:center;
     padding:13px 0;
     border:0;
@@ -89,7 +92,7 @@
   .student-plan-intent-grid article{
     display:grid;
     grid-template-columns:minmax(0,1fr) auto;
-    gap:3px 12px;
+    gap:3px 10px;
     align-items:center;
     padding:12px 0;
     border:0;
@@ -115,13 +118,38 @@
   .student-process-template-main h3{font-size:21px}
   .student-process-template-main p{display:none}
   .student-process-summary{margin-top:6px}
-  .student-process-template-actions{justify-content:flex-start;gap:6px}
+  .student-process-template-actions{justify-content:flex-start;gap:5px;align-items:center}
+  .student-process-template-actions>form{margin:0}
+  .student-process-template-actions .button-primary{flex:1 1 100%;justify-content:center}
+  .student-process-template-actions .button-secondary,
+  .student-process-template-actions .student-danger-action{
+    min-height:30px;
+    padding:0 7px;
+    border:0;
+    background:transparent;
+    font-size:8px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
   .student-process-standard-grid{grid-template-columns:1fr;gap:0;margin-top:10px;border-top:1px solid var(--line)}
-  .student-process-standard-card{padding:13px 0;border:0;border-bottom:1px solid var(--line);background:transparent}
-  .student-process-standard-card h3{margin-top:7px;font-size:21px}
+  .student-process-standard-card{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-rows:auto auto auto;
+    column-gap:12px;
+    align-items:center;
+    padding:13px 0;
+    border:0;
+    border-bottom:1px solid var(--line);
+    background:transparent;
+  }
+  .student-process-standard-meta{grid-column:1;grid-row:1;margin:0}
+  .student-process-standard-card h3{grid-column:1;grid-row:2;margin:7px 0 0;font-size:19px;line-height:1.15}
   .student-process-standard-card>p{display:none}
-  .student-process-standard-footer{padding-top:10px}
-  .student-process-standard-footer>span{font-size:9px}
+  .student-process-standard-footer{display:contents}
+  .student-process-standard-footer>span{grid-column:1;grid-row:3;margin-top:7px;font-size:9px}
+  .student-process-standard-footer form{grid-column:2;grid-row:1 / 4;align-self:center;margin:0}
+  .student-process-standard-footer .button{min-height:36px;padding:0 10px;white-space:normal;max-width:112px;line-height:1.2}
 
   .student-process-editor{margin-top:18px}
   .student-process-editor-overview{gap:12px;padding-bottom:16px}
@@ -160,9 +188,9 @@
   .student-recording-option{
     display:grid;
     grid-template-columns:minmax(0,1fr) auto;
-    gap:4px 12px;
+    gap:4px 10px;
     align-items:center;
-    padding:11px 0;
+    padding:10px 0;
     border:0;
     border-bottom:1px solid var(--line);
     border-radius:0;
@@ -171,7 +199,7 @@
   .student-recording-option>p{display:none}
   .student-recording-option>span{grid-column:1;font-size:8px;justify-self:start}
   .student-recording-option form{grid-column:2;grid-row:1 / 3;margin:0}
-  .student-recording-option .button{white-space:nowrap}
+  .student-recording-option .button{min-height:34px;padding:0 10px;white-space:nowrap}
   .student-process-history article{align-items:center;flex-direction:row;gap:10px;padding:.7rem 0}
   .student-process-history article>div{gap:.6rem}
   .student-process-history article p{font-size:11px;line-height:1.35}
@@ -186,13 +214,9 @@
   .student-shell{width:calc(100% - 18px)}
   .student-title{font-size:32px}
   .student-title-record{font-size:30px}
-  .student-process-path-options article,
-  .student-plan-intent-grid article,
-  .student-recording-option{grid-template-columns:1fr}
-  .student-process-path-options .button,
-  .student-process-path-options .student-link,
-  .student-plan-intent-grid .button,
-  .student-recording-option form{grid-column:1;grid-row:auto;margin-top:7px;justify-self:start}
   .student-process-history article{align-items:flex-start}
   .student-process-history article .button{margin-left:auto}
+  .student-process-standard-card{column-gap:9px}
+  .student-process-standard-card h3{font-size:18px}
+  .student-process-standard-footer .button{max-width:104px;padding-inline:8px;font-size:8px}
 }
