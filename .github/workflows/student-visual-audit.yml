@@ -12,6 +12,7 @@ on:
       - 'tools/browser-fixture/student-auth-visual-audit.html'
       - 'tools/browser-fixture/student-tools-mechanics-audit.html'
       - 'tools/browser-fixture/student-process-product-audit.html'
+      - 'tools/browser-fixture/student-process-routes-audit.html'
       - 'tools/browser-fixture/student-process-intent-audit.html'
       - 'tools/browser-fixture/student-caderno-product-audit.html'
       - 'tools/browser-fixture/student-recording-associated-audit.html'
@@ -23,6 +24,7 @@ on:
       - 'tools/browser-tests/student-visual-audit.spec.cjs'
       - 'tools/browser-tests/student-tools-mechanics-audit.spec.cjs'
       - 'tools/browser-tests/student-process-product-audit.spec.cjs'
+      - 'tools/browser-tests/student-process-routes-audit.spec.cjs'
       - 'tools/browser-tests/student-caderno-product-audit.spec.cjs'
       - 'tools/browser-tests/student-lab-stock-product-audit.spec.cjs'
       - 'tools/browser-tests/student-complete-area-audit.spec.cjs'
@@ -44,7 +46,7 @@ jobs:
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
-          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
       - name: Upload rendered student screens
         if: always()
         uses: actions/upload-artifact@v4
