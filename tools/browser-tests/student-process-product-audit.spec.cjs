@@ -21,6 +21,16 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(screen==='runner'){
         await expect(page.getByText('Reutilize o banho da primeira revelação')).toBeVisible();
         await expect(page.getByText('07:00').first()).toBeVisible();
+        await expect(page.locator('.student-topbar')).toBeHidden();
+        await expect(page.locator('.student-mobile-nav')).toBeHidden();
+        const start=page.getByRole('button',{name:'Iniciar'});
+        await expect(start).toBeVisible();
+        const receivesPointer=await start.evaluate(el=>{
+          const box=el.getBoundingClientRect();
+          const hit=document.elementFromPoint(box.left+box.width/2,box.top+box.height/2);
+          return hit===el||el.contains(hit);
+        });
+        expect(receivesPointer,'runner primary control must not be covered by navigation chrome').toBe(true);
       }
       await page.screenshot({path:`student-visual-audit/${device}/process-${screen}.png`,fullPage:true,animations:'disabled'});
     });
