@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>:root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#73d2ac;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:"Courier New",monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px;--ux-space-8:64px}</style>
+<link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-workbench.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css"><link rel="stylesheet" href="/assets/student-processes.css"><link rel="stylesheet" href="/assets/student-quality-pass.css">
+<title>Workshop route audit</title>
+</head>
+<body class="student-page"><div class="student-shell">
+<header class="student-topbar"><a class="brand student-wordmark">JSaidler Fotografia</a><nav class="student-desktop-nav"><a>Início</a><a>Curso</a><a>Caderno</a></nav><span class="student-topbar-spacer"></span><button class="button button-secondary button-compact student-tools-trigger">Ferramentas</button><details class="student-user-menu"><summary>Conta</summary></details></header>
+<main class="student-main" id="screen"></main>
+<nav class="student-mobile-nav"><a>Início</a><a>Curso</a><a>Caderno</a><button>Ferramentas</button></nav>
+</div>
+<script>
+const parodinal=(ei)=>({developer:`Parodinal ${ei===400?'20':'10'} ml + água até 550 ml`,temperature:'26 °C',duration:'07:00',agitation:'agitação leve'});
+const caffenol={developer:'Brewed Caffenol fresco',temperature:'35,7 °C',duration:'05:00',agitation:''};
+const routes={
+ 'parodinal-ei200-ferric':{name:'Positivo direto — Parodinal EI 200 — FeCl₃ + amônia',ei:'EI 200',dev:parodinal(200),bleach:'ferric'},
+ 'parodinal-ei400-ferric':{name:'Positivo direto — Parodinal EI 400 — FeCl₃ + amônia',ei:'EI 400',dev:parodinal(400),bleach:'ferric'},
+ 'parodinal-ei200-peracetic':{name:'Positivo direto — Parodinal EI 200 — peracética',ei:'EI 200',dev:parodinal(200),bleach:'peracetic'},
+ 'parodinal-ei400-peracetic':{name:'Positivo direto — Parodinal EI 400 — peracética',ei:'EI 400',dev:parodinal(400),bleach:'peracetic'},
+ 'caffenol-ei400-ferric':{name:'Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia',ei:'EI 400',dev:caffenol,bleach:'ferric',recipe:'37 g café torrado e moído extra-forte + 54 g carbonato de sódio + 20 g ácido ascórbico; completar com água até aproximadamente 1 L.'},
+ 'caffenol-ei400-peracetic':{name:'Positivo direto — Brewed Caffenol EI 400 — peracética',ei:'EI 400',dev:caffenol,bleach:'peracetic',recipe:'37 g café torrado e moído extra-forte + 54 g carbonato de sódio + 20 g ácido ascórbico; completar com água até aproximadamente 1 L.'}
+};
+function stepsFor(r){
+ const devMeta=[r.dev.developer,r.dev.temperature,r.dev.duration,r.dev.agitation].filter(Boolean).join(' · ');
+ const base=[['01','Primeira revelação',devMeta],['02','Lavagem','01:00']];
+ if(r.bleach==='ferric')base.push(['03','Branqueamento — cloreto férrico','01:30'],['04','Lavagem após branqueamento','01:00'],['05','Limpeza — amônia','Sem tempo definido'],['06','Lavagem após amônia','01:00'],['07','Segunda revelação',devMeta,'reuse'],['08','Lavagem final','01:00'],['09','Secagem','Sem tempo definido']);
+ else base.push(['03','Branqueamento — peracética','01:30'],['04','Lavagem após branqueamento','01:00'],['05','Segunda revelação',devMeta,'reuse'],['06','Lavagem final','01:00'],['07','Secagem','Sem tempo definido']);
+ return base;
+}
+const key=new URLSearchParams(location.search).get('route')||'parodinal-ei200-ferric';const route=routes[key]||routes['parodinal-ei200-ferric'];const steps=stepsFor(route);
+const total=steps.reduce((s,x)=>{const m=x[2].match(/(?:^| · )(\d\d):(\d\d)(?: ·|$)/)||x[2].match(/^(\d\d):(\d\d)$/);return m?s+(+m[1])*60+(+m[2]):s;},0);const mm=Math.floor(total/60),ss=String(total%60).padStart(2,'0');
+const list=steps.map(([n,name,meta,reuse])=>`<li class="student-process-step-card" data-route-stage="${n}"><span class="student-process-step-index">${n}</span><div class="student-process-step-body"><h3>${name}</h3><p>${meta}</p>${reuse?'<div class="student-process-reuse-note"><strong>Mesmo banho da 1ª revelação</strong><span>Reutilize a solução já preparada; não prepare outro revelador.</span></div>':''}</div></li>`).join('');
+document.getElementById('screen').innerHTML=`<header class="student-page-heading student-process-library-heading"><div><p class="student-kicker">Roteiro do workshop</p><h1 class="student-title">${route.name}</h1></div><a class="button button-secondary">← Roteiros</a></header><section class="student-process-editor route-audit"><div class="student-process-editor-overview"><div><p class="student-kicker">Parâmetros principais</p><h2>${route.dev.developer}</h2><p>${route.dev.temperature} · ${route.dev.duration}${route.dev.agitation?' · '+route.dev.agitation:''}</p>${route.recipe?`<p>${route.recipe}</p>`:''}</div><div class="student-process-editor-stats"><span><strong>${steps.length}</strong>etapas</span><span><strong>${String(mm).padStart(2,'0')}:${ss} + livres</strong>tempo programado</span></div></div><div class="student-process-editor-heading"><div><p class="student-kicker">Sequência</p><h2 class="student-subtitle">Etapas do processamento</h2></div></div><ol class="student-process-step-list">${list}</ol></section>`;
+</script>
+</body></html>

@@ -14,14 +14,21 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(screen==='library'){
         await expect(page.getByText('Meus processamentos')).toBeVisible();
         await expect(page.getByRole('button',{name:'Excluir'}).first()).toBeVisible();
+        await expect(page.locator('.student-process-standard-card')).toHaveCount(6);
+        await expect(page.locator('.student-process-standard-card[data-developer="Brewed Caffenol"]')).toHaveCount(2);
+        await expect(page.getByText('Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:true})).toBeVisible();
       }
       if(screen==='editor'){
         await expect(page.getByText('Mesmo banho da 1ª revelação')).toBeVisible();
         await expect(page.getByRole('button',{name:'Salvar etapa'})).toBeVisible();
+        await expect(page.locator('.student-process-step-card')).toHaveCount(9);
+        await expect(page.locator('.student-process-step-card[data-stage="03"]')).toContainText('cloreto férrico');
+        await expect(page.locator('.student-process-step-card[data-stage="05"]')).toContainText('amônia');
       }
       if(screen==='runner'){
         await expect(page.getByText('Reutilize o banho da primeira revelação')).toBeVisible();
         await expect(page.getByText('07:00').first()).toBeVisible();
+        await expect(page.locator('.student-process-runner-timeline li')).toHaveCount(9);
         await expect(page.locator('.student-topbar')).toBeHidden();
         await expect(page.locator('.student-mobile-nav')).toBeHidden();
         const start=page.getByRole('button',{name:'Iniciar',exact:true});
