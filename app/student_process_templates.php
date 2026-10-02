@@ -49,6 +49,13 @@ function student_process_template_steps(PDO $db,int $templateId): array {
     $q->execute([$templateId]);return $q->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function student_process_template_step_for_student(PDO $db,int $templateId,int $stepId,int $studentId): ?array {
+    if($templateId<1||$stepId<1)return null;
+    student_process_template_for_student($db,$templateId,$studentId)??throw new RuntimeException('Processamento não encontrado.');
+    $q=$db->prepare('SELECT * FROM student_process_template_steps WHERE id=? AND template_id=? LIMIT 1');
+    $q->execute([$stepId,$templateId]);return $q->fetch(PDO::FETCH_ASSOC)?:null;
+}
+
 function student_process_template_total_seconds(PDO $db,int $templateId): int {
     $total=0;foreach(student_process_template_steps($db,$templateId) as $step){$seconds=student_process_time_seconds((string)$step['duration']);if($seconds!==null)$total+=$seconds;}return $total;
 }
@@ -67,6 +74,21 @@ function student_process_template_update(PDO $db,int $templateId,int $studentId,
     $description=student_workspace_text($input['description']??$template['description'],1000);
     $db->prepare('UPDATE student_process_templates SET name=?,description=?,updated_at=? WHERE id=? AND student_id=?')->execute([$name,$description,utc_now(),$templateId,$studentId]);
     return student_process_template_for_student($db,$templateId,$studentId)??$template;
+}
+
+function student_process_template_duplicate(PDO $db,int $templateId,int $studentId): array {
+    $template=student_process_template_for_student($db,$templateId,$studentId)??throw new RuntimeException('Processamento não encontrado.');
+    $steps=student_process_template_steps($db,$templateId);$now=utc_now();
+    $copyName=student_workspace_text((string)$template['name'].' — cópia',160);
+    $db->beginTransaction();
+    try{
+        $q=$db->prepare('INSERT INTO student_process_templates(template_uuid,student_id,name,description,created_at,updated_at) VALUES(?,?,?,?,?,?)');
+        $q->execute([student_uuid(),$studentId,$copyName,(string)$template['description'],$now,$now]);$copyId=(int)$db->lastInsertId();
+        $insert=$db->prepare('INSERT INTO student_process_template_steps(template_id,position,stage_key,label,duration,agitation_interval,payload_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)');
+        foreach($steps as $step)$insert->execute([$copyId,(int)$step['position'],(string)$step['stage_key'],(string)$step['label'],(string)$step['duration'],(string)$step['agitation_interval'],(string)$step['payload_json'],$now,$now]);
+        $db->commit();
+    }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+    return student_process_template_for_student($db,$copyId,$studentId)??[];
 }
 
 function student_process_template_delete(PDO $db,int $templateId,int $studentId): void {
@@ -88,6 +110,7 @@ function student_process_template_resolve_input(PDO $db,int $studentId,array $in
 }
 
 function student_process_template_payload_from_stage(array $data,string $stageKey,array $input): array {
+    $reuseSource=$stageKey==='second_development'?student_workspace_text($input['reuse_source_stage_key']??'',80):'';
     return [
         'stage_key'=>$stageKey,
         'custom_label'=>$stageKey==='custom'?(string)$data['label']:'',
@@ -96,13 +119,14 @@ function student_process_template_payload_from_stage(array $data,string $stageKe
         'developer_amount'=>$data['developer_amount'],
         'water_amount'=>$data['water_amount'],
         'fresh_volume'=>$data['developer_amount'],
-        'saved_preparation_id'=>null,
+        'saved_preparation_id'=>(int)($input['saved_preparation_id']??0)?:null,
         'inventory_item_id'=>null,
         'inventory_amount'=>null,
         'temperature'=>(string)$data['temperature'],
         'duration'=>(string)$data['duration'],
         'agitation'=>(string)$data['agitation'],
         'notes'=>(string)$data['notes'],
+        'reuse_source_stage_key'=>$reuseSource,
         'agitation_interval'=>student_workspace_text($input['agitation_interval']??'',80),
     ];
 }
@@ -116,6 +140,16 @@ function student_process_template_add_step(PDO $db,int $templateId,int $studentI
     $q->execute([$templateId,$position,$stageKey,$data['label'],$data['duration'],$payload['agitation_interval'],json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),$now,$now]);
     $db->prepare('UPDATE student_process_templates SET updated_at=? WHERE id=?')->execute([$now,$templateId]);
     $id=(int)$db->lastInsertId();$q=$db->prepare('SELECT * FROM student_process_template_steps WHERE id=?');$q->execute([$id]);return $q->fetch(PDO::FETCH_ASSOC)?:[];
+}
+
+function student_process_template_update_step(PDO $db,int $templateId,int $stepId,int $studentId,array $input): array {
+    $step=student_process_template_step_for_student($db,$templateId,$stepId,$studentId)??throw new RuntimeException('Etapa não encontrada.');
+    $resolved=student_process_template_resolve_input($db,$studentId,$input);$stageKey=(string)($resolved['stage_key']??$step['stage_key']);
+    $data=student_process_stage_data($stageKey,$resolved);$payload=student_process_template_payload_from_stage($data,$stageKey,$resolved);$now=utc_now();
+    $db->prepare('UPDATE student_process_template_steps SET stage_key=?,label=?,duration=?,agitation_interval=?,payload_json=?,updated_at=? WHERE id=? AND template_id=?')
+        ->execute([$stageKey,$data['label'],$data['duration'],$payload['agitation_interval'],json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),$now,$stepId,$templateId]);
+    $db->prepare('UPDATE student_process_templates SET updated_at=? WHERE id=?')->execute([$now,$templateId]);
+    return student_process_template_step_for_student($db,$templateId,$stepId,$studentId)??$step;
 }
 
 function student_process_template_delete_step(PDO $db,int $templateId,int $stepId,int $studentId): void {
