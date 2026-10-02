@@ -13,17 +13,30 @@ function student_process_standard_development(int $ei): array {
     ];
 }
 
+function student_process_standard_caffenol_ei400(): array {
+    return [
+        'developer_key'=>'brewed-caffenol',
+        'temperature'=>'35,7 °C',
+        'duration'=>'5:00',
+        'notes'=>'Brewed Caffenol preparado fresco. Receita de referência para aproximadamente 1 L: 37 g de café torrado e moído extra-forte, 54 g de carbonato de sódio e 20 g de ácido ascórbico; completar com água até 1 L.',
+    ];
+}
+
 function student_process_standard_reused_development(array $development): array {
     $development['reuse_source_stage_key']='first_development';
-    $development['notes']='Reutilizar o mesmo banho de revelador da primeira revelação; não preparar uma nova solução.';
+    $existing=trim((string)($development['notes']??''));
+    $reuse='Reutilizar o mesmo banho de revelador da primeira revelação; não preparar uma nova solução.';
+    $development['notes']=$existing!==''?$existing.' '.$reuse:$reuse;
     return $development;
 }
 
 function student_process_standard_catalog(): array {
     $ei200=student_process_standard_development(200);
     $ei400=student_process_standard_development(400);
+    $caffenol400=student_process_standard_caffenol_ei400();
     $ei200Second=student_process_standard_reused_development($ei200);
     $ei400Second=student_process_standard_reused_development($ei400);
+    $caffenol400Second=student_process_standard_reused_development($caffenol400);
     return [
         'positive-ferric-ammonia-ei200'=>[
             'name'=>'Positivo direto — Parodinal EI 200 — FeCl₃ + amônia',
@@ -81,12 +94,41 @@ function student_process_standard_catalog(): array {
                 ['stage_key'=>'dry','duration'=>''],
             ],
         ],
+        'positive-ferric-ammonia-ei400-caffenol'=>[
+            'name'=>'Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia',
+            'description'=>'Brewed Caffenol fresco, EI 400, 35,7 °C e 5 min. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e cloreto férrico por 1 min 30 s.',
+            'steps'=>[
+                ['stage_key'=>'first_development']+$caffenol400,
+                ['stage_key'=>'wash_after_first','duration'=>'1:00'],
+                ['stage_key'=>'ferric','duration'=>'1:30'],
+                ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
+                ['stage_key'=>'ammonia','duration'=>''],
+                ['stage_key'=>'wash_after_ammonia','duration'=>'1:00'],
+                ['stage_key'=>'second_development']+$caffenol400Second,
+                ['stage_key'=>'final_wash','duration'=>'1:00'],
+                ['stage_key'=>'dry','duration'=>''],
+            ],
+        ],
+        'positive-peracetic-ei400-caffenol'=>[
+            'name'=>'Positivo direto — Brewed Caffenol EI 400 — peracética',
+            'description'=>'Brewed Caffenol fresco, EI 400, 35,7 °C e 5 min. O mesmo banho é reutilizado na segunda revelação. Lavagens de 1 min e branqueamento peracético por 1 min 30 s.',
+            'steps'=>[
+                ['stage_key'=>'first_development']+$caffenol400,
+                ['stage_key'=>'wash_after_first','duration'=>'1:00'],
+                ['stage_key'=>'peracetic','duration'=>'1:30'],
+                ['stage_key'=>'wash_after_bleach','duration'=>'1:00'],
+                ['stage_key'=>'second_development']+$caffenol400Second,
+                ['stage_key'=>'final_wash','duration'=>'1:00'],
+                ['stage_key'=>'dry','duration'=>''],
+            ],
+        ],
     ];
 }
 
 function student_process_standard_developers(): array {
-    $catalog=student_process_developer_catalog();
-    return isset($catalog['parodinal'])?['parodinal'=>$catalog['parodinal']]:[];
+    $catalog=student_process_developer_catalog();$out=[];
+    foreach(['parodinal','brewed-caffenol'] as $key)if(isset($catalog[$key]))$out[$key]=$catalog[$key];
+    return $out;
 }
 
 function student_process_standard_for_key(string $key): ?array {

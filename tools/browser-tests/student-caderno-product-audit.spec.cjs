@@ -6,8 +6,10 @@ for(const [device,viewport] of Object.entries(viewports)){
   for(const screen of screens){
     test(`caderno product visual audit ${device} ${screen}`,async({page})=>{
       await page.setViewportSize(viewport);
-      await page.goto(`${base}?screen=${screen}`,{waitUntil:'networkidle'});
+      const suffix=screen==='process-choice'||screen==='process-plan'?'&id=17':'';
+      await page.goto(`${base}?screen=${screen}${suffix}`,{waitUntil:'networkidle'});
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      if(screen==='process-choice'||screen==='process-plan')await page.addScriptTag({url:'/assets/student-process-entry.js'});
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${screen} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       if(screen==='notebook'){
@@ -23,12 +25,15 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(screen==='process-choice'){
         await expect(page.getByRole('heading',{name:'Usar um processamento salvo'})).toBeVisible();
         await expect(page.getByRole('heading',{name:'Registrar etapas manualmente'})).toBeVisible();
+        await expect(page.getByRole('heading',{name:'Registrar um processamento já realizado'})).toBeVisible();
         await expect(page.getByText('Escolher processamento',{exact:true})).toBeVisible();
+        await expect(page.getByText('Registrar o que já foi feito',{exact:true})).toBeVisible();
       }
       if(screen==='process-plan'){
         await expect(page.getByText('5 / 9 etapas')).toBeVisible();
         await expect(page.getByText('Lavagem após branqueamento')).toBeVisible();
         await expect(page.getByText('Continuar no modo laboratório',{exact:true})).toBeVisible();
+        await expect(page.getByText('Já executei etapas fora do sistema',{exact:false})).toBeVisible();
       }
       if(screen==='result'){
         await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();
