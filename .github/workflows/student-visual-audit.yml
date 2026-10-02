@@ -15,6 +15,7 @@ on:
       - 'tools/browser-fixture/student-process-intent-audit.html'
       - 'tools/browser-fixture/student-caderno-product-audit.html'
       - 'tools/browser-fixture/student-recording-associated-audit.html'
+      - 'tools/browser-fixture/student-recording-states-audit.html'
       - 'tools/browser-fixture/student-lab-stock-product-audit.html'
       - 'tools/browser-fixture/student-secondary-screens-audit.html'
       - 'tools/browser-fixture/student-material-notes.html'
