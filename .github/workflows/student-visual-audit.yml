@@ -3,9 +3,13 @@ on:
   pull_request:
     paths:
       - 'aluno/**'
+      - 'admin/processes.php'
+      - 'admin/lab-catalogs.php'
       - 'app/student_*.php'
+      - 'app/admin_shell.php'
       - 'assets/student-*.css'
       - 'assets/student-*.js'
+      - 'assets/admin-*.css'
       - 'assets/cms-student-notes.css'
       - 'assets/ui-core.css'
       - 'assets/ui-core.js'
@@ -15,6 +19,8 @@ on:
       - 'tools/browser-fixture/student-process-product-audit.html'
       - 'tools/browser-fixture/student-process-routes-audit.html'
       - 'tools/browser-fixture/student-process-intent-audit.html'
+      - 'tools/browser-fixture/student-process-execution-state-audit.html'
+      - 'tools/browser-fixture/admin-process-domain-audit.html'
       - 'tools/browser-fixture/student-caderno-product-audit.html'
       - 'tools/browser-fixture/student-recording-associated-audit.html'
       - 'tools/browser-fixture/student-recording-states-audit.html'
@@ -26,6 +32,8 @@ on:
       - 'tools/browser-tests/student-tools-mechanics-audit.spec.cjs'
       - 'tools/browser-tests/student-process-product-audit.spec.cjs'
       - 'tools/browser-tests/student-process-routes-audit.spec.cjs'
+      - 'tools/browser-tests/student-process-execution-state-audit.spec.cjs'
+      - 'tools/browser-tests/admin-process-domain-audit.spec.cjs'
       - 'tools/browser-tests/student-material-notes-audit.spec.cjs'
       - 'tools/browser-tests/student-caderno-product-audit.spec.cjs'
       - 'tools/browser-tests/student-lab-stock-product-audit.spec.cjs'
@@ -42,14 +50,14 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - name: Render every student-area screen
+      - name: Render student and process-admin surfaces
         run: |
           php -S 127.0.0.1:8099 -t . >/tmp/student-visual-audit.log 2>&1 &
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
-          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
-      - name: Upload rendered student screens
+          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-process-execution-state-audit.spec.cjs tools/browser-tests/admin-process-domain-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
+      - name: Upload rendered screens
         if: always()
         uses: actions/upload-artifact@v4
         with:
