@@ -23,23 +23,45 @@ must_student_process_manager(student_process_time_seconds('abc')===null,'invalid
 must_student_process_manager(student_process_seconds_label(420)==='07:00','duration formatting failed');
 
 $standards=student_process_standard_catalog();
-must_student_process_manager(isset($standards['positive-ferric-ammonia']),'ferric + ammonia workshop standard is missing');
-must_student_process_manager(isset($standards['positive-peracetic']),'peracetic workshop standard is missing');
+$expectedKeys=['positive-ferric-ammonia-ei200','positive-ferric-ammonia-ei400','positive-peracetic-ei200','positive-peracetic-ei400'];
+must_student_process_manager(array_keys($standards)===$expectedKeys,'workshop must expose the four current EI/bleach standards');
 foreach($standards as $key=>$standard){
+    $first=null;$second=null;$hasFerric=false;$hasAmmonia=false;$hasPeracetic=false;
     foreach((array)$standard['steps'] as $step){
         $stage=(string)$step['stage_key'];$duration=(string)($step['duration']??'');
         if(str_starts_with($stage,'wash_')||$stage==='final_wash')must_student_process_manager($duration==='1:00',$key.' wash must default to 1:00');
         if(in_array($stage,['ferric','peracetic'],true))must_student_process_manager($duration==='1:30',$key.' bleach must default to 1:30');
-        if(in_array($stage,['first_development','second_development','ammonia'],true))must_student_process_manager($duration==='',$key.' image-dependent stage must remain untimed');
+        if($stage==='ammonia')must_student_process_manager($duration==='',$key.' ammonia must remain untimed');
+        if($stage==='first_development')$first=$step;
+        if($stage==='second_development')$second=$step;
+        if($stage==='ferric')$hasFerric=true;
+        if($stage==='ammonia')$hasAmmonia=true;
+        if($stage==='peracetic')$hasPeracetic=true;
     }
+    must_student_process_manager(is_array($first)&&is_array($second),$key.' must contain two development stages');
+    $firstProfile=$first;$secondProfile=$second;unset($firstProfile['stage_key'],$firstProfile['notes'],$secondProfile['stage_key'],$secondProfile['notes']);
+    must_student_process_manager($firstProfile===$secondProfile,$key.' second development must exactly mirror first development parameters');
+    must_student_process_manager(str_contains((string)($second['notes']??''),'Reutilizar o mesmo banho de revelador'),$key.' second development must explicitly reuse the first developer bath');
+    must_student_process_manager(($first['developer_key']??'')==='parodinal',$key.' must use Parodinal');
+    must_student_process_manager(($first['temperature']??'')==='26 °C',$key.' development temperature must be 26 °C');
+    must_student_process_manager(($first['duration']??'')==='7:00',$key.' development time must be seven minutes');
+    must_student_process_manager(($first['agitation']??'')==='leve',$key.' development agitation must be light');
+    $ei400=str_contains($key,'ei400');
+    must_student_process_manager(($first['developer_amount']??'')===($ei400?'20':'10'),$key.' Parodinal amount is wrong');
+    must_student_process_manager(($first['water_amount']??'')===($ei400?'530':'540'),$key.' water amount must complete 550 ml');
+    if(str_contains($key,'ferric-ammonia'))must_student_process_manager($hasFerric&&$hasAmmonia&&!$hasPeracetic,$key.' ferric route is wrong');
+    else must_student_process_manager($hasPeracetic&&!$hasFerric&&!$hasAmmonia,$key.' peracetic route is wrong');
 }
-must_student_process_manager(student_process_standard_duration_summary($standards['positive-ferric-ammonia']['steps'])==='05:30 + etapas livres','ferric standard fixed-time summary is wrong');
-must_student_process_manager(student_process_standard_duration_summary($standards['positive-peracetic']['steps'])==='04:30 + etapas livres','peracetic standard fixed-time summary is wrong');
-must_student_process_manager(str_contains($standardsSource,"foreach(['parodinal','brewed-caffenol']"),'workshop standards must offer Parodinal and Brewed Caffenol');
+must_student_process_manager(student_process_standard_duration_summary($standards['positive-ferric-ammonia-ei200']['steps'])==='19:30 + etapas livres','ferric standard fixed-time summary is wrong');
+must_student_process_manager(student_process_standard_duration_summary($standards['positive-peracetic-ei200']['steps'])==='18:30 + etapas livres','peracetic standard fixed-time summary is wrong');
+must_student_process_manager(str_contains($standardsSource,"'water_amount'=>(string)(550-\$developerAmount)"),'standard dilution must encode water as the complement to 550 ml');
+must_student_process_manager(str_contains($standardsSource,"foreach(['developer_key','developer_amount','water_amount','temperature','agitation','agitation_interval','notes']"),'standard copy must persist the complete development profile and reuse note');
 must_student_process_manager(str_contains($bootstrap,"'student_process_standards'"),'standard process catalog is not loaded by bootstrap');
 must_student_process_manager(str_contains($manager,"action==='copy_standard'")&&str_contains($manager,'Padrões do workshop'),'process manager does not expose workshop standards');
-must_student_process_manager(str_contains($manager,'name="developer_key"')&&str_contains($manager,'Adicionar aos meus'),'standard copy flow does not let the student choose a developer');
+must_student_process_manager(str_contains($manager,'Escolha o EI e a rota de branqueamento. As duas revelações usam exatamente os mesmos parâmetros.'),'process manager does not explain the fixed workshop presets');
+must_student_process_manager(!str_contains($manager,'$standardDevelopers'),'current workshop standard cards must not expose a developer selector');
 must_student_process_manager(str_contains($manager,'student_process_template_duration_summary'),'saved templates still present partial timed sums as complete totals');
+must_student_process_manager(str_contains($doc,'mesmo banho de revelador preparado para a primeira revelação é reaproveitado na segunda'),'developer reuse is not documented canonically');
 
 foreach(['student_process_templates','student_process_template_steps','student_process_plans','student_process_plan_steps'] as $table)must_student_process_manager(str_contains($migration,'CREATE TABLE IF NOT EXISTS '.$table),'missing migration table '.$table);
 must_student_process_manager(str_contains($domain,'student_process_plan_apply_template')&&str_contains($domain,'payload_json'),'template snapshot authority is missing');

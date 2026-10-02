@@ -33,22 +33,28 @@ As etapas podem ser adicionadas, removidas e reordenadas. O processamento salvo 
 
 O gerenciador oferece processamentos padrão como pontos de partida canônicos do workshop. Eles não são objetos compartilhados mutáveis: ao escolher um padrão, o sistema cria uma cópia pertencente ao aluno. A partir daí ela é um processamento salvo normal, que pode ser editado sem alterar o padrão de origem.
 
-Os padrões iniciais representam as duas rotas de branqueamento trabalhadas na plataforma:
+Os padrões atuais combinam as duas condições de primeira revelação trabalhadas no workshop com as duas rotas de branqueamento:
 
-- **Positivo direto — FeCl₃ + amônia:** primeira revelação → lavagem → cloreto férrico → lavagem → banho de amônia → lavagem → segunda revelação → lavagem final → secagem.
-- **Positivo direto — peracética:** primeira revelação → lavagem → solução peroxiacética → lavagem → segunda revelação → lavagem final → secagem.
+- **Positivo direto — Parodinal EI 200 — FeCl₃ + amônia**;
+- **Positivo direto — Parodinal EI 400 — FeCl₃ + amônia**;
+- **Positivo direto — Parodinal EI 200 — peracética**;
+- **Positivo direto — Parodinal EI 400 — peracética**.
 
-Contrato de tempo desses padrões:
+Contrato das revelações nesses quatro padrões:
+
+- EI 200: **10 ml de Parodinal + água até 550 ml, 26 °C, 7 min, agitação leve**;
+- EI 400: **20 ml de Parodinal + água até 550 ml, 26 °C, 7 min, agitação leve**;
+- **a segunda revelação repete exatamente os parâmetros da primeira revelação** do mesmo padrão;
+- **o mesmo banho de revelador preparado para a primeira revelação é reaproveitado na segunda**. Não se prepara uma segunda solução e esse reaproveitamento não deve ser contabilizado como novo consumo de revelador.
+
+Contrato das demais etapas:
 
 - todas as lavagens: **1 min**;
 - banho de branqueamento: **1 min 30 s**;
-- primeira e segunda revelações: sem tempo padrão fixo;
 - banho de amônia: sem tempo padrão fixo;
 - secagem: sem tempo padrão fixo.
 
-Os tempos não fixados permanecem deliberadamente como etapas livres no executor: o padrão não deve inventar uma duração para operações cujo ponto final depende da imagem ou do procedimento adotado.
-
-Ao copiar um padrão, o aluno escolhe **Parodinal** ou **Brewed Caffenol** como revelador das etapas de revelação. Quantidade, diluição, temperatura, agitação e duração continuam editáveis no processamento copiado.
+Os padrões atuais não oferecem seleção de revelador porque essas quatro condições são especificamente de Parodinal. Brewed Caffenol e outras condições históricas permanecem disponíveis para processamentos montados pelo aluno, mas não são apresentados como padrão vigente do workshop.
 
 Quando o padrão é escolhido a partir de um registro do Caderno, primeiro é criada a cópia do aluno e em seguida o sistema aplica um snapshot dessa cópia ao registro. Alterações posteriores no padrão canônico ou no processamento salvo não reescrevem o plano já associado à fotografia.
 
@@ -136,6 +142,6 @@ Esta primeira implementação deliberadamente mantém o escopo controlado:
 - templates permitem reordenação, remoção e adição; edição detalhada de uma etapa existente pode ser evoluída depois;
 - padrões complexos de agitação (agitação inicial + duração de cada ciclo) ainda não fazem parte do schema; o primeiro contrato usa intervalo de aviso;
 - execução avulsa de um template usa o runner sem gerar registro no Caderno;
-- consumo de inventário não é vinculado automaticamente pelo template nesta primeira tranche; o registro real continua sendo a autoridade para consumo.
+- consumo de inventário não é vinculado automaticamente pelo template nesta primeira tranche; o registro real continua sendo a autoridade para consumo. Quando essa integração for implementada, a segunda revelação dos padrões de positivo direto deve reutilizar o consumo da primeira e nunca gerar uma segunda baixa do mesmo banho.
 
 Esses limites não alteram a arquitetura. Evoluções devem preservar a separação **template → snapshot do registro → execução real**.
