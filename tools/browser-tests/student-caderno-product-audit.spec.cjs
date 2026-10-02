@@ -36,7 +36,8 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByRole('button',{name:'Novo registro'})).toBeVisible();
       }
       if(screen==='exposure'){
-        await expect(page.getByRole('heading',{name:'Como expus'})).toBeVisible();
+        if(device==='phone')await expect(page.locator('.student-workflow-heading')).toBeHidden();
+        else await expect(page.getByRole('heading',{name:'Como expus'})).toBeVisible();
         await expect(page.getByRole('button',{name:'Salvar exposição e continuar →'})).toBeVisible();
       }
       if(screen==='process-choice'){
@@ -59,7 +60,8 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('Completar registro',{exact:true})).toBeVisible();
       }
       if(screen==='result'){
-        await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();
+        if(device==='phone')await expect(page.locator('.student-workflow-heading')).toBeHidden();
+        else await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();
         await expect(page.getByRole('heading',{name:'Exposição e processamento, lado a lado'})).toBeVisible();
         await expect(page.getByText('Anote o que observou no positivo',{exact:false})).toBeVisible();
       }
