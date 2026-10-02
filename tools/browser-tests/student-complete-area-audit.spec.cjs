@@ -105,13 +105,20 @@ for(const [device,viewport] of Object.entries(viewports)){
           const nav=document.querySelector('.student-mobile-nav');const top=document.querySelector('.student-topbar');const main=document.querySelector('.student-main');
           if(!nav||!top||!main)return null;
           const ns=getComputedStyle(nav),ts=getComputedStyle(top),nr=nav.getBoundingClientRect(),mr=main.getBoundingClientRect();
-          return {navPosition:ns.position,navBackdrop:ns.backdropFilter||ns.webkitBackdropFilter||'none',topPosition:ts.position,navTop:nr.top,mainBottom:mr.bottom};
+          return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBackdrop:ns.backdropFilter||ns.webkitBackdropFilter||'none',topPosition:ts.position,navTop:nr.top,mainBottom:mr.bottom};
         });
         if(mobileChrome){
-          expect(mobileChrome.navPosition,`${name}: mobile nav overlays content`).toBe('static');
-          expect(['none',''].includes(mobileChrome.navBackdrop),`${name}: mobile nav remains translucent/blurred`).toBe(true);
-          expect(mobileChrome.topPosition,`${name}: topbar remains sticky`).toBe('static');
-          expect(mobileChrome.navTop,`${name}: mobile nav begins before main ends`).toBeGreaterThanOrEqual(mobileChrome.mainBottom-1);
+          if(name==='lab-runner'){
+            expect(mobileChrome.navDisplay,'lab-runner: mobile navigation must be hidden during execution').toBe('none');
+            expect(mobileChrome.topDisplay,'lab-runner: topbar must be hidden during execution').toBe('none');
+          }else{
+            expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');
+            expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');
+            expect(mobileChrome.navPosition,`${name}: mobile nav overlays content`).toBe('static');
+            expect(['none',''].includes(mobileChrome.navBackdrop),`${name}: mobile nav remains translucent/blurred`).toBe(true);
+            expect(mobileChrome.topPosition,`${name}: topbar remains sticky`).toBe('static');
+            expect(mobileChrome.navTop,`${name}: mobile nav begins before main ends`).toBeGreaterThanOrEqual(mobileChrome.mainBottom-1);
+          }
         }
       }
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
