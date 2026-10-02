@@ -14,7 +14,13 @@ Essa separação impede que uma alteração futura no processamento salvo reescr
 
 ## Gerenciador
 
-A superfície `/aluno/processamentos.php` é a autoridade operacional dos roteiros do aluno.
+A superfície `/aluno/processamentos.php` é a autoridade operacional dos roteiros do aluno e funciona como **biblioteca pessoal**, não como formulário principal.
+
+A hierarquia é:
+
+1. processamentos que o aluno já salvou;
+2. padrões atuais do workshop como pontos de partida;
+3. criação do zero como alternativa secundária.
 
 Cada processamento possui:
 
@@ -25,9 +31,12 @@ Cada processamento possui:
 - intervalo de aviso de agitação;
 - temperatura, agitação e observações quando aplicáveis;
 - dados de revelador quando a etapa é uma revelação;
-- possibilidade de usar uma predefinição de revelação como origem dos valores, que são copiados para o roteiro.
+- possibilidade de usar uma predefinição de revelação como origem dos valores, que são copiados para o roteiro;
+- relação explícita de reutilização quando uma etapa usa o mesmo banho de uma etapa anterior.
 
-As etapas podem ser adicionadas, removidas e reordenadas. O processamento salvo pode ser iniciado diretamente no modo laboratório ou aplicado a um registro do Caderno.
+O aluno pode criar, editar, duplicar e excluir processamentos. Dentro do roteiro, as etapas podem ser adicionadas, **editadas em lugar**, removidas e reordenadas. O processamento salvo pode ser iniciado diretamente no modo laboratório ou aplicado a um registro do Caderno.
+
+Ações destrutivas são visíveis e separadas das ações de fluxo normal. Excluir um template nunca apaga snapshots já aplicados a registros do Caderno.
 
 ## Padrões do workshop
 
@@ -47,6 +56,8 @@ Contrato das revelações nesses quatro padrões:
 - **a segunda revelação repete exatamente os parâmetros da primeira revelação** do mesmo padrão;
 - **o mesmo banho de revelador preparado para a primeira revelação é reaproveitado na segunda**. Não se prepara uma segunda solução e esse reaproveitamento não deve ser contabilizado como novo consumo de revelador.
 
+A reutilização é parte do domínio, não apenas texto explicativo. O payload da segunda revelação usa `reuse_source_stage_key = first_development`. Esse vínculo deve sobreviver à cópia do padrão, ao snapshot do Caderno e ao registro da etapa executada. Quando a etapa possui essa relação de reutilização, ela não pode gerar nova baixa de inventário.
+
 Contrato das demais etapas:
 
 - todas as lavagens: **1 min**;
@@ -60,16 +71,16 @@ Quando o padrão é escolhido a partir de um registro do Caderno, primeiro é cr
 
 ## Integração com o Caderno
 
-A tela de processamento do Caderno mantém o modo livre existente. Ele continua adequado quando o aluno quer construir o processo conforme trabalha.
+A tela de processamento do Caderno mantém o modo livre existente, mas ele passa a ser alternativa ad hoc. O caminho canônico é selecionar um Processamento e executá-lo no Modo laboratório.
 
-Como alternativa, a tela oferece **Modo laboratório**, que encaminha ao gerenciador no contexto do registro atual. Ao escolher um processamento salvo:
+Ao escolher um processamento salvo:
 
 1. o sistema verifica que o registro ainda não possui etapas executadas;
 2. cria um `student_process_plan` associado ao registro;
 3. copia todas as etapas do template para `student_process_plan_steps`;
 4. abre o executor em `/aluno/processar.php?test=<id>`.
 
-O plano é um snapshot. Alterar ou excluir o template depois disso não altera o plano associado ao registro.
+O plano é um snapshot. Alterar, duplicar ou excluir o template depois disso não altera o plano associado ao registro.
 
 Uma etapa do plano só entra em `student_process_steps` quando o usuário pressiona **Concluir etapa**. Para isso o executor reutiliza `student_process_add_flexible_step()`, preservando a autoridade já existente para gravação do processo real e sincronização dos dados legados do Caderno.
 
@@ -80,12 +91,16 @@ Uma etapa do plano só entra em `student_process_steps` quando o usuário pressi
 A tela prioriza operação de bancada:
 
 - etapa atual em destaque;
+- solução ou banho relevante;
+- instrução operacional curta quando necessária;
 - cronômetro grande;
 - aviso de agitação;
 - próxima etapa visível antes da transição;
 - progresso da sequência inteira;
 - início, pausa e reinício explícitos;
 - conclusão explícita da etapa.
+
+Quando a segunda revelação reutiliza o revelador, o runner mostra explicitamente **“Reutilize o banho da primeira revelação”** e informa que não se prepara outro banho nem se registra novo consumo.
 
 **A próxima etapa nunca começa automaticamente.** O fim de um tempo representa apenas o fim da contagem. Entre duas etapas existe uma operação física — esvaziar uma solução, iniciar uma lavagem, colocar outro banho etc. — e o software não pode registrar ou temporizar essa transição como se já tivesse acontecido.
 
@@ -117,6 +132,17 @@ Contrato:
 - pausar deliberadamente a etapa libera o wake lock;
 - o fim do cronômetro não inicia automaticamente a etapa seguinte.
 
+## Inspeção visual
+
+Processamentos e Modo laboratório fazem parte do gate visual obrigatório da área do aluno. A suíte `student-visual-audit` deve gerar estados próprios de:
+
+- biblioteca de processamentos;
+- editor de roteiro com edição de etapa;
+- runner em etapa temporizada com instrução de reutilização;
+- desktop e mobile.
+
+O artefato automatizado serve para disponibilizar as renderizações. A aprovação exige inspeção humana das imagens e correção de problemas antes de merge.
+
 ## Dados
 
 A migração `079_student_process_templates_and_runner.php` adiciona:
@@ -134,14 +160,12 @@ A entrada `lab_timer` permanece como chave técnica de permissão por compatibil
 
 O JavaScript legado do timer pode continuar existindo temporariamente enquanto houver consumidores antigos, mas a nova operação canônica é o gerenciador + executor de processamento.
 
-## Limites da primeira implementação
-
-Esta primeira implementação deliberadamente mantém o escopo controlado:
+## Limites atuais
 
 - etapas futuras de um plano já iniciado ainda não são editadas dentro do runner;
-- templates permitem reordenação, remoção e adição; edição detalhada de uma etapa existente pode ser evoluída depois;
-- padrões complexos de agitação (agitação inicial + duração de cada ciclo) ainda não fazem parte do schema; o primeiro contrato usa intervalo de aviso;
+- padrões complexos de agitação (agitação inicial + duração de cada ciclo) ainda não fazem parte do schema; o contrato atual usa intervalo de aviso;
 - execução avulsa de um template usa o runner sem gerar registro no Caderno;
-- consumo de inventário não é vinculado automaticamente pelo template nesta primeira tranche; o registro real continua sendo a autoridade para consumo. Quando essa integração for implementada, a segunda revelação dos padrões de positivo direto deve reutilizar o consumo da primeira e nunca gerar uma segunda baixa do mesmo banho.
+- templates ainda não vinculam automaticamente um item de inventário a cada banho; o registro real continua sendo a autoridade para consumo;
+- a integração futura de inventário deve respeitar `reuse_source_stage_key` para impedir dupla baixa do mesmo banho.
 
 Esses limites não alteram a arquitetura. Evoluções devem preservar a separação **template → snapshot do registro → execução real**.

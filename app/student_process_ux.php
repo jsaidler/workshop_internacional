@@ -33,6 +33,8 @@ function student_process_stage_data(string $stageKey,array $input): array {
 
     $chemicalKey='';$chemicalName='';$developerAmount=null;$waterAmount=null;$unit='ml';$dilution='';$total=null;
     $savedPrepId=(int)($input['saved_preparation_id']??0)?:null;
+    $reuseSource=$stageKey==='second_development'?student_workspace_text($input['reuse_source_stage_key']??'',80):'';
+    if($reuseSource!==''&&$reuseSource!=='first_development')throw new RuntimeException('Origem de reutilização inválida.');
 
     if($stageType==='development'){
         $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));
@@ -59,7 +61,7 @@ function student_process_stage_data(string $stageKey,array $input): array {
         $savedPrepId=null;
     }
 
-    $inventoryAllowed=in_array($stageType,['development','chemical','custom'],true);
+    $inventoryAllowed=in_array($stageType,['development','chemical','custom'],true)&&$reuseSource==='';
     $inventoryItemId=$inventoryAllowed?((int)($input['inventory_item_id']??0)?:null):null;
     $usedAmount=$inventoryAllowed?student_workbench_float($input['inventory_amount']??null):null;
     if($inventoryItemId&&$usedAmount===null&&$developerAmount!==null&&$stageType==='development')$usedAmount=$developerAmount;
@@ -77,6 +79,7 @@ function student_process_stage_data(string $stageKey,array $input): array {
         'agitation'=>$agitation,
         'notes'=>student_workspace_text($input['notes']??'',3000),
         'used_amount'=>$usedAmount,
+        'reuse_source_stage_key'=>$reuseSource,
     ];
 }
 
@@ -101,10 +104,11 @@ function student_process_add_flexible_step(PDO $db,int $testId,int $studentId,ar
     $data=student_process_stage_data($stageKey,$input);
     $position=(int)$db->query('SELECT COALESCE(MAX(position),0)+1 FROM student_process_steps WHERE test_id='.(int)$testId)->fetchColumn();
     $now=utc_now();
+    $metadata=['reuse_source_stage_key'=>$data['reuse_source_stage_key']];
     $db->beginTransaction();
     try{
         $q=$db->prepare('INSERT INTO student_process_steps(step_uuid,test_id,position,stage_type,stage_key,label,chemical_key,chemical_name,inventory_item_id,saved_preparation_id,developer_amount,water_amount,amount_unit,calculated_dilution,total_volume,temperature,duration,agitation,notes,metadata_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-        $q->execute([student_uuid(),$testId,$position,$data['stage_type'],$stageKey,$data['label'],$data['chemical_key'],$data['chemical_name'],$data['inventory_item_id'],$data['saved_preparation_id'],$data['developer_amount'],$data['water_amount'],$data['amount_unit'],$data['calculated_dilution'],$data['total_volume'],$data['temperature'],$data['duration'],$data['agitation'],$data['notes'],'{}',$now,$now]);
+        $q->execute([student_uuid(),$testId,$position,$data['stage_type'],$stageKey,$data['label'],$data['chemical_key'],$data['chemical_name'],$data['inventory_item_id'],$data['saved_preparation_id'],$data['developer_amount'],$data['water_amount'],$data['amount_unit'],$data['calculated_dilution'],$data['total_volume'],$data['temperature'],$data['duration'],$data['agitation'],$data['notes'],json_encode($metadata,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),$now,$now]);
         $stepId=(int)$db->lastInsertId();
         if($data['inventory_item_id']&&$data['used_amount']!==null&&$data['used_amount']>0){
             student_inventory_move($db,$studentId,(int)$data['inventory_item_id'],-(float)$data['used_amount'],'consume','Uso no Caderno',$testId,$stepId,false);
@@ -123,7 +127,7 @@ function student_process_update_step(PDO $db,int $testId,int $stepId,int $studen
     $step=$q->fetch(PDO::FETCH_ASSOC)?:throw new RuntimeException('Etapa não encontrada.');
     $stageKey=(string)$step['stage_key'];
     $data=student_process_stage_data($stageKey,$input);
-    $now=utc_now();
+    $now=utc_now();$metadata=['reuse_source_stage_key'=>$data['reuse_source_stage_key']];
 
     $db->beginTransaction();
     try{
@@ -135,8 +139,8 @@ function student_process_update_step(PDO $db,int $testId,int $stepId,int $studen
             student_inventory_move($db,$studentId,(int)$movement['item_id'],-$delta,'adjust','Ajuste por edição da etapa',$testId,$stepId,false);
         }
 
-        $db->prepare('UPDATE student_process_steps SET stage_type=?,label=?,chemical_key=?,chemical_name=?,inventory_item_id=?,saved_preparation_id=?,developer_amount=?,water_amount=?,amount_unit=?,calculated_dilution=?,total_volume=?,temperature=?,duration=?,agitation=?,notes=?,updated_at=? WHERE id=? AND test_id=?')
-            ->execute([$data['stage_type'],$data['label'],$data['chemical_key'],$data['chemical_name'],$data['inventory_item_id'],$data['saved_preparation_id'],$data['developer_amount'],$data['water_amount'],$data['amount_unit'],$data['calculated_dilution'],$data['total_volume'],$data['temperature'],$data['duration'],$data['agitation'],$data['notes'],$now,$stepId,$testId]);
+        $db->prepare('UPDATE student_process_steps SET stage_type=?,label=?,chemical_key=?,chemical_name=?,inventory_item_id=?,saved_preparation_id=?,developer_amount=?,water_amount=?,amount_unit=?,calculated_dilution=?,total_volume=?,temperature=?,duration=?,agitation=?,notes=?,metadata_json=?,updated_at=? WHERE id=? AND test_id=?')
+            ->execute([$data['stage_type'],$data['label'],$data['chemical_key'],$data['chemical_name'],$data['inventory_item_id'],$data['saved_preparation_id'],$data['developer_amount'],$data['water_amount'],$data['amount_unit'],$data['calculated_dilution'],$data['total_volume'],$data['temperature'],$data['duration'],$data['agitation'],$data['notes'],json_encode($metadata,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),$now,$stepId,$testId]);
 
         if($data['inventory_item_id']&&$data['used_amount']!==null&&$data['used_amount']>0){
             student_inventory_move($db,$studentId,(int)$data['inventory_item_id'],-(float)$data['used_amount'],'consume','Uso no Caderno',$testId,$stepId,false);

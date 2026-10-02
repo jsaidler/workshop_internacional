@@ -43,7 +43,7 @@ must_student_premium_ui(str_contains($courses,'elseif(count($enrollments)===1)$s
 must_student_premium_ui(str_contains($courses,'student-course-dashboard')&&str_contains($courses,'Dúvidas e respostas'),'course workspace is not flattened around study tasks');
 must_student_premium_ui(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity'),'workbench lost inline simple exposure tools');
 must_student_premium_ui(!str_contains($bench,'data-lab-timer')&&str_contains($bench,'/aluno/processamentos.php'),'workbench did not replace the isolated timer with the process manager');
-must_student_premium_ui(str_contains($processManager,'Usar neste registro')&&str_contains($processManager,'Iniciar processamento'),'process manager is not reusable across notebook and laboratory contexts');
+must_student_premium_ui(str_contains($processManager,'Usar neste registro')&&str_contains($processManager,'Iniciar no laboratório'),'process manager is not reusable across notebook and laboratory contexts');
 must_student_premium_ui(str_contains($processRunner,'data-process-runner')&&str_contains($processRunner,'Concluir etapa'),'laboratory runner is missing explicit stage execution');
 must_student_premium_ui(str_contains($bench,'<h2>Receitas</h2>')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
 foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual','registre apenas os dados que usou'] as $internalCopy)must_student_premium_ui(!str_contains($home.$bench.$test,$internalCopy),'internal design commentary leaked into student UI: '.$internalCopy);

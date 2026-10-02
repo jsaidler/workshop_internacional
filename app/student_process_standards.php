@@ -14,6 +14,7 @@ function student_process_standard_development(int $ei): array {
 }
 
 function student_process_standard_reused_development(array $development): array {
+    $development['reuse_source_stage_key']='first_development';
     $development['notes']='Reutilizar o mesmo banho de revelador da primeira revelação; não preparar uma nova solução.';
     return $development;
 }
@@ -114,7 +115,7 @@ function student_process_standard_copy(PDO $db,int $studentId,string $standardKe
         $templateId=(int)($template['id']??0);if($templateId<1)throw new RuntimeException('Não foi possível criar o processamento padrão.');
         foreach((array)$standard['steps'] as $step){
             $input=['stage_key'=>(string)$step['stage_key'],'duration'=>(string)($step['duration']??'')];
-            foreach(['developer_key','developer_amount','water_amount','temperature','agitation','agitation_interval','notes'] as $field)if(array_key_exists($field,$step))$input[$field]=$step[$field];
+            foreach(['developer_key','developer_amount','water_amount','temperature','agitation','agitation_interval','notes','reuse_source_stage_key'] as $field)if(array_key_exists($field,$step))$input[$field]=$step[$field];
             student_process_template_add_step($db,$templateId,$studentId,$input);
         }
         $db->commit();

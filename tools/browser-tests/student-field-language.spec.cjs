@@ -4,6 +4,7 @@ const path=require('path');
 
 const root=path.resolve(__dirname,'../..');
 const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+const compactMarkup=text=>text.replace(/\s+(?=<)/g,'');
 const studentUiFiles=[
   'aluno/caderno.php',
   'aluno/calibracao.php',
@@ -113,7 +114,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
     'aluno/preparos.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
   };
   for(const [file,needles] of Object.entries(required)){
-    const text=read(file);
+    const text=compactMarkup(read(file));
     for(const needle of needles)expect(text,`${file} missing canonical label: ${needle}`).toContain(needle);
   }
 });
