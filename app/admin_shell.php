@@ -50,7 +50,7 @@ function admin_workspace(string $section): string {return match($section){
     'overview'=>'overview',
     'registrations','cohorts','students','people','studentops'=>'operation',
     'courses','lessons','material'=>'teaching',
-    'processes'=>'laboratory',
+    'processes','lab-catalogs'=>'laboratory',
     'pages','blocks','design','site','seo','forms','responses'=>'site',
     'analytics'=>'analytics',
     'media'=>'media',
@@ -72,6 +72,7 @@ function admin_context_items(string $workspace,?array $activity): array {return 
     ],
     'laboratory'=>[
         'processes'=>['Processos globais','/admin/processes.php'],
+        'lab-catalogs'=>['Catálogos do laboratório','/admin/lab-catalogs.php'],
     ],
     'site','content'=>[
         'pages'=>['Páginas',admin_shell_url('/admin/pages.php',$activity)],
