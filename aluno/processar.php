@@ -5,17 +5,43 @@ security_headers();student_private_headers();
 $db=database();$student=student_account_current($db);$next='/aluno/processar.php';
 if(!$student){header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
 $studentId=(int)$student['id'];student_tool_require($db,$studentId,'lab_timer');$testId=(int)($_GET['test']??$_POST['test_id']??0);$templateId=(int)($_GET['template']??$_POST['template_id']??0);$intent=(string)($_GET['intent']??'');$error='';
+
+function student_process_runner_json(array $payload,int $status=200): never {
+    http_response_code($status);header('Content-Type: application/json; charset=utf-8');echo json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);exit;
+}
+
 if($testId>0){
     $test=student_test_for_student($db,$testId,$studentId);if(!$test){http_response_code(404);student_shell_start('Registro não encontrado',null,$student);?><div class="student-empty">Registro não encontrado.</div><?php student_shell_end();exit;}
     $plan=student_process_plan_for_test($db,$testId,$studentId);
     if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
-        if(!verify_csrf('student-process-runner-'.$testId,$_POST['_csrf']??null))$error='Solicitação inválida.';
-        else try{
-            $action=(string)($_POST['action']??'');if(!$plan)throw new RuntimeException('Escolha um processamento para este registro.');
-            if($action==='start'){student_process_plan_start($db,(int)$plan['id'],$studentId);if((string)($_POST['ajax']??'')==='1'){http_response_code(204);exit;}}
-            elseif($action==='complete_step'){student_process_plan_complete_step($db,(int)$plan['id'],(int)($_POST['plan_step_id']??0),$studentId);header('Location: /aluno/processar.php?test='.$testId,true,303);exit;}
-            else throw new RuntimeException('Ação inválida.');
-        }catch(Throwable $e){$error=$e->getMessage();if((string)($_POST['ajax']??'')==='1'){http_response_code(422);header('Content-Type: application/json; charset=utf-8');echo json_encode(['error'=>$error],JSON_UNESCAPED_UNICODE);exit;}}
+        $action=(string)($_POST['action']??'');$ajax=(string)($_POST['ajax']??'')==='1'||str_starts_with($action,'timer_');
+        if(!verify_csrf('student-process-runner-'.$testId,$_POST['_csrf']??null)){
+            if($ajax)student_process_runner_json(['error'=>'Solicitação inválida.'],403);
+            $error='Solicitação inválida.';
+        }else try{
+            if(!$plan)throw new RuntimeException('Escolha um processamento para este registro.');
+            $planId=(int)$plan['id'];$planStepId=(int)($_POST['plan_step_id']??0);
+            if(in_array($action,['timer_state','timer_start','timer_pause','timer_reset','start'],true)){
+                if($planStepId<1)throw new RuntimeException('Etapa do processamento não informada.');
+                $expectedRevision=array_key_exists('revision',$_POST)&&$_POST['revision']!==''?(int)$_POST['revision']:null;
+                $clientToken=student_workspace_text($_POST['client_token']??'',120);
+                if($action==='timer_state')$state=student_process_execution_state($db,$planId,$planStepId,$studentId);
+                else{
+                    $transition=$action==='start'?'start':substr($action,6);
+                    $state=student_process_execution_transition($db,$planId,$planStepId,$studentId,$transition,$clientToken,$expectedRevision);
+                }
+                student_process_runner_json(['state'=>$state]);
+            }elseif($action==='complete_step'){
+                if($planStepId<1)throw new RuntimeException('Etapa do processamento não informada.');
+                student_process_execution_complete_step($db,$planId,$planStepId,$studentId);
+                header('Location: /aluno/processar.php?test='.$testId,true,303);exit;
+            }else throw new RuntimeException('Ação inválida.');
+        }catch(StudentProcessExecutionConflict $e){
+            if($ajax)student_process_runner_json(['error'=>$e->getMessage(),'state'=>$e->executionState],409);
+            $error=$e->getMessage();
+        }catch(Throwable $e){
+            $error=$e->getMessage();if($ajax)student_process_runner_json(['error'=>$error],422);
+        }
     }
     $plan=student_process_plan_for_test($db,$testId,$studentId);$allSteps=$plan?student_process_plan_steps($db,(int)$plan['id']):[];$current=$plan?student_process_plan_next_step($db,$plan):null;$currentIndex=0;if($current)foreach($allSteps as $i=>$row)if((int)$row['id']===(int)$current['id']){$currentIndex=$i;break;}
     $completedCount=0;foreach($allSteps as $row)if((string)($row['status']??'')==='completed')$completedCount++;
@@ -42,20 +68,21 @@ if($showIntentChoice){
 }
 
 $payload=$current?student_process_json_array((string)$current['payload_json']):[];$durationSeconds=$current?student_process_time_seconds((string)$current['duration']):null;$agitationSeconds=$current?student_process_time_seconds((string)$current['agitation_interval']):null;$nextStep=$current&&isset($allSteps[$currentIndex+1])?$allSteps[$currentIndex+1]:null;$storageKey=$current?($testId>0?'plan-'.$plan['id'].'-step-'.$current['id']:'template-'.$templateId.'-step-'.$current['id']):'';$csrf=$testId>0?csrf_token('student-process-runner-'.$testId):'';$reuseSource=(string)($payload['reuse_source_stage_key']??'');
+$executionState=$testId>0&&$plan&&$current?student_process_execution_for_test($db,$testId,$studentId):null;$executionJson=$executionState?json_encode($executionState,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES):'';
 student_shell_start('Modo laboratório',null,$student);?>
 <header class="student-process-runner-head"><a class="student-back" href="<?=h($backUrl)?>">← <?=$testId>0?'Caderno':'Processamentos'?></a><div><p class="student-kicker">Modo laboratório</p><h1 class="student-title"><?=h($sourceName)?></h1></div></header>
 <?php if($error!==''):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
 <?php if(!$plan&&$testId>0):?><section class="student-process-runner-empty"><p class="student-kicker">Nenhum roteiro selecionado</p><h2>Escolha um processamento antes de iniciar.</h2><p>O roteiro define a sequência que poderá ser executada ou registrada nesta fotografia.</p><a class="button button-primary" href="<?=h($managerUrl)?>">Escolher processamento</a></section>
 <?php elseif(!$current):?><section class="student-process-runner-complete"><p class="student-kicker">Processamento concluído</p><h2>Sequência finalizada.</h2><p>As etapas executadas ficaram registradas no Caderno.</p><a class="button button-primary" href="<?=h($backUrl)?>">Voltar ao Caderno</a></section>
 <?php else:?>
-<section class="student-process-runner" data-process-runner data-duration-seconds="<?=$durationSeconds===null?'':$durationSeconds?>" data-agitation-seconds="<?=$agitationSeconds===null?'':$agitationSeconds?>" data-storage-key="<?=h($storageKey)?>" data-final-stage="<?=$nextStep?'0':'1'?>"<?=$testId>0?' data-start-endpoint="/aluno/processar.php?test='.$testId.'" data-start-csrf="'.h($csrf).'"':''?>>
+<section class="student-process-runner" data-process-runner data-duration-seconds="<?=$durationSeconds===null?'':$durationSeconds?>" data-agitation-seconds="<?=$agitationSeconds===null?'':$agitationSeconds?>" data-storage-key="<?=h($storageKey)?>" data-final-stage="<?=$nextStep?'0':'1'?>"<?=$testId>0?' data-runner-endpoint="/aluno/processar.php?test='.$testId.'" data-runner-csrf="'.h($csrf).'" data-plan-id="'.(int)$plan['id'].'" data-plan-step-id="'.(int)$current['id'].'" data-execution-state="'.h($executionJson).'"':''?>>
 <div class="student-process-runner-progress"><span><?=($currentIndex+1).' / '.count($allSteps)?></span><div aria-hidden="true"><i style="--student-process-progress:<?=h((string)(($currentIndex+1)/max(1,count($allSteps))*100))?>%"></i></div></div>
 <div class="student-process-runner-current"><p class="student-kicker">Etapa atual</p><h2><?=h((string)$current['label'])?></h2><?php $details=[];if((string)($payload['developer_name']??'')!=='')$details[]=(string)$payload['developer_name'];if((string)($payload['temperature']??'')!=='')$details[]=(string)$payload['temperature'];if((string)($payload['agitation']??'')!=='')$details[]=(string)$payload['agitation'];if($details):?><p class="student-process-runner-details"><?=h(implode(' · ',$details))?></p><?php endif;?>
 <?php if($reuseSource==='first_development'):?><div class="student-process-runner-instruction"><strong>Reutilize o banho da primeira revelação</strong><span>Use a mesma solução de revelador já preparada. Não prepare outro banho e não registre novo consumo.</span></div><?php elseif((string)($payload['notes']??'')!==''):?><div class="student-process-runner-instruction"><strong>Orientação desta etapa</strong><span><?=h((string)$payload['notes'])?></span></div><?php endif;?></div>
-<?php if($durationSeconds!==null):?><output class="student-process-runner-clock" data-runner-clock><?=h(student_process_seconds_label($durationSeconds))?></output><p class="student-process-runner-cue" data-runner-cue aria-live="polite"></p><div class="student-process-runner-status"><span data-runner-wake-status>Tela ativa ao iniciar</span><?php if($agitationSeconds!==null&&$agitationSeconds>0):?><span>Aviso a cada <?=h(student_process_seconds_label($agitationSeconds))?></span><?php endif;?></div><div class="student-actions student-process-runner-controls"><button class="button button-primary" type="button" data-runner-start>Iniciar</button><button class="button button-secondary" type="button" data-runner-pause disabled>Pausar</button><button class="button button-secondary" type="button" data-runner-reset>Reiniciar</button></div><?php else:?><div class="student-process-runner-untimed"><strong>Sem tempo definido</strong><p>Execute a etapa e avance quando ela estiver concluída.</p></div><?php endif;?>
+<?php if($durationSeconds!==null):?><output class="student-process-runner-clock" data-runner-clock><?=h(student_process_seconds_label($executionState['remaining_seconds']??$durationSeconds))?></output><p class="student-process-runner-cue" data-runner-cue aria-live="polite"></p><div class="student-process-runner-status"><span data-runner-state-status><?=h(match((string)($executionState['state']??'idle')){'running'=>'Cronômetro em andamento','paused'=>'Cronômetro pausado','elapsed'=>'Tempo concluído',default=>'Pronto para iniciar'})?></span><span data-runner-wake-status>Tela ativa ao iniciar</span><?php if($agitationSeconds!==null&&$agitationSeconds>0):?><span>Aviso a cada <?=h(student_process_seconds_label($agitationSeconds))?></span><?php endif;?></div><div class="student-actions student-process-runner-controls"><button class="button button-primary" type="button" data-runner-start>Iniciar</button><button class="button button-secondary" type="button" data-runner-pause disabled>Pausar</button><button class="button button-secondary" type="button" data-runner-reset>Reiniciar</button></div><?php else:?><div class="student-process-runner-untimed"><strong>Sem tempo definido</strong><p>Execute a etapa e avance quando ela estiver concluída.</p></div><?php endif;?>
 <?php if($nextStep):?><div class="student-process-runner-next"><span>Próxima etapa</span><strong><?=h((string)$nextStep['label'])?></strong><small><?=h((string)$nextStep['duration']!==''?student_process_seconds_label(student_process_time_seconds((string)$nextStep['duration'])):'Sem tempo definido')?></small></div><?php else:?><div class="student-process-runner-next"><span>Depois desta etapa</span><strong>Fim do processamento</strong></div><?php endif;?>
 <div class="student-process-runner-advance">
-<?php if($testId>0):?><form method="post" data-runner-completion><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="complete_step"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="plan_step_id" value="<?=(int)$current['id']?>"><button class="button button-primary" type="submit" data-runner-complete<?=$durationSeconds!==null?' disabled':''?>><?=$nextStep?'Concluir etapa':'Concluir processamento'?></button></form><?php else:$nextNumber=$currentIndex+2;$nextHref=$nextStep?'/aluno/processar.php?template='.$templateId.'&step='.$nextNumber:'/aluno/processamentos.php?id='.$templateId;?><a class="button button-primary<?=$durationSeconds!==null?' is-disabled':''?>" data-runner-complete href="<?=h($nextHref)?>"<?=$durationSeconds!==null?' aria-disabled="true" tabindex="-1"':''?>><?=$nextStep?'Próxima etapa':'Concluir processamento'?></a><?php endif;?>
+<?php if($testId>0):?><form method="post" data-runner-completion><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="complete_step"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="plan_step_id" value="<?=(int)$current['id']?>"><button class="button button-primary" type="submit" data-runner-complete<?=$durationSeconds!==null&&($executionState['state']??'idle')!=='elapsed'?' disabled':''?>><?=$nextStep?'Concluir etapa':'Concluir processamento'?></button></form><?php else:$nextNumber=$currentIndex+2;$nextHref=$nextStep?'/aluno/processar.php?template='.$templateId.'&step='.$nextNumber:'/aluno/processamentos.php?id='.$templateId;?><a class="button button-primary<?=$durationSeconds!==null?' is-disabled':''?>" data-runner-complete href="<?=h($nextHref)?>"<?=$durationSeconds!==null?' aria-disabled="true" tabindex="-1"':''?>><?=$nextStep?'Próxima etapa':'Concluir processamento'?></a><?php endif;?>
 </div>
 <ol class="student-process-runner-timeline" aria-label="Etapas do processamento"><?php foreach($allSteps as $i=>$step):$done=$testId>0?(string)$step['status']==='completed':$i<$currentIndex;$active=$i===$currentIndex;?><li class="<?=$done?'is-done ':''?><?=$active?'is-active':''?>"><span><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></span><div><strong><?=h((string)$step['label'])?></strong><small><?=h((string)$step['duration']!==''?student_process_seconds_label(student_process_time_seconds((string)$step['duration'])):'—')?></small></div></li><?php endforeach;?></ol>
 </section>
