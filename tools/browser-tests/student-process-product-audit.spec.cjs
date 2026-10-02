@@ -23,7 +23,7 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('07:00').first()).toBeVisible();
         await expect(page.locator('.student-topbar')).toBeHidden();
         await expect(page.locator('.student-mobile-nav')).toBeHidden();
-        const start=page.getByRole('button',{name:'Iniciar'});
+        const start=page.getByRole('button',{name:'Iniciar',exact:true});
         await expect(start).toBeVisible();
         const receivesPointer=await start.evaluate(el=>{
           const box=el.getBoundingClientRect();
