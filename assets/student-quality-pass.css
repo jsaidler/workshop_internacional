@@ -116,8 +116,15 @@
   .student-process-standard-card>p{display:none!important}
   .student-process-standard-footer{padding-top:12px!important}
 
-  .student-process-recording-principles{margin:14px 0 18px!important}
+  .student-process-intent-gate .student-process-editor-overview{padding:0 0 12px!important;border:0!important;background:transparent!important}
+  .student-process-intent-gate .student-process-editor-overview p:last-child{display:none!important}
+  .student-process-intent-gate .student-process-editor-overview h2{font-size:27px!important}
+  .student-process-intent-options .student-process-standard-meta{margin-bottom:2px!important}
+  .student-process-intent-options .student-process-standard-footer>span{display:none!important}
+
   .student-recording-context{margin-bottom:20px!important;padding:0!important;border:0!important}
+  .student-recording-help{margin-bottom:16px!important}
+  .student-recording-help>div{font-size:13px!important}
   .student-recording-group-title{margin:24px 0 6px!important}
   .student-recording-grid{gap:0!important;border-top:1px solid var(--line)!important}
   .student-recording-option{
