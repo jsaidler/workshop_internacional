@@ -162,8 +162,19 @@
   .student-process-editor-heading p:last-child{display:none}
   .student-process-step-card{grid-template-columns:26px minmax(0,1fr);gap:10px;padding:14px 0}
   .student-process-step-body h3{font-size:16px}
-  .student-process-step-actions{grid-column:2;justify-content:flex-start;gap:5px}
-  .student-process-step-actions :is(.button,.student-link,.student-danger-action){min-height:32px;padding-inline:8px;font-size:8px}
+  .student-process-step-actions{grid-column:2;justify-content:flex-start;gap:3px;align-items:center}
+  .student-process-step-actions .button{min-height:30px;padding:0 8px;font-size:8px}
+  .student-process-step-actions .student-link,
+  .student-process-step-actions .student-danger-action{
+    min-height:30px;
+    padding:0 5px;
+    border:0;
+    background:transparent;
+    font-size:8px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .student-process-step-actions .student-danger-action{color:#d96868}
   .student-process-reuse-note{margin-top:8px;padding:9px 10px}
   .student-process-reuse-note span{font-size:11px}
   .student-process-step-editor{padding:16px}
