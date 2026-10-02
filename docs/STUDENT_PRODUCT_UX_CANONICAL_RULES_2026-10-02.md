@@ -20,11 +20,13 @@ Nenhum desses caminhos deve ser tratado como erro ou exceção improvisada. A in
 
 ### Invariante: associar não é executar
 
-**Selecionar, aplicar ou associar um processamento salvo a um registro nunca significa iniciar o laboratório.** Essa ação apenas cria o snapshot do roteiro dentro do Caderno.
+**Selecionar, aplicar ou associar um processamento salvo a um registro nunca significa iniciar a execução.** Essa ação cria o snapshot do roteiro dentro do Caderno.
 
-O Modo laboratório só pode ser iniciado por uma ação explícita do aluno, apresentada como execução — por exemplo, **Executar agora** ou **Entrar no modo laboratório**. Depois de associado um roteiro e antes de qualquer etapa ser executada, o estado do registro deve permanecer neutro e oferecer, com hierarquia equivalente, pelo menos:
+A execução só começa por uma ação explícita do aluno. Um fluxo pode preservar a intenção já declarada — por exemplo, **Vou revelar agora** — durante a escolha do roteiro e abrir o Modo laboratório depois da associação, desde que a execução propriamente dita continue dependendo do comando **Iniciar** do laboratório.
 
-- executar agora com acompanhamento;
+Quando não existe intenção anterior conhecida, um roteiro associado e ainda não iniciado deve permanecer neutro e permitir:
+
+- abrir o laboratório;
 - registrar o processamento como já realizado;
 - trocar o roteiro.
 
@@ -56,6 +58,8 @@ Antes de implementar uma tela ou ação, responder:
 - a interface diferencia claramente documentar, preparar, executar e revisar?
 
 Se a solução depende de uma única sequência idealizada de uso, o fluxo ainda não está suficientemente modelado.
+
+Também não é aceitável transformar cada distinção conceitual em uma nova tela de decisão. **A interface deve perguntar uma decisão apenas quando ela muda a próxima ação do aluno e deve preservar essa intenção enquanto ela continuar válida.**
 
 ## 4. Inspeção visual obrigatória — cobertura total
 
@@ -127,11 +131,29 @@ A sequência obrigatória passa a ser:
 
 Nenhuma tranche da área do aluno é considerada pronta apenas porque suas telas diretamente alteradas parecem corretas.
 
-## 8. Consequência para o roadmap atual
+## 8. Regras de qualidade visual no mobile
 
-A Tranche D (Dashboard + Curso + Material) fica bloqueada até que a tranche corretiva anterior resolva:
+No mobile, a leitura e a operação têm prioridade sobre persistência de navegação e ornamentação.
+
+- navegação fixa ou sticky não pode cobrir, atravessar ou disputar espaço visual com o conteúdo;
+- barras de navegação sobre o conteúdo não devem usar transparência, `backdrop-filter` ou blur;
+- se uma navegação persistente exigir reserva artificial de espaço para não esconder conteúdo, a preferência é torná-la parte do fluxo normal da página;
+- títulos, subtítulos, kickers e parágrafos não devem repetir a mesma informação em sequência;
+- texto explicativo deve existir somente quando evita erro, esclarece uma consequência ou orienta uma decisão real;
+- caminhos equivalentes não precisam ser três ou quatro cards grandes: ações simples devem parecer simples;
+- opções avançadas, manuais ou raras devem ficar progressivamente reveladas quando não forem necessárias à maioria dos usos;
+- uma tela mobile não deve parecer uma pilha de cartões dentro de cartões quando linhas, separadores ou disclosure resolvem a mesma hierarquia.
+
+A inspeção visual deve tratar **carga textual, quantidade de decisões, número de caixas visuais e oclusão por elementos persistentes como defeitos de produto**, e não como preferência estética.
+
+## 9. Consequência para o roadmap atual
+
+A Tranche D (Dashboard + Curso + Material) permanece bloqueada até que a tranche corretiva atual resolva e valide:
 
 1. suporte explícito a múltiplos caminhos de processamento no Caderno, incluindo registro retroativo e retomada parcial;
 2. distinção entre documentação e execução;
 3. consumo de inventário seguro em registros retroativos;
-4. inspeção visual integral da área do aluno no estado resultante.
+4. simplificação do percurso de processamento, sem repetir a mesma decisão em telas sucessivas;
+5. remoção de barras móveis que sobrepõem conteúdo e de transparência/blur nessas superfícies;
+6. redução objetiva da carga textual e da quantidade de cartões no mobile;
+7. inspeção visual integral da área do aluno no estado resultante, seguida de correção dos problemas encontrados.
