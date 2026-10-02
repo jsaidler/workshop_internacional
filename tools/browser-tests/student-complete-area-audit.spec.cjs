@@ -19,6 +19,7 @@ const screens=[
   ['process-partial','student-caderno-product-audit.html?screen=process-partial'],
   ['process-intent','student-process-intent-audit.html'],
   ['recording-start','student-secondary-screens-audit.html?screen=recording-start'],
+  ['recording-associated','student-recording-associated-audit.html'],
   ['recording-partial','student-secondary-screens-audit.html?screen=recording-partial'],
   ['recording-complete','student-secondary-screens-audit.html?screen=recording-complete'],
   ['result','student-caderno-product-audit.html?screen=result'],
@@ -89,6 +90,11 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:false})).toBeVisible();
         await expect(page.getByText('não movimenta o inventário automaticamente',{exact:false})).toBeVisible();
       }
+      if(name==='recording-associated'){
+        await expect(page.getByText('Roteiro associado',{exact:true})).toBeVisible();
+        await expect(page.getByRole('button',{name:'Registrar todo o processamento como realizado'})).toBeVisible();
+        await expect(page.getByText('ainda estão apenas planejadas',{exact:false})).toBeVisible();
+      }
       if(name==='recording-partial')await expect(page.getByRole('button',{name:'Registrar etapas restantes como realizadas'})).toBeVisible();
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${name} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
@@ -99,6 +105,6 @@ for(const [device,viewport] of Object.entries(viewports)){
 
 test('complete student visual audit declares all rendered student route families',()=>{
   const names=new Set(screens.map(([name])=>name));
-  for(const required of ['login','home','course-list','course-detail','material','questions-list','question-thread','notebook','new-record','exposure','process-choice','process-plan','process-partial','process-intent','recording-start','recording-partial','recording-complete','result','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-item-editor','preparations','calibration-list','tools','toolbox','profile','password-change'])expect(names.has(required),`missing visual surface ${required}`).toBe(true);
-  expect(screens.length,'full student audit surface count').toBe(39);
+  for(const required of ['login','home','course-list','course-detail','material','questions-list','question-thread','notebook','new-record','exposure','process-choice','process-plan','process-partial','process-intent','recording-start','recording-associated','recording-partial','recording-complete','result','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-item-editor','preparations','calibration-list','tools','toolbox','profile','password-change'])expect(names.has(required),`missing visual surface ${required}`).toBe(true);
+  expect(screens.length,'full student audit surface count').toBe(40);
 });
