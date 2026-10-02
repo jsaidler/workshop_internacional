@@ -36,8 +36,8 @@ must_student_caderno_product_ux(str_contains($bridge,"processEntry='server'")&&!
 must_student_caderno_product_ux(str_contains($shell,"\$notebookFeature")&&str_contains($shell,'/assets/student-caderno.css'),'shell does not load the Caderno UX layer');
 must_student_caderno_product_ux(str_contains($shell,'/assets/student-quality-pass.css'),'shell does not load the corrective visual quality layer');
 foreach(['.student-record-progress','.student-process-path-choice','.student-caderno-plan-card','.student-plan-intent-grid','.student-result-context'] as $selector)must_student_caderno_product_ux(str_contains($css,$selector),'Caderno UX stylesheet is missing '.$selector);
-must_student_caderno_product_ux(str_contains($quality,'.student-mobile-nav')&&str_contains($quality,'position:static!important')&&str_contains($quality,'backdrop-filter:none!important'),'mobile navigation can still cover content or remain translucent');
-must_student_caderno_product_ux(str_contains($quality,'.student-record-purpose{display:none!important}')&&str_contains($quality,'.student-workflow-heading>p{display:none!important}'),'mobile density pass does not remove repeated explanatory copy');
+must_student_caderno_product_ux(str_contains($quality,'.student-mobile-nav')&&str_contains($quality,'position:static;')&&str_contains($quality,'backdrop-filter:none;'),'mobile navigation can still cover content or remain translucent');
+must_student_caderno_product_ux(str_contains($quality,'.student-record-purpose{display:none}')&&str_contains($quality,'.student-workflow-heading>p{display:none}'),'mobile density pass does not remove repeated explanatory copy');
 must_student_caderno_product_ux(str_contains($doc,'exposição → processamento → resultado'),'Caderno canonical document lost the research sequence');
 must_student_caderno_product_ux(str_contains($doc,'inspeção visual humana'),'Caderno canonical document does not require human visual inspection');
 must_student_caderno_product_ux(str_contains($rules,'carga textual')&&str_contains($rules,'barras móveis que sobrepõem conteúdo'),'canonical quality rules do not encode the visual defects found in audit');
