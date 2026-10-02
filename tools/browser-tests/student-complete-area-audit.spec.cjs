@@ -14,8 +14,10 @@ const screens=[
   ['notebook','student-caderno-product-audit.html?screen=notebook'],
   ['new-record','student-visual-audit.html?screen=new-record'],
   ['exposure','student-caderno-product-audit.html?screen=exposure'],
-  ['process-choice','student-caderno-product-audit.html?screen=process-choice&id=17'],
-  ['process-plan','student-caderno-product-audit.html?screen=process-plan&id=17'],
+  ['process-choice','student-caderno-product-audit.html?screen=process-choice'],
+  ['process-plan','student-caderno-product-audit.html?screen=process-plan'],
+  ['process-partial','student-caderno-product-audit.html?screen=process-partial'],
+  ['process-intent','student-process-intent-audit.html'],
   ['recording-start','student-secondary-screens-audit.html?screen=recording-start'],
   ['recording-partial','student-secondary-screens-audit.html?screen=recording-partial'],
   ['recording-complete','student-secondary-screens-audit.html?screen=recording-complete'],
@@ -68,8 +70,20 @@ for(const [device,viewport] of Object.entries(viewports)){
         await page.evaluate(sel=>{const d=document.querySelector(sel);if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}},selector);
       }
       if(name==='process-choice'){
-        await page.addScriptTag({url:'/assets/student-process-entry.js'});
         await expect(page.getByText('Registrar um processamento já realizado',{exact:true})).toBeVisible();
+        await expect(page.locator('.student-process-path-options article')).toHaveCount(3);
+      }
+      if(name==='process-plan'){
+        await expect(page.getByText('0 / 9 etapas')).toBeVisible();
+        await expect(page.getByText('Registrar o que já foi feito',{exact:true})).toBeVisible();
+      }
+      if(name==='process-partial'){
+        await expect(page.getByText('5 / 9 etapas')).toBeVisible();
+        await expect(page.getByText('Registrar etapas já realizadas',{exact:true})).toBeVisible();
+      }
+      if(name==='process-intent'){
+        await expect(page.getByText('Nenhuma execução iniciada',{exact:true})).toBeVisible();
+        await expect(page.getByText('Registrar o processamento realizado',{exact:true})).toBeVisible();
       }
       if(name==='recording-start'){
         await expect(page.getByText('Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:false})).toBeVisible();
@@ -85,5 +99,6 @@ for(const [device,viewport] of Object.entries(viewports)){
 
 test('complete student visual audit declares all rendered student route families',()=>{
   const names=new Set(screens.map(([name])=>name));
-  for(const required of ['login','home','course-list','course-detail','material','questions-list','question-thread','notebook','new-record','exposure','process-choice','process-plan','recording-start','recording-partial','recording-complete','result','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-item-editor','preparations','calibration-list','tools','toolbox','profile','password-change'])expect(names.has(required),`missing visual surface ${required}`).toBe(true);
+  for(const required of ['login','home','course-list','course-detail','material','questions-list','question-thread','notebook','new-record','exposure','process-choice','process-plan','process-partial','process-intent','recording-start','recording-partial','recording-complete','result','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-item-editor','preparations','calibration-list','tools','toolbox','profile','password-change'])expect(names.has(required),`missing visual surface ${required}`).toBe(true);
+  expect(screens.length,'full student audit surface count').toBe(39);
 });
