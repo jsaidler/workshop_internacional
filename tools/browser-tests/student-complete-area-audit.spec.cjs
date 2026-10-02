@@ -92,14 +92,24 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='recording-start'){
         await expect(page.getByText('Qual roteiro você usou?',{exact:true})).toBeVisible();
-        await expect(page.getByText('Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:false}).first()).toBeVisible();
+        await expect(page.locator('[data-workshop-standards] .student-recording-option')).toHaveCount(6);
+        await expect(page.getByText('Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:true})).toBeVisible();
       }
       if(name==='recording-associated'){
         await expect(page.getByText('Roteiro associado',{exact:true})).toBeVisible();
         await expect(page.getByRole('button',{name:'Registrar processo como realizado'})).toBeVisible();
       }
-      if(name==='recording-partial')await expect(page.getByRole('button',{name:'Registrar etapas restantes'})).toBeVisible();
-      if(name==='recording-complete')await expect(page.getByRole('button',{name:'Registrar resultado →'})).toBeVisible();
+      if(name==='recording-partial'){
+        await expect(page.getByRole('button',{name:'Registrar etapas restantes'})).toBeVisible();
+        await expect(page.locator('[data-history-stage]')).toHaveCount(5);
+      }
+      if(name==='recording-complete'){
+        await expect(page.getByRole('button',{name:'Registrar resultado →'})).toBeVisible();
+        await expect(page.locator('[data-history-stage]')).toHaveCount(9);
+      }
+      if(name==='process-library')await expect(page.locator('.student-process-standard-card')).toHaveCount(6);
+      if(name==='process-editor')await expect(page.locator('.student-process-step-card')).toHaveCount(9);
+      if(name==='lab-runner')await expect(page.locator('.student-process-runner-timeline li')).toHaveCount(9);
       if(device==='phone'&&name!=='login'&&name!=='activation-password'&&name!=='material'){
         const mobileChrome=await page.evaluate(()=>{
           const nav=document.querySelector('.student-mobile-nav');const top=document.querySelector('.student-topbar');const main=document.querySelector('.student-main');
