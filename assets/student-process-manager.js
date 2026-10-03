@@ -14,14 +14,17 @@ function init(root=document){
     const development=qs('[data-process-template-development]',form);
     const custom=qs('[data-process-template-custom]',form);
     const reuse=qs('[data-process-template-reuse]',form);
+    const agitationMode=qs('[data-process-agitation-mode]',form);
+    const agitationPeriodic=qs('[data-process-agitation-periodic]',form);
     if(!stage)return;
     const update=()=>{
       const key=stage.value;
       setGroupState(development,developmentKeys.has(key));
       setGroupState(custom,key==='custom');
       setGroupState(reuse,key==='second_development');
+      setGroupState(agitationPeriodic,agitationMode?.value==='periodic');
     };
-    stage.addEventListener('change',update);update();
+    stage.addEventListener('change',update);agitationMode?.addEventListener('change',update);update();
   });
 }
 init();
