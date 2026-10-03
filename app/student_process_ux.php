@@ -102,7 +102,8 @@ function student_process_add_flexible_step(PDO $db,int $testId,int $studentId,ar
     $position=(int)$db->query('SELECT COALESCE(MAX(position),0)+1 FROM student_process_steps WHERE test_id='.(int)$testId)->fetchColumn();
     $now=utc_now();
     $metadata=['reuse_source_stage_key'=>$data['reuse_source_stage_key']];
-    $db->beginTransaction();
+    $ownsTransaction=!$db->inTransaction();
+    if($ownsTransaction)$db->beginTransaction();
     try{
         $q=$db->prepare('INSERT INTO student_process_steps(step_uuid,test_id,position,stage_type,stage_key,label,chemical_key,chemical_name,inventory_item_id,saved_preparation_id,developer_amount,water_amount,amount_unit,calculated_dilution,total_volume,temperature,duration,agitation,notes,metadata_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
         $q->execute([student_uuid(),$testId,$position,$data['stage_type'],$stageKey,$data['label'],$data['chemical_key'],$data['chemical_name'],$data['inventory_item_id'],$data['saved_preparation_id'],$data['developer_amount'],$data['water_amount'],$data['amount_unit'],$data['calculated_dilution'],$data['total_volume'],$data['temperature'],$data['duration'],$data['agitation'],$data['notes'],json_encode($metadata,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),$now,$now]);
@@ -111,8 +112,8 @@ function student_process_add_flexible_step(PDO $db,int $testId,int $studentId,ar
             student_inventory_move($db,$studentId,(int)$data['inventory_item_id'],-(float)$data['used_amount'],'consume','Uso no Caderno',$testId,$stepId,false);
         }
         student_process_sync_legacy_summary($db,$testId,$studentId,$stageKey,$data,$now);
-        $db->commit();
-    }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+        if($ownsTransaction)$db->commit();
+    }catch(Throwable $e){if($ownsTransaction&&$db->inTransaction())$db->rollBack();throw $e;}
     $q=$db->prepare('SELECT * FROM student_process_steps WHERE id=?');$q->execute([$stepId]);
     return $q->fetch(PDO::FETCH_ASSOC)?:[];
 }
@@ -126,7 +127,8 @@ function student_process_update_step(PDO $db,int $testId,int $stepId,int $studen
     $data=student_process_stage_data($stageKey,$input);
     $now=utc_now();$metadata=['reuse_source_stage_key'=>$data['reuse_source_stage_key']];
 
-    $db->beginTransaction();
+    $ownsTransaction=!$db->inTransaction();
+    if($ownsTransaction)$db->beginTransaction();
     try{
         $movements=$db->prepare('SELECT item_id,COALESCE(SUM(quantity_delta),0) delta FROM student_inventory_movements WHERE step_id=? GROUP BY item_id');
         $movements->execute([$stepId]);
@@ -143,8 +145,8 @@ function student_process_update_step(PDO $db,int $testId,int $stepId,int $studen
             student_inventory_move($db,$studentId,(int)$data['inventory_item_id'],-(float)$data['used_amount'],'consume','Uso no Caderno',$testId,$stepId,false);
         }
         student_process_sync_legacy_summary($db,$testId,$studentId,$stageKey,$data,$now);
-        $db->commit();
-    }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+        if($ownsTransaction)$db->commit();
+    }catch(Throwable $e){if($ownsTransaction&&$db->inTransaction())$db->rollBack();throw $e;}
 
     $q=$db->prepare('SELECT * FROM student_process_steps WHERE id=?');$q->execute([$stepId]);
     return $q->fetch(PDO::FETCH_ASSOC)?:[];
