@@ -20,7 +20,18 @@ function student_process_execution_plan(PDO $db,int $planId,int $studentId): arr
 }
 
 function student_process_execution_current_step(PDO $db,array $plan): ?array {
-    return student_process_plan_next_step($db,$plan);
+    $planId=(int)$plan['id'];$studentId=(int)$plan['student_id'];
+    $session=student_process_execution_session($db,$planId,$studentId);
+    if($session){
+        $selectedId=(int)($session['plan_step_id']??0);
+        if($selectedId>0){
+            $q=$db->prepare("SELECT * FROM student_process_plan_steps WHERE id=? AND plan_id=? AND status NOT IN ('completed','skipped') LIMIT 1");
+            $q->execute([$selectedId,$planId]);$selected=$q->fetch(PDO::FETCH_ASSOC);
+            if($selected)return $selected;
+        }
+    }
+    foreach(student_process_plan_steps($db,$planId) as $step)if(!in_array((string)$step['status'],['completed','skipped'],true))return $step;
+    return null;
 }
 
 function student_process_execution_timestamp(?string $value): ?int {
