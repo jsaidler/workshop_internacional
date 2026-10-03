@@ -22,13 +22,12 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     }catch(Throwable $e){$error=$e->getMessage();}
 }
 $plan=student_process_plan_for_test($db,$testId,$studentId);$facts=student_process_steps($db,$testId);$templates=student_process_templates($db,$studentId);$standards=student_process_standard_catalog();
-$currentStarted=$plan?student_process_replanning_current_started_step($db,$plan):null;$csrf=csrf_token('student-process-replanning-'.$testId);$back=$from==='recorded'?'/aluno/processamento-realizado.php?test='.$testId:'/aluno/teste.php?id='.$testId.'&view=process';
+$csrf=csrf_token('student-process-replanning-'.$testId);$back=$from==='recorded'?'/aluno/processamento-realizado.php?test='.$testId:'/aluno/teste.php?id='.$testId.'&view=process';
 $currentTemplateId=(int)($plan['source_template_id']??0);$currentGlobalVersionId=(int)($plan['source_global_version_id']??0);
 student_shell_start('Alterar próximas etapas',null,$student);?>
 <div class="student-appbar"><a class="student-back" href="<?=h($back)?>">← Processamento</a></div>
-<header class="student-page-heading student-replanning-heading"><div><p class="student-kicker">Caderno</p><h1 class="student-title">Alterar próximas etapas</h1><p class="student-process-context"><strong><?=count($facts)?> etapa<?=count($facts)===1?'':'s'?> registrada<?=count($facts)===1?'':'s'?></strong> permanece<?=count($facts)===1?'':'m'?> no histórico. A escolha abaixo muda somente o que vem depois.</p></div></header>
+<header class="student-page-heading student-replanning-heading"><div><p class="student-kicker">Caderno</p><h1 class="student-title">Alterar próximas etapas</h1><p class="student-process-context"><?php if($facts):?><strong><?=count($facts)?> etapa<?=count($facts)===1?'':'s'?> realizada<?=count($facts)===1?'':'s'?></strong> permanece<?=count($facts)===1?'':'m'?> no histórico. A escolha abaixo muda somente o que ainda não foi consolidado.<?php else:?>Nenhuma etapa foi consolidada pelo Caderno. Trocar o roteiro agora muda apenas o snapshot desta fotografia.<?php endif;?></p></div></header>
 <?php if($error!==''):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
-<?php if($currentStarted):?><p class="ui-alert ui-alert-notice">A etapa atual já foi iniciada. Se você trocar o roteiro agora, ela será preservada como <strong>interrompida</strong>, com o tempo decorrido quando ele estiver disponível.</p><?php endif;?>
 <?php if($plan):?><section class="student-replanning-current"><span>Roteiro atual</span><strong><?=h((string)$plan['source_name'])?></strong></section><?php endif;?>
 
 <section class="student-process-section" aria-labelledby="replanning-personal-title">
