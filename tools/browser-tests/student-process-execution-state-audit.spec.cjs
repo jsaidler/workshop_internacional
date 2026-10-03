@@ -31,7 +31,7 @@ for(const [device,viewport] of Object.entries(viewports)){
     await page.setViewportSize(viewport);await page.goto(`${base}?state=idle&settings=open`,{waitUntil:'networkidle'});
     await expect(page.locator('.student-lab-timer-settings')).toHaveAttribute('open','');
     await expect(page.locator('input[name="duration"]')).toHaveValue('07:00');
-    await expect(page.locator('[data-agitation-mode]')).toHaveValue('periodic');
+    await expect(page.locator('select[name="agitation_mode"]')).toHaveValue('periodic');
     await expect(page.locator('input[name="agitation_duration"]')).toHaveValue('00:10');
     await expect(page.locator('input[name="agitation_interval"]')).toHaveValue('01:00');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,'settings horizontal overflow').toBeLessThanOrEqual(1);
