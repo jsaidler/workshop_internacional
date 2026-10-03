@@ -36,13 +36,13 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('17 definições')).toBeVisible();
         await expect(page.getByText('stop_after_first')).toBeVisible();
         await expect(page.getByText('Desativado').first()).toBeVisible();
-        if(device==='phone')await expect(page.getByRole('button',{name:'Editar'}).first()).toBeInViewport();
+        if(device==='phone')await expect(page.locator('summary.admin-table-action',{hasText:'Editar'}).first()).toBeInViewport();
       }
       if(view==='developers'){
         await expect(page.getByText('13 definições')).toBeVisible();
         await expect(page.getByText('Brewed Caffenol',{exact:true}).first()).toBeVisible();
         await expect(page.getByText('fresh',{exact:true}).first()).toBeVisible();
-        if(device==='phone')await expect(page.getByRole('button',{name:'Editar'}).first()).toBeInViewport();
+        if(device==='phone')await expect(page.locator('summary.admin-table-action',{hasText:'Editar'}).first()).toBeInViewport();
       }
       await page.screenshot({path:`student-visual-audit/${device}/admin-process-${view}.png`,fullPage:true,animations:'disabled'});
     });
