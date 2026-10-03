@@ -37,6 +37,14 @@ for(const [device,viewport] of Object.entries(viewports)){
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,'settings horizontal overflow').toBeLessThanOrEqual(1);
     await page.screenshot({path:`student-visual-audit/${device}/process-execution-settings.png`,fullPage:true,animations:'disabled'});
   });
+  test(`per-photo route adjustments visual audit ${device}`,async({page})=>{
+    await page.setViewportSize(viewport);await page.goto(`${base}?state=idle&route=open`,{waitUntil:'networkidle'});
+    await expect(page.locator('.student-lab-route-adjustments')).toHaveAttribute('open','');await expect(page.getByRole('button',{name:'Repetir esta etapa',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Remover esta etapa',exact:true})).toBeVisible();
+    await expect(page.locator('[data-route-insert]')).toHaveAttribute('open','');const stage=page.locator('[data-lab-stage]');await stage.selectOption('first_development');await expect(page.locator('[data-lab-field="development"]')).toBeVisible();
+    const mode=page.locator('[data-lab-agitation-mode]');await mode.selectOption('periodic');await expect(page.locator('[data-lab-field="agitation-periodic"]')).toBeVisible();
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,'route adjustments horizontal overflow').toBeLessThanOrEqual(1);
+    await page.screenshot({path:`student-visual-audit/${device}/process-execution-route-adjustments.png`,fullPage:true,animations:'disabled'});
+  });
 }
 
 test('timer remains a tool while progression stays available',async({page})=>{

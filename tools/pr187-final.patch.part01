@@ -1,0 +1,69 @@
+_key"]'),agitationMode=form.querySelector('select[name="agitation_mode"]');
++    stage?.addEventListener('change',()=>refresh(form));developer?.addEventListener('change',()=>refresh(form));agitationMode?.addEventListener('change',()=>refresh(form));refresh(form);
+   });
+ })();
+ </script>
+ <?php admin_shell_end();
+ 
+ function admin_process_step_fields(array $stages,array $developers,array $v): void {
+-    $stageKey=(string)($v['stage_key']??'first_development');$developerKey=(string)($v['developer_key']??'');?>
++    $stageKey=(string)($v['stage_key']??'first_development');$developerKey=(string)($v['developer_key']??'');
++    $profile=student_process_lab_agitation_profile([
++        'payload_json'=>json_encode($v,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),
++        'agitation_interval'=>(string)($v['agitation_interval']??''),
++    ]);?>
+     <label class="admin-form-span-2">Etapa<select name="stage_key" required><?php foreach($stages as $key=>$stage):$enabled=(bool)($stage['enabled']??true);?><option value="<?=h($key)?>" data-stage-type="<?=h((string)($stage['type']??''))?>"<?=$key===$stageKey?' selected':''?><?=!$enabled&&$key!==$stageKey?' disabled':''?>><?=h((string)$stage['label'].(!$enabled?' · desativada':''))?></option><?php endforeach;?></select></label>
+     <label data-process-field="developer">Revelador<select name="developer_key"><option value="">—</option><?php foreach($developers as $key=>$dev):$enabled=(bool)($dev['enabled']??true);?><option value="<?=h($key)?>" data-developer-mode="<?=h((string)($dev['mode']??''))?>"<?=$key===$developerKey?' selected':''?><?=!$enabled&&$key!==$developerKey?' disabled':''?>><?=h((string)$dev['label'].(!$enabled?' · desativado':''))?></option><?php endforeach;?></select></label>
+     <label data-process-field="developer-name">Nome personalizado<input name="developer_name" value="<?=h((string)($v['developer_name']??''))?>"></label>
+@@ -87,10 +93,14 @@
+     <label data-process-field="dilution-volume">Água (ml)<input type="number" min="0" step="0.1" name="water_amount" value="<?=h((string)($v['water_amount']??''))?>"></label>
+     <label data-process-field="fresh-volume">Volume fresco (ml)<input type="number" min="0" step="0.1" name="fresh_volume" value="<?=h((string)($v['fresh_volume']??''))?>"></label>
+     <label>Temperatura<input name="temperature" value="<?=h((string)($v['temperature']??''))?>"></label>
+-    <label>Tempo<input name="duration" value="<?=h((string)($v['duration']??''))?>" placeholder="7:00"></label>
+-    <label>Intervalo de agitação<input name="agitation_interval" value="<?=h((string)($v['agitation_interval']??''))?>"></label>
+-    <label class="admin-form-span-2">Agitação<input name="agitation" value="<?=h((string)($v['agitation']??''))?>"></label>
++    <label>Tempo<input name="duration" value="<?=h((string)($v['duration']??''))?>" placeholder="07:00"></label>
++    <label class="admin-form-span-2">Controle de agitação<select name="agitation_mode"><option value="none"<?=$profile['mode']==='none'?' selected':''?>>Sem temporização</option><option value="periodic"<?=$profile['mode']==='periodic'?' selected':''?>>Periódica</option><option value="continuous"<?=$profile['mode']==='continuous'?' selected':''?>>Contínua</option></select></label>
++    <div class="admin-form-span-2 admin-form-grid" data-process-field="agitation-periodic"<?=$profile['mode']==='periodic'?'':' hidden'?>>
++      <label>Duração de cada agitação<input name="agitation_duration" value="<?=h((string)$profile['duration'])?>" placeholder="00:10"></label>
++      <label>Intervalo entre inícios<input name="agitation_interval" value="<?=h((string)$profile['interval'])?>" placeholder="01:00"></label>
++    </div>
++    <label class="admin-form-span-2">Observação de agitação<input name="agitation" value="<?=h((string)($v['agitation']??''))?>" placeholder="Ex.: inversões suaves"></label>
+     <label class="admin-form-span-2" data-process-field="chemical">Químico / nome livre<input name="chemical_name" value="<?=h((string)($v['chemical_name']??''))?>"></label>
+     <label data-process-field="reuse">Reutilizar banho<select name="reuse_source_stage_key"><option value="">Não</option><option value="first_development"<?=((string)($v['reuse_source_stage_key']??'')==='first_development')?' selected':''?>>Primeira revelação</option></select></label>
+     <label class="admin-form-span-2">Notas<textarea name="notes" rows="3"><?=h((string)($v['notes']??''))?></textarea></label>
+-<?php }
+\ No newline at end of file
++<?php }
+--- a/aluno/processar.php
++++ b/aluno/processar.php
+@@ -12,6 +12,36 @@
+ }
+ function student_process_runner_step_url(int $testId,int $stepId): string {return '/aluno/processar.php?test='.$testId.'&intent=live&step='.$stepId;}
+ 
++function student_process_runner_render_insert_form(array $stages,array $developers,array $preparations,string $csrf,int $testId,int $referenceStepId): void {?>
++<form method="post" class="student-form-grid student-lab-insert-form" data-lab-insert-form>
++  <input type="hidden" name="_csrf" value="<?=h($csrf)?>">
++  <input type="hidden" name="action" value="insert_plan_step">
++  <input type="hidden" name="test_id" value="<?=$testId?>">
++  <input type="hidden" name="reference_step_id" value="<?=$referenceStepId?>">
++  <input type="hidden" name="operation_token" value="<?=h(student_uuid())?>">
++  <label class="form-field">Posição<select name="insert_where"><option value="after">Depois desta etapa</option><option value="before">Antes desta etapa</option></select></label>
++  <label class="form-field">Etapa<select name="stage_key" data-lab-stage required><option value="">Escolha…</option><?php foreach($stages as $key=>$stage):$enabled=(bool)($stage['enabled']??true);?><option value="<?=h((string)$key)?>" data-stage-type="<?=h((string)($stage['type']??''))?>"<?=$enabled?'':' disabled'?>><?=h((string)$stage['label'])?></option><?php endforeach;?></select></label>
++  <label class="form-field student-span-2" data-lab-field="custom" hidden>Nome da etapa<input name="custom_label" maxlength="120" disabled></label>
++  <div class="student-span-2 student-form-grid" data-lab-field="development" hidden>
++    <label class="form-field">Revelador<select name="developer_key" data-lab-developer disabled><?php foreach($developers as $key=>$developer):$enabled=(bool)($developer['enabled']??true);?><option value="<?=h((string)$key)?>" data-developer-mode="<?=h((string)($developer['mode']??''))?>"<?=$key==='parodinal'?' selected':''?><?=$enabled?'':' disabled'?>><?=h((string)$developer['label'])?></option><?php endforeach;?></select></label>
++    <label class="form-field">Predefinição de revelação<select name="saved_preparation_id" disabled><option value="">Nenhuma</option><?php foreach($preparations as $prep):?><option value="<?=(int)$prep['id']?>"><?=h((string)$prep['label'])?></option><?php endforeach;?></select></label>
++    <label class="form-field" data-lab-field="dilution-volume">Revelador / estoque (ml)<input type="number" min="0" step="0.1" name="developer_amount" disabled></label>
++    <label class="form-field" data-lab-field="dilution-volume">Água (ml)<input type="number" min="0" step="0.1" name="water_amount" disabled></label>
++    <label class="form-field" data-lab-field="fresh-volume" hidden>Volume fresco (ml)<input type="number" min="0" step="0.1" name="fresh_volume" disabled></label>
++    <label class="form-field" data-lab-field="developer-name" hidden>Outro revelador<input name="developer_name" disabled></label>
++  </div>
++  <label class="student-process-reuse student-span-2" data-lab-field="reuse" hidden><input type="checkbox" name="reuse_source_stage_key" value="first_development" disabled><span><strong>Reutilizar o banho da primeira revelação</strong><small>Não cria uma nova preparação nem um novo consumo.</small></span></label>
++  <label class="form-field" data-lab-field="chemical" hidden>Químico / nome livre<input name="chemical_name" disabled></label>
++  <label class="form-field">Tempo<input name="duration" placeholder="07:00"></label>
++  <label class="form-field">Temperatura<input name="temperature" placeholder="26 °C"></label>
++  <label class="form-field student-span-2">Controle de agitação<select name="agitation_mode" data-lab-agitation-mode><option value="none">Sem temporização</option><option value="periodic">Periódica</option><option value="continuous">Contínua</option></select></label>
++  <div class="student-span-2 student-form-grid" data-lab-field="agitation-periodic" hidden><label class="form-field">Duração de cada agitação<input name="agitation_duration" placeholder="00:10" disabled></label><label class="form-field">Intervalo entre inícios<input name="agitation_interval" placeholder="01:00" disabled></label></div>
++  <label class="form-field student-span-2">Observação de agitação<input name="agitation" placeholder="Ex.: inversões suaves"></label>
++  <label class="form-field student-span-2">Anotações<textarea nam
