@@ -157,3 +157,33 @@ A Tranche D (Dashboard + Curso + Material) permanece bloqueada até que a tranch
 5. remoção de barras móveis que sobrepõem conteúdo e de transparência/blur nessas superfícies;
 6. redução objetiva da carga textual e da quantidade de cartões no mobile;
 7. inspeção visual integral da área do aluno no estado resultante, seguida de correção dos problemas encontrados.
+
+## 10. Reversibilidade, fatos e mudança de rota
+
+**Escolhas são reversíveis; fatos registrados são preservados; somente ações explicitamente destrutivas apagam dados.**
+
+Trocar um roteiro, mudar de “já revelei” para “vou revelar agora”, abandonar um roteiro em favor de outro ou continuar manualmente não pode obrigar o aluno a recriar o registro nem apagar o que efetivamente aconteceu.
+
+A aplicação deve distinguir intenção futura de história factual:
+
+- antes de qualquer execução, trocar o roteiro substitui apenas o plano;
+- depois de etapas concluídas, essas etapas continuam como fatos e somente as próximas etapas são replanejadas;
+- fatos que não coincidirem com a nova rota permanecem no histórico e não são renomeados para parecer compatíveis;
+- uma etapa que já começou e é abandonada por uma troca de rota deve ser preservada como **interrompida**, incluindo o tempo efetivamente decorrido quando ele puder ser determinado;
+- dados independentes da rota — exposição, mídia, observações, data e demais fatos do registro — não devem ser solicitados novamente nem descartados;
+- o usuário deve encontrar a ação de alterar/trocar roteiro junto da decisão atual, e não por meio de uma fuga escondida da interface;
+- quando houver consequência, a interface explica **o que permanece e o que muda**, em vez de usar confirmação genérica.
+
+### Atomicidade obrigatória
+
+Uma mudança de rota é uma única operação lógica. Quando ela envolve preservar uma etapa em andamento como fato interrompido, atualizar metadados de registro, encerrar a sessão operacional anterior e criar o novo plano, **todas essas alterações devem pertencer à mesma transação de banco de dados**.
+
+Se qualquer parte da troca falhar:
+
+- o plano anterior continua válido;
+- a sessão de execução anterior continua recuperável;
+- nenhuma etapa “interrompida” parcial fica gravada isoladamente;
+- nenhum evento de auditoria afirma que a troca aconteceu;
+- nenhum consumo ou ajuste de inventário parcial pode sobreviver à falha.
+
+O teste de reversibilidade deve incluir deliberadamente falha durante a substituição do plano e verificar rollback integral, além dos caminhos felizes.
