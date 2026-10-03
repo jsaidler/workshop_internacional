@@ -12,6 +12,36 @@ function student_process_runner_json(array $payload,int $status=200): never {
 }
 function student_process_runner_step_url(int $testId,int $stepId): string {return '/aluno/processar.php?test='.$testId.'&intent=live&step='.$stepId;}
 
+function student_process_runner_render_insert_form(array $stages,array $developers,array $preparations,string $csrf,int $testId,int $referenceStepId): void {?>
+<form method="post" class="student-form-grid student-lab-insert-form" data-lab-insert-form>
+  <input type="hidden" name="_csrf" value="<?=h($csrf)?>">
+  <input type="hidden" name="action" value="insert_plan_step">
+  <input type="hidden" name="test_id" value="<?=$testId?>">
+  <input type="hidden" name="reference_step_id" value="<?=$referenceStepId?>">
+  <input type="hidden" name="operation_token" value="<?=h(student_uuid())?>">
+  <label class="form-field">Posição<select name="insert_where"><option value="after">Depois desta etapa</option><option value="before">Antes desta etapa</option></select></label>
+  <label class="form-field">Etapa<select name="stage_key" data-lab-stage required><option value="">Escolha…</option><?php foreach($stages as $key=>$stage):$enabled=(bool)($stage['enabled']??true);?><option value="<?=h((string)$key)?>" data-stage-type="<?=h((string)($stage['type']??''))?>"<?=$enabled?'':' disabled'?>><?=h((string)$stage['label'])?></option><?php endforeach;?></select></label>
+  <label class="form-field student-span-2" data-lab-field="custom" hidden>Nome da etapa<input name="custom_label" maxlength="120" disabled></label>
+  <div class="student-span-2 student-form-grid" data-lab-field="development" hidden>
+    <label class="form-field">Revelador<select name="developer_key" data-lab-developer disabled><?php foreach($developers as $key=>$developer):$enabled=(bool)($developer['enabled']??true);?><option value="<?=h((string)$key)?>" data-developer-mode="<?=h((string)($developer['mode']??''))?>"<?=$key==='parodinal'?' selected':''?><?=$enabled?'':' disabled'?>><?=h((string)$developer['label'])?></option><?php endforeach;?></select></label>
+    <label class="form-field">Predefinição de revelação<select name="saved_preparation_id" disabled><option value="">Nenhuma</option><?php foreach($preparations as $prep):?><option value="<?=(int)$prep['id']?>"><?=h((string)$prep['label'])?></option><?php endforeach;?></select></label>
+    <label class="form-field" data-lab-field="dilution-volume">Revelador / estoque (ml)<input type="number" min="0" step="0.1" name="developer_amount" disabled></label>
+    <label class="form-field" data-lab-field="dilution-volume">Água (ml)<input type="number" min="0" step="0.1" name="water_amount" disabled></label>
+    <label class="form-field" data-lab-field="fresh-volume" hidden>Volume fresco (ml)<input type="number" min="0" step="0.1" name="fresh_volume" disabled></label>
+    <label class="form-field" data-lab-field="developer-name" hidden>Outro revelador<input name="developer_name" disabled></label>
+  </div>
+  <label class="student-process-reuse student-span-2" data-lab-field="reuse" hidden><input type="checkbox" name="reuse_source_stage_key" value="first_development" disabled><span><strong>Reutilizar o banho da primeira revelação</strong><small>Não cria uma nova preparação nem um novo consumo.</small></span></label>
+  <label class="form-field" data-lab-field="chemical" hidden>Químico / nome livre<input name="chemical_name" disabled></label>
+  <label class="form-field">Tempo<input name="duration" placeholder="07:00"></label>
+  <label class="form-field">Temperatura<input name="temperature" placeholder="26 °C"></label>
+  <label class="form-field student-span-2">Controle de agitação<select name="agitation_mode" data-lab-agitation-mode><option value="none">Sem temporização</option><option value="periodic">Periódica</option><option value="continuous">Contínua</option></select></label>
+  <div class="student-span-2 student-form-grid" data-lab-field="agitation-periodic" hidden><label class="form-field">Duração de cada agitação<input name="agitation_duration" placeholder="00:10" disabled></label><label class="form-field">Intervalo entre inícios<input name="agitation_interval" placeholder="01:00" disabled></label></div>
+  <label class="form-field student-span-2">Observação de agitação<input name="agitation" placeholder="Ex.: inversões suaves"></label>
+  <label class="form-field student-span-2">Anotações<textarea name="notes" rows="2" maxlength="3000"></textarea></label>
+  <div class="student-actions student-span-2"><button class="button button-primary" type="submit">Adicionar a esta fotografia</button></div>
+</form>
+<?php }
+
 if($testId>0){
     $test=student_test_for_student($db,$testId,$studentId);if(!$test){http_response_code(404);student_shell_start('Registro não encontrado',null,$student);?><div class="student-empty">Registro não encontrado.</div><?php student_shell_end();exit;}
     $plan=student_process_plan_for_test($db,$testId,$studentId);
@@ -40,6 +70,19 @@ if($testId>0){
                 if($planStepId<1)throw new RuntimeException('Etapa do processamento não informada.');
                 student_process_lab_update_timer_settings($db,$planId,$planStepId,$studentId,$_POST);
                 header('Location: '.student_process_runner_step_url($testId,$planStepId),true,303);exit;
+            }elseif($action==='insert_plan_step'){
+                $referenceStepId=(int)($_POST['reference_step_id']??0);if($referenceStepId<1)throw new RuntimeException('Etapa de referência não informada.');
+                $inserted=student_process_plan_insert_step($db,$planId,$referenceStepId,$studentId,$_POST,(string)($_POST['operation_token']??''));
+                header('Location: '.student_process_runner_step_url($testId,(int)$inserted['id']),true,303);exit;
+            }elseif($action==='repeat_plan_step'){
+                if($planStepId<1)throw new RuntimeException('Etapa do processamento não informada.');
+                $inserted=student_process_plan_repeat_step($db,$planId,$planStepId,$studentId,(string)($_POST['operation_token']??''));
+                header('Location: '.student_process_runner_step_url($testId,(int)$inserted['id']),true,303);exit;
+            }elseif($action==='remove_plan_step'){
+                if($planStepId<1)throw new RuntimeException('Etapa do processamento não informada.');
+                $result=student_process_plan_remove_step($db,$planId,$planStepId,$studentId,(string)($_POST['operation_token']??''));
+                $nextStepId=(int)($result['current_step']['id']??0);$target=$nextStepId>0?student_process_runner_step_url($testId,$nextStepId):'/aluno/teste.php?id='.$testId.'&view=process';
+                header('Location: '.$target,true,303);exit;
             }else throw new RuntimeException('Ação inválida.');
         }catch(StudentProcessExecutionConflict $e){
             if($ajax)student_process_runner_json(['error'=>$e->getMessage(),'state'=>$e->executionState],409);$error=$e->getMessage();
@@ -86,6 +129,7 @@ $selectedCompleted=$testId>0&&$current&&(string)($current['status']??'')==='comp
 $activeIndex=null;if($testId>0&&$activeStepId>0)foreach($allSteps as $i=>$row)if((int)$row['id']===$activeStepId){$activeIndex=$i;break;}
 $nextPending=null;if($testId>0&&$activeIndex!==null)for($i=$activeIndex+1;$i<count($allSteps);$i++)if((string)$allSteps[$i]['status']!=='completed'){$nextPending=$allSteps[$i];break;}
 $agitationSummary='';if($profile['mode']==='continuous')$agitationSummary='Agitação contínua';elseif($profile['mode']==='periodic'&&$profile['interval_seconds'])$agitationSummary=$profile['duration_seconds']?'Agitar '.student_process_seconds_label((int)$profile['duration_seconds']).' a cada '.student_process_seconds_label((int)$profile['interval_seconds']):'Agitação a cada '.student_process_seconds_label((int)$profile['interval_seconds']);
+$mutationStages=$testId>0&&$plan&&!$planComplete?student_process_managed_stage_catalog($db,false):[];$mutationDevelopers=$testId>0&&$plan&&!$planComplete?student_process_managed_developer_catalog($db,false):[];$mutationPreparations=$testId>0&&$plan&&!$planComplete?student_saved_preparations($db,$studentId):[];
 
 student_shell_start('Modo laboratório',null,$student);?>
 <header class="student-process-runner-head"><a class="student-back" href="<?=h($backUrl)?>">← <?=$testId>0?'Caderno':'Processamentos'?></a><div><p class="student-kicker">Modo laboratório</p><h1 class="student-title"><?=h($sourceName)?></h1></div></header>
@@ -118,6 +162,17 @@ student_shell_start('Modo laboratório',null,$student);?>
 <div class="student-process-runner-advance">
 <?php if($testId>0):?><?php if($nextPending):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="advance_to_step"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="plan_step_id" value="<?=(int)$nextPending['id']?>"><button class="button button-primary" type="submit">Ir para próxima etapa</button></form><?php else:?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="finish_process"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="plan_step_id" value="<?=(int)$current['id']?>"><button class="button button-primary" type="submit">Concluir processamento</button></form><?php endif;?><?php else:$nextNumber=$currentIndex+2;$nextHref=isset($allSteps[$currentIndex+1])?'/aluno/processar.php?template='.$templateId.'&step='.$nextNumber:'/aluno/processamentos.php?id='.$templateId;?><a class="button button-primary" href="<?=h($nextHref)?>"><?=isset($allSteps[$currentIndex+1])?'Próxima etapa':'Sair do processamento'?></a><?php endif;?>
 </div>
+<?php endif;?>
+
+<?php if($testId>0&&!$planComplete):?>
+<details class="student-lab-route-adjustments"><summary>Ajustar roteiro desta fotografia</summary>
+  <div class="student-lab-route-adjustment-copy"><strong>Exceções desta realização</strong><span>Estas ações alteram somente o roteiro desta fotografia. O processo padrão e os fatos já registrados continuam intactos.</span></div>
+  <div class="student-lab-route-adjustment-actions">
+    <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="repeat_plan_step"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="plan_step_id" value="<?=(int)$current['id']?>"><input type="hidden" name="operation_token" value="<?=h(student_uuid())?>"><button class="button button-secondary button-compact" type="submit">Repetir esta etapa</button></form>
+    <?php if(!$selectedCompleted&&count($allSteps)>1):?><form method="post" onsubmit="return confirm('Remover esta etapa somente do roteiro desta fotografia?')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="remove_plan_step"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="plan_step_id" value="<?=(int)$current['id']?>"><input type="hidden" name="operation_token" value="<?=h(student_uuid())?>"><button class="student-danger-action" type="submit">Remover esta etapa</button></form><?php endif;?>
+  </div>
+  <?php if(!$selectedCompleted):?><details><summary class="button button-secondary button-compact">Adicionar outra etapa</summary><?php student_process_runner_render_insert_form($mutationStages,$mutationDevelopers,$mutationPreparations,$csrf,$testId,(int)$current['id']);?></details><?php else:?><p class="student-lab-route-adjustment-copy"><span>Para inserir outra etapa no trecho ainda aberto, abra a etapa atual do processo e faça o ajuste a partir dela.</span></p><?php endif;?>
+</details>
 <?php endif;?>
 
 <details class="student-lab-route-list"><summary>Ver roteiro completo</summary><ol><?php foreach($allSteps as $i=>$step):$done=$testId>0&&(string)($step['status']??'')==='completed';?><li class="<?=$done?'is-done':''?>"><span><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></span><strong><?=h((string)$step['label'])?></strong><small><?=h((string)$step['duration']!==''?student_process_seconds_label(student_process_time_seconds((string)$step['duration'])):'—')?></small></li><?php endforeach;?></ol></details>
