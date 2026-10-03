@@ -6,6 +6,7 @@ $root=dirname(__DIR__);
 $migration=(string)file_get_contents($root.'/migrations/080_student_process_recording_modes.php');
 $domain=(string)file_get_contents($root.'/app/student_process_recording.php');
 $execution=(string)file_get_contents($root.'/app/student_process_execution.php');
+$labNavigation=(string)file_get_contents($root.'/app/student_process_lab_navigation.php');
 $page=(string)file_get_contents($root.'/aluno/processamento-realizado.php');
 $record=(string)file_get_contents($root.'/aluno/teste.php');
 $notebook=(string)file_get_contents($root.'/aluno/caderno.php');
@@ -48,11 +49,14 @@ must_process_recording(str_contains($manager,"\$intent!=='live')\$intent=''"),'p
 must_process_recording(str_contains($manager,'Usar no laboratório'),'live selection is not labeled as a laboratory action');
 
 must_process_recording(str_contains($runner,"\$showIntentChoice=\$plan&&!\$planStarted&&\$intent!=='live'"),'runner does not gate an unstarted neutral plan behind explicit execution intent');
-must_process_recording(str_contains($runner,'student_process_execution_transition')&&str_contains($runner,'student_process_execution_complete_step'),'laboratory execution bypasses the persisted execution state service');
+must_process_recording(str_contains($runner,'student_process_execution_transition'),'laboratory timer bypasses the persisted server timer service');
+must_process_recording(str_contains($runner,'student_process_lab_advance_to_step')&&str_contains($runner,'student_process_lab_finish_process'),'laboratory process progression bypasses the server process-position service');
+must_process_recording(str_contains($labNavigation,'student_process_add_flexible_step'),'live process progression does not write through factual process-step authority');
 must_process_recording(str_contains($runner,'timer_state')&&str_contains($runner,'timer_start')&&str_contains($runner,'timer_pause')&&str_contains($runner,'timer_reset'),'runner endpoint does not expose complete persisted timer transitions');
 must_process_recording(str_contains($runner,'data-runner-start>Iniciar'),'laboratory runner lacks the explicit start control');
-must_process_recording(str_contains($runner,'data-execution-state'),'runner does not hydrate the server execution state');
-must_process_recording(str_contains($execution,"state='elapsed'")&&str_contains($execution,'timer_ends_at'),'server execution model does not distinguish elapsed timer from completed step');
+must_process_recording(str_contains($runner,'data-execution-state'),'runner does not hydrate the server timer state');
+must_process_recording(str_contains($execution,"state='elapsed'")&&str_contains($execution,'timer_ends_at'),'server timer model does not preserve elapsed state independently of process progression');
+must_process_recording(!str_contains($labNavigation,'student_process_lab_interrupt_attempt'),'app state can still be materialized as a fictitious interrupted laboratory event');
 
 must_process_recording(str_contains($entry,"processEntry='server'")&&!str_contains($entry,'article.innerHTML'),'core processing paths are still injected by JavaScript');
 must_process_recording(str_contains($progressive,'data-recorded-stage')&&str_contains($progressive,"type!=='development'"),'manual retroactive form does not hide irrelevant developer fields');
@@ -63,4 +67,5 @@ must_process_recording(str_contains($shell,"str_contains(\$path,'processamento-r
 must_process_recording(str_contains($rules,'Não presumir caminho único'),'canonical multipath UX rule is missing');
 must_process_recording(str_contains($rules,'A interface deve perguntar uma decisão apenas quando ela muda a próxima ação'),'canonical rules do not prevent repeated decision gates');
 must_process_recording(str_contains($rules,'todas as telas da área do aluno, sem exceção'),'full visual inspection rule is missing');
+must_process_recording(str_contains($rules,'O estado da interface não é um fato do laboratório'),'canonical rules still conflate application state with the photographic process');
 echo "student-process-recording: ok\n";
