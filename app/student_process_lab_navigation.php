@@ -51,7 +51,10 @@ function student_process_lab_materialize_step(PDO $db,array $plan,array $step,in
     $testId=(int)$plan['test_id'];$payload=student_process_json_array((string)$step['payload_json']);
     $payload['stage_key']=(string)$step['stage_key'];$payload['duration']=(string)$step['duration'];
     $payload['agitation_interval']=(string)($step['agitation_interval']??'');
-    $actual=student_process_recording_add_step($db,$testId,$studentId,$payload,'live');$actualId=(int)($actual['id']??0);
+    // Live progression creates a real fact and therefore uses the normal factual
+    // write path. Retroactive recording has a separate helper that deliberately
+    // suppresses automatic inventory effects.
+    $actual=student_process_add_flexible_step($db,$testId,$studentId,$payload);$actualId=(int)($actual['id']??0);
     if($actualId<1)throw new RuntimeException('Não foi possível registrar a etapa realizada.');
 
     $profile=student_process_lab_agitation_profile($step);$meta=student_process_json_array((string)($actual['metadata_json']??'{}'));
