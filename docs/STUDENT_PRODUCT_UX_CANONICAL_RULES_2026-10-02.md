@@ -4,33 +4,35 @@ Este documento complementa e prevalece sobre quaisquer suposições conflitantes
 
 ## 1. Não presumir caminho único
 
-A área do aluno não pode modelar uma tarefa como se existisse apenas uma sequência válida de uso.
+A área do aluno não pode modelar uma tarefa como se existisse apenas uma sequência válida de uso do software.
 
 Antes de desenhar ou alterar qualquer fluxo, devem ser identificados os caminhos reais pelos quais um aluno pode chegar ao mesmo objetivo, incluindo uso síncrono da ferramenta, registro posterior e retomada parcial.
 
-No Caderno, documentação do experimento e controle da execução são responsabilidades distintas.
+No Caderno, documentação do experimento, navegação da interface e andamento físico do processo são responsabilidades distintas.
 
 Para processamento, pelo menos estes caminhos são canônicos:
 
-1. **Executar agora no laboratório** — o aluno escolhe ou monta um processamento, aplica ao registro e acompanha a execução pelo Modo laboratório.
-2. **Registrar processamento já realizado** — o aluno já revelou fora do sistema e quer apenas documentar o que efetivamente fez.
-3. **Retomar/completar um registro parcial** — o aluno iniciou o acompanhamento no sistema, mas parte da execução ocorreu fora dele; depois completa o registro real sem ser obrigado a simular etapas já executadas.
+1. **Acompanhar no laboratório** — o aluno escolhe ou monta um processamento, aplica ao registro e usa o Modo laboratório como consulta, temporizador e apoio durante a revelação.
+2. **Registrar processamento já realizado** — o aluno já revelou fora do sistema e quer documentar o que efetivamente fez.
+3. **Retomar/completar um registro parcial** — o aluno usou o sistema em parte do processo, continuou a revelação sem ele e depois retoma a documentação sem ser obrigado a simular interações que não aconteceram no aplicativo.
 
 Nenhum desses caminhos deve ser tratado como erro ou exceção improvisada. A interface deve deixar a escolha explícita quando ela for relevante.
 
-### Invariante: associar não é executar
+### Invariante: associar não é avançar o processo
 
-**Selecionar, aplicar ou associar um processamento salvo a um registro nunca significa iniciar a execução.** Essa ação cria o snapshot do roteiro dentro do Caderno.
+**Selecionar, aplicar ou associar um processamento salvo a um registro nunca significa que a revelação começou ou avançou.** Essa ação cria o snapshot do roteiro dentro do Caderno.
 
-A execução só começa por uma ação explícita do aluno. Um fluxo pode preservar a intenção já declarada — por exemplo, **Vou revelar agora** — durante a escolha do roteiro e abrir o Modo laboratório depois da associação, desde que a execução propriamente dita continue dependendo do comando **Iniciar** do laboratório.
+O Modo laboratório não controla a revelação. Entrar nele, abrir uma etapa, iniciar ou abandonar um cronômetro, fechar a página, perder conexão ou voltar depois não cria por si só um fato laboratorial.
 
-Quando não existe intenção anterior conhecida, um roteiro associado e ainda não iniciado deve permanecer neutro e permitir:
+O andamento do processo só muda por uma declaração explícita do aluno sobre a posição real — por exemplo, **Estou nesta etapa** — ou por um registro retroativo do que foi realizado.
 
-- abrir o laboratório;
+Quando não existe posição declarada, um roteiro associado deve permanecer neutro e permitir:
+
+- abrir o laboratório para consulta e temporização;
 - registrar o processamento como já realizado;
 - trocar o roteiro.
 
-Um roteiro associado e ainda não iniciado não pode aparecer no Caderno como “em execução”, “processamento iniciado” ou equivalente.
+Um roteiro meramente associado não pode aparecer no Caderno como “em execução”, “processamento iniciado” ou equivalente.
 
 ## 2. Registro retroativo de processamento
 
@@ -55,9 +57,10 @@ Antes de implementar uma tela ou ação, responder:
 - o aluno pode estar registrando algo que já aconteceu?;
 - o aluno pode ter executado parte fora do sistema?;
 - há mais de uma forma legítima de concluir a tarefa?;
-- a interface diferencia claramente documentar, preparar, executar e revisar?
+- a interface diferencia claramente documentar, consultar, temporizar, preparar e revisar?;
+- o que acontece se o fotógrafo decidir fazer outra coisa agora?
 
-Se a solução depende de uma única sequência idealizada de uso, o fluxo ainda não está suficientemente modelado.
+Se a solução depende de uma única sequência idealizada de uso da interface, o fluxo ainda não está suficientemente modelado.
 
 Também não é aceitável transformar cada distinção conceitual em uma nova tela de decisão. **A interface deve perguntar uma decisão apenas quando ela muda a próxima ação do aluno e deve preservar essa intenção enquanto ela continuar válida.**
 
@@ -119,7 +122,8 @@ As renderizações devem ser efetivamente observadas e criticadas. A revisão de
 - comportamento mobile;
 - estados e feedback;
 - continuidade entre fluxos;
-- adequação à operação física de laboratório quando pertinente.
+- adequação à operação física de laboratório quando pertinente;
+- liberdade de navegação sem transformar o software em controlador do procedimento.
 
 Problema encontrado durante a inspeção deve ser corrigido antes do merge e a tela correspondente deve ser reinspecionada.
 
@@ -151,38 +155,76 @@ A inspeção visual deve tratar **carga textual, quantidade de decisões, númer
 A Tranche D (Dashboard + Curso + Material) permanece bloqueada até que a tranche corretiva atual resolva e valide:
 
 1. suporte explícito a múltiplos caminhos de processamento no Caderno, incluindo registro retroativo e retomada parcial;
-2. distinção entre documentação e execução;
+2. distinção entre documentação, navegação da interface e andamento físico do processo;
 3. consumo de inventário seguro em registros retroativos;
 4. simplificação do percurso de processamento, sem repetir a mesma decisão em telas sucessivas;
 5. remoção de barras móveis que sobrepõem conteúdo e de transparência/blur nessas superfícies;
 6. redução objetiva da carga textual e da quantidade de cartões no mobile;
 7. inspeção visual integral da área do aluno no estado resultante, seguida de correção dos problemas encontrados.
 
-## 10. Reversibilidade, fatos e mudança de rota
+## 10. Roteiro, posição real, fatos e reversibilidade
 
-**Escolhas são reversíveis; fatos registrados são preservados; somente ações explicitamente destrutivas apagam dados.**
+**A sequência pertence ao processo fotográfico. A navegação pertence ao usuário. O estado da interface não é um fato do laboratório.**
 
-Trocar um roteiro, mudar de “já revelei” para “vou revelar agora”, abandonar um roteiro em favor de outro ou continuar manualmente não pode obrigar o aluno a recriar o registro nem apagar o que efetivamente aconteceu.
+O roteiro de revelação possui uma sequência física real. O aplicativo pode ser usado continuamente, parcialmente ou abandonado durante parte do procedimento sem que isso altere o que aconteceu no laboratório.
 
-A aplicação deve distinguir intenção futura de história factual:
+A aplicação deve distinguir quatro coisas:
 
-- antes de qualquer execução, trocar o roteiro substitui apenas o plano;
-- depois de etapas concluídas, essas etapas continuam como fatos e somente as próximas etapas são replanejadas;
-- fatos que não coincidirem com a nova rota permanecem no histórico e não são renomeados para parecer compatíveis;
-- uma etapa que já começou e é abandonada por uma troca de rota deve ser preservada como **interrompida**, incluindo o tempo efetivamente decorrido quando ele puder ser determinado;
-- dados independentes da rota — exposição, mídia, observações, data e demais fatos do registro — não devem ser solicitados novamente nem descartados;
-- o usuário deve encontrar a ação de alterar/trocar roteiro junto da decisão atual, e não por meio de uma fuga escondida da interface;
-- quando houver consequência, a interface explica **o que permanece e o que muda**, em vez de usar confirmação genérica.
+- **processo-base** — o padrão versionado ou roteiro pessoal escolhido;
+- **snapshot do registro** — a cópia dos valores daquele processo para aquela fotografia;
+- **posição declarada no processo** — a etapa real que o aluno afirma ter alcançado;
+- **histórico factual** — as etapas que o sistema pode considerar realizadas a partir dessa declaração e dos valores do snapshot, além das correções explícitas feitas pelo aluno.
+
+### Regras da bancada
+
+- abrir ou consultar qualquer etapa é uma ação de leitura e não muda a posição real;
+- iniciar, pausar, reiniciar, ajustar ou abandonar um cronômetro não cria nem invalida fatos;
+- fechar a página, perder conexão, trocar de dispositivo ou voltar depois não cria uma “interrupção” laboratorial;
+- ao declarar **Estou nesta etapa** em uma etapa posterior, as etapas anteriores do roteiro são consideradas realizadas com os valores atuais do snapshot;
+- os valores herdados do padrão são valores efetivos até que o aluno os altere naquela fotografia;
+- alterar tempo, temperatura, agitação ou outro parâmetro modifica apenas o snapshot daquele registro, nunca o padrão global já publicado;
+- uma etapa anterior pode ser consultada depois sem mover a posição do processo para trás;
+- se uma etapa excepcionalmente não fez parte daquele processamento, isso deve ser uma edição explícita do roteiro daquela fotografia, e não uma inferência automática de `skipped`;
+- o sistema não cria fatos “interrompidos” porque uma tela, timer ou rota deixou de ser usada.
+
+### Temporização e agitação
+
+O cronômetro é uma ferramenta auxiliar e nunca uma condição para que uma etapa tenha acontecido.
+
+A etapa pode definir:
+
+- duração total;
+- sem temporização de agitação;
+- agitação contínua;
+- agitação periódica, com **duração de cada agitação** e **intervalo entre o início de cada agitação**.
+
+Em agitação periódica, `10 s a cada 60 s` significa agitar de `0:00–0:10`, `1:00–1:10`, `2:00–2:10` e assim por diante. Em agitação contínua, a indicação permanece ativa durante toda a contagem da etapa.
+
+Chegar a zero apenas encerra a contagem e emite o aviso correspondente. O cronômetro não avança automaticamente o processo.
+
+### Reversibilidade e mudança de roteiro
+
+**Escolhas são reversíveis; fatos já materializados são preservados; estado operacional da interface não é convertido em história factual.**
+
+Trocar um roteiro não pode obrigar o aluno a recriar o registro nem apagar exposição, mídia, observações, datas ou etapas já materializadas. Também não pode transformar automaticamente um cronômetro em andamento ou uma etapa exibida na tela em uma ocorrência “interrompida”.
+
+Quando houver mudança de roteiro:
+
+- fatos já materializados permanecem intactos;
+- o novo roteiro governa apenas o que ainda não foi consolidado como fato;
+- fatos incompatíveis com a nova rota não são renomeados para parecer compatíveis;
+- a posição operacional e os timers podem ser reinicializados sem criar acontecimentos laboratoriais fictícios;
+- a interface explica o que permanece e o que muda.
 
 ### Atomicidade obrigatória
 
-Uma mudança de rota é uma única operação lógica. Quando ela envolve preservar uma etapa em andamento como fato interrompido, atualizar metadados de registro, encerrar a sessão operacional anterior e criar o novo plano, **todas essas alterações devem pertencer à mesma transação de banco de dados**.
+Uma mudança de roteiro é uma única operação lógica. A preservação dos fatos existentes, a substituição das próximas etapas, a atualização da posição operacional e o encerramento/reinicialização de sessões auxiliares devem pertencer à mesma transação de banco de dados.
 
 Se qualquer parte da troca falhar:
 
 - o plano anterior continua válido;
-- a sessão de execução anterior continua recuperável;
-- nenhuma etapa “interrompida” parcial fica gravada isoladamente;
+- os fatos existentes continuam intactos;
+- nenhuma etapa fictícia é criada;
 - nenhum evento de auditoria afirma que a troca aconteceu;
 - nenhum consumo ou ajuste de inventário parcial pode sobreviver à falha.
 
