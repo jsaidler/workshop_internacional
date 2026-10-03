@@ -33,14 +33,14 @@ $navStart=strpos($adminShell,'function admin_navigation_groups');$navEnd=strpos(
 
 ux_expect($globalNav!=='','administração precisa de uma árvore global explícita');
 ux_expect(str_contains($globalNav,"'Principal'=>")&&str_contains($globalNav,"'Ensino'=>")&&str_contains($globalNav,"'Laboratório'=>")&&str_contains($globalNav,"'Site'=>")&&str_contains($globalNav,"'Sistema'=>"),'sidebar deve refletir ensino, laboratório, site e sistema');
-ux_expect(str_contains($globalNav,"'courses'=>['Cursos'")&&str_contains($globalNav,"'students'=>['Alunos'"),'Ensino deve expor somente as entradas globais de Cursos e Alunos');
+ux_expect(str_contains($globalNav,"'Ensino'=>admin_context_items('courses'")&&str_contains($adminShell,"'courses'=>['Cursos'")&&str_contains($adminShell,"'students'=>['Alunos'"),'Ensino deve expor somente as entradas globais de Cursos e Alunos');
 ux_expect(!str_contains($globalNav,"'registrations'=>")&&!str_contains($globalNav,"'cohorts'=>")&&!str_contains($globalNav,"'people'=>")&&!str_contains($globalNav,"'lessons'=>")&&!str_contains($globalNav,"'material'=>"),'coleções dependentes de curso/turma não devem competir na navegação global');
 ux_expect(str_contains($adminShell,'function admin_course_workspace_items')&&str_contains($adminShell,'function admin_cohort_workspace_items'),'curso e turma precisam de navegação contextual própria');
 ux_expect(str_contains($adminShell,"'registrations'=>['Inscrições',admin_course_url")&&str_contains($adminShell,"'cohorts'=>['Turmas',admin_course_url")&&str_contains($adminShell,"'content'=>['Conteúdo',admin_course_url")&&str_contains($adminShell,"'followup'=>['Acompanhamento',admin_course_url"),'workspace do curso deve expor as tarefas canônicas');
 ux_expect(str_contains($adminShell,"'students'=>['Alunos',admin_cohort_url")&&str_contains($adminShell,"'lessons'=>['Aulas e acesso',admin_cohort_url")&&str_contains($adminShell,"'questions'=>['Dúvidas',admin_cohort_url")&&str_contains($adminShell,"'tests'=>['Testes',admin_cohort_url"),'workspace da turma deve expor operação e acompanhamento');
 ux_expect(str_contains($adminShell,'class="admin-workspace-nav"'),'navegação contextual deve usar o componente compartilhado de workspace');
-ux_expect(str_contains($globalNav,"'forms'=>['Formulários'"),'Formulários deve ficar em Site');
-ux_expect(str_contains($globalNav,"'integrity'=>['Integridade'"),'Integridade deve ficar em Sistema');
+ux_expect(str_contains($globalNav,"'Site'=>admin_context_items('site'")&&str_contains($adminShell,"'forms'=>['Formulários'"),'Formulários deve ficar em Site');
+ux_expect(str_contains($globalNav,"'Sistema'=>admin_context_items('settings'")&&str_contains($adminShell,"'integrity'=>['Integridade'"),'Integridade deve ficar em Sistema');
 
 ux_expect(str_contains($courses,"['overview','setup']")||str_contains($courses,"['overview','setup'],true"),'curso deve conservar visão geral e configuração próprias');
 ux_expect(str_contains($courses,'Escolha um curso para administrar inscrições, turmas, conteúdo e acompanhamento.'),'catálogo de cursos deve explicar a tarefa, não o modelo de dados');
