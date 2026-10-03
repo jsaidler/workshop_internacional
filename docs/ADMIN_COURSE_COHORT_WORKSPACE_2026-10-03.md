@@ -1,5 +1,13 @@
 # Workspace administrativo por curso e turma — 03/10/2026
 
+## Autoridade desta decisão
+
+Este documento é a referência canônica da arquitetura de informação da administração de cursos a partir de 03/10/2026.
+
+Ele substitui, **somente para a administração de cursos**, a decisão anterior de “coleções globais como eixo primário” registrada em `docs/ADMIN_STUDENT_UX_AUDIT_2026-09-28.md`. As decisões daquele documento sobre Área do Aluno, sistema visual, ritmo, responsividade e consumo de componentes compartilhados continuam válidas onde não conflitarem com esta revisão.
+
+O domínio de dados não muda: curso, inscrição, turma, matrícula, aula e material continuam obedecendo às autoridades já definidas em `docs/COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md`.
+
 ## Motivo
 
 A auditoria funcional da administração identificou que a modelagem canônica de curso, turma, matrícula, aula e material estava correta, mas a interface ainda obrigava o operador a reconstruir o contexto por filtros e telas globais. Também havia regressões concretas na migração da antiga Área do Aluno administrativa: edição do ciclo de turma, importação histórica por CSV, avaliação de testes e prévia efetiva do conteúdo por turma haviam ficado órfãs ou inacessíveis.
