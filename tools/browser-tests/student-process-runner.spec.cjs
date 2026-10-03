@@ -17,11 +17,15 @@ test('lab runner starts wake lock only after explicit start and never auto advan
   await page.locator('[data-runner-start]').click();
   await expect.poll(()=>page.evaluate(()=>window.__wakeRequests)).toBeGreaterThan(0);
   await expect(page.locator('[data-runner-wake-status]')).toHaveText('Tela mantida ativa');
-  await expect(page.locator('[data-runner-start]')).toBeDisabled();
+  await expect(page.locator('[data-runner-start]')).toBeHidden();
+  await expect(page.locator('[data-runner-pause]')).toBeVisible();
+  await expect(page.locator('[data-runner-reset]')).toBeVisible();
   await page.waitForTimeout(2300);
   await expect(page.locator('[data-runner-clock]')).toHaveText('00:00');
   await expect(page.locator('[data-runner-cue]')).toHaveText('Tempo concluído');
-  await expect(page.locator('[data-runner-complete]')).not.toHaveAttribute('aria-disabled','true');
+  await expect(page.locator('[data-runner-start]')).toBeHidden();
+  await expect(page.locator('[data-runner-pause]')).toBeHidden();
+  await expect(page.locator('[data-runner-reset]')).toBeVisible();
   expect(page.url()).toBe(initialUrl);
   await expect(page.locator('.student-process-runner-next').getByText('Lavagem',{exact:true})).toBeVisible();
   expect(await page.evaluate(()=>window.__vibrations.length)).toBeGreaterThan(0);
@@ -30,11 +34,12 @@ test('lab runner starts wake lock only after explicit start and never auto advan
 test('pause releases wake lock; resume reacquires it; reset returns to idle without advancing',async({page})=>{
   await mockWake(page);await page.goto(base,{waitUntil:'networkidle'});
   await page.locator('[data-runner-start]').click();await page.waitForTimeout(350);
-  const firstWakeCount=await page.evaluate(()=>window.__wakeRequests);
-  expect(firstWakeCount).toBeGreaterThan(0);
+  const firstWakeCount=await page.evaluate(()=>window.__wakeRequests);expect(firstWakeCount).toBeGreaterThan(0);
   await page.locator('[data-runner-pause]').click();
   await expect.poll(()=>page.evaluate(()=>window.__wakeReleases)).toBeGreaterThan(0);
   await expect(page.locator('[data-runner-wake-status]')).toHaveText('Tela ativa pausada');
+  await expect(page.locator('[data-runner-start]')).toBeVisible();await expect(page.locator('[data-runner-start]')).toHaveText('Retomar');
+  await expect(page.locator('[data-runner-pause]')).toBeHidden();await expect(page.locator('[data-runner-reset]')).toBeVisible();
   const paused=await page.locator('[data-runner-clock]').textContent();
   await page.waitForTimeout(600);await expect(page.locator('[data-runner-clock]')).toHaveText(paused);
   await page.locator('[data-runner-start]').click();
@@ -42,8 +47,8 @@ test('pause releases wake lock; resume reacquires it; reset returns to idle with
   const wakeAfterResume=await page.evaluate(()=>window.__wakeRequests);
   await page.locator('[data-runner-reset]').click();
   await expect(page.locator('[data-runner-clock]')).toHaveText('00:02');
-  await expect(page.locator('[data-runner-complete]')).toHaveAttribute('aria-disabled','true');
-  await expect(page.locator('[data-runner-start]')).toBeEnabled();
+  await expect(page.locator('[data-runner-start]')).toBeVisible();await expect(page.locator('[data-runner-start]')).toBeEnabled();
+  await expect(page.locator('[data-runner-pause]')).toBeHidden();await expect(page.locator('[data-runner-reset]')).toBeHidden();
   await expect(page.locator('[data-runner-wake-status]')).toHaveText('Tela ativa pausada');
   expect(await page.evaluate(()=>window.__wakeRequests)).toBe(wakeAfterResume);
   await expect(page.locator('.student-process-runner-progress')).toContainText('1 / 2');
