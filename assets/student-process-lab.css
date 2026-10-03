@@ -74,6 +74,7 @@ body.student-page:has(.student-process-runner) .student-main{max-width:980px}
 .student-lab-route-adjustment-copy strong{font-size:12px}
 .student-lab-route-adjustment-copy span{max-width:680px;color:var(--muted);font-size:11px;line-height:1.5}
 .student-lab-insert-form{padding:14px 0 18px;border-top:1px solid var(--student-line-soft)}
+.student-lab-insert-form [hidden]{display:none}
 .student-lab-insert-form .student-process-reuse{margin-top:0}
 @media(max-width:760px){
   .student-lab-route-adjustment-actions{display:grid;grid-template-columns:1fr;align-items:stretch}
