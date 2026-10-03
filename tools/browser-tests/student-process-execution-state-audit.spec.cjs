@@ -9,16 +9,29 @@ for(const [device,viewport] of Object.entries(viewports)){
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`${state} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByText('Reutilize o banho da primeira revelação')).toBeVisible();
       await expect(page.getByRole('button',{name:'Ir para próxima etapa',exact:true})).toBeEnabled();
-      const status=page.locator('[data-runner-state-status]');
-      if(state==='idle'){await expect(status).toHaveText('Pronto para iniciar');await expect(page.getByRole('button',{name:'Iniciar',exact:true})).toBeEnabled();}
-      else if(state==='running'){await expect(status).toHaveText('Cronômetro em andamento');await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeEnabled();await expect(page.locator('[data-runner-agitation]')).toContainText(/AGITAR|Próxima agitação/);}
-      else if(state==='paused'){await expect(status).toHaveText('Cronômetro pausado');await expect(page.getByRole('button',{name:'Retomar',exact:true})).toBeEnabled();await expect(page.locator('[data-runner-agitation]')).toHaveText('Agitação pausada');}
-      else{await expect(status).toHaveText('Tempo concluído');await expect(page.getByRole('button',{name:'Iniciar',exact:true})).toBeDisabled();await expect(page.locator('[data-runner-agitation]')).toHaveText('Agitação encerrada');}
+      const status=page.locator('[data-runner-state-status]'),start=page.locator('[data-runner-start]'),pause=page.locator('[data-runner-pause]'),reset=page.locator('[data-runner-reset]');
+      if(state==='idle'){
+        await expect(status).toHaveText('Pronto para iniciar');await expect(start).toBeVisible();await expect(start).toBeEnabled();await expect(pause).toBeHidden();await expect(reset).toBeHidden();
+      }else if(state==='running'){
+        await expect(status).toHaveText('Cronômetro em andamento');await expect(start).toBeHidden();await expect(pause).toBeVisible();await expect(pause).toBeEnabled();await expect(reset).toBeVisible();await expect(page.locator('[data-runner-agitation]')).toContainText(/AGITAR|Próxima agitação/);
+      }else if(state==='paused'){
+        await expect(status).toHaveText('Cronômetro pausado');await expect(start).toBeVisible();await expect(start).toHaveText('Retomar');await expect(pause).toBeHidden();await expect(reset).toBeVisible();await expect(page.locator('[data-runner-agitation]')).toHaveText('Agitação pausada');
+      }else{
+        await expect(status).toHaveText('Tempo concluído');await expect(start).toBeHidden();await expect(pause).toBeHidden();await expect(reset).toBeVisible();await expect(page.locator('[data-runner-agitation]')).toHaveText('Agitação encerrada');
+      }
       await page.screenshot({path:`student-visual-audit/${device}/process-execution-${state}.png`,fullPage:true,animations:'disabled'});
     });
   }
   test(`continuous agitation visual audit ${device}`,async({page})=>{
-    await page.setViewportSize(viewport);await page.goto(`${base}?state=running&agitation=continuous`,{waitUntil:'networkidle'});await expect(page.locator('[data-runner-agitation]')).toHaveText('AGITAÇÃO CONTÍNUA');await page.screenshot({path:`student-visual-audit/${device}/process-execution-continuous.png`,fullPage:true,animations:'disabled'});
+    await page.setViewportSize(viewport);await page.goto(`${base}?state=running&agitation=continuous`,{waitUntil:'networkidle'});
+    await expect(page.locator('[data-runner-agitation]')).toHaveText('AGITAÇÃO CONTÍNUA');await expect(page.locator('.student-process-runner-details')).toContainText('Agitação contínua');await expect(page.locator('.student-process-runner-details')).not.toContainText('a cada');
+    await page.screenshot({path:`student-visual-audit/${device}/process-execution-continuous.png`,fullPage:true,animations:'disabled'});
+  });
+  test(`timer settings visual audit ${device}`,async({page})=>{
+    await page.setViewportSize(viewport);await page.goto(`${base}?state=idle&settings=open`,{waitUntil:'networkidle'});
+    await expect(page.locator('.student-lab-timer-settings')).toHaveAttribute('open','');await expect(page.getByLabel('Tempo da etapa')).toHaveValue('07:00');await expect(page.getByLabel('Agitação')).toHaveValue('periodic');await expect(page.getByLabel('Duração de cada agitação')).toHaveValue('00:10');await expect(page.getByLabel('Intervalo entre inícios')).toHaveValue('01:00');
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,'settings horizontal overflow').toBeLessThanOrEqual(1);
+    await page.screenshot({path:`student-visual-audit/${device}/process-execution-settings.png`,fullPage:true,animations:'disabled'});
   });
 }
 
