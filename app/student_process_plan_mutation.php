@@ -113,9 +113,14 @@ function student_process_plan_repeat_step(PDO $db,int $planId,int $sourceStepId,
         }
 
         $source=student_process_plan_mutation_step($db,$planId,$sourceStepId);
-        if((string)$source['status']==='completed')throw new RuntimeException('Esta etapa já faz parte do histórico realizado. Repita uma etapa a partir do trecho ainda aberto do roteiro.');
-        $position=(int)$source['position']+1;
-        $beforeCurrent=student_process_execution_current_step($db,$plan);$beforeCurrentId=$beforeCurrent?(int)$beforeCurrent['id']:null;
+        $beforeCurrent=student_process_execution_current_step($db,$plan);
+        if(!$beforeCurrent)throw new RuntimeException('Não há trecho aberto onde repetir esta etapa.');
+        $beforeCurrentId=(int)$beforeCurrent['id'];
+        // Repetir significa acrescentar uma nova ocorrência no ponto atual do
+        // procedimento. Se a fonte já aconteceu, copiamos seus parâmetros antes
+        // da etapa corrente; não reescrevemos nem duplicamos o fato anterior.
+        $sourceCompleted=(string)$source['status']==='completed'||(int)($source['actual_step_id']??0)>0;
+        $position=$sourceCompleted?(int)$beforeCurrent['position']:(int)$source['position']+1;
         $payload=student_process_json_array((string)$source['payload_json']);$payload['instance_repeat_of_plan_step_id']=$sourceStepId;
         $now=utc_now();
 
@@ -127,7 +132,7 @@ function student_process_plan_repeat_step(PDO $db,int $planId,int $sourceStepId,
         student_process_plan_mutation_resequence($db,$planId,$now);
         student_process_plan_mutation_reset_session_if_current_changed($db,$planId,$studentId,$beforeCurrentId);
         if(function_exists('student_process_change_log'))student_process_change_log($db,'student',null,$studentId,'student_process_plan',$planId,'repeat_plan_step',[],[
-            'plan_step_id'=>$insertedId,'source_step_id'=>$sourceStepId,'stage_key'=>(string)$source['stage_key'],'position'=>$position,
+            'plan_step_id'=>$insertedId,'source_step_id'=>$sourceStepId,'source_completed'=>$sourceCompleted,'stage_key'=>(string)$source['stage_key'],'position'=>$position,
         ]);
         student_process_plan_mutation_store_result($db,$operationToken,$studentId,$planId,'repeat_plan_step',['plan_step_id'=>$insertedId]);
         $db->commit();
