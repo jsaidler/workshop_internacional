@@ -14,20 +14,20 @@ for(const [device,viewport] of Object.entries(viewports)){
       const status=page.locator('[data-runner-state-status]');
       if(state==='idle'){
         await expect(status).toHaveText('Pronto para iniciar');
-        await expect(page.getByRole('button',{name:'Iniciar'})).toBeEnabled();
-        await expect(page.getByRole('button',{name:'Concluir etapa'})).toBeDisabled();
+        await expect(page.getByRole('button',{name:'Iniciar',exact:true})).toBeEnabled();
+        await expect(page.getByRole('button',{name:'Concluir etapa',exact:true})).toBeDisabled();
       }else if(state==='running'){
         await expect(status).toHaveText('Cronômetro em andamento');
-        await expect(page.getByRole('button',{name:'Pausar'})).toBeEnabled();
-        await expect(page.getByRole('button',{name:'Concluir etapa'})).toBeDisabled();
+        await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeEnabled();
+        await expect(page.getByRole('button',{name:'Concluir etapa',exact:true})).toBeDisabled();
       }else if(state==='paused'){
         await expect(status).toHaveText('Cronômetro pausado');
-        await expect(page.getByRole('button',{name:'Retomar'})).toBeEnabled();
-        await expect(page.getByRole('button',{name:'Concluir etapa'})).toBeDisabled();
+        await expect(page.getByRole('button',{name:'Retomar',exact:true})).toBeEnabled();
+        await expect(page.getByRole('button',{name:'Concluir etapa',exact:true})).toBeDisabled();
       }else{
         await expect(status).toHaveText('Tempo concluído');
-        await expect(page.getByRole('button',{name:'Concluir etapa'})).toBeEnabled();
-        await expect(page.getByRole('button',{name:'Iniciar'})).toBeDisabled();
+        await expect(page.getByRole('button',{name:'Concluir etapa',exact:true})).toBeEnabled();
+        await expect(page.getByRole('button',{name:'Iniciar',exact:true})).toBeDisabled();
       }
       await page.screenshot({path:`student-visual-audit/${device}/process-execution-${state}.png`,fullPage:true,animations:'disabled'});
     });
@@ -37,19 +37,19 @@ for(const [device,viewport] of Object.entries(viewports)){
 test('persisted runner transitions without resetting the laboratory clock',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto(`${base}?state=idle`,{waitUntil:'networkidle'});
-  await page.getByRole('button',{name:'Iniciar'}).click();
+  await page.getByRole('button',{name:'Iniciar',exact:true}).click();
   await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro em andamento');
-  await expect(page.getByRole('button',{name:'Pausar'})).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeEnabled();
   const afterStart=await page.locator('[data-runner-clock]').textContent();
   expect(afterStart).not.toBe('07:00');
-  await page.getByRole('button',{name:'Pausar'}).click();
+  await page.getByRole('button',{name:'Pausar',exact:true}).click();
   await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro pausado');
   const paused=await page.locator('[data-runner-clock]').textContent();
   await page.waitForTimeout(1100);
   await expect(page.locator('[data-runner-clock]')).toHaveText(paused);
-  await page.getByRole('button',{name:'Retomar'}).click();
+  await page.getByRole('button',{name:'Retomar',exact:true}).click();
   await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro em andamento');
-  await page.getByRole('button',{name:'Reiniciar'}).click();
+  await page.getByRole('button',{name:'Reiniciar',exact:true}).click();
   await expect(page.locator('[data-runner-state-status]')).toHaveText('Pronto para iniciar');
   await expect(page.locator('[data-runner-clock]')).toHaveText('07:00');
 });
