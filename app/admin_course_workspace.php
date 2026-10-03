@@ -15,7 +15,7 @@ function admin_course_cohort(PDO $db,int $courseId,int $cohortId,bool $includeAr
 }
 
 function admin_course_update_cohort(PDO $db,int $courseId,int $cohortId,array $input): array {
-    $course=course_by_id($db,$courseId)??throw new RuntimeException('Curso não encontrado.');
+    course_by_id($db,$courseId)??throw new RuntimeException('Curso não encontrado.');
     $cohort=admin_course_cohort($db,$courseId,$cohortId,true)??throw new RuntimeException('Turma não encontrada neste curso.');
     $title=trim((string)($input['title']??$cohort['title']));if($title==='')throw new RuntimeException('Informe o nome da turma.');
     $startsAt=trim((string)($input['starts_at']??$cohort['starts_at']??''));$endsAt=trim((string)($input['ends_at']??$cohort['ends_at']??''));
@@ -28,7 +28,7 @@ function admin_course_update_cohort(PDO $db,int $courseId,int $cohortId,array $i
 
 function admin_course_set_cohort_archived(PDO $db,int $courseId,int $cohortId,bool $archived): array {
     course_by_id($db,$courseId)??throw new RuntimeException('Curso não encontrado.');
-    $cohort=admin_course_cohort($db,$courseId,$cohortId,true)??throw new RuntimeException('Turma não encontrada neste curso.');
+    admin_course_cohort($db,$courseId,$cohortId,true)??throw new RuntimeException('Turma não encontrada neste curso.');
     $status=$archived?'archived':'active';
     $db->prepare('UPDATE course_cohorts SET status=?,is_registration_default=0,updated_at=? WHERE id=? AND course_id=?')->execute([$status,utc_now(),$cohortId,$courseId]);
     return admin_course_cohort($db,$courseId,$cohortId,true)??throw new RuntimeException('cohort_status_failed');
@@ -63,7 +63,7 @@ function admin_course_lesson_material_impact(PDO $db,int $courseId): array {
 
 function admin_course_lesson_material_items(PDO $db,int $courseId,int $lessonId): array {
     $q=$db->prepare("SELECT p.id page_id,p.title page_title,s.section_key FROM course_material_sections s JOIN course_material_pages m ON m.course_id=s.course_id AND m.page_id=s.page_id JOIN cms_pages p ON p.id=s.page_id WHERE s.course_id=? AND s.lesson_id=? AND p.status!='archived' ORDER BY m.sort_order,p.sort_order,p.id,s.section_key");
-    $q->execute([$courseId,$lessonId]);$rows=$q->fetchAll();$labels=[];foreach($rows as &$row){$sections=course_material_sections_from_page($db,(int)$row['page_id']);$row['section_label']=$sections[(string)$row['section_key']]??(string)$row['section_key'];}unset($row);return $rows;
+    $q->execute([$courseId,$lessonId]);$rows=$q->fetchAll();foreach($rows as &$row){$sections=course_material_sections_from_page($db,(int)$row['page_id']);$row['section_label']=$sections[(string)$row['section_key']]??(string)$row['section_key'];}unset($row);return $rows;
 }
 
 function admin_course_cohort_stats(PDO $db,int $courseId,int $cohortId): array {
@@ -76,8 +76,8 @@ function admin_course_cohort_stats(PDO $db,int $courseId,int $cohortId): array {
 }
 
 function admin_course_attention(PDO $db,int $courseId): array {
-    $course=course_by_id($db,$courseId)??throw new RuntimeException('Curso não encontrado.');
-    $q=$db->prepare("SELECT COALESCE(SUM(CASE WHEN status!='archived' AND payment_status!='paid' AND status!='converted' THEN 1 ELSE 0 END),0) pending_payment,COALESCE(SUM(CASE WHEN status!='archived' AND (payment_status='paid' OR status='converted') AND cohort_id IS NULL THEN 1 ELSE 0 END),0) unassigned FROM cms_form_submissions WHERE course_id=?");$q->execute([$courseId]);$registrations=$q->fetch()?:[];
+    course_by_id($db,$courseId)??throw new RuntimeException('Curso não encontrado.');
+    $q=$db->prepare("SELECT COALESCE(SUM(CASE WHEN status!='archived' AND COALESCE(payment_status,'pending')!='paid' AND status!='converted' THEN 1 ELSE 0 END),0) pending_payment,COALESCE(SUM(CASE WHEN status!='archived' AND (payment_status='paid' OR status='converted') AND cohort_id IS NULL THEN 1 ELSE 0 END),0) unassigned FROM cms_form_submissions WHERE course_id=?");$q->execute([$courseId]);$registrations=$q->fetch()?:[];
     $q=$db->prepare("SELECT COUNT(*) FROM student_questions sq JOIN course_cohorts cc ON cc.id=sq.cohort_id WHERE cc.course_id=? AND sq.status='open'");$q->execute([$courseId]);$questions=(int)$q->fetchColumn();
     $q=$db->prepare("SELECT COUNT(*) FROM student_tests t JOIN course_cohorts cc ON cc.id=t.cohort_id WHERE cc.course_id=? AND t.status IN ('submitted','needs_revision')");$q->execute([$courseId]);$tests=(int)$q->fetchColumn();
     return ['pending_payment'=>(int)($registrations['pending_payment']??0),'unassigned'=>(int)($registrations['unassigned']??0),'questions'=>$questions,'tests'=>$tests];
