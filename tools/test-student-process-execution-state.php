@@ -11,6 +11,9 @@ function student_process_time_seconds(string $value): ?int {
 function student_process_plan_next_step(PDO $db,array $plan): ?array {
     $q=$db->prepare("SELECT * FROM student_process_plan_steps WHERE plan_id=? AND status!='completed' ORDER BY position,id LIMIT 1");$q->execute([(int)$plan['id']]);return $q->fetch(PDO::FETCH_ASSOC)?:null;
 }
+function student_process_plan_for_test(PDO $db,int $testId,int $studentId): ?array {
+    $q=$db->prepare('SELECT * FROM student_process_plans WHERE test_id=? AND student_id=? ORDER BY id DESC LIMIT 1');$q->execute([$testId,$studentId]);return $q->fetch(PDO::FETCH_ASSOC)?:null;
+}
 function student_process_plan_complete_step(PDO $db,int $planId,int $stepId,int $studentId): array {
     $q=$db->prepare("SELECT * FROM student_process_plan_steps WHERE id=? AND plan_id=? AND status!='completed'");$q->execute([$stepId,$planId]);$step=$q->fetch(PDO::FETCH_ASSOC)?:throw new RuntimeException('Etapa inválida.');
     $now=utc_now();$db->prepare("UPDATE student_process_plan_steps SET status='completed',completed_at=?,updated_at=? WHERE id=?")->execute([$now,$now,$stepId]);
