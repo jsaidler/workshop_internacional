@@ -27,14 +27,14 @@ $assert(str_contains($registrations,'admin-operation-danger'),'Destructive regis
 
 $cohorts=$read('admin/cohorts.php');
 $assert(str_contains($cohorts,'admin_course_context($course')&&str_contains($cohorts,'admin_cohort_context($course,$cohort'),'Cohorts must support both course collection and cohort workspace contexts.');
-$assert(str_contains($cohorts,"$action==='update'")&&str_contains($cohorts,"$action==='archive'")&&str_contains($cohorts,"$action==='restore'"),'Cohort lifecycle must support edit, archive and restore.');
+$assert(str_contains($cohorts,"\$action==='update'")&&str_contains($cohorts,"\$action==='archive'")&&str_contains($cohorts,"\$action==='restore'"),'Cohort lifecycle must support edit, archive and restore.');
 $assert(str_contains($cohorts,'Abrir turma'),'Cohort collection must open the operational workspace.');
 $assert(str_contains($cohorts,'Visualizar como esta turma'),'Cohort workspace must expose effective-access preview.');
 $assert(!str_contains($cohorts,'name="slug"'),'Ordinary cohort creation must not require an internal slug decision.');
 
 $lessons=$read('admin/lessons.php');
 $assert(str_contains($lessons,'admin_course_context($course')&&str_contains($lessons,'admin_cohort_context($course,$cohort'),'Lessons must distinguish course structure from cohort access.');
-$assert(str_contains($lessons,"$action==='update_lesson'")&&str_contains($lessons,"$action==='move_lesson'"),'Course lesson structure must be editable and reorderable.');
+$assert(str_contains($lessons,"\$action==='update_lesson'")&&str_contains($lessons,"\$action==='move_lesson'"),'Course lesson structure must be editable and reorderable.');
 $assert(str_contains($lessons,'Ver conteúdo afetado')&&str_contains($lessons,'admin_course_lesson_material_items'),'Release decisions must expose their material consequences.');
 $assert(str_contains($lessons,'Liberar agora')&&str_contains($lessons,'Agendar')&&str_contains($lessons,'Bloquear'),'Cohort access controls must be operable inline.');
 $assert(!str_contains($lessons,'Todos os cursos'),'Lesson screens must not reconstruct context with a global course filter.');
@@ -60,7 +60,7 @@ $assert(str_contains($import,'admin_course_cohort')&&str_contains($import,'/admi
 $assert(!str_contains($import,'student-area.php'),'Import result must not return to the retired student-area surface.');
 
 $preview=$read('admin/course-preview.php');
-$assert(str_contains($preview,'cms_access_filter_html')&&str_contains($preview,"'cohort_id'=>$cohortId")&&str_contains($preview,"'course_id'=>$courseId"),'Cohort preview must pass through the real server-side access filter with explicit course/cohort context.');
+$assert(str_contains($preview,'cms_access_filter_html')&&str_contains($preview,"'cohort_id'=>\$cohortId")&&str_contains($preview,"'course_id'=>\$courseId"),'Cohort preview must pass through the real server-side access filter with explicit course/cohort context.');
 
 $legacy=$read('admin/student-area.php');
 $assert(str_contains($legacy,"'tests'=>'/admin/tests.php'")&&str_contains($legacy,"default=>'/admin/students.php'"),'Legacy admin routes must land on current workspaces rather than orphaned views.');
