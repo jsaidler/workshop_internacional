@@ -30,10 +30,10 @@ for(const [device,viewport] of Object.entries(viewports)){
   test(`timer settings visual audit ${device}`,async({page})=>{
     await page.setViewportSize(viewport);await page.goto(`${base}?state=idle&settings=open`,{waitUntil:'networkidle'});
     await expect(page.locator('.student-lab-timer-settings')).toHaveAttribute('open','');
-    await expect(page.getByLabel('Tempo da etapa',{exact:true})).toHaveValue('07:00');
-    await expect(page.getByLabel('Agitação',{exact:true})).toHaveValue('periodic');
-    await expect(page.getByLabel('Duração de cada agitação',{exact:true})).toHaveValue('00:10');
-    await expect(page.getByLabel('Intervalo entre inícios',{exact:true})).toHaveValue('01:00');
+    await expect(page.locator('input[name="duration"]')).toHaveValue('07:00');
+    await expect(page.locator('[data-agitation-mode]')).toHaveValue('periodic');
+    await expect(page.locator('input[name="agitation_duration"]')).toHaveValue('00:10');
+    await expect(page.locator('input[name="agitation_interval"]')).toHaveValue('01:00');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,'settings horizontal overflow').toBeLessThanOrEqual(1);
     await page.screenshot({path:`student-visual-audit/${device}/process-execution-settings.png`,fullPage:true,animations:'disabled'});
   });
