@@ -1,6 +1,6 @@
 const {test,expect}=require('@playwright/test');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-process-replanning-audit.html';
-const views=['partial','choice','interrupted','recorded'];
+const views=['partial','choice','active','recorded'];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 for(const [device,viewport] of Object.entries(viewports)){
   for(const view of views){
@@ -12,12 +12,13 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('3 / 9 etapas')).toBeVisible();
         await expect(page.getByText('Alterar próximas etapas')).toBeVisible();
       }
-      if(view==='choice'||view==='interrupted'){
+      if(view==='choice'||view==='active'){
         await expect(page.getByRole('heading',{name:'Alterar próximas etapas'})).toBeVisible();
-        await expect(page.getByText('3 etapas registradas',{exact:false})).toBeVisible();
         await expect(page.locator('.student-process-standard-card')).toHaveCount(6);
         await expect(page.getByRole('button',{name:'Usar nas próximas etapas'}).first()).toBeVisible();
-        if(view==='interrupted')await expect(page.getByText('preservada como',{exact:false})).toBeVisible();
+        await expect(page.getByText('interrompida',{exact:false})).toHaveCount(0);
+        if(view==='choice')await expect(page.getByText('3 etapas realizadas',{exact:false})).toBeVisible();
+        if(view==='active')await expect(page.getByText('Nenhuma etapa foi consolidada pelo Caderno',{exact:false})).toBeVisible();
       }
       if(view==='recorded'){
         await expect(page.getByText('3 de 9 etapas registradas.')).toBeVisible();

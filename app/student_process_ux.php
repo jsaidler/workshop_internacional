@@ -5,8 +5,9 @@ declare(strict_types=1);
  * Operational process editing for the student notebook.
  *
  * A process is a laboratory record, not a one-way wizard. Existing stages can
- * be edited in place without destroying the stages that follow. Changing the
- * sequence remains an explicit destructive correction handled separately.
+ * be edited in place without destroying the stages that follow. Future route
+ * changes are explicit per-record snapshot mutations handled separately;
+ * factual stages are never rewritten implicitly.
  */
 function student_process_step_for_student(PDO $db,int $testId,int $position,int $studentId): ?array {
     if($testId<1||$position<1)return null;

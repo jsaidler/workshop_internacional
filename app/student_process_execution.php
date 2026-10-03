@@ -20,7 +20,10 @@ function student_process_execution_plan(PDO $db,int $planId,int $studentId): arr
 }
 
 function student_process_execution_current_step(PDO $db,array $plan): ?array {
-    return student_process_plan_next_step($db,$plan);
+    foreach(student_process_plan_steps($db,(int)$plan['id']) as $step){
+        if((string)$step['status']!=='completed')return $step;
+    }
+    return null;
 }
 
 function student_process_execution_timestamp(?string $value): ?int {
@@ -84,7 +87,7 @@ function student_process_execution_for_test(PDO $db,int $testId,int $studentId):
 
 function student_process_execution_assert_current(PDO $db,array $plan,int $planStepId): array {
     $current=student_process_execution_current_step($db,$plan)??throw new RuntimeException('O processamento já foi concluído.');
-    if((int)$current['id']!==$planStepId)throw new RuntimeException('Esta aba está em uma etapa antiga. Recarregue o processamento.');
+    if((int)$current['id']!==$planStepId)throw new RuntimeException('O cronômetro pertence a outra etapa do processamento. Atualize a página.');
     return $current;
 }
 
@@ -102,10 +105,10 @@ function student_process_execution_check_revision(array $row,?int $expectedRevis
 }
 
 function student_process_execution_transition(PDO $db,int $planId,int $planStepId,int $studentId,string $action,string $clientToken='',?int $expectedRevision=null): array {
-    $plan=student_process_execution_plan($db,$planId,$studentId);$step=student_process_execution_assert_current($db,$plan,$planStepId);
-    $row=student_process_execution_ensure($db,$plan,$studentId)??throw new RuntimeException('Não há uma etapa ativa.');
+    $plan=student_process_execution_plan($db,$planId,$studentId);student_process_execution_assert_current($db,$plan,$planStepId);
+    $row=student_process_execution_ensure($db,$plan,$studentId)??throw new RuntimeException('Não há uma etapa disponível para o cronômetro.');
     $row=student_process_execution_normalize($db,$row);
-    if((int)$row['plan_step_id']!==$planStepId)throw new RuntimeException('Esta aba está em uma etapa antiga. Recarregue o processamento.');
+    if((int)$row['plan_step_id']!==$planStepId)throw new RuntimeException('O cronômetro pertence a outra etapa do processamento. Atualize a página.');
     if($clientToken!==''&&hash_equals((string)$row['last_client_token'],$clientToken))return student_process_execution_payload($row);
     student_process_execution_check_revision($row,$expectedRevision);
 
@@ -114,12 +117,11 @@ function student_process_execution_transition(PDO $db,int $planId,int $planStepI
     $state=(string)$row['state'];$remaining=max(0,(int)($row['remaining_seconds']??$duration));$now=utc_now();$revision=(int)$row['revision']+1;
 
     if($action==='start'){
-        if($state==='elapsed')throw new RuntimeException('O tempo desta etapa já terminou. Conclua a etapa ou reinicie o cronômetro.');
+        if($state==='elapsed')throw new RuntimeException('O tempo terminou. Reinicie ou ajuste o cronômetro para continuar contando.');
         if($state==='running')return student_process_execution_payload($row);
         if($remaining<=0)$remaining=$duration;
-        student_process_execution_mark_started($db,$plan,$step,$studentId);
         $endsAt=gmdate('c',time()+$remaining);
-        $q=$db->prepare("UPDATE student_process_execution_sessions SET state='running',remaining_seconds=?,timer_started_at=?,timer_ends_at=?,paused_at=NULL,revision=?,last_client_token=?,updated_at=? WHERE plan_id=? AND student_id=?");
+        $q=$db->prepare("UPDATE student_process_execution_sessions SET state='running',remaining_seconds=?,timer_started_at=COALESCE(timer_started_at,?),timer_ends_at=?,paused_at=NULL,revision=?,last_client_token=?,updated_at=? WHERE plan_id=? AND student_id=?");
         $q->execute([$remaining,$now,$endsAt,$revision,$clientToken,$now,$planId,$studentId]);
     }elseif($action==='pause'){
         if($state==='elapsed')return student_process_execution_payload($row);
@@ -142,20 +144,40 @@ function student_process_execution_transition(PDO $db,int $planId,int $planStepI
     return student_process_execution_payload(student_process_execution_normalize($db,$fresh));
 }
 
+function student_process_execution_retime(PDO $db,int $planId,int $planStepId,int $studentId,?int $newDuration): ?array {
+    $plan=student_process_execution_plan($db,$planId,$studentId);student_process_execution_assert_current($db,$plan,$planStepId);
+    $row=student_process_execution_ensure($db,$plan,$studentId);if(!$row)return null;
+    $row=student_process_execution_normalize($db,$row);
+    $oldDuration=$row['duration_seconds']===null?null:(int)$row['duration_seconds'];$state=(string)$row['state'];$elapsed=0;
+    if($oldDuration!==null&&$row['remaining_seconds']!==null&&in_array($state,['running','paused','elapsed'],true)){
+        $elapsed=max(0,$oldDuration-max(0,(int)$row['remaining_seconds']));
+    }
+    $now=utc_now();$revision=(int)$row['revision']+1;$startedAt=(string)($row['timer_started_at']??'');
+    if($newDuration===null){
+        $q=$db->prepare("UPDATE student_process_execution_sessions SET state='idle',duration_seconds=NULL,remaining_seconds=NULL,timer_started_at=NULL,timer_ends_at=NULL,paused_at=NULL,revision=?,last_client_token='',updated_at=? WHERE plan_id=? AND student_id=?");
+        $q->execute([$revision,$now,$planId,$studentId]);
+    }else{
+        $newDuration=max(0,$newDuration);$remaining=max(0,$newDuration-$elapsed);$nextState='idle';$endsAt=null;$pausedAt=null;
+        if($state==='running'){
+            if($remaining>0){$nextState='running';$endsAt=gmdate('c',time()+$remaining);}else{$nextState='elapsed';}
+        }elseif(in_array($state,['paused','elapsed'],true)){
+            if($remaining>0){$nextState='paused';$pausedAt=$now;}else{$nextState='elapsed';}
+        }else{$remaining=$newDuration;$startedAt='';}
+        $q=$db->prepare('UPDATE student_process_execution_sessions SET state=?,duration_seconds=?,remaining_seconds=?,timer_started_at=?,timer_ends_at=?,paused_at=?,revision=?,last_client_token=\'\',updated_at=? WHERE plan_id=? AND student_id=?');
+        $q->execute([$nextState,$newDuration,$remaining,$startedAt!==''?$startedAt:null,$endsAt,$pausedAt,$revision,$now,$planId,$studentId]);
+    }
+    $fresh=student_process_execution_session($db,$planId,$studentId);
+    return $fresh?student_process_execution_payload(student_process_execution_normalize($db,$fresh)):null;
+}
+
 function student_process_execution_state(PDO $db,int $planId,int $planStepId,int $studentId): array {
     $plan=student_process_execution_plan($db,$planId,$studentId);student_process_execution_assert_current($db,$plan,$planStepId);
-    $row=student_process_execution_ensure($db,$plan,$studentId)??throw new RuntimeException('Não há uma etapa ativa.');
+    $row=student_process_execution_ensure($db,$plan,$studentId)??throw new RuntimeException('Não há uma etapa disponível para o cronômetro.');
     return student_process_execution_payload(student_process_execution_normalize($db,$row));
 }
 
 function student_process_execution_complete_step(PDO $db,int $planId,int $planStepId,int $studentId): array {
     $plan=student_process_execution_plan($db,$planId,$studentId);$step=student_process_execution_assert_current($db,$plan,$planStepId);
-    $duration=student_process_time_seconds((string)$step['duration']);
-    if($duration!==null){
-        $row=student_process_execution_ensure($db,$plan,$studentId)??throw new RuntimeException('O cronômetro desta etapa não foi iniciado.');
-        $row=student_process_execution_normalize($db,$row);
-        if((string)$row['state']!=='elapsed')throw new RuntimeException('O cronômetro desta etapa ainda não terminou.');
-    }
     student_process_execution_mark_started($db,$plan,$step,$studentId);
     $completed=student_process_plan_complete_step($db,$planId,$planStepId,$studentId);
     $db->prepare('DELETE FROM student_process_execution_sessions WHERE plan_id=? AND student_id=?')->execute([$planId,$studentId]);

@@ -45,7 +45,8 @@ must_student_premium_ui(str_contains($bench,'data-exposure-tool')&&str_contains(
 must_student_premium_ui(!str_contains($bench,'data-lab-timer')&&str_contains($bench,'/aluno/processamentos.php'),'workbench did not replace the isolated timer with the process manager');
 must_student_premium_ui(str_contains($processManager,'Associar ao registro')&&str_contains($processManager,'Iniciar no laboratório'),'process manager is not reusable across notebook and laboratory contexts');
 must_student_premium_ui(str_contains($processManager,'Nenhuma execução foi iniciada.')&&!str_contains($processManager,"header('Location: /aluno/processar.php?test='.\$testId"),'process manager still conflates notebook association with laboratory execution');
-must_student_premium_ui(str_contains($processRunner,'data-process-runner')&&str_contains($processRunner,'Concluir etapa'),'laboratory runner is missing explicit stage execution');
+must_student_premium_ui(str_contains($processRunner,'data-process-runner')&&str_contains($processRunner,'Estou nesta etapa')&&str_contains($processRunner,'Ir para próxima etapa'),'laboratory runner must allow consultation plus explicit process-position progression');
+must_student_premium_ui(!str_contains($processRunner,'Interromper a etapa atual')&&!str_contains($processRunner,'Concluir esta etapa'),'laboratory runner still treats interface state as a mandatory stage-execution wizard');
 must_student_premium_ui(str_contains($bench,'<h2>Receitas</h2>')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
 foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual','registre apenas os dados que usou'] as $internalCopy)must_student_premium_ui(!str_contains($home.$bench.$test,$internalCopy),'internal design commentary leaked into student UI: '.$internalCopy);
 

@@ -12,6 +12,7 @@ $standardsSource=(string)file_get_contents($root.'/app/student_process_standards
 $globalSource=(string)file_get_contents($root.'/app/student_global_processes.php');
 $catalogSource=(string)file_get_contents($root.'/app/student_process_catalogs.php');
 $executionSource=(string)file_get_contents($root.'/app/student_process_execution.php');
+$labNavigation=(string)file_get_contents($root.'/app/student_process_lab_navigation.php');
 $runner=(string)file_get_contents($root.'/assets/student-process-runner.js');
 $manager=(string)file_get_contents($root.'/aluno/processamentos.php');
 $runPage=(string)file_get_contents($root.'/aluno/processar.php');
@@ -30,14 +31,7 @@ must_student_process_manager(student_process_time_seconds('01:02:03')===3723,'ho
 must_student_process_manager(student_process_time_seconds('abc')===null,'invalid duration must not become a timer');
 must_student_process_manager(student_process_seconds_label(420)==='07:00','duration formatting failed');
 
-$expectedKeys=[
-    'positive-ferric-ammonia-ei200',
-    'positive-ferric-ammonia-ei400',
-    'positive-peracetic-ei200',
-    'positive-peracetic-ei400',
-    'positive-ferric-ammonia-ei400-caffenol',
-    'positive-peracetic-ei400-caffenol',
-];
+$expectedKeys=['positive-ferric-ammonia-ei200','positive-ferric-ammonia-ei400','positive-peracetic-ei200','positive-peracetic-ei400','positive-ferric-ammonia-ei400-caffenol','positive-peracetic-ei400-caffenol'];
 foreach($expectedKeys as $key)must_student_process_manager(str_contains($migration81,"'$key'"),'global-process seed is missing '.$key);
 foreach(['student_process_stage_catalog','student_process_developer_catalog','student_global_processes','student_global_process_versions','student_global_process_version_steps','student_process_execution_sessions','student_process_change_log'] as $table)must_student_process_manager(str_contains($migration81,'CREATE TABLE IF NOT EXISTS '.$table),'migration 081 is missing '.$table);
 must_student_process_manager(str_contains($migration81,"ADD COLUMN source_global_version_id"),'plan snapshot does not preserve its global version origin');
@@ -52,19 +46,18 @@ must_student_process_manager(!str_contains($standardsSource,'positive-ferric-amm
 must_student_process_manager(str_contains($globalSource,"status='published'")&&str_contains($globalSource,'active_version_id'),'global process service does not resolve a published active version');
 must_student_process_manager(str_contains($globalSource,"status='superseded'")&&str_contains($globalSource,"status='published'"),'publishing a new version does not preserve immutable version history');
 must_student_process_manager(str_contains($globalSource,'student_process_change_log'),'global process mutations are not audited');
-
 must_student_process_manager(str_contains($catalogSource,'student_process_stage_catalog')&&str_contains($catalogSource,'student_process_developer_catalog'),'managed process catalogs are not read from persistent domain tables');
 must_student_process_manager(str_contains($processUx,'student_process_managed_stage_catalog')&&str_contains($processUx,'student_process_managed_developer'),'factual process recording still resolves stage/developer meaning from hardcoded PHP catalogs');
 must_student_process_manager(str_contains($processUx,"&&\$reuseSource===''"),'reused bath must be excluded from inventory consumption');
 must_student_process_manager(str_contains($processUx,"'reuse_source_stage_key'=>\$data['reuse_source_stage_key']"),'executed step must persist reuse metadata');
 
-must_student_process_manager(str_contains($bootstrap,"'student_process_catalogs'")&&str_contains($bootstrap,"'student_global_processes'")&&str_contains($bootstrap,"'student_process_execution'"),'managed process domains are not loaded by bootstrap');
+foreach(['student_process_catalogs','student_global_processes','student_process_execution','student_process_lab_navigation'] as $service)must_student_process_manager(str_contains($bootstrap,"'$service'"),'bootstrap does not load '.$service);
 must_student_process_manager(str_contains($domain,'student_process_template_duplicate'),'saved process duplication is missing');
 must_student_process_manager(str_contains($domain,'student_process_template_update_step'),'saved process step editing is missing');
 must_student_process_manager(str_contains($domain,"'reuse_source_stage_key'"),'saved process payload does not preserve bath reuse');
 foreach(['student_process_templates','student_process_template_steps','student_process_plans','student_process_plan_steps'] as $table)must_student_process_manager(str_contains($migration79,'CREATE TABLE IF NOT EXISTS '.$table),'missing migration table '.$table);
 must_student_process_manager(str_contains($domain,'student_process_plan_apply_template')&&str_contains($domain,'payload_json'),'template snapshot authority is missing');
-must_student_process_manager(str_contains($domain,'student_process_add_flexible_step'),'runner completion no longer writes through actual process-step authority');
+must_student_process_manager(str_contains($domain,'student_process_add_flexible_step'),'factual process-step authority is missing');
 
 must_student_process_manager(str_contains($manager,"action==='copy_standard'")&&str_contains($manager,'Padrões do workshop'),'process manager does not expose workshop standards');
 must_student_process_manager(str_contains($manager,"action==='duplicate'")&&str_contains($manager,'Duplicar processamento'),'process manager does not expose process duplication');
@@ -76,20 +69,36 @@ must_student_process_manager(str_contains($manager,'student_process_template_dur
 must_student_process_manager(str_contains($manager,'Associar ao registro')&&str_contains($manager,'Nenhuma execução foi iniciada.'),'process manager lost neutral association semantics');
 must_student_process_manager(str_contains($manager,'Usar no laboratório')&&str_contains($manager,"\$intent==='live'"),'process manager does not preserve an explicit live intent');
 
-foreach(['idle','running','paused','elapsed'] as $state)must_student_process_manager(str_contains($executionSource,"'$state'")||str_contains($executionSource,"state='$state'"),'execution service is missing state '.$state);
-must_student_process_manager(str_contains($executionSource,'timer_ends_at'),'server execution does not persist an absolute timer deadline');
-must_student_process_manager(str_contains($executionSource,'revision')&&str_contains($executionSource,'last_client_token'),'execution state lacks concurrency/idempotency protection');
+foreach(['idle','running','paused','elapsed'] as $state)must_student_process_manager(str_contains($executionSource,"'$state'")||str_contains($executionSource,"state='$state'"),'execution service is missing timer state '.$state);
+must_student_process_manager(str_contains($executionSource,'timer_ends_at'),'server timer does not persist an absolute deadline');
+must_student_process_manager(str_contains($executionSource,'revision')&&str_contains($executionSource,'last_client_token'),'timer state lacks concurrency/idempotency protection');
 must_student_process_manager(str_contains($executionSource,'StudentProcessExecutionConflict'),'stale tab/device conflict is not explicit');
-must_student_process_manager(str_contains($executionSource,"state='elapsed'")&&str_contains($executionSource,'student_process_plan_complete_step'),'elapsed timer and factual step completion are separate transitions');
+must_student_process_manager(str_contains($executionSource,'student_process_execution_retime'),'timer duration cannot be adjusted without replacing the session');
+must_student_process_manager(!str_contains($executionSource,"if((string)\$row['state']!=='elapsed')throw new RuntimeException('O cronômetro desta etapa ainda não terminou.')"),'timer elapsed state is still a gate for factual progression');
+
+must_student_process_manager(str_contains($labNavigation,'student_process_lab_advance_to_step'),'laboratory progression has no server-side authority');
+must_student_process_manager(str_contains($labNavigation,'student_process_lab_finish_process'),'laboratory completion has no server-side authority');
+must_student_process_manager(str_contains($labNavigation,'student_process_lab_update_timer_settings'),'per-photo timer/agitation settings have no server-side authority');
+must_student_process_manager(str_contains($labNavigation,'student_process_add_flexible_step'),'live progression does not write through factual process-step authority');
+must_student_process_manager(str_contains($labNavigation,"'agitation_mode'")&&str_contains($labNavigation,"'continuous'")&&str_contains($labNavigation,"'periodic'"),'structured agitation modes are missing from laboratory domain');
+must_student_process_manager(!str_contains($labNavigation,'student_process_lab_interrupt_attempt'),'laboratory domain still fabricates interruptions from interface state');
+must_student_process_manager(!str_contains($labNavigation,"status='skipped'")&&!str_contains($labNavigation,"'skipped'"),'laboratory domain still treats skipped as a normal inferred state');
+
 must_student_process_manager(str_contains($runner,"navigator.wakeLock.request('screen')"),'Screen Wake Lock is missing');
 must_student_process_manager(str_contains($runner,'state.endAt-Date.now()'),'timer is not derived from an absolute end timestamp');
 must_student_process_manager(!preg_match('/remaining\s*[-]{2}|remaining\s*=\s*remaining\s*-\s*1/',$runner),'timer regressed to decrement-per-tick timing');
 must_student_process_manager(str_contains($runner,"action:'timer_state'")&&str_contains($runner,"transition('timer_start')")&&str_contains($runner,"transition('timer_pause')")&&str_contains($runner,"transition('timer_reset')"),'browser runner does not reconcile all persisted timer transitions');
 must_student_process_manager(str_contains($runner,"window.addEventListener('online'")&&str_contains($runner,"document.addEventListener('visibilitychange'"),'runner does not reconcile after interruption/return');
-must_student_process_manager(str_contains($runPage,'student_process_execution_transition')&&str_contains($runPage,'student_process_execution_complete_step'),'runner endpoint bypasses server execution authority');
-must_student_process_manager(str_contains($runPage,'data-execution-state')&&str_contains($runPage,'data-plan-step-id'),'runner does not hydrate the exact persisted step state');
+must_student_process_manager(str_contains($runner,'agitationDuration')&&str_contains($runner,'agitationInterval')&&str_contains($runner,"AGITAÇÃO CONTÍNUA"),'runner does not implement structured agitation timing');
+
+must_student_process_manager(str_contains($runPage,'student_process_execution_transition'),'runner endpoint bypasses server timer authority');
+must_student_process_manager(str_contains($runPage,'student_process_lab_advance_to_step')&&str_contains($runPage,'student_process_lab_finish_process'),'runner endpoint bypasses server process-position authority');
+must_student_process_manager(str_contains($runPage,'student_process_lab_update_timer_settings'),'runner endpoint bypasses per-photo timer/agitation authority');
+must_student_process_manager(str_contains($runPage,'data-execution-state')&&str_contains($runPage,'data-plan-step-id'),'runner does not hydrate the exact persisted timer state');
+must_student_process_manager(str_contains($runPage,'Estou nesta etapa')&&str_contains($runPage,'Ir para próxima etapa'),'runner does not separate browsing from explicit process progression');
 must_student_process_manager(str_contains($runPage,'Reutilize o banho da primeira revelação')&&str_contains($runPage,'não registre novo consumo'),'runner does not surface the reuse instruction');
-must_student_process_manager(str_contains($runPage,"\$intent!=='live'")&&str_contains($runPage,'Registrar o processamento realizado'),'neutral associated plan can enter laboratory mode without an explicit intent gate');
+must_student_process_manager(str_contains($runPage,"\$intent!=='live'")&&str_contains($runPage,'Registrar o processamento realizado'),'neutral associated plan cannot choose between laboratory and retroactive recording');
+must_student_process_manager(!str_contains($runPage,'Interromper a etapa atual'),'runner still presents app navigation as a laboratory interruption');
 
 must_student_process_manager(str_contains($manager,'Associar ao registro')&&str_contains($manager,'Iniciar no laboratório'),'process library no longer supports both record association and standalone execution');
 must_student_process_manager(str_contains($recordPage,'/aluno/processamentos.php?test=<?=$id?>&amp;intent=live')&&str_contains($recordPage,'Vou revelar agora'),'Caderno does not preserve the live intent through reusable process selection');
@@ -102,6 +111,7 @@ must_student_process_manager(!str_contains($tools,'data-lab-timer'),'standalone 
 
 must_student_process_manager(str_contains($doc,'mesmo banho de revelador preparado para a primeira revelação é reaproveitado na segunda'),'developer reuse is not documented canonically');
 must_student_process_manager(str_contains($doc,'template → snapshot do registro → execução real'),'architecture decision is not documented');
-must_student_process_manager(str_contains($runtimeDoc,'O servidor é a autoridade da sessão ao vivo')&&str_contains($runtimeDoc,'Matriz obrigatória de cenários reais'),'real-world execution/admin contract is not documented canonically');
+must_student_process_manager(str_contains($runtimeDoc,'O servidor é a autoridade da sessão auxiliar do timer')&&str_contains($runtimeDoc,'Matriz obrigatória de cenários reais'),'real-world timer/process-position contract is not documented canonically');
+must_student_process_manager(str_contains($runtimeDoc,'estado operacional auxiliar do timer e da interface; não é fato laboratorial'),'runtime document still conflates timer state with factual process state');
 must_student_process_manager(str_contains($productContract,'inspeção visual real em desktop e mobile antes de merge'),'product UX visual inspection contract is missing');
 echo "student-process-manager: ok\n";
