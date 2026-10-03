@@ -30,6 +30,28 @@ document.addEventListener('click',async event=>{const stepEdit=event.target.clos
   const close=event.target.closest('[data-student-editor-close]');if(close){event.preventDefault();close.closest('dialog')?.close?.();}
 });
 const convertInlineFileUploads=scope=>{if(!path.endsWith('/aluno/teste.php'))return;qa('form input[type="file"]',scope).forEach(input=>{if(input.dataset.localUploadBound==='1')return;input.dataset.localUploadBound='1';input.onchange=null;input.addEventListener('change',()=>{if(!input.files?.length)return;const form=input.form,action=form?.querySelector('[data-process-action]');if(action)action.value='upload';form?.requestSubmit();});});};
-convertInlineFileUploads(document);document.addEventListener('student:local-update',event=>convertInlineFileUploads(event.detail?.root||document));
+const routeChangeLink=(testId,from,label)=>{const a=document.createElement('a');a.className='student-link';a.dataset.routeChangeLink='';a.href=`/aluno/processamentos-trocar.php?test=${encodeURIComponent(testId)}&from=${encodeURIComponent(from)}`;a.textContent=label;return a;};
+const installRouteChangeAffordances=scope=>{
+  const params=new URLSearchParams(location.search),testId=params.get('id')||params.get('test');if(!testId)return;
+  if(path.endsWith('/aluno/teste.php')){
+    const plan=q('.student-caderno-plan-card',scope)||q('.student-caderno-plan-card');
+    if(plan&&q('.student-plan-resume-actions',plan)&&!q('[data-route-change-link]',plan)){
+      const wrap=document.createElement('div');wrap.className='student-plan-secondary-actions';wrap.append(routeChangeLink(testId,'record','Alterar próximas etapas'));plan.append(wrap);
+    }
+    const manual=q('.student-process-now',scope)||q('.student-process-now');
+    if(manual&&!plan&&!q('[data-route-change-link]',manual)){
+      const wrap=document.createElement('div');wrap.className='student-plan-secondary-actions';wrap.append(routeChangeLink(testId,'record','Definir próximas etapas'));manual.append(wrap);
+    }
+  }
+  if(path.endsWith('/aluno/processamento-realizado.php')){
+    const plan=q('.student-recording-plan',scope)||q('.student-recording-plan');
+    if(plan&&!q('[data-route-change-link]',plan)){
+      const actions=document.createElement('div');actions.className='student-actions';actions.append(routeChangeLink(testId,'recorded','Trocar próximas etapas'));plan.append(actions);
+    }else if(!plan&&!q('.student-process-complete')&&q('.student-process-history')&&!q('[data-route-change-link]')){
+      const manual=q('.student-recording-manual');if(manual){const actions=document.createElement('div');actions.className='student-actions student-recording-route-change';actions.append(routeChangeLink(testId,'recorded','Definir próximas etapas'));manual.before(actions);}
+    }
+  }
+};
+convertInlineFileUploads(document);installRouteChangeAffordances(document);document.addEventListener('student:local-update',event=>{const root=event.detail?.root||document;convertInlineFileUploads(root);installRouteChangeAffordances(root);});
 window.addEventListener('beforeunload',event=>{if(!q('[data-lab-timer][data-timer-active="1"]'))return;event.preventDefault();event.returnValue='';});
 })();
