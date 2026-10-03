@@ -29,17 +29,18 @@ $renderedCss=(string)file_get_contents($root.'/assets/student-rendered-fixes.css
 $workspaceDoc=(string)file_get_contents($root.'/docs/ADMIN_COURSE_COHORT_WORKSPACE_2026-10-03.md');
 $studentDoc=(string)file_get_contents($root.'/docs/STUDENT_AREA_WORKFLOW_REDESIGN_2026-09-30.md');
 $processDoc=(string)file_get_contents($root.'/docs/STUDENT_PROCESS_MANAGER_AND_LAB_RUNNER_2026-10-01.md');
+$navStart=strpos($adminShell,'function admin_navigation_groups');$navEnd=strpos($adminShell,'function admin_navigation_active_key');$globalNav=($navStart!==false&&$navEnd!==false&&$navEnd>$navStart)?substr($adminShell,$navStart,$navEnd-$navStart):'';
 
-ux_expect(str_contains($adminShell,'function admin_navigation_groups'),'administração precisa de uma árvore global explícita');
-ux_expect(str_contains($adminShell,"'Principal'=>")&&str_contains($adminShell,"'Ensino'=>")&&str_contains($adminShell,"'Laboratório'=>")&&str_contains($adminShell,"'Site'=>")&&str_contains($adminShell,"'Sistema'=>"),'sidebar deve refletir ensino, laboratório, site e sistema');
-ux_expect(str_contains($adminShell,"'courses'=>['Cursos'")&&str_contains($adminShell,"'students'=>['Alunos'"),'Ensino deve expor somente as entradas globais de Cursos e Alunos');
-ux_expect(!str_contains($adminShell,"'registrations'=>['Inscrições'")&&!str_contains($adminShell,"'cohorts'=>['Turmas'")&&!str_contains($adminShell,"'people'=>['Pessoas'")&&!str_contains($adminShell,"'lessons'=>['Aulas'")&&!str_contains($adminShell,"'material'=>['Material'"),'coleções dependentes de curso/turma não devem competir na navegação global');
+ux_expect($globalNav!=='','administração precisa de uma árvore global explícita');
+ux_expect(str_contains($globalNav,"'Principal'=>")&&str_contains($globalNav,"'Ensino'=>")&&str_contains($globalNav,"'Laboratório'=>")&&str_contains($globalNav,"'Site'=>")&&str_contains($globalNav,"'Sistema'=>"),'sidebar deve refletir ensino, laboratório, site e sistema');
+ux_expect(str_contains($globalNav,"'courses'=>['Cursos'")&&str_contains($globalNav,"'students'=>['Alunos'"),'Ensino deve expor somente as entradas globais de Cursos e Alunos');
+ux_expect(!str_contains($globalNav,"'registrations'=>")&&!str_contains($globalNav,"'cohorts'=>")&&!str_contains($globalNav,"'people'=>")&&!str_contains($globalNav,"'lessons'=>")&&!str_contains($globalNav,"'material'=>"),'coleções dependentes de curso/turma não devem competir na navegação global');
 ux_expect(str_contains($adminShell,'function admin_course_workspace_items')&&str_contains($adminShell,'function admin_cohort_workspace_items'),'curso e turma precisam de navegação contextual própria');
 ux_expect(str_contains($adminShell,"'registrations'=>['Inscrições',admin_course_url")&&str_contains($adminShell,"'cohorts'=>['Turmas',admin_course_url")&&str_contains($adminShell,"'content'=>['Conteúdo',admin_course_url")&&str_contains($adminShell,"'followup'=>['Acompanhamento',admin_course_url"),'workspace do curso deve expor as tarefas canônicas');
 ux_expect(str_contains($adminShell,"'students'=>['Alunos',admin_cohort_url")&&str_contains($adminShell,"'lessons'=>['Aulas e acesso',admin_cohort_url")&&str_contains($adminShell,"'questions'=>['Dúvidas',admin_cohort_url")&&str_contains($adminShell,"'tests'=>['Testes',admin_cohort_url"),'workspace da turma deve expor operação e acompanhamento');
 ux_expect(str_contains($adminShell,'class="admin-workspace-nav"'),'navegação contextual deve usar o componente compartilhado de workspace');
-ux_expect(str_contains($adminShell,"'forms'=>['Formulários'"),'Formulários deve ficar em Site');
-ux_expect(str_contains($adminShell,"'integrity'=>['Integridade'"),'Integridade deve ficar em Sistema');
+ux_expect(str_contains($globalNav,"'forms'=>['Formulários'"),'Formulários deve ficar em Site');
+ux_expect(str_contains($globalNav,"'integrity'=>['Integridade'"),'Integridade deve ficar em Sistema');
 
 ux_expect(str_contains($courses,"['overview','setup']")||str_contains($courses,"['overview','setup'],true"),'curso deve conservar visão geral e configuração próprias');
 ux_expect(str_contains($courses,'Escolha um curso para administrar inscrições, turmas, conteúdo e acompanhamento.'),'catálogo de cursos deve explicar a tarefa, não o modelo de dados');
@@ -54,18 +55,18 @@ ux_expect(str_contains($registrations,'LIMIT $pageSize OFFSET $offset')&&str_con
 ux_expect(!str_contains($registrations,'LIMIT 500'),'Inscrições não pode truncar silenciosamente em 500 registros');
 
 ux_expect(str_contains($cohorts,'admin_course_context($course')&&str_contains($cohorts,'admin_cohort_context($course,$cohort'),'Turmas deve alternar entre coleção do curso e workspace da turma');
-ux_expect(str_contains($cohorts,"$action==='update'")&&str_contains($cohorts,"$action==='archive'")&&str_contains($cohorts,"$action==='restore'"),'turma deve permitir edição, arquivamento e reativação');
+ux_expect(str_contains($cohorts,"\$action==='update'")&&str_contains($cohorts,"\$action==='archive'")&&str_contains($cohorts,"\$action==='restore'"),'turma deve permitir edição, arquivamento e reativação');
 ux_expect(str_contains($cohorts,'Abrir turma')&&str_contains($cohorts,'Nova turma'),'turma deve ser objeto operacional diretamente descobrível');
 
 ux_expect(str_contains($students,'Busca global de pessoas com histórico de participação nos cursos.'),'Alunos deve oferecer uma entrada global por identidade sem expor Pessoas como decisão principal');
 ux_expect(str_contains($students,'admin_course_context($course')&&str_contains($students,'admin_cohort_context($course,$cohort'),'Alunos deve preservar contexto de curso e turma quando presente');
 ux_expect(str_contains($students,'Importar CSV')&&str_contains($students,'student-import-csv.php'),'importação deve estar disponível em Turma → Alunos');
-ux_expect(str_contains($students,"$action==='move_registration'")&&str_contains($students,"$action==='disable_manual_enrollment'"),'participação educacional precisa permitir as operações canônicas suportadas');
+ux_expect(str_contains($students,"\$action==='move_registration'")&&str_contains($students,"\$action==='disable_manual_enrollment'"),'participação educacional precisa permitir as operações canônicas suportadas');
 ux_expect(str_contains($people,'LIMIT $pageSize OFFSET $offset')&&str_contains($people,'admin-pagination'),'Pessoas deve continuar disponível como histórico global paginado');
 ux_expect(str_contains($people,'FROM student_users u'),'Pessoas deve continuar baseada na autoridade global de identidade');
 
 ux_expect(str_contains($lessons,'admin_course_context($course')&&str_contains($lessons,'admin_cohort_context($course,$cohort'),'Aulas deve separar estrutura do curso e acesso da turma');
-ux_expect(str_contains($lessons,"$action==='update_lesson'")&&str_contains($lessons,"$action==='move_lesson'"),'estrutura de aulas deve permitir correção de nome e ordem');
+ux_expect(str_contains($lessons,"\$action==='update_lesson'")&&str_contains($lessons,"\$action==='move_lesson'"),'estrutura de aulas deve permitir correção de nome e ordem');
 ux_expect(str_contains($lessons,'Ver conteúdo afetado')&&str_contains($lessons,'Liberar agora')&&str_contains($lessons,'Agendar')&&str_contains($lessons,'Bloquear'),'liberação deve mostrar consequência e ações no próprio contexto da turma');
 ux_expect(str_contains($lessons,'Visualizar como esta turma'),'Aulas e acesso deve permitir verificar o resultado efetivo');
 ux_expect(str_contains($material,'course_material_add_page'),'Material deve preservar a relação canônica com páginas CMS');
