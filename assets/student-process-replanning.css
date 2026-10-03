@@ -10,6 +10,6 @@
 .student-recording-route-change{margin:var(--ux-space-4) 0}
 @media(max-width:700px){
   .student-replanning-current{grid-template-columns:1fr;gap:5px}
-  .student-replanning-heading .student-process-context{display:block!important;margin-top:10px;font-size:13px;line-height:1.5}
+  .student-replanning-heading .student-process-context{display:block;margin-top:10px;font-size:13px;line-height:1.5}
   .student-process-template-card.is-current{padding-inline:8px}
 }
