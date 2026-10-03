@@ -119,17 +119,15 @@ function student_process_replan(PDO $db,int $testId,int $studentId,array $source
     $newName=trim((string)($source['name']??''));if($newName==='')throw new RuntimeException('Roteiro inválido.');
 
     $existing=student_process_plan_for_test($db,$testId,$studentId);
-    $previousSource=(string)($existing['source_name']??'');$interrupted=null;
-    if($existing){
-        $started=student_process_replanning_current_started_step($db,$existing);
-        if($started)$interrupted=student_process_replanning_materialize_started($db,$existing,$started,$studentId);
-    }
-
-    $facts=student_process_steps($db,$testId);$matched=student_process_replanning_prefix($facts,$routeSteps);
-    $preserved=count($facts);$divergent=max(0,$preserved-$matched);$pending=max(0,count($routeSteps)-$matched);
+    $previousSource=(string)($existing['source_name']??'');
+    $started=$existing?student_process_replanning_current_started_step($db,$existing):null;
     $oldPlanId=(int)($existing['id']??0);$oldPlanUuid=(string)($existing['plan_uuid']??'');$oldCreatedAt=(string)($existing['created_at']??'');$oldStartedAt=(string)($existing['started_at']??'');
-    $now=utc_now();$db->beginTransaction();
+    $ownsTransaction=!$db->inTransaction();if($ownsTransaction)$db->beginTransaction();
     try{
+        $interrupted=$started?student_process_replanning_materialize_started($db,$existing,$started,$studentId):null;
+        $facts=student_process_steps($db,$testId);$matched=student_process_replanning_prefix($facts,$routeSteps);
+        $preserved=count($facts);$divergent=max(0,$preserved-$matched);$pending=max(0,count($routeSteps)-$matched);
+        $now=utc_now();
         if($existing){
             $db->prepare('DELETE FROM student_process_execution_sessions WHERE plan_id=? AND student_id=?')->execute([$oldPlanId,$studentId]);
             $db->prepare('DELETE FROM student_process_plans WHERE id=? AND student_id=?')->execute([$oldPlanId,$studentId]);
@@ -151,8 +149,8 @@ function student_process_replan(PDO $db,int $testId,int $studentId,array $source
         ],[
             'plan_id'=>$planId,'source_name'=>$newName,'preserved_fact_count'=>$preserved,'matched_prefix'=>$matched,'divergent_fact_count'=>$divergent,'pending_step_count'=>$pending,'interrupted_step_id'=>(int)($interrupted['id']??0)?:null
         ]);
-        $db->commit();
-    }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+        if($ownsTransaction)$db->commit();
+    }catch(Throwable $e){if($ownsTransaction&&$db->inTransaction())$db->rollBack();throw $e;}
     $plan=student_process_plan_for_test($db,$testId,$studentId)??[];
     $plan['_change']=[
         'previous_source'=>$previousSource,
