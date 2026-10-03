@@ -95,7 +95,10 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Predefinição de revelação<select name="saved_preparation_id"',
       '>Outro revelador<input name="developer_name"',
       '>Revelador ou solução estoque (ml)<input',
-      '>Aviso de agitação<input name="agitation_interval"',
+      '>Controle de agitação<select name="agitation_mode"',
+      '>Duração de cada agitação<input name="agitation_duration"',
+      '>Intervalo entre inícios<input name="agitation_interval"',
+      '>Observação de agitação<input name="agitation"',
     ],
     'app/student_shell.php':[
       '>Tempo sem reciprocidade<input data-quick-reciprocity-source',
