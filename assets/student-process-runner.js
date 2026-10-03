@@ -80,11 +80,12 @@ function renderAgitation({allowCue=true}={}){
 }
 
 function render({allowAgitationCue=true}={}){
-  if(total===null){if(stateStatus)stateStatus.textContent='Sem cronômetro';renderAgitation({allowCue:false});return;}
+  const timerState=state?.state||'idle';root.dataset.timerState=timerState;
+  if(total===null){if(stateStatus)stateStatus.textContent='Sem cronômetro';if(start)start.hidden=true;if(pause)pause.hidden=true;if(reset)reset.hidden=true;renderAgitation({allowCue:false});return;}
   const remaining=remainingNow();if(clock)clock.textContent=format(remaining);if(stateStatus)stateStatus.textContent=stateLabel();
-  if(start){start.disabled=busy||state?.state==='running'||state?.state==='elapsed';start.textContent=state?.state==='paused'?'Retomar':'Iniciar';}
-  if(pause)pause.disabled=busy||state?.state!=='running';
-  if(reset)reset.disabled=busy;
+  if(start){start.hidden=!['idle','paused'].includes(timerState);start.disabled=busy;start.textContent=timerState==='paused'?'Retomar':'Iniciar';}
+  if(pause){pause.hidden=timerState!=='running';pause.disabled=busy;}
+  if(reset){reset.hidden=timerState==='idle';reset.disabled=busy;}
   renderAgitation({allowCue:allowAgitationCue});
 }
 function applyServerState(input,{quiet=false}={}){
