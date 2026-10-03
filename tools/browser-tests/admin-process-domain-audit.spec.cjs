@@ -9,10 +9,15 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.goto(`${base}?view=${view}`,{waitUntil:'networkidle'});
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${view} horizontal document overflow on ${device}`).toBeLessThanOrEqual(1);
+      if(device==='phone'){
+        const internalOverflows=await page.locator('.admin-table-scroll').evaluateAll(nodes=>nodes.map(node=>node.scrollWidth-node.clientWidth));
+        for(const internalOverflow of internalOverflows)expect(internalOverflow,`${view} hides administrative fields/actions in an internal horizontal scroller`).toBeLessThanOrEqual(1);
+      }
       if(view==='list'){
         await expect(page.getByRole('heading',{name:'Processos globais',level:1})).toBeVisible();
         await expect(page.locator('tbody tr')).toHaveCount(6);
         await expect(page.getByText('Receitas publicadas são versionadas; uma alteração nunca modifica o histórico do aluno.')).toBeVisible();
+        if(device==='phone')await expect(page.getByRole('button',{name:'Gerenciar'}).first()).toBeInViewport();
       }
       if(view==='draft'){
         await expect(page.getByRole('heading',{name:'Editar próxima versão'})).toBeVisible();
@@ -31,11 +36,13 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('17 definições')).toBeVisible();
         await expect(page.getByText('stop_after_first')).toBeVisible();
         await expect(page.getByText('Desativado').first()).toBeVisible();
+        if(device==='phone')await expect(page.getByRole('button',{name:'Editar'}).first()).toBeInViewport();
       }
       if(view==='developers'){
         await expect(page.getByText('13 definições')).toBeVisible();
         await expect(page.getByText('Brewed Caffenol',{exact:true}).first()).toBeVisible();
         await expect(page.getByText('fresh',{exact:true}).first()).toBeVisible();
+        if(device==='phone')await expect(page.getByRole('button',{name:'Editar'}).first()).toBeInViewport();
       }
       await page.screenshot({path:`student-visual-audit/${device}/admin-process-${view}.png`,fullPage:true,animations:'disabled'});
     });
