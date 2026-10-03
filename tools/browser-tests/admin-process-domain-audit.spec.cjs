@@ -2,6 +2,9 @@ const {test,expect}=require('@playwright/test');
 const base='http://127.0.0.1:8099/tools/browser-fixture/admin-process-domain-audit.html';
 const views=['list','draft','published','stages','developers'];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
+async function beforeLabel(locator){
+  return locator.evaluate(el=>getComputedStyle(el,'::before').content.replace(/^['"]|['"]$/g,''));
+}
 for(const [device,viewport] of Object.entries(viewports)){
   for(const view of views){
     test(`admin process domain visual audit ${device} ${view}`,async({page})=>{
@@ -17,7 +20,10 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByRole('heading',{name:'Processos globais',level:1})).toBeVisible();
         await expect(page.locator('tbody tr')).toHaveCount(6);
         await expect(page.getByText('Receitas publicadas são versionadas; uma alteração nunca modifica o histórico do aluno.')).toBeVisible();
-        if(device==='phone')await expect(page.getByRole('button',{name:'Gerenciar'}).first()).toBeInViewport();
+        if(device==='phone'){
+          await expect(page.getByRole('button',{name:'Gerenciar'}).first()).toBeInViewport();
+          expect(await beforeLabel(page.locator('tbody tr').first().locator('td').nth(3))).toBe('Uso');
+        }
       }
       if(view==='draft'){
         await expect(page.getByRole('heading',{name:'Editar próxima versão'})).toBeVisible();
@@ -30,6 +36,11 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByRole('heading',{name:'Roteiro publicado'})).toBeVisible();
         await expect(page.getByRole('heading',{name:'Versões'})).toBeVisible();
         await expect(page.locator('.admin-process-history tbody tr')).toHaveCount(3);
+        if(device==='phone'){
+          const firstHistoryRow=page.locator('.admin-process-history tbody tr').first();
+          expect(await beforeLabel(firstHistoryRow.locator('td').nth(2))).toBe('Publicada');
+          expect(await beforeLabel(firstHistoryRow.locator('td').nth(3))).toBe('Alteração');
+        }
       }
       if(view==='stages'){
         await expect(page.getByRole('heading',{name:'Catálogos do laboratório',level:1})).toBeVisible();
