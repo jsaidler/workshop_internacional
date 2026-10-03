@@ -32,6 +32,6 @@ $courses=file_get_contents(__DIR__.'/../admin/courses.php');$material=file_get_c
 must_course_domain(str_contains($courses,"admin_course_url(\$activityId,\$courseId,'material')"),'course catalog does not route to the filtered material collection');
 must_course_domain(str_contains($material,'course_material_add_page'),'material collection does not consume material-page relation');
 must_course_domain(str_contains($material,'/editor/?page='),'material editing does not route to the canonical CMS editor');
-must_course_domain(str_contains($registrations,'Todos os cursos')&&!str_contains($registrations,'Escolha o curso'),'registrations are not exposed as a global course-filterable collection');
+must_course_domain(str_contains($registrations,'function registration_admin_url(int $activityId,int $courseId')&&str_contains($registrations,"'s.course_id=?'")&&!str_contains($registrations,'Todos os cursos'),'registrations do not preserve the canonical course workspace context');
 must_course_domain(str_contains($student,'course_lesson_release_rows_for_course'),'student workspace does not consume canonical course lessons');
 echo "course-domain-material: ok\n";
