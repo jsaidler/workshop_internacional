@@ -1,0 +1,15 @@
+.student-replanning-heading{align-items:flex-start}
+.student-replanning-heading .student-process-context{max-width:66ch}
+.student-replanning-current{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 18px;align-items:baseline;margin-top:var(--ux-space-5);padding:14px 0;border-top:1px solid var(--student-line-soft);border-bottom:1px solid var(--student-line-soft)}
+.student-replanning-current span{color:var(--muted);font:600 9px/1.3 var(--mono);letter-spacing:.05em;text-transform:uppercase}
+.student-replanning-current strong{font-size:14px;font-weight:600}
+.student-replanning-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.student-replanning-title-row h3{min-width:0}
+.student-process-template-card.is-current,.student-process-standard-card.is-current{border-color:color-mix(in srgb,var(--focus) 58%,var(--student-line-soft))}
+.student-process-template-card.is-current{padding-inline:12px}
+.student-recording-route-change{margin:var(--ux-space-4) 0}
+@media(max-width:700px){
+  .student-replanning-current{grid-template-columns:1fr;gap:5px}
+  .student-replanning-heading .student-process-context{font-size:13px;line-height:1.5}
+  .student-process-template-card.is-current{padding-inline:8px}
+}
