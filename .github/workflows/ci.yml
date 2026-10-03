@@ -93,6 +93,7 @@ jobs:
             php tools/test-student-mechanics-audit.php
             php tools/test-student-process-manager.php
             php tools/test-student-process-execution-state.php
+            php tools/test-student-process-replanning.php
             php tools/test-student-process-recording-modes.php
             php tools/test-student-caderno-product-ux.php
             php tools/test-student-lab-stock-product-ux.php
