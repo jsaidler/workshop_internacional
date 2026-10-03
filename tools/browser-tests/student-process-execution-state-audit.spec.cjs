@@ -40,8 +40,7 @@ test('persisted runner transitions without resetting the laboratory clock',async
   await page.getByRole('button',{name:'Iniciar',exact:true}).click();
   await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro em andamento');
   await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeEnabled();
-  const afterStart=await page.locator('[data-runner-clock]').textContent();
-  expect(afterStart).not.toBe('07:00');
+  await expect.poll(async()=>await page.locator('[data-runner-clock]').textContent(),{timeout:2500}).not.toBe('07:00');
   await page.getByRole('button',{name:'Pausar',exact:true}).click();
   await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro pausado');
   const paused=await page.locator('[data-runner-clock]').textContent();
