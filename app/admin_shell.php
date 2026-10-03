@@ -50,6 +50,7 @@ function admin_workspace(string $section): string {return match($section){
     'overview'=>'overview',
     'registrations','cohorts','students','people','studentops'=>'operation',
     'courses','lessons','material'=>'teaching',
+    'processes','lab-catalogs'=>'laboratory',
     'pages','blocks','design','site','seo','forms','responses'=>'site',
     'analytics'=>'analytics',
     'media'=>'media',
@@ -68,6 +69,10 @@ function admin_context_items(string $workspace,?array $activity): array {return 
         'courses'=>['Cursos',admin_shell_url('/admin/courses.php',$activity)],
         'lessons'=>['Aulas',admin_shell_url('/admin/lessons.php',$activity)],
         'material'=>['Material',admin_shell_url('/admin/material.php',$activity)],
+    ],
+    'laboratory'=>[
+        'processes'=>['Processos globais','/admin/processes.php'],
+        'lab-catalogs'=>['Catálogos do laboratório','/admin/lab-catalogs.php'],
     ],
     'site','content'=>[
         'pages'=>['Páginas',admin_shell_url('/admin/pages.php',$activity)],
@@ -92,6 +97,7 @@ function admin_navigation_groups(?array $activity): array {return [
     ],
     'Operação'=>admin_context_items('operation',$activity),
     'Ensino'=>admin_context_items('teaching',$activity),
+    'Laboratório'=>admin_context_items('laboratory',$activity),
     'Site'=>admin_context_items('site',$activity),
     'Biblioteca'=>[
         'media'=>['Mídia',admin_shell_url('/admin/media.php',$activity)],

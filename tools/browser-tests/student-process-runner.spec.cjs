@@ -9,12 +9,14 @@ async function mockWake(page){
   });
 }
 
-test('lab runner keeps screen awake and never auto advances',async({page})=>{
+test('lab runner starts wake lock only after explicit start and never auto advances',async({page})=>{
   await mockWake(page);await page.goto(base,{waitUntil:'networkidle'});
-  await expect.poll(()=>page.evaluate(()=>window.__wakeRequests)).toBeGreaterThan(0);
-  await expect(page.locator('[data-runner-wake-status]')).toHaveText('Tela mantida ativa');
+  expect(await page.evaluate(()=>window.__wakeRequests)).toBe(0);
+  await expect(page.locator('[data-runner-wake-status]')).toHaveText('Tela ativa pausada');
   const initialUrl=page.url();
   await page.locator('[data-runner-start]').click();
+  await expect.poll(()=>page.evaluate(()=>window.__wakeRequests)).toBeGreaterThan(0);
+  await expect(page.locator('[data-runner-wake-status]')).toHaveText('Tela mantida ativa');
   await expect(page.locator('[data-runner-start]')).toBeDisabled();
   await page.waitForTimeout(2300);
   await expect(page.locator('[data-runner-clock]')).toHaveText('00:00');
@@ -25,18 +27,26 @@ test('lab runner keeps screen awake and never auto advances',async({page})=>{
   expect(await page.evaluate(()=>window.__vibrations.length)).toBeGreaterThan(0);
 });
 
-test('pause releases wake lock and reset does not advance the process',async({page})=>{
+test('pause releases wake lock; resume reacquires it; reset returns to idle without advancing',async({page})=>{
   await mockWake(page);await page.goto(base,{waitUntil:'networkidle'});
   await page.locator('[data-runner-start]').click();await page.waitForTimeout(350);
+  const firstWakeCount=await page.evaluate(()=>window.__wakeRequests);
+  expect(firstWakeCount).toBeGreaterThan(0);
   await page.locator('[data-runner-pause]').click();
   await expect.poll(()=>page.evaluate(()=>window.__wakeReleases)).toBeGreaterThan(0);
   await expect(page.locator('[data-runner-wake-status]')).toHaveText('Tela ativa pausada');
   const paused=await page.locator('[data-runner-clock]').textContent();
   await page.waitForTimeout(600);await expect(page.locator('[data-runner-clock]')).toHaveText(paused);
+  await page.locator('[data-runner-start]').click();
+  await expect.poll(()=>page.evaluate(()=>window.__wakeRequests)).toBeGreaterThan(firstWakeCount);
+  const wakeAfterResume=await page.evaluate(()=>window.__wakeRequests);
   await page.locator('[data-runner-reset]').click();
   await expect(page.locator('[data-runner-clock]')).toHaveText('00:02');
   await expect(page.locator('[data-runner-complete]')).toHaveAttribute('aria-disabled','true');
-  await expect.poll(()=>page.evaluate(()=>window.__wakeRequests)).toBeGreaterThan(1);
+  await expect(page.locator('[data-runner-start]')).toBeEnabled();
+  await expect(page.locator('[data-runner-wake-status]')).toHaveText('Tela ativa pausada');
+  expect(await page.evaluate(()=>window.__wakeRequests)).toBe(wakeAfterResume);
+  await expect(page.locator('.student-process-runner-progress')).toContainText('1 / 2');
 });
 
 test('lab runner stays within phone viewport',async({page})=>{

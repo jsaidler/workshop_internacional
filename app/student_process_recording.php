@@ -28,7 +28,7 @@ function student_process_recording_add_step(PDO $db,int $testId,int $studentId,a
 }
 
 function student_process_plan_apply_standard(PDO $db,string $standardKey,int $testId,int $studentId): array {
-    $standard=student_process_standard_for_key($standardKey)??throw new RuntimeException('Processamento padrão não encontrado.');
+    $standard=student_global_process_for_key($db,$standardKey)??throw new RuntimeException('Processamento padrão não encontrado.');
     $test=student_test_for_student($db,$testId,$studentId)??throw new RuntimeException('Registro não encontrado.');
     if((string)$test['status']==='reviewed')throw new RuntimeException('Este registro já foi revisado.');
     if(student_process_steps($db,$testId))throw new RuntimeException('Este registro já possui etapas. Use a continuação do registro para documentar o restante.');
@@ -37,8 +37,8 @@ function student_process_plan_apply_standard(PDO $db,string $standardKey,int $te
     $now=utc_now();$db->beginTransaction();
     try{
         if($existing)$db->prepare('DELETE FROM student_process_plans WHERE id=?')->execute([(int)$existing['id']]);
-        $q=$db->prepare('INSERT INTO student_process_plans(plan_uuid,student_id,test_id,source_template_id,source_name,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)');
-        $q->execute([student_uuid(),$studentId,$testId,null,(string)$standard['name'],'planned',$now,$now]);$planId=(int)$db->lastInsertId();
+        $q=$db->prepare('INSERT INTO student_process_plans(plan_uuid,student_id,test_id,source_template_id,source_global_version_id,source_name,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?, ?,?)');
+        $q->execute([student_uuid(),$studentId,$testId,null,(int)($standard['version_id']??0)?:null,(string)$standard['name'],'planned',$now,$now]);$planId=(int)$db->lastInsertId();
         $insert=$db->prepare("INSERT INTO student_process_plan_steps(plan_id,position,stage_key,label,duration,agitation_interval,payload_json,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,'planned',?,?)");
         foreach((array)$standard['steps'] as $i=>$raw){
             $stageKey=(string)$raw['stage_key'];$data=student_process_stage_data($stageKey,$raw);$payload=student_process_template_payload_from_stage($data,$stageKey,$raw);

@@ -18,7 +18,7 @@ function student_process_add_guided_step(PDO $db,int $testId,int $studentId,arra
     $allowed=student_experience_next_choices($steps);
     if(!isset($allowed[$stageKey]))throw new RuntimeException('Escolha uma etapa válida.');
     if(in_array($stageKey,['first_development','second_development'],true)){
-        $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));
+        $developer=student_process_managed_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''),$db,true);
         if((string)$developer['mode']==='fresh'){
             unset($input['inventory_item_id'],$input['inventory_amount']);
         }
@@ -48,7 +48,7 @@ function student_process_delete_from_step(PDO $db,int $testId,int $stepId,int $s
             $db->prepare("UPDATE student_tests SET developer='',dilution='',temperature='',development_time='',agitation='',bleach='',updated_at=? WHERE id=? AND student_id=?")
                 ->execute([utc_now(),$testId,$studentId]);
         }else{
-            $remaining=student_process_steps($db,$testId);$branch=student_process_last_bleach($remaining);$bleach=['peracetic'=>'Solução peroxiacética','ferric'=>'Cloreto férrico','dichromate'=>'Dicromato','permanganate'=>'Permanganato'][$branch]??'';
+            $remaining=student_process_steps($db,$testId);$branch=student_process_last_bleach($remaining);$stage=$branch!==''?student_process_managed_stage($branch,$db,true):null;$bleach=trim((string)($stage['chemical_name']??''));if($bleach==='')$bleach=trim((string)($stage['label']??''));
             $db->prepare('UPDATE student_tests SET bleach=?,updated_at=? WHERE id=? AND student_id=?')->execute([$bleach,utc_now(),$testId,$studentId]);
         }
         $db->commit();
@@ -56,7 +56,7 @@ function student_process_delete_from_step(PDO $db,int $testId,int $stepId,int $s
 }
 
 function student_saved_preparation_create_guided(PDO $db,int $studentId,array $input): array {
-    $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));
+    $developer=student_process_managed_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''),$db,true);
     if((string)$developer['mode']==='fresh'){
         $input['developer_amount']=$input['fresh_volume']??null;
         $input['water_amount']=null;

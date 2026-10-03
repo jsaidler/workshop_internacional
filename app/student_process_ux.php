@@ -25,7 +25,7 @@ function student_process_step_inventory_amount(PDO $db,int $stepId,int $itemId):
 }
 
 function student_process_stage_data(string $stageKey,array $input): array {
-    $catalog=student_process_stage_catalog();
+    $db=database();$catalog=student_process_managed_stage_catalog($db,false);
     if(!isset($catalog[$stageKey]))throw new RuntimeException('Etapa inválida.');
     $stage=$catalog[$stageKey];$stageType=(string)$stage['type'];
     $label=$stageKey==='custom'?student_workspace_text($input['custom_label']??'',120):(string)$stage['label'];
@@ -37,7 +37,7 @@ function student_process_stage_data(string $stageKey,array $input): array {
     if($reuseSource!==''&&$reuseSource!=='first_development')throw new RuntimeException('Origem de reutilização inválida.');
 
     if($stageType==='development'){
-        $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));
+        $developer=student_process_managed_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''),$db,true);
         $chemicalKey=(string)$developer['key'];
         $chemicalName=(string)$developer['label'];
         if((string)$developer['mode']==='fresh'){
@@ -51,12 +51,9 @@ function student_process_stage_data(string $stageKey,array $input): array {
             $dilution=$calc['label'];$total=$calc['total'];
         }
     }else{
-        $chemicalNames=[
-            'stop_after_first'=>'Banho interruptor','fixer'=>'Hipossulfito / fixador','peracetic'=>'Solução peroxiacética',
-            'ferric'=>'Cloreto férrico','dichromate'=>'Dicromato','permanganate'=>'Permanganato',
-            'ammonia'=>'Amônia','clearing'=>'Banho de limpeza',
-        ];
-        $chemicalName=$chemicalNames[$stageKey]??student_workspace_text($input['chemical_name']??'',180);
+        $catalogChemical=student_workspace_text($stage['chemical_name']??'',180);
+        $freeChemical=student_workspace_text($input['chemical_name']??'',180);
+        $chemicalName=$catalogChemical!==''?$catalogChemical:$freeChemical;
         $chemicalKey=$stageKey;
         $savedPrepId=null;
     }
