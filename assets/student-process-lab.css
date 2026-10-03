@@ -20,6 +20,7 @@ body.student-page:has(.student-process-runner) .student-main{max-width:980px}
 .student-process-runner-status{justify-content:flex-start;flex-wrap:wrap;gap:6px 18px;margin-top:8px}
 .student-process-runner-controls{justify-content:flex-start;margin-top:16px}
 .student-process-runner-controls .button{min-width:124px}
+.student-process-runner-controls .button[hidden]{display:none}
 .student-process-runner-advance{justify-content:flex-start;margin-top:22px;padding-top:18px;border-top:1px solid var(--student-line-soft)}
 .student-process-runner-advance .button{min-width:200px}
 .student-process-runner-untimed{margin:24px 0;text-align:left}
@@ -56,8 +57,8 @@ body.student-page:has(.student-process-runner) .student-main{max-width:980px}
   .student-lab-agitation{width:100%;justify-content:center;text-align:center}
   .student-process-runner-status{display:flex;justify-content:flex-start;text-align:left;gap:5px 12px;font-size:9px}
   .student-process-runner-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .student-process-runner[data-timer-state="idle"] .student-process-runner-controls,.student-process-runner[data-timer-state="elapsed"] .student-process-runner-controls{grid-template-columns:1fr}
   .student-process-runner-controls .button{min-width:0;width:100%}
-  .student-process-runner-controls .button:last-child{grid-column:1/-1}
   .student-process-runner-advance{display:block}
   .student-process-runner-advance form,.student-process-runner-advance .button,.student-lab-select-form .button{width:100%}
   .student-lab-timer-settings .student-form-grid{grid-template-columns:1fr}
