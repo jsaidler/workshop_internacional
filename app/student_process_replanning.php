@@ -87,7 +87,7 @@ function student_process_replan(PDO $db,int $testId,int $studentId,array $source
             $db->prepare('DELETE FROM student_process_plans WHERE id=? AND student_id=?')->execute([$oldPlanId,$studentId]);
         }
         $status=$pending===0?'completed':($preserved>0?'running':'planned');
-        $startedAt=$oldStartedAt!==''?$oldStartedAt:($preserved>0?$now:null);$completedAt=$status==='completed'?$now:null;
+        $startedAt=$preserved>0?($oldStartedAt!==''?$oldStartedAt:$now):null;$completedAt=$status==='completed'?$now:null;
         $q=$db->prepare('INSERT INTO student_process_plans(plan_uuid,student_id,test_id,source_template_id,source_global_version_id,source_name,status,started_at,completed_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)');
         $q->execute([$oldPlanUuid!==''?$oldPlanUuid:student_uuid(),$studentId,$testId,$source['source_template_id']??null,$source['source_global_version_id']??null,$newName,$status,$startedAt,$completedAt,$oldCreatedAt!==''?$oldCreatedAt:$now,$now]);
         $planId=(int)$db->lastInsertId();
