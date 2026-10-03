@@ -14,6 +14,7 @@ Este inventário operacionaliza a regra de que nenhuma tela da área do aluno po
 | `aluno/caderno.php` | lista e novo registro |
 | `aluno/teste.php` | exposição, escolha de processamento, roteiro aplicado e resultado |
 | `aluno/processamento-realizado.php` | registro retroativo, retomada parcial e registro concluído |
+| `aluno/processamentos-trocar.php` | troca de roteiro antes da execução, depois de fatos registrados e com etapa em andamento; o efeito da troca deve permanecer legível no mobile |
 | `aluno/teste-etapa.php` | edição de etapa real |
 | `aluno/teste-compartilhado.php` | registro compartilhado |
 | `aluno/excluir-teste.php` | confirmação destrutiva |
@@ -46,4 +47,6 @@ Estes arquivos não recebem screenshot próprio porque são redirecionadores, a�
 
 ## Gate
 
-`tools/browser-tests/student-complete-area-audit.spec.cjs` é a lista executável de cobertura visual total. Ele não substitui a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.
+`tools/browser-tests/student-complete-area-audit.spec.cjs` é a lista executável de cobertura visual total. Estados transversais de mudança de rota são complementados por `tools/browser-tests/student-process-replanning-audit.spec.cjs`, porque uma única tela precisa ser observada antes da troca, depois de fatos registrados e durante uma interrupção real.
+
+Os testes não substituem a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.
