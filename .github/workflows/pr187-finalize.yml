@@ -14,12 +14,21 @@ jobs:
         with:
           ref: fix/free-lab-navigation-2026-10-03
           fetch-depth: 0
-      - name: Apply final laboratory patch
+      - name: Apply final laboratory patches
         run: |
-          cat tools/pr187-final.patch.part00 tools/pr187-final.patch.part01 tools/pr187-final.patch.part02 > /tmp/pr187-final.patch
-          git apply --check /tmp/pr187-final.patch
-          git apply /tmp/pr187-final.patch
-          rm tools/pr187-final.patch.part00 tools/pr187-final.patch.part01 tools/pr187-final.patch.part02
+          for patch in \
+            tools/pr187-patch-app-student-process-templates.patch \
+            tools/pr187-patch-app-student-global-processes.patch \
+            tools/pr187-patch-aluno-processamentos.patch \
+            tools/pr187-patch-admin-processes.patch \
+            tools/pr187-patch-aluno-processar.patch \
+            tools/pr187-patch-assets-student-process-runner.patch
+          do
+            git apply --check "$patch"
+            git apply "$patch"
+          done
+          rm -f tools/pr187-final.patch.part00 tools/pr187-final.patch.part01 tools/pr187-final.patch.part02
+          rm -f tools/pr187-patch-*.patch
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A

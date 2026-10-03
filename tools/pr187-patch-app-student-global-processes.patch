@@ -1,0 +1,13 @@
+--- a/app/student_global_processes.php
++++ b/app/student_global_processes.php
+@@ -126,8 +126,9 @@
+ 
+ function student_global_process_step_payload(array $input): array {
+     $stageKey=(string)($input['stage_key']??'');$data=student_process_stage_data($stageKey,$input);$payload=student_process_template_payload_from_stage($data,$stageKey,$input);
++    $agitationInterval=(string)($payload['agitation_interval']??'');
+     unset($payload['stage_key'],$payload['duration'],$payload['agitation_interval']);
+-    return ['stage_key'=>$stageKey,'label'=>(string)$data['label'],'duration'=>(string)$data['duration'],'agitation_interval'=>student_workspace_text($input['agitation_interval']??'',80),'payload'=>$payload];
++    return ['stage_key'=>$stageKey,'label'=>(string)$data['label'],'duration'=>(string)$data['duration'],'agitation_interval'=>$agitationInterval,'payload'=>$payload];
+ }
+ 
+ function student_global_process_add_step(PDO $db,int $versionId,int $adminId,array $input): array {

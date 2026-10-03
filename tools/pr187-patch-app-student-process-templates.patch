@@ -1,0 +1,48 @@
+--- a/app/student_process_templates.php
++++ b/app/student_process_templates.php
+@@ -109,8 +109,32 @@
+     return $resolved;
+ }
+ 
++function student_process_agitation_input(array $input): array {
++    $legacy=student_workspace_text($input['agitation']??'',600);
++    $mode=trim((string)($input['agitation_mode']??''));
++    $durationRaw=student_workspace_text($input['agitation_duration']??'',40);
++    $intervalRaw=student_workspace_text($input['agitation_interval']??'',40);
++    if(!in_array($mode,['none','periodic','continuous'],true)){
++        $fold=mb_strtolower($legacy);
++        if(str_contains($fold,'contín')||str_contains($fold,'contin'))$mode='continuous';
++        elseif($intervalRaw!=='')$mode='periodic';
++        else $mode='none';
++    }
++    $duration='';$interval='';
++    if($mode==='periodic'){
++        $durationSeconds=student_process_time_seconds($durationRaw);
++        $intervalSeconds=student_process_time_seconds($intervalRaw);
++        if($durationSeconds===null||$durationSeconds<=0)throw new RuntimeException('Informe quanto tempo dura cada agitação.');
++        if($intervalSeconds===null||$intervalSeconds<=0)throw new RuntimeException('Informe o intervalo entre o início de cada agitação.');
++        if($durationSeconds>=$intervalSeconds)throw new RuntimeException('A duração da agitação deve ser menor que o intervalo. Para agitação sem pausa, escolha Contínua.');
++        $duration=student_process_seconds_label($durationSeconds);$interval=student_process_seconds_label($intervalSeconds);
++    }
++    return ['mode'=>$mode,'duration'=>$duration,'interval'=>$interval,'description'=>$legacy];
++}
++
+ function student_process_template_payload_from_stage(array $data,string $stageKey,array $input): array {
+     $reuseSource=$stageKey==='second_development'?student_workspace_text($input['reuse_source_stage_key']??'',80):'';
++    $agitation=student_process_agitation_input($input);
+     return [
+         'stage_key'=>$stageKey,
+         'custom_label'=>$stageKey==='custom'?(string)$data['label']:'',
+@@ -125,9 +149,11 @@
+         'temperature'=>(string)$data['temperature'],
+         'duration'=>(string)$data['duration'],
+         'agitation'=>(string)$data['agitation'],
++        'agitation_mode'=>$agitation['mode'],
++        'agitation_duration'=>$agitation['duration'],
++        'agitation_interval'=>$agitation['interval'],
+         'notes'=>(string)$data['notes'],
+         'reuse_source_stage_key'=>$reuseSource,
+-        'agitation_interval'=>student_workspace_text($input['agitation_interval']??'',80),
+     ];
+ }
+ 
