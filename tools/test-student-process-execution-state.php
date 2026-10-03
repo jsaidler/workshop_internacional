@@ -26,8 +26,8 @@ function student_process_plan_complete_step(PDO $db,int $planId,int $stepId,int 
 function student_process_recording_mode_for_test(PDO $db,int $testId,int $studentId): string {return 'live';}
 function student_process_recording_meta(PDO $db,int $testId,int $studentId): ?array {return null;}
 function student_process_recording_save_meta(PDO $db,int $testId,int $studentId,string $mode,?string $performedOn,string $notes): array {return ['entry_mode'=>$mode];}
-function student_process_recording_add_step(PDO $db,int $testId,int $studentId,array $input,string $mode='retroactive'): array {
-    $position=(int)$db->query('SELECT COALESCE(MAX(position),0)+1 FROM student_process_steps WHERE test_id='.(int)$testId)->fetchColumn();$now=utc_now();$metadata=json_encode(['recording_mode'=>$mode],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+function student_process_add_flexible_step(PDO $db,int $testId,int $studentId,array $input): array {
+    $position=(int)$db->query('SELECT COALESCE(MAX(position),0)+1 FROM student_process_steps WHERE test_id='.(int)$testId)->fetchColumn();$now=utc_now();$metadata=json_encode([],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
     $q=$db->prepare('INSERT INTO student_process_steps(test_id,position,stage_key,label,duration,agitation,metadata_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)');
     $q->execute([$testId,$position,(string)($input['stage_key']??''),(string)($input['custom_label']??$input['label']??$input['stage_key']??''),(string)($input['duration']??''),(string)($input['agitation']??''),$metadata,$now,$now]);$id=(int)$db->lastInsertId();
     $q=$db->prepare('SELECT * FROM student_process_steps WHERE id=?');$q->execute([$id]);return $q->fetch(PDO::FETCH_ASSOC)?:[];
@@ -82,6 +82,7 @@ must_execution_state($rows[0]['status']==='completed'&&$rows[1]['status']==='com
 must_execution_state((int)$db->query('SELECT COUNT(*) FROM student_process_steps WHERE test_id=40')->fetchColumn()===2,'reaching stage 3 must materialize stages 1 and 2 as facts');
 $facts=$db->query('SELECT * FROM student_process_steps WHERE test_id=40 ORDER BY position')->fetchAll();
 must_execution_state($facts[0]['duration']==='08:00'&&$facts[1]['duration']==='1:00','materialized facts must use the current route snapshot values');
+must_execution_state(str_contains((string)$facts[0]['metadata_json'],'"recording_mode":"live"'),'live progression must keep per-step provenance');
 must_execution_state(!str_contains((string)$facts[0]['metadata_json'],'interrupted'),'leaving the app timer behind must never invent an interrupted laboratory event');
 $newSession=student_process_execution_session($db,1,7);must_execution_state($newSession&&(int)$newSession['plan_step_id']===13&&$newSession['state']==='idle','advancing process position must reset the timer for the new current stage');
 
