@@ -143,7 +143,8 @@ function student_process_replan(PDO $db,int $testId,int $studentId,array $source
         $insert=$db->prepare('INSERT INTO student_process_plan_steps(plan_id,position,stage_key,label,duration,agitation_interval,payload_json,status,actual_step_id,started_at,completed_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)');
         foreach($routeSteps as $i=>$routeStep){
             $isMatched=$i<$matched;$fact=$isMatched?($facts[$i]??null):null;
-            $insert->execute([$planId,$i+1,(string)$routeStep['stage_key'],(string)$routeStep['label'],(string)$routeStep['duration'],(string)($routeStep['agitation_interval']??''),(string)$routeStep['payload_json'],$isMatched?'completed':'planned',$isMatched?(int)($fact['id']??0)?:null,null,null,$now,$now]);
+            $actualStepId=$isMatched?(((int)($fact['id']??0))?:null):null;
+            $insert->execute([$planId,$i+1,(string)$routeStep['stage_key'],(string)$routeStep['label'],(string)$routeStep['duration'],(string)($routeStep['agitation_interval']??''),(string)$routeStep['payload_json'],$isMatched?'completed':'planned',$actualStepId,null,null,$now,$now]);
         }
         if(function_exists('student_process_change_log'))student_process_change_log($db,'student',null,$studentId,'student_test',$testId,'change_process_route',[
             'plan_id'=>$oldPlanId?:null,'source_name'=>$previousSource,'fact_count'=>$preserved-($interrupted?1:0)
