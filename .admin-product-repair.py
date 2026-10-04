@@ -1,0 +1,211 @@
+from pathlib import Path
+import re
+
+
+def read(path):
+    return Path(path).read_text(encoding='utf-8')
+
+
+def write(path, text):
+    Path(path).write_text(text, encoding='utf-8')
+
+
+def once(text, old, new, label):
+    n = text.count(old)
+    if n != 1:
+        raise SystemExit(f'{label}: expected 1 match, found {n}')
+    return text.replace(old, new, 1)
+
+
+# Shared navigation: course and cohort are explicit, reversible contexts.
+p = 'app/admin_shell.php'
+s = read(p)
+s = once(
+    s,
+    "    'cohorts'=>['Turmas',admin_course_url($activityId,$courseId,'cohorts')],\n    'content'=>['Conteúdo',admin_course_url($activityId,$courseId,'content')],",
+    "    'cohorts'=>['Turmas',admin_course_url($activityId,$courseId,'cohorts')],\n    'students'=>['Alunos',admin_course_url($activityId,$courseId,'students')],\n    'content'=>['Conteúdo',admin_course_url($activityId,$courseId,'content')],",
+    'course students workspace',
+)
+pattern = r"function admin_course_context\(array \$course,int \$activityId,string \$active='overview',\?string \$description=null\): void \{.*?\n\}\nfunction admin_cohort_context\(array \$course,array \$cohort,int \$activityId,string \$active='overview',\?string \$description=null\): void \{.*?\n\}\n"
+replacement = """function admin_course_context(array $course,int $activityId,string $active='overview',?string $description=null): void {
+    $courseId=(int)$course['id'];$coursesUrl=admin_shell_url('/admin/courses.php',['id'=>$activityId]);
+    ?><section class=\"admin-scope-strip admin-workspace-context\" aria-label=\"Curso atual\"><nav class=\"admin-breadcrumb\" aria-label=\"Localização\"><a href=\"<?=h($coursesUrl)?>\">Cursos</a><span aria-hidden=\"true\">›</span><span aria-current=\"page\"><?=h((string)$course['title'])?></span></nav><div class=\"admin-context-heading\"><div><span class=\"admin-scope-label\">Curso</span><h2><?=h((string)$course['title'])?></h2><?php if($description):?><small><?=h($description)?></small><?php endif;?></div><a class=\"admin-context-back\" href=\"<?=h($coursesUrl)?>\">← Todos os cursos</a></div><?php admin_workspace_nav(admin_course_workspace_items($activityId,$courseId),$active,'Áreas do curso');?></section><?php
+}
+function admin_cohort_context(array $course,array $cohort,int $activityId,string $active='overview',?string $description=null): void {
+    $courseId=(int)$course['id'];$cohortId=(int)$cohort['id'];$coursesUrl=admin_shell_url('/admin/courses.php',['id'=>$activityId]);$courseUrl=admin_course_url($activityId,$courseId);$cohortsUrl=admin_course_url($activityId,$courseId,'cohorts');
+    ?><section class=\"admin-scope-strip admin-workspace-context\" aria-label=\"Turma atual\"><nav class=\"admin-breadcrumb\" aria-label=\"Localização\"><a href=\"<?=h($coursesUrl)?>\">Cursos</a><span aria-hidden=\"true\">›</span><a href=\"<?=h($courseUrl)?>\"><?=h((string)$course['title'])?></a><span aria-hidden=\"true\">›</span><a href=\"<?=h($cohortsUrl)?>\">Turmas</a><span aria-hidden=\"true\">›</span><span aria-current=\"page\"><?=h((string)$cohort['title'])?></span></nav><div class=\"admin-context-heading\"><div><span class=\"admin-scope-label\">Turma</span><h2><?=h((string)$cohort['title'])?></h2><?php if($description):?><small><?=h($description)?></small><?php endif;?></div><a class=\"admin-context-back\" href=\"<?=h($cohortsUrl)?>\">← Voltar às turmas</a></div><?php admin_workspace_nav(admin_cohort_workspace_items($activityId,$courseId,$cohortId),$active,'Áreas da turma');?></section><?php
+}
+"""
+s, n = re.subn(pattern, replacement, s, flags=re.S)
+if n != 1:
+    raise SystemExit(f'context functions: expected 1 replacement, got {n}')
+write(p, s)
+
+# Canonical admin CSS: repair malformed declarations and active navigation contrast.
+p = 'assets/admin-system.css'
+s = read(p)
+repairs = {
+    'overflow:autowidth:min(calc(100% - 28px),560px);': 'overflow:auto;width:min(calc(100% - 28px),560px);',
+    'border-top:1px solid var(--admin-line)gap:10px;': 'border-top:1px solid var(--admin-line);gap:10px;',
+    '.compact-groups{display:block;border:0grid-template-columns:repeat(2,minmax(0,1fr))}': '.compact-groups{display:block;border:0}',
+    '.submission-toggle:after{display:nonecontent:"Abrir resposta +";}': '.submission-toggle:after{display:none;content:"Abrir resposta +";}',
+    '.submission-toggle{padding:15px 20pxtext-align:left;}': '.submission-toggle{padding:15px 20px;text-align:left;}',
+    '.media-card-button{position:relativeappearance:none;}': '.media-card-button{position:relative;appearance:none;}',
+    '.admin-nav-links a[aria-current=page]{border-color:var(--admin-ink);background:var(--admin-surface)}': '.admin-nav-links a[aria-current=page]{border-color:var(--admin-ink);background:var(--admin-ink);color:#fff}',
+}
+for old, new in repairs.items():
+    s = once(s, old, new, 'admin-system repair')
+write(p, s)
+
+# Teaching workspace composition: one hierarchy, obvious exits, focused task states.
+p = 'assets/admin-teaching.css'
+s = read(p)
+start = s.index('.admin-workspace-context{')
+end = s.index('.admin-status-tabs span{', start)
+end = s.index('}', end) + 1
+block = """.admin-workspace-context{display:grid;gap:12px;padding:0 0 16px;border-bottom:1px solid var(--admin-line)}
+.admin-breadcrumb{display:flex;align-items:center;gap:7px;min-width:0;color:var(--admin-muted);font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+.admin-breadcrumb a{color:var(--admin-muted);text-underline-offset:3px}
+.admin-breadcrumb span[aria-current=page]{color:var(--admin-ink);font-weight:600}
+.admin-context-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;min-width:0}
+.admin-context-heading>div{display:grid;gap:3px;min-width:0}
+.admin-context-heading h2{margin:0;font-size:clamp(24px,3vw,34px);line-height:1.05;overflow-wrap:anywhere}
+.admin-context-heading small{color:var(--admin-muted);font-size:11px}
+.admin-context-back,.admin-list-return{display:inline-flex;align-items:center;min-height:34px;color:var(--admin-ink);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+.admin-context-back:hover,.admin-list-return:hover{text-decoration:underline;text-underline-offset:3px}
+.admin-workspace-nav,.admin-content-tabs,.admin-status-tabs{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.admin-workspace-nav a,.admin-content-tabs a,.admin-status-tabs a{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:7px 10px;border:1px solid var(--admin-line);border-radius:var(--admin-radius);color:var(--admin-muted);font-size:12px;font-weight:500;text-decoration:none;background:var(--admin-surface)}
+.admin-workspace-nav a[aria-current=page],.admin-content-tabs a[aria-current=page],.admin-status-tabs a[aria-current=page]{border-color:var(--admin-ink);background:var(--admin-ink);color:#fff}
+.admin-status-tabs span{font-variant-numeric:tabular-nums}"""
+s = s[:start] + block + s[end:]
+intro = """.admin-page-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding-bottom:14px;border-bottom:1px solid var(--admin-line)}
+.admin-page-intro>div{display:grid;gap:6px;min-width:0}
+.admin-page-intro h2{margin:0;font-size:clamp(22px,3vw,32px);line-height:1.08}
+.admin-page-intro p{max-width:68ch;margin:0;color:var(--admin-muted);font-size:12px;line-height:1.5}
+.admin-focused-task{width:min(100%,820px)}
+.admin-detail-lead{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 0 14px;border-bottom:1px solid var(--admin-line)}
+.admin-page-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+"""
+s = s.replace('/* Teaching workspace components: courses, lessons and material. */\n', '/* Teaching workspace components: courses, lessons and material. */\n' + intro, 1)
+s = s.replace('  .admin-teaching-detail>header{align-items:flex-start}\n', '  .admin-teaching-detail>header{align-items:flex-start}\n  .admin-context-heading,.admin-page-intro,.admin-detail-lead{align-items:stretch;flex-direction:column}\n  .admin-context-back{width:max-content}\n  .admin-page-actions{justify-content:flex-start}\n', 1)
+write(p, s)
+
+# Shared responsive collection: operational lists become stacked records, not clipped desktop tables.
+p = 'assets/admin-collection-ux.css'
+s = read(p)
+responsive = """
+@media(max-width:700px){
+  .admin-table-scroll:has(.admin-responsive-list){overflow:visible;border:0;background:transparent}
+  .admin-responsive-list{display:block;width:100%;min-width:0}
+  .admin-responsive-list thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .admin-responsive-list tbody{display:grid;gap:10px;width:100%}
+  .admin-responsive-list tr{display:block;width:100%;border:1px solid var(--admin-line);border-radius:var(--admin-radius);background:var(--admin-surface);overflow:hidden}
+  .admin-responsive-list td{display:grid;grid-template-columns:minmax(94px,.36fr) minmax(0,1fr);gap:10px;width:100%;padding:9px 12px;border:0;border-bottom:1px solid var(--admin-line);white-space:normal;overflow-wrap:anywhere}
+  .admin-responsive-list td::before{content:attr(data-label);color:var(--admin-muted);font-size:10px;font-weight:600;line-height:1.35;text-transform:uppercase;letter-spacing:.04em}
+  .admin-responsive-list td[data-primary=true]{display:block;padding:13px 12px;background:#fafaf7}
+  .admin-responsive-list td[data-primary=true]::before,.admin-responsive-list td[data-actions=true]::before{display:none}
+  .admin-responsive-list td[data-actions=true]{display:block;padding:10px 12px;border-bottom:0}
+  .admin-responsive-list td[data-actions=true] .admin-button{width:100%}
+  .admin-responsive-list .admin-table-compact-counts{white-space:normal}
+}
+"""
+if 'admin-responsive-list tbody' not in s:
+    s += responsive
+write(p, s)
+
+# Registrations: focused detail, atomic cohort change, semantic mobile list.
+p = 'admin/registrations.php'
+s = read(p)
+s = once(s, "if($cohortId>0&&!array_filter($cohortOptions,static fn(array $row): bool=>(int)$row['id']===$cohortId))$cohortId=0;", "if($cohortId>0&&!array_filter($cohortOptions,static fn(array $row): bool=>(int)$row['id']===$cohortId)){$_SESSION['admin_registrations_notice']='A turma solicitada não pertence a este curso.';header('Location: '.admin_course_url($activityId,$courseId,'cohorts'),true,302);exit;}", 'registration invalid cohort')
+s = s.replace("admin_shell_start('registrations','Inscrições · '.(string)$course['title']", "admin_shell_start('registrations','Inscrições'", 1)
+s = once(s, "<?php admin_course_context($course,$activityId,'registrations','Entrada e atribuição de turma.');?>\n<nav class=\"admin-status-tabs\"", "<?php admin_course_context($course,$activityId,'registrations','Entrada e atribuição de turma.');?>\n<?php if(!$selected):?>\n<nav class=\"admin-status-tabs\"", 'registration focused start')
+s = once(s, '<div class="admin-pagination"><span>Página <?=$page?> de <?=$pages?></span><?php if($pages>1):?><nav aria-label="Paginação de inscrições"><?php if($page>1):?><a href="<?=h(registration_admin_url($activityId,$courseId,$cohortId,0,$filter,$search,$page-1))?>">← Anterior</a><?php endif;?><?php if($page<$pages):?><a href="<?=h(registration_admin_url($activityId,$courseId,$cohortId,0,$filter,$search,$page+1))?>">Próxima →</a><?php endif;?></nav><?php endif;?></div>\n<?php if($selected):', '<div class="admin-pagination"><span>Página <?=$page?> de <?=$pages?></span><?php if($pages>1):?><nav aria-label="Paginação de inscrições"><?php if($page>1):?><a href="<?=h(registration_admin_url($activityId,$courseId,$cohortId,0,$filter,$search,$page-1))?>">← Anterior</a><?php endif;?><?php if($page<$pages):?><a href="<?=h(registration_admin_url($activityId,$courseId,$cohortId,0,$filter,$search,$page+1))?>">Próxima →</a><?php endif;?></nav><?php endif;?></div>\n<?php endif;?>\n<?php if($selected):', 'registration focused end')
+s = s.replace('<table class="admin-data-table"><thead><tr><th>Pessoa</th><th>Status</th><th>Pagamento</th><th>Turma</th><th>Data</th><th></th></tr></thead>', '<table class="admin-data-table admin-responsive-list"><thead><tr><th>Pessoa</th><th>Status</th><th>Pagamento</th><th>Turma</th><th>Data</th><th></th></tr></thead>', 1)
+s = s.replace('<tr><td><div class="admin-table-primary"><strong><?=h(registration_name($row))?></strong>', '<tr><td data-primary="true" data-label="Pessoa"><div class="admin-table-primary"><strong><?=h(registration_name($row))?></strong>', 1)
+s = s.replace('</div></td><td><?=admin_badge(registration_status_label($row),registration_status_tone($row))?></td><td><?=admin_badge(admin_status_label(\'payment\',$payment),admin_status_tone(\'payment\',$payment))?></td><td><?=h((string)($row[\'cohort_title\']?:\'—\'))?></td><td><?=h(date(\'d/m/Y\',strtotime((string)$row[\'created_at\'])))?></td><td class="actions">', '</div></td><td data-label="Status"><?=admin_badge(registration_status_label($row),registration_status_tone($row))?></td><td data-label="Pagamento"><?=admin_badge(admin_status_label(\'payment\',$payment),admin_status_tone(\'payment\',$payment))?></td><td data-label="Turma"><?=h((string)($row[\'cohort_title\']?:\'—\'))?></td><td data-label="Data"><?=h(date(\'d/m/Y\',strtotime((string)$row[\'created_at\'])))?></td><td data-actions="true" data-label="" class="actions">', 1)
+s = s.replace('<section class="admin-card admin-section-stack admin-operation-detail"><header>', '<section class="admin-card admin-section-stack admin-operation-detail" id="registration-detail"><header>', 1)
+old = """<section class="admin-operation-section"><h3>Turma</h3><?php if((int)($selected['cohort_id']??0)>0):?><p><strong><?=h((string)($selected['cohort_title']?:'Turma definida'))?></strong></p><form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('course-registrations'))?>"><input type="hidden" name="action" value="unassign_cohort"><input type="hidden" name="submission_id" value="<?=(int)$selected['id']?>"><input type="hidden" name="filter_course_id" value="<?=$courseId?>"><input type="hidden" name="filter_cohort_id" value="<?=$cohortId?>"><input type="hidden" name="filter_status" value="<?=h($filter)?>"><input type="hidden" name="search_q" value="<?=h($search)?>"><input type="hidden" name="list_page" value="<?=$page?>"><button class="admin-button secondary" type="submit">Alterar turma</button></form><?php else:?><form class="admin-inline-actions" method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('course-registrations'))?>"><input type="hidden" name="action" value="assign_cohort"><input type="hidden" name="submission_id" value="<?=(int)$selected['id']?>"><input type="hidden" name="filter_course_id" value="<?=$courseId?>"><input type="hidden" name="filter_cohort_id" value="<?=$cohortId?>"><input type="hidden" name="filter_status" value="<?=h($filter)?>"><input type="hidden" name="search_q" value="<?=h($search)?>"><input type="hidden" name="list_page" value="<?=$page?>"><select name="cohort_id" required><option value="">Escolha a turma</option><?php foreach($cohortOptions as $item):?><option value="<?=(int)$item['id']?>"><?=h((string)$item['title'])?></option><?php endforeach;?></select><button class="admin-button" type="submit">Adicionar à turma</button></form><?php endif;?></section>"""
+new = """<section class="admin-operation-section"><h3>Turma</h3><form class="admin-inline-actions" method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('course-registrations'))?>"><input type="hidden" name="action" value="assign_cohort"><input type="hidden" name="submission_id" value="<?=(int)$selected['id']?>"><input type="hidden" name="filter_course_id" value="<?=$courseId?>"><input type="hidden" name="filter_cohort_id" value="<?=$cohortId?>"><input type="hidden" name="filter_status" value="<?=h($filter)?>"><input type="hidden" name="search_q" value="<?=h($search)?>"><input type="hidden" name="list_page" value="<?=$page?>"><select name="cohort_id" required><option value="">Escolha a turma</option><?php foreach($cohortOptions as $item):?><option value="<?=(int)$item['id']?>"<?=(int)($selected['cohort_id']??0)===(int)$item['id']?' selected':''?>><?=h((string)$item['title'])?></option><?php endforeach;?></select><button class="admin-button" type="submit"><?=(int)($selected['cohort_id']??0)>0?'Trocar turma':'Adicionar à turma'?></button></form><?php if((int)($selected['cohort_id']??0)>0):?><form class="admin-block-gap" method="post" data-confirm="Retirar esta inscrição da turma atual? A inscrição continuará preservada."><input type="hidden" name="_csrf" value="<?=h(csrf_token('course-registrations'))?>"><input type="hidden" name="action" value="unassign_cohort"><input type="hidden" name="submission_id" value="<?=(int)$selected['id']?>"><input type="hidden" name="filter_course_id" value="<?=$courseId?>"><input type="hidden" name="filter_cohort_id" value="<?=$cohortId?>"><input type="hidden" name="filter_status" value="<?=h($filter)?>"><input type="hidden" name="search_q" value="<?=h($search)?>"><input type="hidden" name="list_page" value="<?=$page?>"><button class="admin-button secondary" type="submit">Retirar da turma</button></form><?php endif;?></section>"""
+s = once(s, old, new, 'registration atomic cohort')
+write(p, s)
+
+# Students: preserve context and remove duplicate headings.
+p = 'admin/students.php'
+s = read(p)
+s = once(s, "$cohortId=max(0,(int)($_GET['cohort']??$_POST['cohort_id']??0));$cohort=$course&&$cohortId>0?admin_course_cohort($db,$courseId,$cohortId,false):null;if($cohortId>0&&!$cohort){$cohortId=0;}", "$cohortId=max(0,(int)($_GET['cohort']??$_POST['cohort_id']??0));$cohort=$course&&$cohortId>0?admin_course_cohort($db,$courseId,$cohortId,false):null;if($course&&$cohortId>0&&!$cohort){$_SESSION['admin_students_notice']='A turma solicitada não pertence a este curso.';header('Location: '.admin_course_url($activityId,$courseId,'cohorts'),true,302);exit;}", 'students invalid cohort')
+s, n = re.subn(r"admin_shell_start\('students',\$course\?\(\$cohort\?'Alunos · '.+?\):'Alunos',\$state", "admin_shell_start('students','Alunos',$state", s, count=1)
+if n != 1:
+    raise SystemExit('students shell title replacement failed')
+s = s.replace("else admin_course_context($course,$activityId,'cohorts','Alunos matriculados nas turmas deste curso.');", "else admin_course_context($course,$activityId,'students','Alunos matriculados nas turmas deste curso.');", 1)
+old = '<section class="admin-card admin-teaching-detail"><header><div><h2><?=$cohort?h((string)$cohort[\'title\']).\' · Alunos\':\'Alunos do curso\'?></h2><p><?=$total?> matrícula(s) ativa(s) no contexto atual.</p></div><?php if($cohort):?><a class="admin-button" href="<?=h(students_workspace_url($activityId,$courseId,$cohortId,0,\'\',1,[\'import\'=>1]))?>">Importar CSV</a><?php endif;?></header></section>'
+new = '<div class="admin-detail-lead"><span><?=$total?> matrícula(s) ativa(s) no contexto atual.</span><?php if($cohort):?><div class="admin-page-actions"><a class="admin-button" href="<?=h(students_workspace_url($activityId,$courseId,$cohortId,0,\'\',1,[\'import\'=>1]))?>">Importar CSV</a></div><?php endif;?></div>'
+s = once(s, old, new, 'students duplicate heading')
+s = s.replace('<table class="admin-data-table"><thead><tr><th>Aluno</th><th>Conta</th><th>Participações ativas</th><th>Último acesso</th><th></th></tr></thead>', '<table class="admin-data-table admin-responsive-list"><thead><tr><th>Aluno</th><th>Conta</th><th>Participações ativas</th><th>Último acesso</th><th></th></tr></thead>', 1)
+s = s.replace('<tr><td><div class="admin-table-primary"><strong><?=h((string)$row[\'name\'])?></strong><span><?=h((string)$row[\'email\'])?><?=$row[\'cpf_last4\']?\' · ***.\'.h((string)$row[\'cpf_last4\']):\'\'?></span></div></td><td><?=admin_badge(admin_status_label(\'account\',(string)$row[\'status\']),admin_status_tone(\'account\',(string)$row[\'status\']))?>', '<tr><td data-primary="true" data-label="Aluno"><div class="admin-table-primary"><strong><?=h((string)$row[\'name\'])?></strong><span><?=h((string)$row[\'email\'])?><?=$row[\'cpf_last4\']?\' · ***.\'.h((string)$row[\'cpf_last4\']):\'\'?></span></div></td><td data-label="Conta"><?=admin_badge(admin_status_label(\'account\',(string)$row[\'status\']),admin_status_tone(\'account\',(string)$row[\'status\']))?>', 1)
+s = s.replace('</div></td><td class="admin-table-number"><?=(int)$row[\'active_enrollments\']?></td><td><?=h(admin_students_datetime($row[\'last_login_at\']??null))?></td><td class="actions">', '</div></td><td data-label="Participações" class="admin-table-number"><?=(int)$row[\'active_enrollments\']?></td><td data-label="Último acesso"><?=h(admin_students_datetime($row[\'last_login_at\']??null))?></td><td data-actions="true" data-label="" class="actions">', 1)
+s = s.replace('<table class="admin-data-table"><thead><tr><th>Aluno</th><?php if(!$cohort):?><th>Turma</th><?php endif;?><th>Conta</th><th>Último acesso</th><th></th></tr></thead>', '<table class="admin-data-table admin-responsive-list"><thead><tr><th>Aluno</th><?php if(!$cohort):?><th>Turma</th><?php endif;?><th>Conta</th><th>Último acesso</th><th></th></tr></thead>', 1)
+s = s.replace('<tr><td><div class="admin-table-primary"><strong><?=h((string)$row[\'name\'])?></strong><span><?=h((string)$row[\'email\'])?><?=$row[\'cpf_last4\']?\' · ***.\'.h((string)$row[\'cpf_last4\']):\'\'?></span></div></td><?php if(!$cohort):?><td><?=h((string)$row[\'cohort_title\'])?></td><?php endif;?><td><?=$row[\'activated_at\']?admin_badge(\'Ativa\',\'good\'):admin_badge(\'Ativação pendente\',\'attention\')?></td><td><?=h(admin_students_datetime($row[\'last_login_at\']??null))?></td><td class="actions">', '<tr><td data-primary="true" data-label="Aluno"><div class="admin-table-primary"><strong><?=h((string)$row[\'name\'])?></strong><span><?=h((string)$row[\'email\'])?><?=$row[\'cpf_last4\']?\' · ***.\'.h((string)$row[\'cpf_last4\']):\'\'?></span></div></td><?php if(!$cohort):?><td data-label="Turma"><?=h((string)$row[\'cohort_title\'])?></td><?php endif;?><td data-label="Conta"><?=$row[\'activated_at\']?admin_badge(\'Ativa\',\'good\'):admin_badge(\'Ativação pendente\',\'attention\')?></td><td data-label="Último acesso"><?=h(admin_students_datetime($row[\'last_login_at\']??null))?></td><td data-actions="true" data-label="" class="actions">', 1)
+write(p, s)
+
+# People: deep links retain course and show cohort names rather than internal ids.
+p = 'admin/people.php'
+s = read(p)
+s = once(s, "SELECT s.id,s.status,s.payment_status,s.created_at,s.course_id,s.cohort_id,c.title course_title,f.title form_title FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id LEFT JOIN courses c ON c.id=s.course_id", "SELECT s.id,s.status,s.payment_status,s.created_at,s.course_id,s.cohort_id,c.title course_title,cc.title cohort_title,f.title form_title FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id LEFT JOIN courses c ON c.id=s.course_id LEFT JOIN course_cohorts cc ON cc.id=s.cohort_id", 'people cohort title query')
+s = s.replace("['activity'=>$activityId,'submission'=>(int)$row['source_submission_id']]", "['activity'=>$activityId,'course'=>(int)$row['course_id'],'submission'=>(int)$row['source_submission_id']]", 1)
+s = s.replace("<?=((int)($row['cohort_id']??0)>0)?'#'.(int)$row['cohort_id']:'Não definida'?>", "<?=h((string)($row['cohort_title']?:'Não definida'))?>", 1)
+s = s.replace("['activity'=>$activityId,'submission'=>(int)$row['id']]", "['activity'=>$activityId,'course'=>(int)$row['course_id'],'submission'=>(int)$row['id']]", 1)
+write(p, s)
+
+# Cohort-scoped teaching pages never silently broaden context.
+for p, var, notice in [
+    ('admin/questions.php', 'admin_questions_notice', 'A turma solicitada não pertence a este curso.'),
+    ('admin/tests.php', 'admin_tests_notice', 'A turma solicitada não pertence a este curso.'),
+]:
+    s = read(p)
+    s = once(s, "if($cohortId>0&&!$cohort){$cohortId=0;}", f"if($cohortId>0&&!$cohort){{$_SESSION['{var}']='{notice}';header('Location: '.admin_course_url($activityId,$courseId,'cohorts'),true,302);exit;}}", f'{p} invalid cohort')
+    write(p, s)
+
+# Questions mobile list + concise shell title.
+p = 'admin/questions.php'
+s = read(p)
+s, n = re.subn(r"admin_shell_start\('questions','Dúvidas · '.+?,\$state", "admin_shell_start('questions','Dúvidas',$state", s, count=1)
+if n != 1:
+    raise SystemExit('questions shell title replacement failed')
+s = s.replace('<table class="admin-data-table"><thead><tr><th>Dúvida</th><th>Aluno<?php if(!$cohort):?> / turma<?php endif;?></th><th>Status</th><th>Respostas</th><th></th></tr></thead>', '<table class="admin-data-table admin-responsive-list"><thead><tr><th>Dúvida</th><th>Aluno<?php if(!$cohort):?> / turma<?php endif;?></th><th>Status</th><th>Respostas</th><th></th></tr></thead>', 1)
+s = s.replace('<tr><td><div class="admin-table-primary"><strong><?=h((string)$row[\'title\'])?></strong>', '<tr><td data-primary="true" data-label="Dúvida"><div class="admin-table-primary"><strong><?=h((string)$row[\'title\'])?></strong>', 1)
+s = s.replace('</span></div></td><td><div class="admin-table-primary"><strong><?=h((string)$row[\'student_name\'])?></strong>', '</span></div></td><td data-label="Aluno"><div class="admin-table-primary"><strong><?=h((string)$row[\'student_name\'])?></strong>', 1)
+s = s.replace('</div></td><td><?=admin_badge((string)$row[\'status\']===\'resolved\'?\'Resolvida\':\'Aberta\'', '</div></td><td data-label="Status"><?=admin_badge((string)$row[\'status\']===\'resolved\'?\'Resolvida\':\'Aberta\'', 1)
+s = s.replace('</td><td class="admin-table-number"><?=(int)$row[\'message_count\']?></td><td class="actions">', '</td><td data-label="Respostas" class="admin-table-number"><?=(int)$row[\'message_count\']?></td><td data-actions="true" data-label="" class="actions">', 1)
+write(p, s)
+
+# Tests: state-driven transitions and mobile list.
+p = 'admin/tests.php'
+s = read(p)
+s, n = re.subn(r"admin_shell_start\('tests','Testes · '.+?,\$state", "admin_shell_start('tests','Testes',$state", s, count=1)
+if n != 1:
+    raise SystemExit('tests shell title replacement failed')
+s = once(s, "<?php foreach(['needs_revision'=>'Solicitar ajustes','reviewed'=>'Marcar como revisado','submitted'=>'Voltar para avaliação'] as $value=>$label):?>", "<?php $currentReview=(string)$selectedTest['status'];$reviewTransitions=match($currentReview){'submitted'=>['needs_revision'=>'Solicitar ajustes','reviewed'=>'Marcar como revisado'],'needs_revision'=>['submitted'=>'Voltar para avaliação','reviewed'=>'Marcar como revisado'],'reviewed'=>['submitted'=>'Reabrir avaliação'],default=>[]};foreach($reviewTransitions as $value=>$label):?>", 'test transitions')
+s = s.replace('<table class="admin-data-table"><thead><tr><th>Teste</th><th>Aluno<?php if(!$cohort):?> / turma<?php endif;?></th><th>Visibilidade</th><th>Estado</th><th></th></tr></thead>', '<table class="admin-data-table admin-responsive-list"><thead><tr><th>Teste</th><th>Aluno<?php if(!$cohort):?> / turma<?php endif;?></th><th>Visibilidade</th><th>Estado</th><th></th></tr></thead>', 1)
+s = s.replace('<tr><td><div class="admin-table-primary"><strong><?=h((string)$test[\'title\'])?></strong>', '<tr><td data-primary="true" data-label="Teste"><div class="admin-table-primary"><strong><?=h((string)$test[\'title\'])?></strong>', 1)
+s = s.replace('</span></div></td><td><div class="admin-table-primary"><strong><?=h((string)$test[\'student_name\'])?></strong>', '</span></div></td><td data-label="Aluno"><div class="admin-table-primary"><strong><?=h((string)$test[\'student_name\'])?></strong>', 1)
+s = s.replace('</div></td><td><?=h(student_test_visibility_label', '</div></td><td data-label="Visibilidade"><?=h(student_test_visibility_label', 1)
+s = s.replace('</td><td><?=admin_badge(student_test_status_label', '</td><td data-label="Estado"><?=admin_badge(student_test_status_label', 1)
+s = s.replace('</td><td class="actions"><a class="admin-button secondary admin-table-action" href="<?=h(admin_tests_url', '</td><td data-actions="true" data-label="" class="actions"><a class="admin-button secondary admin-table-action" href="<?=h(admin_tests_url', 1)
+write(p, s)
+
+# Material collection is operational on mobile; detail already has an explicit return.
+p = 'admin/material.php'
+s = read(p)
+s = s.replace("admin_shell_start('material','Conteúdo · Material'", "admin_shell_start('material','Material'", 1)
+s = s.replace('<table class="admin-data-table"><thead><tr><th>Página</th><th>Status</th><th>Idioma</th><th></th></tr></thead>', '<table class="admin-data-table admin-responsive-list"><thead><tr><th>Página</th><th>Status</th><th>Idioma</th><th></th></tr></thead>', 1)
+s = s.replace('<tr><td><div class="admin-table-primary"><strong><?=h((string)$row[\'title\'])?></strong></div></td><td><?=admin_badge', '<tr><td data-primary="true" data-label="Página"><div class="admin-table-primary"><strong><?=h((string)$row[\'title\'])?></strong></div></td><td data-label="Status"><?=admin_badge', 1)
+s = s.replace('</td><td><?=h(public_language_label((string)$row[\'locale\']))?></td><td class="actions">', '</td><td data-label="Idioma"><?=h(public_language_label((string)$row[\'locale\']))?></td><td data-actions="true" data-label="" class="actions">', 1)
+write(p, s)
+
+# Concise lesson shell title; course/cohort context carries the name.
+p = 'admin/lessons.php'
+s = read(p)
+s = once(s, "admin_shell_start('lessons',$cohort?'Aulas e acesso · '.(string)$cohort['title']:'Conteúdo · Aulas'", "admin_shell_start('lessons',$cohort?'Aulas e acesso':'Aulas'", 'lessons shell title')
+write(p, s)
+
+print('admin product repair transformations complete')
