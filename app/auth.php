@@ -1,0 +1,3 @@
+<?php
+declare(strict_types=1);
+function current_admin():?array{return $_SESSION['admin']??null;} function require_admin():void{if(!current_admin()){header('Location: /admin/login.php',true,303);exit;}} function admin_login(string $email,string $password):bool{$q=database()->prepare('SELECT * FROM admin_users WHERE email=?');$q->execute([strtolower(trim($email))]);$u=$q->fetch();if(!$u||!password_verify($password,$u['password_hash']))return false;session_regenerate_id(true);$_SESSION['admin']=['id'=>(int)$u['id'],'email'=>$u['email']];database()->prepare('UPDATE admin_users SET last_login_at=?,updated_at=? WHERE id=?')->execute([utc_now(),utc_now(),$u['id']]);return true;}

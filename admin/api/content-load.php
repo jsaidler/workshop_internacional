@@ -1,0 +1,2 @@
+<?php
+require __DIR__.'/../../app/bootstrap.php';require_admin();header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: no-store');$a=admin_activity(database());$row=content_current(database(),(int)$a['id']);echo json_encode(['document'=>content_for_draft(database(),(int)$a['id']),'meta'=>content_metadata($row),'csrf'=>csrf_token('content'),'activity'=>$a],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);

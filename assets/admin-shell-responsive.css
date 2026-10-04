@@ -1,0 +1,83 @@
+/* --------------------------------------------------------------------------
+   Admin shell responsive authority
+   -------------------------------------------------------------------------- */
+@media(max-width:800px){
+  body.admin-page .admin-mobile-header{
+    position:sticky;
+    top:0;
+    z-index:60;
+  }
+  body.admin-page .admin-sidebar{
+    position:fixed;
+    inset:52px auto 0 0;
+    z-index:50;
+    display:none;
+    width:min(320px,88vw);
+    height:auto;
+    padding:16px;
+    overflow-y:auto;
+  }
+  body.admin-page .admin-sidebar.is-open{display:flex}
+  body.admin-page .admin-main{
+    width:100%;
+    max-width:none;
+    min-width:0;
+    margin-left:0;
+    padding-top:0;
+  }
+  body.admin-page .admin-toolbar{
+    position:static;
+    top:auto;
+  }
+  body.admin-page .admin-nav{
+    gap:16px;
+    margin:16px 0;
+  }
+  body.admin-page .admin-content{
+    min-width:0;
+    gap:24px;
+  }
+
+  /* The viewport owns page width. Wide data belongs inside its local scroller. */
+  body.admin-page .admin-content>*,
+  body.admin-page .admin-section-stack,
+  body.admin-page .admin-card,
+  body.admin-page .admin-stat,
+  body.admin-page .admin-table-scroll{
+    min-width:0;
+    max-width:100%;
+  }
+  body.admin-page .admin-section-stack{
+    grid-template-columns:minmax(0,1fr);
+  }
+  body.admin-page .admin-card>header>*{
+    min-width:0;
+    max-width:100%;
+  }
+  body.admin-page .admin-card>header p,
+  body.admin-page .admin-stat span,
+  body.admin-page .admin-stat strong{
+    overflow-wrap:anywhere;
+  }
+  body.admin-page .admin-table-scroll{
+    width:100%;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+  }
+}
+@media(max-width:520px){
+  body.admin-page .admin-content{width:calc(100% - 20px)}
+  body.admin-page .admin-card>header{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  body.admin-page .admin-card>header>.admin-card-actions,
+  body.admin-page .admin-card>header>form{
+    width:100%;
+    margin:0;
+  }
+  body.admin-page .admin-card>header>.admin-card-actions .admin-button,
+  body.admin-page .admin-card>header>form>.admin-button{
+    width:100%;
+  }
+}

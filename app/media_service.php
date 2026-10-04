@@ -1,0 +1,218 @@
+<?php
+declare(strict_types=1);
+
+const MEDIA_IMAGE_WIDTHS=[320,480,768,1024,1440,1920];
+const MEDIA_UPLOAD_MAX_BYTES=134217728;
+const MEDIA_POSTER_MAX_BYTES=10485760;
+const MEDIA_IMAGE_MAX_PIXELS=40000000;
+
+function media_upload_root():string{return dirname(__DIR__).'/uploads/media';}
+function media_url(string $path):string{return '/uploads/media/'.ltrim(str_replace('\\','/',$path),'/');}
+function media_video_url(int $assetId,int $versionId,string $path):string{if(str_starts_with($path,'../../assets/media/'))return '/assets/media/'.rawurlencode(basename($path));return '/media-stream.php?asset='.rawurlencode((string)$assetId).'&version='.rawurlencode((string)$versionId);}
+function media_ini_bytes(string $value):int{$value=trim($value);if($value===''||$value==='-1')return PHP_INT_MAX;$number=(float)$value;$unit=strtolower(substr($value,-1));return (int)round($number*match($unit){'g'=>1024**3,'m'=>1024**2,'k'=>1024,default=>1});}
+function media_effective_upload_limit():int{$multipartMargin=1024*1024;return max(1,min(MEDIA_UPLOAD_MAX_BYTES,media_ini_bytes((string)ini_get('upload_max_filesize')),max(1,media_ini_bytes((string)ini_get('post_max_size'))-$multipartMargin)));}
+function media_webp_supported():bool{if(function_exists('imagewebp'))return true;if(extension_loaded('imagick')){try{return count(Imagick::queryFormats('WEBP'))>0;}catch(Throwable){return false;}}return false;}
+function media_capabilities():array{return ['imagick'=>extension_loaded('imagick'),'gd'=>extension_loaded('gd'),'webp'=>media_webp_supported(),'upload_max'=>ini_get('upload_max_filesize'),'post_max'=>ini_get('post_max_size'),'memory_limit'=>ini_get('memory_limit'),'effective_upload_max_bytes'=>media_effective_upload_limit()];}
+function media_mime_extension(string $mime):?string{return ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp','video/mp4'=>'mp4','video/webm'=>'webm'][$mime]??null;}
+function media_mkdir(string $dir):void{if(!is_dir($dir)&&!mkdir($dir,0755,true)&&!is_dir($dir))throw new RuntimeException('storage_unavailable');}
+function media_storage_available(): bool {
+    try { media_mkdir(media_upload_root()); }
+    catch (Throwable) { return false; }
+    $probe=@tempnam(media_upload_root(),'health-');
+    if($probe===false)return false;
+    $ok=@file_put_contents($probe,'ok',LOCK_EX)!==false;
+    @unlink($probe);
+    return $ok;
+}
+function media_remove_tree(string $dir):void{if(!is_dir($dir))return;foreach(scandir($dir)?:[] as $item){if($item==='.'||$item==='..')continue;$path=$dir.'/'.$item;if(is_dir($path))media_remove_tree($path);else @unlink($path);}@rmdir($dir);}
+
+function media_image_dimensions(string $file):array{
+    $info=@getimagesize($file);
+    if(!$info||$info[0]<1||$info[1]<1||(int)$info[0]*(int)$info[1]>MEDIA_IMAGE_MAX_PIXELS)throw new RuntimeException('invalid_image_dimensions');
+    return [(int)$info[0],(int)$info[1]];
+}
+function media_image_decoder(string $mime):callable{return match($mime){'image/jpeg'=>'imagecreatefromjpeg','image/png'=>'imagecreatefrompng','image/webp'=>function(string $path){return function_exists('imagecreatefromwebp')?@imagecreatefromwebp($path):false;},default=>throw new RuntimeException('unsupported_image')};}
+function media_gd_orient($image,string $file,string $mime):array{
+    if($mime!=='image/jpeg'||!function_exists('exif_read_data'))return [$image,imagesx($image),imagesy($image)];
+    $orientation=(int)((@exif_read_data($file,'IFD0',true,false)['IFD0']['Orientation']??1));
+    if($orientation===2)imageflip($image,IMG_FLIP_HORIZONTAL);
+    elseif($orientation===3)$image=imagerotate($image,180,0);
+    elseif($orientation===4)imageflip($image,IMG_FLIP_VERTICAL);
+    elseif($orientation===5){$image=imagerotate($image,-90,0);imageflip($image,IMG_FLIP_HORIZONTAL);}
+    elseif($orientation===6)$image=imagerotate($image,-90,0);
+    elseif($orientation===7){$image=imagerotate($image,90,0);imageflip($image,IMG_FLIP_HORIZONTAL);}
+    elseif($orientation===8)$image=imagerotate($image,90,0);
+    return [$image,imagesx($image),imagesy($image)];
+}
+function media_decode_image(string $file,string $mime):array{
+    [$width,$height]=media_image_dimensions($file);
+    if(extension_loaded('imagick')){
+        try{
+            $sequence=new Imagick($file);
+            if($sequence->getNumberImages()>1){
+                $sequence->setIteratorIndex(0);
+                $image=$sequence->getImage();
+                $sequence->clear();
+            }else $image=$sequence;
+            if(method_exists($image,'autoOrientImage'))$image->autoOrientImage();
+            $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
+            // Virtual canvas/page metadata must never survive into the CMS
+            // derivative pipeline. It can make a valid raster render as a
+            // narrow strip inside a much larger transparent canvas.
+            $image->setImagePage(0,0,0,0);
+            return ['engine'=>'imagick','image'=>$image,'width'=>$image->getImageWidth(),'height'=>$image->getImageHeight(),'alpha'=>(bool)$image->getImageAlphaChannel(),'mime'=>$mime];
+        }catch(Throwable){throw new RuntimeException('image_decode_failed');}
+    }
+    if(!extension_loaded('gd'))throw new RuntimeException('image_engine_unavailable');
+    $decoder=media_image_decoder($mime);$image=$decoder($file);if(!$image)throw new RuntimeException('image_decode_failed');
+    [$image,$width,$height]=media_gd_orient($image,$file,$mime);
+    $alpha=$mime==='image/png'||$mime==='image/webp'?media_gd_has_alpha($image,$width,$height):false;
+    return ['engine'=>'gd','image'=>$image,'width'=>$width,'height'=>$height,'alpha'=>$alpha,'mime'=>$mime];
+}
+function media_gd_has_alpha(GdImage $image,int $width,int $height):bool{
+    if(imagecolortransparent($image)>=0)return true;
+    for($y=0;$y<$height;$y+=max(1,(int)floor($height/240)))for($x=0;$x<$width;$x+=max(1,(int)floor($width/240))){if(((imagecolorat($image,$x,$y)>>24)&0x7f)>0)return true;}
+    return false;
+}
+function media_source_has_transparency(array $source):bool{
+    if(($source['engine']??'')==='imagick'){
+        if(empty($source['alpha']))return false;
+        try{
+            $range=Imagick::getQuantumRange();$max=(float)($range['quantumRangeLong']??$range['quantumRangeString']??65535);
+            $extrema=$source['image']->getImageChannelExtrema(Imagick::CHANNEL_ALPHA);$min=(float)($extrema['minima']??$extrema['min']??$max);
+            return $min<$max;
+        }catch(Throwable){return true;}
+    }
+    if(($source['engine']??'')==='gd')return media_gd_has_alpha($source['image'],(int)$source['width'],(int)$source['height']);
+    return false;
+}
+function media_release_image(?array $source):void{if(!$source)return;if($source['engine']==='imagick')$source['image']->clear();else imagedestroy($source['image']);}
+function media_preserve_lossless(string $mime,bool $alpha):bool{return $alpha||$mime==='image/png';}
+function media_image_derivative_formats(string $mime,bool $alpha,bool $webp):array{
+    if($mime==='image/png')return $webp?['png','webp']:['png'];
+    if($mime==='image/webp')return $alpha?($webp?['webp','png']:['png']):($webp?['webp']:[]);
+    $formats=['jpeg'];if($webp)$formats[]='webp';return $formats;
+}
+function media_primary_derivative_format(string $mime,array $available):?string{
+    $preferences=match($mime){'image/png'=>['png'],'image/webp'=>['webp'],default=>['webp','jpeg']};
+    foreach($preferences as $format)if(in_array($format,$available,true))return $format;
+    return null;
+}
+function media_safe_file(array $file):array{
+    if(($file['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK)throw new RuntimeException('upload_failed');
+    if(!is_file((string)($file['tmp_name']??''))||($file['size']??0)<1)throw new RuntimeException('empty_or_missing_file');
+    if((int)$file['size']>MEDIA_UPLOAD_MAX_BYTES)throw new RuntimeException('file_too_large');
+    $mime=(new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name'])?:'';$extension=media_mime_extension($mime);
+    if($extension===null)throw new RuntimeException('unsupported_or_invalid_file');
+    if(strtolower((string)pathinfo((string)($file['name']??''),PATHINFO_EXTENSION))!==$extension)throw new RuntimeException('extension_mime_mismatch');
+    $kind=str_starts_with($mime,'video/')?'video':'image';
+    if($kind==='image'){ $source=media_decode_image($file['tmp_name'],$mime);media_release_image($source); }
+    return [$mime,$kind,$extension];
+}
+function media_write_image(array $source,int $width,int $height,string $format,string $path):void{
+    $transparent=media_source_has_transparency($source);
+    $preserve=media_preserve_lossless((string)($source['mime']??''),$transparent);
+    if($format==='jpeg'&&$preserve)throw new RuntimeException('lossy_format_not_allowed');
+    if($source['engine']==='imagick'){
+        $image=clone $source['image'];
+        try{
+            $image->setImagePage(0,0,0,0);
+            if($preserve){
+                $image->setImageBackgroundColor(new ImagickPixel('transparent'));
+                if(method_exists($image,'setImageAlphaChannel'))$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
+            }
+            // The target dimensions have already been calculated from the
+            // source aspect ratio. Resize to that exact raster and reset page
+            // geometry again so no ImageMagick virtual canvas can leak out.
+            $image->resizeImage($width,$height,Imagick::FILTER_LANCZOS,1,false);
+            $image->setImagePage(0,0,0,0);
+            if($image->getImageWidth()!==$width||$image->getImageHeight()!==$height)throw new RuntimeException('derivative_dimension_mismatch');
+            if($format==='jpeg'){
+                $image->setImageFormat('jpeg');$image->setImageCompressionQuality(86);
+            }elseif($format==='png'){
+                $image->setImageFormat('png');
+                if(method_exists($image,'setImageAlphaChannel')&&$preserve)$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
+                $image->setOption('png:compression-level','9');
+            }elseif($format==='webp'){
+                $image->setImageFormat('webp');
+                if($preserve){if(method_exists($image,'setImageAlphaChannel'))$image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);$image->setOption('webp:lossless','true');$image->setOption('webp:alpha-quality','100');$image->setImageCompressionQuality(100);}else $image->setImageCompressionQuality(84);
+            }else throw new RuntimeException('unsupported_derivative_format');
+            if(!$image->writeImage($path))throw new RuntimeException('derivative_write_failed');
+        }finally{$image->clear();}
+        return;
+    }
+    if(($source['engine']??'')!=='gd')throw new RuntimeException('image_engine_unavailable');
+    $out=imagecreatetruecolor($width,$height);
+    if(in_array($format,['png','webp'],true)){
+        imagealphablending($out,false);imagesavealpha($out,true);$transparentColor=imagecolorallocatealpha($out,0,0,0,127);imagefill($out,0,0,$transparentColor);
+    }else imagefill($out,0,0,imagecolorallocate($out,255,255,255));
+    imagecopyresampled($out,$source['image'],0,0,0,0,$width,$height,$source['width'],$source['height']);
+    if(in_array($format,['png','webp'],true)){imagealphablending($out,false);imagesavealpha($out,true);}
+    $ok=match($format){'jpeg'=>imagejpeg($out,$path,86),'png'=>imagepng($out,$path,9),'webp'=>function_exists('imagewebp')&&imagewebp($out,$path,$preserve?100:84),default=>false};
+    imagedestroy($out);if(!$ok)throw new RuntimeException('derivative_write_failed');
+}
+function media_verify_image_derivative(string $path,string $mime,int $width,int $height,bool $requireTransparency=false):void{
+    if(!is_file($path)||filesize($path)<1)throw new RuntimeException('derivative_write_failed');
+    [$actualWidth,$actualHeight]=media_image_dimensions($path);
+    if($actualWidth!==$width||$actualHeight!==$height)throw new RuntimeException('derivative_dimension_mismatch');
+    if(extension_loaded('imagick')){
+        try{
+            $probe=new Imagick($path);if($probe->getNumberImages()>1)$probe->setIteratorIndex(0);$page=$probe->getImagePage();
+            $pageWidth=(int)($page['width']??0);$pageHeight=(int)($page['height']??0);$pageX=(int)($page['x']??0);$pageY=(int)($page['y']??0);
+            $probe->clear();
+            if(($pageWidth!==0&&$pageWidth!==$width)||($pageHeight!==0&&$pageHeight!==$height)||$pageX!==0||$pageY!==0)throw new RuntimeException('derivative_virtual_canvas_mismatch');
+        }catch(RuntimeException $e){throw $e;}catch(Throwable){throw new RuntimeException('derivative_decode_failed');}
+    }
+    if($requireTransparency){$check=media_decode_image($path,$mime);try{if(!media_source_has_transparency($check))throw new RuntimeException('alpha_channel_lost');}finally{media_release_image($check);}}
+}
+function media_generate_images(PDO $db,int $versionId,string $relative,string $mime):void{
+    $source=media_decode_image(media_upload_root().'/'.$relative,$mime);$base=dirname(dirname($relative));$dir=media_upload_root().'/'.$base.'/responsive';$created=[];
+    try{
+        media_mkdir($dir);$transparent=media_source_has_transparency($source);$formats=media_image_derivative_formats($mime,$transparent,media_webp_supported());
+        if(!$formats)throw new RuntimeException('image_format_not_supported');
+        foreach(MEDIA_IMAGE_WIDTHS as $target){
+            if($target>$source['width'])continue;$height=(int)round($source['height']*$target/$source['width']);
+            foreach($formats as $format){
+                $extension=$format==='jpeg'?'jpg':$format;$relativePath=$base.'/responsive/'.$target.'.'.$extension;$absolute=media_upload_root().'/'.$relativePath;$mimeType=$format==='jpeg'?'image/jpeg':'image/'.$format;
+                media_write_image($source,$target,$height,$format,$absolute);
+                media_verify_image_derivative($absolute,$mimeType,$target,$height,$transparent&&in_array($format,['png','webp'],true));
+                $db->prepare('INSERT INTO media_derivatives(version_id,derivative_kind,width,height,format,mime_type,path,byte_size,checksum,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)')->execute([$versionId,'responsive',$target,$height,$format,$mimeType,$relativePath,filesize($absolute),hash_file('sha256',$absolute),gmdate('c')]);
+                $created[]=$absolute;
+            }
+        }
+    }catch(Throwable $e){foreach($created as $file)@unlink($file);throw $e;}finally{media_release_image($source);}
+}
+function media_create(PDO $db,array $file,?int $replaceAsset=null):array{
+    [$mime,$kind,$extension]=media_safe_file($file);$now=gmdate('c');$checksum=hash_file('sha256',$file['tmp_name']);[$width,$height]=$kind==='image'?media_image_dimensions($file['tmp_name']):[null,null];$assetUuid=bin2hex(random_bytes(16));$versionUuid=bin2hex(random_bytes(16));$newAsset=$replaceAsset===null;$assetId=0;$versionRoot='';
+    $db->beginTransaction();
+    try{
+        if($replaceAsset!==null){$q=$db->prepare('SELECT * FROM media_assets WHERE id=?');$q->execute([$replaceAsset]);$existing=$q->fetch();if(!$existing)throw new RuntimeException('asset_not_found');if($existing['kind']!==$kind)throw new RuntimeException('asset_type_mismatch');$assetId=(int)$existing['id'];$assetUuid=$existing['asset_uuid'];}
+        else{$q=$db->prepare('INSERT INTO media_assets(asset_uuid,kind,title,original_name,mime_type,byte_size,width,height,checksum,processing_status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,"processing",?,?)');$q->execute([$assetUuid,$kind,pathinfo((string)$file['name'],PATHINFO_FILENAME),(string)$file['name'],$mime,(int)$file['size'],$width,$height,$checksum,$now,$now]);$assetId=(int)$db->lastInsertId();}
+        $relative=$assetUuid.'/'.$versionUuid.'/original/file.'.$extension;$destination=media_upload_root().'/'.$relative;$versionRoot=dirname(dirname($destination));media_mkdir(dirname($destination));if(!move_uploaded_file($file['tmp_name'],$destination))throw new RuntimeException('storage_write_failed');
+        $q=$db->prepare('INSERT INTO media_versions(asset_id,version_uuid,original_path,mime_type,byte_size,width,height,checksum,processing_status,created_at) VALUES(?,?,?,?,?,?,?, ?,"processing",?)');$q->execute([$assetId,$versionUuid,$relative,$mime,(int)$file['size'],$width,$height,$checksum,$now]);$versionId=(int)$db->lastInsertId();
+        if($kind==='image')media_generate_images($db,$versionId,$relative,$mime);
+        $db->prepare('UPDATE media_versions SET processing_status="ready" WHERE id=?')->execute([$versionId]);$db->prepare('UPDATE media_assets SET title=?,original_name=?,mime_type=?,byte_size=?,width=?,height=?,checksum=?,active_version_id=?,processing_status="ready",updated_at=? WHERE id=?')->execute([pathinfo((string)$file['name'],PATHINFO_FILENAME),(string)$file['name'],$mime,(int)$file['size'],$width,$height,$checksum,$versionId,$now,$assetId]);
+        $db->commit();return media_asset($db,$assetId);
+    }catch(Throwable $e){if($db->inTransaction())$db->rollBack();if($versionRoot!=='')media_remove_tree($versionRoot);if($newAsset)media_remove_tree(media_upload_root().'/'.$assetUuid);throw $e;}
+}
+function media_derivatives(PDO $db,int $versionId):array{$q=$db->prepare('SELECT * FROM media_derivatives WHERE version_id=? ORDER BY width,format');$q->execute([$versionId]);return array_map(fn($row)=>['id'=>(int)$row['id'],'kind'=>$row['derivative_kind'],'width'=>(int)$row['width'],'height'=>(int)$row['height'],'format'=>$row['format'],'mimeType'=>$row['mime_type']??($row['format']==='jpeg'?'image/jpeg':'image/'.$row['format']),'path'=>$row['path'],'sizeBytes'=>(int)$row['byte_size'],'checksum'=>$row['checksum']??'','src'=>media_url($row['path'])],$q->fetchAll());}
+function media_version_rows(PDO $db,int $assetId):array{$q=$db->prepare('SELECT * FROM media_versions WHERE asset_id=? ORDER BY id DESC');$q->execute([$assetId]);return array_map(fn($row)=>['id'=>(int)$row['id'],'versionUuid'=>$row['version_uuid'],'mimeType'=>$row['mime_type'],'width'=>$row['width']===null?null:(int)$row['width'],'height'=>$row['height']===null?null:(int)$row['height'],'duration'=>$row['duration']===null?null:(float)$row['duration'],'sizeBytes'=>(int)$row['byte_size'],'checksum'=>$row['checksum'],'status'=>$row['processing_status'],'createdAt'=>$row['created_at'],'url'=>media_url($row['original_path']),'derivatives'=>media_derivatives($db,(int)$row['id'])],$q->fetchAll());}
+function media_poster_rows(PDO $db,int $versionId):array{$q=$db->prepare('SELECT p.id,p.poster_uuid,p.timestamp_seconds,p.created_at,v.id variant_id,v.variant_key,v.width,v.height,v.format,v.mime_type,v.path,v.size_bytes,v.checksum FROM media_posters p LEFT JOIN media_poster_variants v ON v.poster_id=p.id WHERE p.video_version_id=? ORDER BY p.id DESC,v.width DESC,v.format ASC');$q->execute([$versionId]);$posters=[];foreach($q->fetchAll() as $row){$id=(int)$row['id'];if(!isset($posters[$id]))$posters[$id]=['id'=>$id,'posterUuid'=>$row['poster_uuid'],'timestamp'=>(float)$row['timestamp_seconds'],'createdAt'=>$row['created_at'],'variants'=>[]];if($row['variant_id']!==null)$posters[$id]['variants'][]=['key'=>$row['variant_key'],'format'=>$row['format'],'mimeType'=>$row['mime_type'],'width'=>(int)$row['width'],'height'=>(int)$row['height'],'path'=>$row['path'],'sizeBytes'=>(int)$row['size_bytes'],'checksum'=>$row['checksum'],'src'=>media_url($row['path'])];}return array_values($posters);}
+function media_poster_url(PDO $db,?int $assetId,?int $versionId,?int $posterId,string $fallback):string{if(!$assetId||!$versionId||!$posterId)return $fallback;$q=$db->prepare('SELECT v.path FROM media_posters p JOIN media_poster_variants v ON v.poster_id=p.id WHERE p.id=? AND p.video_asset_id=? AND p.video_version_id=? ORDER BY CASE v.format WHEN "jpeg" THEN 0 WHEN "webp" THEN 1 ELSE 2 END,v.width DESC LIMIT 1');$q->execute([$posterId,$assetId,$versionId]);$path=$q->fetchColumn();return is_string($path)&&$path!==''?media_url($path):$fallback;}
+function media_asset(PDO $db,int $id):array{$q=$db->prepare('SELECT a.*,v.original_path,v.version_uuid,v.processing_status version_processing_status FROM media_assets a LEFT JOIN media_versions v ON v.id=a.active_version_id WHERE a.id=?');$q->execute([$id]);$a=$q->fetch();if(!$a)throw new RuntimeException('asset_not_found');$a['id']=(int)$a['id'];$a['active_version_id']=$a['active_version_id']===null?null:(int)$a['active_version_id'];$a['derivatives']=$a['active_version_id']?media_derivatives($db,$a['active_version_id']):[];$a['versions']=media_version_rows($db,$a['id']);$a['url']=$a['kind']==='video'?media_video_url($a['id'],(int)$a['active_version_id'],(string)$a['original_path']):media_url((string)$a['original_path']);$a['posters']=$a['kind']==='video'?media_poster_rows($db,(int)$a['active_version_id']):[];if($a['posters']){$poster=$a['posters'][0];$variants=$poster['variants'];$jpeg=array_values(array_filter($variants,fn($v)=>$v['format']==='jpeg'));$variant=$jpeg[0]??$variants[0]??null;$a['poster']=$variant?['id'=>$poster['id'],'timestamp'=>$poster['timestamp'],'createdAt'=>$poster['createdAt'],'src'=>$variant['src'],'mimeType'=>$variant['mimeType']]:null;}else $a['poster']=null;return $a;}
+function media_list(PDO $db):array{$rows=$db->query('SELECT id FROM media_assets WHERE archived_at IS NULL ORDER BY id DESC')->fetchAll();return array_map(fn($r)=>media_asset($db,(int)$r['id']),$rows);}
+function media_image_sources(PDO $db,?int $assetId,?int $versionId,string $fallback):array{
+    if(!$assetId||!$versionId)return ['src'=>$fallback,'srcset'=>''];
+    $q=$db->prepare('SELECT a.kind,v.original_path,v.mime_type FROM media_assets a JOIN media_versions v ON v.asset_id=a.id WHERE a.id=? AND v.id=? AND v.processing_status="ready"');$q->execute([$assetId,$versionId]);$row=$q->fetch();
+    if(!$row||$row['kind']!=='image')return ['src'=>$fallback,'srcset'=>''];
+    $derivatives=media_derivatives($db,$versionId);$available=array_values(array_unique(array_column($derivatives,'format')));$format=media_primary_derivative_format((string)$row['mime_type'],$available);
+    if($format===null)return ['src'=>media_url((string)$row['original_path']),'srcset'=>''];
+    $primary=array_values(array_filter($derivatives,fn($d)=>$d['format']===$format));
+    if(!$primary)return ['src'=>media_url((string)$row['original_path']),'srcset'=>''];
+    usort($primary,fn($a,$b)=>$a['width']<=>$b['width']);$src=$primary[count($primary)-1]['src'];
+    return ['src'=>$src,'srcset'=>implode(', ',array_map(fn($d)=>$d['src'].' '.$d['width'].'w',$primary))];
+}
+function media_usage(PDO $db,int $assetId):array{$q=$db->query('SELECT a.admin_name,a.slug,c.draft_json,c.published_json FROM activities a JOIN content_documents c ON c.activity_id=a.id ORDER BY a.id');$uses=[];foreach($q->fetchAll() as $row)foreach(['draft_json'=>'Rascunho','published_json'=>'Publicado'] as $column=>$state){$document=json_decode((string)$row[$column],true);foreach(($document['images']??[]) as $element=>$value)if((int)($value['mediaAssetId']??0)===$assetId)$uses[]=['activity'=>$row['admin_name'],'slug'=>$row['slug'],'state'=>$state,'element'=>$element,'versionId'=>(int)($value['mediaVersionId']??0)];} $asset=media_asset($db,$assetId);foreach($uses as &$use)$use['isActiveVersion']=$use['versionId']===$asset['active_version_id'];unset($use);return $uses;}
+function media_poster_source(string $file,string $mime):array{if(extension_loaded('imagick')){$image=new Imagick($file);$image->setImageColorspace(Imagick::COLORSPACE_SRGB);return ['engine'=>'imagick','image'=>$image];}if(!extension_loaded('gd'))throw new RuntimeException('image_engine_unavailable');$image=$mime==='image/jpeg'?@imagecreatefromjpeg($file):@imagecreatefrompng($file);if(!$image)throw new RuntimeException('frame_decode_failed');return ['engine'=>'gd','image'=>$image];}
+function media_write_poster_variant(array $source,int $sourceWidth,int $sourceHeight,int $width,int $height,string $format,string $path):void{if($source['engine']==='imagick'){$image=clone $source['image'];$image->resizeImage($width,$height,Imagick::FILTER_LANCZOS,1);$image->setImageFormat($format==='jpeg'?'jpeg':'webp');$image->setImageCompressionQuality(86);$image->writeImage($path);$image->clear();return;}$out=imagecreatetruecolor($width,$height);$background=imagecolorallocate($out,0,0,0);imagefill($out,0,0,$background);imagecopyresampled($out,$source['image'],0,0,0,0,$width,$height,$sourceWidth,$sourceHeight);$ok=$format==='jpeg'?imagejpeg($out,$path,86):(function_exists('imagewebp')&&imagewebp($out,$path,84));imagedestroy($out);if(!$ok)throw new RuntimeException('poster_write_failed');}
+function media_create_poster(PDO $db,int $assetId,int $versionId,float $timestamp,array $file):array{if(!is_finite($timestamp)||$timestamp<0)throw new RuntimeException('invalid_timestamp');if(($file['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK||!is_file((string)($file['tmp_name']??''))||($file['size']??0)<1||($file['size']??0)>MEDIA_POSTER_MAX_BYTES)throw new RuntimeException('invalid_frame');$mime=(new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);if(!in_array($mime,['image/jpeg','image/png'],true))throw new RuntimeException('invalid_frame_type');$info=@getimagesize($file['tmp_name']);if(!$info||$info[0]<1||$info[1]<1)throw new RuntimeException('invalid_frame');$q=$db->prepare('SELECT a.asset_uuid,a.kind,v.id,v.version_uuid FROM media_assets a JOIN media_versions v ON v.asset_id=a.id WHERE a.id=? AND v.id=? AND v.processing_status="ready"');$q->execute([$assetId,$versionId]);$video=$q->fetch();if(!$video||$video['kind']!=='video')throw new RuntimeException('invalid_video_version');$uuid=bin2hex(random_bytes(16));$now=gmdate('c');$dir=media_upload_root().'/'.$video['asset_uuid'].'/'.$video['version_uuid'].'/posters/'.$uuid;$source=null;$db->beginTransaction();try{media_mkdir($dir);$source=media_poster_source($file['tmp_name'],$mime);$db->prepare('INSERT INTO media_posters(video_asset_id,video_version_id,poster_uuid,timestamp_seconds,source_width,source_height,created_at) VALUES(?,?,?,?,?,?,?)')->execute([$assetId,$versionId,$uuid,$timestamp,$info[0],$info[1],$now]);$posterId=(int)$db->lastInsertId();$widths=array_values(array_filter(MEDIA_IMAGE_WIDTHS,fn($width)=>$width<=$info[0]));if(!$widths)$widths=[$info[0]];$variants=[];foreach($widths as $width){$height=(int)round($info[1]*$width/$info[0]);foreach(['jpeg','webp'] as $format){if($format==='webp'&&!media_webp_supported())continue;$fileName=$width.'.'.($format==='jpeg'?'jpg':'webp');$path=$dir.'/'.$fileName;media_write_poster_variant($source,$info[0],$info[1],$width,$height,$format,$path);if(!is_file($path)||filesize($path)<1)throw new RuntimeException('poster_write_failed');$relative=substr($path,strlen(media_upload_root())+1);$mimeType=$format==='jpeg'?'image/jpeg':'image/webp';$db->prepare('INSERT INTO media_poster_variants(poster_id,variant_key,width,height,format,mime_type,path,size_bytes,checksum,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)')->execute([$posterId,(string)$width,$width,$height,$format,$mimeType,$relative,filesize($path),hash_file('sha256',$path),$now]);$variants[]=['key'=>(string)$width,'format'=>$format,'mimeType'=>$mimeType,'width'=>$width,'height'=>$height,'src'=>media_url($relative)];}}$db->commit();media_release_image($source);$jpeg=array_values(array_filter($variants,fn($variant)=>$variant['format']==='jpeg'));return ['id'=>$posterId,'mediaAssetId'=>$assetId,'mediaVersionId'=>$versionId,'posterUuid'=>$uuid,'timestamp'=>$timestamp,'width'=>$info[0],'height'=>$info[1],'src'=>($jpeg[count($jpeg)-1]??$variants[count($variants)-1])['src'],'variants'=>$variants];}catch(Throwable $e){media_release_image($source);if($db->inTransaction())$db->rollBack();media_remove_tree($dir);throw $e;}}

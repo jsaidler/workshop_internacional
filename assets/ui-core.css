@@ -1,0 +1,58 @@
+:root{
+  --ux-space-1:4px;
+  --ux-space-2:8px;
+  --ux-space-3:12px;
+  --ux-space-4:16px;
+  --ux-space-5:24px;
+  --ux-space-6:32px;
+  --ux-space-7:48px;
+  --ux-space-8:64px;
+}
+
+/* Global reusable UI primitives.
+   Surfaces consume these rules; feature styles must not recreate them locally. */
+
+.form-field{display:grid;gap:8px;margin-top:20px;font:500 10px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.065em;color:var(--text)}
+.form-field input,.form-field select,.form-field textarea{display:block;width:100%;min-width:0;min-height:54px;margin:0;padding:13px 15px;border:1px solid var(--line);border-radius:0;background:var(--surface);color:var(--text);font:400 16px/1.45 var(--body);letter-spacing:0;text-transform:none;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+.form-field textarea{min-height:116px;resize:vertical}
+.form-field input:hover,.form-field select:hover,.form-field textarea:hover{border-color:var(--line-strong)}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{outline:0;border-color:var(--focus);box-shadow:inset 0 0 0 1px var(--focus)}
+.form-field input::placeholder,.form-field textarea::placeholder{color:color-mix(in srgb,var(--muted) 76%,transparent);opacity:1}
+.form-field select{appearance:none;-webkit-appearance:none;padding-right:46px;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--text) 50%),linear-gradient(135deg,var(--text) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+.form-field input:disabled,.form-field select:disabled,.form-field textarea:disabled{background:var(--surface-2);color:var(--muted);cursor:not-allowed}
+.form-field [aria-invalid=true]{border-color:#8b2727;box-shadow:inset 3px 0 0 #8b2727}
+.form-field-error{display:block;margin-top:2px;color:#8b2727;font:500 11px/1.45 var(--body);letter-spacing:0;text-transform:none}
+.form-field-help{display:block;color:var(--muted);font:400 11px/1.45 var(--body);letter-spacing:0;text-transform:none}
+
+.choice-field{min-width:0;margin:20px 0 0;padding:0;border:0}
+.choice-field>legend{padding:0;font:500 10px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.065em}
+.choice-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.choice-option{position:relative;display:block;cursor:pointer}
+.choice-option input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.choice-option span{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:500 10px/1.2 var(--mono);letter-spacing:.035em;text-transform:uppercase;transition:border-color .16s ease,background-color .16s ease,color .16s ease}
+.choice-option:hover span{border-color:var(--line-strong)}
+.choice-option input:checked+span{border-color:var(--line-strong);background:var(--inverse-bg);color:var(--inverse)}
+.choice-option input:focus-visible+span{outline:3px solid var(--focus);outline-offset:3px}
+.choice-field.has-error .choice-row{outline:1px solid #8b2727;outline-offset:4px}
+.choice-field-compact{margin:0}.choice-field-compact .choice-option span{min-height:38px;padding:0 11px;font-size:9px}
+
+.check-field{display:flex;align-items:flex-start;gap:12px;margin-top:22px;color:var(--text);font-size:14px;line-height:1.55}
+.check-field input{width:18px;height:18px;min-width:18px;margin:2px 0 0;accent-color:var(--focus)}
+.check-field .form-field-error{flex-basis:100%}
+
+.button-compact{min-height:40px;padding:0 13px;font-size:9px}
+.button-danger{color:#8b2727;border-color:#8b2727;background:transparent}
+.button-danger:hover{color:var(--inverse);background:#8b2727;border-color:#8b2727}
+button.button:disabled,.button[aria-disabled=true]{opacity:.48;cursor:not-allowed}
+
+.ui-alert{margin:24px 0 0;padding:15px 18px;background:var(--surface);color:var(--text);font-size:14px;line-height:1.5;border:1px solid var(--line)}
+.ui-alert-error{border-left:4px solid #8b2727}
+.ui-alert-notice{border-left:4px solid var(--focus)}
+
+@media(max-width:760px){
+  .form-field{margin-top:16px}
+  .form-field input,.form-field select,.form-field textarea{min-height:52px;font-size:16px}
+  .choice-row{display:grid;grid-template-columns:1fr}
+  .choice-option span{width:100%;min-height:48px;justify-content:flex-start;text-align:left}
+  .choice-field-compact .choice-row{display:flex}.choice-field-compact .choice-option span{width:auto;justify-content:center}
+}
