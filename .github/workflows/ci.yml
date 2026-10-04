@@ -106,6 +106,7 @@ jobs:
             php tools/test-admin-lifecycle-and-student-design.php
             php tools/test-student-platform-coherence.php
             php tools/test-student-handbook.php
+            php tools/test-aula3-student-area-material.php
             php tools/test-student-material-system.php
             php tools/test-student-material-access-hotfix.php
             php tools/test-student-placeholder-visibility.php
