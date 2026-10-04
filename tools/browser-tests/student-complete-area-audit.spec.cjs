@@ -5,13 +5,16 @@ const screens=[
   ['login','student-auth-visual-audit.html?screen=login'],
   ['activation-password','student-auth-visual-audit.html?screen=password'],
   ['home','student-dashboard-truth.html?state=active'],
+  ['home-feedback','student-pedagogical-feedback-audit.html?screen=home-feedback'],
   ['home-study','student-dashboard-truth.html?state=study'],
   ['home-multiple','student-dashboard-truth.html?state=multiple'],
   ['course-list','student-course-context.html'],
   ['course-detail','student-course-context.html?cohort=cohort-a'],
+  ['course-feedback','student-pedagogical-feedback-audit.html?screen=course-feedback'],
   ['course-empty','student-course-context.html?cohort=cohort-b&state=empty'],
   ['material','student-material-context.html'],
   ['questions-list','student-secondary-screens-audit.html?screen=questions-list'],
+  ['questions-feedback','student-pedagogical-feedback-audit.html?screen=questions-feedback'],
   ['question-new','student-secondary-screens-audit.html?screen=question-new'],
   ['question-thread','student-secondary-screens-audit.html?screen=question-thread'],
   ['notebook','student-caderno-product-audit.html?screen=notebook'],
@@ -26,6 +29,9 @@ const screens=[
   ['recording-partial','student-recording-states-audit.html?screen=partial'],
   ['recording-complete','student-recording-states-audit.html?screen=complete'],
   ['result','student-caderno-product-audit.html?screen=result'],
+  ['result-waiting','student-pedagogical-feedback-audit.html?screen=result-waiting'],
+  ['result-revision','student-pedagogical-feedback-audit.html?screen=result-revision'],
+  ['result-reviewed','student-pedagogical-feedback-audit.html?screen=result-reviewed'],
   ['step-editor','student-secondary-screens-audit.html?screen=step-editor'],
   ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
   ['delete-record','student-secondary-screens-audit.html?screen=delete-record'],
@@ -47,7 +53,7 @@ const screens=[
   ['password-change','student-secondary-screens-audit.html?screen=password-change'],
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
-const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
+const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
   await page.evaluate(async styles=>{
     const featurePattern=/\/assets\/student-(?:auth|caderno|processes|lab-stock|process-recording)\.css(?:\?|$)/;
@@ -76,6 +82,25 @@ for(const [device,viewport] of Object.entries(viewports)){
         const selector=name==='new-record'?'.student-create-dialog':'.student-toolbox';
         await page.evaluate(sel=>{const d=document.querySelector(sel);if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}},selector);
       }
+      if(name==='home-feedback'){
+        await expect(page.getByText('Retorno do professor',{exact:true})).toBeVisible();
+        await expect(page.getByText('Ler retorno e revisar →',{exact:true})).toBeVisible();
+      }
+      if(name==='course-feedback'){
+        await expect(page.getByText('Há algo para retomar',{exact:true})).toBeVisible();
+        await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();
+      }
+      if(name==='questions-feedback'){
+        await expect(page.getByText('Conversas de avaliação',{exact:true})).toBeVisible();
+        await expect(page.getByText('Dúvidas da turma',{exact:true})).toBeVisible();
+      }
+      if(name==='result-waiting')await expect(page.getByText('Enviado para avaliação',{exact:true})).toBeVisible();
+      if(name==='result-revision'){
+        await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();
+        await expect(page.getByText('Enviar revisão para avaliação',{exact:true})).toBeVisible();
+        await expect(page.getByText('Professor',{exact:true})).toBeVisible();
+      }
+      if(name==='result-reviewed')await expect(page.getByText('Avaliação concluída',{exact:true})).toBeVisible();
       if(name==='process-choice'){
         await expect(page.getByText('O processamento já aconteceu?',{exact:true})).toBeVisible();
         await expect(page.locator('.student-process-path-options article')).toHaveCount(2);
@@ -143,6 +168,6 @@ for(const [device,viewport] of Object.entries(viewports)){
 
 test('complete student visual audit declares all rendered student route families',()=>{
   const names=new Set(screens.map(([name])=>name));
-  for(const required of ['login','home','home-study','home-multiple','course-list','course-detail','course-empty','material','questions-list','question-thread','notebook','new-record','exposure','process-choice','process-plan','process-partial','process-intent','recording-start','recording-associated','recording-partial','recording-complete','result','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-item-editor','preparations','calibration-list','tools','toolbox','profile','password-change'])expect(names.has(required),`missing visual surface ${required}`).toBe(true);
-  expect(screens.length,'full student audit surface count').toBe(43);
+  for(const required of ['login','home','home-feedback','home-study','home-multiple','course-list','course-detail','course-feedback','course-empty','material','questions-list','questions-feedback','question-thread','notebook','new-record','exposure','process-choice','process-plan','process-partial','process-intent','recording-start','recording-associated','recording-partial','recording-complete','result','result-waiting','result-revision','result-reviewed','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-item-editor','preparations','calibration-list','tools','toolbox','profile','password-change'])expect(names.has(required),`missing visual surface ${required}`).toBe(true);
+  expect(screens.length,'full student audit surface count').toBe(49);
 });
