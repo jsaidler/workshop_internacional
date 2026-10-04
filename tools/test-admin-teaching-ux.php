@@ -25,7 +25,7 @@ teaching_ux_expect(str_contains($cohorts,'Editar turma')&&str_contains($cohorts,
 teaching_ux_expect(str_contains($cohorts,'Aulas e acesso')&&str_contains($cohorts,'Acompanhamento'),'visão da turma deve expor as próximas tarefas reais');
 teaching_ux_expect(str_contains($cohorts,'Visualizar como esta turma'),'turma deve permitir verificar o estado efetivo de acesso');
 
-teaching_ux_expect(str_contains($lessons,'Conteúdo · Aulas'),'estrutura de aulas deve pertencer ao curso');
+teaching_ux_expect(str_contains($lessons,"admin_course_context($course,$activityId,'content'")&&str_contains($lessons,"'Aulas'"),'estrutura de aulas deve pertencer ao contexto persistente do curso');
 teaching_ux_expect(str_contains($lessons,'Aulas e acesso'),'disponibilidade deve pertencer à turma');
 teaching_ux_expect(str_contains($lessons,'update_lesson')&&str_contains($lessons,'move_lesson'),'estrutura deve permitir corrigir e ordenar aulas existentes');
 teaching_ux_expect(str_contains($lessons,'Ver conteúdo afetado'),'decisão de liberação deve revelar a consequência sobre o material');
