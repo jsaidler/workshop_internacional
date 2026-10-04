@@ -72,12 +72,12 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '<dt>Tempo sem reciprocidade</dt>',
       '<dt>Tempo com reciprocidade</dt>',
     ],
-    'aluno/comparar-processos.php':[
-      "'EI'=>'iso_reference'",
-      "'Abertura'=>'aperture'",
-      "'Tempo sem reciprocidade'=>'calculated_time'",
-      "'Tempo com reciprocidade'=>'reciprocity_time'",
-      "'Faixa tonal e intenção'=>'tonal_range'",
+    'app/student_research.php':[
+      "'iso_reference'=>'EI'",
+      "'aperture'=>'Abertura'",
+      "'calculated_time'=>'Tempo sem reciprocidade'",
+      "'reciprocity_time'=>'Tempo com reciprocidade'",
+      "'tonal_range'=>'Faixa tonal e intenção'",
     ],
     'aluno/teste-etapa.php':[
       '>Predefinição de revelação<select name="saved_preparation_id"',
