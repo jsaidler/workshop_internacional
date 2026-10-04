@@ -30,8 +30,7 @@ jobs:
             -e 's#a/workshop_dist/#a/#g' \
             -e 's#b/admin_repair_test2/#b/#g' \
             /tmp/admin-repair.raw.patch > /tmp/admin-repair.patch
-          git apply --recount --check /tmp/admin-repair.patch
-          git apply --recount /tmp/admin-repair.patch
+          git apply --3way --recount /tmp/admin-repair.patch
           rm -rf .admin-repair
           rm -f .github/workflows/apply-admin-repair.yml
           git config user.name 'github-actions[bot]'
