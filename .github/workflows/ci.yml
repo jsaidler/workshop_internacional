@@ -112,6 +112,7 @@ jobs:
             php tools/test-private-media-editor-contract.php
             php tools/test-canonical-student-media-access.php
             php tools/test-handbook-email-integrity.php
+            php tools/test-student-handbook-workflow-guide.php
             php tools/test-system-authority-boundaries.php
             php tools/test-read-purity-activity-templates.php
             php tools/test-activity-locales-page-hierarchy.php
