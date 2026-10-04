@@ -1,0 +1,37 @@
+name: apply-admin-repair
+
+on:
+  push:
+    branches:
+      - 'ux/admin-complete-product-repair-2026-10-03'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ux/admin-complete-product-repair-2026-10-03
+          fetch-depth: 0
+      - name: Apply staged administrative repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .admin-repair/part-* > /tmp/admin-repair.raw.patch
+          sed \
+            -e 's#a/workshop_dist/#a/#g' \
+            -e 's#b/admin_repair_test2/#b/#g' \
+            /tmp/admin-repair.raw.patch > /tmp/admin-repair.patch
+          git apply --check /tmp/admin-repair.patch
+          git apply /tmp/admin-repair.patch
+          rm -rf .admin-repair
+          rm -f .github/workflows/apply-admin-repair.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Repair administrative UX, navigation and responsive behavior'
+          git push origin HEAD:ux/admin-complete-product-repair-2026-10-03
