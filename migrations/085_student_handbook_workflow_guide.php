@@ -23,9 +23,7 @@ return static function(PDO $db): void {
     <div class="process-item"><span>03</span><p data-cms-editable><strong>Resultado.</strong> Fotografem ou digitalizem o positivo e anotem o que observaram. Não é preciso saber ainda por que o resultado aconteceu.</p></div>
   </div>
   <p class="technical-note study-summary" data-cms-editable>Registrem o que aconteceu, não o que deveria ter acontecido.</p>
-  <figure class="media-figure" data-private-media-slot="aula2-exposicao" data-private-media-alt="Área do Aluno: registro da exposição de uma tentativa no Caderno."></figure>
-  <figure class="media-figure" data-private-media-slot="aula2-processamento" data-private-media-alt="Área do Aluno: registro das etapas realmente realizadas durante o processamento."></figure>
-  <figure class="media-figure" data-private-media-slot="aula2-resultado" data-private-media-alt="Área do Aluno: resultado com exposição, processamento, imagem e observações reunidos no mesmo registro."></figure>
+  <figure class="media-figure" data-private-media-slot="aula2-registro" data-private-media-alt="Área do Aluno: um registro reúne exposição, processamento e resultado da mesma tentativa."></figure>
   <div class="statement-copy">
     <p data-cms-editable>Não é preciso chegar à terceira aula com uma fotografia “certa”. Precisamos chegar com resultados que consigamos observar, reconstruir e discutir.</p>
   </div>
@@ -61,7 +59,7 @@ HTML;
     <p data-cms-editable>Se o EI mudou ao mesmo tempo que o tempo de primeira revelação, por exemplo, as duas diferenças continuam existindo. O Caderno ajuda a enxergá-las; não escolhe uma causa por nós.</p>
   </div>
   <p class="technical-note study-summary" data-cms-editable>Uma diferença registrada não é, por si só, uma explicação.</p>
-  <figure class="media-figure" data-private-media-slot="aula3-comparacao" data-private-media-alt="Área do Aluno: comparação descritiva de duas experimentações e seus resultados lado a lado."></figure>
+  <figure class="media-figure" data-private-media-slot="aula3-comparacao" data-private-media-alt="Área do Aluno: comparação descritiva de duas experimentações, seus resultados e a preparação da próxima tentativa."></figure>
 </section>
 
 <section class="section study-unit" data-layout-background="surface" data-layout-space="l" data-cms-section="caderno-aula3-continuar" data-cms-section-name="Aula 3 · Continuar a pesquisa">
@@ -71,7 +69,6 @@ HTML;
     <p data-cms-editable>Escolham o registro de origem e escrevam o que pretendem mudar. A nova tentativa começa a partir dessa intenção, mas processamento e resultado continuam vazios até que realmente aconteçam.</p>
     <p data-cms-editable>Isso é importante: a próxima fotografia herda um ponto de partida, não uma conclusão.</p>
   </div>
-  <figure class="media-figure" data-private-media-slot="aula3-continuar" data-private-media-alt="Área do Aluno: escolha da tentativa de origem e declaração do que será modificado na próxima variação."></figure>
 </section>
 HTML;
 
@@ -156,20 +153,25 @@ HTML;
     if(!is_dir($mediaRoot)&&!mkdir($mediaRoot,0755,true)&&!is_dir($mediaRoot))throw new RuntimeException('handbook_workflow_media_root_unavailable');
 
     $media=[
-        'aula2-exposicao'=>['aula2-exposicao.webp','Área do Aluno — Exposição'],
-        'aula2-processamento'=>['aula2-processamento.webp','Área do Aluno — Processamento'],
-        'aula2-resultado'=>['aula2-resultado.webp','Área do Aluno — Resultado'],
+        'aula2-registro'=>['aula2-registro.webp','Área do Aluno — Exposição, processamento e resultado'],
         'aula3-caderno'=>['aula3-caderno.webp','Área do Aluno — Caderno'],
         'aula3-avaliacao'=>['aula3-avaliacao.webp','Área do Aluno — Avaliação'],
-        'aula3-comparacao'=>['aula3-comparacao.webp','Área do Aluno — Comparação'],
-        'aula3-continuar'=>['aula3-continuar.webp','Área do Aluno — Continuar a pesquisa'],
+        'aula3-comparacao'=>['aula3-comparacao.webp','Área do Aluno — Comparação e continuidade'],
     ];
 
     foreach($media as $slot=>[$filename,$title]){
-        $source=$sourceRoot.'/'.$filename;
-        if(!is_file($source))throw new RuntimeException('handbook_workflow_media_source_missing:'.$filename);
-        $checksum=hash_file('sha256',$source);
-        if($checksum===false)throw new RuntimeException('handbook_workflow_media_checksum_failed:'.$filename);
+        $chunks=glob($sourceRoot.'/'.$filename.'.*.b64')?:[];
+        sort($chunks,SORT_STRING);
+        if(!$chunks)throw new RuntimeException('handbook_workflow_media_source_missing:'.$filename);
+        $encoded='';
+        foreach($chunks as $chunk){
+            $part=file_get_contents($chunk);
+            if($part===false)throw new RuntimeException('handbook_workflow_media_chunk_failed:'.basename($chunk));
+            $encoded.=trim($part);
+        }
+        $bytes=base64_decode($encoded,true);
+        if($bytes===false||$bytes==='')throw new RuntimeException('handbook_workflow_media_decode_failed:'.$filename);
+        $checksum=hash('sha256',$bytes);
         $assetUuid=md5('student-handbook-workflow:'.$slot);
         $versionUuid=md5($assetUuid.':'.$checksum);
 
@@ -183,7 +185,7 @@ HTML;
             $destination=$mediaRoot.'/'.$relative;
             $directory=dirname($destination);
             if(!is_dir($directory)&&!mkdir($directory,0755,true)&&!is_dir($directory))throw new RuntimeException('handbook_workflow_media_directory_failed');
-            if(!is_file($destination)&&!copy($source,$destination))throw new RuntimeException('handbook_workflow_media_copy_failed:'.$filename);
+            if(!is_file($destination)&&file_put_contents($destination,$bytes,LOCK_EX)===false)throw new RuntimeException('handbook_workflow_media_write_failed:'.$filename);
             $info=@getimagesize($destination);
             if(!is_array($info))throw new RuntimeException('handbook_workflow_media_image_invalid:'.$filename);
             $width=(int)$info[0];$height=(int)$info[1];$byteSize=(int)filesize($destination);
