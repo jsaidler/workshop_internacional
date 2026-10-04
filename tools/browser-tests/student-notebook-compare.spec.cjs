@@ -26,7 +26,7 @@ test('derived records expose lineage through the record menu instead of permanen
   await expect(page.locator('.student-compare-pick')).toHaveCount(0);
   await expect(page.locator('.student-research-card-lineage')).toContainText('Continuação de');
   const menu=page.locator('.student-record-menu');
-  const compareOrigin=page.getByRole('link',{name:'Comparar com origem'});
+  const compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});
   await expect(menu).toBeVisible();
   await expect(compareOrigin).toBeHidden();
   await menu.locator('summary').click();
