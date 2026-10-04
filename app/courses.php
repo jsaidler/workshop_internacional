@@ -50,9 +50,9 @@ function course_material_page_release_summary(PDO $db,int $courseId,int $cohortI
     $sections=course_material_sections_from_page($db,$pageId);$map=course_material_section_map($db,$courseId,$pageId);
     if(!$map)return ['state'=>'available','label'=>'Disponível','released'=>0,'scheduled'=>0,'blocked'=>0,'unrestricted'=>count($sections)];
     if($releaseRows===null)$releaseRows=course_lesson_release_rows_for_course($db,$cohortId,$courseId);
-    $lessonStates=[];foreach($releaseRows as $row)$lessonStates[(int)$row['id']]=function_exists('cms_access_lesson_release_state')?cms_access_lesson_release_state($row,$now):['state'=>((string)($row['released_at']??'')!==''?'released':'blocked')];
+    $lessonStates=[];foreach($releaseRows as $row)$lessonStates[(int)$row['id']]=function_exists('cms_access_lesson_release_state')?cms_access_lesson_release_state(isset($row['released_at'])?(string)$row['released_at']:null,$now):((string)($row['released_at']??'')!==''?'released':'blocked');
     $released=0;$scheduled=0;$blocked=0;$mapped=0;
-    foreach($sections as $key=>$name){if(!isset($map[$key]))continue;$mapped++;$lessonId=(int)$map[$key]['lesson_id'];$state=(string)($lessonStates[$lessonId]['state']??'blocked');if($state==='released')$released++;elseif($state==='scheduled')$scheduled++;else $blocked++;}
+    foreach($sections as $key=>$name){if(!isset($map[$key]))continue;$mapped++;$lessonId=(int)$map[$key]['lesson_id'];$state=(string)($lessonStates[$lessonId]??'blocked');if($state==='released')$released++;elseif($state==='scheduled')$scheduled++;else $blocked++;}
     $unrestricted=max(0,count($sections)-$mapped);$restricted=$scheduled+$blocked;
     if($restricted===0)$state='available';elseif($released+$unrestricted>0)$state='partial';elseif($scheduled>0&&$blocked===0)$state='scheduled';else $state='blocked';
     $label=match($state){'available'=>'Disponível','partial'=>'Parcial','scheduled'=>'Agendado',default=>'Aguardando'};
