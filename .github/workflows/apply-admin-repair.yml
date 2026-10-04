@@ -26,61 +26,70 @@ jobs:
           import re
 
           parts=sorted(Path('.admin-repair').glob('part-*'))
-          patch=''.join(p.read_text(encoding='utf-8') for p in parts)
+          patch='\n'.join(p.read_text(encoding='utf-8') for p in parts)
           patch=patch.replace('a/workshop_dist/','a/').replace('b/admin_repair_test2/','b/')
           lines=patch.splitlines(keepends=True)
-
-          files=[]
-          current=None
-          hunk=None
+          files=[]; current=None; hunk=None
           for line in lines:
               if line.startswith('diff --git '):
                   m=re.match(r'diff --git a/(.+?) b/(.+?)\s*$',line.rstrip('\n'))
-                  if not m:
-                      raise SystemExit(f'Invalid diff header: {line!r}')
-                  current={'path':m.group(2),'hunks':[]}
-                  files.append(current)
-                  hunk=None
-                  continue
-              if current is None:
-                  continue
+                  if not m: raise SystemExit(f'Invalid diff header: {line!r}')
+                  current={'path':m.group(2),'hunks':[]};files.append(current);hunk=None;continue
+              if current is None: continue
               if line.startswith('@@'):
-                  hunk={'old':[],'new':[]}
-                  current['hunks'].append(hunk)
-                  continue
-              if hunk is None:
-                  continue
-              if line.startswith('\\ No newline at end of file'):
-                  continue
-              if line.startswith(' '):
-                  hunk['old'].append(line[1:]);hunk['new'].append(line[1:])
-              elif line.startswith('-') and not line.startswith('---'):
-                  hunk['old'].append(line[1:])
-              elif line.startswith('+') and not line.startswith('+++'):
-                  hunk['new'].append(line[1:])
-              elif line.strip()=='' and hunk is not None:
-                  # Split patch parts may insert a blank separator. It is not source context.
-                  continue
+                  hunk=[];current['hunks'].append(hunk);continue
+              if hunk is None or line.startswith('\\ No newline at end of file'): continue
+              if line.startswith(' ') or (line.startswith('-') and not line.startswith('---')) or (line.startswith('+') and not line.startswith('+++')):
+                  hunk.append((line[0],line[1:]))
 
-          if not files:
-              raise SystemExit('No file patches parsed')
+          def replace_change(text, old, new, before, after, label):
+              if old:
+                  positions=[];start=0
+                  while True:
+                      p=text.find(old,start)
+                      if p<0: break
+                      positions.append(p);start=p+1
+                  if len(positions)==1:
+                      p=positions[0];return text[:p]+new+text[p+len(old):]
+                  candidates=positions
+                  if len(candidates)>1 and before:
+                      candidates=[p for p in candidates if text[max(0,p-len(before)):p].endswith(before)]
+                  if len(candidates)>1 and after:
+                      candidates=[p for p in candidates if text[p+len(old):p+len(old)+len(after)].startswith(after)]
+                  if len(candidates)!=1:
+                      raise SystemExit(f'{label}: cannot uniquely match deletion block ({len(positions)} raw, {len(candidates)} anchored): {old[:180]!r}')
+                  p=candidates[0];return text[:p]+new+text[p+len(old):]
+              # Pure insertion: anchor on adjacent unchanged context.
+              if before:
+                  count=text.count(before)
+                  if count==1:
+                      p=text.find(before)+len(before);return text[:p]+new+text[p:]
+              if after:
+                  count=text.count(after)
+                  if count==1:
+                      p=text.find(after);return text[:p]+new+text[p:]
+              raise SystemExit(f'{label}: cannot anchor pure insertion')
 
+          if not files: raise SystemExit('No file patches parsed')
           for item in files:
               path=Path(item['path'])
-              if not path.exists():
-                  raise SystemExit(f'Missing target file: {path}')
+              if not path.exists(): raise SystemExit(f'Missing target file: {path}')
               text=path.read_text(encoding='utf-8')
-              for idx,h in enumerate(item['hunks'],1):
-                  old=''.join(h['old']);new=''.join(h['new'])
-                  if old==new:
-                      continue
-                  count=text.count(old)
-                  if count!=1:
-                      marker=(old[:180].replace('\n','\\n'))
-                      raise SystemExit(f'{path}: hunk {idx}: expected one exact match, found {count}: {marker}')
-                  text=text.replace(old,new,1)
+              for hi,ops in enumerate(item['hunks'],1):
+                  i=0
+                  while i<len(ops):
+                      if ops[i][0]==' ':
+                          i+=1;continue
+                      start=i
+                      while i<len(ops) and ops[i][0]!=' ': i+=1
+                      block=ops[start:i]
+                      old=''.join(s for op,s in block if op=='-')
+                      new=''.join(s for op,s in block if op=='+')
+                      before=''.join(s for op,s in ops[max(0,start-2):start] if op==' ')
+                      after=''.join(s for op,s in ops[i:min(len(ops),i+2)] if op==' ')
+                      text=replace_change(text,old,new,before,after,f'{path}: hunk {hi}')
               path.write_text(text,encoding='utf-8')
-              print(f'applied {len(item["hunks"])} hunks to {path}')
+              print(f'applied repair changes to {path}')
           PY
           rm -rf .admin-repair
           rm -f .github/workflows/apply-admin-repair.yml
