@@ -21,3 +21,4 @@ $seo=$db->query('SELECT robots FROM cms_page_seo WHERE page_id='.(int)$page['id'
 $maps=$db->query('SELECT s.section_key,l.lesson_key FROM course_page_sections s JOIN course_lessons l ON l.id=s.lesson_id ORDER BY s.section_key')->fetchAll(PDO::FETCH_KEY_PAIR);
 if(($maps['caderno-03-exposicao']??'')!=='aula-1')fail('exposure not mapped to lesson 1');if(($maps['caderno-08-parodinal']??'')!=='aula-2')fail('chemistry not mapped to lesson 2');
 echo "student-handbook: ok\n";
+require __DIR__.'/test-aula3-student-area-material.php';
