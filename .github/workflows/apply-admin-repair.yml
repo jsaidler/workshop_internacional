@@ -21,7 +21,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .admin-repair/part-* > /tmp/admin-repair.raw.patch
+          : > /tmp/admin-repair.raw.patch
+          for part in .admin-repair/part-*; do
+            cat "$part" >> /tmp/admin-repair.raw.patch
+            printf '\n' >> /tmp/admin-repair.raw.patch
+          done
           sed \
             -e 's#a/workshop_dist/#a/#g' \
             -e 's#b/admin_repair_test2/#b/#g' \
