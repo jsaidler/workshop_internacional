@@ -35,7 +35,9 @@ const screens=[
   ['step-editor','student-secondary-screens-audit.html?screen=step-editor'],
   ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
   ['delete-record','student-secondary-screens-audit.html?screen=delete-record'],
-  ['compare-records','student-notebook-compare.html'],
+  ['compare-select','student-notebook-compare.html?screen=select'],
+  ['compare-records','student-notebook-compare.html?screen=analysis'],
+  ['research-derived','student-notebook-compare.html?screen=derived'],
   ['process-library','student-process-product-audit.html?screen=library'],
   ['process-editor','student-process-product-audit.html?screen=editor'],
   ['lab-runner','student-process-product-audit.html?screen=runner'],
@@ -101,6 +103,27 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('Professor',{exact:true})).toBeVisible();
       }
       if(name==='result-reviewed')await expect(page.getByText('Avaliação concluída',{exact:true})).toBeVisible();
+      if(name==='compare-select'){
+        await expect(page.getByText('Escolha o segundo registro',{exact:true})).toBeVisible();
+        await expect(page.getByText('EI 200 — FeCl₃',{exact:true})).toBeVisible();
+      }
+      if(name==='compare-records'){
+        await expect(page.getByText('Diferenças registradas',{exact:true})).toBeVisible();
+        await expect(page.getByText('Resultado observado',{exact:true})).toBeVisible();
+        await expect(page.getByText('Criar próxima variação',{exact:true})).toBeVisible();
+      }
+      if(name==='research-derived'){
+        await expect(page.getByText('Continuação de',{exact:false})).toBeVisible();
+        await expect(page.getByText('Manter EI 400 e voltar a primeira revelação para 7 minutos.',{exact:false})).toBeVisible();
+        const menu=page.locator('.student-record-menu');
+        const compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});
+        await expect(menu).toBeVisible();
+        await expect(compareOrigin).toBeHidden();
+        await menu.locator('summary').click();
+        await expect(compareOrigin).toBeVisible();
+        await menu.locator('summary').click();
+        await expect(compareOrigin).toBeHidden();
+      }
       if(name==='process-choice'){
         await expect(page.getByText('O processamento já aconteceu?',{exact:true})).toBeVisible();
         await expect(page.locator('.student-process-path-options article')).toHaveCount(2);
@@ -168,6 +191,6 @@ for(const [device,viewport] of Object.entries(viewports)){
 
 test('complete student visual audit declares all rendered student route families',()=>{
   const names=new Set(screens.map(([name])=>name));
-  for(const required of ['login','home','home-feedback','home-study','home-multiple','course-list','course-detail','course-feedback','course-empty','material','questions-list','questions-feedback','question-thread','notebook','new-record','exposure','process-choice','process-plan','process-partial','process-intent','recording-start','recording-associated','recording-partial','recording-complete','result','result-waiting','result-revision','result-reviewed','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-item-editor','preparations','calibration-list','tools','toolbox','profile','password-change'])expect(names.has(required),`missing visual surface ${required}`).toBe(true);
-  expect(screens.length,'full student audit surface count').toBe(49);
+  for(const required of ['login','home','home-feedback','home-study','home-multiple','course-list','course-detail','course-feedback','course-empty','material','questions-list','questions-feedback','question-thread','notebook','new-record','exposure','process-choice','process-plan','process-partial','process-intent','recording-start','recording-associated','recording-partial','recording-complete','result','result-waiting','result-revision','result-reviewed','step-editor','shared-record','delete-record','compare-select','compare-records','research-derived','process-library','process-editor','lab-runner','inventory','inventory-item-editor','preparations','calibration-list','tools','toolbox','profile','password-change'])expect(names.has(required),`missing visual surface ${required}`).toBe(true);
+  expect(screens.length,'full student audit surface count').toBe(51);
 });

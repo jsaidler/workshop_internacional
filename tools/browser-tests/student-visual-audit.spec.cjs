@@ -50,14 +50,14 @@ for(const [device,viewport] of Object.entries(viewports)){
     await page.screenshot({path:`student-visual-audit/${device}/mechanics-drying.png`,fullPage:true,animations:'disabled'});
   });
 
-  test(`mechanics visual audit ${device} compare mode`,async({page})=>{
+  test(`mechanics visual audit ${device} research comparison`,async({page})=>{
     await page.setViewportSize(viewport);
-    await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-notebook-compare.html',{waitUntil:'networkidle'});
-    await page.locator('[data-compare-mode-open]').click();
-    await page.locator('.student-compare-pick input').nth(0).check();
-    await page.locator('.student-compare-pick input').nth(1).check();
+    await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-notebook-compare.html?screen=analysis',{waitUntil:'networkidle'});
+    await expect(page.locator('.student-research-difference-row')).toHaveCount(3);
+    await expect(page.getByText('Resultado observado',{exact:true})).toBeVisible();
+    await expect(page.getByText('Criar próxima variação',{exact:true})).toBeVisible();
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-    expect(overflow,'compare horizontal overflow').toBeLessThanOrEqual(1);
+    expect(overflow,'research comparison horizontal overflow').toBeLessThanOrEqual(1);
     await page.screenshot({path:`student-visual-audit/${device}/mechanics-compare.png`,fullPage:true,animations:'disabled'});
   });
 
