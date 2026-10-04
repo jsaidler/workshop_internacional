@@ -18,7 +18,7 @@ $assert(str_contains($registrations,'Retirar da turma'),'Removing a cohort assig
 $assert(str_contains($registrations,'admin-responsive-list'),'Registration collection must have a semantic mobile presentation.');
 
 $students=$read('admin/students.php');
-$assert(str_contains($students,"admin_course_context($course,$activityId,'students'"),'Course student context must mark Students rather than Cohorts as the current area.');
+$assert(str_contains($students,'admin_course_context($course,$activityId,\'students\''),'Course student context must mark Students rather than Cohorts as the current area.');
 $assert(str_contains($students,'admin-responsive-list'),'Student collections must have a semantic mobile presentation.');
 
 $people=$read('admin/people.php');
