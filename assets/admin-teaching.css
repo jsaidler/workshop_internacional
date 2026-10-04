@@ -1,4 +1,11 @@
 /* Teaching workspace components: courses, lessons and material. */
+.admin-page-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding-bottom:14px;border-bottom:1px solid var(--admin-line)}
+.admin-page-intro>div{display:grid;gap:6px;min-width:0}
+.admin-page-intro h2{margin:0;font-size:clamp(22px,3vw,32px);line-height:1.08}
+.admin-page-intro p{max-width:68ch;margin:0;color:var(--admin-muted);font-size:12px;line-height:1.5}
+.admin-focused-task{width:min(100%,820px)}
+.admin-detail-lead{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 0 14px;border-bottom:1px solid var(--admin-line)}
+.admin-page-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .admin-teaching-detail{border-top:3px solid var(--admin-ink)}
 .admin-teaching-detail>header{align-items:center}
 .admin-teaching-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;color:var(--admin-muted);font-size:12px}
@@ -32,14 +39,19 @@
 .admin-relation-stack span{color:var(--admin-muted);font-size:11px}
 .admin-table-compact-counts{display:flex;gap:12px;flex-wrap:wrap;color:var(--admin-muted);font-size:11px;white-space:nowrap}
 .admin-table-compact-counts strong{color:var(--admin-ink);font-variant-numeric:tabular-nums}
-.admin-workspace-context{display:grid;gap:14px;align-items:end}
-.admin-workspace-heading{display:grid;gap:3px;min-width:0}
-.admin-scope-parent{width:max-content;max-width:100%;color:var(--admin-muted);font-size:11px;text-decoration:none}
-.admin-workspace-heading strong{font-size:15px}
-.admin-workspace-heading small{color:var(--admin-muted);font-size:11px}
+.admin-workspace-context{display:grid;gap:12px;padding:0 0 16px;border-bottom:1px solid var(--admin-line)}
+.admin-breadcrumb{display:flex;align-items:center;gap:7px;min-width:0;color:var(--admin-muted);font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+.admin-breadcrumb a{color:var(--admin-muted);text-underline-offset:3px}
+.admin-breadcrumb span[aria-current=page]{color:var(--admin-ink);font-weight:600}
+.admin-context-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;min-width:0}
+.admin-context-heading>div{display:grid;gap:3px;min-width:0}
+.admin-context-heading h2{margin:0;font-size:clamp(24px,3vw,34px);line-height:1.05;overflow-wrap:anywhere}
+.admin-context-heading small{color:var(--admin-muted);font-size:11px}
+.admin-context-back,.admin-list-return{display:inline-flex;align-items:center;min-height:34px;color:var(--admin-ink);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+.admin-context-back:hover,.admin-list-return:hover{text-decoration:underline;text-underline-offset:3px}
 .admin-workspace-nav,.admin-content-tabs,.admin-status-tabs{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
 .admin-workspace-nav a,.admin-content-tabs a,.admin-status-tabs a{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:7px 10px;border:1px solid var(--admin-line);border-radius:var(--admin-radius);color:var(--admin-muted);font-size:12px;font-weight:500;text-decoration:none;background:var(--admin-surface)}
-.admin-workspace-nav a[aria-current=page],.admin-content-tabs a[aria-current=page],.admin-status-tabs a[aria-current=page]{border-color:var(--admin-ink);color:var(--admin-ink)}
+.admin-workspace-nav a[aria-current=page],.admin-content-tabs a[aria-current=page],.admin-status-tabs a[aria-current=page]{border-color:var(--admin-ink);background:var(--admin-ink);color:#fff}
 .admin-status-tabs span{font-variant-numeric:tabular-nums}
 .admin-work-queue{display:grid;gap:1px;border:1px solid var(--admin-line);border-radius:var(--admin-radius);overflow:hidden;background:var(--admin-line)}
 .admin-work-item{display:flex;justify-content:space-between;gap:18px;padding:13px 14px;background:var(--admin-surface);color:var(--admin-ink);text-decoration:none}
@@ -59,6 +71,9 @@
 .admin-inline-editor[open] form{margin-top:8px}
 @media(max-width:800px){
   .admin-teaching-detail>header{align-items:flex-start}
+  .admin-context-heading,.admin-page-intro,.admin-detail-lead{align-items:stretch;flex-direction:column}
+  .admin-context-back{width:max-content}
+  .admin-page-actions{justify-content:flex-start}
   .admin-teaching-detail>header .admin-card-actions{width:100%}
   .admin-teaching-detail>header .admin-card-actions .admin-button{width:100%}
   .admin-release-form{grid-template-columns:1fr}

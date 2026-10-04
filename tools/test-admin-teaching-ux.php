@@ -25,7 +25,7 @@ teaching_ux_expect(str_contains($cohorts,'Editar turma')&&str_contains($cohorts,
 teaching_ux_expect(str_contains($cohorts,'Aulas e acesso')&&str_contains($cohorts,'Acompanhamento'),'visão da turma deve expor as próximas tarefas reais');
 teaching_ux_expect(str_contains($cohorts,'Visualizar como esta turma'),'turma deve permitir verificar o estado efetivo de acesso');
 
-teaching_ux_expect(str_contains($lessons,'Conteúdo · Aulas'),'estrutura de aulas deve pertencer ao curso');
+teaching_ux_expect(str_contains($lessons,'admin_course_context($course,$activityId,\'content\'')&&str_contains($lessons,"'Aulas'"),'estrutura de aulas deve pertencer ao contexto persistente do curso');
 teaching_ux_expect(str_contains($lessons,'Aulas e acesso'),'disponibilidade deve pertencer à turma');
 teaching_ux_expect(str_contains($lessons,'update_lesson')&&str_contains($lessons,'move_lesson'),'estrutura deve permitir corrigir e ordenar aulas existentes');
 teaching_ux_expect(str_contains($lessons,'Ver conteúdo afetado'),'decisão de liberação deve revelar a consequência sobre o material');
@@ -40,7 +40,7 @@ teaching_ux_expect(str_contains($material,'admin-teaching-danger'),'retirada de 
 teaching_ux_expect(str_contains($material,"admin_status_label('page'"),'Material deve traduzir estado editorial da página');
 teaching_ux_expect(!str_contains($material,'vínculo educacional')&&!str_contains($material,'página CMS'),'Material não deve ensinar o modelo interno do CMS ao operador');
 
-foreach([$courses,$cohorts,$lessons,$material] as $page)teaching_ux_expect(!preg_match('/<style\b/i',$page),'rotas de Ensino não podem conter CSS visual inline');
+foreach([$courses,$cohorts,$lessons,$material] as $page)teaching_ux_expect(!preg_match('/<style\\b/i',$page),'rotas de Ensino não podem conter CSS visual inline');
 teaching_ux_expect(str_contains($teachingCss,'.admin-workspace-nav')&&str_contains($teachingCss,'.admin-release-form')&&str_contains($teachingCss,'.admin-teaching-danger'),'componentes específicos de Ensino devem permanecer na camada compartilhada do domínio');
 
 echo "admin-teaching-ux: ok\n";
