@@ -39,7 +39,7 @@ if(!str_contains($media,'if(current_admin())')||!str_contains($media,'student_pr
 if(!str_contains($shell,"/assets/admin-system.css")||str_contains($shell,"/assets/admin-student-area.css"))fail_material('admin shared UX stylesheet not canonical');
 if(str_contains($admin,'style='))fail_material('student admin contains page-local inline style');
 foreach(['view=','admin-subtabs','admin-data-toolbar','LIMIT ? OFFSET ?','slot_key'] as $needle)if(!str_contains($admin,$needle))fail_material('scalable student operations contract missing: '.$needle);
-if(!str_contains($guard,'/admin/people.php')||!str_contains($people,'FROM student_users u'))fail_material('global student identity administration is not canonical');
-if(!str_contains($shell,"'material'=>['Material'")||!str_contains($courseAdmin,"admin_course_url(\$activityId,\$courseId,'material')")||!str_contains($materialAdmin,'course_material_add_page')||!str_contains($materialAdmin,'/editor/?page='))fail_material('course material does not consume canonical CMS pages/editor through the material collection');
+if(!str_contains($guard,"'/admin/students.php'")||!str_contains($people,'FROM student_users u'))fail_material('global student identity and participation administration is not canonical');
+if(!str_contains($shell,"'content'=>['Conteúdo',admin_course_url")||!str_contains($materialAdmin,'course_material_add_page')||!str_contains($materialAdmin,'/editor/?page='))fail_material('course material does not consume canonical CMS pages/editor through the course workspace');
 if(str_contains($materialAdmin,'material-editor')||str_contains($materialAdmin,'material_renderer'))fail_material('parallel material editor/renderer leaked');
 echo "student-material-system: ok\n";
