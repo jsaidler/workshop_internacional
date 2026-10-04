@@ -6,6 +6,7 @@ $root=dirname(__DIR__);
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
 $experienceCss=(string)file_get_contents($root.'/assets/student-experience.css');
+$academicCss=(string)file_get_contents($root.'/assets/student-academic.css');
 $renderedCss=(string)file_get_contents($root.'/assets/student-rendered-fixes.css');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $uiJs=(string)file_get_contents($root.'/assets/ui-core.js');
@@ -25,22 +26,26 @@ must_student_premium_ui(!str_contains($shell,'data-theme="light"'),'student shel
 must_student_premium_ui(str_contains($shell,'data-theme-value="auto"')&&str_contains($shell,'data-theme-value="dark"'),'student shell does not expose canonical theme choices');
 must_student_premium_ui(str_contains($shell,'/assets/ui-core.css')&&str_contains($shell,'/assets/ui-core.js'),'student shell does not consume global UI authority');
 must_student_premium_ui(str_contains($shell,'/assets/student-experience.css')&&str_contains($shell,'/assets/student-experience.js'),'student shell does not load the experience layer');
+must_student_premium_ui(str_contains($shell,'/assets/student-academic.css'),'student shell does not load the academic UX layer');
 must_student_premium_ui(str_contains($shell,'/assets/student-rendered-fixes.css')&&str_contains($shell,'data-student-rendered-fixes'),'student shell does not load the rendered visual polish layer');
 foreach(['.student-field','.student-choice-','.student-check-field','.student-button','.student-error','.student-notice','.student-danger-button','--student-control-height'] as $forbidden)must_student_premium_ui(!str_contains($css,$forbidden),'student stylesheet still owns global primitive '.$forbidden);
 
 foreach(['>Início</a>','>Curso</a>','>Caderno</a>'] as $destination)must_student_premium_ui(str_contains($shell,$destination),'student primary navigation is missing '.$destination);
 must_student_premium_ui(str_contains($shell,'data-toolbox-open')&&str_contains($shell,'data-student-toolbox'),'small utilities are not exposed as a contextual toolbox');
 must_student_premium_ui(str_contains($shell,'student-user-menu')&&str_contains($shell,'Gerenciar conta'),'account/theme/session controls are not grouped as settings');
-must_student_premium_ui(str_contains($experienceCss,'.student-home-primary')&&str_contains($experienceCss,'.student-process-now')&&str_contains($experienceCss,'.student-bench-grid'),'experience stylesheet lost task hierarchy');
+must_student_premium_ui(str_contains($experienceCss,'.student-home-primary')&&str_contains($experienceCss,'.student-process-now')&&str_contains($experienceCss,'.student-bench-grid'),'experience stylesheet lost task hierarchy for unchanged student surfaces');
+must_student_premium_ui(str_contains($academicCss,'.student-dashboard-focus')&&str_contains($academicCss,'.student-academic-material-list'),'academic stylesheet does not own Dashboard/Course study hierarchy');
 
 foreach(['.form-field','.choice-field','.check-field','.button-compact','.button-danger','.ui-alert'] as $global)must_student_premium_ui(str_contains($uiCss,$global),'global UI stylesheet is missing '.$global);
 must_student_premium_ui(str_contains($uiCss,'appearance:none')&&str_contains($uiCss,'[aria-invalid=true]'),'global field states are incomplete');
 must_student_premium_ui(str_contains($uiJs,"form[data-ui-validate]")&&str_contains($uiJs,'workshop-theme'),'global UI behavior does not own validation and theme');
 
-must_student_premium_ui(str_contains($home,'student_experience_process_state')&&str_contains($home,'<h1 class="student-title">Início</h1>'),'student home is not a continuation surface');
+must_student_premium_ui(str_contains($home,'student_experience_dashboard_state')&&str_contains($home,'<h1 class="student-title">Início</h1>'),'student home is not a next-action surface');
+must_student_premium_ui(str_contains($home,'student-dashboard-focus')&&str_contains($home,'student-dashboard-links'),'student home does not preserve a clear primary action plus secondary destinations');
 must_student_premium_ui(!str_contains($home,'Escolha o que você veio fazer')&&!str_contains($home,'Abrir laboratório'),'student home regressed to a duplicate navigation catalog');
 must_student_premium_ui(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment still requires a course-selector click');
-must_student_premium_ui(str_contains($courses,'student-course-dashboard')&&str_contains($courses,'Dúvidas e respostas'),'course workspace is not flattened around study tasks');
+must_student_premium_ui(str_contains($courses,'student-academic-material-list')&&str_contains($courses,'Dúvidas e respostas'),'course workspace is not flattened around study tasks');
+must_student_premium_ui(!str_contains($courses,'student-course-dashboard')&&!str_contains($courses,'$releasedCount'),'course workspace regressed to parallel dashboard/progress blocks');
 must_student_premium_ui(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity'),'workbench lost inline simple exposure tools');
 must_student_premium_ui(!str_contains($bench,'data-lab-timer')&&str_contains($bench,'/aluno/processamentos.php'),'workbench did not replace the isolated timer with the process manager');
 must_student_premium_ui(str_contains($processManager,'Associar ao registro')&&str_contains($processManager,'Iniciar no laboratório'),'process manager is not reusable across notebook and laboratory contexts');
