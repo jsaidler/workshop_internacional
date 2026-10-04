@@ -128,6 +128,7 @@ function admin_course_workspace_items(int $activityId,int $courseId): array {ret
     'overview'=>['Visão geral',admin_course_url($activityId,$courseId)],
     'registrations'=>['Inscrições',admin_course_url($activityId,$courseId,'registrations')],
     'cohorts'=>['Turmas',admin_course_url($activityId,$courseId,'cohorts')],
+    'students'=>['Alunos',admin_course_url($activityId,$courseId,'students')],
     'content'=>['Conteúdo',admin_course_url($activityId,$courseId,'content')],
     'followup'=>['Acompanhamento',admin_course_url($activityId,$courseId,'followup')],
 ];}
@@ -142,12 +143,12 @@ function admin_workspace_nav(array $items,string $active,string $label): void {
     ?><nav class="admin-workspace-nav" aria-label="<?=h($label)?>"><?php foreach($items as $key=>[$text,$url]):?><a href="<?=h($url)?>"<?=$key===$active?' aria-current="page"':''?>><?=h($text)?></a><?php endforeach;?></nav><?php
 }
 function admin_course_context(array $course,int $activityId,string $active='overview',?string $description=null): void {
-    $courseId=(int)$course['id'];
-    ?><section class="admin-scope-strip admin-workspace-context" aria-label="Curso atual"><div class="admin-workspace-heading"><a class="admin-scope-parent" href="<?=h(admin_shell_url('/admin/courses.php',['id'=>$activityId]))?>">Cursos</a><span class="admin-scope-label">Curso</span><strong><?=h((string)$course['title'])?></strong><?php if($description):?><small><?=h($description)?></small><?php endif;?></div><?php admin_workspace_nav(admin_course_workspace_items($activityId,$courseId),$active,'Áreas do curso');?></section><?php
+    $courseId=(int)$course['id'];$coursesUrl=admin_shell_url('/admin/courses.php',['id'=>$activityId]);
+    ?><section class="admin-scope-strip admin-workspace-context" aria-label="Curso atual"><nav class="admin-breadcrumb" aria-label="Localização"><a href="<?=h($coursesUrl)?>">Cursos</a><span aria-hidden="true">›</span><span aria-current="page"><?=h((string)$course['title'])?></span></nav><div class="admin-context-heading"><div><span class="admin-scope-label">Curso</span><h2><?=h((string)$course['title'])?></h2><?php if($description):?><small><?=h($description)?></small><?php endif;?></div><a class="admin-context-back" href="<?=h($coursesUrl)?>">← Todos os cursos</a></div><?php admin_workspace_nav(admin_course_workspace_items($activityId,$courseId),$active,'Áreas do curso');?></section><?php
 }
 function admin_cohort_context(array $course,array $cohort,int $activityId,string $active='overview',?string $description=null): void {
-    $courseId=(int)$course['id'];$cohortId=(int)$cohort['id'];
-    ?><section class="admin-scope-strip admin-workspace-context" aria-label="Turma atual"><div class="admin-workspace-heading"><a class="admin-scope-parent" href="<?=h(admin_course_url($activityId,$courseId,'cohorts'))?>"><?=h((string)$course['title'])?> · Turmas</a><span class="admin-scope-label">Turma</span><strong><?=h((string)$cohort['title'])?></strong><?php if($description):?><small><?=h($description)?></small><?php endif;?></div><?php admin_workspace_nav(admin_cohort_workspace_items($activityId,$courseId,$cohortId),$active,'Áreas da turma');?></section><?php
+    $courseId=(int)$course['id'];$cohortId=(int)$cohort['id'];$coursesUrl=admin_shell_url('/admin/courses.php',['id'=>$activityId]);$courseUrl=admin_course_url($activityId,$courseId);$cohortsUrl=admin_course_url($activityId,$courseId,'cohorts');
+    ?><section class="admin-scope-strip admin-workspace-context" aria-label="Turma atual"><nav class="admin-breadcrumb" aria-label="Localização"><a href="<?=h($coursesUrl)?>">Cursos</a><span aria-hidden="true">›</span><a href="<?=h($courseUrl)?>"><?=h((string)$course['title'])?></a><span aria-hidden="true">›</span><a href="<?=h($cohortsUrl)?>">Turmas</a><span aria-hidden="true">›</span><span aria-current="page"><?=h((string)$cohort['title'])?></span></nav><div class="admin-context-heading"><div><span class="admin-scope-label">Turma</span><h2><?=h((string)$cohort['title'])?></h2><?php if($description):?><small><?=h($description)?></small><?php endif;?></div><a class="admin-context-back" href="<?=h($cohortsUrl)?>">← Voltar às turmas</a></div><?php admin_workspace_nav(admin_cohort_workspace_items($activityId,$courseId,$cohortId),$active,'Áreas da turma');?></section><?php
 }
 
 function admin_shell_start(string $section,string $title,array $state,array $styles=[]): void {

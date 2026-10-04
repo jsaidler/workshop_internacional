@@ -17,7 +17,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
  $target=$cohort?admin_cohort_url($activityId,$courseId,$cohortId,'lessons'):admin_course_url($activityId,$courseId,'lessons');header('Location: '.$target,true,303);exit;
 }
 $lessons=course_lessons_for_course($db,$courseId);$impact=admin_course_lesson_material_impact($db,$courseId);$materials=course_material_pages($db,$courseId);$notice=(string)($_SESSION['admin_lessons_notice']??'');unset($_SESSION['admin_lessons_notice']);$tone=str_starts_with($notice,'Não foi possível')?'error':'success';
-admin_shell_start('lessons',$cohort?'Aulas e acesso · '.(string)$cohort['title']:'Conteúdo · Aulas',$state,['/assets/admin-teaching.css','/assets/admin-operations.css']);?>
+admin_shell_start('lessons',$cohort?'Aulas e acesso':'Aulas',$state,['/assets/admin-teaching.css','/assets/admin-operations.css']);?>
 <?php if($notice!==''):?><div class="admin-notice <?=h($tone)?>" role="<?=$tone==='error'?'alert':'status'?>"><?=h($notice)?></div><?php endif;?>
 <?php if($cohort):admin_cohort_context($course,$cohort,$activityId,'lessons','Disponibilidade do conteúdo nesta turma.');$releaseRows=course_lesson_release_rows_for_course($db,$cohortId,$courseId);?>
 <section class="admin-card admin-teaching-detail"><header><div><h2>Aulas e acesso</h2><p>Liberar uma aula torna disponíveis as seções de material associadas a ela.</p></div><?php if($materials):?><a class="admin-button secondary" href="/admin/course-preview.php?<?=h(http_build_query(['activity'=>$activityId,'course'=>$courseId,'cohort'=>$cohortId,'page'=>(int)$materials[0]['id']]))?>" target="_blank" rel="noopener">Visualizar como esta turma ↗</a><?php endif;?></header></section>
