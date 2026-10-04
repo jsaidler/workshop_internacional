@@ -1,0 +1,1 @@
+This fixture exists only for automated browser rendering of the administrative shell and representative product states. It does not authenticate, query production data, or define business rules.
