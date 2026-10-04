@@ -12,13 +12,17 @@ test('material preserves course and cohort context without becoming a second das
   await expect(page.getByTestId('questions')).toHaveAttribute('href','/aluno/duvidas.php?cohort=cohort-a');
   await expect(context.locator('a[rel="prev"]')).toHaveAttribute('href',/cohort=cohort-a/);
   await expect(context.locator('a[rel="next"]')).toHaveAttribute('href',/cohort=cohort-a/);
+  await expect(context.locator('a[rel="next"]')).toContainText('Segunda revelação e acabamento');
   await expect(page.locator('.cms-student-context')).toHaveCount(0);
 });
 
 test('material is a continuous editorial reading surface with annotations beside it',async({page})=>{
   await page.goto(url);
-  await expect(page.getByTestId('editorial-material')).toBeVisible();
-  await expect(page.getByTestId('editorial-material').locator('[data-cms-section]')).toHaveCount(2);
+  const material=page.getByTestId('editorial-material');
+  await expect(material).toBeVisible();
+  await expect(material.locator('[data-cms-section]')).toHaveCount(2);
+  await expect(material).not.toContainText('aula correspondente já foi liberada');
+  await expect(material).not.toContainText('não aparece neste HTML');
   await expect(page.getByTestId('notes-panel')).toBeVisible();
   await page.getByTestId('notes-panel').locator('summary').click();
   await expect(page.getByTestId('notes-panel')).toHaveAttribute('open','');
