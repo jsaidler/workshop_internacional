@@ -21,6 +21,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('admin/tests.php')
+          s=p.read_text(encoding='utf-8')
+          old="if($cohortId>0&&!$cohort)$cohortId=0;"
+          new="if($cohortId>0&&!$cohort){$cohortId=0;}"
+          if old not in s:
+              raise SystemExit('tests cohort guard normalization target missing')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
           python3 .admin-product-repair.py
           rm -f .admin-product-repair.py
           rm -f .github/workflows/admin-product-repair-batch.yml
