@@ -30,7 +30,7 @@ must_workshop_page_architecture(str_contains($adminShell,"'activities'=>['Estrut
 
 must_workshop_page_architecture(str_contains($renderer,'cms_access_filter_html($db,$activity,$body,$currentStudent,$editor,null,$materialContext)'),'public renderer bypasses canonical section access filter with enrollment context');
 must_workshop_page_architecture(!str_contains($renderer,'data-cms-student-context')&&!str_contains($headerCss,'.cms-student-context'),'protected material still renders a second student header bar');
-must_workshop_page_architecture(str_contains($renderer,'/aluno/caderno.php')&&str_contains($renderer,'/aluno/duvidas.php?cohort='),'protected material topbar does not expose the current Caderno and course Dúvidas destinations');
+must_workshop_page_architecture(str_contains($renderer,'cms_student_material_context_html')&&str_contains($renderer,"'/aluno/cursos.php?cohort='")&&str_contains($renderer,"'/aluno/duvidas.php?cohort='"),'protected material does not expose the current course context and course Dúvidas destination');
 must_workshop_page_architecture(!str_contains($renderer,'/aluno/testes.php?cohort='),'protected material still exposes the obsolete Tests destination');
 
 echo "workshop-page-architecture: ok\n";

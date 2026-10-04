@@ -36,14 +36,14 @@ must_student_material_context(student_enrollment_material_context($db,$student,$
 must_student_material_context(student_enrollment_material_context($db,$student,$authenticatedPage,'cohort-a')===null,'generic authenticated page incorrectly received a course workspace context');
 
 $renderer=(string)file_get_contents(__DIR__.'/../app/cms_renderer.php');
-$css=(string)file_get_contents(__DIR__.'/../assets/cms-header.css');
+$css=(string)file_get_contents(__DIR__.'/../assets/cms-student-notes.css');
 must_student_material_context(str_contains($renderer,'student_enrollment_material_context'),'public renderer does not derive context from the canonical enrollment helper');
 must_student_material_context(str_contains($renderer,'cms_access_filter_html($db,$activity,$body,$currentStudent,$editor,null,$materialContext)'),'public renderer does not apply the canonical section access filter with enrollment context');
-must_student_material_context(!str_contains($renderer,'data-cms-student-context')&&!str_contains($css,'.cms-student-context'),'protected material still creates a second header bar');
-must_student_material_context(str_contains($renderer,"'/aluno/?cohort='"),'course return link does not preserve the cohort uuid');
-must_student_material_context(str_contains($renderer,'/aluno/caderno.php')&&str_contains($renderer,'/aluno/duvidas.php?cohort=')&&str_contains($renderer,'href="/aluno/perfil.php"'),'single topbar does not expose Caderno, Dúvidas and Conta');
+must_student_material_context(str_contains($renderer,'cms_student_material_context_html'),'material renderer does not expose the academic reading context');
+must_student_material_context(str_contains($renderer,"'/aluno/cursos.php?cohort='")&&str_contains($renderer,"'/aluno/duvidas.php?cohort='"),'course/material navigation does not preserve the cohort uuid');
+must_student_material_context(str_contains($renderer,'course_material_page_release_summary')&&str_contains($renderer,"['available','partial']"),'previous/next material navigation includes pages with no currently usable content');
+must_student_material_context(str_contains($renderer,'<main id="main" data-cms-page-main><?=$studyContext?><?=$body?>'),'study context is not in the normal reading flow before editorial content');
+must_student_material_context(str_contains($css,'.cms-student-study-context')&&str_contains($css,'.cms-student-study-pagination'),'material context has no canonical student CSS owner');
 must_student_material_context(!str_contains($renderer,'/aluno/testes.php?cohort='),'protected material still exposes the obsolete Testes destination');
-must_student_material_context(str_contains($renderer,'$studentAccessLabel=$materialContext?$contextBackLabel:$studentAreaLabel'),'single topbar does not turn the student action into the course return action');
 must_student_material_context(str_contains($renderer,'if(!$editor)'),'editor preview is not protected from student-session context UI');
-
 echo "student-material-context: ok\n";

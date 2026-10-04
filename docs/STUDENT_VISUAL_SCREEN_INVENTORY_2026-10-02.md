@@ -7,9 +7,9 @@ Este inventário operacionaliza a regra de que nenhuma tela da área do aluno po
 | Rota / domínio | Estados mínimos no audit |
 |---|---|
 | `aluno/login.php` | entrada e ativação inicial |
-| `aluno/index.php` | dashboard |
-| `aluno/cursos.php` | lista de cursos e curso/turma |
-| material do curso (CMS autenticado) | leitura + anotações |
+| `aluno/index.php` | Caderno em andamento; uma matrícula sem pendência no Caderno e com material utilizável; múltiplas matrículas |
+| `aluno/cursos.php` | múltiplas matrículas; curso/turma com material disponível, parcial e agendado; curso sem material |
+| material do curso (CMS autenticado) | leitura parcial com seções de aulas diferentes filtradas no servidor; contexto curso/turma; anterior/próximo preservando `cohort`; anotações; telefone estreito |
 | `aluno/duvidas.php` | lista, nova dúvida e conversa |
 | `aluno/caderno.php` | lista e novo registro |
 | `aluno/teste.php` | exposição, escolha de processamento, roteiro aplicado e resultado |
@@ -47,6 +47,8 @@ Estes arquivos não recebem screenshot próprio porque são redirecionadores, a�
 
 ## Gate
 
-`tools/browser-tests/student-complete-area-audit.spec.cjs` é a lista executável de cobertura visual total. Estados transversais de mudança de rota são complementados por `tools/browser-tests/student-process-replanning-audit.spec.cjs`, incluindo a troca depois de fatos registrados e a troca enquanto o app possuía estado operacional mas nenhum fato havia sido consolidado. O segundo caso deve provar visualmente que o sistema não fabrica uma “interrupção”.
+`tools/browser-tests/student-complete-area-audit.spec.cjs` é a lista executável de cobertura visual total. A Tranche D acrescenta três estados acadêmicos obrigatórios ao conjunto anterior, totalizando **43 superfícies renderizadas por viewport**: três estados de Dashboard, três estados de Curso e o Material acadêmico, além de todas as superfícies já existentes.
+
+Estados transversais de mudança de rota são complementados por `tools/browser-tests/student-process-replanning-audit.spec.cjs`, incluindo a troca depois de fatos registrados e a troca enquanto o app possuía estado operacional mas nenhum fato havia sido consolidado. O segundo caso deve provar visualmente que o sistema não fabrica uma “interrupção”.
 
 Os testes não substituem a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.

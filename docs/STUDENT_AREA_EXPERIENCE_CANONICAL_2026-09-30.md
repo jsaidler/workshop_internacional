@@ -110,3 +110,45 @@ A regressão deve impedir:
 - Conta ocupando a navegação inferior;
 - quebra da autoridade visual global;
 - perda de contexto de curso, Caderno, inventário, preparos, dúvidas ou material.
+
+## 10. Tranche D — Dashboard, Curso e Material — 04/10/2026
+
+Esta tranche explicita como as três superfícies acadêmicas consomem o domínio canônico de curso/turma/matrícula/aula/material sem criar um segundo modelo.
+
+### Dashboard
+
+O Dashboard responde à pergunta **“o que faço agora?”**. A prioridade não é simplesmente o registro mais recente.
+
+1. Se existe um registro do Caderno que ainda exige uma ação real, ele pode ocupar a ação principal: exposição/processamento incompletos, resultado ainda não registrado, revisão solicitada ou registro de curso pronto para revisão/envio.
+2. Registros enviados ou revisados deixam de ser prioridade. Um registro pessoal com processamento e resultado já documentados também deixa de monopolizar a tela.
+3. Sem trabalho pendente no Caderno e com uma única matrícula, o Dashboard pode levar diretamente ao primeiro material atualmente utilizável, preservando `cohort`.
+4. Com múltiplas matrículas, a escolha do curso é necessária porque muda o próximo contexto; com uma única matrícula essa escolha não é repetida.
+5. Sem matrícula ativa, o Caderno pessoal continua sendo um próximo passo válido.
+
+Não existe estado canônico de “conteúdo novo” ou “não lido”. Uma liberação muda o que está disponível, mas não deve ser anunciada como novidade até existir um modelo persistente de leitura/ciência do aluno.
+
+### Curso
+
+A unidade editorial do material é a **página CMS associada ao curso**. A aula não substitui essa estrutura: ela funciona como regra acadêmica de disponibilidade das seções associadas.
+
+- páginas permanecem na ordem editorial definida por `course_material_pages`;
+- uma página pode estar `Disponível`, `Parcial`, `Agendada` ou `Aguardando` conforme as seções mapeadas e a disponibilidade da turma;
+- seções não associadas a aula permanecem livres dentro da página autorizada;
+- aulas já liberadas não precisam ser duplicadas em uma segunda coluna de “progresso”; somente liberações futuras/pendentes podem aparecer como contexto secundário;
+- a ausência de material e a ausência de aulas possuem estados vazios próprios;
+- a troca de curso só aparece quando existe mais de uma matrícula.
+
+### Material
+
+O Material continua sendo uma página editorial CMS de leitura. O HTML bloqueado continua sendo removido no servidor antes da camada de anotações.
+
+A superfície do aluno acrescenta somente contexto acadêmico externo ao conteúdo editorial:
+
+- curso e turma atuais;
+- retorno explícito ao curso;
+- Dúvidas preservando `cohort`;
+- navegação anterior/próximo entre páginas atualmente utilizáveis do mesmo curso;
+- preservação de `cohort` em todos esses percursos;
+- Caderno de anotações existente sem alterar a estrutura editorial da página.
+
+Esse contexto não deve se transformar em uma segunda barra global nem em um dashboard dentro do material. No telefone ele permanece no fluxo normal da leitura; não pode cobrir o conteúdo nem depender de blur/transparência persistente.

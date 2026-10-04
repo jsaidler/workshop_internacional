@@ -1,3 +1,18 @@
+/* Student study context and annotations live beside the editorial page, never inside its content model. */
+.cms-public .cms-student-study-context{width:min(840px,calc(100% - 40px));margin:26px auto 18px;padding:0 0 18px;border-bottom:1px solid var(--line);color:var(--text)}
+.cms-public .cms-student-study-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.cms-public .cms-student-study-head>div{display:grid;gap:4px}
+.cms-public .cms-student-study-head a,.cms-public .cms-student-study-questions{color:var(--text);font:600 10px/1.3 var(--mono);letter-spacing:.04em;text-decoration:none;text-transform:uppercase}
+.cms-public .cms-student-study-head a:hover,.cms-public .cms-student-study-head a:focus-visible,.cms-public .cms-student-study-questions:hover,.cms-public .cms-student-study-questions:focus-visible{text-decoration:underline;text-underline-offset:4px}
+.cms-public .cms-student-study-head strong{font-family:var(--title);font-size:24px;font-weight:500;line-height:1.05}
+.cms-public .cms-student-study-head small{color:var(--muted);font-size:12px;line-height:1.4}
+.cms-public .cms-student-study-pagination{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.cms-public .cms-student-study-pagination a{display:grid;gap:4px;color:var(--text);text-decoration:none}
+.cms-public .cms-student-study-pagination a:last-child{text-align:right}
+.cms-public .cms-student-study-pagination span{color:var(--muted);font:500 9px/1.2 var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.cms-public .cms-student-study-pagination strong{font-size:13px;line-height:1.35}
+.cms-public .cms-student-study-pagination a:hover strong,.cms-public .cms-student-study-pagination a:focus-visible strong{text-decoration:underline;text-underline-offset:4px}
+
 /* Student annotations are one notebook layer for the material page, not widgets glued to sections. */
 .cms-public .student-notes-entry{display:none}
 .cms-public .student-notes-entry>a{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:600 10px/1 var(--mono);letter-spacing:.05em;text-decoration:none;text-transform:uppercase}
@@ -48,6 +63,12 @@
 .cms-public .student-reanchor-hint[hidden]{display:none}
 .cms-public .student-reanchor-hint button{border:0;background:none;color:var(--muted);cursor:pointer;font:600 10px/1 var(--mono);text-decoration:underline;text-underline-offset:3px;text-transform:uppercase}
 @media(max-width:760px),(pointer:coarse){
+  .cms-public .cms-student-study-context{width:calc(100% - 32px);margin:18px 16px 14px;padding-bottom:14px}
+  .cms-public .cms-student-study-head{align-items:flex-start}
+  .cms-public .cms-student-study-head strong{font-size:21px}
+  .cms-public .cms-student-study-pagination{grid-template-columns:1fr;gap:12px;margin-top:14px;padding-top:14px}
+  .cms-public .cms-student-study-pagination>span:empty{display:none}
+  .cms-public .cms-student-study-pagination a:last-child{text-align:left}
   .cms-public .student-notes-panel:not([open]){position:static;right:auto;bottom:auto;margin:28px 16px calc(20px + env(safe-area-inset-bottom,0px));z-index:auto}
   .cms-public .student-notes-panel:not([open])>summary{width:100%;justify-content:space-between;box-shadow:none;background:var(--surface)}
   .cms-public .student-notes-panel[open]{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:400}

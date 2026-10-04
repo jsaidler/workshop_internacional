@@ -1,24 +1,21 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--gutter:24px;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:monospace}</style>
-  <link rel="stylesheet" href="/template/page.css">
-  <link rel="stylesheet" href="/assets/cms-header.css">
-  <title>Student material context fixture</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--gutter:24px;--body:Arial,sans-serif;--title:Georgia,serif;--mono:monospace;--reading-width:840px}</style>
+  <link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/cms-core.css"><link rel="stylesheet" href="/assets/cms-responsive.css"><link rel="stylesheet" href="/assets/cms-header.css"><link rel="stylesheet" href="/assets/cms-editorial.css"><link rel="stylesheet" href="/assets/cms-study.css"><link rel="stylesheet" href="/assets/cms-student-notes.css">
+  <title>Material acadêmico</title>
 </head>
-<body class="cms-public" data-cms-page-slug="caderno-positivo-direto">
-<header class="topbar cms-topbar cms-topbar-static" data-cms-public-header>
-  <a class="brand" href="#">JSaidler Fotografia</a>
-  <button class="cms-nav-toggle" type="button">Menu</button>
-  <nav><a href="#">Workshop</a></nav>
-  <div class="cms-topbar-actions"><a class="cms-student-access" href="/aluno/?cohort=cohort-a">Área do aluno</a></div>
-</header>
-<aside class="cms-student-context" data-cms-student-context>
-  <div class="cms-student-context-copy"><span>Área do aluno</span><strong>Positivo direto em filme de raio-X</strong><small>Turma Setembro</small></div>
-  <nav aria-label="Navegação do curso"><a data-testid="back-course" href="/aluno/?cohort=cohort-a">Voltar ao curso</a><a data-testid="tests" href="/aluno/testes.php">Testes</a><a data-testid="account" href="/aluno/perfil.php">Conta</a></nav>
-</aside>
-<main id="main" data-cms-page-main><section style="min-height:520px;padding:48px var(--gutter)"><h1>Material protegido</h1><p>Conteúdo do CMS permanece no renderer público.</p></section></main>
-</body>
-</html>
+<body class="cms-public" data-cms-page-slug="processo-quimico-completo">
+<header class="topbar cms-topbar cms-topbar-static" data-cms-public-header><a class="brand">JSaidler Fotografia</a><button class="cms-nav-toggle" type="button">Menu</button><nav><a>Workshop</a></nav><div class="cms-topbar-actions"><a class="cms-student-access" href="/aluno/cursos.php?cohort=cohort-a">Curso</a></div></header>
+<main id="main" data-cms-page-main>
+  <aside class="cms-student-study-context" aria-label="Contexto de estudo" data-testid="study-context"><div class="cms-student-study-head"><div><a data-testid="back-course" href="/aluno/cursos.php?cohort=cohort-a">Curso ←</a><strong>Positivo direto em filme de raio-X</strong><small>Turma Outubro 2026</small></div><a class="cms-student-study-questions" data-testid="questions" href="/aluno/duvidas.php?cohort=cohort-a">Dúvidas</a></div><nav class="cms-student-study-pagination" aria-label="Navegação do material"><a rel="prev" href="?page=exposicao&cohort=cohort-a"><span>← Anterior</span><strong>Exposição pensando no positivo</strong></a><a rel="next" href="?page=segunda-revelacao&cohort=cohort-a"><span>Próximo →</span><strong>Segunda revelação e acabamento</strong></a></nav></aside>
+  <article class="study-material" data-testid="editorial-material">
+    <header class="study-cover"><p class="section-label">Segundo encontro</p><div class="statement-grid"><div><h1>Processo químico completo</h1></div><p class="study-subtitle">Do primeiro desenvolvimento à obtenção do positivo no próprio filme de raio-X.</p></div></header>
+    <section class="study-unit" data-cms-section="primeiro-desenvolvimento" data-student-note-context="primeiro-desenvolvimento"><p class="section-label">01 · Desenvolvimento</p><div class="statement-grid"><div><h2>Primeiro desenvolvimento</h2></div><div class="statement-copy"><p>O primeiro desenvolvimento forma a imagem negativa que servirá de base ao positivo. O controle aqui é feito em relação à exposição realmente usada e à resposta do conjunto filme–revelador.</p><p data-student-anchor-block>Ao comparar resultados, mantenha as demais variáveis constantes sempre que a intenção for observar o efeito de uma mudança de exposição ou de desenvolvimento.</p></div></div></section>
+    <section class="study-unit" data-cms-section="branqueamento" data-student-note-context="branqueamento"><p class="section-label">02 · Branqueamento</p><div class="statement-grid"><div><h2>Branqueamento</h2></div><div class="statement-copy"><p>O branqueamento remove a prata metálica formada no primeiro desenvolvimento. A sequência de lavagem e limpeza precisa ser concluída antes da reexposição.</p><div class="technical-note study-instruction">Registre tempo, temperatura e qualquer diferença observada entre a sequência prevista e o que foi realmente feito.</div></div></div></section>
+    <section class="study-unit"><p class="section-label">Caderno</p><div class="statement-grid"><div><h2>Notas de bancada</h2></div><div class="statement-copy"><p>Use suas anotações para relacionar o resultado final às condições de exposição e aos valores efetivamente usados no processamento.</p></div></div></section>
+  </article>
+  <details class="student-notes-panel" data-testid="notes-panel"><summary>Anotações <b>2</b></summary><div class="student-notes-sheet"><header class="student-notes-head"><div><span>Material</span><h2>Suas anotações</h2><p>Selecione um trecho do texto para anotar diretamente sobre ele. Anotações gerais continuam disponíveis para a página inteira.</p></div></header><div class="student-notes-list"><article class="student-note-item"><header><span>Primeiro desenvolvimento</span><strong>Comparar EI 200 e EI 400</strong></header><p>Repetir o teste mantendo diluição, temperatura e agitação.</p></article><article class="student-note-item"><header><span>Branqueamento</span><strong>Conferir lavagem</strong></header><p>Observar se ainda há resíduo antes da reexposição.</p></article></div></div></details>
+</main>
+</body></html>

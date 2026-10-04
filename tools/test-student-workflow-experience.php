@@ -17,7 +17,7 @@ $hardening=(string)file_get_contents($root.'/app/student_workbench_hardening.php
 must_student_workflow(str_contains($shell,'>Início</a>')&&str_contains($shell,'>Curso</a>')&&str_contains($shell,'>Caderno</a>'),'primary navigation lost task-centered destinations');
 must_student_workflow(str_contains($shell,'data-student-toolbox')&&str_contains($shell,'data-toolbox-open'),'simple tools are not available as an integrated toolbox');
 must_student_workflow(!str_contains($home,'Escolha o que você veio fazer'),'home still asks the student to classify their intent');
-must_student_workflow(str_contains($home,'student_experience_process_state')&&str_contains($home,'Continuar'),'home no longer resumes the latest process');
+must_student_workflow(str_contains($home,'student_experience_dashboard_state')&&str_contains($home,'Continuar no Caderno'),'home no longer prioritizes unfinished Caderno work');
 must_student_workflow(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment still requires an intermediate course click');
 must_student_workflow(str_contains($notebook,'Mais ações')&&str_contains($notebook,'student_experience_process_state'),'notebook does not prioritize continuation over secondary actions');
 must_student_workflow(!str_contains($notebook,'student-process-compare'),'notebook reintroduced permanent comparison controls');
