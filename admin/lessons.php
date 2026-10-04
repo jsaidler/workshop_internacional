@@ -3,7 +3,7 @@ declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';require __DIR__.'/../app/admin_shell.php';security_headers();require_admin();
 $db=database();$state=admin_activity_resolution($db);$activity=$state['activity'];if(!$activity){header('Location: /admin/activities.php');exit;}$activityId=(int)$activity['id'];
 $courses=course_list($db,$activityId);$courseId=max(0,(int)($_GET['course']??$_POST['course_id']??0));$course=$courseId>0?course_by_id($db,$courseId):null;if(!$course||(int)$course['activity_id']!==$activityId){if(count($courses)===1){header('Location: '.admin_course_url($activityId,(int)$courses[0]['id'],'lessons'),true,302);exit;}header('Location: /admin/courses.php?activity='.$activityId,true,302);exit;}
-$cohortId=max(0,(int)($_GET['cohort']??$_POST['cohort_id']??0));$cohort=$cohortId>0?admin_course_cohort($db,$courseId,$cohortId,false):null;if($cohortId>0&&!$cohort){http_response_code(404);exit('Turma não encontrada.');}
+$cohortId=max(0,(int)($_GET['cohort']??$_POST['cohort_id']??0));$cohort=$cohortId>0?admin_course_cohort($db,$courseId,$cohortId,false):null;if($cohortId>0&&!$cohort){$_SESSION['admin_cohorts_notice']='A turma solicitada não existe ou não está ativa neste curso.';header('Location: '.admin_course_url($activityId,$courseId,'cohorts'),true,302);exit;}
 function lesson_release_display(?string $utc): string {if(!$utc)return '';try{$dt=new DateTimeImmutable($utc);$tz=new DateTimeZone((string)(app_config()['timezone']??'UTC'));return $dt->setTimezone($tz)->format('d/m/Y · H:i');}catch(Throwable){return (string)$utc;}}
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
  if(!verify_csrf('lessons-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Invalid request');}$action=(string)($_POST['action']??'');
