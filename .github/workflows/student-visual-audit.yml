@@ -29,6 +29,7 @@ on:
       - 'tools/browser-fixture/student-secondary-screens-audit.html'
       - 'tools/browser-fixture/student-material-notes.html'
       - 'tools/browser-fixture/student-notebook-compare.html'
+      - 'tools/browser-fixture/student-pedagogical-feedback-audit.html'
       - 'tools/browser-tests/student-visual-audit.spec.cjs'
       - 'tools/browser-tests/student-tools-mechanics-audit.spec.cjs'
       - 'tools/browser-tests/student-process-product-audit.spec.cjs'
