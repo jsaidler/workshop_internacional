@@ -21,16 +21,67 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          : > /tmp/admin-repair.raw.patch
-          for part in .admin-repair/part-*; do
-            cat "$part" >> /tmp/admin-repair.raw.patch
-            printf '\n' >> /tmp/admin-repair.raw.patch
-          done
-          sed \
-            -e 's#a/workshop_dist/#a/#g' \
-            -e 's#b/admin_repair_test2/#b/#g' \
-            /tmp/admin-repair.raw.patch > /tmp/admin-repair.patch
-          git apply --3way --recount /tmp/admin-repair.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          parts=sorted(Path('.admin-repair').glob('part-*'))
+          patch=''.join(p.read_text(encoding='utf-8') for p in parts)
+          patch=patch.replace('a/workshop_dist/','a/').replace('b/admin_repair_test2/','b/')
+          lines=patch.splitlines(keepends=True)
+
+          files=[]
+          current=None
+          hunk=None
+          for line in lines:
+              if line.startswith('diff --git '):
+                  m=re.match(r'diff --git a/(.+?) b/(.+?)\s*$',line.rstrip('\n'))
+                  if not m:
+                      raise SystemExit(f'Invalid diff header: {line!r}')
+                  current={'path':m.group(2),'hunks':[]}
+                  files.append(current)
+                  hunk=None
+                  continue
+              if current is None:
+                  continue
+              if line.startswith('@@'):
+                  hunk={'old':[],'new':[]}
+                  current['hunks'].append(hunk)
+                  continue
+              if hunk is None:
+                  continue
+              if line.startswith('\\ No newline at end of file'):
+                  continue
+              if line.startswith(' '):
+                  hunk['old'].append(line[1:]);hunk['new'].append(line[1:])
+              elif line.startswith('-') and not line.startswith('---'):
+                  hunk['old'].append(line[1:])
+              elif line.startswith('+') and not line.startswith('+++'):
+                  hunk['new'].append(line[1:])
+              elif line.strip()=='' and hunk is not None:
+                  # Split patch parts may insert a blank separator. It is not source context.
+                  continue
+
+          if not files:
+              raise SystemExit('No file patches parsed')
+
+          for item in files:
+              path=Path(item['path'])
+              if not path.exists():
+                  raise SystemExit(f'Missing target file: {path}')
+              text=path.read_text(encoding='utf-8')
+              for idx,h in enumerate(item['hunks'],1):
+                  old=''.join(h['old']);new=''.join(h['new'])
+                  if old==new:
+                      continue
+                  count=text.count(old)
+                  if count!=1:
+                      marker=(old[:180].replace('\n','\\n'))
+                      raise SystemExit(f'{path}: hunk {idx}: expected one exact match, found {count}: {marker}')
+                  text=text.replace(old,new,1)
+              path.write_text(text,encoding='utf-8')
+              print(f'applied {len(item["hunks"])} hunks to {path}')
+          PY
           rm -rf .admin-repair
           rm -f .github/workflows/apply-admin-repair.yml
           git config user.name 'github-actions[bot]'
