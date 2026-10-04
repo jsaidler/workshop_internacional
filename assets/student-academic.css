@@ -2,6 +2,7 @@
  * These styles own the study/navigation layer only; the editorial material
  * itself remains under the CMS study styles. */
 .student-dashboard-focus{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:end;margin-top:18px;padding:26px 0 30px;border-top:1px solid var(--student-line-soft);border-bottom:1px solid var(--student-line-soft)}
+.student-dashboard-focus[hidden]{display:none}
 .student-dashboard-focus-copy{min-width:0}
 .student-dashboard-focus-copy .student-kicker{margin-bottom:8px}
 .student-dashboard-focus-copy h2{max-width:760px;margin:0;font-family:var(--title);font-size:clamp(32px,4.4vw,54px);font-weight:500;line-height:.98;text-transform:none}
