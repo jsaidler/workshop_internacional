@@ -13,8 +13,8 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         $action=(string)($_POST['action']??'');
         if($action!=='fork')throw new RuntimeException('Ação inválida.');
         $baseId=(int)($_POST['source_test_id']??0);if(!in_array($baseId,$ids,true))throw new RuntimeException('Escolha um dos registros comparados como base.');
-        $created=student_research_fork($db,$baseId,$studentId,(string)($_POST['research_intent']??''));
-        $_SESSION['student_process_notice']='Próxima variação criada. Revise a exposição antes de continuar.';
+        $intent=(string)($_POST['research_intent']??'');$created=student_research_fork($db,$baseId,$studentId,$intent);$base=$recordMap[$baseId];
+        $_SESSION['student_process_notice']='Próxima variação criada a partir de “'.(string)$base['title'].'”. Intenção: '.(string)$created['research_intent'].' Revise a exposição antes de continuar.';
         header('Location: /aluno/teste.php?id='.(int)$created['id'].'&view=exposure',true,303);exit;
     }catch(Throwable $e){$error=$e->getMessage();}
 }
