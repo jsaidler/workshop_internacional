@@ -2,36 +2,33 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:monospace}</style>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--body:Arial,sans-serif;--title:Georgia,serif;--mono:monospace}</style>
   <link rel="stylesheet" href="/template/page.css">
+  <link rel="stylesheet" href="/assets/ui-core.css">
   <link rel="stylesheet" href="/assets/student-area.css">
-  <title>Dashboard truth fixture</title>
+  <link rel="stylesheet" href="/assets/student-workbench.css">
+  <link rel="stylesheet" href="/assets/student-experience.css">
+  <link rel="stylesheet" href="/assets/student-academic.css">
+  <link rel="stylesheet" href="/assets/student-quality-pass.css">
+  <title>Dashboard acadêmico</title>
 </head>
 <body class="student-page">
 <div class="student-shell">
+  <header class="student-topbar"><a class="brand student-wordmark" href="#">JSaidler Fotografia</a><nav class="student-desktop-nav" aria-label="Área do aluno"><a aria-current="page">Início</a><a>Curso</a><a>Caderno</a></nav><span class="student-topbar-spacer"></span><button class="button button-secondary button-compact student-tools-trigger" type="button">Ferramentas</button><details class="student-user-menu"><summary>Conta</summary></details></header>
   <main class="student-main">
-    <p class="student-kicker">Área do aluno</p>
-    <h1 class="student-title">Cursos e prática</h1>
-    <p class="student-lead">Acesse o material liberado para sua turma e registre as experimentações enquanto fotografa e revela.</p>
-    <section class="student-course-stack" aria-label="Cursos e materiais">
-      <article class="student-course-card" data-testid="course-card">
-        <header>
-          <div><span class="student-card-label">Turma Setembro</span><h2>Positivo direto em filme de raio-X</h2></div>
-          <span class="student-course-progress" data-testid="progress">1/3 aulas liberadas</span>
-        </header>
-        <div class="student-release-list" aria-label="Liberação das aulas">
-          <span class="is-released" data-testid="lesson-released"><b>Aula 1</b><small>liberada</small></span>
-          <span class="is-scheduled" data-testid="lesson-scheduled"><b>Aula 2</b><small>agendada</small></span>
-          <span data-testid="lesson-blocked"><b>Aula 3</b><small>aguardando</small></span>
-        </div>
-        <div class="student-course-actions">
-          <div><span class="student-card-label">Material</span><a class="student-course-primary" href="#activity">Caderno do curso →</a><a class="student-course-primary" href="#cohort">Material da turma →</a></div>
-          <div><span class="student-card-label">Prática</span><p>Registre exposição, cena, revelação e resultado no telefone.</p><a class="student-course-primary" href="#tests">Abrir meus testes →</a></div>
-        </div>
-      </article>
-    </section>
+    <p class="student-kicker">Área do aluno</p><h1 class="student-title">Início</h1>
+    <section data-fixture-state="active" class="student-dashboard-focus" aria-labelledby="dash-active"><div class="student-dashboard-focus-copy"><p class="student-kicker">Continuar no Caderno</p><h2 id="dash-active">Retrato 04 — janela lateral</h2><p>Primeiro desenvolvimento · atualizado em 03/10/2026.</p></div><div class="student-dashboard-focus-action"><a class="button button-primary">Continuar registro →</a></div></section>
+    <section data-fixture-state="study" class="student-dashboard-focus" aria-labelledby="dash-study" hidden><div class="student-dashboard-focus-copy"><p class="student-kicker">Estudar</p><h2 id="dash-study">Exposição pensando no positivo</h2><p>Positivo direto em filme de raio-X · Turma Outubro 2026</p></div><div class="student-dashboard-focus-action"><a class="button button-primary">Abrir material →</a></div></section>
+    <section data-fixture-state="multiple" class="student-dashboard-focus" aria-labelledby="dash-multiple" hidden><div class="student-dashboard-focus-copy"><p class="student-kicker">Estudar</p><h2 id="dash-multiple">Escolha o curso</h2><p>Há 2 matrículas ativas. A escolha só é necessária porque ela muda o material e a turma que serão abertos.</p></div><div class="student-dashboard-focus-action"><a class="button button-primary">Escolher curso →</a></div></section>
+    <nav class="student-dashboard-links" aria-label="Outros destinos"><a class="student-dashboard-link"><span><strong>Curso</strong><small data-course-meta>Positivo direto em filme de raio-X · Turma Outubro 2026</small></span><span>→</span></a><a class="student-dashboard-link"><span><strong>Caderno</strong><small>7 registros no caderno.</small></span><span>→</span></a></nav>
   </main>
+  <nav class="student-mobile-nav" aria-label="Área do aluno"><a aria-current="page">Início</a><a>Curso</a><a>Caderno</a><button type="button">Ferramentas</button></nav>
 </div>
+<script>
+const params=new URLSearchParams(location.search);const state=params.get('state')||'active';
+document.querySelectorAll('[data-fixture-state]').forEach(el=>{el.hidden=el.dataset.fixtureState!==state;});
+if(state==='multiple')document.querySelector('[data-course-meta]').textContent='2 matrículas ativas.';
+</script>
 </body>
 </html>
