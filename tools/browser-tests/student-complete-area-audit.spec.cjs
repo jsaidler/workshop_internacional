@@ -115,7 +115,14 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name==='research-derived'){
         await expect(page.getByText('Continuação de',{exact:false})).toBeVisible();
         await expect(page.getByText('Manter EI 400 e voltar a primeira revelação para 7 minutos.',{exact:false})).toBeVisible();
-        await expect(page.getByText('Comparar com origem',{exact:true})).toBeVisible();
+        const menu=page.locator('.student-record-menu');
+        const compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});
+        await expect(menu).toBeVisible();
+        await expect(compareOrigin).toBeHidden();
+        await menu.locator('summary').click();
+        await expect(compareOrigin).toBeVisible();
+        await menu.locator('summary').click();
+        await expect(compareOrigin).toBeHidden();
       }
       if(name==='process-choice'){
         await expect(page.getByText('O processamento já aconteceu?',{exact:true})).toBeVisible();
