@@ -42,8 +42,8 @@ ux_expect(str_contains($adminShell,'class="admin-workspace-nav"'),'navegação c
 ux_expect(str_contains($globalNav,"'Site'=>admin_context_items('site'")&&str_contains($adminShell,"'forms'=>['Formulários'"),'Formulários deve ficar em Site');
 ux_expect(str_contains($globalNav,"'Sistema'=>admin_context_items('settings'")&&str_contains($adminShell,"'integrity'=>['Integridade'"),'Integridade deve ficar em Sistema');
 
-ux_expect(str_contains($courses,"['overview','setup']")||str_contains($courses,"['overview','setup'],true"),'curso deve conservar visão geral e configuração próprias');
-ux_expect(str_contains($courses,'Escolha um curso para administrar inscrições, turmas, conteúdo e acompanhamento.'),'catálogo de cursos deve explicar a tarefa, não o modelo de dados');
+ux_expect(str_contains($courses,'in_array($view,[\'overview\',\'setup\',\'new\'],true)'),'curso deve conservar visão geral e configuração próprias');
+ux_expect(str_contains($courses,'Escolha um curso para administrar inscrições, turmas, alunos, conteúdo e acompanhamento.'),'catálogo de cursos deve explicar a tarefa, não o modelo de dados');
 ux_expect(str_contains($courses,'Abrir curso')&&str_contains($courses,'admin_course_context($course'),'abrir curso deve entrar no workspace persistente');
 ux_expect(str_contains($courses,'Precisa de atenção')&&str_contains($courses,'pending_payment')&&str_contains($courses,'unassigned'),'visão geral do curso deve priorizar pendências operacionais');
 ux_expect(str_contains($courses,'Buscar curso')&&str_contains($courses,'LIMIT $pageSize OFFSET $offset'),'catálogo de cursos deve pesquisar e paginar no servidor');
