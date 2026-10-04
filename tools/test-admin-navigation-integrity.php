@@ -22,8 +22,8 @@ $assert(str_contains($students,"admin_course_context($course,$activityId,'studen
 $assert(str_contains($students,'admin-responsive-list'),'Student collections must have a semantic mobile presentation.');
 
 $people=$read('admin/people.php');
-$assert(str_contains($people,"'course'=>(int)$row['course_id'],'submission'=>(int)$row['source_submission_id']"),'Person to source-registration links must preserve course context.');
-$assert(str_contains($people,"'course'=>(int)$row['course_id'],'submission'=>(int)$row['id']"),'Person registration history links must preserve course context.');
+$assert(str_contains($people,'\'course\'=>(int)$row[\'course_id\'],\'submission\'=>(int)$row[\'source_submission_id\']'),'Person to source-registration links must preserve course context.');
+$assert(str_contains($people,'\'course\'=>(int)$row[\'course_id\'],\'submission\'=>(int)$row[\'id\']'),'Person registration history links must preserve course context.');
 $assert(str_contains($people,'cohort_title\']?:\'Não definida'),'Person history must show cohort identity instead of an internal numeric id.');
 
 foreach(['admin/questions.php','admin/tests.php','admin/students.php'] as $path){
