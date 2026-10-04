@@ -48,6 +48,24 @@ function student_experience_process_state(array $record,array $steps): array {
 }
 
 /**
+ * Dashboard state is intentionally narrower than the generic Caderno state.
+ * The home page must surface unfinished work, not keep the newest record as a
+ * permanent priority after that record no longer requires an action.
+ */
+function student_experience_dashboard_state(array $record,array $steps,bool $hasResult=false): ?array {
+    $status=(string)($record['status']??'draft');
+    $scope=(string)($record['context_scope']??'course');
+    if($status==='reviewed'||$status==='submitted')return null;
+    if($status==='needs_revision')return ['label'=>'Revisão solicitada','view'=>'review','action'=>'Revisar registro'];
+    $complete=student_experience_process_complete($steps);
+    if($complete&&$hasResult){
+        if($scope==='course')return ['label'=>'Resultado registrado','view'=>'review','action'=>'Revisar e enviar'];
+        return null;
+    }
+    return student_experience_process_state($record,$steps);
+}
+
+/**
  * State shown by the Caderno list. A saved plan is documentation/preparation,
  * not proof that laboratory execution has begun.
  */
