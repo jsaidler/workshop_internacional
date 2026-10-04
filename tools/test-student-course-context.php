@@ -16,5 +16,6 @@ must_student_course_context(str_contains($courses,'elseif(count($enrollments)===
 must_student_course_context(str_contains($courses,'Trocar curso')&&str_contains($courses,'count($enrollments)>1'),'course switch is not limited to students with multiple enrollments');
 must_student_course_context(str_contains($courses,'As aulas aparecerão conforme forem cadastradas.'),'empty lesson state is misleading');
 must_student_course_context(str_contains($courses,"student_shell_start('Curso',\$selectedActivity,\$student)"),'selected course design context is not passed to student shell');
-must_student_course_context(str_contains($home,'student_experience_process_state')&&!str_contains($home,'student_course_context_header'),'student home must remain a continuation surface, not the course workspace');
+must_student_course_context(str_contains($courses,'student-academic-choice-list')&&str_contains($courses,'student-academic-material-list'),'course surface still uses dashboard-style card composition');
+must_student_course_context(str_contains($home,'student_experience_dashboard_state')&&!str_contains($home,'student_course_context_header'),'student home must remain a next-action surface, not the course workspace');
 echo "student-course-context: ok\n";
