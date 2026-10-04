@@ -12,8 +12,9 @@ $nonScreens=[
 $actual=array_map('basename',glob($root.'/aluno/*.php')?:[]);sort($actual);$classified=array_merge($rendered,$nonScreens);sort($classified);
 must_student_visual_inventory($actual===$classified,'every aluno/*.php file must be explicitly classified as rendered screen or non-screen endpoint');
 $spec=(string)file_get_contents($root.'/tools/browser-tests/student-complete-area-audit.spec.cjs');
-$requiredVisualNames=['login','home','course-list','course-detail','material','questions-list','question-new','question-thread','notebook','new-record','exposure','process-choice','process-plan','recording-start','recording-partial','recording-complete','result','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-empty','inventory-movement','inventory-item-editor','preparations','preparation-editor','calibration-list','calibration-editor','tools','toolbox','profile','password-change'];
+$requiredVisualNames=['login','home','home-feedback','course-list','course-detail','course-feedback','material','questions-list','questions-feedback','question-new','question-thread','notebook','new-record','exposure','process-choice','process-plan','recording-start','recording-partial','recording-complete','result','result-waiting','result-revision','result-reviewed','step-editor','shared-record','delete-record','compare-records','process-library','process-editor','lab-runner','inventory','inventory-empty','inventory-movement','inventory-item-editor','preparations','preparation-editor','calibration-list','calibration-editor','tools','toolbox','profile','password-change'];
 foreach($requiredVisualNames as $name)must_student_visual_inventory(str_contains($spec,"['$name'"),'complete visual audit is missing '.$name);
+must_student_visual_inventory(str_contains($spec,"toBe(49)"),'complete visual audit surface count must include the six pedagogical feedback states');
 $replanSpec=(string)file_get_contents($root.'/tools/browser-tests/student-process-replanning-audit.spec.cjs');
 must_student_visual_inventory(str_contains($replanSpec,"view==='choice'")&&str_contains($replanSpec,"view==='active'")&&str_contains($replanSpec,"view==='recorded'"),'route-change screen is not covered across factual and unconsolidated route states');
 must_student_visual_inventory(!str_contains($replanSpec,"view==='interrupted'"),'visual audit must not preserve the obsolete interrupted-by-app state');
@@ -22,5 +23,6 @@ must_student_visual_inventory(str_contains($workflow,'student-complete-area-audi
 must_student_visual_inventory(str_contains($workflow,'student-process-replanning-audit.spec.cjs'),'route-change visual audit is not executed by workflow');
 $doc=(string)file_get_contents($root.'/docs/STUDENT_VISUAL_SCREEN_INVENTORY_2026-10-02.md');
 foreach($rendered as $file)must_student_visual_inventory(str_contains($doc,'`aluno/'.$file.'`')||in_array($file,['teste.php'],true),'screen inventory doc is missing '.$file);
+must_student_visual_inventory(str_contains($doc,'49 superfícies por viewport'),'screen inventory does not declare the Tranche E coverage');
 must_student_visual_inventory(str_contains($doc,'artefato inteiro deve ser aberto e observado'),'screen inventory must require human inspection');
 echo "student-visual-screen-inventory: ok\n";
