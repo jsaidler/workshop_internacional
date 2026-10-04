@@ -38,6 +38,14 @@ CREATE TABLE course_material_sections(
   updated_at TEXT NOT NULL,
   PRIMARY KEY(course_id,page_id,section_key)
 );
+CREATE TABLE course_page_media_slots(
+  page_id INTEGER NOT NULL,
+  slot_key TEXT NOT NULL,
+  media_asset_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY(page_id,slot_key)
+);
 SQL);
 
 $oldHtml=<<<'HTML'
@@ -47,7 +55,8 @@ $oldHtml=<<<'HTML'
 <a class="format-card" href="#caderno-aula-3"><span class="number">03</span><h3 data-cms-editable>Revisão de resultados</h3></a>
 </div></section>
 <section data-cms-section="caderno-aula-1"><h2>Aula 1 preservada</h2></section>
-<section data-cms-section="caderno-aula-2"><h2>Aula 2 preservada</h2></section>
+<section id="caderno-aula-2" data-cms-section="caderno-aula-2"><h2>Aula 2 preservada</h2></section>
+<section data-cms-section="caderno-20-materiais"><h2>Conteúdo final existente da Aula 2 preservado</h2></section>
 <section id="caderno-aula-3" class="format" data-cms-section="caderno-aula-3" data-cms-section-name="Aula 3 — Revisão de resultados"><h2>Revisão de resultados</h2></section>
 <section class="section" data-cms-section="caderno-21-leitura-resultados"><p>Conteúdo antigo 21</p></section>
 <section class="section" data-cms-section="caderno-22-registro"><p>Conteúdo antigo 22</p></section>
@@ -59,15 +68,35 @@ foreach(['caderno-aula-3','caderno-21-leitura-resultados','caderno-22-registro']
     $db->prepare('INSERT INTO course_page_sections(page_id,section_key,lesson_id,created_at,updated_at) VALUES(1,?,3,\'old\',\'old\')')->execute([$key]);
     $db->prepare('INSERT INTO course_material_sections(course_id,page_id,section_key,lesson_id,created_at,updated_at) VALUES(1,1,?,3,\'old\',\'old\')')->execute([$key]);
 }
+foreach(['caderno-aula-2','caderno-20-materiais'] as $key){
+    $db->prepare('INSERT INTO course_page_sections(page_id,section_key,lesson_id,created_at,updated_at) VALUES(1,?,2,\'old\',\'old\')')->execute([$key]);
+    $db->prepare('INSERT INTO course_material_sections(course_id,page_id,section_key,lesson_id,created_at,updated_at) VALUES(1,1,?,2,\'old\',\'old\')')->execute([$key]);
+}
+$db->exec("INSERT INTO course_page_media_slots(page_id,slot_key,media_asset_id,created_at,updated_at) VALUES(1,'aula3-caderno',99,'old','old')");
 
-$migration=require __DIR__.'/../migrations/085_aula3_student_area_research_guide.php';
-$migration($db);
+$aula3Migration=require __DIR__.'/../migrations/085_aula3_student_area_research_guide.php';
+$aula2Migration=require __DIR__.'/../migrations/087_aula2_practice_bridge.php';
+$aula3Migration($db);
+$aula2Migration($db);
 $page=$db->query('SELECT * FROM cms_pages WHERE id=1')->fetch();
 $published=json_decode((string)$page['published_document_json'],true,512,JSON_THROW_ON_ERROR);
 $draft=json_decode((string)$page['draft_document_json'],true,512,JSON_THROW_ON_ERROR);
 $html=(string)$published['html'];
 
-must_aula3(str_contains($html,'Aula 1 preservada')&&str_contains($html,'Aula 2 preservada'),'migration replaced material outside Aula 3');
+must_aula3(str_contains($html,'Aula 1 preservada')&&str_contains($html,'Aula 2 preservada')&&str_contains($html,'Conteúdo final existente da Aula 2 preservado'),'migration replaced existing material outside the intended additions');
+must_aula3(strpos($html,'Conteúdo final existente da Aula 2 preservado')<strpos($html,'Agora é a vez de vocês'),'Aula 2 bridge does not follow the existing Aula 2 ending');
+must_aula3(strpos($html,'Antes do terceiro encontro')<strpos($html,'id="caderno-aula-3"'),'Aula 2 bridge was not inserted before Aula 3');
+must_aula3(str_contains($html,'Registre o que aconteceu, não o que deveria ter acontecido.'),'Aula 2 practice principle missing');
+must_aula3(str_contains($html,'Não é preciso chegar com uma fotografia “certa”. Precisamos chegar com resultados que possamos observar, reconstruir e discutir.'),'Aula 2 preparation for lesson 3 missing');
+must_aula3(str_contains($html,'data-private-media-slot="aula2-caderno"'),'Aula 2 screenshot slot missing');
+foreach(['caderno-20a-agora-e-a-vez','caderno-20b-antes-terceiro-encontro'] as $key){
+    must_aula3(str_contains($html,'data-cms-section="'.$key.'"'),'document missing Aula 2 bridge section '.$key);
+    $q=$db->prepare('SELECT lesson_id FROM course_page_sections WHERE page_id=1 AND section_key=?');$q->execute([$key]);must_aula3((int)$q->fetchColumn()===2,'legacy Aula 2 mapping missing for '.$key);
+    $q=$db->prepare('SELECT lesson_id FROM course_material_sections WHERE course_id=1 AND page_id=1 AND section_key=?');$q->execute([$key]);must_aula3((int)$q->fetchColumn()===2,'course Aula 2 mapping missing for '.$key);
+}
+$q=$db->query("SELECT media_asset_id FROM course_page_media_slots WHERE page_id=1 AND slot_key='aula2-caderno'");
+must_aula3((int)$q->fetchColumn()===99,'Aula 2 Caderno screenshot did not reuse the canonical Caderno asset');
+
 must_aula3(str_contains($html,'Área do aluno: revisão, avaliação e continuidade da pesquisa'),'new Aula 3 title missing');
 must_aula3(str_contains($html,'Área do aluno e continuidade'),'index was not updated');
 must_aula3(!str_contains($html,'Conteúdo antigo 21')&&!str_contains($html,'Conteúdo antigo 22'),'old generic Aula 3 sections remain in document');
@@ -89,12 +118,13 @@ foreach($keys as $key){
 }
 must_aula3((int)$db->query("SELECT COUNT(*) FROM course_page_sections WHERE section_key IN ('caderno-21-leitura-resultados','caderno-22-registro')")->fetchColumn()===0,'old lesson mappings remain');
 must_aula3((int)$db->query("SELECT COUNT(*) FROM course_material_sections WHERE section_key IN ('caderno-21-leitura-resultados','caderno-22-registro')")->fetchColumn()===0,'old course material mappings remain');
-must_aula3((int)$page['draft_revision']===11&&(int)$page['published_revision']===11,'page revision was not advanced');
+must_aula3((int)$page['draft_revision']===12&&(int)$page['published_revision']===12,'page revisions did not advance for Aula 3 plus Aula 2 bridge');
 must_aula3($draft['meta']['test']===true&&$published['meta']['test']===true,'document metadata was not preserved');
 
 $before=(string)$page['published_document_json'];
-$migration($db);
+$aula3Migration($db);
+$aula2Migration($db);
 $after=(string)$db->query('SELECT published_document_json FROM cms_pages WHERE id=1')->fetchColumn();
-must_aula3($before===$after,'migration is not idempotent after Aula 3 replacement');
+must_aula3($before===$after,'migrations are not idempotent after material update');
 
 echo "aula3-student-area-material: ok\n";
