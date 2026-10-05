@@ -34,7 +34,7 @@ function student_process_notebook_delete_free_step(PDO $db,int $testId,int $step
     $q=$db->prepare('SELECT id FROM student_process_steps WHERE id=? AND test_id=?');$q->execute([$stepId,$testId]);if(!$q->fetchColumn())throw new RuntimeException('Etapa não encontrada.');
     $db->beginTransaction();try{
         $db->prepare('DELETE FROM student_process_steps WHERE id=? AND test_id=?')->execute([$stepId,$testId]);
-        $rows=student_process_steps($db,$testId);$u=$db->prepare('UPDATE student_process_steps SET position=?,updated_at=? WHERE id=?');$now=utc_now();foreach($rows as $i=>$row)$u->execute([$i+1,$now,(int)$row['id']);
+        $rows=student_process_steps($db,$testId);$u=$db->prepare('UPDATE student_process_steps SET position=?,updated_at=? WHERE id=?');$now=utc_now();foreach($rows as $i=>$row)$u->execute([$i+1,$now,(int)$row['id']]);
         $db->prepare('UPDATE student_tests SET updated_at=? WHERE id=? AND student_id=?')->execute([$now,$testId,$studentId]);$db->commit();
     }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }
