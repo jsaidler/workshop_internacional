@@ -73,6 +73,16 @@ A migração `084_student_research_lineage.php` adiciona `source_test_id` e `res
 
 A exclusão da origem usa `ON DELETE SET NULL`: a experimentação derivada continua existindo, mas deixa de afirmar uma origem que já não está disponível.
 
+## Enquadramento no material pedagógico
+
+O conteúdo que usa Caderno, Exposição, Processamento, Resultado, avaliação, comparação, continuidade e Ferramentas é apresentado ao aluno como **Prática**. O identificador histórico interno `caderno-aula-3` pode ser preservado, mas não define a função pedagógica nem a nomenclatura pública desse bloco.
+
+Prática acontece **entre o segundo e o terceiro encontro**. Por isso, suas seções devem ser liberadas com a Aula 2, e não depender da liberação do terceiro encontro. O fim da Aula 2 apenas introduz o trabalho autônomo; Prática oferece as orientações e as ferramentas necessárias enquanto o aluno produz e registra suas próprias tentativas.
+
+O terceiro encontro não possui uma seção de conteúdo fixo no material. Sua proposta aparece no último parágrafo de Prática: partir das experiências realizadas pelos alunos para observar resultados, discutir diferenças registradas e analisar em conjunto as decisões de exposição e processamento. Não é exigido um resultado “correto”.
+
+O fluxo pedagógico permanece `registro → observação → avaliação → comparação → próxima tentativa`, com as mesmas invariantes semânticas deste documento: cálculo ou roteiro não equivalem a fato realizado, comparação é descritiva e uma continuação não copia processamento executado nem resultado da tentativa de origem.
+
 ## Gate visual e funcional
 
 A Tranche F acrescenta ao inventário visual obrigatório:
