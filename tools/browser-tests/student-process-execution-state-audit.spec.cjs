@@ -8,7 +8,6 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.setViewportSize(viewport);await page.goto(`${base}?state=${state}`,{waitUntil:'networkidle'});
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`${state} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByText('Reutilize o banho da primeira revelação')).toBeVisible();
-      await expect(page.getByRole('button',{name:'Ir para próxima etapa',exact:true})).toBeEnabled();
       const status=page.locator('[data-runner-state-status]'),start=page.locator('[data-runner-start]'),pause=page.locator('[data-runner-pause]'),reset=page.locator('[data-runner-reset]');
       if(state==='idle'){
         await expect(status).toHaveText('Pronto para iniciar');await expect(start).toBeVisible();await expect(start).toBeEnabled();await expect(pause).toBeHidden();await expect(reset).toBeHidden();
@@ -17,7 +16,7 @@ for(const [device,viewport] of Object.entries(viewports)){
       }else if(state==='paused'){
         await expect(status).toHaveText('Cronômetro pausado');await expect(start).toBeVisible();await expect(start).toHaveText('Retomar');await expect(pause).toBeHidden();await expect(reset).toBeVisible();await expect(page.locator('[data-runner-agitation]')).toHaveText('Agitação pausada');
       }else{
-        await expect(status).toHaveText('Tempo concluído');await expect(start).toBeHidden();await expect(pause).toBeHidden();await expect(reset).toBeVisible();await expect(page.locator('[data-runner-agitation]')).toHaveText('Agitação encerrada');
+        await expect(status).toHaveText('Tempo concluído');await expect(start).toBeVisible();await expect(start).toHaveText('Iniciar novamente');await expect(pause).toBeHidden();await expect(reset).toBeVisible();await expect(page.locator('[data-runner-agitation]')).toHaveText('Agitação encerrada');
       }
       await page.screenshot({path:`student-visual-audit/${device}/process-execution-${state}.png`,fullPage:true,animations:'disabled'});
     });
@@ -48,10 +47,10 @@ for(const [device,viewport] of Object.entries(viewports)){
   });
 }
 
-test('timer remains a tool while progression stays available',async({page})=>{
+test('timer remains a reusable independent tool',async({page})=>{
   await page.setViewportSize({width:390,height:844});await page.goto(`${base}?state=idle`,{waitUntil:'networkidle'});
-  await expect(page.getByRole('button',{name:'Ir para próxima etapa',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Iniciar',exact:true}).click();await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro em andamento');
-  await expect.poll(async()=>await page.locator('[data-runner-clock]').textContent(),{timeout:2500}).not.toBe('07:00');await expect(page.getByRole('button',{name:'Ir para próxima etapa',exact:true})).toBeEnabled();
+  await page.getByRole('button',{name:'Iniciar',exact:true}).click();await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro em andamento');
+  await expect.poll(async()=>await page.locator('[data-runner-clock]').textContent(),{timeout:2500}).not.toBe('07:00');
   await page.getByRole('button',{name:'Pausar',exact:true}).click();await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro pausado');const paused=await page.locator('[data-runner-clock]').textContent();await page.waitForTimeout(1100);await expect(page.locator('[data-runner-clock]')).toHaveText(paused);
   await page.getByRole('button',{name:'Retomar',exact:true}).click();await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro em andamento');await page.getByRole('button',{name:'Reiniciar',exact:true}).click();await expect(page.locator('[data-runner-state-status]')).toHaveText('Pronto para iniciar');await expect(page.locator('[data-runner-clock]')).toHaveText('07:00');
 });
