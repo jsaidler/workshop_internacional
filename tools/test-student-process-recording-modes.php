@@ -3,70 +3,19 @@ declare(strict_types=1);
 function fail_process_recording(string $message): never {fwrite(STDERR,"student-process-recording: $message\n");exit(1);}
 function must_process_recording(bool $ok,string $message): void {if(!$ok)fail_process_recording($message);}
 $root=dirname(__DIR__);
-$migration=(string)file_get_contents($root.'/migrations/080_student_process_recording_modes.php');
-$domain=(string)file_get_contents($root.'/app/student_process_recording.php');
-$execution=(string)file_get_contents($root.'/app/student_process_execution.php');
-$labNavigation=(string)file_get_contents($root.'/app/student_process_lab_navigation.php');
-$page=(string)file_get_contents($root.'/aluno/processamento-realizado.php');
-$record=(string)file_get_contents($root.'/aluno/teste.php');
-$notebook=(string)file_get_contents($root.'/aluno/caderno.php');
-$manager=(string)file_get_contents($root.'/aluno/processamentos.php');
-$runner=(string)file_get_contents($root.'/aluno/processar.php');
-$entry=(string)file_get_contents($root.'/assets/student-process-entry.js');
-$progressive=(string)file_get_contents($root.'/assets/student-process-recording.js');
-$shell=(string)file_get_contents($root.'/app/student_shell.php');
-$quality=(string)file_get_contents($root.'/assets/student-quality-pass.css');
-$rules=(string)file_get_contents($root.'/docs/STUDENT_PRODUCT_UX_CANONICAL_RULES_2026-10-02.md');
+$legacyMigration=(string)file_get_contents($root.'/migrations/080_student_process_recording_modes.php');$legacyDomain=(string)file_get_contents($root.'/app/student_process_recording.php');$legacyPage=(string)file_get_contents($root.'/aluno/processamento-realizado.php');
+$record=(string)file_get_contents($root.'/aluno/teste.php');$runner=(string)file_get_contents($root.'/aluno/processar.php');$notebookDomain=(string)file_get_contents($root.'/app/student_process_notebook.php');$doc=(string)file_get_contents($root.'/docs/STUDENT_CADERNO_PRODUCT_UX_TRANCHE_B_2026-10-01.md');
 
-must_process_recording(str_contains($migration,'CREATE TABLE IF NOT EXISTS student_process_recording_meta'),'recording metadata migration is missing');
-foreach(['live','retroactive','mixed'] as $mode)must_process_recording(str_contains($domain,"'$mode'"),'domain must recognize '.$mode.' recording mode');
-must_process_recording(str_contains($domain,'student_process_plan_complete_recorded'),'plan cannot be completed as an already-performed record');
-must_process_recording(str_contains($domain,'student_process_plan_apply_standard'),'workshop standards cannot be snapped directly into a record');
-must_process_recording(str_contains($domain,"unset(\$input['inventory_item_id'],\$input['inventory_amount'])"),'retroactive recording can accidentally consume inventory');
-must_process_recording((bool)preg_match('/\$meta\[[\'\"]recording_mode[\'\"]\]\s*=\s*\$mode/',$domain),'actual recorded steps do not preserve entry mode');
+// Migração e serviço antigos permanecem somente para compatibilidade de dados já existentes.
+must_process_recording(str_contains($legacyMigration,'student_process_recording_meta'),'legacy recording metadata migration disappeared');
+must_process_recording(str_contains($legacyDomain,'student_process_recording_meta'),'legacy recording data can no longer be read');
+// A antiga superfície temporal não é mais uma experiência de produto.
+must_process_recording(str_contains($legacyPage,"header('Location: '.\$next,true,303)")&&str_contains($legacyPage,'não possui um modo separado'),'legacy already-performed route must converge to the record');
 
-must_process_recording(str_contains($page,'Registrar processamento')&&str_contains($page,'Registre a sequência que você realmente realizou.'),'retroactive recording page has no concise student-facing purpose');
-must_process_recording(str_contains($page,'Não há baixa automática no inventário.'),'retroactive page does not explain inventory consequence');
-must_process_recording(str_contains($page,'vira uma cópia própria deste registro'),'retroactive page does not explain snapshot independence');
-must_process_recording(str_contains($page,'Registrar etapas restantes'),'partial tracking cannot be completed without replaying timers');
-must_process_recording(str_contains($page,'Registrar processo como realizado'),'fully retroactive associated plan cannot be completed directly');
-must_process_recording(str_contains($page,"\$planCompleted>0?'Registro parcial':'Roteiro associado'"),'retroactive page does not distinguish an untouched associated plan from partial execution');
-must_process_recording(str_contains($page,'Editar etapa'),'recorded snapshot cannot expose deviation correction');
-must_process_recording(str_contains($page,'data-recorded-process-form'),'manual retroactive entry lacks progressive form contract');
-must_process_recording(!str_contains($page,'student-process-recording-principles'),'retroactive page still exposes the old pair of permanent explanatory cards');
-
-must_process_recording(str_contains($record,'Usar um roteiro')&&str_contains($record,'Registrar manualmente'),'Caderno does not expose useful processing actions without a temporal classification gate');
-must_process_recording(str_contains($record,'Continuar laboratório'),'Caderno does not server-render partial process continuation');
-must_process_recording(str_contains($record,'intent=live'),'live laboratory execution is not an explicit preserved intent');
-must_process_recording(str_contains($record,'/aluno/processamento-realizado.php?test=<?=$id?>'),'manual or retroactive recording is not a first-class server-rendered path');
-must_process_recording(str_contains($notebook,'student_notebook_process_summary'),'Caderno list does not derive documentary processing summaries');
-must_process_recording(!str_contains($notebook,'Roteiro em execução'),'Caderno list still labels an associated plan as execution');
-must_process_recording(!str_contains($record,'O processamento já aconteceu?')&&!str_contains($record,'Vou revelar agora')&&!str_contains($record,'Já revelei'),'Caderno still asks the user to classify when the process happened before exposing useful actions');
-
-must_process_recording(str_contains($manager,'Associar ao registro'),'process manager lost neutral association mode');
-must_process_recording(str_contains($manager,'Nenhuma execução foi iniciada.'),'association does not state that execution remains untouched');
-must_process_recording(str_contains($manager,"\$target=\$intent==='live'?'/aluno/processar.php?test='.\$testId.'&intent=live':'/aluno/teste.php?id='.\$testId.'&view=process'"),'process manager does not preserve the previously declared live intent');
-must_process_recording(str_contains($manager,"\$intent!=='live')\$intent=''"),'process manager does not constrain intent values');
-must_process_recording(str_contains($manager,'Usar no laboratório'),'live selection is not labeled as a laboratory action');
-
-must_process_recording(str_contains($runner,"\$showIntentChoice=\$plan&&!\$planStarted&&\$intent!=='live'"),'runner does not gate an unstarted neutral plan behind explicit execution intent');
-must_process_recording(str_contains($runner,'student_process_execution_transition'),'laboratory timer bypasses the persisted server timer service');
-must_process_recording(str_contains($runner,'student_process_lab_advance_to_step')&&str_contains($runner,'student_process_lab_finish_process'),'laboratory process progression bypasses the server process-position service');
-must_process_recording(str_contains($labNavigation,'student_process_add_flexible_step'),'live process progression does not write through factual process-step authority');
-must_process_recording(str_contains($runner,'timer_state')&&str_contains($runner,'timer_start')&&str_contains($runner,'timer_pause')&&str_contains($runner,'timer_reset'),'runner endpoint does not expose complete persisted timer transitions');
-must_process_recording(str_contains($runner,'data-runner-start>Iniciar'),'laboratory runner lacks the explicit start control');
-must_process_recording(str_contains($runner,'data-execution-state'),'runner does not hydrate the server timer state');
-must_process_recording(str_contains($execution,"state='elapsed'")&&str_contains($execution,'timer_ends_at'),'server timer model does not preserve elapsed state independently of process progression');
-must_process_recording(!str_contains($labNavigation,'student_process_lab_interrupt_attempt'),'app state can still be materialized as a fictitious interrupted laboratory event');
-
-must_process_recording(str_contains($entry,"processEntry='server'")&&!str_contains($entry,'article.innerHTML'),'core processing paths are still injected by JavaScript');
-must_process_recording(str_contains($progressive,'data-recorded-stage')&&str_contains($progressive,"type!=='development'"),'manual retroactive form does not hide irrelevant developer fields');
-must_process_recording(str_contains($shell,'student-process-recording.css')&&str_contains($shell,'student-process-recording.js'),'recording UI assets are not loaded');
-must_process_recording(str_contains($shell,'student-quality-pass.css'),'corrective quality layer is not loaded');
-must_process_recording(str_contains($quality,'.student-mobile-nav')&&str_contains($quality,'position:static;'),'mobile navigation can still cover process content');
-must_process_recording(str_contains($shell,"str_contains(\$path,'processamento-realizado')")&&str_contains($shell,"return 'notebook'"),'retroactive recording is not part of the Caderno navigation domain');
-must_process_recording(str_contains($rules,'Não presumir caminho único'),'canonical multipath UX rule is missing');
-must_process_recording(str_contains($rules,'A interface deve perguntar uma decisão apenas quando ela muda a próxima ação'),'canonical rules do not prevent repeated decision gates');
-must_process_recording(str_contains($rules,'todas as telas da área do aluno, sem exceção'),'full visual inspection rule is missing');
-must_process_recording(str_contains($rules,'O estado da interface não é um fato do laboratório'),'canonical rules still conflate application state with the photographic process');
+foreach(['O processamento já aconteceu?','Vou revelar agora','Já revelei','retroativo','retrospectiv','intent=live','Registrar manualmente','Continuar laboratório'] as $obsolete)must_process_recording(!str_contains($record,$obsolete),'Caderno still exposes temporal mode: '.$obsolete);
+foreach(['Estou nesta etapa','Ir para próxima etapa','Concluir processamento','Registrar o processamento realizado','$intent'] as $obsolete)must_process_recording(!str_contains($runner,$obsolete),'route tool still exposes execution mode/progression: '.$obsolete);
+must_process_recording(str_contains($runner,'student_process_notebook_timer_transition')&&str_contains($runner,'student_process_notebook_set_completed'),'route timer/check does not use notebook authority');
+must_process_recording(str_contains($notebookDomain,'student_process_notebook_timer_normalize')&&str_contains($notebookDomain,"true,'timer'"),'timer elapsed does not map to reversible step check');
+must_process_recording(!str_contains($notebookDomain,'student_inventory_move'),'timer/check domain must not move inventory');
+must_process_recording(str_contains($doc,'O sistema não diferencia “vou revelar”, “estou revelando” e “já revelei”'),'canonical document still leaves temporal modes ambiguous');
 echo "student-process-recording: ok\n";
