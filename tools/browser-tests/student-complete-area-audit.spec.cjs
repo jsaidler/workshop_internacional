@@ -19,16 +19,16 @@ const screens=[
   ['question-thread','student-secondary-screens-audit.html?screen=question-thread'],
   ['notebook','student-caderno-product-audit.html?screen=notebook'],
   ['new-record','student-visual-audit.html?screen=new-record'],
-  ['exposure','student-caderno-product-audit.html?screen=exposure'],
-  ['process-choice','student-caderno-product-audit.html?screen=process-choice'],
-  ['process-plan','student-caderno-product-audit.html?screen=process-plan'],
-  ['process-partial','student-caderno-product-audit.html?screen=process-partial'],
+  ['exposure','student-caderno-product-audit.html?screen=record-empty'],
+  ['process-choice','student-caderno-product-audit.html?screen=record-empty'],
+  ['process-plan','student-caderno-product-audit.html?screen=record-plan'],
+  ['process-partial','student-caderno-product-audit.html?screen=record-partial'],
   ['process-intent','student-process-intent-audit.html'],
   ['recording-start','student-recording-states-audit.html?screen=start'],
   ['recording-associated','student-recording-associated-audit.html'],
   ['recording-partial','student-recording-states-audit.html?screen=partial'],
   ['recording-complete','student-recording-states-audit.html?screen=complete'],
-  ['result','student-caderno-product-audit.html?screen=result'],
+  ['result','student-caderno-product-audit.html?screen=record-result'],
   ['result-waiting','student-pedagogical-feedback-audit.html?screen=result-waiting'],
   ['result-revision','student-pedagogical-feedback-audit.html?screen=result-revision'],
   ['result-reviewed','student-pedagogical-feedback-audit.html?screen=result-reviewed'],
@@ -125,17 +125,23 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(compareOrigin).toBeHidden();
       }
       if(name==='process-choice'){
-        await expect(page.getByText('O processamento já aconteceu?',{exact:true})).toBeVisible();
-        await expect(page.locator('.student-process-path-options article')).toHaveCount(2);
+        await expect(page.getByText('Associar roteiro',{exact:true})).toBeVisible();
+        await expect(page.getByText('Adicionar etapa',{exact:true}).first()).toBeVisible();
+        await expect(page.getByText('Movimentar estoque',{exact:true})).toBeVisible();
+        await expect(page.getByText('O processamento já aconteceu?',{exact:false})).toHaveCount(0);
       }
       if(name==='process-plan'){
-        await expect(page.getByText('0 / 9 etapas')).toBeVisible();
-        await expect(page.getByText('Abrir laboratório',{exact:true})).toBeVisible();
-        await expect(page.getByText('Registrar',{exact:true})).toBeVisible();
+        await expect(page.getByText('0 de 9 marcadas',{exact:true})).toBeVisible();
+        await expect(page.locator('.student-notebook-route-step')).toHaveCount(9);
+        await expect(page.getByText('Abrir roteiro',{exact:true})).toBeVisible();
+        await expect(page.getByText('Alterar roteiro',{exact:true})).toBeVisible();
+        await expect(page.getByText('Abrir laboratório',{exact:false})).toHaveCount(0);
       }
       if(name==='process-partial'){
-        await expect(page.getByText('5 / 9 etapas')).toBeVisible();
-        await expect(page.getByText('Completar registro',{exact:true})).toBeVisible();
+        await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();
+        await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);
+        await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);
+        await expect(page.getByText('Completar registro',{exact:false})).toHaveCount(0);
       }
       if(name==='process-intent'){
         await expect(page.getByText('Nenhuma execução iniciada',{exact:true})).toBeVisible();
