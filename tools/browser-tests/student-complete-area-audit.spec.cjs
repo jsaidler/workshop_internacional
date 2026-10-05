@@ -35,7 +35,7 @@ const screens=[
   ['research-derived','student-notebook-compare.html?screen=derived'],
   ['process-library','student-process-product-audit.html?screen=library'],
   ['process-editor','student-process-product-audit.html?screen=editor'],
-  ['lab-runner','student-process-product-audit.html?screen=runner'],
+  ['lab-runner','student-process-execution-state-audit.html?state=idle'],
   ['inventory','student-lab-stock-product-audit.html?screen=inventory'],
   ['inventory-empty','student-lab-stock-product-audit.html?screen=empty'],
   ['inventory-movement','student-lab-stock-product-audit.html?screen=movement'],
@@ -98,13 +98,12 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='process-library')await expect(page.locator('.student-process-standard-card')).toHaveCount(6);
       if(name==='process-editor')await expect(page.locator('.student-process-step-card')).toHaveCount(9);
-      if(name==='lab-runner')await expect(page.locator('.student-process-runner-timeline li')).toHaveCount(9);
+      if(name==='lab-runner'){
+        await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar como concluída',exact:true})).toBeVisible();await expect(page.getByText('Ir para próxima etapa',{exact:false})).toHaveCount(0);
+      }
       if(device==='phone'&&name!=='login'&&name!=='activation-password'&&name!=='material'){
         const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar'),shell=document.querySelector('.student-shell');if(!nav||!top||!shell)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),shs=getComputedStyle(shell),nr=nav.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,topPosition:ts.position,navBottom:nr.bottom,navHeight:nr.height,viewportHeight:innerHeight,shellPaddingBottom:parseFloat(shs.paddingBottom||'0')};});
-        if(mobileChrome){
-          if(name==='lab-runner'){expect(mobileChrome.navDisplay,'lab-runner: mobile navigation must be hidden during execution').toBe('none');expect(mobileChrome.topDisplay,'lab-runner: topbar must be hidden during execution').toBe('none');}
-          else{expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);expect(mobileChrome.shellPaddingBottom,`${name}: shell must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);expect(mobileChrome.topPosition,`${name}: topbar remains sticky`).toBe('static');}
-        }
+        if(mobileChrome){expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);expect(mobileChrome.shellPaddingBottom,`${name}: shell must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);expect(mobileChrome.topPosition,`${name}: topbar remains sticky`).toBe('static');}
       }
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`${name} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await page.screenshot({path:`student-visual-audit/complete/${device}/${name}.png`,fullPage:true,animations:'disabled'});
