@@ -23,7 +23,8 @@ test('lab runner starts wake lock only after explicit start and never auto advan
   await page.waitForTimeout(2300);
   await expect(page.locator('[data-runner-clock]')).toHaveText('00:00');
   await expect(page.locator('[data-runner-cue]')).toHaveText('Tempo concluído');
-  await expect(page.locator('[data-runner-start]')).toBeHidden();
+  await expect(page.locator('[data-runner-start]')).toBeVisible();
+  await expect(page.locator('[data-runner-start]')).toHaveText('Iniciar novamente');
   await expect(page.locator('[data-runner-pause]')).toBeHidden();
   await expect(page.locator('[data-runner-reset]')).toBeVisible();
   expect(page.url()).toBe(initialUrl);
