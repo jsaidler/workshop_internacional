@@ -4,6 +4,7 @@
     "test:browser": "playwright test tools/browser-tests"
   },
   "devDependencies": {
-    "@playwright/test": "1.55.0"
+    "@playwright/test": "1.55.0",
+    "sharp": "0.34.4"
   }
 }
