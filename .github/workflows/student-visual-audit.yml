@@ -13,6 +13,13 @@ on:
       - 'assets/cms-student-notes.css'
       - 'assets/ui-core.css'
       - 'assets/ui-core.js'
+      - 'migrations/085_aula3_student_area_research_guide.php'
+      - 'migrations/087_aula2_practice_bridge.php'
+      - 'migrations/088_aula3_hires_screenshot_media.php'
+      - 'migrations/assets/aula3-hires.pack.b64'
+      - 'package.json'
+      - 'tools/generate-aula3-screenshot-pack.cjs'
+      - 'tools/browser-fixture/student-aula3-material-audit.php'
       - 'tools/browser-fixture/student-visual-audit.html'
       - 'tools/browser-fixture/student-auth-visual-audit.html'
       - 'tools/browser-fixture/student-tools-current-audit.html'
@@ -31,6 +38,7 @@ on:
       - 'tools/browser-fixture/student-material-notes.html'
       - 'tools/browser-fixture/student-notebook-compare.html'
       - 'tools/browser-fixture/student-pedagogical-feedback-audit.html'
+      - 'tools/browser-tests/student-aula3-material-audit.spec.cjs'
       - 'tools/browser-tests/student-visual-audit.spec.cjs'
       - 'tools/browser-tests/student-tools-current-audit.spec.cjs'
       - 'tools/browser-tests/student-tools-mechanics-audit.spec.cjs'
@@ -45,11 +53,17 @@ on:
       - 'tools/browser-tests/student-complete-area-audit.spec.cjs'
       - '.github/workflows/student-visual-audit.yml'
   workflow_dispatch:
+
+permissions:
+  contents: write
+
 jobs:
   render:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -62,6 +76,22 @@ jobs:
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
           npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-current-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-process-execution-state-audit.spec.cjs tools/browser-tests/student-process-replanning-audit.spec.cjs tools/browser-tests/admin-process-domain-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
+          node tools/generate-aula3-screenshot-pack.cjs student-visual-audit/complete/desktop migrations/assets/aula3-hires.pack.b64
+          npx playwright test tools/browser-tests/student-aula3-material-audit.spec.cjs --workers=1
+      - name: Commit refreshed Aula 3 screenshot pack
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git diff --quiet -- migrations/assets/aula3-hires.pack.b64; then
+            echo 'Aula 3 screenshot pack already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add migrations/assets/aula3-hires.pack.b64
+          git commit -m 'Refresh Aula 3 screenshot pack'
+          git push origin HEAD:"$HEAD_REF"
       - name: Upload rendered screens
         if: always()
         uses: actions/upload-artifact@v4
