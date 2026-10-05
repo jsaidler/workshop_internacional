@@ -1,24 +1,6 @@
 <?php
 declare(strict_types=1);
 
-function aula3_audit_pack(): array {
-    $path=__DIR__.'/../../migrations/assets/aula3-hires.pack.b64';
-    if(!is_file($path))return [];
-    $encoded=preg_replace('/\s+/','',(string)file_get_contents($path));
-    $compressed=base64_decode((string)$encoded,true);if($compressed===false)return [];
-    $raw=gzdecode($compressed);if($raw===false)return [];
-    $files=[];$offset=0;$length=strlen($raw);
-    while($offset<$length){
-        $newline=strpos($raw,"\n",$offset);if($newline===false)break;
-        $header=substr($raw,$offset,$newline-$offset);$offset=$newline+1;
-        $parts=explode("\t",$header,2);if(count($parts)!==2)break;
-        [$name,$sizeRaw]=$parts;$size=(int)$sizeRaw;if($name==='END')break;
-        if($name===''||$size<1||$offset+$size>$length)break;
-        $files[$name]=substr($raw,$offset,$size);$offset+=$size;
-    }
-    return $files;
-}
-
 $db=new PDO('sqlite::memory:');
 $db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE,PDO::FETCH_ASSOC);
@@ -51,17 +33,9 @@ $db->exec("INSERT INTO course_page_media_slots(page_id,slot_key,media_asset_id,c
 (require __DIR__.'/../../migrations/087_aula2_practice_bridge.php')($db);
 (require __DIR__.'/../../migrations/089_restore_study_material_pedagogical_pattern.php')($db);
 (require __DIR__.'/../../migrations/090_reframe_aula3_as_practice.php')($db);
+(require __DIR__.'/../../migrations/091_practice_infographic_placeholders.php')($db);
 $page=$db->query('SELECT published_document_json FROM cms_pages WHERE id=1')->fetchColumn();
 $published=json_decode((string)$page,true,512,JSON_THROW_ON_ERROR);$html=(string)$published['html'];
-$files=aula3_audit_pack();
-$slotFiles=[
-    'aula2-caderno'=>'notebook.webp','aula3-caderno'=>'notebook.webp','aula3-exposicao'=>'exposure.webp','aula3-processamentos'=>'process-library.webp','aula3-processamento-realizado'=>'recording-partial.webp','aula3-avaliacao'=>'result-reviewed.webp','aula3-comparacao'=>'compare-records.webp','aula3-continuidade'=>'research-derived.webp','aula3-ferramentas'=>'tools.webp',
-];
-$html=preg_replace_callback('~<figure\b[^>]*data-private-media-slot=["\']([^"\']+)["\'][^>]*>.*?</figure>~is',static function(array $m)use($files,$slotFiles):string{
-    $slot=(string)$m[1];$file=$slotFiles[$slot]??'';$bytes=$file!==''?($files[$file]??''):'';
-    if($bytes==='')return '<figure class="media-figure" data-private-media-slot="'.htmlspecialchars($slot,ENT_QUOTES).'" data-aula3-screenshot><div class="cms-media-placeholder"><span>Screenshot ausente: '.htmlspecialchars($slot,ENT_QUOTES).'</span></div></figure>';
-    return '<figure class="media-figure" data-private-media-slot="'.htmlspecialchars($slot,ENT_QUOTES).'" data-aula3-screenshot><div class="media-area"><img data-cms-media src="data:image/webp;base64,'.base64_encode($bytes).'" alt="'.htmlspecialchars($slot,ENT_QUOTES).'"></div></figure>';
-},$html)??$html;
 ?><!doctype html>
 <html lang="pt-BR" data-theme="dark">
 <head>

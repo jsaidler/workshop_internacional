@@ -75,13 +75,21 @@ A exclusão da origem usa `ON DELETE SET NULL`: a experimentação derivada cont
 
 ## Enquadramento no material pedagógico
 
-O conteúdo que usa Caderno, Exposição, Processamento, Resultado, avaliação, comparação, continuidade e Ferramentas é apresentado ao aluno como **Prática**. O identificador histórico interno `caderno-aula-3` pode ser preservado, mas não define a função pedagógica nem a nomenclatura pública desse bloco.
+O conteúdo que usa Caderno, Exposição, Processamento, Resultado, avaliação, comparação e continuidade é apresentado ao aluno como **Prática**. O identificador histórico interno `caderno-aula-3` pode ser preservado, mas não define a função pedagógica nem a nomenclatura pública desse bloco.
 
-Prática acontece **entre o segundo e o terceiro encontro**. Por isso, suas seções devem ser liberadas com a Aula 2, e não depender da liberação do terceiro encontro. O fim da Aula 2 apenas introduz o trabalho autônomo; Prática oferece as orientações e as ferramentas necessárias enquanto o aluno produz e registra suas próprias tentativas.
+Prática acontece **entre o segundo e o terceiro encontro**. Por isso, suas seções devem ser liberadas com a Aula 2, e não depender da liberação do terceiro encontro. O fim da Aula 2 apenas introduz o trabalho autônomo; Prática oferece as orientações necessárias enquanto o aluno produz e registra suas próprias tentativas.
 
 O terceiro encontro não possui uma seção de conteúdo fixo no material. Sua proposta aparece no último parágrafo de Prática: partir das experiências realizadas pelos alunos para observar resultados, discutir diferenças registradas e analisar em conjunto as decisões de exposição e processamento. Não é exigido um resultado “correto”.
 
 O fluxo pedagógico permanece `registro → observação → avaliação → comparação → próxima tentativa`, com as mesmas invariantes semânticas deste documento: cálculo ou roteiro não equivalem a fato realizado, comparação é descritiva e uma continuação não copia processamento executado nem resultado da tentativa de origem.
+
+### Regra editorial da Prática
+
+O material de Prática não deve funcionar como manual da interface. Screenshots reais da Área do Aluno permanecem úteis para auditoria visual do produto, mas não devem ser incorporados ao texto pedagógico apenas para demonstrar telas. No material, recursos visuais devem explicar relações, decisões e sequências do processo fotográfico.
+
+A versão corrente usa placeholders editoriais nos pontos em que um infográfico futuro agrega compreensão: fluxo Exposição → Processamento → Resultado, Caderno como registro, exposição, diferença entre roteiro e processamento realizado, resultado avaliado, comparação descritiva e continuidade da pesquisa. Esses placeholders não representam telas do sistema e não devem ser preenchidos automaticamente com screenshots do produto.
+
+A antiga unidade autônoma **Ferramentas da área do aluno** deixa de fazer parte do fluxo principal. As ferramentas permanecem disponíveis no produto e recebem apenas um convite breve depois de **Criar a próxima tentativa**. O enquadramento é de apoio: cálculos, consultas e organização do laboratório podem ser explorados conforme fizerem sentido para a prática, mas não substituem o Caderno nem o registro factual de cada tentativa.
 
 ## Gate visual e funcional
 
@@ -92,6 +100,8 @@ A Tranche F acrescenta ao inventário visual obrigatório:
 - registro derivado mostrando origem e intenção de pesquisa.
 
 Esses estados devem ser renderizados em desktop e telefone, sem overflow horizontal e sem reintroduzir controles permanentes de comparação no Caderno.
+
+A auditoria do material pedagógico deve, separadamente, provar que os screenshots do produto não reaparecem dentro de Prática, que os placeholders editoriais permanecem legíveis em desktop e telefone e que a unidade autônoma de Ferramentas não foi reintroduzida.
 
 O gate funcional deve provar pelo menos:
 
