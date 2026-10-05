@@ -56,18 +56,18 @@ ux_expect(str_contains($registrations,'LIMIT $pageSize OFFSET $offset')&&str_con
 ux_expect(!str_contains($registrations,'LIMIT 500'),'Inscrições não pode truncar silenciosamente em 500 registros');
 
 ux_expect(str_contains($cohorts,'admin_course_context($course')&&str_contains($cohorts,'admin_cohort_context($course,$cohort'),'Turmas deve alternar entre coleção do curso e workspace da turma');
-ux_expect(str_contains($cohorts,"$action==='update'")&&str_contains($cohorts,"$action==='archive'")&&str_contains($cohorts,"$action==='restore'"),'turma deve permitir edição, arquivamento e reativação');
+ux_expect(str_contains($cohorts,"\$action==='update'")&&str_contains($cohorts,"\$action==='archive'")&&str_contains($cohorts,"\$action==='restore'"),'turma deve permitir edição, arquivamento e reativação');
 ux_expect(str_contains($cohorts,'Abrir turma')&&str_contains($cohorts,'Nova turma'),'turma deve ser objeto operacional diretamente descobrível');
 
 ux_expect(str_contains($students,'Busca global de pessoas com histórico de participação nos cursos.'),'Alunos deve oferecer uma entrada global por identidade sem expor Pessoas como decisão principal');
 ux_expect(str_contains($students,'admin_course_context($course')&&str_contains($students,'admin_cohort_context($course,$cohort'),'Alunos deve preservar contexto de curso e turma quando presente');
 ux_expect(str_contains($students,'Importar CSV')&&str_contains($students,'student-import-csv.php'),'importação deve estar disponível em Turma → Alunos');
-ux_expect(str_contains($students,"$action==='move_registration'")&&str_contains($students,"$action==='disable_manual_enrollment'"),'participação educacional precisa permitir as operações canônicas suportadas');
+ux_expect(str_contains($students,"\$action==='move_registration'")&&str_contains($students,"\$action==='disable_manual_enrollment'"),'participação educacional precisa permitir as operações canônicas suportadas');
 ux_expect(str_contains($people,'LIMIT $pageSize OFFSET $offset')&&str_contains($people,'admin-pagination'),'Pessoas deve continuar disponível como histórico global paginado');
 ux_expect(str_contains($people,'FROM student_users u'),'Pessoas deve continuar baseada na autoridade global de identidade');
 
 ux_expect(str_contains($lessons,'admin_course_context($course')&&str_contains($lessons,'admin_cohort_context($course,$cohort'),'Aulas deve separar estrutura do curso e acesso da turma');
-ux_expect(str_contains($lessons,"$action==='update_lesson'")&&str_contains($lessons,"$action==='move_lesson'"),'estrutura de aulas deve permitir correção de nome e ordem');
+ux_expect(str_contains($lessons,"\$action==='update_lesson'")&&str_contains($lessons,"\$action==='move_lesson'"),'estrutura de aulas deve permitir correção de nome e ordem');
 ux_expect(str_contains($lessons,'Ver conteúdo afetado')&&str_contains($lessons,'Liberar agora')&&str_contains($lessons,'Agendar')&&str_contains($lessons,'Bloquear'),'liberação deve mostrar consequência e ações no próprio contexto da turma');
 ux_expect(str_contains($lessons,'Visualizar como esta turma'),'Aulas e acesso deve permitir verificar o resultado efetivo');
 ux_expect(str_contains($material,'course_material_add_page'),'Material deve preservar a relação canônica com páginas CMS');
