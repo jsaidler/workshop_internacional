@@ -42,7 +42,6 @@ ux_expect(str_contains($adminShell,"'students'=>['Alunos',admin_cohort_url")&&st
 ux_expect(str_contains($adminShell,'class="admin-workspace-nav"'),'navegação contextual deve usar o componente compartilhado de workspace');
 ux_expect(str_contains($globalNav,"'Site'=>admin_context_items('site'")&&str_contains($adminShell,"'forms'=>['Formulários'"),'Formulários deve ficar em Site');
 ux_expect(str_contains($globalNav,"'Sistema'=>admin_context_items('settings'")&&str_contains($adminShell,"'integrity'=>['Integridade'"),'Integridade deve ficar em Sistema');
-
 ux_expect(str_contains($courses,'in_array($view,[\'overview\',\'setup\',\'new\'],true)'),'curso deve conservar visão geral e configuração próprias');
 ux_expect(str_contains($courses,'Escolha um curso para administrar inscrições, turmas, alunos, conteúdo e acompanhamento.'),'catálogo de cursos deve explicar a tarefa, não o modelo de dados');
 ux_expect(str_contains($courses,'Abrir curso')&&str_contains($courses,'admin_course_context($course'),'abrir curso deve entrar no workspace persistente');
@@ -88,7 +87,7 @@ ux_expect(str_contains($studentNotebook,'data-record-create-dialog'),'novo regis
 ux_expect(!str_contains($studentNotebook,'student-process-compare'),'comparação não pode ocupar permanentemente cada registro');
 ux_expect(str_contains($studentRecord,'id="exposicao"')&&str_contains($studentRecord,'id="processamento"')&&str_contains($studentRecord,'id="resultado"'),'registro deve manter Exposição, Processamento e Resultado acessíveis na mesma página');
 ux_expect(str_contains($studentRecord,'student-process-path-choice')&&str_contains($studentRecord,'student-process-history')&&!str_contains($studentRecord,'$resultReady'),'processamento deve oferecer ações sem bloquear outras partes do registro');
-ux_expect(str_contains($studentShell,'/assets/student-process-entry.js')&&str_contains($studentRecord,'Desfazer última etapa'),'processamento deve oferecer modo laboratório e subordinar correções');
+ux_expect(str_contains($studentShell,'/assets/student-process-entry.js')&&str_contains($studentRecord,'Marcar ✓')&&str_contains($studentRecord,'Desmarcar')&&str_contains($studentRecord,'Abrir timer')&&!str_contains($studentRecord,'Desfazer última etapa'),'processamento deve expor checks reversíveis e timer sem progressão obrigatória');
 ux_expect(str_contains($studentBench,'data-exposure-tool')&&str_contains($studentBench,'data-quick-reciprocity'),'ferramentas pequenas de exposição devem continuar inline');
 ux_expect(!str_contains($studentBench,'data-lab-timer')&&str_contains($studentBench,'/aluno/processamentos.php'),'processamento multietapas não pode permanecer reduzido a um temporizador inline');
 ux_expect(str_contains($processManager,'student-process-step-list')&&str_contains($processRunner,'data-process-runner'),'processamento multietapas deve ter gerenciador e superfície operacional próprias');
