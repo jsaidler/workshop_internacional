@@ -16,6 +16,7 @@ on:
       - 'migrations/085_aula3_student_area_research_guide.php'
       - 'migrations/087_aula2_practice_bridge.php'
       - 'migrations/088_aula3_hires_screenshot_media.php'
+      - 'migrations/089_restore_study_material_pedagogical_pattern.php'
       - 'migrations/assets/aula3-hires.pack.b64'
       - 'package.json'
       - 'tools/generate-aula3-screenshot-pack.cjs'

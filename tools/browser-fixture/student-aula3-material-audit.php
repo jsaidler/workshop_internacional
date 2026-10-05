@@ -29,11 +29,11 @@ CREATE TABLE course_material_sections(course_id INTEGER NOT NULL,page_id INTEGER
 CREATE TABLE course_page_media_slots(page_id INTEGER NOT NULL,slot_key TEXT NOT NULL,media_asset_id INTEGER NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(page_id,slot_key));
 SQL);
 $oldHtml=<<<'HTML'
-<section id="caderno-aula-2" class="format" data-cms-section="caderno-aula-2"><div class="format-inner"><div class="format-heading"><div><p class="section-label">Aula 02</p><h2>Processos químicos para positivos</h2></div></div></div></section>
-<section class="section" data-cms-section="caderno-20-materiais"><p class="section-label">Fim da Aula 2</p><div class="statement-grid"><div><h2>Depois da demonstração completa, começa a prática de vocês.</h2></div><div class="statement-copy"><p>Este bloco representa o conteúdo já existente da Aula 2 e serve apenas para preservar a transição real na auditoria visual.</p></div></div></section>
-<section id="caderno-aula-3" class="format" data-cms-section="caderno-aula-3"><div class="format-inner"><div class="format-heading"><div><p class="section-label">Aula 03</p><h2>Revisão de resultados</h2></div></div></div></section>
-<section class="section" data-cms-section="caderno-21-leitura-resultados"><p>Conteúdo antigo 21</p></section>
-<section class="section" data-cms-section="caderno-22-registro"><p>Conteúdo antigo 22</p></section>
+<section id="caderno-aula-2" class="format study-chapter" data-cms-section="caderno-aula-2"><div class="format-inner"><div class="format-heading"><div><p class="section-label">Aula 02</p><h2>Processos químicos para positivos</h2></div></div></div></section>
+<section class="study-unit" data-cms-section="caderno-20-materiais"><p class="section-label">Fim da Aula 2</p><div class="statement-grid"><div><h2>Materiais para o laboratório</h2></div><div class="statement-copy"><p>Este bloco representa o conteúdo já existente da Aula 2 e serve apenas para preservar a transição real na auditoria visual.</p></div></div></section>
+<section id="caderno-aula-3" class="format study-chapter" data-cms-section="caderno-aula-3"><div class="format-inner"><div class="format-heading"><div><p class="section-label">Aula 03</p><h2>Revisão de resultados</h2></div></div></div></section>
+<section class="study-unit" data-cms-section="caderno-21-leitura-resultados"><p>Conteúdo antigo 21</p></section>
+<section class="study-unit" data-cms-section="caderno-22-registro"><p>Conteúdo antigo 22</p></section>
 HTML;
 $doc=json_encode(['version'=>2,'theme'=>'auto','meta'=>['audit'=>true],'html'=>$oldHtml],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
 $stmt=$db->prepare('INSERT INTO cms_pages(id,locale,slug,status,draft_document_json,published_document_json,draft_revision,published_revision,updated_at) VALUES(1,?,?,?,?,?,?,?,?)');
@@ -49,6 +49,7 @@ foreach(['caderno-aula-2','caderno-20-materiais'] as $key){
 $db->exec("INSERT INTO course_page_media_slots(page_id,slot_key,media_asset_id,created_at,updated_at) VALUES(1,'aula3-caderno',99,'old','old')");
 (require __DIR__.'/../../migrations/085_aula3_student_area_research_guide.php')($db);
 (require __DIR__.'/../../migrations/087_aula2_practice_bridge.php')($db);
+(require __DIR__.'/../../migrations/089_restore_study_material_pedagogical_pattern.php')($db);
 $page=$db->query('SELECT published_document_json FROM cms_pages WHERE id=1')->fetchColumn();
 $published=json_decode((string)$page,true,512,JSON_THROW_ON_ERROR);$html=(string)$published['html'];
 $files=aula3_audit_pack();
