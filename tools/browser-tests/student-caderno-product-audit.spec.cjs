@@ -78,7 +78,7 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();
         await expect(page.getByRole('heading',{name:'Exposição e processamento'})).toBeVisible();
         await expect(page.getByText('Anote o que observou no positivo',{exact:false})).toBeVisible();
-        await expect(page.locator('textarea')).toContainText('Sombras agrupadas');
+        await expect(page.locator('textarea')).toHaveValue(/Sombras agrupadas/);
       }
       await page.screenshot({path:`student-visual-audit/${device}/caderno-${screen}.png`,fullPage:true,animations:'disabled'});
     });
