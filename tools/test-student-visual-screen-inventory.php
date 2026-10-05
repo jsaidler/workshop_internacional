@@ -4,7 +4,7 @@ function fail_student_visual_inventory(string $message): never {fwrite(STDERR,"s
 function must_student_visual_inventory(bool $ok,string $message): void {if(!$ok)fail_student_visual_inventory($message);}
 $root=dirname(__DIR__);
 $rendered=[
-'caderno.php','calibracao.php','comparar-processos.php','cursos.php','duvidas.php','excluir-teste.php','ferramentas.php','index.php','inventario-item.php','inventario.php','login.php','perfil.php','preparos.php','processamento-realizado.php','processamentos-trocar.php','processamentos.php','processar.php','senha.php','teste-compartilhado.php','teste-etapa.php','teste.php',
+'caderno.php','calibracao.php','comparar-processos.php','cursos.php','duvidas.php','excluir-teste.php','ferramentas.php','index.php','inventario-item.php','inventario.php','login.php','perfil.php','preparos.php','processamento-realizado.php','processamentos-trocar.php','processamentos.php','processar.php','registro-roteiro.php','senha.php','teste-compartilhado.php','teste-etapa.php','teste.php',
 ];
 $nonScreens=[
 'exposicao.php','logout.php','material-anotacao.php','material.php','media.php','preparo-solucoes.php','reciprocidade.php','temporizador.php','teste-media.php','testes.php','visibilidade-teste.php',
@@ -18,9 +18,12 @@ must_student_visual_inventory(str_contains($spec,"toBe(51)"),'complete visual au
 $replanSpec=(string)file_get_contents($root.'/tools/browser-tests/student-process-replanning-audit.spec.cjs');
 must_student_visual_inventory(str_contains($replanSpec,"view==='choice'")&&str_contains($replanSpec,"view==='active'")&&str_contains($replanSpec,"view==='recorded'"),'route-change screen is not covered across factual and unconsolidated route states');
 must_student_visual_inventory(!str_contains($replanSpec,"view==='interrupted'"),'visual audit must not preserve the obsolete interrupted-by-app state');
+$cadernoSpec=(string)file_get_contents($root.'/tools/browser-tests/student-caderno-product-audit.spec.cjs');
+must_student_visual_inventory(str_contains($cadernoSpec,"'route-picker'")&&str_contains($cadernoSpec,"'record-empty'")&&str_contains($cadernoSpec,"'record-partial'"),'non-linear Caderno audit must cover route selection and incomplete records');
 $workflow=(string)file_get_contents($root.'/.github/workflows/student-visual-audit.yml');
 must_student_visual_inventory(str_contains($workflow,'student-complete-area-audit.spec.cjs'),'complete student visual audit is not executed by workflow');
 must_student_visual_inventory(str_contains($workflow,'student-process-replanning-audit.spec.cjs'),'route-change visual audit is not executed by workflow');
+must_student_visual_inventory(str_contains($workflow,'student-caderno-product-audit.spec.cjs'),'non-linear Caderno visual audit is not executed by workflow');
 $doc=(string)file_get_contents($root.'/docs/STUDENT_VISUAL_SCREEN_INVENTORY_2026-10-02.md');
 foreach($rendered as $file)must_student_visual_inventory(str_contains($doc,'`aluno/'.$file.'`')||in_array($file,['teste.php'],true),'screen inventory doc is missing '.$file);
 must_student_visual_inventory(str_contains($doc,'51 superfícies por viewport'),'screen inventory does not declare the Tranche F coverage');
