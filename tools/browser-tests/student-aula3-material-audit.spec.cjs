@@ -2,6 +2,8 @@ const {test,expect}=require('@playwright/test');
 
 const host='http://127.0.0.1:8099';
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
+// These assertions prevent another low-resolution regression. They do not replace
+// human inspection of the full-page desktop and phone renders uploaded by this test.
 
 for(const [device,viewport] of Object.entries(viewports)){
   test(`Aula 2/Aula 3 final material visual audit ${device}`,async({page})=>{
