@@ -31,7 +31,7 @@ must_student_caderno_product_ux(str_contains($record,'/aluno/processar.php?test=
 must_student_caderno_product_ux(str_contains($record,'Alterar roteiro'),'an associated route is still irreversible from the record');
 must_student_caderno_product_ux(str_contains($record,'Mais opções do processamento')&&str_contains($record,'Desfazer última etapa'),'destructive processing action is not progressively disclosed');
 must_student_caderno_product_ux(str_contains($record,'Salvar resultado'),'result cannot be saved independently');
-must_student_caderno_product_ux(str_contains($record,"header('Location: /aluno/teste.php?id='.\$id.'#'.\$anchor,true,303)")||str_contains($record,"header('Location: /aluno/teste.php?id='.\$id.('#'.\$anchor)"),'legacy view compatibility does not converge to anchors');
+must_student_caderno_product_ux(str_contains($record,"isset(\$_GET['view'])")&&str_contains($record,"'process'=>'processamento'")&&str_contains($record,"'review'=>'resultado'")&&str_contains($record,"\$anchor!==''?'#'.\$anchor:''"),'legacy view compatibility does not converge to anchors');
 must_student_caderno_product_ux(str_contains($record,'← Voltar ao Caderno'),'record has no canonical exit back to notebook');
 must_student_caderno_product_ux(!str_contains($record,'data-lab-timer'),'legacy inline timer is still embedded in Caderno processing');
 
