@@ -1,167 +1,194 @@
 # Caderno — contrato de registro não linear — revisão de 05/10/2026
 
-Este documento substitui, para o Caderno de Processos, as regras de progressão visual e de “próxima ação” descritas na versão de 01/10/2026 sempre que houver conflito. Ele deve ser lido em conjunto com `STUDENT_PRODUCT_UX_CANONICAL_RULES_2026-10-02.md`, que permanece canônico para a distinção entre navegação, documentação e fatos do laboratório.
+Este documento substitui, para o Caderno de Processos, qualquer regra anterior que trate o registro como wizard, fluxo de execução, progressão obrigatória ou máquina de estados.
 
-## Objetivo
+## Princípio
 
-O Caderno é um **registro de pesquisa**, não um assistente de etapas e não um controlador do processo fotográfico.
+**O Caderno observa e auxilia o processo; ele não governa o processo.**
 
-Exposição, Processamento e Resultado continuam sendo as três categorias que organizam um registro, porque respondem a três perguntas úteis:
+Tudo que seria trivial fazer num caderno de papel deve continuar trivial. O digital acrescenta vantagens — estrutura, busca, roteiro reutilizável, timer, cálculos, estoque, imagens e análise — sem exigir que o usuário explique ao sistema em que momento ou fase da experiência está.
 
-1. **Como expus?** — filme, EI, abertura, tempo e contexto da cena.
-2. **Como revelei?** — roteiro ou sequência efetivamente executada.
-3. **O que obtive?** — imagem do resultado, observações e, quando aplicável, avaliação do curso.
+O sistema não diferencia “vou revelar”, “estou revelando” e “já revelei”. Essa distinção não pertence ao Caderno.
 
-Essas categorias **não definem uma ordem obrigatória de uso da interface**. Um aluno pode registrar exposição e sair, começar pelo processamento, transcrever um resultado antigo, retomar um registro parcial ou corrigir uma parte depois de já ter preenchido as demais.
+## Registro
 
-## Invariante principal
+Exposição, Processamento, Resultado e anotações pertencem ao mesmo registro e podem ser preenchidos, corrigidos ou deixados vazios em qualquer ordem.
 
-**O aluno deve conseguir salvar o que tem, sair, voltar depois e alterar uma decisão sem perder fatos já registrados.**
+Consequências obrigatórias:
 
-Consequências diretas:
+- nenhuma parte libera ou bloqueia outra;
+- salvar uma parte não força navegação para outra;
+- Resultado pode existir sem Processamento completo;
+- um registro pode permanecer parcial indefinidamente;
+- ausência de dados significa apenas ausência de dados no Caderno;
+- o sistema não conclui que uma operação física ocorreu ou deixou de ocorrer a partir da navegação da interface.
 
-- nenhuma das três partes fica bloqueada por outra;
-- salvar Exposição não leva automaticamente a Processamento;
-- salvar Processamento não obriga a abrir Resultado;
-- Resultado pode ser registrado mesmo sem Exposição ou Processamento completos;
-- o estado interno do registro não habilita nem desabilita navegação;
-- um registro incompleto é um estado legítimo, não um erro a ser resolvido pela interface.
+`/aluno/teste.php?id=...` mantém as partes na mesma página, com âncoras para acesso rápido. Links antigos `?view=...` podem apenas convergir para essas âncoras.
 
-A única exceção de edição é um registro já avaliado (`reviewed`), que permanece preservado como documento acadêmico. Mesmo nesse estado, **todas as partes continuam consultáveis**; o bloqueio é de escrita, não de navegação.
+## Roteiro associado
+
+Um roteiro é uma **referência associada ao registro**.
+
+Associar um roteiro:
+
+- não inicia processamento;
+- não cria etapa atual;
+- não cria próxima etapa;
+- não cria pendência;
+- não movimenta estoque;
+- não impede qualquer outra parte do registro.
+
+Todas as etapas do roteiro ficam imediatamente disponíveis. O usuário pode abrir qualquer uma delas em qualquer ordem.
+
+Trocar o roteiro substitui a referência associada. Anotações livres e demais dados do registro não são apagados. Quando houver etapas equivalentes entre a referência anterior e a nova, checks compatíveis podem ser preservados. O sistema não deve reconstruir uma sequência física a partir do histórico.
+
+## Etapas e checks
+
+Cada etapa de um roteiro possui um check independente `concluída / não concluída`.
+
+O check é **somente um dado do Caderno**. Ele nunca é uma permissão.
+
+O usuário pode:
+
+- marcar qualquer etapa manualmente;
+- desmarcar qualquer etapa;
+- marcar etapas fora de ordem;
+- editar os dados de uma etapa marcada;
+- abrir o timer de uma etapa marcada;
+- deixar qualquer conjunto de etapas sem marcação para sempre.
+
+O timer chegar ao fim pode marcar automaticamente aquela etapa como concluída. Essa marcação continua reversível.
+
+A interface pode informar `3 de 7 etapas marcadas`. Ela não deve transformar isso em `faltam 4`, `pendente`, `processamento incompleto`, `próxima etapa` ou equivalente.
+
+Completar todos os checks também não fecha nem bloqueia o roteiro.
+
+## Experimentos interrompidos ou abandonados
+
+É normal uma experiência terminar antes do fim de um roteiro. Se o resultado já estiver previsível na primeira revelação, o usuário pode simplesmente parar ali.
+
+O Caderno não interpreta etapas não marcadas como trabalho a concluir. Um roteiro com apenas algumas etapas marcadas continua sendo um registro válido e pode conter Resultado, imagem e observações.
+
+Não existe obrigação de criar um estado especial para distinguir uma tentativa abandonada de uma tentativa que será retomada. Se o pesquisador quiser registrar essa informação, ela pertence às anotações ou ao Resultado.
+
+## Timer
+
+Timer é ferramenta de uma etapa, não execução controlada pelo sistema.
+
+Cada etapa temporizada pode ter seu próprio timer. O usuário pode abrir o timer de qualquer etapa a qualquer momento e voltar a usá-lo depois. Abrir, pausar, reiniciar ou fechar um timer não determina sequência de processamento.
+
+Quando o timer chega a zero:
+
+1. o timer fica em estado `elapsed` para aquela etapa;
+2. o check da etapa pode ser marcado automaticamente uma vez;
+3. o usuário continua livre para desmarcar, editar ou usar o timer novamente.
+
+Estado de timer é estado operacional da ferramenta, nunca prova ou autoridade sobre o processo físico.
+
+## Etapas livres
+
+O usuário pode registrar etapas sem associar um roteiro.
+
+Adicionar, editar ou remover uma etapa livre afeta somente aquela anotação. Remover uma etapa não remove as seguintes e não desfaz movimentações de estoque.
+
+A ordem visual dessas anotações é apenas organização do Caderno, não validação da sequência química.
+
+## Estoque
+
+Estoque é um domínio independente do check e do timer.
+
+Nenhuma destas ações pode baixar, devolver ou descartar material automaticamente:
+
+- associar roteiro;
+- abrir timer;
+- timer chegar ao fim;
+- marcar etapa;
+- desmarcar etapa;
+- editar etapa;
+- remover etapa do Caderno.
+
+Movimentação de estoque é uma ação explícita do usuário.
+
+Isso é necessário porque **uso químico, desgaste da solução e variação física de volume são eventos diferentes**. Soluções podem ser de uso único ou reaproveitáveis; o sistema não deve deduzir o destino de uma solução apenas porque uma etapa foi marcada.
+
+## Resultado
+
+Resultado é o que o pesquisador decidiu documentar sobre a tentativa. Não significa “positivo final obtido depois de todas as etapas”.
+
+Pode registrar, por exemplo, que uma tentativa foi abandonada após a primeira revelação. Imagem e observações continuam opcionais e independentes dos checks do roteiro.
+
+## Análise
+
+O Caderno registra. **A Análise interroga o conjunto de registros.**
+
+A vantagem digital está em manter dados suficientemente estruturados para permitir posteriormente filtros, comparações, tabelas, gráficos e relações entre variáveis como filme, EI, exposição, revelador, diluição, temperatura, tempos, câmeras, roteiros, etapas usadas e resultado.
+
+Registros parciais continuam válidos para análise. Uma experiência abandonada pode ser informação relevante.
+
+A camada de análise deve distinguir associação de causalidade: pode mostrar padrões e relações presentes nos dados, mas não afirmar causa quando os registros não sustentam essa conclusão.
 
 ## Biblioteca do Caderno
 
-`/aluno/caderno.php` deve apresentar cada item como **um registro**, não como uma etapa de um funil.
+`/aluno/caderno.php` apresenta **registros**, não uma progressão `01 → 02 → 03`.
 
-A lista mostra, de forma derivada dos dados existentes:
+A ação principal é `Abrir registro`. Resumos podem dizer fatos como `roteiro associado`, `4 etapas marcadas`, `resultado registrado` ou equivalentes. Eles não prescrevem próxima ação.
 
-- se há Exposição registrada;
-- quantas etapas de Processamento foram registradas ou se há um roteiro associado;
-- se há Resultado registrado.
+Comparar, duplicar, compartilhar e excluir permanecem ações secundárias.
 
-Essas informações são resumo documental. Não existe “etapa atual” do Caderno, não existe barra `01 / 02 / 03` e a interface não prescreve uma “próxima ação”.
+## Linguagem de interface
 
-A ação principal de cada item é **Abrir registro**. Comparar, duplicar, compartilhar e excluir continuam secundárias em `Mais ações`.
+Preferir linguagem documental e instrumental:
 
-## Página do registro
+- Associar roteiro;
+- Alterar roteiro;
+- Abrir roteiro;
+- Abrir timer;
+- Marcar como concluída;
+- Desmarcar etapa;
+- Editar dados;
+- Movimentar estoque;
+- Adicionar anotação.
 
-`/aluno/teste.php?id=...` contém Exposição, Processamento e Resultado na **mesma página**, em sequência vertical, com âncoras para acesso rápido.
+Evitar linguagem de controle de workflow:
 
-As três seções ficam sempre presentes e acessíveis. Não há abas bloqueadas nem parâmetro de estado usado para decidir qual parte o aluno pode ver.
+- iniciar processamento;
+- retomar processamento;
+- finalizar processamento;
+- etapa atual;
+- próxima etapa;
+- continuar laboratório;
+- processamento pendente;
+- faltam N etapas;
+- vou revelar agora;
+- já revelei;
+- registrar retrospectivamente.
 
-Links legados com `?view=exposure`, `?view=process` ou `?view=review` podem ser aceitos apenas como compatibilidade e devem convergir para as âncoras `#exposicao`, `#processamento` e `#resultado`.
+## Exceção acadêmica
 
-### Exposição
-
-A seção registra as condições utilizadas na fotografia. A fotografia da cena permanece opcional e é uma referência de contexto.
-
-A ação primária é **Salvar exposição**. Salvar não implica que o aluno queira processar a fotografia imediatamente e não muda sua posição na página para outra tarefa.
-
-### Processamento
-
-Processamento é uma parte do registro. O aluno pode:
-
-- associar ou alterar um roteiro;
-- abrir o Modo laboratório para consulta, temporização e apoio à execução;
-- registrar o processamento manualmente ou retroativamente.
-
-Essas opções não representam universos paralelos. Todas produzem ou organizam informação do mesmo registro.
-
-#### Roteiro como ferramenta do registro
-
-A escolha de roteiro ocorre numa superfície subordinada ao registro (`/aluno/registro-roteiro.php?test=...`) e sempre oferece retorno explícito ao Processamento do registro.
-
-Associar um roteiro cria um snapshot para aquela fotografia e **não significa que a revelação começou**.
-
-Alterar o roteiro é permitido mesmo quando já existem fatos materializados:
-
-- etapas factualizadas permanecem intactas;
-- exposição, resultado, mídia e observações não são alterados;
-- o novo roteiro governa somente o que ainda não foi consolidado como fato;
-- timers e posição operacional podem ser reinicializados sem criar fatos fictícios;
-- a troca é atômica, conforme o contrato canônico de replanejamento.
-
-#### Modo laboratório
-
-O Modo laboratório é uma operação filha do registro. Abrir, fechar, consultar uma etapa ou usar o cronômetro não muda o histórico factual por si só.
-
-Ao sair do laboratório, o caminho de retorno deve convergir para o mesmo registro, preferencialmente `#processamento`.
-
-#### Registro manual ou retroativo
-
-Registrar algo já feito não exige simular o uso prévio do Modo laboratório. O aluno pode documentar diretamente a execução real e, quando usar um roteiro como base, ajustar o snapshot sem modificar o processo-base.
-
-Consumo retroativo de inventário permanece explícito e opcional.
-
-### Resultado
-
-Resultado fica disponível desde a abertura do registro.
-
-A seção reapresenta um resumo compacto de Exposição e Processamento, quando houver dados, mas a ausência deles não impede o registro do resultado.
-
-A ação primária é **Salvar resultado**. Para registros vinculados a curso, a avaliação e a conversa com o professor continuam nesta mesma seção.
-
-## Reversibilidade e ações destrutivas
-
-A interface diferencia **editar/corrigir** de **apagar histórico**.
-
-Operações destrutivas ou de reversão técnica não ocupam o fluxo principal. Elas ficam em `Mais ações` ou `Mais opções do processamento`, com confirmação adequada.
-
-O usuário não precisa conhecer estados internos como `planned`, `running`, `completed`, `draft` ou combinações equivalentes para navegar no Caderno. Esses estados podem continuar existindo no domínio e no banco de dados, mas não funcionam como regras de navegação.
-
-## Contrato de saída e retorno
-
-Toda operação filha iniciada a partir de um registro deve ter uma saída inequívoca:
-
-- voltar ao registro atual, na seção relevante; ou
-- voltar ao Caderno.
-
-Nenhuma operação normal pode deixar o aluno num caminho sem retorno, exigir recriação de dados para escolher outro percurso ou converter uma navegação da interface em fato de laboratório.
-
-## Mobile
-
-No telefone:
-
-- Exposição, Processamento e Resultado permanecem na mesma página;
-- os atalhos de seção podem empilhar verticalmente;
-- não deve haver barra fixa cobrindo conteúdo;
-- ações primárias devem ocupar largura útil suficiente;
-- resumos devem reduzir para uma coluna quando necessário;
-- opções raras ou destrutivas permanecem progressivamente reveladas.
+Um registro com status acadêmico `reviewed` pode continuar preservado como documento avaliado. Essa é uma regra de avaliação do curso, não uma regra do processo fotográfico. Mesmo nesse estado, todas as partes continuam consultáveis.
 
 ## Casos de aceitação obrigatórios
 
-A implementação deve suportar, sem perda de dados e sem bloqueio de navegação:
+A implementação deve permitir, sem perda de dados e sem bloqueio por sequência:
 
 1. criar um registro vazio e sair;
-2. preencher apenas Exposição, salvar, voltar ao Caderno e retomar depois;
-3. começar por Processamento sem preencher Exposição;
-4. registrar Resultado antes de completar Processamento;
-5. interromper a documentação de um processamento e retomar mais tarde;
-6. alterar o roteiro depois de fatos já materializados, preservando os fatos anteriores;
-7. registrar Processamento manualmente sem usar Modo laboratório;
-8. editar Exposição depois de já haver Processamento ou Resultado;
-9. abrir o seletor de roteiro e cancelar, retornando ao mesmo registro;
-10. acessar links legados `?view=...` e convergir para a seção correspondente;
-11. navegar entre as três seções no mobile sem bloqueio ou overflow horizontal;
-12. consultar integralmente um registro já avaliado, mantendo-o somente leitura.
+2. preencher apenas Exposição;
+3. registrar Resultado sem completar Processamento;
+4. associar um roteiro e abrir imediatamente qualquer etapa;
+5. abrir o timer da última etapa sem marcar as anteriores;
+6. marcar manualmente qualquer conjunto de etapas em qualquer ordem;
+7. desmarcar uma etapa já marcada;
+8. editar uma etapa marcada;
+9. deixar o timer chegar ao fim e obter o check automático daquela etapa;
+10. reiniciar e reutilizar o timer de uma etapa já marcada;
+11. abandonar uma tentativa com poucas etapas marcadas e ainda registrar Resultado;
+12. trocar o roteiro sem reconstruir artificialmente uma sequência física;
+13. adicionar, editar e remover uma etapa livre sem afetar outras etapas;
+14. usar o Caderno sem qualquer movimentação automática de estoque;
+15. registrar movimentação de estoque separadamente quando desejar;
+16. acessar Exposição, Processamento e Resultado em qualquer ordem no desktop e no mobile;
+17. usar registros parciais em comparação e análise.
 
-## Inspeção visual e gate
+## Gate
 
-A alteração estrutural só pode ser considerada pronta para merge depois de **inspeção visual humana**, desktop e mobile, conforme `STUDENT_PRODUCT_UX_CANONICAL_RULES_2026-10-02.md`.
-
-A inspeção precisa validar a área do aluno inteira no estado resultante e, em especial, os seguintes estados do Caderno:
-
-- biblioteca vazia e com registros;
-- criação de registro;
-- registro vazio;
-- Exposição preenchida isoladamente;
-- Processamento sem roteiro;
-- roteiro associado ainda não iniciado;
-- Processamento parcial;
-- alteração de roteiro com fatos preservados;
-- registro retroativo/manual;
-- Resultado com e sem dados anteriores;
-- registro avaliado em somente leitura.
-
-Teste automatizado protege o contrato e regressões mecânicas, mas não substitui a inspeção visual humana.
+Mudanças estruturais no Caderno só podem ser consideradas prontas depois de testes automatizados e inspeção visual desktop/mobile. Os testes devem proteger este contrato, e não preservar expectativas antigas de wizard, progressão física ou distinção temporal que este documento aboliu.
