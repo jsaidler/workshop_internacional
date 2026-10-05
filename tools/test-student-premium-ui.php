@@ -48,11 +48,13 @@ must_student_premium_ui(str_contains($courses,'elseif(count($enrollments)===1)$s
 must_student_premium_ui(str_contains($courses,'student-academic-material-list')&&str_contains($courses,'Dúvidas e respostas'),'course workspace is not flattened around study tasks');
 must_student_premium_ui(!str_contains($courses,'student-course-dashboard')&&!str_contains($courses,'$releasedCount'),'course workspace regressed to parallel dashboard/progress blocks');
 must_student_premium_ui(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity'),'workbench lost inline simple exposure tools');
-must_student_premium_ui(!str_contains($bench,'data-lab-timer')&&str_contains($bench,'/aluno/processamentos.php'),'workbench did not replace the isolated timer with the process manager');
-must_student_premium_ui(str_contains($processManager,'Associar ao registro')&&str_contains($processManager,'Iniciar no laboratório'),'process manager is not reusable across notebook and laboratory contexts');
-must_student_premium_ui(str_contains($processManager,'Nenhuma execução foi iniciada.')&&!str_contains($processManager,"header('Location: /aluno/processar.php?test='.\$testId"),'process manager still conflates notebook association with laboratory execution');
-must_student_premium_ui(str_contains($processRunner,'data-process-runner')&&str_contains($processRunner,'Estou nesta etapa')&&str_contains($processRunner,'Ir para próxima etapa'),'laboratory runner must allow consultation plus explicit process-position progression');
-must_student_premium_ui(!str_contains($processRunner,'Interromper a etapa atual')&&!str_contains($processRunner,'Concluir esta etapa'),'laboratory runner still treats interface state as a mandatory stage-execution wizard');
+must_student_premium_ui(!str_contains($bench,'data-lab-timer')&&str_contains($bench,'/aluno/processamentos.php'),'workbench did not replace the isolated timer with the process library');
+
+// Process library remains reusable, but the Caderno does not declare a live/retroactive mode.
+must_student_premium_ui(str_contains($processManager,'Associar ao registro'),'process library lost neutral record association');
+must_student_premium_ui(str_contains($processRunner,'data-process-runner')&&str_contains($processRunner,'Marcar como concluída')&&str_contains($processRunner,'Desmarcar etapa'),'route tool must allow independent reversible step checks');
+must_student_premium_ui(str_contains($processRunner,'Editar dados da etapa')&&str_contains($processRunner,'Movimentar estoque'),'route tool must expose editing and stock as independent notebook tools');
+foreach(['Estou nesta etapa','Ir para próxima etapa','Concluir processamento','Interromper a etapa atual','Concluir esta etapa','Registrar o processamento realizado'] as $forbidden)must_student_premium_ui(!str_contains($processRunner,$forbidden),'route tool reintroduced workflow language: '.$forbidden);
 must_student_premium_ui(str_contains($bench,'<h2>Receitas</h2>')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
 foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual','registre apenas os dados que usou'] as $internalCopy)must_student_premium_ui(!str_contains($home.$bench.$test,$internalCopy),'internal design commentary leaked into student UI: '.$internalCopy);
 
@@ -62,13 +64,13 @@ must_student_premium_ui(str_contains($notebook,'button button-danger button-comp
 must_student_premium_ui(str_contains($notebook,'data-ui-validate')&&str_contains($notebook,'data-record-create-dialog'),'new-record flow must be one-click and consume global validation');
 must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route does not redirect to notebook');
 
-must_student_premium_ui(str_contains($test,'student-process-path-choice')&&str_contains($test,'student-process-history'),'processing does not keep primary choices separate from factual history');
-must_student_premium_ui(str_contains($routePicker,'student_process_replan_template')&&str_contains($routePicker,'student_process_replan_standard'),'record does not use the canonical history-preserving route picker');
 foreach(['id="exposicao"','id="processamento"','id="resultado"'] as $anchor)must_student_premium_ui(str_contains($test,$anchor),'record lost always-available documentary section '.$anchor);
 must_student_premium_ui(!str_contains($test,"\$view='review'")&&!str_contains($test,'$resultReady'),'record navigation is coupled again to process progression');
-must_student_premium_ui(str_contains($test,'Desfazer última etapa')&&!str_contains($test,'remover daqui'),'destructive process correction is still repeated on every step');
-must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'data-process-step-form'),'guided process does not consume global choice controls');
-must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record workflow is not consuming global validation');
+foreach(['Vou revelar agora','Já revelei','Continuar laboratório','Registrar manualmente','intent=live','Próxima etapa'] as $forbidden)must_student_premium_ui(!str_contains($test,$forbidden),'record reintroduced workflow choice: '.$forbidden);
+must_student_premium_ui(str_contains($test,'Marcar ✓')&&str_contains($test,'Abrir timer')&&str_contains($test,'Movimentar estoque'),'record does not expose notebook advantages directly');
+must_student_premium_ui(str_contains($routePicker,'student_process_replan_template')&&str_contains($routePicker,'student_process_replan_standard'),'record does not use the canonical route picker');
+must_student_premium_ui(str_contains($routePicker,'não inicia processamento, não impõe ordem e não movimenta estoque'),'route picker semantics are not neutral');
+must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record is not consuming global validation');
 must_student_premium_ui(str_contains($renderedCss,'.student-sticky-action{margin-top:30px;padding-top:22px')&&str_contains($renderedCss,'.student-form-grid{gap:28px 20px}'),'primary form actions can collapse against fields');
 must_student_premium_ui(str_contains($renderedCss,'.student-create-dialog .student-actions{justify-content:flex-end;gap:12px;margin-top:10px;padding-top:22px'),'new-record action still collapses against preceding fields');
 
