@@ -56,18 +56,18 @@ ux_expect(str_contains($registrations,'LIMIT $pageSize OFFSET $offset')&&str_con
 ux_expect(!str_contains($registrations,'LIMIT 500'),'Inscrições não pode truncar silenciosamente em 500 registros');
 
 ux_expect(str_contains($cohorts,'admin_course_context($course')&&str_contains($cohorts,'admin_cohort_context($course,$cohort'),'Turmas deve alternar entre coleção do curso e workspace da turma');
-ux_expect(str_contains($cohorts,"\$action==='update'")&&str_contains($cohorts,"\$action==='archive'")&&str_contains($cohorts,"\$action==='restore'"),'turma deve permitir edição, arquivamento e reativação');
+ux_expect(str_contains($cohorts,"$action==='update'")&&str_contains($cohorts,"$action==='archive'")&&str_contains($cohorts,"$action==='restore'"),'turma deve permitir edição, arquivamento e reativação');
 ux_expect(str_contains($cohorts,'Abrir turma')&&str_contains($cohorts,'Nova turma'),'turma deve ser objeto operacional diretamente descobrível');
 
 ux_expect(str_contains($students,'Busca global de pessoas com histórico de participação nos cursos.'),'Alunos deve oferecer uma entrada global por identidade sem expor Pessoas como decisão principal');
 ux_expect(str_contains($students,'admin_course_context($course')&&str_contains($students,'admin_cohort_context($course,$cohort'),'Alunos deve preservar contexto de curso e turma quando presente');
 ux_expect(str_contains($students,'Importar CSV')&&str_contains($students,'student-import-csv.php'),'importação deve estar disponível em Turma → Alunos');
-ux_expect(str_contains($students,"\$action==='move_registration'")&&str_contains($students,"\$action==='disable_manual_enrollment'"),'participação educacional precisa permitir as operações canônicas suportadas');
+ux_expect(str_contains($students,"$action==='move_registration'")&&str_contains($students,"$action==='disable_manual_enrollment'"),'participação educacional precisa permitir as operações canônicas suportadas');
 ux_expect(str_contains($people,'LIMIT $pageSize OFFSET $offset')&&str_contains($people,'admin-pagination'),'Pessoas deve continuar disponível como histórico global paginado');
 ux_expect(str_contains($people,'FROM student_users u'),'Pessoas deve continuar baseada na autoridade global de identidade');
 
 ux_expect(str_contains($lessons,'admin_course_context($course')&&str_contains($lessons,'admin_cohort_context($course,$cohort'),'Aulas deve separar estrutura do curso e acesso da turma');
-ux_expect(str_contains($lessons,"\$action==='update_lesson'")&&str_contains($lessons,"\$action==='move_lesson'"),'estrutura de aulas deve permitir correção de nome e ordem');
+ux_expect(str_contains($lessons,"$action==='update_lesson'")&&str_contains($lessons,"$action==='move_lesson'"),'estrutura de aulas deve permitir correção de nome e ordem');
 ux_expect(str_contains($lessons,'Ver conteúdo afetado')&&str_contains($lessons,'Liberar agora')&&str_contains($lessons,'Agendar')&&str_contains($lessons,'Bloquear'),'liberação deve mostrar consequência e ações no próprio contexto da turma');
 ux_expect(str_contains($lessons,'Visualizar como esta turma'),'Aulas e acesso deve permitir verificar o resultado efetivo');
 ux_expect(str_contains($material,'course_material_add_page'),'Material deve preservar a relação canônica com páginas CMS');
@@ -83,10 +83,11 @@ ux_expect(str_contains($studentHome,'student_experience_dashboard_state')&&str_c
 ux_expect(str_contains($studentCourses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'uma única matrícula não pode exigir página intermediária');
 ux_expect(str_contains($studentCourses,'student-academic-study')&&str_contains($studentCourses,'course_material_page_release_summary')&&str_contains($studentCourses,'Dúvidas e respostas'),'curso deve reunir material, disponibilidade e dúvidas no mesmo contexto acadêmico');
 ux_expect(str_contains($academicCss,'.student-dashboard-focus[hidden]{display:none}'),'estados alternativos do dashboard não podem aparecer simultaneamente');
-ux_expect(str_contains($studentNotebook,'Mais ações')&&str_contains($studentNotebook,'student_experience_process_state'),'Caderno deve priorizar estado e continuação do registro');
+ux_expect(str_contains($studentNotebook,'Mais ações')&&str_contains($studentNotebook,'student-record-summary')&&!str_contains($studentNotebook,'student-record-progress'),'Caderno deve priorizar o registro e resumir o que existe sem prescrever uma etapa atual');
 ux_expect(str_contains($studentNotebook,'data-record-create-dialog'),'novo registro deve abrir diretamente em diálogo, sem etapa intermediária');
 ux_expect(!str_contains($studentNotebook,'student-process-compare'),'comparação não pode ocupar permanentemente cada registro');
-ux_expect(str_contains($studentRecord,'student-process-now')&&str_contains($studentRecord,'student-process-history'),'processamento deve priorizar o passo atual sobre o histórico');
+ux_expect(str_contains($studentRecord,'id="exposicao"')&&str_contains($studentRecord,'id="processamento"')&&str_contains($studentRecord,'id="resultado"'),'registro deve manter Exposição, Processamento e Resultado acessíveis na mesma página');
+ux_expect(str_contains($studentRecord,'student-process-path-choice')&&str_contains($studentRecord,'student-process-history')&&!str_contains($studentRecord,'$resultReady'),'processamento deve oferecer ações sem bloquear outras partes do registro');
 ux_expect(str_contains($studentShell,'/assets/student-process-entry.js')&&str_contains($studentRecord,'Desfazer última etapa'),'processamento deve oferecer modo laboratório e subordinar correções');
 ux_expect(str_contains($studentBench,'data-exposure-tool')&&str_contains($studentBench,'data-quick-reciprocity'),'ferramentas pequenas de exposição devem continuar inline');
 ux_expect(!str_contains($studentBench,'data-lab-timer')&&str_contains($studentBench,'/aluno/processamentos.php'),'processamento multietapas não pode permanecer reduzido a um temporizador inline');
