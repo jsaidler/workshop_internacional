@@ -3,8 +3,6 @@
 .student-process-standards .student-process-standard-meta span:nth-child(2){display:none}
 
 @media(max-width:820px){
-  .student-shell{padding-bottom:20px}
-
   .student-topbar{
     position:static;
     top:auto;
@@ -19,19 +17,6 @@
     top:auto;
     z-index:auto;
     margin-inline:0;
-    background:var(--bg);
-    backdrop-filter:none;
-    -webkit-backdrop-filter:none;
-    box-shadow:none;
-  }
-
-  .student-mobile-nav{
-    position:static;
-    inset:auto;
-    width:100%;
-    margin:34px 0 0;
-    padding:8px 0 max(8px,env(safe-area-inset-bottom));
-    border-top:1px solid var(--line);
     background:var(--bg);
     backdrop-filter:none;
     -webkit-backdrop-filter:none;

@@ -163,10 +163,10 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name==='lab-runner')await expect(page.locator('.student-process-runner-timeline li')).toHaveCount(9);
       if(device==='phone'&&name!=='login'&&name!=='activation-password'&&name!=='material'){
         const mobileChrome=await page.evaluate(()=>{
-          const nav=document.querySelector('.student-mobile-nav');const top=document.querySelector('.student-topbar');const main=document.querySelector('.student-main');
-          if(!nav||!top||!main)return null;
-          const ns=getComputedStyle(nav),ts=getComputedStyle(top),nr=nav.getBoundingClientRect(),mr=main.getBoundingClientRect();
-          return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBackdrop:ns.backdropFilter||ns.webkitBackdropFilter||'none',topPosition:ts.position,navTop:nr.top,mainBottom:mr.bottom};
+          const nav=document.querySelector('.student-mobile-nav');const top=document.querySelector('.student-topbar');const shell=document.querySelector('.student-shell');
+          if(!nav||!top||!shell)return null;
+          const ns=getComputedStyle(nav),ts=getComputedStyle(top),shs=getComputedStyle(shell),nr=nav.getBoundingClientRect();
+          return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,topPosition:ts.position,navBottom:nr.bottom,navHeight:nr.height,viewportHeight:innerHeight,shellPaddingBottom:parseFloat(shs.paddingBottom||'0')};
         });
         if(mobileChrome){
           if(name==='lab-runner'){
@@ -175,10 +175,10 @@ for(const [device,viewport] of Object.entries(viewports)){
           }else{
             expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');
             expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');
-            expect(mobileChrome.navPosition,`${name}: mobile nav overlays content`).toBe('static');
-            expect(['none',''].includes(mobileChrome.navBackdrop),`${name}: mobile nav remains translucent/blurred`).toBe(true);
+            expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');
+            expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);
+            expect(mobileChrome.shellPaddingBottom,`${name}: shell must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
             expect(mobileChrome.topPosition,`${name}: topbar remains sticky`).toBe('static');
-            expect(mobileChrome.navTop,`${name}: mobile nav begins before main ends`).toBeGreaterThanOrEqual(mobileChrome.mainBottom-1);
           }
         }
       }
