@@ -35,12 +35,13 @@ must_process_recording(str_contains($page,'Editar etapa'),'recorded snapshot can
 must_process_recording(str_contains($page,'data-recorded-process-form'),'manual retroactive entry lacks progressive form contract');
 must_process_recording(!str_contains($page,'student-process-recording-principles'),'retroactive page still exposes the old pair of permanent explanatory cards');
 
-must_process_recording(str_contains($record,'Vou revelar agora')&&str_contains($record,'Já revelei'),'Caderno does not expose the real top-level processing decision');
-must_process_recording(str_contains($record,'Completar registro'),'Caderno does not server-render partial completion');
+must_process_recording(str_contains($record,'Usar um roteiro')&&str_contains($record,'Registrar manualmente'),'Caderno does not expose useful processing actions without a temporal classification gate');
+must_process_recording(str_contains($record,'Continuar laboratório'),'Caderno does not server-render partial process continuation');
 must_process_recording(str_contains($record,'intent=live'),'live laboratory execution is not an explicit preserved intent');
-must_process_recording(str_contains($record,'data-recorded-process-path'),'retroactive route is not a first-class server-rendered path');
-must_process_recording(str_contains($notebook,'student_experience_process_state_with_plan'),'Caderno list still infers execution from plan association');
+must_process_recording(str_contains($record,'/aluno/processamento-realizado.php?test=<?=$id?>'),'manual or retroactive recording is not a first-class server-rendered path');
+must_process_recording(str_contains($notebook,'student_notebook_process_summary'),'Caderno list does not derive documentary processing summaries');
 must_process_recording(!str_contains($notebook,'Roteiro em execução'),'Caderno list still labels an associated plan as execution');
+must_process_recording(!str_contains($record,'O processamento já aconteceu?')&&!str_contains($record,'Vou revelar agora')&&!str_contains($record,'Já revelei'),'Caderno still asks the user to classify when the process happened before exposing useful actions');
 
 must_process_recording(str_contains($manager,'Associar ao registro'),'process manager lost neutral association mode');
 must_process_recording(str_contains($manager,'Nenhuma execução foi iniciada.'),'association does not state that execution remains untouched');
