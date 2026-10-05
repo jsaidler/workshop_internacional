@@ -14,7 +14,7 @@ foreach(['student_test_message_date(','student_review_value('] as $needle)if(!st
 
 if(!str_contains($test,'name="action" value="save_exposure" data-process-action'))fail_student_area_transversal('exposure form lost its canonical save/upload action authority');
 if(substr_count($test,'enctype="multipart/form-data"')<2)fail_student_area_transversal('scene and result forms no longer own their media uploads');
-if(!str_contains($test,'data-process-step-form')||!str_contains($test,'name="action" value="add_step"'))fail_student_area_transversal('guided processing stage is not a single canonical form');
+if(!str_contains($test,'student-process-step-form')||!str_contains($test,'name="action" value="add_free_step"'))fail_student_area_transversal('free notebook step is not a single canonical form');
 if(!str_contains($test,"elseif(\$action==='upload')"))fail_student_area_transversal('media upload branch missing');
 $uploadSave=strpos($test,"elseif(\$action==='upload')");$uploadMutation=strpos($test,'student_test_add_media_phase',$uploadSave?:0);
 if($uploadSave===false||$uploadMutation===false)fail_student_area_transversal('media upload mutation missing');
