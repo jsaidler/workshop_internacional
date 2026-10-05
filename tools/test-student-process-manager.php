@@ -52,6 +52,7 @@ must_student_process_manager(str_contains($processUx,"&&\$reuseSource===''"),'re
 must_student_process_manager(str_contains($processUx,"'reuse_source_stage_key'=>\$data['reuse_source_stage_key']"),'executed step must persist reuse metadata');
 
 foreach(['student_process_catalogs','student_global_processes','student_process_execution','student_process_lab_navigation'] as $service)must_student_process_manager(str_contains($bootstrap,"'$service'"),'bootstrap does not load '.$service);
+must_student_process_manager(str_contains($bootstrap,"'student_process_replanning'"),'bootstrap does not load history-preserving replanning');
 must_student_process_manager(str_contains($domain,'student_process_template_duplicate'),'saved process duplication is missing');
 must_student_process_manager(str_contains($domain,'student_process_template_update_step'),'saved process step editing is missing');
 must_student_process_manager(str_contains($domain,"'reuse_source_stage_key'"),'saved process payload does not preserve bath reuse');
@@ -101,12 +102,13 @@ must_student_process_manager(str_contains($runPage,"\$intent!=='live'")&&str_con
 must_student_process_manager(!str_contains($runPage,'Interromper a etapa atual'),'runner still presents app navigation as a laboratory interruption');
 
 must_student_process_manager(str_contains($manager,'Associar ao registro')&&str_contains($manager,'Iniciar no laboratório'),'process library no longer supports both record association and standalone execution');
-must_student_process_manager(str_contains($recordPage,'/aluno/processamentos.php?test=<?=$id?>&amp;intent=live')&&str_contains($recordPage,'Vou revelar agora'),'Caderno does not preserve the live intent through reusable process selection');
-must_student_process_manager(str_contains($recordPage,'Já revelei')&&str_contains($recordPage,'/aluno/processamento-realizado.php?test=<?=$id?>'),'Caderno does not expose retroactive process recording as the other primary path');
-must_student_process_manager(str_contains($recordPage,'student_process_plan_for_test')&&str_contains($recordPage,'Abrir laboratório')&&str_contains($recordPage,'Trocar roteiro'),'Caderno does not expose compact choices for a neutral associated process plan');
-must_student_process_manager(str_contains($recordPage,'Continuar laboratório')&&str_contains($recordPage,'Completar registro'),'Caderno does not support compact partial live/retroactive continuation');
+must_student_process_manager(str_contains($recordPage,'/aluno/processar.php?test=<?=$id?>&amp;intent=live')&&str_contains($recordPage,'Abrir laboratório'),'Caderno does not expose explicit live laboratory execution from the current record');
+must_student_process_manager(str_contains($recordPage,'Registrar manualmente')&&str_contains($recordPage,'/aluno/processamento-realizado.php?test=<?=$id?>'),'Caderno does not expose direct manual/retroactive process recording');
+must_student_process_manager(str_contains($recordPage,'student_process_plan_for_test')&&str_contains($recordPage,'Abrir laboratório')&&str_contains($recordPage,'Alterar roteiro'),'Caderno does not expose compact choices for a neutral associated process plan');
+must_student_process_manager(str_contains($recordPage,'Continuar laboratório')&&str_contains($recordPage,'Registrar manualmente'),'Caderno does not support continuation without forcing a temporal classification');
 must_student_process_manager(str_contains($notebookBridge,"processEntry='server'")&&!str_contains($notebookBridge,'article.innerHTML'),'legacy notebook bridge is still injecting process UI');
 must_student_process_manager(!str_contains($recordPage,'Como este processamento aconteceu?')&&!str_contains($recordPage,'Associar um processamento salvo'),'Caderno still exposes the old verbose decision gate');
+must_student_process_manager(!str_contains($recordPage,'O processamento já aconteceu?')&&!str_contains($recordPage,'Vou revelar agora')&&!str_contains($recordPage,'Já revelei'),'Caderno still exposes a temporal classification before useful processing actions');
 must_student_process_manager(!str_contains($tools,'data-lab-timer'),'standalone timer is still the primary tools UI');
 
 must_student_process_manager(str_contains($doc,'mesmo banho de revelador preparado para a primeira revelação é reaproveitado na segunda'),'developer reuse is not documented canonically');
