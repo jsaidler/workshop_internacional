@@ -15,6 +15,7 @@ $courses=(string)file_get_contents($root.'/aluno/cursos.php');
 $bench=(string)file_get_contents($root.'/aluno/ferramentas.php');
 $notebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
+$routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
 $processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
 $processRunner=(string)file_get_contents($root.'/aluno/processar.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
@@ -56,14 +57,15 @@ must_student_premium_ui(str_contains($bench,'<h2>Receitas</h2>')&&str_contains($
 foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual','registre apenas os dados que usou'] as $internalCopy)must_student_premium_ui(!str_contains($home.$bench.$test,$internalCopy),'internal design commentary leaked into student UI: '.$internalCopy);
 
 must_student_premium_ui(str_contains($notebook,'student-process-card')&&str_contains($notebook,'Mais ações'),'notebook does not subordinate administrative actions');
-must_student_premium_ui(!str_contains($notebook,'student-process-compare'),'notebook reintroduced permanent compare checkboxes');
+must_student_premium_ui(!str_contains($notebook,'student-process-compare')&&!str_contains($notebook,'student-record-progress'),'notebook reintroduced permanent comparison or staged progress controls');
 must_student_premium_ui(str_contains($notebook,'button button-danger button-compact')&&str_contains($notebook,'name="visibility"'),'secondary/destructive notebook controls are not explicit inside secondary actions');
 must_student_premium_ui(str_contains($notebook,'data-ui-validate')&&str_contains($notebook,'data-record-create-dialog'),'new-record flow must be one-click and consume global validation');
 must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route does not redirect to notebook');
 
-must_student_premium_ui(str_contains($test,'student-process-now')&&str_contains($test,'student-process-history'),'processing does not prioritize now over history');
-must_student_premium_ui(str_contains($shell,'/assets/student-process-entry.js')&&str_contains($processManager,'?test='),'record workflow does not expose the reusable process manager');
-must_student_premium_ui(str_contains($test,"if(\$stageKey==='dry')")&&str_contains($test,"\$view='review'"),'drying does not move directly to result');
+must_student_premium_ui(str_contains($test,'student-process-path-choice')&&str_contains($test,'student-process-history'),'processing does not keep primary choices separate from factual history');
+must_student_premium_ui(str_contains($routePicker,'student_process_replan_template')&&str_contains($routePicker,'student_process_replan_standard'),'record does not use the canonical history-preserving route picker');
+foreach(['id="exposicao"','id="processamento"','id="resultado"'] as $anchor)must_student_premium_ui(str_contains($test,$anchor),'record lost always-available documentary section '.$anchor);
+must_student_premium_ui(!str_contains($test,"\$view='review'")&&!str_contains($test,'$resultReady'),'record navigation is coupled again to process progression');
 must_student_premium_ui(str_contains($test,'Desfazer última etapa')&&!str_contains($test,'remover daqui'),'destructive process correction is still repeated on every step');
 must_student_premium_ui(str_contains($test,'class="choice-field"')&&str_contains($test,'data-process-step-form'),'guided process does not consume global choice controls');
 must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record workflow is not consuming global validation');
