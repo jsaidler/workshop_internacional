@@ -12,8 +12,10 @@ try{
     if($page&&$page['status']!=='archived'&&!empty($page['published_document_json'])){
         $document=cms_page_doc($page,true);$admin=current_admin();$student=student_account_current($db);$pageAccess=(string)($page['access_level']??'public');
         $materialCourses=course_domain_available($db)?course_material_courses_for_page($db,(int)$page['id']):[];$cohortUuid=trim((string)($_GET['cohort']??''));$materialContext=$student&&$materialCourses?student_enrollment_material_context($db,$student,$page,$cohortUuid):null;
+        if(!$admin&&!$student&&($pageAccess!=='public'||$materialCourses)){
+            $next=student_safe_next((string)($_SERVER['REQUEST_URI']??cms_page_url($activity,$page,$locale)));header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;
+        }
         if(!$admin&&!cms_access_page_allowed($db,$activity,$page,$student)){
-            if(!$student&&($pageAccess!=='public'||$materialCourses)){$next=student_safe_next((string)($_SERVER['REQUEST_URI']??cms_page_url($activity,$page,$locale)));header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
             http_response_code(403);student_private_headers();exit('Este conteúdo não está disponível para esta conta.');
         }
         if(!$admin&&$materialCourses&&$student&&!$materialContext){http_response_code(403);student_private_headers();exit('Abra este material a partir do curso correspondente na Área do aluno.');}
