@@ -24,7 +24,8 @@ for(const [device,viewport] of Object.entries(viewports)){
   }
   test(`continuous agitation visual audit ${device}`,async({page})=>{
     await page.setViewportSize(viewport);await page.goto(`${base}?state=running&agitation=continuous`,{waitUntil:'networkidle'});
-    await expect(page.locator('[data-runner-agitation]')).toHaveText('AGITAÇÃO CONTÍNUA');await expect(page.locator('.student-process-runner-details')).toContainText('Agitação contínua');await expect(page.locator('.student-process-runner-details')).not.toContainText('a cada');
+    const details=page.locator('.student-process-runner-current .student-process-runner-details');
+    await expect(page.locator('[data-runner-agitation]')).toHaveText('AGITAÇÃO CONTÍNUA');await expect(details).toContainText('Agitação contínua');await expect(details).not.toContainText('a cada');
     await page.screenshot({path:`student-visual-audit/${device}/process-execution-continuous.png`,fullPage:true,animations:'disabled'});
   });
   test(`timer settings visual audit ${device}`,async({page})=>{
@@ -36,7 +37,7 @@ for(const [device,viewport] of Object.entries(viewports)){
   });
   test(`independent step tools visual audit ${device}`,async({page})=>{
     await page.setViewportSize(viewport);await page.goto(`${base}?state=idle`,{waitUntil:'networkidle'});
-    await expect(page.locator('.student-lab-stage-state')).toContainText('Etapa não marcada');await expect(page.locator('.student-lab-stage-state')).toContainText('não altera nem bloqueia');
+    await expect(page.locator('.student-lab-stage-state')).toContainText('Etapa não marcada');await expect(page.locator('.student-lab-stage-state')).toContainText('Não altera nem bloqueia');
     await expect(page.getByRole('button',{name:'Marcar como concluída',exact:true})).toBeVisible();await expect(page.getByText('Movimentar estoque',{exact:true})).toBeVisible();
     await expect(page.getByText('Repetir esta etapa',{exact:false})).toHaveCount(0);await expect(page.getByText('Remover esta etapa',{exact:false})).toHaveCount(0);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,'step tools horizontal overflow').toBeLessThanOrEqual(1);
