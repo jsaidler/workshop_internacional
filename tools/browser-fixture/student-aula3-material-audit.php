@@ -50,6 +50,7 @@ $db->exec("INSERT INTO course_page_media_slots(page_id,slot_key,media_asset_id,c
 (require __DIR__.'/../../migrations/085_aula3_student_area_research_guide.php')($db);
 (require __DIR__.'/../../migrations/087_aula2_practice_bridge.php')($db);
 (require __DIR__.'/../../migrations/089_restore_study_material_pedagogical_pattern.php')($db);
+(require __DIR__.'/../../migrations/090_reframe_aula3_as_practice.php')($db);
 $page=$db->query('SELECT published_document_json FROM cms_pages WHERE id=1')->fetchColumn();
 $published=json_decode((string)$page,true,512,JSON_THROW_ON_ERROR);$html=(string)$published['html'];
 $files=aula3_audit_pack();
@@ -66,7 +67,7 @@ $html=preg_replace_callback('~<figure\b[^>]*data-private-media-slot=["\']([^"\']
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/cms-core.css"><link rel="stylesheet" href="/assets/cms-responsive.css"><link rel="stylesheet" href="/assets/cms-header.css"><link rel="stylesheet" href="/assets/cms-editorial.css"><link rel="stylesheet" href="/assets/cms-study.css"><link rel="stylesheet" href="/assets/cms-student-notes.css">
-<title>Aula 2 e Aula 3 — auditoria visual</title>
+<title>Aula 2 e Prática — auditoria visual</title>
 </head>
 <body class="cms-public">
 <header class="topbar cms-topbar cms-topbar-static"><a class="brand">JSaidler Fotografia</a><nav><a>Workshop</a></nav><div class="cms-topbar-actions"><a class="cms-student-access">Curso</a></div></header>
