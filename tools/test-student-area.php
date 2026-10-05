@@ -45,6 +45,12 @@ $accessGuard=strpos($publicIndex,"if(!\$admin&&!cms_access_page_allowed");
 if($loginGuard===false)fail('protected material login redirect guard missing');
 if($accessGuard===false||$loginGuard>$accessGuard)fail('protected material login redirect must run before access filtering');
 
+$studentAreaCss=(string)file_get_contents(__DIR__.'/../assets/student-area.css');
+$qualityPassCss=(string)file_get_contents(__DIR__.'/../assets/student-quality-pass.css');
+if(!preg_match('~\.student-mobile-nav\s*\{[^}]*position:fixed[^}]*bottom:0~s',$studentAreaCss))fail('canonical mobile navigation is not fixed to viewport bottom');
+if(preg_match('~\.student-mobile-nav\s*\{[^}]*position:static~s',$qualityPassCss))fail('quality pass downgrades mobile navigation to document flow');
+if(str_contains($qualityPassCss,'.student-shell{padding-bottom:20px}'))fail('quality pass removes fixed navigation footprint from shell');
+
 student_admin_set_enrollment($db,(int)$user['id'],1,'disabled');
 if(student_has_activity($db,(int)$user['id'],1))fail('disabled enrollment still active');
 
