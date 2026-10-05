@@ -19,6 +19,16 @@ function student_process_notebook_add_free_step(PDO $db,int $testId,int $student
     $q=$db->prepare('SELECT * FROM student_process_steps WHERE id=?');$q->execute([$id]);return $q->fetch(PDO::FETCH_ASSOC)?:[];
 }
 
+function student_process_notebook_update_free_step(PDO $db,int $testId,int $stepId,int $studentId,array $input): array {
+    student_test_for_student($db,$testId,$studentId)??throw new RuntimeException('Registro não encontrado.');
+    $q=$db->prepare('SELECT * FROM student_process_steps WHERE id=? AND test_id=?');$q->execute([$stepId,$testId]);$step=$q->fetch(PDO::FETCH_ASSOC)?:throw new RuntimeException('Etapa não encontrada.');
+    $label=student_workspace_text($input['label']??$step['label'],120);if($label==='')throw new RuntimeException('Informe o nome da etapa.');
+    $chemicalName=student_workspace_text($input['chemical_name']??$step['chemical_name'],180);$temperature=student_workspace_text($input['temperature']??$step['temperature'],80);$agitation=student_workspace_text($input['agitation']??$step['agitation'],600);$notes=student_workspace_text($input['notes']??$step['notes'],3000);
+    $duration=student_workspace_text($input['duration']??$step['duration'],40);if($duration!==''&&student_process_time_seconds($duration)===null)throw new RuntimeException('Informe um tempo válido ou deixe o campo vazio.');if($duration!=='')$duration=student_process_seconds_label(student_process_time_seconds($duration));
+    $now=utc_now();$db->prepare('UPDATE student_process_steps SET label=?,chemical_name=?,temperature=?,duration=?,agitation=?,notes=?,updated_at=? WHERE id=? AND test_id=?')->execute([$label,$chemicalName,$temperature,$duration,$agitation,$notes,$now,$stepId,$testId]);$db->prepare('UPDATE student_tests SET updated_at=? WHERE id=? AND student_id=?')->execute([$now,$testId,$studentId]);
+    $q=$db->prepare('SELECT * FROM student_process_steps WHERE id=?');$q->execute([$stepId]);return $q->fetch(PDO::FETCH_ASSOC)?:[];
+}
+
 function student_process_notebook_delete_free_step(PDO $db,int $testId,int $stepId,int $studentId): void {
     student_test_for_student($db,$testId,$studentId)??throw new RuntimeException('Registro não encontrado.');
     $q=$db->prepare('SELECT id FROM student_process_steps WHERE id=? AND test_id=?');$q->execute([$stepId,$testId]);if(!$q->fetchColumn())throw new RuntimeException('Etapa não encontrada.');
