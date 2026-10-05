@@ -20,7 +20,7 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.locator('.student-step-nav')).toHaveCount(0);await expect(page.locator('#exposicao')).toBeVisible();await expect(page.locator('#processamento')).toBeVisible();await expect(page.locator('#resultado')).toBeVisible();await expect(page.getByRole('link',{name:'Exposição',exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Processamento',exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Resultado',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Salvar exposição'})).toBeVisible();await expect(page.getByRole('button',{name:'Salvar resultado'})).toBeVisible();
       }
       if(screen==='record-empty'){
-        await expect(page.getByRole('link',{name:'Associar roteiro'})).toBeVisible();await expect(page.getByRole('link',{name:'Adicionar etapa'})).toBeVisible();await expect(page.getByRole('link',{name:'Movimentar estoque'})).toBeVisible();
+        await expect(page.getByText('Associar roteiro',{exact:true})).toBeVisible();await expect(page.getByText('Adicionar etapa',{exact:true}).first()).toBeVisible();await expect(page.getByText('Movimentar estoque',{exact:true})).toBeVisible();
         for(const obsolete of ['O processamento já aconteceu?','Vou revelar agora','Já revelei','Registrar manualmente'])await expect(page.getByText(obsolete,{exact:false})).toHaveCount(0);
       }
       if(screen==='record-plan'){
@@ -31,10 +31,14 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);await expect(page.getByText('Lavagem após branqueamento')).toBeVisible();
       }
       if(screen==='route-picker'){
-        await expect(page.getByRole('heading',{name:'Alterar roteiro'})).toBeVisible();await expect(page.getByText('não inicia processamento, não impõe ordem e não movimenta estoque',{exact:false})).toBeVisible();await expect(page.getByText('Associar este roteiro',{exact:true}).first()).toBeVisible();await expect(page.getByText('Usar daqui em diante',{exact:false})).toHaveCount(0);await expect(page.getByText('Cancelar e voltar ao registro',{exact:true})).toBeVisible();
+        await expect(page.getByRole('heading',{name:'Alterar roteiro'})).toBeVisible();
+        const neutralCopy=page.getByText('não inicia processamento, não impõe ordem e não movimenta estoque',{exact:false});if(device==='desktop')await expect(neutralCopy).toBeVisible();else await expect(neutralCopy).toHaveCount(1);
+        await expect(page.getByText('Associar este roteiro',{exact:true}).first()).toBeVisible();await expect(page.getByText('Usar daqui em diante',{exact:false})).toHaveCount(0);await expect(page.getByText('Cancelar e voltar ao registro',{exact:true})).toBeVisible();
       }
       if(screen==='record-result'){
-        await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();await expect(page.getByRole('heading',{name:'Exposição e processamento'})).toBeVisible();await expect(page.getByText('não depende de nenhuma etapa anterior',{exact:false})).toBeVisible();await expect(page.locator('textarea')).toHaveValue(/tentativa encerrada/);
+        await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();await expect(page.getByRole('heading',{name:'Exposição e processamento'})).toBeVisible();
+        const independentCopy=page.getByText('não depende de nenhuma etapa anterior',{exact:false});if(device==='desktop')await expect(independentCopy).toBeVisible();else await expect(independentCopy).toHaveCount(1);
+        await expect(page.locator('textarea')).toHaveValue(/tentativa encerrada/);
       }
       await page.screenshot({path:`student-visual-audit/${device}/caderno-${screen}.png`,fullPage:true,animations:'disabled'});
     });
