@@ -56,4 +56,4 @@ A cobertura específica do Caderno fica em `tools/browser-tests/student-caderno-
 
 `tools/browser-tests/student-process-execution-state-audit.spec.cjs` cobre o timer como ferramenta independente: ele pode iniciar, pausar, reiniciar e ser reutilizado depois de chegar a zero. O fim do timer pode marcar o check da própria etapa, mas não libera, bloqueia nem seleciona outra etapa.
 
-Os testes não substituem a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.
+O pacote de screenshots usado pelo material da Aula 3 deve ser regenerado a partir dessas superfícies sempre que a apresentação canônica do Caderno mudar. Na revisão não linear, o pacote foi atualizado depois de o audit visual passar.\n\nOs testes não substituem a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.
