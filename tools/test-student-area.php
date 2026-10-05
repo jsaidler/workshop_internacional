@@ -39,6 +39,12 @@ if(!current_student($db))fail('valid session rejected');
 $_SESSION=['student'=>['id'=>(int)$user['id'],'issued_at'=>time()-STUDENT_ABSOLUTE_TIMEOUT_SECONDS-1,'last_activity'=>time()]];
 if(current_student($db)!==null)fail('expired absolute session accepted');
 
+$publicIndex=(string)file_get_contents(__DIR__.'/../index.php');
+$loginGuard=strpos($publicIndex,"if(!\$admin&&!\$student&&(\$pageAccess!=='public'||\$materialCourses))");
+$accessGuard=strpos($publicIndex,"if(!\$admin&&!cms_access_page_allowed");
+if($loginGuard===false)fail('protected material login redirect guard missing');
+if($accessGuard===false||$loginGuard>$accessGuard)fail('protected material login redirect must run before access filtering');
+
 student_admin_set_enrollment($db,(int)$user['id'],1,'disabled');
 if(student_has_activity($db,(int)$user['id'],1))fail('disabled enrollment still active');
 
