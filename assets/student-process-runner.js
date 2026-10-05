@@ -30,6 +30,7 @@ const durationRaw=root.dataset.durationSeconds,agitationMode=root.dataset.agitat
 const total=durationRaw===''?null:Number(durationRaw),agitationDuration=agitationDurationRaw===''?null:Number(agitationDurationRaw),agitationInterval=agitationIntervalRaw===''?null:Number(agitationIntervalRaw);
 const clock=root.querySelector('[data-runner-clock]'),cue=root.querySelector('[data-runner-cue]'),wakeStatus=root.querySelector('[data-runner-wake-status]'),stateStatus=root.querySelector('[data-runner-state-status]'),agitationStatus=root.querySelector('[data-runner-agitation]');
 const start=root.querySelector('[data-runner-start]'),pause=root.querySelector('[data-runner-pause]'),reset=root.querySelector('[data-runner-reset]');
+const completion=root.querySelector('[data-step-completion]'),completionText=completion?.querySelector('strong'),completionForm=root.querySelector('.student-notebook-step-check'),completionInput=completionForm?.querySelector('input[name="completed"]'),completionButton=completionForm?.querySelector('button');
 const endpoint=root.dataset.runnerEndpoint||'',csrf=root.dataset.runnerCsrf||'',planStepId=root.dataset.planStepId||'';
 const serverMode=!!(endpoint&&csrf&&planStepId),storageKey='student-process-runner:'+root.dataset.storageKey,wakeSessionKey='student-process-wake-active';
 let interval=null,reconcileInterval=null,wakeLock=null,audioContext=null,busy=false,lastElapsedSync=0,lastAgitationPhase='',lastLegacyAgitationIndex=0,agitationInitialized=false;
@@ -39,6 +40,12 @@ const parseDate=value=>{const ms=Date.parse(String(value||''));return Number.isF
 const setCue=(text,clear=true)=>{if(!cue)return;cue.textContent=text;if(clear&&text)setTimeout(()=>{if(cue&&cue.textContent===text)cue.textContent='';},1800);};
 const beep=(frequency=880,duration=.16)=>{try{audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.frequency.value=frequency;gain.gain.setValueAtTime(.045,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.0001,audioContext.currentTime+duration);osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+duration);}catch{}};
 const setWakeText=text=>{if(wakeStatus)wakeStatus.textContent=text;};
+function applyCompletion(done){
+  if(!serverMode)return;
+  if(completionText)completionText.textContent=done?'Etapa marcada como concluída':'Etapa não marcada';
+  if(completionInput)completionInput.value=done?'0':'1';
+  if(completionButton){completionButton.textContent=done?'Desmarcar etapa':'Marcar como concluída';completionButton.classList.toggle('button-primary',!done);completionButton.classList.toggle('button-secondary',done);}
+}
 async function acquireWake(){
   if(document.visibilityState!=='visible')return;
   if(!('wakeLock' in navigator)){setWakeText('Tela ativa: recurso não disponível');return;}
@@ -72,9 +79,7 @@ function renderAgitation({allowCue=true}={}){
     agitationStatus.textContent=state?.state==='running'?'AGITAÇÃO CONTÍNUA':state?.state==='paused'?'Agitação contínua · pausada':state?.state==='elapsed'?'Agitação contínua · tempo encerrado':'Agitação contínua durante toda a etapa';
     agitationInitialized=true;return;
   }
-  if(agitationMode!=='periodic'||!agitationInterval||agitationInterval<=0){
-    agitationStatus.classList.remove('is-agitating');agitationStatus.textContent='Sem aviso de agitação';agitationInitialized=true;return;
-  }
+  if(agitationMode!=='periodic'||!agitationInterval||agitationInterval<=0){agitationStatus.classList.remove('is-agitating');agitationStatus.textContent='Sem aviso de agitação';agitationInitialized=true;return;}
   const elapsed=elapsedNow();
   if(state?.state!=='running'){
     agitationStatus.classList.remove('is-agitating');
@@ -87,13 +92,9 @@ function renderAgitation({allowCue=true}={}){
     if(agitationInitialized&&index>lastLegacyAgitationIndex&&elapsed>0&&allowCue)agitationStartCue();
     lastLegacyAgitationIndex=index;agitationInitialized=true;return;
   }
-  const cycle=Math.floor(elapsed/agitationInterval),position=elapsed-(cycle*agitationInterval),active=position<agitationDuration;
-  const phase=`${cycle}:${active?'on':'off'}`;
-  if(active){agitationStatus.classList.add('is-agitating');agitationStatus.textContent=`AGITAR · ${format(agitationDuration-position)}`;}
-  else{agitationStatus.classList.remove('is-agitating');agitationStatus.textContent=`Próxima agitação em ${format(agitationInterval-position)}`;}
-  if(agitationInitialized&&phase!==lastAgitationPhase&&allowCue){
-    if(active)agitationStartCue();else if(lastAgitationPhase.endsWith(':on'))agitationEndCue();
-  }
+  const cycle=Math.floor(elapsed/agitationInterval),position=elapsed-(cycle*agitationInterval),active=position<agitationDuration;const phase=`${cycle}:${active?'on':'off'}`;
+  if(active){agitationStatus.classList.add('is-agitating');agitationStatus.textContent=`AGITAR · ${format(agitationDuration-position)}`;}else{agitationStatus.classList.remove('is-agitating');agitationStatus.textContent=`Próxima agitação em ${format(agitationInterval-position)}`;}
+  if(agitationInitialized&&phase!==lastAgitationPhase&&allowCue){if(active)agitationStartCue();else if(lastAgitationPhase.endsWith(':on'))agitationEndCue();}
   lastAgitationPhase=phase;agitationInitialized=true;
 }
 
@@ -101,14 +102,13 @@ function render({allowAgitationCue=true}={}){
   const timerState=state?.state||'idle';root.dataset.timerState=timerState;
   if(total===null){if(stateStatus)stateStatus.textContent='Sem cronômetro';if(start)start.hidden=true;if(pause)pause.hidden=true;if(reset)reset.hidden=true;renderAgitation({allowCue:false});return;}
   const remaining=remainingNow();if(clock)clock.textContent=format(remaining);if(stateStatus)stateStatus.textContent=stateLabel();
-  if(start){start.hidden=!['idle','paused'].includes(timerState);start.disabled=busy;start.textContent=timerState==='paused'?'Retomar':'Iniciar';}
+  if(start){start.hidden=!['idle','paused','elapsed'].includes(timerState);start.disabled=busy;start.textContent=timerState==='paused'?'Retomar':timerState==='elapsed'?'Iniciar novamente':'Iniciar';}
   if(pause){pause.hidden=timerState!=='running';pause.disabled=busy;}
   if(reset){reset.hidden=timerState==='idle';reset.disabled=busy;}
   renderAgitation({allowCue:allowAgitationCue});
 }
 function applyServerState(input,{quiet=false}={}){
-  const next=normalizeServerState(input);if(!next)return;
-  const previous=state?.state;state=next;
+  const next=normalizeServerState(input);if(!next)return;const previous=state?.state;state=next;
   if(previous!=='elapsed'&&state.state==='elapsed'&&!quiet){setCue('Tempo concluído',false);navigator.vibrate?.([260,100,260]);beep();}
   render();reconcileWake();
 }
@@ -117,47 +117,38 @@ async function serverRequest(action,{allowConflict=true}={}){
   const body=new URLSearchParams({_csrf:csrf,action,ajax:'1',plan_step_id:planStepId,revision:String(state?.revision??''),client_token:token()});
   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body,credentials:'same-origin'});
   let payload={};try{payload=await response.json();}catch{}
-  if(response.status===409&&allowConflict&&payload.state){applyServerState(payload.state);setCue('Estado atualizado de outra aba ou dispositivo.');return payload.state;}
+  if(response.status===409&&allowConflict&&payload.state){applyServerState(payload.state);if(Object.hasOwn(payload,'completed'))applyCompletion(Boolean(payload.completed));setCue('Estado atualizado de outra aba ou dispositivo.');return payload.state;}
   if(!response.ok)throw new Error(payload.error||'Não foi possível atualizar o cronômetro.');
-  if(payload.state)applyServerState(payload.state,{quiet:action==='timer_state'});
+  if(payload.state)applyServerState(payload.state,{quiet:action==='timer_state'});if(Object.hasOwn(payload,'completed'))applyCompletion(Boolean(payload.completed));
   return payload.state||null;
 }
 async function syncState({quiet=true}={}){
   if(!serverMode||busy)return;
-  try{const body=new URLSearchParams({_csrf:csrf,action:'timer_state',ajax:'1',plan_step_id:planStepId,client_token:token()});const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body,credentials:'same-origin'});const payload=await response.json();if(!response.ok)throw new Error(payload.error||'Falha ao sincronizar.');if(payload.state)applyServerState(payload.state,{quiet});}
-  catch(error){if(!quiet)setCue(error instanceof Error?error.message:'Sem conexão para sincronizar.',false);}
+  try{
+    const body=new URLSearchParams({_csrf:csrf,action:'timer_state',ajax:'1',plan_step_id:planStepId,client_token:token()});
+    const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8','X-Requested-With':'XMLHttpRequest'},body,credentials:'same-origin'});const payload=await response.json();
+    if(!response.ok)throw new Error(payload.error||'Falha ao sincronizar.');if(payload.state)applyServerState(payload.state,{quiet});if(Object.hasOwn(payload,'completed'))applyCompletion(Boolean(payload.completed));
+  }catch(error){if(!quiet)setCue(error instanceof Error?error.message:'Sem conexão para sincronizar.',false);}
 }
-async function transition(action){
-  if(busy)return;busy=true;render({allowAgitationCue:false});
-  try{await serverRequest(action);}
-  catch(error){setCue(error instanceof Error?error.message:'Não foi possível atualizar o cronômetro.',false);}
-  finally{busy=false;render();}
-}
+async function transition(action){if(busy)return;busy=true;render({allowAgitationCue:false});try{await serverRequest(action);}catch(error){setCue(error instanceof Error?error.message:'Não foi possível atualizar o cronômetro.',false);}finally{busy=false;render();}}
 function localFinish(){if(!state||state.state==='elapsed')return;state.remaining=0;state.endAt=null;state.state='elapsed';persistLocal();setCue('Tempo concluído',false);navigator.vibrate?.([260,100,260]);beep();render();reconcileWake();}
 function tick(){
-  if(!state||state.state!=='running'||!state.endAt)return;
-  state.remaining=remainingNow();
-  if(state.remaining<=0){
-    if(serverMode){state.state='elapsed';state.endAt=null;render();releaseWake();const now=Date.now();if(now-lastElapsedSync>1500){lastElapsedSync=now;syncState({quiet:false});}}
-    else localFinish();
-    return;
-  }
+  if(!state||state.state!=='running'||!state.endAt)return;state.remaining=remainingNow();
+  if(state.remaining<=0){if(serverMode){state.state='elapsed';state.endAt=null;render();releaseWake();const now=Date.now();if(now-lastElapsedSync>1500){lastElapsedSync=now;syncState({quiet:false});}}else localFinish();return;}
   persistLocal();render();
 }
 async function startTimer(){
-  if(!state||total===null||state.state==='running'||state.state==='elapsed')return;
+  if(!state||total===null||state.state==='running')return;
   audioContext=audioContext||(()=>{try{return new (window.AudioContext||window.webkitAudioContext)();}catch{return null;}})();
   if(serverMode){await transition('timer_start');return;}
   if(state.remaining<=0)state.remaining=total;state.endAt=Date.now()+state.remaining*1000;state.state='running';sessionStorage.setItem(wakeSessionKey,'1');persistLocal();await acquireWake();render();
 }
 async function pauseTimer(){
-  if(!state||state.state!=='running')return;
-  if(serverMode){await transition('timer_pause');return;}
+  if(!state||state.state!=='running')return;if(serverMode){await transition('timer_pause');return;}
   state.remaining=remainingNow();state.endAt=null;state.state='paused';sessionStorage.setItem(wakeSessionKey,'0');persistLocal();await releaseWake();render();
 }
 async function resetTimer(){
-  if(!state||total===null)return;
-  lastAgitationPhase='';lastLegacyAgitationIndex=0;agitationInitialized=false;
+  if(!state||total===null)return;lastAgitationPhase='';lastLegacyAgitationIndex=0;agitationInitialized=false;
   if(serverMode){await transition('timer_reset');setCue('Cronômetro reiniciado.');return;}
   state=freshLocalState();sessionStorage.removeItem(storageKey);sessionStorage.setItem(wakeSessionKey,'0');if(cue)cue.textContent='';await releaseWake();render({allowAgitationCue:false});
 }
@@ -166,6 +157,5 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('focus',()=>{if(serverMode)syncState();});window.addEventListener('online',()=>{if(serverMode)syncState({quiet:false});});
 window.addEventListener('pagehide',()=>{clearInterval(interval);clearInterval(reconcileInterval);interval=null;reconcileInterval=null;});
 if(!serverMode&&state?.state==='running'&&state.endAt&&remainingNow()<=0)localFinish();
-render({allowAgitationCue:false});reconcileWake();
-if(total!==null)interval=setInterval(tick,250);if(serverMode)reconcileInterval=setInterval(()=>syncState(),15000);
+render({allowAgitationCue:false});reconcileWake();if(total!==null)interval=setInterval(tick,250);if(serverMode)reconcileInterval=setInterval(()=>syncState(),15000);
 })();
