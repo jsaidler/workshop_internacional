@@ -83,7 +83,7 @@ jobs:
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          if git diff --quiet -- migrations/assets/aula3-hires.pack.b64; then
+          if [[ -z "$(git status --porcelain -- migrations/assets/aula3-hires.pack.b64)" ]]; then
             echo 'Aula 3 screenshot pack already current.'
             exit 0
           fi
