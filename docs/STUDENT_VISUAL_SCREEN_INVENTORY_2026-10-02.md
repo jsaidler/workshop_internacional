@@ -1,6 +1,8 @@
-# Área do aluno — inventário obrigatório de telas — 02/10/2026
+# Área do aluno — inventário obrigatório de telas — revisão de 05/10/2026
 
 Este inventário operacionaliza a regra de que nenhuma tela da área do aluno pode ser presumida correta. Toda tranche deve renderizar e inspecionar as superfícies visuais abaixo em desktop e mobile.
+
+A revisão de 05/10/2026 incorpora o contrato não linear do Caderno. Modos visuais separados de “ao vivo”, “já realizado”, “retrospectivo” ou “próximas etapas” deixam de ser superfícies de produto: o Caderno não precisa saber quando a operação física aconteceu.
 
 ## Superfícies visuais
 
@@ -12,16 +14,14 @@ Este inventário operacionaliza a regra de que nenhuma tela da área do aluno po
 | material do curso (CMS autenticado) | leitura parcial com seções de aulas diferentes filtradas no servidor; contexto curso/turma; anterior/próximo preservando `cohort`; anotações; telefone estreito |
 | `aluno/duvidas.php` | lista; lista com conversa de avaliação contextual; nova dúvida; conversa |
 | `aluno/caderno.php` | lista; novo registro; registro derivado com origem e intenção de pesquisa |
-| `aluno/teste.php` | registro vazio; exposição preenchida isoladamente; processamento sem roteiro; roteiro associado ainda não iniciado; processamento parcial; resultado disponível com e sem processamento concluído; avaliação aguardando retorno, revisão solicitada e avaliação concluída |
-| `aluno/registro-roteiro.php` | associação inicial e alteração de roteiro a partir do próprio registro, sempre com retorno explícito; alteração após fatos deve deixar claro que o histórico realizado permanece |
-| `aluno/processamento-realizado.php` | registro retroativo, retomada parcial e registro concluído |
-| `aluno/processamentos-trocar.php` | troca antes de fatos consolidados, troca depois de fatos registrados e registro já realizado; nunca inferir interrupção a partir do estado do app |
-| `aluno/teste-etapa.php` | edição de etapa real |
+| `aluno/teste.php` | registro vazio; exposição isolada; processamento sem roteiro; roteiro associado com zero checks; conjunto arbitrário de checks; resultado independente; avaliação aguardando retorno, revisão solicitada e avaliação concluída |
+| `aluno/registro-roteiro.php` | associação inicial e alteração de roteiro a partir do próprio registro, sem iniciar processamento, impor ordem ou movimentar estoque |
+| `aluno/teste-etapa.php` | edição de etapa livre sem afetar outras etapas ou estoque |
 | `aluno/teste-compartilhado.php` | registro compartilhado |
 | `aluno/excluir-teste.php` | confirmação destrutiva |
 | `aluno/comparar-processos.php` | um registro já escolhido + escolha do segundo; comparação analítica com diferenças registradas, resultados e continuidade |
-| `aluno/processamentos.php` | biblioteca e editor |
-| `aluno/processar.php` | modo laboratório; navegação entre etapas, consulta sem progresso, timer idle/running/paused/elapsed, agitação periódica e contínua, ajustes de tempo/agitação abertos |
+| `aluno/processamentos.php` | biblioteca e editor de roteiros reutilizáveis |
+| `aluno/processar.php` | consulta de qualquer etapa; checks reversíveis; timer idle/running/paused/elapsed e reutilização; agitação periódica e contínua; edição de dados; estoque como ação separada |
 | `aluno/inventario.php` | estoque, vazio e movimentação |
 | `aluno/inventario-item.php` | edição de item |
 | `aluno/preparos.php` | lista e editor de predefinição |
@@ -44,16 +44,16 @@ Estes arquivos não recebem screenshot próprio porque são redirecionadores, a�
 - `aluno/temporizador.php` — redirecionamento legado para Processamentos;
 - `aluno/teste-media.php` — entrega de mídia do Caderno;
 - `aluno/testes.php` — redirecionamento legado para Caderno;
-- `aluno/visibilidade-teste.php` — ação de alteração de visibilidade.
+- `aluno/visibilidade-teste.php` — ação de alteração de visibilidade;
+- `aluno/processamento-realizado.php` — compatibilidade: converge para o Processamento do próprio registro, sem modo retrospectivo separado;
+- `aluno/processamentos-trocar.php` — compatibilidade: converge para `registro-roteiro.php`, sem conceito de “próximas etapas”.
 
-## Gate
+## Gate visual atual
 
-`tools/browser-tests/student-complete-area-audit.spec.cjs` é a lista executável de cobertura visual total. A Tranche D elevou o conjunto para 43 superfícies renderizadas por viewport. A Tranche E acrescentou seis estados pedagógicos obrigatórios — Início com retorno, Curso com acompanhamento, Dúvidas com conversa de avaliação, Resultado aguardando avaliação, Resultado com revisão solicitada e Resultado avaliado — totalizando 49 superfícies por viewport.
+`tools/browser-tests/student-complete-area-audit.spec.cjs` é a lista executável de cobertura visual total e declara **46 superfícies por viewport**. Os cinco estados que representavam distinções temporais artificiais — `process-intent`, `recording-start`, `recording-associated`, `recording-partial` e `recording-complete` — foram retirados do produto visual porque contradizem o contrato atual do Caderno.
 
-A Tranche F acrescenta **dois estados obrigatórios** sem criar uma nova rota: comparação iniciada a partir de um registro e registro derivado com origem/intenção. A comparação analítica substitui a antiga captura genérica da própria rota. O conjunto passa a **51 superfícies por viewport**.
+A cobertura específica do Caderno fica em `tools/browser-tests/student-caderno-product-audit.spec.cjs`, com biblioteca, registro vazio, roteiro associado, conjunto parcial de checks, seletor contextual de roteiro e resultado. O audit deve verificar também a ausência de linguagem de workflow, a disponibilidade de todas as etapas, checks reversíveis e acesso ao timer.
 
-A revisão do Caderno de 05/10/2026 acrescenta uma rota contextual, `aluno/registro-roteiro.php`, e muda a semântica de `aluno/teste.php`: Exposição, Processamento e Resultado deixam de funcionar como etapas de navegação e passam a coexistir no mesmo registro. Essa revisão é coberta por `tools/browser-tests/student-caderno-product-audit.spec.cjs`, que deve renderizar, em desktop e telefone, pelo menos: biblioteca do Caderno, registro vazio, roteiro associado ainda não iniciado, processamento parcial, seletor contextual de roteiro e resultado. Esse conjunto é complementar às 51 superfícies históricas do audit completo e faz parte do mesmo gate visual da área do aluno.
-
-Estados transversais de mudança de rota são complementados por `tools/browser-tests/student-process-replanning-audit.spec.cjs`, incluindo a troca depois de fatos registrados e a troca enquanto o app possuía estado operacional mas nenhum fato havia sido consolidado. O segundo caso deve provar visualmente que o sistema não fabrica uma “interrupção”.
+`tools/browser-tests/student-process-execution-state-audit.spec.cjs` cobre o timer como ferramenta independente: ele pode iniciar, pausar, reiniciar e ser reutilizado depois de chegar a zero. O fim do timer pode marcar o check da própria etapa, mas não libera, bloqueia nem seleciona outra etapa.
 
 Os testes não substituem a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.
