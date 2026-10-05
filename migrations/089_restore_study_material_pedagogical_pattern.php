@@ -24,16 +24,16 @@ return static function(PDO $db): void {
     ];
 
     $replaceOpeningTag=static function(string $html,string $key,string $classes): string {
-        $pattern='~<section\\b[^>]*data-cms-section=["\\']'.preg_quote($key,'~').'["\\'][^>]*>~i';
+        $pattern="~<section\\b[^>]*data-cms-section=[\"']".preg_quote($key,'~')."[\"'][^>]*>~i";
         return preg_replace_callback($pattern,static function(array $m)use($classes):string{
             $tag=(string)$m[0];
-            if(preg_match('~\\bclass=["\\'][^"\\']*["\\']~i',$tag)){
-                $tag=preg_replace('~\\bclass=["\\'][^"\\']*["\\']~i','class="'.$classes.'"',$tag,1)??$tag;
+            if(preg_match("~\\bclass=[\"'][^\"']*[\"']~i",$tag)){
+                $tag=preg_replace("~\\bclass=[\"'][^\"']*[\"']~i",'class="'.$classes.'"',$tag,1)??$tag;
             }else{
                 $tag=preg_replace('~<section\\b~i','<section class="'.$classes.'"',$tag,1)??$tag;
             }
-            $tag=preg_replace('~\\sdata-layout-background=["\\'][^"\\']*["\\']~i','',$tag)??$tag;
-            $tag=preg_replace('~\\sdata-layout-space=["\\'][^"\\']*["\\']~i','',$tag)??$tag;
+            $tag=preg_replace("~\\sdata-layout-background=[\"'][^\"']*[\"']~i",'',$tag)??$tag;
+            $tag=preg_replace("~\\sdata-layout-space=[\"'][^\"']*[\"']~i",'',$tag)??$tag;
             return $tag;
         },$html,1)??$html;
     };
@@ -43,25 +43,25 @@ return static function(PDO $db): void {
     };
 
     $rebuildTools=static function(string $html): string {
-        $pattern='~<section\\b[^>]*data-cms-section=["\\']caderno-27-ferramentas["\\'][^>]*>(.*?)</section>~si';
+        $pattern="~<section\\b[^>]*data-cms-section=[\"']caderno-27-ferramentas[\"'][^>]*>(.*?)</section>~si";
         return preg_replace_callback($pattern,static function(array $m):string{
             $section=(string)$m[0];
-            if(!preg_match('~<div\\b[^>]*class=["\\'][^"\\']*format-grid[^"\\']*["\\'][^>]*>.*?</div>~si',$section,$gridMatch))return $section;
-            if(!preg_match('~<figure\\b[^>]*data-private-media-slot=["\\']aula3-ferramentas["\\'][^>]*>.*?</figure>~si',$section,$figureMatch))return $section;
+            if(!preg_match("~<div\\b[^>]*class=[\"'][^\"']*format-grid[^\"']*[\"'][^>]*>.*?</div>~si",$section,$gridMatch))return $section;
+            if(!preg_match("~<figure\\b[^>]*data-private-media-slot=[\"']aula3-ferramentas[\"'][^>]*>.*?</figure>~si",$section,$figureMatch))return $section;
             $grid=(string)$gridMatch[0];
             $figure=(string)$figureMatch[0];
-            preg_match('~data-cms-availability=["\\']lesson["\\'][^>]*data-cms-lesson-id=["\\'](\\d+)["\\']~i',$section,$lessonMatch);
+            preg_match("~data-cms-availability=[\"']lesson[\"'][^>]*data-cms-lesson-id=[\"'](\\d+)[\"']~i",$section,$lessonMatch);
             $availability=isset($lessonMatch[1])?' data-cms-availability="lesson" data-cms-lesson-id="'.$lessonMatch[1].'"':'';
-            return '<section class="study-unit" data-cms-section="caderno-27-ferramentas" data-cms-section-name="Aula 3 · Ferramentas de apoio"'.$availability.'>\n'
-                .'  <p class="section-label" data-cms-editable>Ferramentas de apoio</p>\n'
-                .'  <div class="statement-grid">\n'
-                .'    <div><h2 data-cms-editable>Ferramentas da área do aluno</h2></div>\n'
-                .'    <div class="statement-copy">\n'
-                .'      <p data-cms-editable>O botão Ferramentas reúne cálculos e referências de laboratório. Eles ajudam a organizar o trabalho e a refazer contas, mas não substituem a leitura da cena, a escolha da exposição nem a interpretação do resultado.</p>\n'
-                .'      <p data-cms-editable>Os recursos abaixo funcionam como apoio ao Caderno. O Caderno continua sendo o lugar onde fica registrado o que efetivamente aconteceu em cada tentativa.</p>\n'
-                .'    </div>\n'
-                .'  </div>\n  '.$grid.'\n  '.$figure.'\n'
-                .'  <p class="technical-note" data-cms-editable>Use as ferramentas para calcular e organizar. Use o Caderno para registrar o que aconteceu.</p>\n'
+            return '<section class="study-unit" data-cms-section="caderno-27-ferramentas" data-cms-section-name="Aula 3 · Ferramentas de apoio"'.$availability.">\n"
+                .'  <p class="section-label" data-cms-editable>Ferramentas de apoio</p>'."\n"
+                .'  <div class="statement-grid">'."\n"
+                .'    <div><h2 data-cms-editable>Ferramentas da área do aluno</h2></div>'."\n"
+                .'    <div class="statement-copy">'."\n"
+                .'      <p data-cms-editable>O botão Ferramentas reúne cálculos e referências de laboratório. Eles ajudam a organizar o trabalho e a refazer contas, mas não substituem a leitura da cena, a escolha da exposição nem a interpretação do resultado.</p>'."\n"
+                .'      <p data-cms-editable>Os recursos abaixo funcionam como apoio ao Caderno. O Caderno continua sendo o lugar onde fica registrado o que efetivamente aconteceu em cada tentativa.</p>'."\n"
+                .'    </div>'."\n"
+                .'  </div>'."\n  ".$grid."\n  ".$figure."\n"
+                .'  <p class="technical-note" data-cms-editable>Use as ferramentas para calcular e organizar. Use o Caderno para registrar o que aconteceu.</p>'."\n"
                 .'</section>';
         },$html,1)??$html;
     };
