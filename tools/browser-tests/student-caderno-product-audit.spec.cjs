@@ -15,19 +15,19 @@ for(const [device,viewport] of Object.entries(viewports)){
           const nav=document.querySelector('.student-mobile-nav');
           const top=document.querySelector('.student-topbar');
           const step=document.querySelector('.student-step-nav');
-          const main=document.querySelector('.student-main');
+          const shell=document.querySelector('.student-shell');
           const ns=nav?getComputedStyle(nav):null;
           const ts=top?getComputedStyle(top):null;
           const ss=step?getComputedStyle(step):null;
+          const shs=shell?getComputedStyle(shell):null;
           const nr=nav?.getBoundingClientRect();
-          const mr=main?.getBoundingClientRect();
-          return {navPosition:ns?.position,navBackdrop:ns?.backdropFilter||ns?.webkitBackdropFilter||'none',topPosition:ts?.position,stepPosition:ss?.position||null,navTop:nr?.top||0,mainBottom:mr?.bottom||0};
+          return {navPosition:ns?.position,topPosition:ts?.position,stepPosition:ss?.position||null,navBottom:nr?.bottom||0,navHeight:nr?.height||0,viewportHeight:innerHeight,shellPaddingBottom:parseFloat(shs?.paddingBottom||'0')};
         });
-        expect(chrome.navPosition,'mobile nav must participate in normal document flow').toBe('static');
-        expect(['none',''].includes(chrome.navBackdrop),'mobile nav must not blur content underneath').toBe(true);
+        expect(chrome.navPosition,'mobile nav must stay anchored to the viewport').toBe('fixed');
+        expect(Math.abs(chrome.navBottom-chrome.viewportHeight),'mobile nav must touch the bottom viewport edge').toBeLessThanOrEqual(1);
+        expect(chrome.shellPaddingBottom,'content must reserve the fixed navigation footprint').toBeGreaterThanOrEqual(chrome.navHeight);
         expect(chrome.topPosition,'mobile topbar must not occupy viewport while scrolling').toBe('static');
         if(screen!=='notebook')expect(chrome.stepPosition,'record step navigation must not stick over content').toBe('static');
-        expect(chrome.navTop,'mobile nav must begin after main content').toBeGreaterThanOrEqual(chrome.mainBottom-1);
       }
       if(screen==='notebook'){
         if(device==='phone')await expect(page.locator('.student-notebook-intro')).toBeHidden();
