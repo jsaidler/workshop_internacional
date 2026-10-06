@@ -171,7 +171,7 @@
   .student-notebook-route-step>div:first-child small{grid-column:2;margin-top:1px}
   .student-notebook-route-step>.student-actions{display:flex;gap:4px}
   .student-notebook-route-step>.student-actions form{display:flex;min-width:0}
-  .student-notebook-route-step>.student-actions .button{width:auto;min-height:32px;padding:0 7px;font-size:8px;white-space:nowrap}
+  .student-notebook-route-step>.student-actions .button{width:auto;min-height:38px;padding:0 8px;font-size:8.5px;white-space:nowrap}
   .student-result-context>summary{min-height:48px}
   .student-result-context>summary span{font-size:19px}
   .student-result-context>summary small{font-size:8px;text-align:right}
