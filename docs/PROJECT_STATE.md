@@ -275,20 +275,23 @@ Hierarquia vigente:
 
 A página inglesa não deve ser mera tradução da brasileira.
 
-### PT-BR — Oficina Pinhole Lambe-Lambe
+### PT-BR — Fotografia Experimental em Grande Formato
 
-- Nova página própria em `/pinhole-lambe-lambe`, independente da home do workshop de positivo direto.
-- Nesta primeira fase, a página é de pré-lançamento/lista de interesse: não cobra pagamento e não anuncia preço ou data ainda não fechados.
-- A página usa placeholders deliberados para a imagem/vídeo do protótipo e para a prévia do PDF; esses espaços serão substituídos no CMS quando o projeto físico estiver pronto.
-- O produto é um encontro on-line e ao vivo de 2 a 3 horas, focado na construção e operação introdutória de uma Pinhole Lambe-Lambe autoral.
-- O PDF entregue contém lista de materiais e projeto imprimível para colar no papel paraná e recortar; não é tratado como simples resumo de aula.
-- A demonstração é feita por etapas, com modelos preparados em diferentes estágios. O participante escolhe se monta junto ou constrói depois.
-- Não há fotografia nem revelação durante a oficina. O conteúdo teórico é introdutório: princípio da pinhole, o que esperar da câmera, falha de reciprocidade e operação da câmera/laboratório.
-- Materiais-base comunicados: papel paraná, lata de refrigerante, fita isolante e, se o projeto final pedir, ímãs. A construção é enquadrada como trabalho de papelaria, sem ferramentas de oficina.
-- O valor pago na oficina poderá virar crédito integral em um único curso elegível posterior: Positivo Direto em Filme de Raio-X ou o futuro curso completo de Construção de Câmeras. Regras e prazo só serão publicados quando fechados.
-- O formulário próprio `pinhole-interest` coleta nome, e-mail, contato opcional, interesses e consentimento para aviso da primeira turma.
-- A migração `034_pinhole_lambe_lambe_landing.php` cria e publica a página e o formulário somente quando ainda não existem, sem sobrescrever uma versão editorial já presente no banco. Depois do seed, ambos continuam sob autoridade do CMS.
-- Não existe contraparte EN desta página neste momento; PT e EN permanecem independentes.
+- A página existente `/pinhole-lambe-lambe` passa a representar a formação **Fotografia Experimental em Grande Formato**. O slug é preservado para não quebrar links e referências já existentes; título público e navegação passam a usar o novo nome.
+- O produto não é mais a antiga oficina curta de Pinhole Lambe-Lambe. É uma formação on-line e ao vivo de **8 encontros de aproximadamente 1h30**, totalizando 12 horas ao vivo, com trabalho experimental entre os encontros.
+- Problema principal da oferta: permitir a entrada na fotografia de grande formato sem exigir que o aluno comece comprando câmera, objetiva, chassis, acessórios e uma infraestrutura separada de laboratório.
+- A câmera ensinada **já nasce como câmera-laboratório**. O espaço protegido de manipulação e processamento é parte do projeto desde o início e não é um acessório acrescentado depois.
+- O curso inclui duas soluções construtivas do mesmo sistema: materiais acessíveis e madeira. Elas pertencem ao mesmo curso; não são versões vendidas separadamente.
+- O percurso cobre projeto/construção, operação e exposição, produção e leitura do negativo, cópia por contato, cianotipia, impressão em clorofila diretamente em folhas e revisão dos resultados.
+- A lógica pedagógica do positivo neste curso é `negativo → nova exposição por contato → positivo`. O negativo é tratado como matriz capaz de originar objetos positivos diferentes conforme suporte e processo.
+- O curso **não ensina nenhum conteúdo técnico do Workshop Positivo Direto em Filme de Raio-X**. Não entram reversal, branqueamento, limpeza, reexposição, receitas, parâmetros ou qualquer outra parte reservada àquele produto.
+- Os dois cursos permanecem independentes. A experiência de produzir negativo e depois uma segunda geração positiva pode tornar perceptível o tempo e a duplicação de etapas do processo, mas a página de Grande Formato não usa o outro curso como upsell nem entrega amostra de seu conteúdo.
+- Valor de lançamento da primeira turma: **R$ 1.290 no Pix**. Valor regular de referência: **R$ 1.490**. A data ainda não está definida; a página opera como lista de interesse até a abertura.
+- A comunicação pública segue diagnóstico de necessidade antes da oferta: interesse → obstáculo → consequência → critério de solução → adequação → oferta. A sequência de “sins” só é usada quando confirma problemas e desejos reais, não como fabricação de concordância.
+- O formulário histórico `pinhole-interest` é preservado para manter continuidade e respostas anteriores, mas passa a coletar a principal barreira para entrar no grande formato e os resultados que a pessoa gostaria de alcançar. A escolha antiga entre versões de R$ 98 é removida.
+- Não há placeholders públicos de mídia. Enquanto não existir mídia editorial válida da nova câmera/protótipo, a página usa somente os componentes visuais globais já existentes no CMS.
+- A especificação detalhada da oferta e da metodologia de comunicação está em `docs/EXPERIMENTAL_LARGE_FORMAT_COURSE_2026-10-06.md`.
+- A migração `093_experimental_large_format_course_page.php` substitui deliberadamente o conteúdo editorial da antiga página Pinhole pelo novo produto, preservando o slug, o ID da página, a chave do formulário e o histórico de submissões.
 
 ## Estado do CMS/admin
 
