@@ -16,7 +16,7 @@ must_student_caderno_product_ux(str_contains($record,'Ele não depende de nenhum
 foreach(['O processamento já aconteceu?','Vou revelar agora','Já revelei','Registrar manualmente','Continuar laboratório','Próxima etapa','intent=live'] as $obsolete)must_student_caderno_product_ux(!str_contains($record,$obsolete),'record reintroduced obsolete workflow language: '.$obsolete);
 must_student_caderno_product_ux(str_contains($record,'Marcar ✓')&&str_contains($record,'Desmarcar')&&str_contains($record,'Abrir timer'),'associated route does not expose independent checks and timers');
 must_student_caderno_product_ux(str_contains($record,'Movimentar estoque'),'stock movement is not available as an explicit separate action');
-must_student_caderno_product_ux(str_contains($record,'Sem sequência obrigatória.'),'free steps still imply sequence');
+must_student_caderno_product_ux(str_contains($record,'Anote uma etapa sem associar um roteiro.'),'free steps still imply sequence');
 
 foreach(['student_process_notebook_set_completed','student_process_notebook_update_step','student_process_notebook_timer_transition'] as $fn)must_student_caderno_product_ux(str_contains($notebookDomain,'function '.$fn),'non-linear notebook domain missing '.$fn);
 must_student_caderno_product_ux(!str_contains($notebookDomain,'student_inventory_move'),'checking, editing or timing a route step must not move inventory');
