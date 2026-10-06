@@ -38,7 +38,7 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(screen==='record-result'){
         await expect(page.getByRole('heading',{name:'O que obtive'})).toBeVisible();await expect(page.getByRole('heading',{name:'Exposição e processamento'})).toBeVisible();
         const independentCopy=page.getByText('não depende de nenhuma etapa anterior',{exact:false});if(device==='desktop')await expect(independentCopy).toBeVisible();else await expect(independentCopy).toHaveCount(1);
-        await expect(page.locator('textarea')).toHaveValue(/tentativa encerrada/);
+        await expect(page.getByRole('textbox',{name:'Anotações sobre o resultado'})).toHaveValue(/tentativa encerrada/);
       }
       await page.screenshot({path:`student-visual-audit/${device}/caderno-${screen}.png`,fullPage:true,animations:'disabled'});
     });
