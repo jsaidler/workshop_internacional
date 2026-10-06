@@ -12,6 +12,28 @@ Este é o documento canônico de estado operacional do projeto. Leia antes de al
 - O updater preserva `storage/database.sqlite`, `uploads/`, `config/local.php`, `config/install.php`, `storage/logs/` e `storage/updates/`, cria backup antes da troca e verifica checksums SHA-256.
 - Migrações pendentes são executadas pelo bootstrap na primeira requisição após a atualização.
 
+## Estado canônico do Caderno de Processos em 06/10/2026
+
+A revisão estrutural do Caderno foi integrada pelo PR #199, merge commit `7ffd448ebe765963f87fe4c01e00d9dda1816c27`.
+
+O Caderno é um registro experimental, não um workflow de laboratório.
+
+- Exposição, Processamento e Resultado são partes independentes do mesmo registro e permanecem acessíveis sem sequência obrigatória.
+- O sistema não distingue “vou revelar”, “estou revelando” e “já revelei”. Ele apenas registra dados e oferece ferramentas.
+- Associar um roteiro adiciona uma referência ao registro; todas as etapas ficam disponíveis imediatamente e podem ser abertas em qualquer ordem.
+- Uma etapa marcada como concluída é apenas um dado reversível. O check não libera, bloqueia, cria pendência nem modifica a permissão das demais etapas.
+- O timer é uma ferramenta reutilizável da etapa. Pode ser aberto quando quiser e, ao chegar ao fim, pode marcar a etapa como concluída. Depois disso continua reutilizável.
+- Dados de uma etapa permanecem editáveis mesmo quando ela está marcada como concluída.
+- Um experimento pode ser interrompido em qualquer ponto. Etapas não marcadas não representam tarefas pendentes nem tornam o registro incompleto.
+- Resultado pode ser registrado a qualquer momento e pode ser uma observação experimental, inclusive quando o processo foi abandonado antes do fim.
+- Estoque é independente de check e timer. Uso, retorno, perda, descarte e demais movimentações são registros explícitos e não são inferidos a partir da conclusão de uma etapa.
+- Tudo que seria trivial fazer em um caderno deve continuar trivial. O digital acrescenta roteiro reutilizável, timer, cálculos, estoque, imagens, busca, filtros, comparações e persistência sem reduzir a liberdade do registro.
+- A camada de Análise é separada do ato de registrar: o Caderno registra; a Análise interroga o conjunto de registros estruturados. Filtros, relações, comparações e gráficos não dependem de um “processo completo” e não devem inferir causalidade além do que os dados sustentam.
+
+Regra de produto para novas mudanças: se uma funcionalidade obriga o usuário a explicar ao sistema o que está fazendo antes de deixá-lo registrar alguma coisa, a funcionalidade provavelmente está errada.
+
+A validação da revisão incluiu `deploy`, `student-visual-audit`, `validate`, 347 regressões de navegador e inspeção visual manual em desktop e telefone. Durante a inspeção foram corrigidos o layout das etapas do roteiro, a fixture de registro vazio e o carregamento dos estilos da tela `registro-roteiro.php`.
+
 ## Regra operacional obrigatória
 
 Para uma alteração de código:
