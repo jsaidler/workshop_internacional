@@ -52,8 +52,12 @@ Estes arquivos não recebem screenshot próprio porque são redirecionadores, a�
 
 `tools/browser-tests/student-complete-area-audit.spec.cjs` é a lista executável de cobertura visual total e declara **46 superfícies por viewport**. Os cinco estados que representavam distinções temporais artificiais — `process-intent`, `recording-start`, `recording-associated`, `recording-partial` e `recording-complete` — foram retirados do produto visual porque contradizem o contrato atual do Caderno.
 
-A cobertura específica do Caderno fica em `tools/browser-tests/student-caderno-product-audit.spec.cjs`, com biblioteca, registro vazio, roteiro associado, conjunto parcial de checks, seletor contextual de roteiro e resultado. O audit deve verificar também a ausência de linguagem de workflow, a disponibilidade de todas as etapas, checks reversíveis e acesso ao timer.
+A cobertura específica do Caderno fica em `tools/browser-tests/student-caderno-product-audit.spec.cjs`, com **nove estados por viewport**: biblioteca; registro vazio; Dados opcionais aberto; etapa livre aberta; roteiro associado com zero checks; conjunto parcial de checks; seletor contextual de roteiro; resultado com contexto recolhido; resultado com contexto aberto. O audit verifica também a ausência de linguagem de workflow, a disponibilidade de todas as etapas, checks reversíveis, acesso ao timer, navegação interna em uma única linha no telefone e área de toque mínima das ações por etapa.
+
+Fixtures dessa cobertura precisam reproduzir o DOM relevante da tela real. Uma fixture que omita disclosure, campo, ação condicional ou estado aberto não pode servir como prova visual daquela superfície.
 
 `tools/browser-tests/student-process-execution-state-audit.spec.cjs` cobre o timer como ferramenta independente: ele pode iniciar, pausar, reiniciar e ser reutilizado depois de chegar a zero. O fim do timer pode marcar o check da própria etapa, mas não libera, bloqueia nem seleciona outra etapa.
 
-O pacote de screenshots usado pelo material da Aula 3 deve ser regenerado a partir dessas superfícies sempre que a apresentação canônica do Caderno mudar. Na revisão não linear, o pacote foi atualizado depois de o audit visual passar.\n\nOs testes não substituem a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.
+O pacote de screenshots usado pelo material da Aula 3 deve ser regenerado a partir dessas superfícies sempre que a apresentação canônica do Caderno mudar. Na revisão não linear, o pacote foi atualizado depois de o audit visual passar.
+
+Os testes não substituem a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.
