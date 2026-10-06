@@ -71,7 +71,7 @@ $db->prepare('INSERT INTO cms_forms(locale,form_key,title,status,draft_schema_js
 ]);
 $formId=(int)$db->lastInsertId();
 
-$migration=require dirname(__DIR__).'/migrations/091_experimental_large_format_course_page.php';
+$migration=require dirname(__DIR__).'/migrations/093_experimental_large_format_course_page.php';
 expect_large_format(is_callable($migration),'migration not callable');
 $migration($db);
 
