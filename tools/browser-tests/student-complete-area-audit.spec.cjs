@@ -96,8 +96,9 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name==='process-partial'){
         await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);await expect(page.getByText('Completar registro',{exact:false})).toHaveCount(0);
       }
-      if(name==='process-library')await expect(page.locator('.student-process-standard-card')).toHaveCount(6);
-      if(name==='process-editor')await expect(page.locator('.student-process-step-card')).toHaveCount(9);
+      if(name==='step-editor'){await expect(page.getByText('Nenhuma outra etapa é alterada por isso.',{exact:false})).toBeVisible();await expect(page.getByText('Corrigir a sequência do processo',{exact:false})).toHaveCount(0);await expect(page.getByText('Remover esta etapa',{exact:true})).toBeVisible();}
+      if(name==='process-library'){await expect(page.locator('.student-process-standard-card')).toHaveCount(6);await expect(page.getByText('Abrir no laboratório',{exact:true}).first()).toBeVisible();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
+      if(name==='process-editor'){await expect(page.locator('.student-process-step-card')).toHaveCount(9);await expect(page.getByText('Abrir no laboratório',{exact:true})).toBeVisible();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
       if(name==='lab-runner'){
         await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar como concluída',exact:true})).toBeVisible();await expect(page.getByText('Ir para próxima etapa',{exact:false})).toHaveCount(0);
       }
