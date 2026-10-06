@@ -47,6 +47,29 @@ A correção posterior do PR #200 mostrou que um screenshot de fixture pode pass
 
 O PR #200 removeu a duplicação visual de Processamento no registro sem roteiro, eliminou a ação duplicada de Adicionar etapa, passou a manter o formulário de etapa recolhido por padrão, compactou Dados opcionais e estabeleceu a hierarquia `PROCESSAMENTO → Roteiro e etapas`.
 
+
+### Auditoria transversal do Caderno — 06/10/2026
+
+A revisão posterior ao PR #200 não se limita ao defeito mostrado em uma captura. O PR #201 audita o Caderno e as superfícies diretamente associadas em desktop e telefone.
+
+- `aluno/teste.php`: registro vazio, Dados opcionais aberto, etapa livre aberta, roteiro associado, roteiro parcialmente marcado, Resultado com contexto fechado e aberto;
+- `aluno/registro-roteiro.php`: associação/troca de roteiro;
+- `aluno/teste-etapa.php`: edição independente de etapa livre;
+- `aluno/processar.php`: consulta de qualquer etapa, timer, check reversível e edição dos dados da etapa;
+- `aluno/processamentos.php`: biblioteca e editor de roteiros-modelo;
+- inventário/estoque continuam ações independentes do check e do timer.
+
+Correções sistêmicas resultantes:
+- removido de `processamentos.php` o resíduo `intent=live` e toda diferenciação “usar agora” × “associar ao registro”; links antigos passam pelo comportamento neutro;
+- associação de roteiro sempre retorna ao registro; o sistema não interpreta a associação como início de processamento;
+- `Iniciar no laboratório` foi substituído por `Abrir no laboratório`; “Iniciar” permanece apenas como verbo do cronômetro;
+- navegação Exposição / Processamento / Resultado passa a ocupar uma única linha no telefone;
+- ações de cada etapa do roteiro foram compactadas sem reduzir a área de toque abaixo de 38 px;
+- o resumo de Exposição e Processamento dentro de Resultado passa a ser informação opcional recolhida, evitando repetir por padrão o que está imediatamente acima;
+- fixtures antigas de edição de etapa e runner temporal foram removidas/alinhadas ao DOM e ao comportamento atuais.
+
+A cobertura visual específica do Caderno inclui também disclosures abertos. Um audit verde que só renderize estados recolhidos não é suficiente. A inspeção humana do artifact continua obrigatória antes de merge de alterações visuais.
+
 ## Regra operacional obrigatória
 
 Para uma alteração de código:
