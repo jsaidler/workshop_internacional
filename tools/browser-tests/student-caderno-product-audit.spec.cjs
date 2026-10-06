@@ -33,6 +33,7 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(screen==='record-plan'){
         await expect(page.getByText('0 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.locator('.student-notebook-route-step')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar ✓'}).first()).toBeVisible();await expect(page.getByText('Abrir timer',{exact:true}).first()).toBeVisible();await expect(page.getByText('Alterar roteiro',{exact:true})).toBeVisible();await expect(page.getByText('Movimentar estoque',{exact:true})).toBeVisible();
         for(const obsolete of ['Próxima etapa','Abrir laboratório','Continuar laboratório','Em andamento'])await expect(page.getByText(obsolete,{exact:false})).toHaveCount(0);
+        if(device==='phone'){const heights=await page.locator('.student-notebook-route-step>.student-actions .button').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));expect(Math.min(...heights),'route-step touch targets').toBeGreaterThanOrEqual(38);}
       }
       if(screen==='record-partial'){
         await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);await expect(page.getByText('Lavagem após branqueamento')).toBeVisible();
