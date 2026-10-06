@@ -22,8 +22,10 @@
 .student-workflow-heading .student-subtitle{margin:0}
 .student-form-group-intro{max-width:720px;margin:9px 0 var(--ux-space-5);color:var(--muted);font-size:13px;line-height:1.55}
 .student-record-form .student-form-group{padding-top:var(--ux-space-5)}
+.student-record-form .student-optional-fields{margin-top:-12px;padding-top:12px}
+.student-record-form .student-optional-fields>summary{min-height:36px}
 
-.student-process-path-choice{margin-top:var(--ux-space-5);padding-top:var(--ux-space-5);border-top:1px solid var(--line)}
+.student-process-path-choice{margin-top:0;padding-top:var(--ux-space-4);border-top:0}
 .student-process-choice-intro{max-width:800px}
 .student-process-choice-intro h3{margin:7px 0 0;font-family:var(--title);font-size:clamp(30px,3.4vw,42px);font-weight:500;line-height:1.02;text-transform:none}
 .student-process-choice-intro>p:last-child{max-width:720px;margin:12px 0 0;color:var(--muted);font-size:14px;line-height:1.6}

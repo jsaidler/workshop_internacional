@@ -18,7 +18,7 @@ must_student_mechanics(str_contains($domain,"\$temperature=\$stageType==='dry'?'
 must_student_mechanics(str_contains($processJs,"const washKeys=new Set")&&str_contains($processJs,"const chemicalKeys=new Set"),'legacy process UI compatibility does not distinguish stage kinds');
 must_student_mechanics(str_contains($processJs,"timer.hidden=kind==='dry'")&&str_contains($processJs,"Tempo de secagem (opcional)"),'legacy stage editor still exposes generic controls for drying');
 
-must_student_mechanics(str_contains($processPage,'name="action" value="add_free_step"')&&str_contains($processPage,'name="chemical_name"')&&str_contains($processPage,'Sem sequência obrigatória.'),'Caderno no longer offers a neutral free-step record');
+must_student_mechanics(str_contains($processPage,'name="action" value="add_free_step"')&&str_contains($processPage,'name="chemical_name"')&&str_contains($processPage,'Anote uma etapa sem associar um roteiro.'),'Caderno no longer offers a neutral free-step record');
 must_student_mechanics(str_contains($processEdit,'Nenhuma outra etapa é alterada por isso.')&&str_contains($processEdit,'name="chemical_name"')&&str_contains($processEdit,'Movimentar estoque'),'free-step editor no longer preserves independent editing and explicit stock movement');
 must_student_mechanics(!str_contains($processPage,'student_experience_next_choices($steps)')&&!str_contains($processPage,'Registrar secagem e ir ao resultado'),'Caderno regressed to a guided physical-stage sequence');
 must_student_mechanics(str_contains($preparations,'>Outro revelador<input name="developer_name"'),'saved preparation editor lost custom developer support');

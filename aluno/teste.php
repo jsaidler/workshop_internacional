@@ -84,7 +84,7 @@ student_shell_start((string)$record['title'].' · Caderno',null,$student);?>
 </section>
 
 <section class="student-workflow-panel student-record-section" id="processamento">
-  <div class="student-workflow-heading"><div><p class="student-kicker">Processamento</p><h2 class="student-subtitle">Processamento</h2></div><p>O roteiro é uma referência. Marque, edite ou abra qualquer etapa na ordem que quiser.</p></div>
+  <div class="student-workflow-heading"><div><p class="student-kicker">Processamento</p><h2 class="student-subtitle">Roteiro e etapas</h2></div><p><?=$plan?'O roteiro é uma referência. Marque, edite ou abra qualquer etapa na ordem que quiser.':'Associe um roteiro como referência ou anote etapas livremente.'?></p></div>
 
   <?php if($plan):?>
   <section class="student-caderno-plan-card" aria-labelledby="student-plan-title">
@@ -103,12 +103,12 @@ student_shell_start((string)$record['title'].' · Caderno',null,$student);?>
     <div class="student-actions student-plan-resume-actions"><a class="button button-primary" href="/aluno/processar.php?test=<?=$id?>">Abrir roteiro</a><?php if(!$locked):?><a class="button button-secondary" href="/aluno/registro-roteiro.php?test=<?=$id?>">Alterar roteiro</a><?php endif;?><a class="button button-secondary" href="/aluno/inventario.php">Movimentar estoque</a></div>
   </section>
   <?php elseif(!$locked):?>
-  <div class="student-process-path-choice"><div class="student-process-choice-intro"><h3>Processamento</h3><p>Você pode associar um roteiro ou simplesmente anotar etapas neste registro.</p></div><div class="student-actions"><a class="button button-primary" href="/aluno/registro-roteiro.php?test=<?=$id?>">Associar roteiro</a><a class="button button-secondary" href="#adicionar-etapa">Adicionar etapa</a><a class="button button-secondary" href="/aluno/inventario.php">Movimentar estoque</a></div></div>
+  <div class="student-process-path-choice"><div class="student-actions"><a class="button button-primary" href="/aluno/registro-roteiro.php?test=<?=$id?>">Associar roteiro</a><a class="button button-secondary" href="/aluno/inventario.php">Movimentar estoque</a></div></div>
   <?php endif;?>
 
   <?php if(!$locked&&!$plan):?>
-  <details class="student-manual-process" id="adicionar-etapa"<?=$steps?'':' open'?>>
-    <summary><span><strong>Adicionar etapa</strong><small>Sem sequência obrigatória.</small></span><span>＋</span></summary>
+  <details class="student-manual-process" id="adicionar-etapa">
+    <summary><span><strong>Adicionar etapa</strong><small>Anote uma etapa sem associar um roteiro.</small></span><span>＋</span></summary>
     <form method="post" class="student-process-step-form student-form-grid"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="action" value="add_free_step">
       <label class="form-field student-span-2">Tipo de etapa<select name="stage_key"><?php foreach($stageCatalog as $key=>$stage):?><option value="<?=h($key)?>"><?=h((string)$stage['label'])?></option><?php endforeach;?></select></label>
       <label class="form-field student-span-2">Nome personalizado <small>use se escolher “Outra etapa”</small><input name="label"></label>
