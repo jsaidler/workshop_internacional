@@ -84,7 +84,7 @@ student_shell_start((string)$record['title'].' · Caderno',null,$student);?>
 </section>
 
 <section class="student-workflow-panel student-record-section" id="processamento">
-  <div class="student-workflow-heading"><div><p class="student-kicker">Processamento</p><h2 class="student-subtitle">Processamento</h2></div><p><?=$plan?'O roteiro é uma referência. Marque, edite ou abra qualquer etapa na ordem que quiser.':'Associe um roteiro como referência ou anote etapas livremente.'?></p></div>
+  <div class="student-workflow-heading"><div><p class="student-kicker">Processamento</p><h2 class="student-subtitle">Roteiro e etapas</h2></div><p><?=$plan?'O roteiro é uma referência. Marque, edite ou abra qualquer etapa na ordem que quiser.':'Associe um roteiro como referência ou anote etapas livremente.'?></p></div>
 
   <?php if($plan):?>
   <section class="student-caderno-plan-card" aria-labelledby="student-plan-title">
