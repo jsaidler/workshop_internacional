@@ -23,7 +23,7 @@ if(!str_contains($test,'name="phase" value="scene"')||!str_contains($test,'name=
 if(!str_contains($helper,'student_test_update_exposure')||!str_contains($helper,'student_test_add_media_phase')||!str_contains($hardening,'function student_process_add_guided_step'))fail_student_mobile('record persistence helpers are incomplete');
 if(!str_contains($migration,"ADD COLUMN phase TEXT NOT NULL DEFAULT 'result'"))fail_student_mobile('media phase migration missing');
 if(!str_contains($css,'.student-mobile-nav')||!str_contains($css,'.student-sticky-action'))fail_student_mobile('mobile app navigation or action styling missing');
-if(!str_contains($cadernoCss,'@media(max-width:560px)')||!str_contains($cadernoCss,'.student-record-section-links{display:grid;grid-template-columns:1fr'))fail_student_mobile('Caderno section navigation does not collapse to a safe mobile layout');
+if(!str_contains($cadernoCss,'@media(max-width:560px)')||!str_contains($cadernoCss,'.student-record-section-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))'))fail_student_mobile('Caderno section navigation does not stay compact in one mobile row');
 if(!str_contains($headerCss,'body[data-cms-page-slug="privacidade"]')||!str_contains($headerCss,'.cms-student-access'))fail_student_mobile('public legal/access styling missing');
 if(str_contains($studentAdmin,'name="media_file"')||str_contains($studentAdmin,'upload_private_media'))fail_student_mobile('parallel private-media uploader returned to student admin');
 echo "student-mobile-experience: ok\n";
