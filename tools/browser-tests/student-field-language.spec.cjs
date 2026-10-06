@@ -60,11 +60,13 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Tempo com reciprocidade<input name="reciprocity_time"',
       '>Condição de luz<textarea name="light_condition"',
       '>Faixa tonal e intenção<textarea name="tonal_range"',
-      '>Predefinição de revelação<select name="saved_preparation_id"',
-      '>Outro revelador<input name="developer_name"',
-      '>Revelador ou solução estoque (ml)<input',
-      '>Volume preparado (ml)<input',
-      "student_process_inventory_select_html($inventory,'Item do inventário')",
+      '>Tipo de etapa<select name="stage_key"',
+      '>Nome personalizado<small>use se escolher “Outra etapa”</small><input name="label"',
+      '>Químico ou solução<small>opcional</small><input name="chemical_name"',
+      '>Tempo<input name="duration"',
+      '>Temperatura<input name="temperature"',
+      '>Agitação<input name="agitation"',
+      '>Anotações<textarea name="notes"',
     ],
     'aluno/teste-compartilhado.php':[
       '<dt>EI</dt>',
@@ -80,11 +82,12 @@ test('student fields use one canonical vocabulary at the source',()=>{
       "'tonal_range'=>'Faixa tonal e intenção'",
     ],
     'aluno/teste-etapa.php':[
-      '>Predefinição de revelação<select name="saved_preparation_id"',
-      '>Outro revelador<input name="developer_name"',
-      '>Revelador ou solução estoque (ml)<input',
-      '>Volume preparado (ml)<input',
+      '>Nome da etapa<input name="label"',
+      '>Químico ou solução<input name="chemical_name"',
+      '>Tempo<input name="duration"',
+      '>Temperatura<input name="temperature"',
       '>Agitação<input name="agitation"',
+      '>Anotações<textarea name="notes"',
     ],
     'aluno/ferramentas.php':[
       '>Tempo sem reciprocidade<input data-quick-reciprocity-source',
@@ -131,7 +134,8 @@ test('student field controls never rely on an empty visible label',()=>{
   }
   expect(read('aluno/calibracao.php')).toContain('aria-label="Anotações da calibração"');
   expect(read('aluno/inventario.php')).toContain('aria-label="Anotações do item"');
-  expect(read('aluno/teste.php')).toContain('aria-label="Anotações da etapa"');
+  expect(compactMarkup(read('aluno/teste.php'))).toContain('>Anotações<textarea name="notes"');
+  expect(compactMarkup(read('aluno/teste-etapa.php'))).toContain('>Anotações<textarea name="notes"');
 });
 
 test('static student labels are server-rendered; JavaScript only relabels state-dependent fields',()=>{

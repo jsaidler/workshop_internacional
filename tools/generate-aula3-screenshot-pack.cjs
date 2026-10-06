@@ -10,7 +10,9 @@ const screens=[
   {source:'notebook.png',file:'notebook.webp',top:70,bottom:1080},
   {source:'exposure.png',file:'exposure.webp',top:70,bottom:1220},
   {source:'process-library.png',file:'process-library.webp',top:70,bottom:1640},
-  {source:'recording-partial.png',file:'recording-partial.webp',top:70,bottom:1120},
+  // O nome interno do arquivo é mantido por compatibilidade com a migration 088,
+  // mas a fonte agora é o estado canônico não linear do Caderno.
+  {source:'process-partial.png',file:'recording-partial.webp',top:70,bottom:1120},
   {source:'result-reviewed.png',file:'result-reviewed.webp',top:70,bottom:2070},
   {source:'compare-records.png',file:'compare-records.webp',top:70,bottom:1650},
   {source:'research-derived.png',file:'research-derived.webp',top:70,bottom:680},
@@ -32,10 +34,7 @@ const screens=[
     const bottom=Math.min(screen.bottom,meta.height);
     const height=bottom-top;
     if(height<300)throw new Error(`Invalid crop for ${input}: ${height}px high`);
-    const bytes=await sharp(input)
-      .extract({left,top,width,height})
-      .webp({quality:82,effort:6,smartSubsample:true})
-      .toBuffer();
+    const bytes=await sharp(input).extract({left,top,width,height}).webp({quality:82,effort:6,smartSubsample:true}).toBuffer();
     const outMeta=await sharp(bytes).metadata();
     if((outMeta.width||0)<1000)throw new Error(`${screen.file} ended below the 1000px visual-material floor.`);
     parts.push(Buffer.from(`${screen.file}\t${bytes.length}\n`,'ascii'),bytes);

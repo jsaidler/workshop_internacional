@@ -41,7 +41,7 @@ $requiredConsumers=[
     'perfil.php'=>['form-field','button button-primary','data-ui-validate'],
     'senha.php'=>['form-field','check-field','data-ui-match','data-ui-validate'],
     'caderno.php'=>['form-field','choice-field','button button-primary','data-ui-validate'],
-    'teste.php'=>['form-field','choice-field','button button-primary','data-ui-validate'],
+    'teste.php'=>['form-field','button button-primary','data-ui-validate'],
 ];
 foreach($requiredConsumers as $file=>$needles){
     $source=(string)file_get_contents($root.'/aluno/'.$file);

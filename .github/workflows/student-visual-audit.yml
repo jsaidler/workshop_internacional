@@ -27,13 +27,9 @@ on:
       - 'tools/browser-fixture/student-tools-mechanics-audit.html'
       - 'tools/browser-fixture/student-process-product-audit.html'
       - 'tools/browser-fixture/student-process-routes-audit.html'
-      - 'tools/browser-fixture/student-process-intent-audit.html'
       - 'tools/browser-fixture/student-process-execution-state-audit.html'
-      - 'tools/browser-fixture/student-process-replanning-audit.html'
       - 'tools/browser-fixture/admin-process-domain-audit.html'
       - 'tools/browser-fixture/student-caderno-product-audit.html'
-      - 'tools/browser-fixture/student-recording-associated-audit.html'
-      - 'tools/browser-fixture/student-recording-states-audit.html'
       - 'tools/browser-fixture/student-lab-stock-product-audit.html'
       - 'tools/browser-fixture/student-secondary-screens-audit.html'
       - 'tools/browser-fixture/student-material-notes.html'
@@ -46,7 +42,6 @@ on:
       - 'tools/browser-tests/student-process-product-audit.spec.cjs'
       - 'tools/browser-tests/student-process-routes-audit.spec.cjs'
       - 'tools/browser-tests/student-process-execution-state-audit.spec.cjs'
-      - 'tools/browser-tests/student-process-replanning-audit.spec.cjs'
       - 'tools/browser-tests/admin-process-domain-audit.spec.cjs'
       - 'tools/browser-tests/student-material-notes-audit.spec.cjs'
       - 'tools/browser-tests/student-caderno-product-audit.spec.cjs'
@@ -76,7 +71,7 @@ jobs:
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
-          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-current-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-process-execution-state-audit.spec.cjs tools/browser-tests/student-process-replanning-audit.spec.cjs tools/browser-tests/admin-process-domain-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-current-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-process-execution-state-audit.spec.cjs tools/browser-tests/admin-process-domain-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
           node tools/generate-aula3-screenshot-pack.cjs student-visual-audit/complete/desktop migrations/assets/aula3-hires.pack.b64
           npx playwright test tools/browser-tests/student-aula3-material-audit.spec.cjs --workers=1
       - name: Commit refreshed Aula 3 screenshot pack
