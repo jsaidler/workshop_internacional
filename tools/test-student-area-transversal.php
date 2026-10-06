@@ -16,6 +16,9 @@ foreach(['student_test_message_date(','student_review_value('] as $needle)if(!st
 if(!str_contains($test,'name="action" value="save_exposure" data-process-action'))fail_student_area_transversal('exposure form lost its canonical save/upload action authority');
 if(substr_count($test,'enctype="multipart/form-data"')<2)fail_student_area_transversal('scene and result forms no longer own their media uploads');
 if(!str_contains($test,'student-process-step-form')||!str_contains($test,'name="action" value="add_free_step"'))fail_student_area_transversal('free notebook step is not a single canonical form');
+if(str_contains($test,'<div class="student-process-choice-intro"><h3>Processamento</h3>'))fail_student_area_transversal('processing section duplicates its own title');
+if(str_contains($test,'href="#adicionar-etapa">Adicionar etapa</a>'))fail_student_area_transversal('free-step action is duplicated above its canonical details control');
+if(str_contains($test,'id="adicionar-etapa"<?=$steps?\'\':\' open\'?>'))fail_student_area_transversal('free-step form opens automatically instead of respecting notebook-style disclosure');
 if(!str_contains($test,"elseif(\$action==='upload')"))fail_student_area_transversal('media upload branch missing');
 $uploadSave=strpos($test,"elseif(\$action==='upload')");$uploadMutation=strpos($test,'student_test_add_media_phase',$uploadSave?:0);
 if($uploadSave===false||$uploadMutation===false)fail_student_area_transversal('media upload mutation missing');
