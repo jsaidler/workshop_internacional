@@ -30,7 +30,7 @@ must_process_notes(str_contains($free,'student_process_notebook_update_free_step
 must_process_notes(!str_contains($free,'student_process_next_choices')&&!str_contains($free,'student_inventory_move'),'free-step editing still assumes sequence or stock side effects');
 must_process_notes(str_contains($editor,'Salvar alterações')&&str_contains($editor,'Nenhuma outra etapa é alterada por isso.')&&str_contains($editor,'Remove somente esta anotação.')&&str_contains($editor,'Movimentar estoque'),'stage editor no longer behaves like an independent notebook entry');
 must_process_notes(!str_contains($editor,'Remover esta etapa e as seguintes'),'stage editor regressed to destructive tail correction');
-must_process_notes(str_contains($record,'name="action" value="add_free_step"')&&str_contains($record,'Sem sequência obrigatória.')&&str_contains($record,'Marcar ✓')&&str_contains($record,'Abrir timer'),'record no longer exposes free notes/checks/timers without a wizard');
+must_process_notes(str_contains($record,'name="action" value="add_free_step"')&&str_contains($record,'Anote uma etapa sem associar um roteiro.')&&str_contains($record,'Marcar ✓')&&str_contains($record,'Abrir timer'),'record no longer exposes free notes/checks/timers without a wizard');
 foreach(['Próxima decisão','Registrar outra etapa →','Registrar secagem e ir ao resultado'] as $obsolete)must_process_notes(!str_contains($record,$obsolete),'record reintroduced process-wizard copy: '.$obsolete);
 
 must_process_notes(str_contains($index,'student_material_render_notebook')&&!str_contains($index,'student_material_inject_notes'),'material still injects note editors into content sections');
