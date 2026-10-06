@@ -34,6 +34,19 @@ Regra de produto para novas mudanças: se uma funcionalidade obriga o usuário a
 
 A validação da revisão incluiu `deploy`, `student-visual-audit`, `validate`, 347 regressões de navegador e inspeção visual manual em desktop e telefone. Durante a inspeção foram corrigidos o layout das etapas do roteiro, a fixture de registro vazio e o carregamento dos estilos da tela `registro-roteiro.php`.
 
+### Regra de validação visual do Caderno
+
+A correção posterior do PR #200 mostrou que um screenshot de fixture pode passar visualmente e ainda assim não representar a composição real de `aluno/teste.php`. Portanto:
+
+- fixture visual só é evidência válida quando reproduz os elementos relevantes do DOM real daquela superfície;
+- elementos omitidos da fixture, inclusive disclosures, campos opcionais, estados vazios e ações condicionais, invalidam qualquer conclusão de “aprovado visualmente” sobre a tela real;
+- quando um defeito for reportado por captura da instalação real, a captura real tem precedência sobre a fixture e deve orientar a correção;
+- o estado visual equivalente ao defeito precisa ser reproduzido no audit antes do merge;
+- aprovação visual de fixture deve ser descrita como aprovação da composição renderizada do repositório, não como prova de que a hospedagem instalada já está correta;
+- a hospedagem só pode ser considerada verificada depois da instalação da versão correspondente e de nova observação da superfície real quando necessário.
+
+O PR #200 removeu a duplicação visual de Processamento no registro sem roteiro, eliminou a ação duplicada de Adicionar etapa, passou a manter o formulário de etapa recolhido por padrão, compactou Dados opcionais e estabeleceu a hierarquia `PROCESSAMENTO → Roteiro e etapas`.
+
 ## Regra operacional obrigatória
 
 Para uma alteração de código:
