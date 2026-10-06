@@ -16,6 +16,8 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.locator('.student-process-standard-card')).toHaveCount(6);
         await expect(page.locator('.student-process-standard-card[data-developer="Brewed Caffenol"]')).toHaveCount(2);
         await expect(page.getByText('Positivo direto — Brewed Caffenol EI 400 — FeCl₃ + amônia',{exact:true})).toBeVisible();
+        await expect(page.getByText('Abrir no laboratório',{exact:true}).first()).toBeVisible();
+        await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);
       }
       if(screen==='editor'){
         await expect(page.getByText('Mesmo banho da 1ª revelação')).toBeVisible();
@@ -23,6 +25,8 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.locator('.student-process-step-card')).toHaveCount(9);
         await expect(page.locator('.student-process-step-card[data-stage="03"]')).toContainText('cloreto férrico');
         await expect(page.locator('.student-process-step-card[data-stage="05"]')).toContainText('amônia');
+        await expect(page.getByText('Abrir no laboratório',{exact:true})).toBeVisible();
+        await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);
       }
       await page.screenshot({path:`student-visual-audit/${device}/process-${screen}.png`,fullPage:true,animations:'disabled'});
     });

@@ -18,6 +18,8 @@ must_student_caderno_product_ux(str_contains($record,'Marcar ✓')&&str_contains
 must_student_caderno_product_ux(str_contains($record,'Movimentar estoque'),'stock movement is not available as an explicit separate action');
 must_student_caderno_product_ux(str_contains($record,'<p class="student-kicker">Processamento</p><h2 class="student-subtitle">Roteiro e etapas</h2>'),'processing section lost its non-redundant notebook heading');
 must_student_caderno_product_ux(str_contains($record,'Anote uma etapa sem associar um roteiro.'),'free steps still imply sequence');
+must_student_caderno_product_ux(str_contains($record,'<details class="student-result-context">'),'result context is no longer optional/collapsible');
+must_student_caderno_product_ux(!str_contains($record,'<section class="student-result-context"'),'result context reverted to always-open duplication');
 
 foreach(['student_process_notebook_set_completed','student_process_notebook_update_step','student_process_notebook_timer_transition'] as $fn)must_student_caderno_product_ux(str_contains($notebookDomain,'function '.$fn),'non-linear notebook domain missing '.$fn);
 must_student_caderno_product_ux(!str_contains($notebookDomain,'student_inventory_move'),'checking, editing or timing a route step must not move inventory');
