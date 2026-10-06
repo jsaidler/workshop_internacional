@@ -40,5 +40,8 @@ must_student_process_manager(str_contains($recordPage,'Marcar ✓')&&str_contain
 
 must_student_process_manager(str_contains($manager,'Meus processamentos')&&str_contains($manager,'Sua biblioteca'),'saved process library disappeared');
 must_student_process_manager(str_contains($manager,'Reutilizar o banho da primeira revelação'),'saved route editor lost explicit bath reuse');
+foreach(['$intent','intent=live','Modo laboratório','Usar no laboratório','Iniciar no laboratório'] as $forbidden)must_student_process_manager(!str_contains($manager,$forbidden),'saved process library reintroduced temporal mode: '.$forbidden);
+must_student_process_manager(str_contains($manager,'Abrir no laboratório'),'saved route library does not expose neutral route opening');
+must_student_process_manager(str_contains($manager,'Associar ao registro'),'saved route library does not use neutral association');
 foreach(['student_process_notebook','student_process_notebook_free'] as $service)must_student_process_manager(str_contains($bootstrap,"'$service'"),'bootstrap does not load '.$service);
 echo "student-process-manager: ok\n";
