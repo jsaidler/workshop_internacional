@@ -184,7 +184,126 @@ Exemplos:
 
 ---
 
-## 8. Navegação contextual é secundária
+## 8. Histórico do navegador e navegação gestual
+
+A navegação da Área do aluno deve respeitar o histórico nativo do navegador e os gestos do sistema operacional.
+
+Em telefone, **voltar por gesto do Android/iOS ou pelo botão Back do navegador é parte da navegação principal da plataforma**. A aplicação não pode depender apenas dos controles visuais próprios.
+
+### Regra de registro no histórico
+
+Sempre que uma ação do usuário representar deslocamento real para outra tela, objeto ou contexto navegável, esse deslocamento deve produzir uma entrada coerente no histórico do navegador.
+
+Exemplos:
+
+- Início → Cursos;
+- Cursos → curso;
+- curso → material;
+- material → dúvida;
+- Caderno → registro;
+- registro → edição de etapa;
+- Laboratório → inventário → item.
+
+Links e navegação HTTP normal são preferidos porque já produzem histórico nativo corretamente.
+
+Quando uma navegação acontecer por JavaScript/AJAX sem reload, a aplicação deve:
+
+- atualizar a URL canônica correspondente;
+- usar `history.pushState()` para movimentos iniciados pelo usuário;
+- restaurar o estado correto em `popstate`;
+- permitir `Forward` depois de um `Back`;
+- evitar criar nova entrada durante o tratamento de `popstate`.
+
+`history.replaceState()` só é apropriado para normalização da entrada atual, correção de URL, preenchimento de estado inicial ou substituição que **não represente um novo movimento do usuário**. Não pode ser usado para esconder etapas reais da navegação.
+
+### Gesto de voltar
+
+O gesto nativo deve percorrer o mesmo caminho conceitual que a pessoa percorreu na interface.
+
+Exemplo:
+
+`Início → Cursos → Curso A → Material 2 → Dúvida`
+
+Back/gesto deve produzir:
+
+`Dúvida → Material 2 → Curso A → Cursos → Início`
+
+Não é aceitável:
+
+- saltar diretamente para a home pública;
+- sair da Área do aluno porque uma transição intermediária não entrou no histórico;
+- voltar para uma tela de outro contexto;
+- criar loops entre duas URLs;
+- permanecer na mesma tela porque a aplicação interceptou Back sem atualizar estado;
+- adicionar entradas artificiais apenas para impedir que o usuário saia.
+
+### Botão Voltar da interface
+
+A ação visual de voltar continua tendo um **destino lógico canônico** e não depende cegamente de `history.back()`.
+
+O controle deve possuir um `href` ou destino explícito que funcione em deep link.
+
+Quando a aplicação souber que a entrada anterior do histórico pertence à mesma Área do aluno e corresponde ao retorno lógico esperado, ela pode usar o histórico nativo para preservar a pilha real. Caso contrário, usa o destino canônico.
+
+Portanto:
+
+- histórico é o mecanismo de percurso;
+- destino lógico é o fallback seguro;
+- um não substitui o outro.
+
+### Deep link e recarga
+
+Toda tela navegável precisa continuar válida quando aberta diretamente ou recarregada.
+
+A URL deve conter contexto suficiente para reconstruir a superfície: curso/turma/registro/item/estado navegável quando necessário.
+
+Depois de recarregar:
+
+- a barra global continua correta;
+- o item ativo continua correto;
+- o botão de voltar mantém destino lógico;
+- o gesto Back volta para a entrada anterior real do navegador, se existir;
+- nenhum estado crítico depende exclusivamente de um objeto JavaScript perdido no reload.
+
+### O que NÃO entra no histórico
+
+Não criar entradas para microestados efêmeros que não representam deslocamento de navegação, salvo quando houver necessidade explícita de deep link.
+
+Por padrão, não viram nova entrada:
+
+- abrir/fechar disclosure;
+- expandir “Dados opcionais”;
+- abrir um editor inline dentro do mesmo objeto, quando ele não representa uma rota própria;
+- mudar foco;
+- abrir tooltip;
+- alterar um campo;
+- mostrar mensagem de sucesso;
+- abrir modal estritamente transitório.
+
+A regra é semântica: **movimento entre superfícies/contextos entra no histórico; estado local de uma mesma superfície não polui a pilha.**
+
+### Scroll e restauração
+
+Quando a navegação é feita por AJAX/History API, o retorno deve preservar ou restaurar posição de leitura quando isso fizer sentido, especialmente em Material e listas longas.
+
+A aplicação não deve fazer o usuário voltar ao topo e reencontrar manualmente o trecho de onde saiu se o navegador conseguir restaurar esse contexto.
+
+### Regressão obrigatória
+
+Os testes de navegação mobile devem validar pelo menos:
+
+1. sequência de navegação por links/bottom bar;
+2. Back do navegador em múltiplos níveis;
+3. Forward depois de Back;
+4. deep link direto em tela filha;
+5. fallback do botão Voltar quando não há histórico interno útil;
+6. preservação de `cohort`, registro e demais parâmetros;
+7. item ativo correto após Back/Forward;
+8. ausência de loop ou history trapping.
+
+---
+
+## 9. Navegação contextual é secundária
 
 Tabs, segmented controls, anterior/próximo, filtros e links internos pertencem à superfície atual e não competem visualmente com a navegação global.
 
@@ -200,7 +319,7 @@ Ações correlatas devem permanecer juntas. Não se separa uma tarefa em áreas 
 
 ---
 
-## 9. Cabeçalho mobile
+## 10. Cabeçalho mobile
 
 A app bar mobile deve ser compacta e previsível.
 
@@ -216,7 +335,7 @@ Títulos gigantes de landing page, menus horizontais comprimidos e blocos de lin
 
 ---
 
-## 10. Profundidade e orientação
+## 11. Profundidade e orientação
 
 A pessoa não deve precisar memorizar a árvore do produto.
 
@@ -230,7 +349,7 @@ Breadcrumb não é necessário para responder a nenhuma delas.
 
 ---
 
-## 11. Continuidade entre telas
+## 12. Continuidade entre telas
 
 Ao navegar dentro de uma tarefa:
 
@@ -244,7 +363,7 @@ Mudança de tela só é justificada quando há mudança real de objeto ou de esp
 
 ---
 
-## 12. Critério de consistência
+## 13. Critério de consistência
 
 Antes de aprovar qualquer superfície da Área do aluno, comparar com pelo menos uma tela irmã.
 
@@ -265,7 +384,7 @@ Uma página isoladamente bonita pode ser reprovada se quebrar a continuidade do 
 
 ---
 
-## 13. Gate obrigatório para qualquer alteração de UI/UX do aluno
+## 14. Gate obrigatório para qualquer alteração de UI/UX do aluno
 
 Nenhuma mudança de UI/UX da Área do aluno é concluída sem revisar a navegação global.
 
@@ -280,12 +399,16 @@ Checklist mínimo:
 - [ ] nenhum fluxo depende de breadcrumb;
 - [ ] desktop preserva a mesma IA;
 - [ ] deep link não deixa a pessoa sem navegação;
+- [ ] Back/gesto do sistema percorre o histórico real da tarefa;
+- [ ] Forward funciona depois de Back;
+- [ ] transições AJAX navegáveis usam `pushState`/URL canônica e `popstate` restaura o contexto;
+- [ ] microestados locais não poluem o histórico;
 - [ ] screenshots mobile e desktop foram efetivamente inspecionados;
 - [ ] qualquer exceção foi documentada neste arquivo antes do merge.
 
 ---
 
-## 14. Proibição de correção local de navegação
+## 15. Proibição de correção local de navegação
 
 Navegação global é responsabilidade do shell compartilhado.
 
@@ -297,7 +420,7 @@ O mesmo vale para estado ativo: não espalhar regras de pathname por páginas in
 
 ---
 
-## 15. Prioridade deste contrato
+## 16. Prioridade deste contrato
 
 Em caso de dúvida entre:
 
