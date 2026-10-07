@@ -103,6 +103,23 @@ Correções sistêmicas resultantes:
 
 A cobertura visual específica do Caderno inclui também disclosures abertos. Um audit verde que só renderize estados recolhidos não é suficiente. A inspeção humana do artifact continua obrigatória antes de merge de alterações visuais.
 
+### Navegação sistêmica da Área do aluno — 07/10/2026
+
+A implementação passa a materializar o contrato de `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` em uma única autoridade compartilhada.
+
+- os quatro destinos globais são **Início / Cursos / Caderno / Laboratório**, nesta ordem, tanto no telefone quanto no desktop;
+- `app/student_shell.php` é a autoridade dos destinos e da classificação semântica do contexto; o estado ativo não é mais decidido por simples correspondência de substring no pathname;
+- uma rota reutilizada pode ter contexto diferente conforme o objeto aberto: `processar.php?test=...` permanece em **Caderno**, enquanto o mesmo instrumento aberto de forma autônoma permanece em **Laboratório**;
+- Conta e atalhos de ferramentas continuam secundários e não competem com os quatro destinos globais;
+- páginas CMS de material didático continuam usando o renderer CMS normal e o mesmo filtro server-side de conteúdo, mas, quando existe `materialContext` autenticado, consomem a navegação global da Área do aluno: logo para `/aluno/`, **Cursos** ativo e barra inferior persistente no telefone;
+- o site público sem contexto de material autenticado mantém sua navegação pública e sua própria semântica de marca;
+- telas filhas precisam de destino lógico explícito em `href`, inclusive em deep link; editores que também aparecem em dialog não podem depender exclusivamente do fechamento do dialog;
+- links HTTP normais continuam sendo o mecanismo preferencial de deslocamento e, portanto, de histórico. Microestados locais não criam entradas artificiais;
+- a regressão de navegador cobre Back, Forward, deep links, preservação de contexto e ausência de poluição do histórico por disclosures;
+- o audit transversal mobile não possui mais exceção para Material: toda superfície autenticada normal precisa provar chrome global persistente e reserva do espaço da barra inferior.
+
+Esta implementação não cria um renderer paralelo de material nem uma segunda topbar. O conteúdo editorial permanece CMS; apenas o chrome autenticado passa a obedecer à mesma arquitetura global da Área do aluno.
+
 ## Regra operacional obrigatória
 
 Para qualquer alteração:
