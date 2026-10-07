@@ -43,6 +43,18 @@ function student_question_attach_annotation(PDO $db,int $questionId,int $student
     if($q->rowCount()!==1)throw new RuntimeException('Dúvida não encontrada para vincular a anotação.');
 }
 
+function student_question_create_from_annotation(PDO $db,int $studentId,int $cohortId,int $annotationId,array $input): array {
+    $existing=student_question_from_annotation($db,$studentId,$annotationId);if($existing)return $existing;
+    $source=student_question_annotation_source($db,$studentId,$cohortId,$annotationId);
+    if(!$source)throw new RuntimeException('Anotação de origem inválida para esta turma.');
+    $title=student_workspace_text($input['question_title']??'',180);if($title==='')throw new RuntimeException('Dê um título à dúvida.');
+    $visibility=(string)($input['question_visibility']??'private');if(!in_array($visibility,['private','cohort'],true))$visibility='private';
+    $created=student_question_create($db,$studentId,$cohortId,['topic'=>'Material','title'=>$title,'body'=>(string)$source['body'],'visibility'=>$visibility,'test_id'=>'']);
+    $questionId=(int)($created['id']??0);if($questionId<1)throw new RuntimeException('Não foi possível criar a dúvida.');
+    student_question_attach_annotation($db,$questionId,$studentId,$cohortId,$annotationId);
+    return student_question_from_annotation($db,$studentId,$annotationId)??$created;
+}
+
 function student_question_source_context(PDO $db,array $question): ?array {
     $annotationId=(int)($question['source_annotation_id']??0);if($annotationId<1||!student_question_annotation_available($db))return null;
     $q=$db->prepare('SELECT a.*,p.title page_title FROM student_material_annotations a JOIN cms_pages p ON p.id=a.page_id WHERE a.id=? LIMIT 1');$q->execute([$annotationId]);
