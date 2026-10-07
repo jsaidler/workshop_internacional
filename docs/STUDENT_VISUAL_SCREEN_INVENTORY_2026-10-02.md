@@ -11,7 +11,7 @@ A revisão de 05/10/2026 incorpora o contrato não linear do Caderno. Modos visu
 | `aluno/login.php` | entrada e ativação inicial |
 | `aluno/index.php` | Caderno em andamento; retorno do professor pendente; uma matrícula sem pendência no Caderno e com material utilizável; múltiplas matrículas |
 | `aluno/cursos.php` | múltiplas matrículas; curso/turma com material disponível, parcial e agendado; curso com acompanhamento pedagógico pendente; curso sem material |
-| material do curso (CMS autenticado) | leitura parcial com seções de aulas diferentes filtradas no servidor; contexto curso/turma; anterior/próximo preservando `cohort`; anotações; telefone estreito |
+| material do curso (CMS autenticado) | leitura parcial com seções de aulas diferentes filtradas no servidor; contexto curso/turma; anterior/próximo preservando `cohort`; painel de anotações; criação de dúvida a partir de anotação no mesmo painel; telefone estreito e desktop |
 | `aluno/duvidas.php` | lista; lista com conversa de avaliação contextual; nova dúvida; conversa |
 | `aluno/caderno.php` | lista; novo registro; registro derivado com origem e intenção de pesquisa |
 | `aluno/teste.php` | registro vazio; exposição isolada; processamento sem roteiro; roteiro associado com zero checks; conjunto arbitrário de checks; resultado independente; avaliação aguardando retorno, revisão solicitada e avaliação concluída |
@@ -55,6 +55,8 @@ Estes arquivos não recebem screenshot próprio porque são redirecionadores, a�
 A cobertura específica do Caderno fica em `tools/browser-tests/student-caderno-product-audit.spec.cjs`, com **dez estados por viewport**: biblioteca; registro vazio; Dados opcionais aberto; etapa livre aberta; roteiro associado com zero checks; roteiro associado com uma etapa em edição; conjunto parcial de checks; seletor contextual de roteiro; resultado com contexto recolhido; resultado com contexto aberto. O audit verifica também a ausência de linguagem de workflow, a disponibilidade de todas as etapas, checks reversíveis, edição direta da cópia do roteiro, acesso ao timer, navegação interna em uma única linha no telefone e área de toque mínima das ações por etapa.
 
 Fixtures dessa cobertura precisam reproduzir o DOM relevante da tela real. Uma fixture que omita disclosure, campo, ação condicional ou estado aberto não pode servir como prova visual daquela superfície.
+
+A cobertura de anotações do material inclui o estado com **Transformar em dúvida** aberto, campos de título/visibilidade visíveis e captura do próprio painel fixo — não screenshot `fullPage` de um elemento `position: fixed`, que distorce a inspeção. O estado é auditado em telefone e desktop.
 
 `tools/browser-tests/student-process-execution-state-audit.spec.cjs` cobre o timer como ferramenta independente: ele pode iniciar, pausar, reiniciar e ser reutilizado depois de chegar a zero. O fim do timer pode marcar o check da própria etapa, mas não libera, bloqueia nem seleciona outra etapa.
 

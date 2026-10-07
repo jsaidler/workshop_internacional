@@ -48,6 +48,22 @@ A correção posterior do PR #200 mostrou que um screenshot de fixture pode pass
 O PR #200 removeu a duplicação visual de Processamento no registro sem roteiro, eliminou a ação duplicada de Adicionar etapa, passou a manter o formulário de etapa recolhido por padrão, compactou Dados opcionais e estabeleceu a hierarquia `PROCESSAMENTO → Roteiro e etapas`.
 
 
+### Anotação e dúvida no mesmo contexto — 07/10/2026
+
+Anotação e dúvida são ações correlatas de leitura e não podem exigir navegação entre telas distantes.
+
+Contrato vigente:
+- ao criar uma anotação sobre um trecho ou sobre a página, o aluno pode abrir **Também é uma dúvida?** no mesmo compositor;
+- o texto da anotação é reutilizado como corpo da dúvida; o aluno informa apenas título e visibilidade;
+- **Salvar anotação e publicar dúvida** cria os dois registros em uma única operação transacional;
+- se a dúvida falhar, a anotação nova não fica salva pela metade;
+- uma anotação já existente pode usar **Transformar em dúvida** no próprio painel, sem navegar para `aluno/duvidas.php`;
+- após a criação, a mesma anotação passa a exibir **Ver dúvida**;
+- uma anotação só pode originar uma dúvida: tentativas repetidas reutilizam o vínculo existente em vez de duplicar a conversa;
+- o fluxo AJAX mantém a página de material e a posição de leitura; nenhuma criação de dúvida exige recarregar ou reconstruir o contexto.
+
+`tools/test-student-question-annotation.php` cobre o vínculo e a não duplicação em SQLite; `tools/browser-tests/student-inline-annotations.spec.cjs` cobre a criação anotação+dúvida sem mudança de URL; o audit visual cobre o compositor aberto em telefone e desktop.
+
 ### Roteiro editável dentro do registro — 07/10/2026
 
 O roteiro associado ao Caderno é uma cópia contextual daquele registro, não um fluxo controlado pelo sistema. A própria folha do registro expõe, para cada etapa, ações independentes de **Marcar/Desmarcar**, **Editar** e **Timer**.
