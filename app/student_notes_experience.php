@@ -139,7 +139,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
     $questionComposer=static function(bool $existing=false) use($questionAvailable,$cohortUuid): string {
         if(!$questionAvailable)return '';
         $submitName=$existing?'annotation_action':'create_question';$submitValue=$existing?'question':'1';
-        $button=$existing?'Publicar dúvida':'Salvar anotação e publicar dúvida';
+        $button=$existing?'Publicar dúvida':'Salvar e publicar dúvida';
         return '<details class="student-note-question" data-note-question>'
             .'<summary>'.($existing?'Transformar em dúvida':'Também é uma dúvida?').'</summary>'
             .'<div class="student-note-question-fields">'
@@ -172,7 +172,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         .'<input type="hidden" name="source_page_revision" value="'.h($revision).'">'
         .'<div class="student-inline-note-selected"><span>Trecho selecionado</span><blockquote data-anchor-preview></blockquote></div>'
         .'<label data-inline-note-body>Anotação<textarea name="body" rows="4" maxlength="5000" placeholder="Escreva o que você quer guardar."></textarea></label>'
-        .'<div class="student-material-note-actions student-inline-note-primary-actions"><button class="button" type="submit" data-inline-note-submit>Salvar anotação</button><button class="student-material-note-remove" type="button" data-inline-note-cancel>Cancelar</button></div>'
+        .'<div class="student-material-note-actions student-inline-note-primary-actions"><button class="button" type="submit" data-inline-note-submit>Salvar</button><button class="button button-secondary student-inline-note-cancel" type="button" data-inline-note-cancel>Cancelar</button></div>'
         .$questionComposer(false)
         .'</form>';
 
