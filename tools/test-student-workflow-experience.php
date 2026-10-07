@@ -14,7 +14,7 @@ must_student_workflow(str_contains($notebook,'Mais ações')&&str_contains($note
 must_student_workflow(!str_contains($notebook,'student-process-compare')&&!str_contains($notebook,'student-record-progress'),'notebook reintroduced comparison/progression chrome');
 must_student_workflow(str_contains($record,'id="exposicao"')&&str_contains($record,'id="processamento"')&&str_contains($record,'id="resultado"'),'record no longer exposes all documentary sections together');
 must_student_workflow(!str_contains($record,"\$view='review'")&&!str_contains($record,'Salvar exposição e continuar'),'record navigation is again coupled to process progression');
-must_student_workflow(str_contains($record,'student-notebook-route-step')&&str_contains($record,'Marcar ✓')&&str_contains($record,'Abrir timer'),'route steps are not independently usable from the record');
+must_student_workflow(str_contains($record,'student-notebook-route-step')&&str_contains($record,'Marcar ✓')&&str_contains($record,'edit_plan_step=')&&str_contains($record,"?'Timer':'Abrir etapa'")&&str_contains($record,'Adicionar etapa ao roteiro'),'route steps are not independently checkable/editable/timed from the record');
 foreach(['Próxima etapa','Continuar laboratório','Vou revelar agora','Já revelei','intent=live'] as $forbidden)must_student_workflow(!str_contains($record,$forbidden),'record reintroduced workflow language: '.$forbidden);
 must_student_workflow(str_contains($routePicker,'student_process_replan_template')&&str_contains($routePicker,'student_process_replan_standard'),'route changes no longer use the replanning service');
 must_student_workflow(str_contains($routePicker,'não inicia processamento, não impõe ordem e não movimenta estoque'),'route association is no longer neutral');
