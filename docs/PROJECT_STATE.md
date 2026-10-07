@@ -292,6 +292,7 @@ A página inglesa não deve ser mera tradução da brasileira.
 - Não há placeholders públicos de mídia. Enquanto não existir mídia editorial válida da nova câmera/protótipo, a página usa somente os componentes visuais globais já existentes no CMS.
 - A especificação detalhada da oferta e da metodologia de comunicação está em `docs/EXPERIMENTAL_LARGE_FORMAT_COURSE_2026-10-06.md`.
 - A migração `093_experimental_large_format_course_page.php` substitui deliberadamente o conteúdo editorial da antiga página Pinhole pelo novo produto, preservando o slug, o ID da página, a chave do formulário e o histórico de submissões.
+- A migração `094_large_format_reuse_canonical_components.php` corrige a composição visual sem criar CSS próprio: a página passa a respeitar os contratos dos componentes globais existentes e remove variantes/classes inexistentes ou estruturas incompletas.
 
 ## Estado do CMS/admin
 
