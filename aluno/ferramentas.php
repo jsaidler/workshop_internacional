@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';security_headers();student_private_headers();$db=database();$student=student_account_current($db);if(!$student){header('Location: /aluno/login.php?next=%2Faluno%2Fferramentas.php',true,303);exit;}
-$tools=student_tools_for_student($db,(int)$student['id']);$byKey=[];foreach($tools as $tool)$byKey[(string)$tool['tool_key']]=$tool;$formulas=student_solution_formulas();$recipeNotes=student_experience_recipe_notes();student_shell_start('Ferramentas',null,$student);?>
+$tools=student_tools_for_student($db,(int)$student['id']);$byKey=[];foreach($tools as $tool)$byKey[(string)$tool['tool_key']]=$tool;$formulas=isset($byKey['solution_prep'])?student_solution_formulas():[];$recipeNotes=isset($byKey['solution_prep'])?student_experience_recipe_notes():[];student_shell_start('Ferramentas',null,$student);?>
 <header class="student-bench-intro"><div><p class="student-kicker">Área do aluno</p><h1 class="student-title">Ferramentas</h1></div></header>
 <?php if(!$tools):?><div class="student-empty">Nenhuma ferramenta disponível.</div><?php else:?><div class="student-bench-grid">
 <?php if(isset($byKey['reciprocity'])):?><section class="student-bench-tool" id="reciprocidade" data-quick-reciprocity><p class="student-kicker">Exposição</p><h2>Reciprocidade</h2><div class="student-form-grid"><label class="form-field">Tempo sem reciprocidade<input data-quick-reciprocity-source placeholder="4 s, 02:30 ou 00:00:04"></label><label class="form-field">Tempo com reciprocidade<input data-quick-reciprocity-target readonly></label></div></section><?php endif;?>
