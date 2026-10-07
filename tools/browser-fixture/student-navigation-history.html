@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <style>:root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--body:Arial,sans-serif;--title:Georgia,serif;--mono:monospace;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px;--ux-space-8:64px}</style>
+  <link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css">
+  <title>Contrato de navegação do aluno</title>
+</head>
+<body class="student-page"><div class="student-shell">
+<header class="student-topbar">
+  <a class="brand student-wordmark" href="?screen=home" data-canonical-href="/aluno/">JSaidler Fotografia</a>
+  <nav class="student-desktop-nav" aria-label="Área do aluno" data-global-nav>
+    <a href="?screen=home" data-area="home">Início</a>
+    <a href="?screen=courses" data-area="courses">Cursos</a>
+    <a href="?screen=notebook" data-area="notebook">Caderno</a>
+    <a href="?screen=laboratory" data-area="laboratory">Laboratório</a>
+  </nav>
+  <span class="student-topbar-spacer"></span><a class="student-link" href="?screen=account">Conta</a>
+</header>
+<main class="student-main" id="app"></main>
+<nav class="student-mobile-nav" aria-label="Área do aluno" data-global-nav>
+  <a href="?screen=home" data-area="home">Início</a>
+  <a href="?screen=courses" data-area="courses">Cursos</a>
+  <a href="?screen=notebook" data-area="notebook">Caderno</a>
+  <a href="?screen=laboratory" data-area="laboratory">Laboratório</a>
+</nav>
+</div>
+<script>
+const app=document.getElementById('app');
+const params=new URLSearchParams(location.search);
+const screen=params.get('screen')||'home';
+const cohort=params.get('cohort')||'cohort-a';
+const record=params.get('id')||'42';
+const item=params.get('item')||'9';
+const active=screen==='home'?'home':['courses','course','material','question'].includes(screen)?'courses':['notebook','record','step'].includes(screen)?'notebook':['laboratory','inventory','item'].includes(screen)?'laboratory':'';
+document.querySelectorAll('[data-global-nav] [data-area]').forEach(link=>{if(link.dataset.area===active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
+const h=(title,body='')=>`<p class="student-kicker">Navegação</p><h1 class="student-title">${title}</h1>${body}`;
+if(screen==='home')app.innerHTML=h('Início','<p class="student-lead">Entrada da Área do aluno.</p>');
+if(screen==='courses')app.innerHTML=h('Cursos',`<div class="student-test-list"><a class="student-test-row" data-testid="course-a" href="?screen=course&cohort=${cohort}"><div><h3>Curso A</h3><p>Turma A</p></div><strong>Abrir →</strong></a></div>`);
+if(screen==='course')app.innerHTML=h('Curso A',`<div class="student-actions"><a class="button button-primary" data-testid="open-material" href="?screen=material&cohort=${cohort}">Abrir material</a></div>`);
+if(screen==='material')app.innerHTML=h('Material 2',`<div class="student-appbar"><a class="student-back" href="?screen=course&cohort=${cohort}">← Curso A</a></div><div class="student-actions"><a class="button button-primary" data-testid="open-question" href="?screen=question&cohort=${cohort}">Abrir dúvida</a></div><details data-testid="microstate"><summary>Dados opcionais</summary><p>Estado local.</p></details>`);
+if(screen==='question')app.innerHTML=h('Dúvida',`<div class="student-appbar"><a class="student-back" data-testid="context-back" href="?screen=material&cohort=${cohort}">← Material 2</a></div>`);
+if(screen==='notebook')app.innerHTML=h('Caderno',`<div class="student-actions"><a class="button button-primary" data-testid="open-record" href="?screen=record&id=${record}">Abrir registro</a></div>`);
+if(screen==='record')app.innerHTML=h('Registro 42',`<div class="student-appbar"><a class="student-back" href="?screen=notebook">← Caderno</a></div><div class="student-actions"><a class="button button-primary" data-testid="open-step" href="?screen=step&id=${record}&step=7">Editar etapa</a></div>`);
+if(screen==='step')app.innerHTML=h('Editar etapa',`<div class="student-appbar"><a class="student-back" data-testid="context-back" href="?screen=record&id=${record}">← Registro ${record}</a></div>`);
+if(screen==='laboratory')app.innerHTML=h('Laboratório',`<div class="student-actions"><a class="button button-primary" data-testid="open-inventory" href="?screen=inventory">Abrir inventário</a></div>`);
+if(screen==='inventory')app.innerHTML=h('Inventário',`<div class="student-appbar"><a class="student-back" href="?screen=laboratory">← Laboratório</a></div><div class="student-actions"><a class="button button-primary" data-testid="open-item" href="?screen=item&item=${item}">Editar item</a></div>`);
+if(screen==='item')app.innerHTML=h('Editar item',`<div class="student-appbar"><a class="student-back" data-testid="context-back" href="?screen=inventory">← Inventário</a></div>`);
+if(screen==='account')app.innerHTML=h('Conta');
+</script>
+</body></html>
