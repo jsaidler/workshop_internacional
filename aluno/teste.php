@@ -101,19 +101,61 @@ student_shell_start((string)$record['title'].' · Caderno',null,$student);?>
 
   <?php if($plan):?>
   <section class="student-caderno-plan-card" aria-labelledby="student-plan-title">
-    <div class="student-caderno-plan-head"><div><p class="student-kicker">Roteiro associado</p><h3 id="student-plan-title"><?=h((string)$plan['source_name'])?></h3></div><span class="student-plan-progress"><?=$planCompleted?> de <?=count($planSteps)?> marcadas</span></div>
+    <div class="student-caderno-plan-head"><div><p class="student-kicker">Roteiro associado</p><h3 id="student-plan-title"><?=h((string)$plan['source_name'])?></h3><p>Esta é a cópia deste registro. Alterações feitas aqui não mudam o roteiro-modelo.</p></div><span class="student-plan-progress"><?=$planCompleted?> de <?=count($planSteps)?> marcadas</span></div>
     <div class="student-notebook-route-steps">
-    <?php foreach($planSteps as $i=>$planStep):$done=(string)$planStep['status']==='completed';$seconds=student_process_time_seconds((string)$planStep['duration']);?>
-      <article class="student-notebook-route-step<?=$done?' is-done':''?>">
-        <div><span class="student-process-step-number"><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></span><strong><?=h((string)$planStep['label'])?></strong><?php if($seconds!==null):?><small><?=h(student_process_seconds_label($seconds))?></small><?php endif;?></div>
-        <div class="student-actions">
-          <?php if(!$locked):?><form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="action" value="toggle_plan_step"><input type="hidden" name="plan_step_id" value="<?=(int)$planStep['id']?>"><input type="hidden" name="completed" value="<?=$done?'0':'1'?>"><button class="button button-secondary button-compact" type="submit"><?=$done?'Desmarcar':'Marcar ✓'?></button></form><?php endif;?>
-          <a class="button button-secondary button-compact" href="/aluno/processar.php?test=<?=$id?>&amp;step=<?=(int)$planStep['id']?>"><?=$seconds!==null?'Abrir timer':'Abrir etapa'?></a>
+    <?php foreach($planSteps as $i=>$planStep):$done=(string)$planStep['status']==='completed';$seconds=student_process_time_seconds((string)$planStep['duration']);$routePayload=student_process_json_array((string)$planStep['payload_json']);$routeMode=(string)($routePayload['agitation_mode']??'none');if(!in_array($routeMode,['none','periodic','continuous'],true))$routeMode='none';$editing=$editPlanStep&&(int)$editPlanStep['id']===(int)$planStep['id'];?>
+      <article class="student-notebook-route-step<?=$done?' is-done':''?><?=$editing?' is-editing':''?>">
+        <div class="student-notebook-route-step-main"><span class="student-process-step-number"><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></span><strong><?=h((string)$planStep['label'])?></strong><?php if($seconds!==null):?><small><?=h(student_process_seconds_label($seconds))?></small><?php endif;?></div>
+        <div class="student-actions student-notebook-route-step-actions">
+          <?php if(!$locked):?><form method="post" action="/aluno/teste.php?id=<?=$id?>#processamento"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="action" value="toggle_plan_step"><input type="hidden" name="plan_step_id" value="<?=(int)$planStep['id']?>"><input type="hidden" name="completed" value="<?=$done?'0':'1'?>"><button class="button button-secondary button-compact" type="submit"><?=$done?'Desmarcar':'Marcar ✓'?></button></form><a class="button button-secondary button-compact" href="/aluno/teste.php?id=<?=$id?>&amp;edit_plan_step=<?=(int)$planStep['id']?>#processamento">Editar</a><?php endif;?>
+          <a class="button button-secondary button-compact" href="/aluno/processar.php?test=<?=$id?>&amp;step=<?=(int)$planStep['id']?>"><?=$seconds!==null?'Timer':'Abrir etapa'?></a>
         </div>
+        <?php if($editing&&!$locked):?>
+        <div class="student-notebook-route-editor">
+          <form method="post" action="/aluno/teste.php?id=<?=$id?>#processamento" class="student-form-grid"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="action" value="save_plan_step"><input type="hidden" name="plan_step_id" value="<?=(int)$planStep['id']?>">
+            <label class="form-field student-span-2">Nome da etapa<input name="label" value="<?=h((string)$planStep['label'])?>"></label>
+            <label class="form-field">Tempo<input name="duration" value="<?=h((string)$planStep['duration'])?>" placeholder="07:00"></label>
+            <label class="form-field">Temperatura<input name="temperature" value="<?=h((string)($routePayload['temperature']??''))?>" placeholder="26 °C"></label>
+            <?php if(in_array((string)$planStep['stage_key'],['first_development','second_development'],true)):?>
+            <label class="form-field student-span-2">Revelador / solução<input name="developer_name" value="<?=h((string)($routePayload['developer_name']??''))?>"></label>
+            <label class="form-field">Revelador / solução (ml)<input type="number" min="0" step="0.1" name="developer_amount" value="<?=h((string)($routePayload['developer_amount']??''))?>"></label>
+            <label class="form-field">Água (ml)<input type="number" min="0" step="0.1" name="water_amount" value="<?=h((string)($routePayload['water_amount']??''))?>"></label>
+            <?php else:?>
+            <label class="form-field student-span-2">Químico / solução<input name="chemical_name" value="<?=h((string)($routePayload['chemical_name']??''))?>"></label>
+            <?php endif;?>
+            <label class="form-field student-span-2">Agitação<select name="agitation_mode"><option value="none"<?=$routeMode==='none'?' selected':''?>>Sem temporização</option><option value="periodic"<?=$routeMode==='periodic'?' selected':''?>>Periódica</option><option value="continuous"<?=$routeMode==='continuous'?' selected':''?>>Contínua</option></select></label>
+            <label class="form-field">Duração da agitação<input name="agitation_duration" value="<?=h((string)($routePayload['agitation_duration']??''))?>" placeholder="00:10"></label>
+            <label class="form-field">Intervalo entre inícios<input name="agitation_interval" value="<?=h((string)($routePayload['agitation_interval']??$planStep['agitation_interval']??''))?>" placeholder="01:00"></label>
+            <label class="form-field student-span-2">Observação de agitação<input name="agitation" value="<?=h((string)($routePayload['agitation']??''))?>"></label>
+            <label class="form-field student-span-2">Anotações<textarea name="notes" rows="3" maxlength="3000"><?=h((string)($routePayload['notes']??''))?></textarea></label>
+            <div class="student-actions student-span-2"><button class="button button-primary" type="submit">Salvar etapa</button><a class="button button-secondary" href="/aluno/teste.php?id=<?=$id?>#processamento">Fechar</a></div>
+          </form>
+          <div class="student-notebook-route-order" aria-label="Alterar posição da etapa">
+            <?php if($i>0):?><form method="post" action="/aluno/teste.php?id=<?=$id?>#processamento"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="action" value="move_plan_step"><input type="hidden" name="plan_step_id" value="<?=(int)$planStep['id']?>"><input type="hidden" name="direction" value="-1"><button class="student-link" type="submit">↑ Subir</button></form><?php endif;?>
+            <?php if($i<count($planSteps)-1):?><form method="post" action="/aluno/teste.php?id=<?=$id?>#processamento"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="action" value="move_plan_step"><input type="hidden" name="plan_step_id" value="<?=(int)$planStep['id']?>"><input type="hidden" name="direction" value="1"><button class="student-link" type="submit">↓ Descer</button></form><?php endif;?>
+          </div>
+        </div>
+        <?php endif;?>
       </article>
     <?php endforeach;?>
     </div>
-    <div class="student-actions student-plan-resume-actions"><a class="button button-primary" href="/aluno/processar.php?test=<?=$id?>">Abrir roteiro</a><?php if(!$locked):?><a class="button button-secondary" href="/aluno/registro-roteiro.php?test=<?=$id?>">Alterar roteiro</a><?php endif;?><a class="button button-secondary" href="/aluno/inventario.php">Movimentar estoque</a></div>
+
+    <?php if(!$locked):?>
+    <details class="student-notebook-route-add">
+      <summary><span><strong>Adicionar etapa ao roteiro</strong><small>Altera somente a cópia deste registro.</small></span><span>＋</span></summary>
+      <form method="post" action="/aluno/teste.php?id=<?=$id?>#processamento" class="student-form-grid"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="action" value="add_plan_step">
+        <label class="form-field student-span-2">Tipo de etapa<select name="stage_key"><?php foreach($stageCatalog as $key=>$stage):?><option value="<?=h($key)?>"><?=h((string)$stage['label'])?></option><?php endforeach;?></select></label>
+        <label class="form-field student-span-2">Nome personalizado <small>opcional</small><input name="label"></label>
+        <label class="form-field student-span-2">Químico / solução / revelador <small>opcional</small><input name="chemical_name"></label>
+        <label class="form-field">Tempo<input name="duration" placeholder="07:00"></label><label class="form-field">Temperatura<input name="temperature" placeholder="26 °C"></label>
+        <label class="form-field">Solução (ml)<input type="number" min="0" step="0.1" name="developer_amount"></label><label class="form-field">Água (ml)<input type="number" min="0" step="0.1" name="water_amount"></label>
+        <label class="form-field student-span-2">Agitação<input name="agitation"></label><label class="form-field student-span-2">Anotações<textarea name="notes" rows="3" maxlength="3000"></textarea></label>
+        <div class="student-actions student-span-2"><button class="button button-primary" type="submit">Adicionar ao roteiro</button></div>
+      </form>
+    </details>
+    <?php endif;?>
+
+    <div class="student-actions student-plan-resume-actions"><a class="button button-primary" href="/aluno/processar.php?test=<?=$id?>">Abrir roteiro</a><?php if(!$locked):?><a class="button button-secondary" href="/aluno/registro-roteiro.php?test=<?=$id?>">Trocar roteiro-base</a><?php endif;?><a class="button button-secondary" href="/aluno/inventario.php">Movimentar estoque</a></div>
   </section>
   <?php elseif(!$locked):?>
   <div class="student-process-path-choice"><div class="student-actions"><a class="button button-primary" href="/aluno/registro-roteiro.php?test=<?=$id?>">Associar roteiro</a><a class="button button-secondary" href="/aluno/inventario.php">Movimentar estoque</a></div></div>
