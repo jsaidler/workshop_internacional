@@ -12,7 +12,8 @@
 <body class="student-page">
 <div class="student-shell">
   <header class="student-topbar">
-    <a class="brand student-wordmark" href="#">JSaidler Fotografia</a>
+    <a class="brand student-wordmark" href="/aluno/">JSaidler Fotografia</a>
+    <nav class="student-desktop-nav" aria-label="Área do aluno"><a href="/aluno/">Início</a><a href="/aluno/cursos.php">Cursos</a><a href="/aluno/caderno.php" aria-current="page">Caderno</a><a href="/aluno/ferramentas.php">Laboratório</a></nav>
     <span class="student-topbar-spacer"></span>
     <div aria-label="Tema" class="theme-switch student-theme-switch">
       <button aria-pressed="true" data-theme-value="auto" type="button">Auto</button>
@@ -34,6 +35,7 @@
       </form>
     </section>
   </main>
+  <nav class="student-mobile-nav" aria-label="Área do aluno"><a href="/aluno/">Início</a><a href="/aluno/cursos.php">Cursos</a><a href="/aluno/caderno.php" aria-current="page">Caderno</a><a href="/aluno/ferramentas.php">Laboratório</a></nav>
 </div>
 <script>document.getElementById('fixture-form').addEventListener('submit',event=>event.preventDefault())</script>
 <script defer src="/assets/ui-core.js"></script>
