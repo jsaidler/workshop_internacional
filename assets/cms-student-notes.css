@@ -89,19 +89,32 @@
   .cms-public .student-notes-panel[open]>summary{min-height:58px;padding:0 16px}
   .cms-public .student-notes-sheet{padding:16px 16px calc(30px + env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
   .cms-public .student-notes-head h2{font-size:28px}
-  .cms-public .student-notes-panel.is-composing .student-notes-head{display:none}
+  .cms-public .student-notes-panel.is-composing .student-notes-head,
+  .cms-public .student-notes-panel.is-composing .student-notes-list,
+  .cms-public .student-notes-panel.is-composing .student-note-new,
+  .cms-public .student-notes-panel.is-composing .student-notes-empty{display:none}
   .cms-public .student-notes-panel.is-composing .student-notes-sheet{padding-top:10px}
   .cms-public .student-notes-panel.is-composing .student-inline-note-compose{margin:0;padding:12px;gap:12px}
   .cms-public .student-notes-panel.is-composing .student-inline-note-selected blockquote{max-height:112px;overflow:auto;margin-bottom:0;padding:10px 12px;font-size:13px;line-height:1.45}
-  .cms-public .student-notes-panel.is-composing [data-inline-note-body] textarea{min-height:96px;max-height:34dvh}
-  .cms-public .student-inline-note-primary-actions{position:sticky;bottom:-1px;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px 0;background:var(--surface)}
-  .cms-public .student-inline-note-primary-actions .button{width:100%}
+  .cms-public .student-notes-panel.is-composing [data-inline-note-body] textarea{min-height:96px;max-height:30dvh}
+  .cms-public .student-inline-note-primary-actions{position:sticky;bottom:-1px;z-index:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:8px 0;background:var(--bg)}
+  .cms-public .student-inline-note-primary-actions .button{width:100%;min-width:0;min-height:46px;margin:0;padding:0 12px;font-size:10px;white-space:nowrap}
+  .cms-public .student-inline-note-cancel{text-decoration:none}
   .cms-public .student-material-note-actions .button,.cms-public .student-note-new .button,.cms-public .student-note-question-fields .button{min-height:44px}
   .cms-public .student-note-question{margin-top:4px}
   .cms-public .student-note-question>summary{min-height:44px}
   .cms-public .student-note-question-fields{gap:10px;padding-bottom:10px}
   .cms-public .student-note-question-fields fieldset label{min-height:34px}
   .cms-public .student-note-question-fields .button{width:100%}
+  .cms-public .student-notes-panel.is-questioning .student-inline-note-selected,
+  .cms-public .student-notes-panel.is-questioning [data-inline-note-body],
+  .cms-public .student-notes-panel.is-questioning .student-inline-note-primary-actions{display:none}
+  .cms-public .student-notes-panel.is-questioning .student-inline-note-compose{padding:0 12px 12px;gap:0}
+  .cms-public .student-notes-panel.is-questioning .student-note-question{margin:0;border-top:0}
+  .cms-public .student-notes-panel.is-questioning .student-note-question>summary{justify-content:flex-start;border-bottom:1px solid var(--line);font-size:11px}
+  .cms-public .student-notes-panel.is-questioning .student-note-question>summary::after{display:none}
+  .cms-public .student-notes-panel.is-questioning .student-note-question-fields{gap:14px;padding:16px 0 0}
+  .cms-public .student-notes-panel.is-questioning .student-note-question-fields>p{font-size:13px;line-height:1.5}
   .cms-public .student-selection-note-action.is-touch-selection{left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:auto;min-height:50px;padding:0 18px;text-align:center;font-size:11px}
   .student-selection-active .cms-public .student-notes-panel:not([open])>summary{visibility:hidden;pointer-events:none}
   .cms-public .student-reanchor-hint{bottom:calc(76px + env(safe-area-inset-bottom,0px));width:calc(100vw - 24px);justify-content:space-between}
