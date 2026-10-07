@@ -18,7 +18,10 @@ test('Conta profile becomes one column on a phone and keeps account actions visi
   expect(columns).toBe(1);
   await expect(page.getByTestId('password-link')).toBeVisible();
   await expect(page.getByTestId('logout')).toBeVisible();
-  await expect(page.locator('.student-mobile-nav a[aria-current="page"]')).toHaveText(/Conta/);
+  const mobileNav=page.locator('.student-mobile-nav');
+  await expect(mobileNav.locator('a')).toHaveCount(4);
+  expect(await mobileNav.locator('a').allTextContents()).toEqual(['Início','Cursos','Caderno','Laboratório']);
+  await expect(mobileNav.locator('[aria-current="page"]')).toHaveCount(0);
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
