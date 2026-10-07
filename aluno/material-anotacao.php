@@ -63,16 +63,8 @@ try{
     $questionPayload=null;$questionUrl='';
     $publishQuestion=static function(int $annotationId,array $note) use($db,$studentId,$context,$cohortUuid,&$questionPayload,&$questionUrl): void {
         $cohortId=(int)($context['cohort_id']??0);if($cohortId<1)throw new RuntimeException('Não foi possível identificar a turma desta dúvida.');
-        $existing=student_question_from_annotation($db,$studentId,$annotationId);
-        if($existing){$questionPayload=['id'=>(int)$existing['id'],'title'=>(string)($existing['title']??''),'status'=>(string)($existing['status']??'open')];}
-        else{
-            $title=student_workspace_text($_POST['question_title']??'',180);if($title==='')throw new RuntimeException('Dê um título à dúvida.');
-            $visibility=(string)($_POST['question_visibility']??'private');if(!in_array($visibility,['private','cohort'],true))$visibility='private';
-            $created=student_question_create($db,$studentId,$cohortId,['topic'=>'Material','title'=>$title,'body'=>(string)$note['body'],'visibility'=>$visibility,'test_id'=>'']);
-            $questionId=(int)($created['id']??0);if($questionId<1)throw new RuntimeException('Não foi possível criar a dúvida.');
-            student_question_attach_annotation($db,$questionId,$studentId,$cohortId,$annotationId);
-            $questionPayload=['id'=>$questionId,'title'=>(string)($created['title']??$title),'status'=>(string)($created['status']??'open')];
-        }
+        $created=student_question_create_from_annotation($db,$studentId,$cohortId,$annotationId,$_POST);
+        $questionPayload=['id'=>(int)($created['id']??0),'title'=>(string)($created['title']??($_POST['question_title']??'')),'status'=>(string)($created['status']??'open')];
         $params=[];if($cohortUuid!=='')$params['cohort']=$cohortUuid;$params['id']=(int)$questionPayload['id'];$questionUrl='/aluno/duvidas.php?'.http_build_query($params);
     };
     if($action!==''){
