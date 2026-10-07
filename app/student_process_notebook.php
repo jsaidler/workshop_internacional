@@ -123,6 +123,8 @@ function student_process_notebook_add_step(PDO $db,int $planId,int $studentId,ar
     $chemical=student_workspace_text($input['chemical_name']??'',180);
     if($chemical==='')$chemical=student_workspace_text($stage['chemical_name']??'',180);
     $developer=student_workspace_text($input['developer_name']??'',180);
+    if($developer===''&&$chemical!=='')$developer=$chemical;
+    if($chemical===''&&$developer!=='')$chemical=$developer;
     $temperature=student_workspace_text($input['temperature']??'',80);
     $agitation=student_workspace_text($input['agitation']??'',600);
     $notes=student_workspace_text($input['notes']??'',3000);
