@@ -32,7 +32,7 @@ test('selected course remains readable on a phone viewport without horizontal ov
   const mobileNav=page.locator('.student-mobile-nav');
   await expect(mobileNav).toBeVisible();
   await expect(mobileNav.locator('a')).toHaveCount(4);
-  await expect(mobileNav.locator('a').allTextContents()).resolves.toEqual(['Início','Cursos','Caderno','Laboratório']);
+  expect(await mobileNav.locator('a').allTextContents()).toEqual(['Início','Cursos','Caderno','Laboratório']);
   await expect(mobileNav.getByText('Cursos',{exact:true})).toHaveAttribute('aria-current','page');
   await expect(page.locator('.student-wordmark')).toHaveAttribute('href','/aluno/');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
