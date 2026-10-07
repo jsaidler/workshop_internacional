@@ -2,7 +2,7 @@ const {test,expect}=require('@playwright/test');
 const url='http://127.0.0.1:8099/tools/browser-fixture/large-format-public-visual.html';
 
 function rgb(value){
-  const m=String(value).match(/rgba?\\((\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)/);
+  const m=String(value).match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
   if(!m)throw new Error('Unsupported color '+value);
   return [Number(m[1]),Number(m[2]),Number(m[3])];
 }
