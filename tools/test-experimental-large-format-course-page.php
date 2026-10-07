@@ -77,6 +77,9 @@ $migration($db);
 $layoutRepair=require dirname(__DIR__).'/migrations/094_large_format_reuse_canonical_components.php';
 expect_large_format(is_callable($layoutRepair),'migration 094 not callable');
 $layoutRepair($db);
+$visualRepair=require dirname(__DIR__).'/migrations/095_large_format_restore_visual_placeholders.php';
+expect_large_format(is_callable($visualRepair),'migration 095 not callable');
+$visualRepair($db);
 
 $page=$db->query("SELECT * FROM cms_pages WHERE id=$pageId")->fetch();
 expect_large_format((string)$page['slug']==='pinhole-lambe-lambe','existing public slug must be preserved');
@@ -104,7 +107,6 @@ foreach([
     'As duas — R$ 168',
     'crédito',
     'Positivo Direto em Filme de Raio-X',
-    'data-cms-image-placeholder',
 ] as $needle)expect_large_format(!str_contains($html,$needle),'legacy or forbidden content remained: '.$needle);
 
 foreach(['hero','diagnosis','camera-lab','journey','meetings','positive-processes','construction','offer','about','faq','interest'] as $section){
@@ -112,10 +114,10 @@ foreach(['hero','diagnosis','camera-lab','journey','meetings','positive-processe
 }
 
 foreach([
-    'class="hero hero--copy-only"',
+    'class="hero" data-cms-section="hero"',
     'class="format" data-cms-section="diagnosis"',
     'class="format-grid cols-3"',
-    'class="cms-support cms-support--single"',
+    'class="cms-support" data-cms-section="camera-lab"',
     'class="section" data-cms-section="construction"',
     'class="cms-proof" data-cms-section="offer"',
 ] as $needle)expect_large_format(str_contains($html,$needle),'canonical component structure missing: '.$needle);
@@ -127,6 +129,13 @@ foreach([
 ] as $needle)expect_large_format(!str_contains($html,$needle),'non-canonical page-specific composition remained: '.$needle);
 
 expect_large_format(substr_count($html,'class="format-grid cols-3"')===2,'three-column format variant should be reused only for diagnosis and FAQ');
+expect_large_format(substr_count($html,'data-cms-image-placeholder')===4,'public page must preserve four editorial image placeholders until real media replaces them');
+foreach([
+    'Fotografia ou vídeo da câmera-laboratório em uso',
+    'Detalhe da câmera-laboratório: área de manipulação e processamento',
+    'Cianotipia e impressão em clorofila produzidas a partir do mesmo negativo',
+    'Comparação das duas soluções construtivas da câmera-laboratório',
+] as $needle)expect_large_format(str_contains($html,$needle),'missing editorial placeholder: '.$needle);
 
 $form=$db->query("SELECT * FROM cms_forms WHERE id=$formId")->fetch();
 expect_large_format((string)$form['form_key']==='pinhole-interest','existing form key must be preserved');
