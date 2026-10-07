@@ -48,6 +48,10 @@ function student_tool_release_column_available(PDO $db): bool {
     try{foreach($db->query('PRAGMA table_info(student_tool_courses)')->fetchAll(PDO::FETCH_ASSOC) as $column)if((string)($column['name']??'')==='release_lesson_id')return true;}catch(Throwable){}
     return false;
 }
+function student_tool_release_state(?string $releasedAt): string {
+    if(function_exists('cms_access_lesson_release_state'))return cms_access_lesson_release_state($releasedAt);
+    if(!$releasedAt)return 'blocked';$ts=strtotime($releasedAt);if($ts===false)return 'blocked';return $ts<=time()?'released':'scheduled';
+}
 function student_tools_for_student(PDO $db,int $studentId): array {
     $hasRelease=student_tool_release_column_available($db);
     $releaseSelect=$hasRelease?',tc.release_lesson_id,r.released_at':',NULL release_lesson_id,NULL released_at';
@@ -65,7 +69,7 @@ function student_tools_for_student(PDO $db,int $studentId): array {
         $allowed=(string)$row['access_mode']==='all';
         if(!$allowed&&(int)($row['enrollment_id']??0)>0){
             $lessonId=(int)($row['release_lesson_id']??0);
-            $state=$lessonId<1?'released':(function_exists('cms_access_lesson_release_state')?cms_access_lesson_release_state((string)($row['released_at']??'')):(strtotime((string)($row['released_at']??''))?:PHP_INT_MAX)<=time()?'released':'blocked');
+            $state=$lessonId<1?'released':student_tool_release_state(isset($row['released_at'])?(string)$row['released_at']:null);
             $allowed=$state==='released';
         }
         if(!$allowed)continue;
@@ -75,9 +79,9 @@ function student_tools_for_student(PDO $db,int $studentId): array {
     return array_values($out);
 }
 function student_tool_course_access_rows(PDO $db,int $courseId): array {
-    $hasRelease=student_tool_release_column_available($db);$release=$hasRelease?'tc.release_lesson_id':'NULL release_lesson_id';$lessonJoin=$hasRelease?' LEFT JOIN course_lessons l ON l.id=tc.release_lesson_id AND l.course_id=tc.course_id ':'';
-    $q=$db->prepare("SELECT t.*,$release,l.title release_lesson_title FROM student_tool_courses tc JOIN student_tools t ON t.tool_key=tc.tool_key $lessonJoin WHERE tc.course_id=? AND t.enabled=1 ORDER BY t.sort_order,t.label");
-    try{$q->execute([$courseId]);return $q->fetchAll(PDO::FETCH_ASSOC);}catch(Throwable){$q=$db->prepare("SELECT t.*,NULL release_lesson_id,NULL release_lesson_title FROM student_tool_courses tc JOIN student_tools t ON t.tool_key=tc.tool_key WHERE tc.course_id=? AND t.enabled=1 ORDER BY t.sort_order,t.label");$q->execute([$courseId]);return $q->fetchAll(PDO::FETCH_ASSOC);}
+    if(student_tool_release_column_available($db))$q=$db->prepare("SELECT t.*,tc.release_lesson_id,l.title release_lesson_title FROM student_tool_courses tc JOIN student_tools t ON t.tool_key=tc.tool_key LEFT JOIN course_lessons l ON l.id=tc.release_lesson_id AND l.course_id=tc.course_id WHERE tc.course_id=? AND t.enabled=1 ORDER BY t.sort_order,t.label");
+    else $q=$db->prepare("SELECT t.*,NULL release_lesson_id,NULL release_lesson_title FROM student_tool_courses tc JOIN student_tools t ON t.tool_key=tc.tool_key WHERE tc.course_id=? AND t.enabled=1 ORDER BY t.sort_order,t.label");
+    $q->execute([$courseId]);return $q->fetchAll(PDO::FETCH_ASSOC);
 }
 function student_tool_course_set_release_lesson(PDO $db,int $courseId,string $toolKey,?int $lessonId): void {
     if(!student_tool_release_column_available($db))throw new RuntimeException('Atualize a instalação antes de configurar liberações de ferramentas.');
