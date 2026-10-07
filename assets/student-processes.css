@@ -80,7 +80,6 @@
 .student-process-danger-zone form{margin:var(--ux-space-4) 0 0}
 
 body.student-page:has(.student-process-runner) .student-topbar,
-body.student-page:has(.student-process-runner) .student-mobile-nav{display:none}
 body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
 .student-process-runner-head{display:grid;gap:var(--ux-space-5);padding-bottom:var(--ux-space-5);border-bottom:1px solid var(--line)}
 .student-process-runner-head .student-title{margin-top:4px}

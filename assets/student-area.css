@@ -68,9 +68,18 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
 .student-login-card{width:min(560px,100%);margin:44px auto 0;background:var(--surface);border:1px solid var(--line);padding:36px}.student-login-card+.student-login-card{margin-top:24px}.student-auth-title{font-size:50px}.student-auth-copy{font-size:16px;margin-top:18px}
 .student-mobile-nav{display:none}
 
-@media(max-width:980px){.student-desktop-nav{margin-left:8px}.student-desktop-nav a{padding-inline:9px}.student-theme-switch button{padding-inline:8px;font-size:9px}.student-logout{display:none}}
+/* Material didático autenticado continua usando o renderer CMS, mas consome a
+   mesma navegação global da Área do aluno. O shell público não muda fora desse contexto. */
+.cms-student-material .cms-topbar>.student-desktop-nav{justify-content:flex-start;margin-left:0}
+.cms-student-material .cms-topbar>.cms-topbar-actions{display:flex;grid-column:auto}
+
+@media(max-width:980px){.student-desktop-nav{margin-left:8px}.student-desktop-nav a{padding-inline:9px}.student-theme-switch button{padding-inline:8px;font-size:9px}.student-logout{display:none}.cms-student-material .cms-topbar>.student-desktop-nav{display:flex;margin-left:0}.cms-student-material .cms-topbar>.cms-topbar-actions{display:flex;grid-column:auto}}
 
 @media(max-width:760px){
+  body.cms-student-material{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  .cms-student-material .cms-topbar{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .cms-student-material .cms-topbar>.student-desktop-nav{display:none}
+  .cms-student-material .cms-topbar>.cms-topbar-actions{display:flex;grid-column:auto;padding:0}
   body.student-page{font-size:15px}.student-shell{width:100%;padding:0 16px calc(92px + env(safe-area-inset-bottom))}.student-topbar{min-height:58px;margin:0 -16px;padding:0 16px;gap:8px}.student-wordmark{font-size:17px}.student-desktop-nav,.student-logout-form{display:none}.student-theme-switch{display:none}.student-account-link{margin-left:auto;min-height:38px}.student-main{padding-top:var(--ux-space-6)}
   .student-title{font-size:clamp(36px,11vw,50px)}.student-title-record{font-size:clamp(38px,12vw,54px)}.student-lead{margin-top:var(--ux-space-4);font-size:17px;line-height:1.52}.student-section{margin-top:var(--ux-space-6)}.student-section-heading{grid-template-columns:1fr;gap:var(--ux-space-3);padding-bottom:var(--ux-space-4)}.student-subtitle{font-size:clamp(29px,9vw,38px)}.student-page-heading{display:grid;gap:var(--ux-space-4);align-items:start}.student-page-heading .button{width:100%}.student-appbar{margin-bottom:var(--ux-space-4)}
   .student-home-grid{grid-template-columns:1fr;margin-top:var(--ux-space-7)}.student-home-section{min-height:0;padding:var(--ux-space-5) 0}.student-home-section+.student-home-section{border-left:0;border-top:1px solid var(--student-line-soft)}.student-home-actions{margin-top:var(--ux-space-5);padding-top:0}.student-home-actions .button{width:100%}.student-home-account{display:grid;gap:var(--ux-space-4)}.student-home-account .button{width:100%}

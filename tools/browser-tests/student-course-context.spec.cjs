@@ -10,6 +10,7 @@ test('multiple enrollments require an explicit reversible course choice',async({
   await expect(page).toHaveURL(/cohort=cohort-b/);
   await expect(page.locator('h1')).toHaveText('O Fazer Intuitivo');
   await expect(page.getByTestId('empty-material')).toBeVisible();
+  await expect(page.locator('.student-desktop-nav').getByText('Cursos',{exact:true})).toHaveAttribute('aria-current','page');
   await page.getByTestId('all-courses').click();
   await expect(page.locator('h1')).toHaveText('Escolha a matrícula');
 });
@@ -28,7 +29,12 @@ test('selected course remains readable on a phone viewport without horizontal ov
   await page.setViewportSize({width:390,height:844});
   await page.goto(url+'?cohort=cohort-a');
   await expect(page.getByTestId('material-list')).toBeVisible();
-  await expect(page.locator('.student-mobile-nav')).toBeVisible();
+  const mobileNav=page.locator('.student-mobile-nav');
+  await expect(mobileNav).toBeVisible();
+  await expect(mobileNav.locator('a')).toHaveCount(4);
+  expect(await mobileNav.locator('a').allTextContents()).toEqual(['Início','Cursos','Caderno','Laboratório']);
+  await expect(mobileNav.getByText('Cursos',{exact:true})).toHaveAttribute('aria-current','page');
+  await expect(page.locator('.student-wordmark')).toHaveAttribute('href','/aluno/');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });

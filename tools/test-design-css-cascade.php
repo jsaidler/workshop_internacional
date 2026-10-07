@@ -79,7 +79,7 @@ $customStyle=strpos($renderer,'id="cms-custom-css"');
 design_css_expect($systemStyles!==false&&$vars!==false&&$customStyle!==false,'renderer must expose system, design-token and additional-CSS stages');
 design_css_expect($systemStyles<$vars&&$vars<$customStyle,'additional CSS must be the final author style in the rendered head');
 design_css_expect(!str_contains($renderer,'id="cms-system-choice-controls"'),'renderer must not carry a corrective inline choice-control stylesheet');
-design_css_expect(str_contains($renderer,'cms_public_system_css_imports($assetVersion,$design)'),'public system stylesheet loader must receive the current Design selection');
+design_css_expect(str_contains($renderer,'cms_public_system_css_imports($assetVersion,$design,(bool)$materialContext)'),'public system stylesheet loader must receive the current Design selection and authenticated material context');
 design_css_expect(str_contains($renderer,'cms_design_font_import_css($design)'),'public renderer must load the selected Google Fonts before local system CSS');
 design_css_expect(str_contains($renderer,"'/assets/cms-core.css'"),'public renderer must consume the canonical CMS core stylesheet');
 design_css_expect(str_contains($renderer,'layer(cms-system)'),'external public system CSS must live in the lower cms-system cascade layer');

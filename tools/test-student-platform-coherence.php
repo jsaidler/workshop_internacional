@@ -11,7 +11,8 @@ $studentAdmin=(string)file_get_contents($root.'/admin/student-area.php');$people
 
 foreach(['cms_design_font_import_css','cms_design_css','/template/page.css'] as $needle)if(!str_contains($studentShell,$needle))fail_coherence('student shell does not consume canonical design authority: '.$needle);
 if(!str_contains($studentShell,'installation_brand_name()')||str_contains($studentShell,'student_account_enrollments('))fail_coherence('student shell still conflates global identity/design with first enrollment');
-if(!str_contains($studentShell,'>Curso</a>')||!str_contains($studentShell,'>Caderno</a>')||!str_contains($studentShell,'data-student-toolbox')||!str_contains($studentShell,'data-toolbox-open'))fail_coherence('student task navigation/contextual toolbox architecture missing');
+foreach(["'courses'=>['label'=>'Cursos','href'=>'/aluno/cursos.php']","'notebook'=>['label'=>'Caderno','href'=>'/aluno/caderno.php']","'laboratory'=>['label'=>'Laboratório','href'=>'/aluno/ferramentas.php']"] as $needle)if(!str_contains($studentShell,$needle))fail_coherence('student global navigation contract missing: '.$needle);
+if(!str_contains($studentShell,'data-student-toolbox')||!str_contains($studentShell,'data-toolbox-open>Atalhos</button>'))fail_coherence('contextual quick-access toolbox architecture missing');
 if(!str_contains($courseAdmin,'name="title"')||!str_contains($courseAdmin,'course_update($db,$courseId,$_POST)'))fail_coherence('course title is not editable from the canonical course configuration');
 if(str_contains($site,'name="course_public_title"')||str_contains($site,'Nome público do curso'))fail_coherence('Site navigation still owns course identity instead of the course domain');
 foreach(['private','cohort','course'] as $visibility)if(!str_contains($sharing,"'".$visibility."'"))fail_coherence('missing record visibility: '.$visibility);
