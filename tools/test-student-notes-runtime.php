@@ -9,6 +9,8 @@ function student_workspace_text(mixed $value,int $max=5000): string {$value=trim
 function student_uuid(): string {return 'annotation-test-uuid';}
 function utc_now(): string {return '2026-10-01T00:00:00Z';}
 function student_material_notes_for_page(PDO $db,int $studentId,int $pageId): array {return ['introducao'=>['section_key'=>'introducao','body'=>'Minha observação anterior']];}
+function student_enrollment_material_context(PDO $db,array $student,array $page,string $cohortUuid=''): ?array {return ['cohort_id'=>3,'cohort_uuid'=>$cohortUuid!==''?$cohortUuid:'turma-1'];}
+function student_question_create(PDO $db,int $studentId,int $cohortId,array $input): array {return ['id'=>99,'student_id'=>$studentId,'cohort_id'=>$cohortId,'title'=>(string)($input['title']??''),'body'=>(string)($input['body']??''),'visibility'=>(string)($input['visibility']??'private'),'status'=>'open'];}
 require dirname(__DIR__).'/app/student_notes_experience.php';
 require dirname(__DIR__).'/app/student_question_annotations.php';
 
@@ -30,7 +32,9 @@ must_notes_runtime(!str_contains($html,'<select name="section_key">'),'new annot
 must_notes_runtime(str_contains($html,'Nota incorporada')&&str_contains($html,'Conteúdo didático.'),'selection annotation is not rendered in the notebook');
 must_notes_runtime(str_contains($html,'data-student-annotation-data'),'client anchor payload is missing');
 must_notes_runtime(str_contains($html,'Minha observação anterior'),'legacy annotations were lost during the migration');
-must_notes_runtime(str_contains($html,'Virar dúvida')&&str_contains($html,'/aluno/duvidas.php?cohort=turma-1&amp;annotation=1'),'annotation cannot be promoted into the course question flow');
+must_notes_runtime(str_contains($html,'Também é uma dúvida?')&&str_contains($html,'Salvar anotação e publicar dúvida')&&str_contains($html,'name="question_title"'),'new annotation cannot publish a question from the same composer');
+must_notes_runtime(str_contains($html,'Transformar em dúvida')&&str_contains($html,'name="annotation_action" value="question"'),'existing annotation cannot become a question in place');
+must_notes_runtime(!str_contains($html,'>Virar dúvida</a>'),'annotation still forces navigation to a distant question screen');
 must_notes_runtime(!str_contains($html,'<section data-cms-section="introducao" data-student-note-context="introducao" id="nota-trecho-introducao"><h2 data-student-anchor-block="introducao:h2:0">Introdução</h2><p data-student-anchor-block="introducao:p:1">Conteúdo didático.</p><form'),'note form is still glued to the section body');
 $index=(string)file_get_contents(dirname(__DIR__).'/index.php');$publicJs=(string)file_get_contents(dirname(__DIR__).'/assets/public.js');$annotationJs=(string)file_get_contents(dirname(__DIR__).'/assets/student-inline-annotations.js');$endpoint=(string)file_get_contents(dirname(__DIR__).'/aluno/material-anotacao.php');
 must_notes_runtime(!str_contains($index,'student-inline-annotations.js'),'annotation runtime is injected into CMS HTML and will be stripped by the sanitizer');
@@ -38,4 +42,5 @@ must_notes_runtime(str_contains($publicJs,"document.querySelector('[data-student
 must_notes_runtime(str_contains($annotationJs,'event.preventDefault()')&&str_contains($annotationJs,"Accept:'application/json'")&&str_contains($annotationJs,'fetch(form.action'),'annotation save still depends on browser navigation');
 must_notes_runtime(str_contains($annotationJs,'restoreReadingOrigin')&&!str_contains($annotationJs,'student.annotation.return.v1'),'annotation continuity still depends on reload/sessionStorage instead of an in-place mutation');
 must_notes_runtime(str_contains($endpoint,'$wantsJson')&&str_contains($endpoint,"['ok'=>true")&&str_contains($endpoint,"Content-Type: application/json"),'annotation endpoint has no JSON contract for local updates');
+must_notes_runtime(str_contains($endpoint,'student_question_create_from_annotation')&&str_contains($endpoint,"'question_url'"),'annotation endpoint cannot create and return a linked question in place');
 echo "student-notes-runtime: ok\n";
