@@ -1,5 +1,5 @@
 const {test,expect}=require('@playwright/test');
-const url='http://127.0.0.1:8099/tools/browser-fixture/large-format-public-visual.html';
+const url='http://127.0.0.1:8099/tools/browser-fixture/large-format-public-visual.php';
 
 function rgba(value){
   const text=String(value).trim();
@@ -52,6 +52,16 @@ async function expectHoverContrast(locator,min=4.5){
   const {fg,bg}=await effectiveColors(locator);
   expect(contrast(fg,bg)).toBeGreaterThanOrEqual(min);
 }
+async function expectFocusVisible(locator){
+  await locator.focus();
+  const focus=await locator.evaluate(el=>{const s=getComputedStyle(el);return {style:s.outlineStyle,width:parseFloat(s.outlineWidth)||0};});
+  expect(focus.style).not.toBe('none');
+  expect(focus.width).toBeGreaterThanOrEqual(2);
+}
+async function expectHeroTitleContained(page){
+  const overflow=await page.locator('.hero h1 span').evaluateAll(spans=>Math.max(...spans.map(el=>el.scrollWidth-el.clientWidth)));
+  expect(overflow).toBeLessThanOrEqual(1);
+}
 
 for(const theme of ['light','dark']){
   test('large-format public components remain legible on hover — '+theme,async({page})=>{
@@ -59,15 +69,24 @@ for(const theme of ['light','dark']){
     await page.goto(url,{waitUntil:'networkidle'});
     await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
 
-    await expect(page.locator('[data-cms-image-placeholder]')).toHaveCount(3);
+    await expect(page.locator('[data-cms-image-placeholder]')).toHaveCount(4);
+    for(const section of ['hero','diagnosis','camera-lab','journey','meetings','positive-processes','construction','offer','about','faq','interest']){
+      await expect(page.locator('[data-cms-section="'+section+'"]')).toHaveCount(1);
+    }
+    await expectHeroTitleContained(page);
 
     await expectHoverContrast(page.locator('#hero-cta'));
     await page.mouse.move(2,2);
     await expectHoverContrast(page.locator('#form-submit'));
     await page.mouse.move(2,2);
     await expectHoverContrast(page.locator('#choice-hover'));
+    await page.mouse.move(2,2);
+    await expectHoverContrast(page.locator('header nav a').last());
+    await expectFocusVisible(page.locator('#hero-cta'));
+    await expectFocusVisible(page.locator('#form-submit'));
 
-    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    await expectHeroTitleContained(page);
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
 
     await page.screenshot({path:'test-results/visual/large-format-'+theme+'-desktop.png',fullPage:true});
@@ -80,8 +99,8 @@ test('large-format public composition remains contained on phone',async({page})=
   await page.evaluate(()=>document.documentElement.dataset.theme='light');
 
   const placeholders=page.locator('[data-cms-image-placeholder]');
-  await expect(placeholders).toHaveCount(3);
-  for(let i=0;i<3;i++)await expect(placeholders.nth(i)).toBeVisible();
+  await expect(placeholders).toHaveCount(4);
+  for(let i=0;i<4;i++)await expect(placeholders.nth(i)).toBeVisible();
 
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
