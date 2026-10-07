@@ -53,6 +53,22 @@ A instalação é globalmente `JSaidler Fotografia`; curso/workshop é uma `acti
 
 A regra arquitetural é: **identidade localizada pertence à activity; hierarquia e equivalência pertencem às páginas; menu não é uma segunda árvore**.
 
+### Material didático autenticado e shell do aluno
+
+Material didático continua sendo página CMS normal e continua sendo produzido pelo renderer canônico. A autenticação não autoriza criar um segundo renderer ou duplicar o documento editorial.
+
+Quando o renderer resolve um `materialContext` de matrícula:
+
+- o filtro server-side de seções e liberações continua sendo aplicado antes da entrega do HTML;
+- o conteúdo e os componentes editoriais continuam pertencendo ao CMS;
+- o chrome autenticado consome a autoridade global da Área do aluno: **Início / Cursos / Caderno / Laboratório**;
+- a marca autenticada aponta para `/aluno/` e **Cursos** representa o contexto ativo;
+- no telefone, a mesma barra inferior persistente das demais superfícies autenticadas permanece visível e o layout reserva sua área;
+- no desktop, a mesma arquitetura global é apresentada no cabeçalho, sem criar uma segunda topbar;
+- sem `materialContext`, a página conserva integralmente o shell e a semântica de navegação do site público.
+
+Assim, renderer editorial e shell de navegação permanecem responsabilidades distintas: o CMS continua autoridade do material; o contexto autenticado decide qual chrome global envolve essa leitura.
+
 ## Mídia
 
 - imagens e vídeos em biblioteca própria;
