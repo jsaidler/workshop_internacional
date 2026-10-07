@@ -126,10 +126,12 @@ A camada de anotações do material foi corrigida a partir do uso real em telefo
 
 - ao iniciar uma anotação de seleção, a introdução do painel sai do caminho e o formulário assume o foco;
 - o trecho selecionado tem altura limitada e rolagem própria, impedindo que uma citação longa consuma a tela;
-- **Salvar anotação** aparece antes do fluxo opcional **Também é uma dúvida?**;
-- o fluxo de dúvida continua recolhido por padrão e não empurra a ação principal para fora da área útil;
+- **Salvar / Cancelar** dividem a mesma linha de ação no telefone; nenhuma ação secundária é espremida para fora da viewport;
+- **Também é uma dúvida?** continua secundário e recolhido por padrão;
+- ao abrir a dúvida no telefone, o compositor entra em um segundo estado: trecho, textarea e ações da anotação saem de cena e aparecem somente título, visibilidade e publicação da dúvida;
+- o retorno **← Voltar à anotação** restaura o primeiro estado e preserva o rascunho;
 - a composição usa altura dinâmica de viewport e reserva de safe area;
-- a auditoria visual cobre explicitamente o estado de composição em 390×844.
+- a auditoria visual cobre explicitamente os dois estados em 390×844 e rejeita o empilhamento simultâneo dos dois formulários.
 
 A liberação de conteúdo sensível também passa a ser autorização server-side, não simples ocultação de links:
 

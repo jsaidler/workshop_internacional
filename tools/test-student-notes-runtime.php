@@ -32,7 +32,7 @@ must_notes_runtime(!str_contains($html,'<select name="section_key">'),'new annot
 must_notes_runtime(str_contains($html,'Nota incorporada')&&str_contains($html,'Conteúdo didático.'),'selection annotation is not rendered in the notebook');
 must_notes_runtime(str_contains($html,'data-student-annotation-data'),'client anchor payload is missing');
 must_notes_runtime(str_contains($html,'Minha observação anterior'),'legacy annotations were lost during the migration');
-must_notes_runtime(str_contains($html,'Também é uma dúvida?')&&str_contains($html,'Salvar anotação e publicar dúvida')&&str_contains($html,'name="question_title"'),'new annotation cannot publish a question from the same composer');
+must_notes_runtime(str_contains($html,'Também é uma dúvida?')&&str_contains($html,'Salvar e publicar dúvida')&&str_contains($html,'name="question_title"'),'new annotation cannot publish a question from the same two-step composer');
 must_notes_runtime(str_contains($html,'Transformar em dúvida')&&str_contains($html,'name="annotation_action" value="question"'),'existing annotation cannot become a question in place');
 must_notes_runtime(!str_contains($html,'>Virar dúvida</a>'),'annotation still forces navigation to a distant question screen');
 must_notes_runtime(!str_contains($html,'<section data-cms-section="introducao" data-student-note-context="introducao" id="nota-trecho-introducao"><h2 data-student-anchor-block="introducao:h2:0">Introdução</h2><p data-student-anchor-block="introducao:p:1">Conteúdo didático.</p><form'),'note form is still glued to the section body');
