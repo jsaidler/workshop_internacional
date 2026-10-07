@@ -97,3 +97,16 @@ A página:
 - usa o sistema visual global do CMS, sem CSS específico da página;
 - apresenta o preço de lançamento e o valor regular;
 - permanece como lista de interesse até a abertura da primeira turma.
+## Composição visual da página
+
+A página não possui sistema visual próprio e não pode introduzir mecânicas específicas para componentes já existentes no site.
+
+- usar somente componentes e variantes já definidos pelo sistema global;
+- respeitar a estrutura DOM esperada por cada componente;
+- quando uma variante global existir para composição sem mídia, usar essa variante em vez de omitir partes do componente;
+- não inventar classes de coluna ou modificadores que não existam no sistema compartilhado;
+- não usar um componente de duas colunas com apenas uma coluna preenchida;
+- qualquer necessidade visual nova que seja realmente sistêmica deve ser resolvida no proprietário global do componente, nunca em CSS específico desta página.
+
+A correção de 06/10/2026 aplica exatamente essa regra: `hero--copy-only`, `cms-support--single`, `format-grid cols-3`, `statement-grid` e `cms-proof` são reutilizados conforme seus contratos globais; a classe inexistente `cols-2` e o uso incompleto de `apparatus` foram removidos.
+
