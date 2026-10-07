@@ -14,7 +14,7 @@ must_student_caderno_product_ux(str_contains($record,'podem ser preenchidos, cor
 must_student_caderno_product_ux(str_contains($record,'Salvar exposição')&&!str_contains($record,'Salvar exposição e continuar'),'exposure still forces progression');
 must_student_caderno_product_ux(str_contains($record,'Ele não depende de nenhuma etapa anterior.'),'result is not explicitly independent');
 foreach(['O processamento já aconteceu?','Vou revelar agora','Já revelei','Registrar manualmente','Continuar laboratório','Próxima etapa','intent=live'] as $obsolete)must_student_caderno_product_ux(!str_contains($record,$obsolete),'record reintroduced obsolete workflow language: '.$obsolete);
-must_student_caderno_product_ux(str_contains($record,'Marcar ✓')&&str_contains($record,'Desmarcar')&&str_contains($record,'Abrir timer'),'associated route does not expose independent checks and timers');
+must_student_caderno_product_ux(str_contains($record,'Marcar ✓')&&str_contains($record,'Desmarcar')&&str_contains($record,'edit_plan_step=')&&str_contains($record,"?'Timer':'Abrir etapa'")&&str_contains($record,'Adicionar etapa ao roteiro'),'associated route does not expose independent checks, editing and timers');
 must_student_caderno_product_ux(str_contains($record,'Movimentar estoque'),'stock movement is not available as an explicit separate action');
 must_student_caderno_product_ux(str_contains($record,'<p class="student-kicker">Processamento</p><h2 class="student-subtitle">Roteiro e etapas</h2>'),'processing section lost its non-redundant notebook heading');
 must_student_caderno_product_ux(str_contains($record,'Anote uma etapa sem associar um roteiro.'),'free steps still imply sequence');
