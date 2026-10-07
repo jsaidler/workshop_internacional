@@ -5,7 +5,7 @@ function must_student_workflow(bool $ok,string $message): void {if(!$ok)fail_stu
 $root=dirname(__DIR__);
 $shell=(string)file_get_contents($root.'/app/student_shell.php');$home=(string)file_get_contents($root.'/aluno/index.php');$courses=(string)file_get_contents($root.'/aluno/cursos.php');$notebook=(string)file_get_contents($root.'/aluno/caderno.php');$record=(string)file_get_contents($root.'/aluno/teste.php');$routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');$bench=(string)file_get_contents($root.'/aluno/ferramentas.php');$processManager=(string)file_get_contents($root.'/aluno/processamentos.php');$processRunner=(string)file_get_contents($root.'/aluno/processar.php');
 
-must_student_workflow(str_contains($shell,'>Início</a>')&&str_contains($shell,'>Curso</a>')&&str_contains($shell,'>Caderno</a>'),'primary navigation lost task-centered destinations');
+foreach(["'home'=>['label'=>'Início','href'=>'/aluno/']","'courses'=>['label'=>'Cursos','href'=>'/aluno/cursos.php']","'notebook'=>['label'=>'Caderno','href'=>'/aluno/caderno.php']","'laboratory'=>['label'=>'Laboratório','href'=>'/aluno/ferramentas.php']"] as $destination)must_student_workflow(str_contains($shell,$destination),'primary navigation lost task-centered destination '.$destination);
 must_student_workflow(str_contains($shell,'data-student-toolbox')&&str_contains($shell,'data-toolbox-open'),'simple tools are not available as an integrated toolbox');
 must_student_workflow(!str_contains($home,'Escolha o que você veio fazer'),'home still asks the student to classify their intent');
 must_student_workflow(str_contains($home,'student_experience_dashboard_state')&&str_contains($home,'Continuar no Caderno'),'home no longer prioritizes Caderno continuity');
