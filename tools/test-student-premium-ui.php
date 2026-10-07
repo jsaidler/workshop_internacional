@@ -31,7 +31,7 @@ must_student_premium_ui(str_contains($shell,'/assets/student-academic.css'),'stu
 must_student_premium_ui(str_contains($shell,'/assets/student-rendered-fixes.css')&&str_contains($shell,'data-student-rendered-fixes'),'student shell does not load the rendered visual polish layer');
 foreach(['.student-field','.student-choice-','.student-check-field','.student-button','.student-error','.student-notice','.student-danger-button','--student-control-height'] as $forbidden)must_student_premium_ui(!str_contains($css,$forbidden),'student stylesheet still owns global primitive '.$forbidden);
 
-foreach(['>Início</a>','>Curso</a>','>Caderno</a>'] as $destination)must_student_premium_ui(str_contains($shell,$destination),'student primary navigation is missing '.$destination);
+foreach(["'home'=>['label'=>'Início','href'=>'/aluno/']","'courses'=>['label'=>'Cursos','href'=>'/aluno/cursos.php']","'notebook'=>['label'=>'Caderno','href'=>'/aluno/caderno.php']","'laboratory'=>['label'=>'Laboratório','href'=>'/aluno/ferramentas.php']"] as $destination)must_student_premium_ui(str_contains($shell,$destination),'student primary navigation is missing '.$destination);
 must_student_premium_ui(str_contains($shell,'data-toolbox-open')&&str_contains($shell,'data-student-toolbox'),'small utilities are not exposed as a contextual toolbox');
 must_student_premium_ui(str_contains($shell,'student-user-menu')&&str_contains($shell,'Gerenciar conta'),'account/theme/session controls are not grouped as settings');
 must_student_premium_ui(str_contains($experienceCss,'.student-home-primary')&&str_contains($experienceCss,'.student-process-now')&&str_contains($experienceCss,'.student-bench-grid'),'experience stylesheet lost task hierarchy for unchanged student surfaces');
