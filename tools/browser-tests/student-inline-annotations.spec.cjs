@@ -126,6 +126,10 @@ test('an annotation can publish a question without leaving the material screen',
   await compose.locator('textarea[name="body"]').fill('Não entendi esta passagem');
   await compose.locator('[data-note-question]>summary').click();
   await expect(compose.locator('[data-note-question]')).toHaveAttribute('open','');
+  await expect(page.locator('[data-student-notes-panel]')).toHaveClass(/is-questioning/);
+  await expect(compose.locator('[data-note-question]>summary')).toHaveText('← Voltar à anotação');
+  await expect(compose.locator('[data-inline-note-body]')).toBeHidden();
+  await expect(compose.locator('.student-inline-note-primary-actions')).toBeHidden();
   await compose.locator('[name="question_title"]').fill('Minha dúvida');
   await compose.locator('[name="question_visibility"][value="cohort"]').check();
   await compose.locator('[data-note-question-publish]').click();
