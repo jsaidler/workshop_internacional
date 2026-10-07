@@ -75,11 +75,17 @@ for(const theme of ['light','dark']){
     }
     await expectHeroTitleContained(page);
 
-    await expectHoverContrast(page.locator('[data-cms-section="hero"] .button-primary'));
+    const heroCta=page.locator('[data-cms-section="hero"] .button-primary');
+    await expectHoverContrast(heroCta);
+    if(theme==='light')await heroCta.screenshot({path:'test-results/visual/large-format-hover-hero-cta-light.png'});
     await page.mouse.move(2,2);
-    await expectHoverContrast(page.locator('#form-submit'));
+    const formSubmit=page.locator('#form-submit');
+    await expectHoverContrast(formSubmit);
+    if(theme==='light')await formSubmit.screenshot({path:'test-results/visual/large-format-hover-form-submit-light.png'});
     await page.mouse.move(2,2);
-    await expectHoverContrast(page.locator('#choice-hover'));
+    const choice=page.locator('#choice-hover');
+    await expectHoverContrast(choice);
+    if(theme==='light')await choice.screenshot({path:'test-results/visual/large-format-hover-choice-light.png'});
     await page.mouse.move(2,2);
     await expectHoverContrast(page.locator('header nav a').last());
     await expectFocusVisible(page.locator('[data-cms-section="hero"] .button-primary'));
@@ -88,8 +94,9 @@ for(const theme of ['light','dark']){
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
 
-    await page.evaluate(()=>document.activeElement?.blur());
+    await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});
     await page.mouse.move(2,2);
+    await page.waitForTimeout(80);
     await page.screenshot({path:'test-results/visual/large-format-'+theme+'-desktop.png',fullPage:true});
   });
 }
@@ -107,11 +114,12 @@ test('large-format public composition remains contained on phone',async({page})=
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 
-  await expectHoverContrast(page.locator('#hero-cta'));
+  await expectHoverContrast(page.locator('[data-cms-section="hero"] .button-primary'));
   await page.mouse.move(2,2);
   await expectHoverContrast(page.locator('#form-submit'));
 
-  await page.evaluate(()=>document.activeElement?.blur());
+  await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});
   await page.mouse.move(2,2);
+  await page.waitForTimeout(80);
   await page.screenshot({path:'test-results/visual/large-format-light-mobile.png',fullPage:true});
 });
