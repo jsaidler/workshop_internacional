@@ -10,5 +10,7 @@ test('material notes use a single page-level control and remain outside content 
   await expect(page.locator('section[data-cms-section] form')).toHaveCount(0);
   await entry.click();
   await expect(page.locator('#anotacoes')).toHaveAttribute('open','');
-  await expect(page.locator('#anotacoes')).toContainText('Onde esta anotação se aplica?');
+  await expect(page.locator('#anotacoes')).toContainText('Anotação da página');
+  await expect(page.locator('#anotacoes')).toContainText('Também é uma dúvida?');
+  await expect(page.locator('#anotacoes')).toContainText('Transformar em dúvida');
 });
