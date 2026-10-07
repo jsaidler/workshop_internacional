@@ -36,7 +36,7 @@ must_student_process_manager(str_contains($runPage,'student_process_notebook_tim
 must_student_process_manager(str_contains($runPage,'Marcar como concluída')&&str_contains($runPage,'Desmarcar etapa')&&str_contains($runPage,'Editar dados da etapa'),'route steps are not freely reversible/editable');
 must_student_process_manager(str_contains($runPage,'Movimentar estoque'),'route tool does not expose stock as a separate action');
 foreach(['Vou revelar agora','Já revelei','Registrar manualmente','Continuar laboratório','intent=live','Próxima etapa'] as $forbidden)must_student_process_manager(!str_contains($recordPage,$forbidden),'record still contains obsolete processing workflow: '.$forbidden);
-must_student_process_manager(str_contains($recordPage,'Marcar ✓')&&str_contains($recordPage,'Abrir timer'),'record does not expose independent route-step tools');
+must_student_process_manager(str_contains($recordPage,'Marcar ✓')&&str_contains($recordPage,'edit_plan_step=')&&str_contains($recordPage,"?'Timer':'Abrir etapa'")&&str_contains($recordPage,'Adicionar etapa ao roteiro'),'record does not expose independent check/edit/timer route tools');
 
 must_student_process_manager(str_contains($manager,'Meus processamentos')&&str_contains($manager,'Sua biblioteca'),'saved process library disappeared');
 must_student_process_manager(str_contains($manager,'Reutilizar o banho da primeira revelação'),'saved route editor lost explicit bath reuse');
