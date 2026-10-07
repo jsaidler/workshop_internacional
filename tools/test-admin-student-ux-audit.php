@@ -75,7 +75,7 @@ ux_expect(!str_contains($material,'Gerenciar liberação'),'Material não deve s
 ux_expect(str_contains($tests,'admin_course_context')||str_contains($tests,'admin_cohort_context'),'Testes deve pertencer ao acompanhamento corrente de curso/turma');
 ux_expect(str_contains($preview,'cms_access_filter_html'),'prévia da turma deve usar o filtro real de acesso');
 
-foreach(['>Início</a>','>Curso</a>','>Caderno</a>'] as $destination)ux_expect(str_contains($studentShell,$destination),'navegação principal do aluno perdeu '.$destination);
+foreach(["'home'=>['label'=>'Início','href'=>'/aluno/']","'courses'=>['label'=>'Cursos','href'=>'/aluno/cursos.php']","'notebook'=>['label'=>'Caderno','href'=>'/aluno/caderno.php']","'laboratory'=>['label'=>'Laboratório','href'=>'/aluno/ferramentas.php']"] as $destination)ux_expect(str_contains($studentShell,$destination),'navegação principal do aluno perdeu '.$destination);
 ux_expect(str_contains($studentShell,'data-student-toolbox')&&str_contains($studentShell,'data-toolbox-open'),'ferramentas pequenas deixaram de ser contextuais');
 ux_expect(str_contains($studentShell,'student-user-menu')&&str_contains($studentShell,'Gerenciar conta'),'conta, tema e sessão devem ficar subordinados');
 ux_expect(str_contains($studentHome,'student_experience_dashboard_state')&&str_contains($studentHome,'student-dashboard-focus')&&str_contains($studentHome,'<h1 class="student-title">Início</h1>'),'Início deve priorizar a próxima ação real sem texto de bastidor');
