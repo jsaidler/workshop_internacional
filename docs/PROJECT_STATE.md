@@ -293,6 +293,8 @@ A página inglesa não deve ser mera tradução da brasileira.
 - A especificação detalhada da oferta e da metodologia de comunicação está em `docs/EXPERIMENTAL_LARGE_FORMAT_COURSE_2026-10-06.md`.
 - A migração `093_experimental_large_format_course_page.php` substitui deliberadamente o conteúdo editorial da antiga página Pinhole pelo novo produto, preservando o slug, o ID da página, a chave do formulário e o histórico de submissões.
 - A migração `094_large_format_reuse_canonical_components.php` corrige a composição visual sem criar CSS próprio: a página passa a respeitar os contratos dos componentes globais existentes e remove variantes/classes inexistentes ou estruturas incompletas.
+- A migração `095_large_format_restore_visual_placeholders.php` restaura os slots editoriais de mídia removidos indevidamente e mantém hero, câmera-laboratório, processos positivos e comparação construtiva com placeholders até a entrada de mídia definitiva.
+- QA visual de página pública passa a ser obrigatório: render real em desktop/telefone, claro/escuro quando aplicável, screenshots diagnósticos e testes de hover/focus dos componentes usados.
 
 ## Estado do CMS/admin
 
