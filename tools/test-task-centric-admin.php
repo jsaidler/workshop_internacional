@@ -71,7 +71,7 @@ must(str_contains($publicCss,'.cms-public input[type="checkbox"],.cms-public inp
 must(str_contains($publicCss,'min-height:18px'),'public choice controls must override legacy text-input height');
 must(str_contains($renderer,'cms_public_asset_version'),'public renderer must version shared assets after application updates');
 must(!str_contains($renderer,'cms-system-choice-controls'),'public renderer must not carry an inline choice-control CSS patch');
-must(str_contains($renderer,'cms_public_system_css_imports($assetVersion,$design)'),'public stylesheets must be rendered through the versioned system import helper with current Design settings');
+must(str_contains($renderer,'cms_public_system_css_imports($assetVersion,$design,(bool)$materialContext)'),'public stylesheets must be rendered through the versioned system import helper with current Design settings and authenticated material context');
 must(str_contains($renderer,"'/template/page.css'")&&str_contains($renderer,"'/assets/cms-core.css'")&&str_contains($renderer,'rawurlencode($assetVersion)'),'public base and canonical core stylesheets must use the installed application version in layered import URLs');
 must(str_contains($renderer,'layer(cms-system)'),'public stylesheets must remain in the lower system cascade layer');
 must(str_contains($renderer,'public.js?v=<?=$assetVersionHtml?>'),'public JavaScript must use the escaped installed application version in its URL');
