@@ -7,6 +7,7 @@ $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
 $cadernoCss=(string)file_get_contents($root.'/assets/student-caderno.css');
+$processCss=(string)file_get_contents($root.'/assets/student-processes.css');
 $headerCss=(string)file_get_contents($root.'/assets/cms-header.css');
 $studentAdmin=(string)file_get_contents($root.'/admin/student-area.php');
 $migration=(string)file_get_contents($root.'/migrations/063_student_test_mobile_workflow.php');
@@ -29,6 +30,7 @@ if(!str_contains($test,'name="phase" value="scene"')||!str_contains($test,'name=
 if(!str_contains($helper,'student_test_update_exposure')||!str_contains($helper,'student_test_add_media_phase')||!str_contains($hardening,'function student_process_add_guided_step'))fail_student_mobile('record persistence helpers are incomplete');
 if(!str_contains($migration,"ADD COLUMN phase TEXT NOT NULL DEFAULT 'result'"))fail_student_mobile('media phase migration missing');
 if(!str_contains($css,'.student-mobile-nav')||!str_contains($css,'.student-sticky-action'))fail_student_mobile('mobile app navigation or action styling missing');
+if(str_contains($processCss,'student-process-runner) .student-mobile-nav{display:none}'))fail_student_mobile('record timer hides the persistent global mobile navigation');
 if(!str_contains($cadernoCss,'@media(max-width:560px)')||!str_contains($cadernoCss,'.student-record-section-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))'))fail_student_mobile('Caderno section navigation does not stay compact in one mobile row');
 if(!str_contains($headerCss,'body[data-cms-page-slug="privacidade"]')||!str_contains($headerCss,'.cms-student-access'))fail_student_mobile('public legal/access styling missing');
 if(str_contains($studentAdmin,'name="media_file"')||str_contains($studentAdmin,'upload_private_media'))fail_student_mobile('parallel private-media uploader returned to student admin');
