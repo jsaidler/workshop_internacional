@@ -1,30 +1,43 @@
 const {test,expect}=require('@playwright/test');
 const url='http://127.0.0.1:8099/tools/browser-fixture/large-format-public-visual.html';
 
-function rgb(value){
-  const m=String(value).match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-  if(!m)throw new Error('Unsupported color '+value);
-  return [Number(m[1]),Number(m[2]),Number(m[3])];
+function rgba(value){
+  const text=String(value).trim();
+  let m=text.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/);
+  if(m)return [Number(m[1]),Number(m[2]),Number(m[3]),m[4]===undefined?1:Number(m[4])];
+  m=text.match(/color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\s*\)/);
+  if(m)return [Number(m[1])*255,Number(m[2])*255,Number(m[3])*255,m[4]===undefined?1:Number(m[4])];
+  if(text==='transparent')return [0,0,0,0];
+  throw new Error('Unsupported color '+value);
+}
+function composite(top,bottom){
+  const a=top[3]+bottom[3]*(1-top[3]);
+  if(a<=0)return [0,0,0,0];
+  return [
+    (top[0]*top[3]+bottom[0]*bottom[3]*(1-top[3]))/a,
+    (top[1]*top[3]+bottom[1]*bottom[3]*(1-top[3]))/a,
+    (top[2]*top[3]+bottom[2]*bottom[3]*(1-top[3]))/a,
+    a,
+  ];
 }
 function luminance([r,g,b]){
   const s=[r,g,b].map(v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);});
   return .2126*s[0]+.7152*s[1]+.0722*s[2];
 }
 function contrast(a,b){
-  const l1=luminance(rgb(a)),l2=luminance(rgb(b));
+  const l1=luminance(a),l2=luminance(b);
   return (Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);
 }
 async function effectiveColors(locator){
-  return locator.evaluate(el=>{
-    const fg=getComputedStyle(el).color;
-    let node=el,bg='rgba(0, 0, 0, 0)';
-    while(node){
-      const candidate=getComputedStyle(node).backgroundColor;
-      if(candidate&&!candidate.endsWith(', 0)')&&candidate!=='transparent'){bg=candidate;break;}
-      node=node.parentElement;
-    }
-    return {fg,bg};
+  const data=await locator.evaluate(el=>{
+    const backgrounds=[];
+    let node=el;
+    while(node){backgrounds.push(getComputedStyle(node).backgroundColor);node=node.parentElement;}
+    return {fg:getComputedStyle(el).color,backgrounds};
   });
+  let bg=[255,255,255,1];
+  for(const value of data.backgrounds.slice().reverse())bg=composite(rgba(value),bg);
+  return {fg:rgba(data.fg),bg};
 }
 async function stableHover(locator){
   const before=await locator.boundingBox();
