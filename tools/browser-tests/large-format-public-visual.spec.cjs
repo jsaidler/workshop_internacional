@@ -104,6 +104,21 @@ for(const theme of ['light','dark']){
     if(theme==='light')await choice.screenshot({path:'test-results/visual/large-format-hover-choice-light.png'});
     await page.mouse.move(2,2);
     await expectHoverContrast(page.locator('header nav a').last());
+    await page.evaluate(()=>{
+      const secondary=document.createElement('a');
+      secondary.id='qa-secondary-button';
+      secondary.className='button button-secondary';
+      secondary.href='#';
+      secondary.textContent='Ação secundária';
+      secondary.style.position='fixed';
+      secondary.style.left='24px';
+      secondary.style.top='80px';
+      secondary.style.zIndex='9999';
+      document.body.appendChild(secondary);
+    });
+    const secondary=page.locator('#qa-secondary-button');
+    await expectHoverContrast(secondary);
+    await secondary.evaluate(el=>el.remove());
     await expectFocusVisible(page.locator('[data-cms-section="hero"] .button-primary'));
     await expectFocusVisible(page.locator('#form-submit'));
 
