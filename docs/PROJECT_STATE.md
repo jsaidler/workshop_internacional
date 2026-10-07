@@ -106,15 +106,32 @@ A cobertura visual específica do Caderno inclui também disclosures abertos. Um
 Para uma alteração de código:
 
 1. ler este documento e os documentos relacionados antes de modificar o projeto;
-2. trabalhar em branch/PR quando a mudança for estrutural ou de comportamento;
-3. manter CI verde;
-4. integrar na branch de produção;
-5. confirmar que `production-dist` foi gerada com o commit correto;
-6. informar ao usuário que a nova versão está disponível no painel;
-7. o usuário aplica a atualização em `Admin → Sistema e atualizações`;
-8. só considerar a hospedagem atualizada depois dessa aplicação e da verificação da versão instalada.
+2. **se a mudança afetar a Área do aluno, ler integralmente `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` antes de qualquer decisão de UI/UX ou alteração de código;**
+3. trabalhar em branch/PR quando a mudança for estrutural ou de comportamento;
+4. manter CI verde;
+5. integrar na branch de produção;
+6. confirmar que `production-dist` foi gerada com o commit correto;
+7. informar ao usuário que a nova versão está disponível no painel;
+8. o usuário aplica a atualização em `Admin → Sistema e atualizações`;
+9. só considerar a hospedagem atualizada depois dessa aplicação e da verificação da versão instalada.
 
 Nunca confundir `production-dist` atualizada com hospedagem atualizada.
+
+### Preflight obrigatório de UI/UX da Área do aluno
+
+`docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` é o contrato prioritário de navegação da Área do aluno.
+
+Antes de alterar qualquer arquivo em `aluno/**`, `app/student_*.php`, `assets/student-*.css`, `assets/student-*.js` ou fixtures/tests correspondentes, a implementação precisa conferir explicitamente:
+
+- mobile como primeira viewport de decisão;
+- barra inferior persistente nas rotas mobile afetadas e vizinhas;
+- destino da logo autenticada sempre em `/aluno/`;
+- estado ativo da navegação por contexto de produto;
+- retorno contextual explícito em telas filhas;
+- breadcrumb apenas como contexto terciário, nunca como mecanismo necessário;
+- mesma arquitetura de informação no desktop.
+
+Uma correção local que introduza exceção de navegação sem alterar primeiro o contrato canônico é inválida.
 
 ### Detecção do canal de produção
 
