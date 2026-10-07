@@ -43,10 +43,10 @@ must_student_material_context(str_contains($renderer,'cms_student_material_conte
 must_student_material_context(str_contains($renderer,"'/aluno/cursos.php?cohort='")&&str_contains($renderer,"'/aluno/duvidas.php?cohort='"),'course/material navigation does not preserve the cohort uuid');
 must_student_material_context(str_contains($renderer,'course_material_page_release_summary')&&str_contains($renderer,"['available','partial']"),'previous/next material navigation includes pages with no currently usable content');
 must_student_material_context(str_contains($renderer,'<main id="main" data-cms-page-main><?=$studyContext?><?=$body?>'),'study context is not in the normal reading flow before editorial content');
-must_student_material_context(str_contains($renderer,"if($materialContext)$brandUrl='/aluno/'"),'authenticated material brand does not return to the student home');
+must_student_material_context(str_contains($renderer,"if(\$materialContext)\$brandUrl='/aluno/'"),'authenticated material brand does not return to the student home');
 must_student_material_context(str_contains($renderer,"student_shell_nav('courses','student-desktop-nav')")&&str_contains($renderer,"student_shell_nav('courses','student-mobile-nav')"),'authenticated material does not consume the shared student navigation');
-must_student_material_context(str_contains($renderer,"cms_public_system_css_imports($assetVersion,$design,(bool)$materialContext)"),'authenticated material does not load the canonical student navigation styles');
-must_student_material_context(str_contains($renderer,"$materialContext?' cms-student-material':''"),'authenticated material lacks the shell context class');
+must_student_material_context(str_contains($renderer,"cms_public_system_css_imports(\$assetVersion,\$design,(bool)\$materialContext)"),'authenticated material does not load the canonical student navigation styles');
+must_student_material_context(str_contains($renderer,"\$materialContext?' cms-student-material':''"),'authenticated material lacks the shell context class');
 must_student_material_context(str_contains($css,'.cms-student-study-context')&&str_contains($css,'.cms-student-study-pagination'),'material context has no canonical student CSS owner');
 must_student_material_context(!str_contains($renderer,'/aluno/testes.php?cohort='),'protected material still exposes the obsolete Testes destination');
 must_student_material_context(str_contains($renderer,'if(!$editor)'),'editor preview is not protected from student-session context UI');
