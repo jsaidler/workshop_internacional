@@ -3,6 +3,8 @@
 Data: 2026-09-30
 Status: canônico e posterior ao passe visual do PR #157.
 
+> **Navegação:** as regras de navegação deste documento foram supersedidas em 07/10/2026 por `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md`. Em qualquer conflito sobre barra inferior, logo, voltar, breadcrumbs, estado ativo, mobile-first ou arquitetura global/contextual, o documento de 07/10 prevalece.
+
 Este documento prevalece sobre decisões anteriores de navegação e apresentação da Área do aluno quando houver conflito. O domínio e os dados definidos em `STUDENT_AREA_PRODUCT_AND_IMPLEMENTATION_2026-09-30.md` continuam válidos; o que muda aqui é a forma como o aluno encontra e usa essas capacidades.
 
 ## 1. Princípio
