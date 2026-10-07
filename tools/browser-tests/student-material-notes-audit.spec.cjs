@@ -28,6 +28,45 @@ test('material mobile keeps closed notes control out of reading viewport',async(
 });
 
 
+
+
+test('selection annotation composer is mobile-first and keeps the note action before optional question fields',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(url,{waitUntil:'networkidle'});
+  await page.evaluate(()=>{
+    const panel=document.querySelector('.student-notes-panel');
+    const compose=document.querySelector('[data-inline-note-compose]');
+    panel.open=true;panel.classList.add('is-composing');compose.hidden=false;
+  });
+  const panel=page.locator('.student-notes-panel');
+  const compose=page.locator('[data-inline-note-compose]');
+  await expect(panel).toHaveClass(/is-composing/);
+  await expect(page.locator('.student-notes-head')).toBeHidden();
+  await expect(compose.locator('[data-note-question]')).not.toHaveAttribute('open','');
+  const layout=await page.evaluate(()=>{
+    const quote=document.querySelector('.student-inline-note-selected blockquote');
+    const actions=document.querySelector('.student-inline-note-primary-actions');
+    const question=document.querySelector('[data-inline-note-compose] [data-note-question]');
+    const sheet=document.querySelector('.student-notes-sheet');
+    const qr=quote.getBoundingClientRect(),ar=actions.getBoundingClientRect(),sr=sheet.getBoundingClientRect();
+    return{
+      quoteHeight:qr.height,
+      quoteOverflow:getComputedStyle(quote).overflowY,
+      actionTop:ar.top,
+      actionBottom:ar.bottom,
+      sheetTop:sr.top,
+      sheetBottom:sr.bottom,
+      actionBeforeQuestion:!!(actions.compareDocumentPosition(question)&Node.DOCUMENT_POSITION_FOLLOWING)
+    };
+  });
+  expect(layout.quoteHeight,'selected quote must not consume most of the phone').toBeLessThanOrEqual(114);
+  expect(['auto','scroll']).toContain(layout.quoteOverflow);
+  expect(layout.actionBeforeQuestion,'saving the note must precede optional question fields').toBe(true);
+  expect(layout.actionTop).toBeGreaterThanOrEqual(layout.sheetTop-1);
+  expect(layout.actionBottom).toBeLessThanOrEqual(layout.sheetBottom+1);
+  await page.screenshot({path:'student-visual-audit/phone/material-note-compose.png',fullPage:true,animations:'disabled'});
+});
+
 test('material desktop keeps question creation inside the notes panel',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(url,{waitUntil:'networkidle'});
