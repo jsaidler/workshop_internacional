@@ -75,20 +75,21 @@ for(const theme of ['light','dark']){
     }
     await expectHeroTitleContained(page);
 
-    await expectHoverContrast(page.locator('#hero-cta'));
+    await expectHoverContrast(page.locator('[data-cms-section="hero"] .button-primary'));
     await page.mouse.move(2,2);
     await expectHoverContrast(page.locator('#form-submit'));
     await page.mouse.move(2,2);
     await expectHoverContrast(page.locator('#choice-hover'));
     await page.mouse.move(2,2);
     await expectHoverContrast(page.locator('header nav a').last());
-    await expectFocusVisible(page.locator('#hero-cta'));
+    await expectFocusVisible(page.locator('[data-cms-section="hero"] .button-primary'));
     await expectFocusVisible(page.locator('#form-submit'));
 
-    await expectHeroTitleContained(page);
-  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
 
+    await page.evaluate(()=>document.activeElement?.blur());
+    await page.mouse.move(2,2);
     await page.screenshot({path:'test-results/visual/large-format-'+theme+'-desktop.png',fullPage:true});
   });
 }
@@ -101,6 +102,7 @@ test('large-format public composition remains contained on phone',async({page})=
   const placeholders=page.locator('[data-cms-image-placeholder]');
   await expect(placeholders).toHaveCount(4);
   for(let i=0;i<4;i++)await expect(placeholders.nth(i)).toBeVisible();
+  await expectHeroTitleContained(page);
 
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
@@ -109,5 +111,7 @@ test('large-format public composition remains contained on phone',async({page})=
   await page.mouse.move(2,2);
   await expectHoverContrast(page.locator('#form-submit'));
 
+  await page.evaluate(()=>document.activeElement?.blur());
+  await page.mouse.move(2,2);
   await page.screenshot({path:'test-results/visual/large-format-light-mobile.png',fullPage:true});
 });
