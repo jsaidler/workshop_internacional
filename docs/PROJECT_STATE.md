@@ -120,6 +120,30 @@ A implementação passa a materializar o contrato de `docs/STUDENT_NAVIGATION_CA
 
 Esta implementação não cria um renderer paralelo de material nem uma segunda topbar. O conteúdo editorial permanece CMS; apenas o chrome autenticado passa a obedecer à mesma arquitetura global da Área do aluno.
 
+### Anotações mobile-first e liberação de áreas sensíveis — 07/10/2026
+
+A camada de anotações do material foi corrigida a partir do uso real em telefone:
+
+- ao iniciar uma anotação de seleção, a introdução do painel sai do caminho e o formulário assume o foco;
+- o trecho selecionado tem altura limitada e rolagem própria, impedindo que uma citação longa consuma a tela;
+- **Salvar anotação** aparece antes do fluxo opcional **Também é uma dúvida?**;
+- o fluxo de dúvida continua recolhido por padrão e não empurra a ação principal para fora da área útil;
+- a composição usa altura dinâmica de viewport e reserva de safe area;
+- a auditoria visual cobre explicitamente o estado de composição em 390×844.
+
+A liberação de conteúdo sensível também passa a ser autorização server-side, não simples ocultação de links:
+
+- seções CMS continuam vinculáveis a aulas e são filtradas no servidor conforme a liberação da aula para a turma;
+- áreas não-CMS da Área do aluno podem usar `student_tool_courses.release_lesson_id`;
+- uma ferramenta vinculada a uma aula não é retornada por `student_tools_for_student()` antes de essa aula estar efetivamente liberada para uma das matrículas elegíveis;
+- deep links obedecem ao mesmo gate por meio de `student_tool_require()`;
+- o atalho e o conteúdo de **Receitas / Preparo de soluções** não são renderizados antes da autorização;
+- `solution_prep` é vinculada por padrão à primeira aula dos cursos existentes e também quando a primeira aula de um novo curso é criada;
+- em **Curso → Aulas**, o administrador escolhe para cada área se ela fica disponível desde a matrícula ou a partir da liberação de uma aula;
+- em **Turma → Aulas e acesso**, liberar/agendar essa aula controla simultaneamente seções de material e áreas vinculadas.
+
+O objetivo é impedir que uma matrícula recém-confirmada dê acesso antecipado a receitas ou outros conteúdos proprietários. O aluno pode ter conta e navegar pela plataforma antes do curso; o conteúdo marcado como sensível simplesmente não é autorizado até o momento pedagógico definido.
+
 ## Regra operacional obrigatória
 
 Para qualquer alteração:
