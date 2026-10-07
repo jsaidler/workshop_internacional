@@ -71,7 +71,7 @@ test('selection annotation composer is mobile-first and keeps the note action be
   expect(layout.actionTop).toBeGreaterThanOrEqual(layout.sheetTop-1);
   expect(layout.actionBottom).toBeLessThanOrEqual(layout.sheetBottom+1);
   expect(Math.abs(layout.widths[0]-layout.widths[1]),'save/cancel actions should share the mobile row instead of squeezing cancel').toBeLessThanOrEqual(2);
-  await page.screenshot({path:'student-visual-audit/phone/material-note-compose.png',fullPage:true,animations:'disabled'});
+  await page.screenshot({path:'student-visual-audit/phone/material-note-compose.png',animations:'disabled'});
 
   await question.locator('summary').click();
   await expect(panel).toHaveClass(/is-questioning/);
@@ -90,7 +90,7 @@ test('selection annotation composer is mobile-first and keeps the note action be
   expect(questionLayout.top).toBeGreaterThanOrEqual(questionLayout.sheetTop-1);
   expect(questionLayout.bottom,'question step should fit inside the mobile note sheet without stacking the annotation form above it').toBeLessThanOrEqual(questionLayout.sheetBottom+1);
   expect(questionLayout.overflow).toBeLessThanOrEqual(1);
-  await page.screenshot({path:'student-visual-audit/phone/material-note-question-step.png',fullPage:true,animations:'disabled'});
+  await page.screenshot({path:'student-visual-audit/phone/material-note-question-step.png',animations:'disabled'});
 
   await question.locator('summary').click();
   await expect(panel).not.toHaveClass(/is-questioning/);
