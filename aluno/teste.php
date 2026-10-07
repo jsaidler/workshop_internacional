@@ -26,6 +26,18 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $plan=student_process_plan_for_test($db,$id,$studentId)??throw new RuntimeException('Associe um roteiro a este registro.');
             student_process_notebook_set_completed($db,(int)$plan['id'],(int)($_POST['plan_step_id']??0),$studentId,(string)($_POST['completed']??'0')==='1','manual');
             $anchor='processamento';$_SESSION['student_process_notice']='Marcação da etapa atualizada.';
+        }elseif($action==='save_plan_step'){
+            $plan=student_process_plan_for_test($db,$id,$studentId)??throw new RuntimeException('Associe um roteiro a este registro.');
+            student_process_notebook_update_step($db,(int)$plan['id'],(int)($_POST['plan_step_id']??0),$studentId,$_POST);
+            $anchor='processamento';$_SESSION['student_process_notice']='Etapa do roteiro atualizada neste registro.';
+        }elseif($action==='move_plan_step'){
+            $plan=student_process_plan_for_test($db,$id,$studentId)??throw new RuntimeException('Associe um roteiro a este registro.');
+            student_process_notebook_move_step($db,(int)$plan['id'],(int)($_POST['plan_step_id']??0),$studentId,(int)($_POST['direction']??0));
+            $anchor='processamento';$_SESSION['student_process_notice']='Ordem do roteiro atualizada neste registro.';
+        }elseif($action==='add_plan_step'){
+            $plan=student_process_plan_for_test($db,$id,$studentId)??throw new RuntimeException('Associe um roteiro a este registro.');
+            student_process_notebook_add_step($db,(int)$plan['id'],$studentId,$_POST);
+            $anchor='processamento';$_SESSION['student_process_notice']='Etapa adicionada ao roteiro deste registro.';
         }elseif($action==='add_free_step'){
             student_process_notebook_add_free_step($db,$id,$studentId,$_POST);$anchor='processamento';$_SESSION['student_process_notice']='Etapa adicionada ao registro.';
         }elseif($action==='delete_free_step'){
@@ -53,6 +65,7 @@ if($contextScope==='course'){student_feedback_mark_seen($db,$id,$studentId);$rec
 $feedbackState=student_feedback_state($record);$steps=student_process_steps($db,$id);$media=student_test_media($db,$id);$sceneMedia=student_test_media_by_phase($media,'scene');$resultMedia=student_test_media_by_phase($media,'result');$messages=student_test_messages($db,$id);
 $notice=(string)($_SESSION['student_process_notice']??'');unset($_SESSION['student_process_notice']);$locked=(string)$record['status']==='reviewed';
 $plan=student_process_plan_for_test($db,$id,$studentId);$planSteps=$plan?student_process_plan_steps($db,(int)$plan['id']):[];$planCompleted=0;foreach($planSteps as $planStep)if((string)$planStep['status']==='completed')$planCompleted++;
+$editPlanStepId=(int)($_GET['edit_plan_step']??0);$editPlanStep=null;if($plan&&$editPlanStepId>0){foreach($planSteps as $candidate)if((int)$candidate['id']===$editPlanStepId){$editPlanStep=$candidate;break;}}
 $stageCatalog=student_process_stage_catalog();$firstDevelopment=null;$bleachNames=[];
 foreach($steps as $step){$stageKey=(string)$step['stage_key'];if($firstDevelopment===null&&$stageKey==='first_development')$firstDevelopment=$step;if(in_array($stageKey,['ferric','peracetic','dichromate','permanganate'],true)&&trim((string)$step['chemical_name'])!=='')$bleachNames[]=(string)$step['chemical_name'];}
 $bleachNames=array_values(array_unique($bleachNames));
