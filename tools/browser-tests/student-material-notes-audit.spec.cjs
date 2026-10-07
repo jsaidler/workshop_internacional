@@ -44,13 +44,16 @@ test('selection annotation composer is mobile-first and keeps the note action be
   const compose=page.locator('[data-inline-note-compose]');
   await expect(panel).toHaveClass(/is-composing/);
   await expect(page.locator('.student-notes-head')).toBeHidden();
-  await expect(compose.locator('[data-note-question]')).not.toHaveAttribute('open','');
+  const question=compose.locator('[data-note-question]');
+  await expect(question).not.toHaveAttribute('open','');
   const layout=await page.evaluate(()=>{
     const quote=document.querySelector('.student-inline-note-selected blockquote');
     const actions=document.querySelector('.student-inline-note-primary-actions');
+    const buttons=[...actions.querySelectorAll('button')];
     const question=document.querySelector('[data-inline-note-compose] [data-note-question]');
     const sheet=document.querySelector('.student-notes-sheet');
     const qr=quote.getBoundingClientRect(),ar=actions.getBoundingClientRect(),sr=sheet.getBoundingClientRect();
+    const widths=buttons.map(button=>button.getBoundingClientRect().width);
     return{
       quoteHeight:qr.height,
       quoteOverflow:getComputedStyle(quote).overflowY,
@@ -58,6 +61,7 @@ test('selection annotation composer is mobile-first and keeps the note action be
       actionBottom:ar.bottom,
       sheetTop:sr.top,
       sheetBottom:sr.bottom,
+      widths,
       actionBeforeQuestion:!!(actions.compareDocumentPosition(question)&Node.DOCUMENT_POSITION_FOLLOWING)
     };
   });
@@ -66,7 +70,32 @@ test('selection annotation composer is mobile-first and keeps the note action be
   expect(layout.actionBeforeQuestion,'saving the note must precede optional question fields').toBe(true);
   expect(layout.actionTop).toBeGreaterThanOrEqual(layout.sheetTop-1);
   expect(layout.actionBottom).toBeLessThanOrEqual(layout.sheetBottom+1);
+  expect(Math.abs(layout.widths[0]-layout.widths[1]),'save/cancel actions should share the mobile row instead of squeezing cancel').toBeLessThanOrEqual(2);
   await page.screenshot({path:'student-visual-audit/phone/material-note-compose.png',fullPage:true,animations:'disabled'});
+
+  await question.locator('summary').click();
+  await expect(panel).toHaveClass(/is-questioning/);
+  await expect(question).toHaveAttribute('open','');
+  await expect(question.locator('summary')).toHaveText('← Voltar à anotação');
+  await expect(compose.locator('.student-inline-note-selected')).toBeHidden();
+  await expect(compose.locator('[data-inline-note-body]')).toBeHidden();
+  await expect(compose.locator('.student-inline-note-primary-actions')).toBeHidden();
+  await expect(question.locator('.student-note-question-fields')).toBeVisible();
+  const questionLayout=await page.evaluate(()=>{
+    const sheet=document.querySelector('.student-notes-sheet');
+    const fields=document.querySelector('[data-inline-note-compose] .student-note-question-fields');
+    const sr=sheet.getBoundingClientRect(),fr=fields.getBoundingClientRect();
+    return{top:fr.top,bottom:fr.bottom,sheetTop:sr.top,sheetBottom:sr.bottom,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+  });
+  expect(questionLayout.top).toBeGreaterThanOrEqual(questionLayout.sheetTop-1);
+  expect(questionLayout.bottom,'question step should fit inside the mobile note sheet without stacking the annotation form above it').toBeLessThanOrEqual(questionLayout.sheetBottom+1);
+  expect(questionLayout.overflow).toBeLessThanOrEqual(1);
+  await page.screenshot({path:'student-visual-audit/phone/material-note-question-step.png',fullPage:true,animations:'disabled'});
+
+  await question.locator('summary').click();
+  await expect(panel).not.toHaveClass(/is-questioning/);
+  await expect(compose.locator('.student-inline-note-selected')).toBeVisible();
+  await expect(compose.locator('.student-inline-note-primary-actions')).toBeVisible();
 });
 
 test('material desktop keeps question creation inside the notes panel',async({page})=>{
