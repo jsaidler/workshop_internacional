@@ -7,6 +7,8 @@
 .cms-public .cms-small{font-size:var(--cms-small,13px)}
 .cms-public .button{padding-inline:var(--cms-button-padding-x,22px);border-width:var(--cms-button-border-width,1px);border-style:solid;border-color:var(--cms-button-border);background:var(--cms-button-bg);color:var(--cms-button-text)}
 .cms-public .button.button-secondary,.cms-public .cms-button-secondary{background:transparent;color:var(--text);border-color:var(--line)}
+.cms-public .button.button-primary:hover{background:transparent;color:var(--text);border-color:var(--line-strong)}
+.cms-public .button.button-secondary:hover,.cms-public .cms-button-secondary:hover{background:var(--inverse-bg);color:var(--inverse);border-color:var(--line-strong)}
 .cms-public .cms-button-ghost{background:transparent;color:inherit;border-color:transparent}
 
 /* Generic builder shell */

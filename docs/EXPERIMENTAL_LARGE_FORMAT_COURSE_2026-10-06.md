@@ -93,7 +93,7 @@ A página existente `/pinhole-lambe-lambe` é reaproveitada para evitar quebrar 
 A página:
 - não menciona o curso de Positivo Direto como continuação ou upsell;
 - não contém conteúdo técnico reservado a esse curso;
-- não usa placeholders públicos de mídia;
+- preserva slots editoriais de mídia como placeholders até que fotografias ou vídeos definitivos sejam inseridos;
 - usa o sistema visual global do CMS, sem CSS específico da página;
 - apresenta o preço de lançamento e o valor regular;
 - permanece como lista de interesse até a abertura da primeira turma.
@@ -110,3 +110,8 @@ A página não possui sistema visual próprio e não pode introduzir mecânicas 
 
 A correção de 06/10/2026 aplica exatamente essa regra: `hero--copy-only`, `cms-support--single`, `format-grid cols-3`, `statement-grid` e `cms-proof` são reutilizados conforme seus contratos globais; a classe inexistente `cols-2` e o uso incompleto de `apparatus` foram removidos.
 
+## Validação visual da página
+
+A página deve manter quatro slots editoriais de mídia enquanto as imagens definitivas não existirem: hero, detalhe da câmera-laboratório, comparação cianotipia/clorofila e comparação das duas construções.
+
+Toda alteração nesta página deve ser renderizada e revisada em navegador real em desktop e telefone, nos temas claro e escuro quando aplicável. Os CTAs, o formulário e os estados de hover/focus precisam ser testados por regressão de navegador. Screenshots diagnósticos devem permanecer no artefato de CI para análise antes do merge.

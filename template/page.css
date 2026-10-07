@@ -466,6 +466,12 @@
       color: var(--inverse);
       border-top: 1px solid var(--line-strong);
       scroll-margin-top: 72px;
+      --cms-form-action-bg: var(--inverse);
+      --cms-form-action-fg: var(--inverse-bg);
+      --cms-form-action-border: var(--inverse);
+      --cms-form-action-hover-bg: transparent;
+      --cms-form-action-hover-fg: var(--inverse);
+      --cms-form-action-hover-border: var(--inverse);
     }
     .interest-inner {
       width: min(100%, var(--max));

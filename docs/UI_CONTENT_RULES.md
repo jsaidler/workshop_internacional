@@ -20,7 +20,7 @@ Toda página pública deve ser escrita para uma pessoa que chegou ali sem conhec
 
 - O visitante não conhece o histórico da oferta, o funil, os testes de preço, a arquitetura do produto nem as razões operacionais de cada decisão.
 - Instruções usadas para orientar implementação, placeholders, justificativas de método e comentários de bastidor nunca devem ser transformados em copy pública.
-- A ausência temporária de uma imagem não deve produzir texto técnico ou placeholder público; o elemento é simplesmente omitido até existir mídia editorial válida.
+- Slots editoriais de mídia definidos para uma página devem ser preservados até a substituição por mídia válida. O placeholder não pode expor instrução técnica ou bastidor; deve apenas identificar, de forma editorial, a imagem ou o vídeo que ainda falta.
 - Cada frase pública precisa cumprir uma função para o interessado: explicar o que é, mostrar valor, responder uma dúvida real, reduzir risco relevante ou conduzir à ação.
 - Quando um fato operacional é necessário para a decisão, comunicar somente o fato na linguagem do participante, sem expor a justificativa interna.
 
@@ -49,6 +49,24 @@ Material extenso não deve ser apresentado como uma coluna contínua de texto se
 - montar a hierarquia com componentes já existentes no sistema visual do site; não criar uma família CSS específica do material;
 - se uma exceção visual for realmente necessária, ela pertence a `Design → CSS adicional` e deve continuar sob controle editorial;
 - a hierarquia visual deve usar a mesma tipografia, paleta, linhas, escala e lógica de composição do restante do site.
+
+
+## Validação visual obrigatória
+
+Alterações em páginas públicas, componentes compartilhados ou estados interativos não estão concluídas apenas porque HTML, PHP, CSS e testes estruturais passam. A validação precisa incluir renderização real em navegador.
+
+Para toda mudança visual relevante:
+
+- renderizar a superfície em navegador real antes do merge;
+- revisar pelo menos desktop e telefone; quando o tema puder mudar, revisar claro e escuro;
+- conferir hierarquia, ritmo vertical, alinhamentos, proporções, quebras de linha, overflow, slots de mídia/placeholders e comportamento responsivo;
+- testar os estados interativos dos componentes usados: hover, focus-visible, checked/selected e submit quando existirem;
+- hover e focus não podem produzir perda de contraste, desaparecimento do controle, salto de layout ou mudança de área clicável;
+- componentes globais devem ser exercitados com a mesma estrutura usada na página real, não apenas por teste unitário do seletor;
+- a suíte de navegador deve capturar screenshots diagnósticos da composição revisada e preservá-los como artefato de CI;
+- uma página nova ou uma alteração visual substancial só pode ser considerada pronta após análise visual dos screenshots e regressão de interação verde.
+
+A revisão visual é responsabilidade da implementação. Não deve ser transferida ao autor da página como etapa manual de descoberta de defeitos.
 
 ## UI/UX administrativa unificada e escalável
 
