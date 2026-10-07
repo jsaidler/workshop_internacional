@@ -18,7 +18,7 @@ foreach(['process-intent','recording-start','recording-associated','recording-pa
 must_student_visual_inventory(str_contains($spec,"toBe(46)"),'complete visual audit surface count must match the non-linear product');
 $cadernoSpec=(string)file_get_contents($root.'/tools/browser-tests/student-caderno-product-audit.spec.cjs');
 must_student_visual_inventory(str_contains($cadernoSpec,"'route-picker'")&&str_contains($cadernoSpec,"'record-empty'")&&str_contains($cadernoSpec,"'record-partial'"),'non-linear Caderno audit must cover route selection and incomplete records');
-must_student_visual_inventory(str_contains($cadernoSpec,'Abrir timer')&&str_contains($cadernoSpec,'Desmarcar'),'non-linear Caderno audit does not protect timer/check advantages');
+must_student_visual_inventory(str_contains($cadernoSpec,"'record-plan-edit'")&&str_contains($cadernoSpec,"name:'Marcar ✓'")&&str_contains($cadernoSpec,"name:'Salvar etapa'"),'non-linear Caderno audit does not protect check/edit/timer advantages');
 foreach(["'record-options'","'record-free-step'","'record-result-context'"] as $state)must_student_visual_inventory(str_contains($cadernoSpec,$state),'Caderno visual audit is missing disclosure state '.$state);
 $workflow=(string)file_get_contents($root.'/.github/workflows/student-visual-audit.yml');
 must_student_visual_inventory(str_contains($workflow,'student-complete-area-audit.spec.cjs'),'complete student visual audit is not executed by workflow');

@@ -85,6 +85,69 @@ function student_process_notebook_update_step(PDO $db,int $planId,int $planStepI
     return student_process_notebook_step($db,$planId,$planStepId,$studentId);
 }
 
+
+function student_process_notebook_move_step(PDO $db,int $planId,int $planStepId,int $studentId,int $direction): array {
+    student_process_notebook_plan($db,$planId,$studentId);
+    $rows=student_process_plan_steps($db,$planId);$index=null;
+    foreach($rows as $i=>$row)if((int)$row['id']===$planStepId){$index=$i;break;}
+    if($index===null)throw new RuntimeException('Etapa não encontrada.');
+    $target=$index+($direction<0?-1:1);if($target<0||$target>=count($rows))return $rows[$index];
+    [$rows[$index],$rows[$target]]=[$rows[$target],$rows[$index]];
+    $now=utc_now();$ownsTransaction=!$db->inTransaction();if($ownsTransaction)$db->beginTransaction();
+    try{
+        $q=$db->prepare('UPDATE student_process_plan_steps SET position=?,updated_at=? WHERE id=? AND plan_id=?');
+        foreach($rows as $i=>$row)$q->execute([$i+1,$now,(int)$row['id'],$planId]);
+        $db->prepare('UPDATE student_process_plans SET updated_at=? WHERE id=? AND student_id=?')->execute([$now,$planId,$studentId]);
+        if(function_exists('student_process_change_log'))student_process_change_log(
+            $db,'student',null,$studentId,'student_process_plan_step',$planStepId,'move_notebook_step',
+            ['position'=>(int)($index+1)],['position'=>(int)($target+1)]
+        );
+        if($ownsTransaction)$db->commit();
+    }catch(Throwable $e){if($ownsTransaction&&$db->inTransaction())$db->rollBack();throw $e;}
+    return student_process_notebook_step($db,$planId,$planStepId,$studentId);
+}
+
+function student_process_notebook_add_step(PDO $db,int $planId,int $studentId,array $input): array {
+    student_process_notebook_plan($db,$planId,$studentId);
+    $stageKey=student_workspace_text($input['stage_key']??'',80);
+    $catalog=student_process_managed_stage_catalog($db,false);
+    if($stageKey===''||!isset($catalog[$stageKey]))throw new RuntimeException('Escolha um tipo de etapa.');
+    $stage=$catalog[$stageKey];
+    $label=student_workspace_text($input['label']??'',120);
+    if($label==='')$label=(string)$stage['label'];
+
+    $duration=student_workspace_text($input['duration']??'',40);
+    if($duration!==''&&student_process_time_seconds($duration)===null)throw new RuntimeException('Informe um tempo válido ou deixe o campo vazio.');
+    if($duration!=='')$duration=student_process_seconds_label(student_process_time_seconds($duration));
+
+    $chemical=student_workspace_text($input['chemical_name']??'',180);
+    if($chemical==='')$chemical=student_workspace_text($stage['chemical_name']??'',180);
+    $developer=student_workspace_text($input['developer_name']??'',180);
+    if($developer===''&&$chemical!=='')$developer=$chemical;
+    if($chemical===''&&$developer!=='')$chemical=$developer;
+    $temperature=student_workspace_text($input['temperature']??'',80);
+    $agitation=student_workspace_text($input['agitation']??'',600);
+    $notes=student_workspace_text($input['notes']??'',3000);
+    $payload=[
+        'stage_key'=>$stageKey,'custom_label'=>$stageKey==='custom'?$label:'',
+        'developer_name'=>$developer,'chemical_name'=>$chemical,
+        'developer_amount'=>student_workbench_float($input['developer_amount']??null),
+        'water_amount'=>student_workbench_float($input['water_amount']??null),
+        'temperature'=>$temperature,'duration'=>$duration,'agitation'=>$agitation,
+        'agitation_mode'=>'none','agitation_duration'=>'','agitation_interval'=>'','notes'=>$notes,
+    ];
+    $position=(int)$db->query('SELECT COALESCE(MAX(position),0)+1 FROM student_process_plan_steps WHERE plan_id='.(int)$planId)->fetchColumn();
+    $now=utc_now();$q=$db->prepare("INSERT INTO student_process_plan_steps(plan_id,position,stage_key,label,duration,agitation_interval,payload_json,status,actual_step_id,started_at,completed_at,created_at,updated_at) VALUES(?,?,?,?,?, '',?,'planned',NULL,NULL,NULL,?,?)");
+    $q->execute([$planId,$position,$stageKey,$label,$duration,json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),$now,$now]);
+    $stepId=(int)$db->lastInsertId();
+    $db->prepare('UPDATE student_process_plans SET updated_at=? WHERE id=? AND student_id=?')->execute([$now,$planId,$studentId]);
+    if(function_exists('student_process_change_log'))student_process_change_log(
+        $db,'student',null,$studentId,'student_process_plan_step',$stepId,'add_notebook_step',[],
+        ['position'=>$position,'stage_key'=>$stageKey,'label'=>$label]
+    );
+    return student_process_notebook_step($db,$planId,$stepId,$studentId);
+}
+
 function student_process_notebook_timer_row(PDO $db,int $planStepId,int $studentId): ?array {
     $q=$db->prepare('SELECT * FROM student_process_step_timers WHERE plan_step_id=? AND student_id=? LIMIT 1');
     $q->execute([$planStepId,$studentId]);return $q->fetch(PDO::FETCH_ASSOC)?:null;

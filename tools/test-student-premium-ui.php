@@ -67,7 +67,7 @@ must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/cade
 foreach(['id="exposicao"','id="processamento"','id="resultado"'] as $anchor)must_student_premium_ui(str_contains($test,$anchor),'record lost always-available documentary section '.$anchor);
 must_student_premium_ui(!str_contains($test,"\$view='review'")&&!str_contains($test,'$resultReady'),'record navigation is coupled again to process progression');
 foreach(['Vou revelar agora','Já revelei','Continuar laboratório','Registrar manualmente','intent=live','Próxima etapa'] as $forbidden)must_student_premium_ui(!str_contains($test,$forbidden),'record reintroduced workflow choice: '.$forbidden);
-must_student_premium_ui(str_contains($test,'Marcar ✓')&&str_contains($test,'Abrir timer')&&str_contains($test,'Movimentar estoque'),'record does not expose notebook advantages directly');
+must_student_premium_ui(str_contains($test,'Marcar ✓')&&str_contains($test,'edit_plan_step=')&&str_contains($test,"?'Timer':'Abrir etapa'")&&str_contains($test,'Adicionar etapa ao roteiro')&&str_contains($test,'Movimentar estoque'),'record does not expose notebook advantages directly');
 must_student_premium_ui(str_contains($routePicker,'student_process_replan_template')&&str_contains($routePicker,'student_process_replan_standard'),'record does not use the canonical route picker');
 must_student_premium_ui(str_contains($routePicker,'não inicia processamento, não impõe ordem e não movimenta estoque'),'route picker semantics are not neutral');
 must_student_premium_ui(str_contains($test,'data-ui-validate')&&!str_contains($test,'data-student-validate'),'record is not consuming global validation');

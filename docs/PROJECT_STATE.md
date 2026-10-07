@@ -48,6 +48,21 @@ A correção posterior do PR #200 mostrou que um screenshot de fixture pode pass
 O PR #200 removeu a duplicação visual de Processamento no registro sem roteiro, eliminou a ação duplicada de Adicionar etapa, passou a manter o formulário de etapa recolhido por padrão, compactou Dados opcionais e estabeleceu a hierarquia `PROCESSAMENTO → Roteiro e etapas`.
 
 
+### Roteiro editável dentro do registro — 07/10/2026
+
+O roteiro associado ao Caderno é uma cópia contextual daquele registro, não um fluxo controlado pelo sistema. A própria folha do registro expõe, para cada etapa, ações independentes de **Marcar/Desmarcar**, **Editar** e **Timer**.
+
+Contrato vigente:
+- editar nome, tempo, temperatura, solução/revelador, volumes, agitação e anotações diretamente em `aluno/teste.php`;
+- editar uma etapa não altera automaticamente seu check e não muda o roteiro-modelo da biblioteca;
+- reordenar etapas com Subir/Descer sem conceito de “etapa atual”;
+- adicionar etapas à cópia do roteiro do registro;
+- o check é reversível e grava explicitamente no registro corrente;
+- timer, check, edição e estoque permanecem independentes;
+- nenhuma dessas ações impõe sequência, desbloqueia etapa ou significa que o processo físico foi iniciado/finalizado.
+
+A regressão funcional do check passa a ser coberta por `tools/test-student-process-notebook-runtime.php`, que executa marcação, releitura, edição preservando check, desmarcação, reordenação, adição de etapa e verificação de ownership em SQLite real. O audit visual inclui o estado `record-plan-edit` em desktop e telefone.
+
 ### Auditoria transversal do Caderno — 06/10/2026
 
 A revisão posterior ao PR #200 não se limita ao defeito mostrado em uma captura. O PR #201 audita o Caderno e as superfícies diretamente associadas em desktop e telefone.
