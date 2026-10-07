@@ -19,4 +19,10 @@ test('material mobile keeps closed notes control out of reading viewport',async(
   await expect(page.locator('.student-notes-panel')).toHaveAttribute('open','');
   const opened=await page.locator('.student-notes-panel').evaluate(el=>getComputedStyle(el).position);
   expect(opened,'notes panel may become modal only after explicit opening').toBe('fixed');
+  await expect(page.getByText('Transformar em dúvida',{exact:true})).toBeVisible();
+  await expect(page.getByText('Também é uma dúvida?',{exact:true})).toBeVisible();
+  await page.getByText('Transformar em dúvida',{exact:true}).click();
+  await expect(page.getByLabel('Título da dúvida').first()).toBeVisible();
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,'open notes/question horizontal overflow').toBeLessThanOrEqual(1);
+  await page.screenshot({path:'student-visual-audit/phone/material-notes-question.png',fullPage:true,animations:'disabled'});
 });
