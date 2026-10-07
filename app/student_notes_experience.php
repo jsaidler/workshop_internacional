@@ -128,10 +128,27 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
     $returnTo=student_notes_return_url();$count=count($legacyNotes)+count($annotations);$open=isset($_GET['anotacoes']);
     $revision=trim((string)($page['updated_at']??''));if($revision==='')$revision=substr(hash('sha256',$html),0,24);
     $cohortUuid=student_workspace_text($_GET['cohort']??'',120);
+    $questionContext=function_exists('student_enrollment_material_context')?student_enrollment_material_context($db,$student,$page,$cohortUuid):null;
+    if($questionContext&&trim((string)($questionContext['cohort_uuid']??''))!=='')$cohortUuid=(string)$questionContext['cohort_uuid'];
+    $questionAvailable=$questionContext&&(int)($questionContext['cohort_id']??0)>0&&function_exists('student_question_create')&&function_exists('student_question_attach_annotation');
     $questionUrl=static function(int $annotationId,int $questionId=0) use($cohortUuid): string {
         $params=[];if($cohortUuid!=='')$params['cohort']=$cohortUuid;
         if($questionId>0)$params['id']=$questionId;else $params['annotation']=$annotationId;
         return '/aluno/duvidas.php?'.http_build_query($params);
+    };
+    $questionComposer=static function(bool $existing=false) use($questionAvailable,$cohortUuid): string {
+        if(!$questionAvailable)return '';
+        $submitName=$existing?'annotation_action':'create_question';$submitValue=$existing?'question':'1';
+        $button=$existing?'Publicar dúvida':'Salvar anotação e publicar dúvida';
+        return '<details class="student-note-question" data-note-question>'
+            .'<summary>'.($existing?'Transformar em dúvida':'Também é uma dúvida?').'</summary>'
+            .'<div class="student-note-question-fields">'
+            .'<p>O texto da anotação será usado como a dúvida. Você não precisa escrevê-lo de novo.</p>'
+            .'<input type="hidden" name="cohort" value="'.h($cohortUuid).'">'
+            .'<label>Título da dúvida<input name="question_title" maxlength="180" placeholder="Resuma a dúvida em uma frase" data-note-question-title></label>'
+            .'<fieldset><legend>Quem pode participar?</legend><label><input type="radio" name="question_visibility" value="private" checked> Somente eu e o professor</label><label><input type="radio" name="question_visibility" value="cohort"> Minha turma</label></fieldset>'
+            .'<button class="button button-secondary" type="submit" name="'.$submitName.'" value="'.$submitValue.'" data-note-question-publish>'.$button.'</button>'
+            .'</div></details>';
     };
     $entry='<div class="student-notes-entry"><a href="'.h($returnTo).'" aria-controls="anotacoes"><span>Anotações</span>'.($count>0?'<b>'.$count.'</b>':'').'</a></div>';
     $panel='<details class="student-notes-panel" id="anotacoes" data-student-notes-panel data-student-page-revision="'.h($revision).'"'.($open?' open':'').'>';
@@ -155,6 +172,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         .'<input type="hidden" name="source_page_revision" value="'.h($revision).'">'
         .'<div class="student-inline-note-selected"><span>Trecho selecionado</span><blockquote data-anchor-preview></blockquote></div>'
         .'<label data-inline-note-body>Anotação<textarea name="body" rows="5" maxlength="5000" placeholder="Escreva o que você quer guardar."></textarea></label>'
+        .$questionComposer(false)
         .'<div class="student-material-note-actions"><button class="button" type="submit" data-inline-note-submit>Adicionar anotação</button><button class="student-material-note-remove" type="button" data-inline-note-cancel>Cancelar</button></div></form>';
 
     if($annotations||$legacyNotes){
@@ -169,8 +187,9 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
                 .'<input type="hidden" name="annotation_id" value="'.$id.'"><textarea name="body" rows="5" maxlength="5000" aria-label="Anotação">'.h((string)$note['body']).'</textarea>'
                 .'<div class="student-material-note-actions"><button class="button" type="submit" name="annotation_action" value="update">Salvar</button>';
             if($selection)$panel.='<button class="student-material-note-secondary" type="button" data-annotation-reanchor="'.$id.'">Reassociar</button><button class="student-material-note-secondary" type="submit" name="annotation_action" value="detach">Tornar geral</button>';
-            $panel.='<a class="student-material-note-secondary" href="'.h($questionUrl($id,(int)($linkedQuestion['id']??0))).'">'.($linkedQuestion?'Ver dúvida':'Virar dúvida').'</a>';
-            $panel.='<button class="student-material-note-remove" type="submit" name="annotation_action" value="remove">Remover</button></div></form></article>';
+            if($linkedQuestion)$panel.='<a class="student-material-note-secondary" href="'.h($questionUrl($id,(int)$linkedQuestion['id'])).'">Ver dúvida</a>';
+            $panel.='<button class="student-material-note-remove" type="submit" name="annotation_action" value="remove">Remover</button></div>'
+                .(!$linkedQuestion?$questionComposer(true):'').'</form></article>';
         }
         foreach($legacyNotes as $key=>$note){
             $meta=$sections[$key]??['title'=>'Trecho original removido','whole_page'=>false];$title=(string)$meta['title'];$context=!empty($meta['whole_page'])?'Página':'Anotação anterior';
@@ -189,6 +208,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         .'<input type="hidden" name="annotation_action" value="create_page">'
         .'<input type="hidden" name="source_page_revision" value="'.h($revision).'">'
         .'<label>Anotação da página<textarea name="body" rows="5" maxlength="5000" placeholder="Para uma ideia que não pertence a um trecho específico."></textarea></label>'
+        .$questionComposer(false)
         .'<button class="button" type="submit">Adicionar anotação da página</button></form>';
 
     $client=[];foreach($annotations as $note)$client[]=['id'=>(int)$note['id'],'anchorType'=>(string)$note['anchor_type'],'blockKey'=>(string)$note['block_key'],'sectionKey'=>(string)$note['section_key'],'exact'=>(string)$note['quote_exact'],'prefix'=>(string)$note['quote_prefix'],'suffix'=>(string)$note['quote_suffix'],'start'=>$note['start_offset']===null?null:(int)$note['start_offset'],'end'=>$note['end_offset']===null?null:(int)$note['end_offset'],'sourceBlockHash'=>(string)$note['source_block_hash']];
