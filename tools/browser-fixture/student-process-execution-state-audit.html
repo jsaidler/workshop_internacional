@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-processes.css"><link rel="stylesheet" href="/assets/student-quality-pass.css"><link rel="stylesheet" href="/assets/student-process-lab.css">
 <title>Route step timer audit</title>
 </head>
-<body class="student-page"><div class="student-shell"><main class="student-main">
+<body class="student-page"><div class="student-shell"><header class="student-topbar"><a class="brand student-wordmark" href="/aluno/">JSaidler Fotografia</a><nav class="student-desktop-nav" aria-label="Área do aluno"><a href="/aluno/">Início</a><a href="/aluno/cursos.php">Cursos</a><a href="/aluno/caderno.php" aria-current="page">Caderno</a><a href="/aluno/ferramentas.php">Laboratório</a></nav><span class="student-topbar-spacer"></span><details class="student-user-menu"><summary>Conta</summary></details></header><main class="student-main">
 <header class="student-process-runner-head"><a class="student-back">← Registro</a><div><p class="student-kicker">Roteiro associado</p><h1 class="student-title">Positivo direto — Parodinal EI 200 — FeCl₃ + amônia</h1><p class="student-process-runner-details">3 de 9 etapas marcadas</p></div></header>
 <section class="student-process-runner" data-process-runner data-duration-seconds="420" data-agitation-mode="periodic" data-agitation-duration-seconds="10" data-agitation-interval-seconds="60" data-storage-key="audit" data-runner-endpoint="/fake/processar" data-runner-csrf="audit" data-plan-id="91" data-plan-step-id="307">
 <nav class="student-lab-stage-nav" aria-label="Etapas do roteiro">
@@ -25,7 +25,7 @@
 <div class="student-actions student-lab-independent-actions"><a class="button button-secondary">Movimentar estoque</a></div>
 <details class="student-lab-route-list"><summary>Ver roteiro completo</summary><p>Qualquer etapa pode ser aberta diretamente pelos números acima.</p></details>
 </section>
-</main></div>
+</main><nav class="student-mobile-nav" aria-label="Área do aluno"><a href="/aluno/">Início</a><a href="/aluno/cursos.php">Cursos</a><a href="/aluno/caderno.php" aria-current="page">Caderno</a><a href="/aluno/ferramentas.php">Laboratório</a></nav></div>
 <script>
 const root=document.querySelector('[data-process-runner]');const qs=new URLSearchParams(location.search),initial=qs.get('state')||'idle',agitation=qs.get('agitation')||'periodic';
 if(qs.get('settings')==='open')document.querySelector('.student-lab-timer-settings').open=true;
