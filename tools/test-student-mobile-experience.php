@@ -16,6 +16,7 @@ $hardening=(string)file_get_contents($root.'/app/student_workbench_hardening.php
 
 if(!str_contains($renderer,'class="cms-student-access"')||!str_contains($renderer,'$studentWorkspaceUrl'))fail_student_mobile('public header does not expose the canonical student-area destination');
 if(!str_contains($shell,'student-mobile-nav')||!str_contains($shell,'student-desktop-nav'))fail_student_mobile('student shell lacks responsive navigation');
+if(substr_count($shell,'student_shell_active_area($path,$_GET)')<2)fail_student_mobile('desktop and mobile navigation do not share query-aware semantic context');
  foreach(["'home'=>['label'=>'Início','href'=>'/aluno/']","'courses'=>['label'=>'Cursos','href'=>'/aluno/cursos.php']","'notebook'=>['label'=>'Caderno','href'=>'/aluno/caderno.php']","'laboratory'=>['label'=>'Laboratório','href'=>'/aluno/ferramentas.php']"] as $needle)if(!str_contains($shell,$needle))fail_student_mobile('canonical student destination missing: '.$needle);
  require_once $root.'/app/student_shell.php';
  if(student_shell_active_area('/aluno/registro-roteiro.php')!=='notebook')fail_student_mobile('record route editor is not classified in Caderno');
