@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-caderno-product-audit.html';
-const screens=['notebook','record-empty','record-options','record-free-step','record-plan','record-partial','route-picker','record-result','record-result-context'];
-const recordScreens=new Set(['record-empty','record-options','record-free-step','record-plan','record-partial','record-result','record-result-context']);
+const screens=['notebook','record-empty','record-options','record-free-step','record-plan','record-plan-edit','record-partial','route-picker','record-result','record-result-context'];
+const recordScreens=new Set(['record-empty','record-options','record-free-step','record-plan','record-plan-edit','record-partial','record-result','record-result-context']);
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 for(const [device,viewport] of Object.entries(viewports)){
   for(const screen of screens){
@@ -30,10 +30,11 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(screen==='record-free-step'){
         const free=page.locator('.student-manual-process');await expect(free).toHaveAttribute('open','');await expect(page.getByLabel('Tipo de etapa')).toBeVisible();await expect(page.getByLabel('Químico ou solução')).toBeVisible();await expect(page.getByRole('button',{name:'Adicionar ao registro'})).toBeVisible();
       }
-      if(screen==='record-plan'){
-        await expect(page.getByText('0 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.locator('.student-notebook-route-step')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar ✓'}).first()).toBeVisible();await expect(page.getByText('Abrir timer',{exact:true}).first()).toBeVisible();await expect(page.getByText('Alterar roteiro',{exact:true})).toBeVisible();await expect(page.getByText('Movimentar estoque',{exact:true})).toBeVisible();
+      if(screen==='record-plan'||screen==='record-plan-edit'){
+        await expect(page.getByText('0 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.locator('.student-notebook-route-step')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar ✓'}).first()).toBeVisible();await expect(page.getByText('Editar',{exact:true}).first()).toBeVisible();await expect(page.getByText('Timer',{exact:true}).first()).toBeVisible();await expect(page.getByText('Adicionar etapa ao roteiro',{exact:true})).toBeVisible();await expect(page.getByText('Trocar roteiro-base',{exact:true})).toBeVisible();await expect(page.getByText('Movimentar estoque',{exact:true})).toBeVisible();await expect(page.getByText('não mudam o roteiro-modelo',{exact:false})).toBeVisible();
         for(const obsolete of ['Próxima etapa','Abrir laboratório','Continuar laboratório','Em andamento'])await expect(page.getByText(obsolete,{exact:false})).toHaveCount(0);
-        if(device==='phone'){const heights=await page.locator('.student-notebook-route-step>.student-actions .button').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));expect(Math.min(...heights),'route-step touch targets').toBeGreaterThanOrEqual(38);}
+        if(device==='phone'){const heights=await page.locator('.student-notebook-route-step-actions .button').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));expect(Math.min(...heights),'route-step touch targets').toBeGreaterThanOrEqual(40);}
+        if(screen==='record-plan-edit'){await expect(page.locator('.student-notebook-route-editor')).toBeVisible();await expect(page.getByRole('button',{name:'Salvar etapa'})).toBeVisible();await expect(page.getByLabel('Nome da etapa')).toHaveValue('Primeira revelação');await expect(page.getByText('↓ Descer',{exact:true})).toBeVisible();}
       }
       if(screen==='record-partial'){
         await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);await expect(page.getByText('Lavagem após branqueamento')).toBeVisible();
