@@ -2,6 +2,8 @@
 
 Este é o documento canônico de estado operacional do projeto. Leia antes de alterar código, conteúdo, deploy ou fluxo administrativo. Atualize este arquivo sempre que uma decisão estrutural, operacional ou editorial mudar.
 
+**Regra global anterior a qualquer trabalho:** ler `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md`. Se existir documentação aplicável à tarefa, ela deve ser descoberta e consultada antes de qualquer decisão ou alteração. Essa obrigação vale para qualquer projeto e não apenas para este repositório.
+
 ## Estado em 20/09/2026
 
 - Branch de produção: `wip/form-response-refinement-2026-07-16`.
@@ -103,17 +105,18 @@ A cobertura visual específica do Caderno inclui também disclosures abertos. Um
 
 ## Regra operacional obrigatória
 
-Para uma alteração de código:
+Para qualquer alteração:
 
-1. ler este documento e os documentos relacionados antes de modificar o projeto;
-2. **se a mudança afetar a Área do aluno, ler integralmente `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` antes de qualquer decisão de UI/UX ou alteração de código;**
-3. trabalhar em branch/PR quando a mudança for estrutural ou de comportamento;
-4. manter CI verde;
-5. integrar na branch de produção;
-6. confirmar que `production-dist` foi gerada com o commit correto;
-7. informar ao usuário que a nova versão está disponível no painel;
-8. o usuário aplica a atualização em `Admin → Sistema e atualizações`;
-9. só considerar a hospedagem atualizada depois dessa aplicação e da verificação da versão instalada.
+1. aplicar primeiro `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md`: descobrir e ler integralmente toda documentação canônica aplicável ao escopo antes de decidir ou modificar qualquer coisa;
+2. ler este documento e os documentos relacionados ao subsistema;
+3. **se a mudança afetar a Área do aluno, ler integralmente `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` antes de qualquer decisão de UI/UX ou alteração de código;**
+4. trabalhar em branch/PR quando a mudança for estrutural ou de comportamento;
+5. manter CI verde;
+6. integrar na branch de produção;
+7. confirmar que `production-dist` foi gerada com o commit correto;
+8. informar ao usuário que a nova versão está disponível no painel;
+9. o usuário aplica a atualização em `Admin → Sistema e atualizações`;
+10. só considerar a hospedagem atualizada depois dessa aplicação e da verificação da versão instalada.
 
 Nunca confundir `production-dist` atualizada com hospedagem atualizada.
 
