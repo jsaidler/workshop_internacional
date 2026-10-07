@@ -116,7 +116,7 @@ test('an annotation can publish a question without leaving the material screen',
   await page.route('**/aluno/material-anotacao.php',async route=>{
     const request=route.request();const body=request.postData()||'';
     expect(request.method()).toBe('POST');expect(request.headers().accept).toContain('application/json');
-    expect(body).toContain('name="create_question"');expect(body).toContain('name="question_title"');expect(body).toContain('Minha+d%C3%BAvida');
+    expect(body).toContain('name="create_question"');expect(body).toContain('name="question_title"');expect(body).toContain('Minha dúvida');
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,action:'create_selection',annotation_id:5,annotation:{id:5,anchorType:'selection',sectionKey:'processo',body:'Não entendi esta passagem',quoteExact:'parágrafo foi alterado',quotePrefix:'Este ',quoteSuffix:' depois da anotação original.',blockKey:'processo:p:1',start:5,end:26,sourceBlockHash:'fixture5',sourcePageRevision:'rev-2'},question:{id:21,title:'Minha dúvida',status:'open'},question_url:'/aluno/duvidas.php?cohort=turma-1&id=21'})});
   });
   await page.goto(url,{waitUntil:'networkidle'});const before=await page.evaluate(()=>location.href);
