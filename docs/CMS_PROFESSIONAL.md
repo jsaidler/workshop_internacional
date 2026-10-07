@@ -69,6 +69,19 @@ Quando o renderer resolve um `materialContext` de matrícula:
 
 Assim, renderer editorial e shell de navegação permanecem responsabilidades distintas: o CMS continua autoridade do material; o contexto autenticado decide qual chrome global envolve essa leitura.
 
+### Liberação pedagógica e conteúdo proprietário
+
+A disponibilidade de conteúdo sensível é uma decisão de autorização, não de apresentação.
+
+- seções editoriais proprietárias devem ser associadas à aula correspondente; `cms_access_filter_html()` remove do HTML as seções cuja aula ainda não foi liberada para a turma;
+- o mesmo relógio de liberação da turma pode controlar superfícies não-CMS por meio de `student_tool_courses.release_lesson_id`;
+- a rota protegida deve consultar a autorização no servidor mesmo quando o link não é apresentado;
+- **Preparo de soluções / Receitas** é tratado como recurso sensível por padrão e passa a depender da primeira aula;
+- o administrador define a relação recurso → aula em **Curso → Aulas** e define o instante de liberação em **Turma → Aulas e acesso**;
+- agendamento futuro continua bloqueado até o instante efetivo de liberação.
+
+Isso permite abrir conta, matrícula, Curso e demais áreas preparatórias antes do primeiro encontro sem entregar antecipadamente receitas ou outros conteúdos marcados como proprietários.
+
 ## Mídia
 
 - imagens e vídeos em biblioteca própria;
