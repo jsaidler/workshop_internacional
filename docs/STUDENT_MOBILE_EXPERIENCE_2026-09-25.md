@@ -1,5 +1,7 @@
 # Experiência da Área do aluno e registro móvel de testes — 25/09/2026
 
+> **Regra posterior:** qualquer decisão de navegação, mobile-first, barra inferior, logo, voltar ou breadcrumb é regida por `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md`. Este documento permanece apenas como histórico das decisões de 25/09.
+
 ## Problemas observados
 
 A validação visual em produção expôs falhas de produto, não detalhes cosméticos:

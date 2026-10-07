@@ -2,6 +2,8 @@
 
 Este documento complementa e prevalece sobre quaisquer suposições conflitantes feitas nas tranches anteriores do redesign da área do aluno.
 
+> **Exceção de precedência:** para navegação global, mobile-first, barra inferior, logo, ação de voltar, breadcrumbs e relação entre navegação global/contextual, prevalece `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md`. Este documento continua válido para modelagem de produto e demais regras de UX que não conflitem com o contrato de navegação posterior.
+
 ## 1. Não presumir caminho único
 
 A área do aluno não pode modelar uma tarefa como se existisse apenas uma sequência válida de uso do software.
