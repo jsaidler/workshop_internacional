@@ -15,6 +15,12 @@ $hardening=(string)file_get_contents($root.'/app/student_workbench_hardening.php
 
 if(!str_contains($renderer,'class="cms-student-access"')||!str_contains($renderer,'$studentWorkspaceUrl'))fail_student_mobile('public header does not expose the canonical student-area destination');
 if(!str_contains($shell,'student-mobile-nav')||!str_contains($shell,'student-desktop-nav'))fail_student_mobile('student shell lacks responsive navigation');
+ foreach(["'home'=>['label'=>'Início','href'=>'/aluno/']","'courses'=>['label'=>'Cursos','href'=>'/aluno/cursos.php']","'notebook'=>['label'=>'Caderno','href'=>'/aluno/caderno.php']","'laboratory'=>['label'=>'Laboratório','href'=>'/aluno/ferramentas.php']"] as $needle)if(!str_contains($shell,$needle))fail_student_mobile('canonical student destination missing: '.$needle);
+ require_once $root.'/app/student_shell.php';
+ if(student_shell_active_area('/aluno/registro-roteiro.php')!=='notebook')fail_student_mobile('record route editor is not classified in Caderno');
+ if(student_shell_active_area('/aluno/processar.php',['test'=>'42'])!=='notebook')fail_student_mobile('record timer does not preserve Caderno context');
+ if(student_shell_active_area('/aluno/processar.php')!=='laboratory')fail_student_mobile('standalone process runner is not classified in Laboratório');
+ if(student_shell_active_area('/aluno/inventario-item.php',['id'=>'7'])!=='laboratory')fail_student_mobile('inventory child does not preserve Laboratório context');
 if(!str_contains($shell,'cms_design_css')||!str_contains($shell,'cms_design_font_import_css'))fail_student_mobile('student shell does not inherit activity design tokens');
 foreach(['id="exposicao"','id="processamento"','id="resultado"'] as $anchor)if(!str_contains($test,$anchor))fail_student_mobile('mobile record does not expose all documentary sections together');
 if(str_contains($test,"['exposure','process','review']")||str_contains($test,'aria-disabled'))fail_student_mobile('mobile record returned to staged/gated navigation');
