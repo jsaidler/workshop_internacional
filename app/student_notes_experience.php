@@ -171,9 +171,10 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         .'<input type="hidden" name="source_block_hash" value="" data-anchor-hash>'
         .'<input type="hidden" name="source_page_revision" value="'.h($revision).'">'
         .'<div class="student-inline-note-selected"><span>Trecho selecionado</span><blockquote data-anchor-preview></blockquote></div>'
-        .'<label data-inline-note-body>Anotação<textarea name="body" rows="5" maxlength="5000" placeholder="Escreva o que você quer guardar."></textarea></label>'
+        .'<label data-inline-note-body>Anotação<textarea name="body" rows="4" maxlength="5000" placeholder="Escreva o que você quer guardar."></textarea></label>'
+        .'<div class="student-material-note-actions student-inline-note-primary-actions"><button class="button" type="submit" data-inline-note-submit>Salvar anotação</button><button class="student-material-note-remove" type="button" data-inline-note-cancel>Cancelar</button></div>'
         .$questionComposer(false)
-        .'<div class="student-material-note-actions"><button class="button" type="submit" data-inline-note-submit>Adicionar anotação</button><button class="student-material-note-remove" type="button" data-inline-note-cancel>Cancelar</button></div></form>';
+        .'</form>';
 
     if($annotations||$legacyNotes){
         $panel.='<div class="student-notes-list">';
@@ -207,9 +208,10 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         .'<input type="hidden" name="return_to" value="'.h($returnTo).'">'
         .'<input type="hidden" name="annotation_action" value="create_page">'
         .'<input type="hidden" name="source_page_revision" value="'.h($revision).'">'
-        .'<label>Anotação da página<textarea name="body" rows="5" maxlength="5000" placeholder="Para uma ideia que não pertence a um trecho específico."></textarea></label>'
+        .'<label>Anotação da página<textarea name="body" rows="4" maxlength="5000" placeholder="Para uma ideia que não pertence a um trecho específico."></textarea></label>'
+        .'<button class="button" type="submit">Salvar anotação da página</button>'
         .$questionComposer(false)
-        .'<button class="button" type="submit">Adicionar anotação da página</button></form>';
+        .'</form>';
 
     $client=[];foreach($annotations as $note)$client[]=['id'=>(int)$note['id'],'anchorType'=>(string)$note['anchor_type'],'blockKey'=>(string)$note['block_key'],'sectionKey'=>(string)$note['section_key'],'exact'=>(string)$note['quote_exact'],'prefix'=>(string)$note['quote_prefix'],'suffix'=>(string)$note['quote_suffix'],'start'=>$note['start_offset']===null?null:(int)$note['start_offset'],'end'=>$note['end_offset']===null?null:(int)$note['end_offset'],'sourceBlockHash'=>(string)$note['source_block_hash']];
     $json=json_encode($client,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT)?:'[]';
