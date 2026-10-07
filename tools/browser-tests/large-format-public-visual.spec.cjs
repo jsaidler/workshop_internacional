@@ -39,16 +39,32 @@ async function effectiveColors(locator){
   for(const value of data.backgrounds.slice().reverse())bg=composite(rgba(value),bg);
   return {fg:rgba(data.fg),bg};
 }
-async function stableHover(locator){
-  const before=await locator.boundingBox();
+async function interactiveStyle(locator){
+  return locator.evaluate(el=>{
+    const s=getComputedStyle(el);
+    return {
+      color:s.color,
+      backgroundColor:s.backgroundColor,
+      borderTopColor:s.borderTopColor,
+      borderRightColor:s.borderRightColor,
+      borderBottomColor:s.borderBottomColor,
+      borderLeftColor:s.borderLeftColor,
+    };
+  });
+}
+async function expectHoverMechanics(locator){
+  const beforeBox=await locator.boundingBox();
+  const beforeStyle=await interactiveStyle(locator);
   await locator.hover();
-  const after=await locator.boundingBox();
-  expect(before).not.toBeNull();expect(after).not.toBeNull();
-  expect(Math.abs(before.width-after.width)).toBeLessThan(.5);
-  expect(Math.abs(before.height-after.height)).toBeLessThan(.5);
+  const afterBox=await locator.boundingBox();
+  const afterStyle=await interactiveStyle(locator);
+  expect(beforeBox).not.toBeNull();expect(afterBox).not.toBeNull();
+  expect(Math.abs(beforeBox.width-afterBox.width)).toBeLessThan(.5);
+  expect(Math.abs(beforeBox.height-afterBox.height)).toBeLessThan(.5);
+  expect(afterStyle).not.toEqual(beforeStyle);
 }
 async function expectHoverContrast(locator,min=4.5){
-  await stableHover(locator);
+  await expectHoverMechanics(locator);
   const {fg,bg}=await effectiveColors(locator);
   expect(contrast(fg,bg)).toBeGreaterThanOrEqual(min);
 }
@@ -94,7 +110,7 @@ for(const theme of ['light','dark']){
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
 
-    await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});
+    await page.evaluate(()=>{document.activeElement?.blur();const topbar=document.querySelector('.topbar');if(topbar)topbar.style.position='static';window.scrollTo(0,0);});
     await page.mouse.move(2,2);
     await page.waitForTimeout(80);
     await page.screenshot({path:'test-results/visual/large-format-'+theme+'-desktop.png',fullPage:true});
@@ -118,7 +134,7 @@ test('large-format public composition remains contained on phone',async({page})=
   await page.mouse.move(2,2);
   await expectHoverContrast(page.locator('#form-submit'));
 
-  await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});
+  await page.evaluate(()=>{document.activeElement?.blur();const topbar=document.querySelector('.topbar');if(topbar)topbar.style.position='static';window.scrollTo(0,0);});
   await page.mouse.move(2,2);
   await page.waitForTimeout(80);
   await page.screenshot({path:'test-results/visual/large-format-light-mobile.png',fullPage:true});
