@@ -1,11 +1,32 @@
 const menuToggle = document.querySelector('.admin-menu-toggle');
 const navigation = document.querySelector('#admin-navigation');
+const navigationBackdrop = document.querySelector('.admin-nav-backdrop');
 if (menuToggle && navigation) {
-  menuToggle.addEventListener('click', () => {
-    const open = menuToggle.getAttribute('aria-expanded') === 'true';
-    menuToggle.setAttribute('aria-expanded', String(!open));
-    navigation.classList.toggle('is-open', !open);
+  const mobileNav = window.matchMedia('(max-width: 1000px)');
+  const setAdminMenu = (open, {returnFocus = false} = {}) => {
+    const next = Boolean(open) && mobileNav.matches;
+    menuToggle.setAttribute('aria-expanded', String(next));
+    navigation.classList.toggle('is-open', next);
+    document.body.classList.toggle('admin-nav-open', next);
+    navigationBackdrop?.setAttribute('aria-hidden', String(!next));
+    if (next) {
+      requestAnimationFrame(() => (navigation.querySelector('a[aria-current="page"]') || navigation.querySelector('a,button'))?.focus());
+    } else if (returnFocus || navigation.contains(document.activeElement)) {
+      menuToggle.focus();
+    }
+  };
+  menuToggle.addEventListener('click', () => setAdminMenu(menuToggle.getAttribute('aria-expanded') !== 'true', {returnFocus:true}));
+  navigationBackdrop?.addEventListener('click', () => setAdminMenu(false, {returnFocus:true}));
+  navigation.addEventListener('click', event => {
+    if (mobileNav.matches && event.target.closest('a')) setAdminMenu(false);
   });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') {
+      event.preventDefault();
+      setAdminMenu(false, {returnFocus:true});
+    }
+  });
+  mobileNav.addEventListener?.('change', event => { if (!event.matches) setAdminMenu(false); });
 }
 
 document.querySelectorAll('[data-dialog-open]').forEach(button => button.addEventListener('click', () => {
