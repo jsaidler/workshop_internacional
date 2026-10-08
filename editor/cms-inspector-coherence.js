@@ -21,6 +21,8 @@ function ensureStyle(){
 #inspector .cms-inspector-group [hidden]{display:none!important}
 #inspector .cms-inspector-actions{display:flex;flex-wrap:wrap;gap:7px;padding:16px 18px 20px}
 #inspector .cms-inspector-actions.button-row{margin:0}
+#inspector .cms-inspector-global-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+#inspector .cms-inspector-global-links .panel-button{width:auto;margin:0;min-height:38px;display:flex;align-items:center;justify-content:center;padding:7px 9px;text-align:center}
 #inspector .cms-inspector-group .cms-access-save-state{margin:0;padding:8px 9px;border-radius:4px;background:#eceee9;color:#555a55;font-size:11px;line-height:1.35}
 #inspector .cms-inspector-group .cms-access-save-state[data-state="saving"]{color:#5c4a17;background:#f5f0dc}
 #inspector .cms-inspector-group .cms-access-save-state[data-state="saved"]{color:#1c5b42;background:#e5f0e9}
@@ -83,6 +85,7 @@ function pageInspector(){
   const navigation=group(panel,'page-navigation','Navegação e aparência','Como a página participa do site e qual tema utiliza.');
   const seo=group(panel,'page-seo','SEO e compartilhamento','Informações usadas por mecanismos de busca e prévias.');
   const audience=group(panel,'page-audience','Audiência','Quem pode abrir esta página. O acesso é salvo automaticamente.');
+  const globals=group(panel,'page-global','Configurações globais','Ajustes que valem para o site, não apenas para esta página.');
   for(const selector of ['#p-title','#page-title','#p-nav','#page-nav','#p-slug','#page-slug'])moveUnique(identity,labelFor(panel,selector));
   const locale=[...panel.querySelectorAll('label')].find(label=>label.textContent.trim().startsWith('Idioma'))||null;moveUnique(identity,locale);
   for(const selector of ['#p-show','#page-nav-visible','#p-theme','#page-theme'])moveUnique(navigation,labelFor(panel,selector));
@@ -95,6 +98,8 @@ function pageInspector(){
     access.querySelectorAll(':scope > .inspector-note').forEach(node=>moveUnique(audience,node));
     access.classList.add('is-consumed');
   }
+  const globalLinks=panel.querySelector(':scope > .button-row');
+  if(globalLinks){globalLinks.classList.add('cms-inspector-global-links');moveUnique(globals,globalLinks)}
   cleanSeparators(panel);
   return true;
 }
