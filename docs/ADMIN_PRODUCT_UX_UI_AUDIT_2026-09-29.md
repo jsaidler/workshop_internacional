@@ -354,3 +354,43 @@ Screenshots continuam obrigatórios, mas são evidência de uma matriz coberta, 
 6. fechamento somente depois da inspeção humana dos quatro breakpoints e estados declarados.
 
 Uma correção não reduz o escopo do audit. O inventário completo permanece aberto até a matriz inteira estar verde e visualmente revisada.
+
+
+## Estado após o PR #213 — AUDITORIA AINDA ABERTA
+
+O PR #213 foi integrado em 08/10/2026 pelo merge commit `3617fcc69579c2439869576ee518d6730df9c39f`. A distribuição de produção foi regenerada a partir desse mesmo commit.
+
+O PR corrigiu problemas reais e importantes:
+
+- idempotência da injeção assíncrona de controles de acesso no inspector;
+- parte das declarações inválidas de `editor-system.css`;
+- hierarquia do inspector de página, deslocando ações globais para um grupo secundário;
+- breakpoint do editor e comportamento de drawer em largura intermediária;
+- drawer administrativo com backdrop, Escape e devolução de foco;
+- nomenclatura de partes da IA administrativa;
+- rota `student-area-legacy.php` convertida em compatibilidade por redirecionamento;
+- novos gates e fixtures para ampliar a cobertura visual e funcional da administração.
+
+**Essas correções não encerram a auditoria.**
+
+A revisão humana posterior ao merge mostrou que ainda existem incongruências visuais e de usabilidade na interface administrativa. Portanto:
+
+- PR verde, screenshots gerados e testes geométricos aprovados **não equivalem a aprovação visual final**;
+- a matriz criada no PR #213 deve ser tratada como infraestrutura de auditoria, não como prova de que todas as superfícies estão no padrão;
+- fixtures sintéticas podem confirmar invariantes de layout, mas não substituem inspeção do runtime real e dos estados reais;
+- qualquer superfície administrativa que ainda pareça fora do sistema visual ou produza fricção de uso continua dentro do escopo desta auditoria;
+- a próxima revisão deve partir do inventário completo da administração e procurar ativamente por incongruências, em vez de validar apenas se as correções anteriores “não quebraram”;
+- diferenças de espaçamento, hierarquia, densidade, linguagem, proporção, comportamento responsivo, foco, navegação, affordance e consistência entre telas devem ser tratadas como defeitos de produto quando prejudicarem a usabilidade;
+- não declarar a administração “revisada”, “fechada” ou “visualmente aprovada” até uma nova inspeção humana transversal do runtime real.
+
+### Regra específica para a próxima etapa
+
+A próxima etapa deve começar por **inspeção e inventário**, não por novos hotfixes.
+
+1. Ler o estado canônico e esta auditoria.
+2. Abrir e percorrer as superfícies administrativas reais em ordem sistemática.
+3. Registrar cada incongruência antes de alterar código.
+4. Classificar cada problema por causa sistêmica, não apenas por página.
+5. Corrigir primeiro os componentes/contratos compartilhados.
+6. Reexecutar a matriz de QA e reinspecionar visualmente o runtime real.
+7. Só então considerar a auditoria encerrada.
