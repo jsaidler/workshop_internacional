@@ -53,7 +53,7 @@ admin_shell_start('analytics','Métricas',$state,['/assets/admin-analytics.css']
     <div>
       <section class="analytics-panel">
         <header><h3>Acessos por dia</h3><span><?=h(ucfirst($periodLabel))?></span></header>
-        <?php if(!$data['daily']):?><p class="analytics-empty">Ainda não há acessos registrados neste período.</p><?php else:?><div class="analytics-panel-body"><div class="analytics-chart" aria-label="Visualizações de página por dia"><?php foreach($data['daily'] as $day):$views=(int)$day['views'];$height=max(2,round(($views/$maxViews)*100,1));$date=strtotime((string)$day['day']);$label=($date?date('d/m',$date):(string)$day['day']).' · '.$views.' visualizações · '.(int)$day['sessions'].' sessões';?><span class="analytics-bar" data-label="<?=h($label)?>" style="--bar-height:<?=$height?>%"><i style="height:<?=$height?>%"></i></span><?php endforeach;?></div></div><?php endif;?>
+        <?php if(!$data['daily']):?><p class="analytics-empty">Ainda não há acessos registrados neste período.</p><?php else:?><div class="analytics-panel-body"><div class="analytics-chart" aria-label="Visualizações de página por dia"><?php foreach($data['daily'] as $day):$views=(int)$day['views'];$height=max(2,round(($views/$maxViews)*100,1));$date=strtotime((string)$day['day']);$label=($date?date('d/m',$date):(string)$day['day']).' · '.$views.' visualizações · '.(int)$day['sessions'].' sessões';?><span class="analytics-bar" data-label="<?=h($label)?>" aria-label="<?=h($label)?>" tabindex="0" style="--bar-height:<?=$height?>%"><i style="height:<?=$height?>%"></i></span><?php endforeach;?></div></div><?php endif;?>
       </section>
       <section class="analytics-panel">
         <header><h3>Páginas</h3><span>Onde as respostas acontecem</span></header>
