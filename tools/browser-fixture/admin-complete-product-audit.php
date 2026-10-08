@@ -11,14 +11,14 @@ $course=['id'=>11,'title'=>'Positivo Direto em Filme de Raio-X','status'=>'activ
 $cohort=['id'=>21,'title'=>'Outubro 2026','status'=>'active'];
 $section=match($view){
  'courses','course'=>'courses','cohorts','cohort'=>'cohorts','registrations','registration'=>'registrations',
- 'students','student'=>'students','questions','question'=>'questions','tests','test'=>'tests','lessons'=>'lessons','material'=>'material',
+ 'students','course-students','student'=>'students','questions','question'=>'questions','tests','test'=>'tests','lessons'=>'lessons','material'=>'material',
  'pages','blocks'=>'pages','site'=>'site','design'=>'design','seo'=>'seo','forms','form'=>'forms','responses'=>'responses','media','media-detail'=>'media',
  'analytics'=>'analytics','processes','process'=>'processes','lab-catalogs'=>'lab-catalogs','system'=>'system','integrity'=>'integrity',
  'activities'=>'activities','people','person'=>'people',default=>'overview'
 };
 $title=match($view){
  'course'=>'Curso','courses'=>'Cursos','cohort'=>'Turma','cohorts'=>'Turmas','registration'=>'Inscrição','registrations'=>'Inscrições',
- 'student'=>'Aluno','students'=>'Alunos','question'=>'Dúvida','questions'=>'Dúvidas','test'=>'Teste','tests'=>'Testes','lessons'=>'Aulas e acesso',
+ 'student'=>'Aluno','students','course-students'=>'Alunos','question'=>'Dúvida','questions'=>'Dúvidas','test'=>'Teste','tests'=>'Testes','lessons'=>'Aulas e acesso',
  'material'=>'Material','pages'=>'Páginas','blocks'=>'Blocos reutilizáveis','site'=>'Cabeçalho e navegação','design'=>'Design','seo'=>'SEO','form'=>'Formulário','forms'=>'Formulários',
  'responses'=>'Outras respostas','media','media-detail'=>'Mídia','analytics'=>'Métricas','process'=>'Processo global','processes'=>'Processos globais',
  'lab-catalogs'=>'Catálogos do laboratório','system'=>'Sistema e atualizações','integrity'=>'Integridade','activities'=>'Identidade da instalação',
@@ -68,7 +68,7 @@ switch($view){
 case 'overview':
  echo '<section class="admin-card"><header><div><h2>Trabalho em aberto</h2><p>Entre diretamente no item que precisa de uma decisão.</p></div><a class="admin-button secondary" href="#">Todos os cursos</a></header><div class="admin-work-queue"><a class="admin-work-item" href="#"><strong>Positivo Direto · 2 inscrições sem turma</strong><span>Atribuir turma</span></a><a class="admin-work-item" href="#"><strong>Positivo Direto · 4 testes</strong><span>Avaliar testes</span></a></div></section><section class="admin-card"><header><div><h2>Cursos</h2><p>2 cursos ativos.</p></div><a class="admin-button secondary" href="#">Gerenciar cursos</a></header>';responsive_collection('courses');echo '</section><section class="admin-card"><header><div><h2>Site</h2><p>Publicação e desempenho do site atual.</p></div><div class="admin-inline-actions"><a class="admin-button" href="#">Editar página inicial</a><a class="admin-button secondary" href="#">Configurar site</a></div></header><section class="admin-stat-grid"><div class="admin-stat"><span>Publicação</span><strong>Em dia</strong><span>Páginas e formulários</span></div><div class="admin-stat"><span>Sessões · 30 dias</span><strong>1.248</strong><span>2.987 visualizações</span></div><div class="admin-stat"><span>Conversão · 30 dias</span><strong>14%</strong><span>Acesso → resposta</span></div></section></section>';break;
 case 'courses':
- echo '<section class="admin-page-intro"><div><h2>Cursos</h2><p>Escolha um curso para administrar inscrições, turmas, alunos, conteúdo e acompanhamento.</p></div><a class="admin-button">Novo curso</a></section>';filters('Buscar curso');responsive_collection('courses');break;
+ echo '<section class="admin-page-intro"><div><p>Escolha um curso para administrar inscrições, turmas, alunos, conteúdo e acompanhamento.</p></div><a class="admin-button">Novo curso</a></section>';filters('Buscar curso');responsive_collection('courses');break;
 case 'course':
  admin_course_context($course,1,'overview','Página pública e acompanhamento do curso.');echo '<section class="admin-card"><header><div><h2>Precisa de atenção</h2><p>Itens que pedem decisão.</p></div></header><div class="admin-work-queue"><a class="admin-work-item"><strong>2 inscrições sem turma</strong><span>Atribuir turma</span></a><a class="admin-work-item"><strong>4 testes</strong><span>Avaliar</span></a></div></section>';break;
 case 'cohorts':
@@ -80,7 +80,9 @@ case 'registrations':
 case 'registration':
  admin_course_context($course,1,'registrations');echo '<a class="admin-list-return" href="#">← Voltar à lista</a>';detail_card('Inscrição #184','Carlos Pereira','Pago, ainda sem turma.');break;
 case 'students':
- admin_course_context($course,1,'students');filters('Buscar aluno');responsive_collection('students');break;
+ echo '<section class="admin-page-intro"><div><p>Busca global de pessoas com histórico de participação nos cursos.</p></div></section>';filters('Buscar aluno');responsive_collection('students');break;
+case 'course-students':
+ admin_course_context($course,1,'students','Alunos matriculados nas turmas deste curso.');filters('Buscar aluno');responsive_collection('students');break;
 case 'student':
  admin_cohort_context($course,$cohort,1,'students');detail_card('Aluno','Ana Souza','Participação ativa nesta turma.');break;
 case 'questions':
@@ -129,7 +131,7 @@ case 'system':
 case 'integrity':
  echo '<section class="admin-page-intro"><div><h2>Diagnóstico de integridade</h2><p>Somente leitura. Vínculos inconsistentes permanecem explícitos.</p></div><a class="admin-button secondary">Baixar diagnóstico JSON</a></section><div class="admin-stat-grid"><div class="admin-stat"><span>Pessoas</span><strong>29</strong></div><div class="admin-stat"><span>Matrículas ativas</span><strong>31</strong></div><div class="admin-stat"><span>Matrículas sem curso</span><strong>0</strong></div><div class="admin-stat"><span>Turmas sem curso</span><strong>0</strong></div></div><section class="admin-card"><header><div><h2>Cursos existentes</h2></div></header><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>ID</th><th>Curso</th><th>Turmas</th><th>Alunos</th><th>Inscrições</th></tr></thead><tbody><tr><td>11</td><td>Positivo Direto</td><td>3</td><td>18</td><td>26</td></tr></tbody></table></div></section>';break;
 case 'activities':
- echo '<section class="admin-page-intro"><div><h2>Identidade da instalação</h2><p>Nome administrativo e títulos públicos localizados.</p></div></section><section class="admin-panel"><p class="admin-kicker">Site principal</p><h2>Identidade</h2><form class="admin-form-grid"><label>Nome no admin<input value="JSaidler Fotografia"></label><label>Nome público · Português<input value="João Saidler"></label><label>Nome público · English<input value="João Saidler"></label><div class="admin-form-actions"><button class="admin-button">Salvar identidade</button></div></form></section><details class="admin-secondary-setup"><summary>Manutenção de estruturas antigas</summary><section class="admin-card"><p>Nenhuma estrutura antiga precisa de atenção.</p></section></details>';break;
+ echo '<section class="admin-panel"><h2>Site principal</h2><p class="muted">Workshops são criados e organizados em Páginas. Esta tela existe apenas para a identidade do site e manutenção de estruturas antigas.</p><form class="admin-form-grid"><label>Nome no admin<input value="JSaidler Fotografia"></label><label>Nome público · Português<input value="João Saidler"></label><label>Nome público · English<input value="João Saidler"></label><div class="admin-form-actions"><button class="admin-button">Salvar identidade</button></div></form></section><details class="admin-secondary-setup"><summary>Manutenção de estruturas antigas</summary><section class="admin-card"><p>Nenhuma estrutura antiga precisa de atenção.</p></section></details>';break;
 case 'people':
  filters('Buscar pessoa');responsive_collection('people');break;
 case 'person':
