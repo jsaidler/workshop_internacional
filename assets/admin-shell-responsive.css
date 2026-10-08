@@ -82,8 +82,16 @@
   body.admin-page .admin-status-tabs a,
   body.admin-page .admin-context-back,
   body.admin-page .admin-list-return,
-  body.admin-page .admin-menu-toggle{
+  body.admin-page .admin-menu-toggle,
+  body.admin-page .site-detail-index a,
+  body.admin-page .link-button,
+  body.admin-page .admin-panel-toggle{
     min-height:40px;
+  }
+  body.admin-page .site-detail-index a,
+  body.admin-page .link-button{
+    display:inline-flex;
+    align-items:center;
   }
 }
 @media(max-width:520px){
