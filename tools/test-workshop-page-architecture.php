@@ -26,7 +26,7 @@ must_workshop_page_architecture(str_contains($activities,"activity_archive_legac
 must_workshop_page_architecture(str_contains($activityRepo,"return ['count'=>1,'activity'=>\$root,'activities'=>[\$root]]"),'admin activity resolution is not root-site only');
 must_workshop_page_architecture(str_contains($activityRepo,'activity_legacy_non_root'),'legacy non-root activities are not isolated for maintenance');
 must_workshop_page_architecture(!str_contains($adminShell,'Selecionar curso ou workshop')&&!str_contains($adminShell,'Gerenciar cursos e workshops'),'admin shell still exposes activity switching as course selection');
-must_workshop_page_architecture(str_contains($adminShell,"'activities'=>['Estrutura do site','/admin/activities.php']"),'settings does not expose neutral site-structure maintenance');
+must_workshop_page_architecture(str_contains($adminShell,"'activities'=>['Identidade da instalação','/admin/activities.php']"),'settings does not expose installation identity and legacy maintenance without presenting activity as course/workshop');
 
 must_workshop_page_architecture(str_contains($renderer,'cms_access_filter_html($db,$activity,$body,$currentStudent,$editor,null,$materialContext)'),'public renderer bypasses canonical section access filter with enrollment context');
 must_workshop_page_architecture(!str_contains($renderer,'data-cms-student-context')&&!str_contains($headerCss,'.cms-student-context'),'protected material still renders a second student header bar');
