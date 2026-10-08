@@ -119,6 +119,7 @@ jobs:
             php tools/test-system-authority-boundaries.php
             php tools/test-read-purity-activity-templates.php
             php tools/test-activity-locales-page-hierarchy.php
+            php tools/test-public-navigation-hierarchy.php
             php tools/test-pages-admin-ux.php
             php tools/test-admin-site-ux.php
             php tools/test-editor-runtime-integration.php
