@@ -25,7 +25,9 @@ $title=match($view){
  'people'=>'Pessoas','person'=>'Pessoa',default=>'Visão geral'
 };
 $styles=[];
+if($view==='overview')$styles=['/assets/admin-teaching.css'];
 if(in_array($view,['courses','course','cohorts','cohort','registrations','registration','students','student','questions','question','tests','test','lessons','material'],true))$styles=['/assets/admin-teaching.css','/assets/admin-operations.css'];
+if(in_array($view,['people','person'],true))$styles=['/assets/admin-operations.css'];
 if(in_array($view,['registrations','registration'],true))$styles[]='/assets/admin-registration.css';
 if(in_array($view,['pages','site','design','forms','form'],true))$styles[]='/assets/admin-site.css';
 if(in_array($view,['forms','form'],true))$styles[]='/assets/admin-forms.css';
