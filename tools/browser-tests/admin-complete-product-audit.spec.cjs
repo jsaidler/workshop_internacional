@@ -52,6 +52,7 @@ for(const [device,viewport] of Object.entries(viewports)){
       }else{
         await expect(page.locator('.admin-mobile-header')).toBeHidden();
         await expect(page.locator('.admin-sidebar')).toBeVisible();
+        await expect(page.locator('.admin-nav-backdrop')).toBeHidden();
       }
 
       const responsive=page.locator('.admin-responsive-list');
