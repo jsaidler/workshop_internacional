@@ -103,6 +103,22 @@ Correções sistêmicas resultantes:
 
 A cobertura visual específica do Caderno inclui também disclosures abertos. Um audit verde que só renderize estados recolhidos não é suficiente. A inspeção humana do artifact continua obrigatória antes de merge de alterações visuais.
 
+### Hierarquia do menu público — 08/10/2026
+
+O menu principal do site público deixa de tratar páginas editoriais como destinos equivalentes e passa a apresentar a hierarquia já existente em `cms_pages.parent_page_id`.
+
+Contrato:
+
+- **Páginas** continua sendo a única autoridade da relação pai/filha;
+- **Navegação** continua escolhendo presença, rótulo e ordem; não ganha uma segunda árvore;
+- uma subpágina selecionada para o menu é sempre apresentada dentro da página superior;
+- se o pai não estiver explicitamente selecionado, o renderer inclui o ancestral necessário para preservar contexto;
+- desktop apresenta submenu; telefone apresenta a mesma árvore em expansão vertical;
+- a inscrição do workshop de positivo passa a ser filha da página principal do workshop, mantendo sua URL;
+- novas inscrições/listas de interesse devem seguir a mesma relação com a página comercial do respectivo curso ou workshop.
+
+A mudança não transforma a home em portal nem reorganiza automaticamente os demais cursos. Ela resolve a arquitetura do menu de forma genérica para que novas páginas de inscrição não apareçam soltas.
+
 ### Navegação sistêmica da Área do aluno — 07/10/2026
 
 A implementação passa a materializar o contrato de `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` em uma única autoridade compartilhada.

@@ -49,14 +49,48 @@ if(document.querySelector('.registration-page,.registration-canonical-form')&&!d
 
 const header=document.querySelector('[data-cms-public-header]');
 const navToggle=header?.querySelector('.cms-nav-toggle');
+const submenuToggles=[...(header?.querySelectorAll('[data-cms-submenu-toggle]')||[])];
+function setSubmenu(button,open){
+  const parent=button?.closest('[data-cms-nav-parent]');
+  if(!parent)return;
+  parent.classList.toggle('is-submenu-open',open);
+  button.setAttribute('aria-expanded',String(open));
+  button.setAttribute('aria-label',open?(button.dataset.closeLabel||''):(button.dataset.openLabel||''));
+}
+function closeSubmenus(except=null){
+  submenuToggles.forEach(button=>{
+    const parent=button.closest('[data-cms-nav-parent]');
+    if(parent&&parent!==except&&parent.classList.contains('is-submenu-open'))setSubmenu(button,false);
+  });
+}
 function setNav(open){
   if(!header||!navToggle)return;
   header.classList.toggle('cms-nav-open',open);
   navToggle.setAttribute('aria-expanded',String(open));
+  if(!open)closeSubmenus();
 }
 navToggle?.addEventListener('click',()=>setNav(!header.classList.contains('cms-nav-open')));
+submenuToggles.forEach(button=>button.addEventListener('click',event=>{
+  event.preventDefault();
+  event.stopPropagation();
+  const parent=button.closest('[data-cms-nav-parent]');
+  const open=!parent?.classList.contains('is-submenu-open');
+  if(open&&parent?.parentElement?.classList.contains('cms-nav-list'))closeSubmenus(parent);
+  setSubmenu(button,open);
+}));
 header?.querySelectorAll('nav a').forEach(link=>link.addEventListener('click',()=>setNav(false)));
-matchMedia('(min-width:981px)').addEventListener?.('change',event=>{if(event.matches)setNav(false)});
+header?.addEventListener('keydown',event=>{
+  if(event.key!=='Escape')return;
+  const open=[...header.querySelectorAll('[data-cms-nav-parent].is-submenu-open')].pop();
+  if(open){
+    const button=open.querySelector(':scope > .cms-nav-parent-row > [data-cms-submenu-toggle]');
+    if(button){setSubmenu(button,false);button.focus();}
+    return;
+  }
+  if(header.classList.contains('cms-nav-open')){setNav(false);navToggle?.focus();}
+});
+document.addEventListener('click',event=>{if(header&&!header.contains(event.target)&&matchMedia('(min-width:981px)').matches)closeSubmenus();});
+matchMedia('(min-width:981px)').addEventListener?.('change',event=>{if(event.matches)setNav(false);else closeSubmenus();});
 
 const zone=Intl.DateTimeFormat().resolvedOptions().timeZone;
 document.querySelectorAll('select[data-timezone-select]').forEach(select=>{

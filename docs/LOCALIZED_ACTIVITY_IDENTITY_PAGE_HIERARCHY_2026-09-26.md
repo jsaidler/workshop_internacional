@@ -50,6 +50,21 @@ A relação pai/filha é aceita apenas entre páginas da mesma `activity` e do m
 
 O menu continua sendo uma apresentação curada. Ele não recebe nem mantém uma segunda árvore concorrente.
 
+### Consumo da hierarquia pelo menu público — 08/10/2026
+
+A navegação pública passa a consumir `cms_pages.parent_page_id` como autoridade estrutural.
+
+- a seleção, o rótulo e a ordem editorial continuam pertencendo a **Navegação**;
+- a relação pai/filha continua pertencendo exclusivamente a **Páginas**;
+- um item de página configurado no menu nunca perde sua relação editorial: se possui `parent_page_id`, ele é renderizado dentro da página superior;
+- quando uma subpágina está configurada no menu mas seu ancestral não foi incluído explicitamente, o renderer materializa a cadeia de ancestrais necessária para não apresentar a página filha solta;
+- links externos permanecem itens de primeiro nível e não participam da árvore editorial;
+- o renderer suporta níveis aninhados sem alterar slug, URL, `page_uuid`, publicação ou ordem editorial das páginas;
+- desktop usa submenu associado ao item pai; telefone usa expansão vertical no mesmo menu principal;
+- o item atual mantém `aria-current="page"` e seus ancestrais recebem estado de ramo atual, sem fingir que a página superior é a página corrente.
+
+A página de inscrição do workshop de positivo é uma subpágina da página principal do próprio workshop. O mesmo padrão deve ser usado pelas próximas páginas de inscrição/lista de interesse: a página comercial do curso/workshop é a superior; inscrição é uma etapa filha, não um destino global solto.
+
 ## Equivalência entre idiomas
 
 `translation_group_uuid` passa a ser a identidade explícita de equivalência editorial. Duas páginas podem ser equivalentes mesmo com slugs diferentes, por exemplo:
