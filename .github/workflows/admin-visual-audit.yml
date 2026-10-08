@@ -1,0 +1,48 @@
+name: admin-visual-audit
+on:
+  pull_request:
+    paths:
+      - 'admin/**'
+      - 'app/admin_shell.php'
+      - 'editor/**'
+      - 'assets/admin-*.css'
+      - 'assets/admin.js'
+      - 'assets/forms-admin.js'
+      - 'tools/browser-fixture/admin-complete-product-audit.php'
+      - 'tools/browser-fixture/editor-admin-ux-audit.html'
+      - 'tools/browser-fixture/editor-inspector-coherence.html'
+      - 'tools/browser-tests/admin-complete-product-audit.spec.cjs'
+      - 'tools/browser-tests/editor-admin-ux-audit.spec.cjs'
+      - 'tools/browser-tests/editor-inspector-coherence.spec.cjs'
+      - '.github/workflows/admin-visual-audit.yml'
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Render complete administrative matrix
+        run: |
+          php -S 127.0.0.1:8099 -t . >/tmp/admin-visual-audit.log 2>&1 &
+          PHP_SERVER_PID=$!
+          trap 'kill $PHP_SERVER_PID' EXIT
+          sleep 1
+          npx playwright test             tools/browser-tests/admin-complete-product-audit.spec.cjs             tools/browser-tests/editor-admin-ux-audit.spec.cjs             tools/browser-tests/editor-inspector-coherence.spec.cjs             --workers=1
+      - name: Upload administrative screens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-visual-audit-${{ github.sha }}
+          path: |
+            test-results/admin-complete-audit
+            test-results/playwright
+            /tmp/admin-visual-audit.log
+          if-no-files-found: warn
