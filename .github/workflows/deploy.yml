@@ -67,6 +67,7 @@ jobs:
           php tools/test-public-navigation-hierarchy.php
           php tools/test-public-errors.php
           php tools/test-task-centric-admin.php
+          php tools/test-admin-complete-ux.php
           php tools/test-admin-submissions-layout.php
           php tools/test-responsive-layout-contract.php
           php tools/test-content-structure-editor.php
