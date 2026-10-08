@@ -182,6 +182,25 @@ Falhas confirmadas que abrem esta revisão: duplicação assíncrona de Audiênc
 
 A especificação detalhada e o inventário ficam em `docs/ADMIN_PRODUCT_UX_UI_AUDIT_2026-09-29.md`.
 
+## Estado da auditoria administrativa após o PR #213 — 08/10/2026
+
+O PR #213 foi integrado em `3617fcc69579c2439869576ee518d6730df9c39f` e a `production-dist` foi regenerada a partir desse mesmo commit. Ele implementou uma primeira tranche sistêmica da auditoria administrativa: correções no editor/inspector, responsividade intermediária, drawer administrativo, IA, compatibilidade legada e novos gates de QA.
+
+**A auditoria de UI/UX administrativa NÃO está encerrada.**
+
+A inspeção visual humana posterior mostrou que ainda existem incongruências e superfícies fora do padrão. A cobertura automatizada criada deve ser mantida, mas não pode ser tratada como substituta da inspeção visual do runtime real.
+
+Regras vigentes para continuidade:
+
+- não afirmar que a interface administrativa está “aprovada visualmente” apenas porque os workflows estão verdes;
+- não reduzir o próximo trabalho às áreas corrigidas pelo PR #213;
+- antes de novos ajustes, produzir inventário transversal das incongruências restantes;
+- diferenciar falha sistêmica de exceção legítima por domínio;
+- priorizar correção em componentes/contratos compartilhados;
+- validar runtime real nos quatro viewports canônicos: 390×844, 768×1024, 1280×800 e 1600×900;
+- fixtures continuam úteis para regressão, mas qualquer divergência entre fixture e instalação real deve ser resolvida a favor do comportamento real;
+- a próxima conversa deve usar `docs/NEXT_CHAT_HANDOFF_ADMIN_UI_UX_2026-10-08.md` como handoff operacional.
+
 ## Regra operacional obrigatória
 
 Para qualquer alteração:
