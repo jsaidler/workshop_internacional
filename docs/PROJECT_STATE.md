@@ -103,6 +103,24 @@ Correções sistêmicas resultantes:
 
 A cobertura visual específica do Caderno inclui também disclosures abertos. Um audit verde que só renderize estados recolhidos não é suficiente. A inspeção humana do artifact continua obrigatória antes de merge de alterações visuais.
 
+### Auditoria visual integral do editor — 08/10/2026
+
+Capturas reais do editor mostraram que uma validação restrita à feature alterada deixa passar defeitos do shell e do inspector. A partir desta revisão, “inspeção visual completa” do editor significa auditar a superfície inteira e não apenas o componente recém-modificado.
+
+Contrato de fechamento para mudanças visuais do editor:
+
+- reproduzir o DOM e os controladores reais relevantes do editor; fixture simplificada que omita plugins do inspector não prova ausência de regressão;
+- validar estado sem seleção, configurações da página, seção selecionada e pelo menos um inspector contextual de conteúdo;
+- validar desktop amplo, desktop/tablet estreito e telefone;
+- verificar largura útil do canvas, scroll independente do inspector, ausência de overflow horizontal, ações sempre alcançáveis e ausência de controles duplicados;
+- quando um painel reorganiza controles criados por outro controlador, a regressão deve carregar ambos para detectar corrida/duplicação real;
+- a página de configurações deve ter uma única hierarquia visual: cabeçalho → Identidade → Navegação e aparência → SEO e compartilhamento → Audiência → Configurações globais;
+- controles de acesso à página devem existir exatamente uma vez; a injeção assíncrona deve ser idempotente mesmo sob múltiplas mutações do inspector;
+- links de Design/Header são ações globais secundárias e não podem anteceder os campos da própria página;
+- em viewport estreita o canvas é priorizado; estrutura vira drawer e o inspector vira sheet rolável em vez de comprimir a página entre duas colunas.
+
+Uma captura da instalação real tem precedência sobre fixtures antigas e deve gerar um estado equivalente no audit antes do merge.
+
 ### Hierarquia do menu público — 08/10/2026
 
 O menu principal do site público deixa de tratar páginas editoriais como destinos equivalentes e passa a apresentar a hierarquia já existente em `cms_pages.parent_page_id`.
