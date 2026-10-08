@@ -28,7 +28,7 @@ async function expectMainInside(page,label){
   expect(box.x+box.width,label+' main end').toBeLessThanOrEqual(page.viewportSize().width+1);
 }
 async function expectTouchTargets(page,label){
-  const bad=await page.locator('.admin-button,.admin-workspace-nav a,.admin-content-tabs a,.admin-status-tabs a,.admin-context-back,.admin-list-return,.admin-menu-toggle,.site-detail-index a,.link-button,.admin-panel-toggle').evaluateAll(nodes=>nodes
+  const bad=await page.locator('.admin-button,.admin-workspace-nav a,.admin-content-tabs a,.admin-status-tabs a,.admin-context-back,.admin-list-return,.admin-menu-toggle,.admin-nav-links a,.admin-pagination a,.admin-filter-chip,.site-detail-index a,.site-language-switch a,.analytics-period a,.link-button,.admin-panel-toggle,.media-detail-header button,.dialog-close').evaluateAll(nodes=>nodes
     .filter(el=>{const s=getComputedStyle(el);const r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0})
     .map(el=>({text:(el.textContent||'').trim(),height:el.getBoundingClientRect().height}))
     .filter(item=>item.height<39.5));
