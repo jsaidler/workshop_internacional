@@ -16,6 +16,19 @@ Estado atual da área administrativa do workshop. O estado operacional canônico
 - CSS adicional como recurso avançado, sem ser necessário para a operação normal;
 - CSS e JavaScript locais da administração usam a versão instalada no URL, evitando que uma atualização correta continue escondida por cache antigo.
 
+### Inspector e responsividade do editor visual
+
+O canvas é a tarefa principal; inspector e estrutura são ferramentas contextuais e não podem tornar a página em edição uma faixa residual.
+
+- em desktop amplo, estrutura / canvas / inspector podem coexistir em três colunas;
+- em larguras intermediárias e telefone, a estrutura vira drawer e o inspector vira sheet rolável; o canvas deixa de ser comprimido entre painéis permanentes;
+- o inspector possui scroll próprio e nenhuma ação pode depender de o usuário rolar a página externa do editor;
+- configurações da página usam a ordem canônica **Identidade → Navegação e aparência → SEO e compartilhamento → Audiência → Configurações globais**;
+- Design global e Header/footer são ações secundárias e ficam depois das propriedades da página;
+- controles assíncronos de acesso são idempotentes: múltiplas mutações/refreshes não podem criar uma segunda cópia do mesmo bloco;
+- `cms-inspector-coherence.js` pode reorganizar controles de outros controladores, mas não cria autoridade paralela nem duplica inputs;
+- a validação visual obrigatória carrega conjuntamente o controlador principal, acesso e coerência do inspector e verifica estados reais em múltiplas larguras.
+
 ### Inicialização de cursos e pureza das leituras
 
 Uma atividade vazia é um estado válido do CMS. Consultar conteúdo não equivale a inicializá-lo.
