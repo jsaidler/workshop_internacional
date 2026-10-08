@@ -8,41 +8,61 @@ async function noOverflow(page,label){
   expect(d.doc,label+': document overflow').toBeLessThanOrEqual(d.client+1);
   expect(d.body,label+': body overflow').toBeLessThanOrEqual(d.client+1);
 }
+const inspectorStates=['empty','page','section'];
 for(const [name,viewport] of Object.entries(viewports)){
-  test('editor complete layout audit '+name,async({page})=>{
+  for(const state of inspectorStates){
+    test('editor complete layout audit '+name+' '+state,async({page})=>{
+      await page.setViewportSize(viewport);
+      await page.goto(url+'&state='+state);
+      await noOverflow(page,name+'/'+state);
+      const canvas=page.locator('.editor-canvas');
+      const canvasBox=await canvas.boundingBox();
+      expect(canvasBox).not.toBeNull();
+      if(viewport.width<=1024){
+        await expect(page.locator('#editor-structure-mobile')).toBeVisible();
+        expect(canvasBox.width).toBeGreaterThan(viewport.width*.92);
+        const panelBox=await page.locator('#editor-structure-panel').boundingBox();
+        expect(panelBox.x).toBeLessThan(0);
+        if(state==='empty'){
+          await expect(page.locator('#inspector')).toBeHidden();
+        }else{
+          const inspectorStyle=await page.locator('#inspector').evaluate(el=>({position:getComputedStyle(el).position,overflowY:getComputedStyle(el).overflowY}));
+          expect(inspectorStyle.position).toBe('fixed');
+          expect(['auto','scroll']).toContain(inspectorStyle.overflowY);
+          await expect(page.locator('#inspector')).toBeVisible();
+        }
+      }else{
+        await expect(page.locator('#editor-structure-mobile')).toBeHidden();
+        expect(canvasBox.width).toBeGreaterThan(viewport.width*.45);
+        await expect(page.locator('#editor-structure-panel')).toBeVisible();
+        await expect(page.locator('#inspector')).toBeVisible();
+      }
+      const out=path.join('test-results','admin-complete-audit','editor');
+      fs.mkdirSync(out,{recursive:true});
+      await page.screenshot({path:path.join(out,name+'-'+state+'.png'),fullPage:true,animations:'disabled'});
+    });
+  }
+}
+for(const name of ['phone','tablet']){
+  test('editor structure drawer visual and keyboard audit '+name,async({page})=>{
+    const viewport=viewports[name];
     await page.setViewportSize(viewport);
-    await page.goto(url);
-    await noOverflow(page,name);
-    const canvas=page.locator('.editor-canvas');
-    const canvasBox=await canvas.boundingBox();
-    expect(canvasBox).not.toBeNull();
-    if(viewport.width<=1024){
-      await expect(page.locator('#editor-structure-mobile')).toBeVisible();
-      expect(canvasBox.width).toBeGreaterThan(viewport.width*.92);
-      const panelBox=await page.locator('#editor-structure-panel').boundingBox();
-      expect(panelBox.x).toBeLessThan(0);
-      const inspectorStyle=await page.locator('#inspector').evaluate(el=>({position:getComputedStyle(el).position,overflowY:getComputedStyle(el).overflowY}));
-      expect(inspectorStyle.position).toBe('fixed');
-      expect(['auto','scroll']).toContain(inspectorStyle.overflowY);
-      await page.locator('#editor-structure-mobile').click();
-      await expect(page.locator('body')).toHaveClass(/structure-mobile-open/);
-      await expect(page.locator('#editor-structure-backdrop')).toBeVisible();
-      await page.keyboard.press('Escape');
-      await expect(page.locator('body')).not.toHaveClass(/structure-mobile-open/);
-    }else{
-      await expect(page.locator('#editor-structure-mobile')).toBeHidden();
-      expect(canvasBox.width).toBeGreaterThan(viewport.width*.45);
-      await expect(page.locator('#editor-structure-panel')).toBeVisible();
-      await expect(page.locator('#inspector')).toBeVisible();
-    }
+    await page.goto(url+'&state=empty');
+    await page.locator('#editor-structure-mobile').click();
+    await expect(page.locator('body')).toHaveClass(/structure-mobile-open/);
+    await expect(page.locator('#editor-structure-backdrop')).toBeVisible();
+    await expect(page.locator('#editor-structure-mobile-close')).toBeFocused();
     const out=path.join('test-results','admin-complete-audit','editor');
     fs.mkdirSync(out,{recursive:true});
-    await page.screenshot({path:path.join(out,name+'.png'),fullPage:true,animations:'disabled'});
+    await page.screenshot({path:path.join(out,name+'-structure-open.png'),fullPage:true,animations:'disabled'});
+    await page.keyboard.press('Escape');
+    await expect(page.locator('body')).not.toHaveClass(/structure-mobile-open/);
+    await expect(page.locator('#editor-structure-mobile')).toBeFocused();
   });
 }
 test('editor canonical CSS declarations are consumed by the browser',async({page})=>{
   await page.setViewportSize({width:1280,height:800});
-  await page.goto(url);
+  await page.goto(url+'&state=page');
   const styles=await page.evaluate(()=>({
     barPosition:getComputedStyle(document.querySelector('.cms-editor-bar')).position,
     wordmarkDecoration:getComputedStyle(document.querySelector('.editor-wordmark')).textDecorationLine,
