@@ -49,6 +49,9 @@ forbid($students,'<h2>Alunos</h2><p>Busca global','Busca global de alunos não p
 $activities=(string)file_get_contents($root.'/admin/activities.php');
 forbid($activities,'<h2>Identidade da instalação</h2>','Identidade da instalação não pode repetir o título primário dentro da página.');
 
+$integrity=(string)file_get_contents($root.'/admin/data-integrity.php');
+forbid($integrity,'overview-hero','Integridade não pode reintroduzir hero administrativo legado.');
+
 $blocks=(string)file_get_contents($root.'/admin/blocks.php');
 forbid($blocks,'overview-hero','Blocos reutilizáveis não pode reintroduzir hero administrativo legado.');
 forbid($blocks,'overview-grid','Blocos reutilizáveis deve usar composição administrativa canônica.');
