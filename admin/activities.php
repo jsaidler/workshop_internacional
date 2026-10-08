@@ -29,7 +29,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
 $state=admin_activity_resolution($db);
 $localized=activity_locales($db,(int)$root['id']);$ptTitle=(string)($localized[PUBLIC_LOCALE_PT_BR]['public_title']??'');$enTitle=(string)($localized[PUBLIC_LOCALE_EN]['public_title']??'');
 $legacy=activity_legacy_non_root($db);
-admin_shell_start('activities','Estrutura do site',$state);
+admin_shell_start('activities','Identidade da instalação',$state);
 ?>
 <?php if($notice!==''):?><p class="admin-success"><?=h($notice)?></p><?php endif;?>
 <?php if($error!==''):?><p class="admin-error" role="alert"><?=h($error)?></p><?php endif;?>
