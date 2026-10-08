@@ -42,12 +42,19 @@ foreach([
  '14pxmax-height','4pxtext-align','var(--editor-body)position','70opacity'
 ] as $bad)forbid($editorCss,$bad,'CSS do editor contém declaração fundida: '.$bad);
 
+$courses=(string)file_get_contents($root.'/admin/courses.php');
+forbid($courses,'<h2>Cursos</h2><p>Escolha um curso','Coleção de cursos não pode repetir o título primário do shell.');
+$students=(string)file_get_contents($root.'/admin/students.php');
+forbid($students,'<h2>Alunos</h2><p>Busca global','Busca global de alunos não pode repetir o título primário do shell.');
+$activities=(string)file_get_contents($root.'/admin/activities.php');
+forbid($activities,'<h2>Identidade da instalação</h2>','Identidade da instalação não pode repetir o título primário dentro da página.');
+
 $blocks=(string)file_get_contents($root.'/admin/blocks.php');
 forbid($blocks,'overview-hero','Blocos reutilizáveis não pode reintroduzir hero administrativo legado.');
 forbid($blocks,'overview-grid','Blocos reutilizáveis deve usar composição administrativa canônica.');
 
 $audit=(string)file_get_contents($root.'/tools/browser-tests/admin-complete-product-audit.spec.cjs');
-foreach(['390','768','1280','1600','media-detail','registration','person','process','responses','integrity','activities','seo','blocks'] as $needle)need($audit,$needle,'Audit completo não cobre requisito: '.$needle);
+foreach(['390','768','1280','1600','media-detail','registration','person','process','responses','integrity','activities','seo','blocks','course-students'] as $needle)need($audit,$needle,'Audit completo não cobre requisito: '.$needle);
 $editorAudit=(string)file_get_contents($root.'/tools/browser-tests/editor-admin-ux-audit.spec.cjs');
 foreach(['phone','tablet','compact','wide','empty','page','section','structure-open','canonical CSS declarations'] as $needle)need($editorAudit,$needle,'Audit do editor não cobre requisito: '.$needle);
 
