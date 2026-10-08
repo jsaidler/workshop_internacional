@@ -20,23 +20,73 @@ function cms_language_switch_url(PDO $db,array $activity,array $page,string $tar
     $candidate=cms_page_translation_counterpart($db,$page,$targetLocale);
     return $candidate?cms_page_url($activity,$candidate,$targetLocale):'';
 }
+function cms_navigation_public_page(PDO $db,array $activity,string $locale,int $pageId): ?array {
+    if($pageId<1)return null;
+    $page=cms_page_by_id($db,$pageId);
+    if(!$page||(int)$page['activity_id']!==(int)$activity['id']||(string)$page['locale']!==$locale||(string)$page['status']==='archived'||empty($page['published_document_json']))return null;
+    return $page;
+}
 function cms_navigation_entries(PDO $db,array $activity,string $locale,array $site): array {
-    $configured=is_array($site['navigation']['items']??null)?$site['navigation']['items']:[];$out=[];
-    if($configured){
-        foreach($configured as $item){
-            if(!is_array($item))continue;$type=($item['type']??'page')==='custom'?'custom':'page';
-            if($type==='page'){
-                $p=cms_page_by_id($db,(int)($item['pageId']??0));if(!$p||(int)$p['activity_id']!==(int)$activity['id']||$p['locale']!==$locale||$p['status']==='archived')continue;
-                $out[]=['type'=>'page','pageId'=>(int)$p['id'],'label'=>trim((string)($item['label']??''))?:$p['nav_title'],'url'=>cms_page_url($activity,$p,$locale),'newTab'=>!empty($item['newTab'])];
-            }else{
-                $label=trim((string)($item['label']??''));$url=trim((string)($item['url']??''));if($label===''||$url==='')continue;
-                $out[]=['type'=>'custom','pageId'=>0,'label'=>$label,'url'=>$url,'newTab'=>!empty($item['newTab'])];
-            }
-        }
-        return $out;
+    $configured=is_array($site['navigation']['items']??null)?$site['navigation']['items']:[];
+    if(!$configured){
+        $configured=[];
+        foreach(cms_nav_pages($db,(int)$activity['id'],$locale) as $page)$configured[]=['type'=>'page','pageId'=>(int)$page['id'],'label'=>'','newTab'=>false];
     }
-    foreach(cms_nav_pages($db,(int)$activity['id'],$locale) as $p)$out[]=['type'=>'page','pageId'=>(int)$p['id'],'label'=>$p['nav_title'],'url'=>cms_page_url($activity,$p,$locale),'newTab'=>false];
-    return $out;
+
+    $nodes=[];$custom=[];$position=0;
+    foreach($configured as $item){
+        if(!is_array($item))continue;
+        $type=($item['type']??'page')==='custom'?'custom':'page';
+        if($type==='custom'){
+            $label=trim((string)($item['label']??''));$url=trim((string)($item['url']??''));if($label===''||$url==='')continue;
+            $custom[]=['entry'=>['type'=>'custom','pageId'=>0,'label'=>$label,'url'=>$url,'newTab'=>!empty($item['newTab']),'children'=>[]],'order'=>$position++];
+            continue;
+        }
+
+        $page=cms_navigation_public_page($db,$activity,$locale,(int)($item['pageId']??0));if(!$page)continue;
+        $pageId=(int)$page['id'];$explicitLabel=trim((string)($item['label']??''));
+        if(!isset($nodes[$pageId]))$nodes[$pageId]=['page'=>$page,'label'=>$explicitLabel?:$page['nav_title'],'newTab'=>!empty($item['newTab']),'order'=>$position,'explicit'=>true];
+        else{
+            $nodes[$pageId]['label']=$explicitLabel?:$page['nav_title'];$nodes[$pageId]['newTab']=!empty($item['newTab']);$nodes[$pageId]['order']=min((int)$nodes[$pageId]['order'],$position);$nodes[$pageId]['explicit']=true;
+        }
+
+        $cursor=$page;$guard=0;
+        while(($parentId=(int)($cursor['parent_page_id']??0))>0&&$guard++<32){
+            $parent=cms_navigation_public_page($db,$activity,$locale,$parentId);if(!$parent)break;
+            if(!isset($nodes[$parentId]))$nodes[$parentId]=['page'=>$parent,'label'=>$parent['nav_title'],'newTab'=>false,'order'=>$position,'explicit'=>false];
+            else $nodes[$parentId]['order']=min((int)$nodes[$parentId]['order'],$position);
+            $cursor=$parent;
+        }
+        $position++;
+    }
+
+    $children=[];$roots=[];
+    foreach($nodes as $pageId=>$node){
+        $parentId=(int)($node['page']['parent_page_id']??0);
+        if($parentId>0&&isset($nodes[$parentId]))$children[$parentId][]=$pageId;else $roots[]=$pageId;
+    }
+    $sortIds=static function(array &$ids) use($nodes): void {usort($ids,static fn(int $a,int $b): int=>((int)$nodes[$a]['order']<=> (int)$nodes[$b]['order'])?:($a<=>$b));};
+    $sortIds($roots);foreach($children as &$ids)$sortIds($ids);unset($ids);
+    $build=function(int $pageId) use(&$build,$nodes,$children,$activity,$locale): array {
+        $node=$nodes[$pageId];$page=$node['page'];$childEntries=[];
+        foreach($children[$pageId]??[] as $childId)$childEntries[]=$build($childId);
+        return ['type'=>'page','pageId'=>$pageId,'label'=>(string)$node['label'],'url'=>cms_page_url($activity,$page,$locale),'newTab'=>!empty($node['newTab']),'children'=>$childEntries];
+    };
+
+    $rootEntries=[];foreach($roots as $pageId)$rootEntries[]=['entry'=>$build($pageId),'order'=>(int)$nodes[$pageId]['order']];
+    foreach($custom as $row)$rootEntries[]=$row;
+    usort($rootEntries,static fn(array $a,array $b): int=>((int)$a['order']<=> (int)$b['order']));
+    return array_values(array_map(static fn(array $row): array=>$row['entry'],$rootEntries));
+}
+function cms_navigation_item_contains_page(array $item,int $pageId): bool {
+    if(($item['type']??'')==='page'&&(int)($item['pageId']??0)===$pageId)return true;
+    foreach(($item['children']??[]) as $child)if(is_array($child)&&cms_navigation_item_contains_page($child,$pageId))return true;
+    return false;
+}
+function cms_render_navigation_tree(array $items,int $currentPageId,string $locale,int $depth=0): string {
+    if(!$items)return '';
+    $pt=$locale===PUBLIC_LOCALE_PT_BR;$listClass=$depth===0?'cms-nav-list':'cms-nav-submenu';
+    ob_start();?><ul class="<?=h($listClass)?>"<?=$depth===0?' data-cms-nav-list':''?>><?php foreach($items as $item):if(!is_array($item))continue;$children=is_array($item['children']??null)?$item['children']:[];$current=($item['type']??'')==='page'&&(int)($item['pageId']??0)===$currentPageId;$branch=$current||cms_navigation_item_contains_page($item,$currentPageId);$hasChildren=(bool)$children;$submenuId=$hasChildren?'cms-submenu-'.(int)($item['pageId']??0).'-'.$depth:'';?><li class="cms-nav-item<?=$hasChildren?' cms-nav-item--parent':''?><?=$branch?' is-current-branch':''?>"<?=$hasChildren?' data-cms-nav-parent':''?>><?php if($hasChildren):?><div class="cms-nav-parent-row"><?php endif;?><a href="<?=h((string)$item['url'])?>"<?=$current?' aria-current="page"':''?><?=!empty($item['newTab'])?' target="_blank" rel="noopener"':''?>><?=h((string)$item['label'])?></a><?php if($hasChildren):?><button class="cms-nav-submenu-toggle" type="button" aria-expanded="<?=$branch?'true':'false'?>" aria-controls="<?=h($submenuId)?>" data-cms-submenu-toggle data-open-label="<?=h($pt?'Abrir submenu de '.(string)$item['label']:'Open '.(string)$item['label'].' submenu')?>" data-close-label="<?=h($pt?'Fechar submenu de '.(string)$item['label']:'Close '.(string)$item['label'].' submenu')?>" aria-label="<?=h($branch?($pt?'Fechar submenu de ':'Close ').(string)$item['label']:($pt?'Abrir submenu de ':'Open ').(string)$item['label'])?>"><span aria-hidden="true">⌄</span></button></div><div id="<?=h($submenuId)?>" class="cms-nav-submenu-wrap"><?=cms_render_navigation_tree($children,$currentPageId,$locale,$depth+1)?></div><?php endif;?></li><?php endforeach;?></ul><?php return (string)ob_get_clean();
 }
 function cms_form_flash_take(string $formUuid): array {$flash=$_SESSION['cms_form_flash'][$formUuid]??[];unset($_SESSION['cms_form_flash'][$formUuid]);return is_array($flash)?$flash:[];}
 function cms_public_asset_version(): string {static $version=null;if(is_string($version))return $version;$root=dirname(__DIR__);$info=$root.'/deploy-info.json';if(is_file($info)){$decoded=json_decode((string)@file_get_contents($info),true);$sha=is_array($decoded)?trim((string)($decoded['sourceSha']??'')):'';if($sha!==''&&preg_match('/^[a-f0-9]{7,64}$/i',$sha))return $version=substr($sha,0,16);}$mtime=@filemtime($root.'/assets/cms-core.css');return $version=$mtime!==false?(string)$mtime:'1';}
@@ -70,5 +120,5 @@ function cms_render_public_page(array $activity,array $page,array $document,bool
     $studentWorkspaceUrl='/aluno/';
     $header=$site['header'];$footer=$site['footer'];$headerClass=!empty($header['sticky'])?'topbar cms-topbar':'topbar cms-topbar cms-topbar-static';$menuLabel='Menu';$studentAreaLabel=$locale===PUBLIC_LOCALE_PT_BR?'Área do aluno':'Student area';$assetVersion=cms_public_asset_version();$assetVersionHtml=h($assetVersion);
     header('Content-Type: text/html; charset=UTF-8');header('Content-Language: '.$locale);header('Vary: Accept-Language',false);
-    ?><!doctype html><html lang="<?=h($locale)?>"<?=$theme?>><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title><?=h($title)?></title><meta name="robots" content="<?=h($robots)?>"><?php if($description!==''):?><meta name="description" content="<?=h($description)?>"><?php endif;?><meta property="og:type" content="website"><meta property="og:title" content="<?=h($socialTitle)?>"><?php if($socialDescription!==''):?><meta property="og:description" content="<?=h($socialDescription)?>"><?php endif;?><?php if($canonical!==''):?><link rel="canonical" href="<?=h($canonical)?>"><meta property="og:url" content="<?=h($canonical)?>"><?php endif;?><?php if($socialImage!==''):?><meta property="og:image" content="<?=h($socialImage)?>"><meta name="twitter:image" content="<?=h($socialImage)?>"><?php endif;?><meta name="twitter:card" content="<?=$socialImage!==''?'summary_large_image':'summary'?>"><meta name="twitter:title" content="<?=h($socialTitle)?>"><?php if($socialDescription!==''):?><meta name="twitter:description" content="<?=h($socialDescription)?>"><?php endif;?><?php if($absoluteLangUrl!==''):?><link rel="alternate" hreflang="<?=h($otherLocale)?>" href="<?=h($absoluteLangUrl)?>"><?php endif;?><?php if(!empty($site['seo']['favicon'])):?><link rel="icon" href="<?=h($site['seo']['favicon'])?>"><?php endif;?><style id="cms-system-styles" data-cms-responsive><?=cms_public_system_css_imports($assetVersion,$design,(bool)$materialContext)?></style><style id="cms-design-vars">@layer cms-system{<?=cms_design_system_css($design)?>}</style><style id="cms-custom-css"><?=cms_design_custom_css($design)?></style></head><body class="cms-public<?=$editor?' cms-editor-preview':''?><?=$materialContext?' cms-student-material':''?>" data-cms-page-id="<?=(int)$page['id']?>" data-cms-page-slug="<?=h((string)$page['slug'])?>" data-cms-locale="<?=h($locale)?>"><a class="skip-link" href="#main"><?=$locale===PUBLIC_LOCALE_PT_BR?'Pular para o conteúdo':'Skip to content'?></a><header class="<?=h($headerClass)?>" data-cms-public-header><a class="brand" href="<?=h($brandUrl)?>"><?=h($brand)?></a><?php if($materialContext):?><?php student_shell_nav('courses','student-desktop-nav');?><div class="cms-topbar-actions"><a class="cms-student-access" href="/aluno/perfil.php">Conta</a></div><?php else:?><button class="cms-nav-toggle" type="button" aria-expanded="false" aria-controls="cms-primary-nav"><?=h($menuLabel)?></button><nav id="cms-primary-nav" aria-label="<?=$locale===PUBLIC_LOCALE_PT_BR?'Navegação principal':'Primary navigation'?>"><?php foreach($nav as $item):?><a href="<?=h((string)$item['url'])?>"<?=($item['type']==='page'&&(int)$item['pageId']===(int)$page['id'])?' aria-current="page"':''?><?=!empty($item['newTab'])?' target="_blank" rel="noopener"':''?>><?=h((string)$item['label'])?></a><?php endforeach;?></nav><div class="cms-topbar-actions"><a class="cms-student-access" href="<?=h($studentWorkspaceUrl)?>"><?=h($studentAreaLabel)?></a><?php if(!empty($header['ctaLabel'])&&!empty($header['ctaUrl'])):?><a class="button cms-header-cta" href="<?=h($header['ctaUrl'])?>"><?=h($header['ctaLabel'])?></a><?php endif;?><?php if(!empty($header['showLanguageSwitch'])&&$langUrl!==''):?><a class="cms-language" href="<?=h($langUrl)?>" hreflang="<?=h($otherLocale)?>"><?=$otherLabel?></a><?php endif;?><?php if(!empty($header['showThemeSwitch'])):?><div aria-label="Theme" class="theme-switch"><button aria-pressed="true" data-theme-value="auto" type="button">Auto</button><button aria-pressed="false" data-theme-value="light" type="button">Light</button><button aria-pressed="false" data-theme-value="dark" type="button">Dark</button></div><?php endif;?></div><?php endif;?></header><main id="main" data-cms-page-main><?=$studyContext?><?=$body?></main><footer class="cms-footer"><p><?=h((string)$footer['line1'])?></p><p><?=h((string)$footer['line2'])?></p><?php if(!empty($footer['links'])&&is_array($footer['links'])):?><nav><?php foreach($footer['links'] as $link):if(!is_array($link)||empty($link['label'])||empty($link['url']))continue;?><a href="<?=h((string)$link['url'])?>"><?=h((string)$link['label'])?></a><?php endforeach;?></nav><?php endif;?></footer><?php if($materialContext)student_shell_nav('courses','student-mobile-nav');?><script defer src="/assets/public.js?v=<?=$assetVersionHtml?>"></script></body></html><?php
+    ?><!doctype html><html lang="<?=h($locale)?>"<?=$theme?>><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title><?=h($title)?></title><meta name="robots" content="<?=h($robots)?>"><?php if($description!==''):?><meta name="description" content="<?=h($description)?>"><?php endif;?><meta property="og:type" content="website"><meta property="og:title" content="<?=h($socialTitle)?>"><?php if($socialDescription!==''):?><meta property="og:description" content="<?=h($socialDescription)?>"><?php endif;?><?php if($canonical!==''):?><link rel="canonical" href="<?=h($canonical)?>"><meta property="og:url" content="<?=h($canonical)?>"><?php endif;?><?php if($socialImage!==''):?><meta property="og:image" content="<?=h($socialImage)?>"><meta name="twitter:image" content="<?=h($socialImage)?>"><?php endif;?><meta name="twitter:card" content="<?=$socialImage!==''?'summary_large_image':'summary'?>"><meta name="twitter:title" content="<?=h($socialTitle)?>"><?php if($socialDescription!==''):?><meta name="twitter:description" content="<?=h($socialDescription)?>"><?php endif;?><?php if($absoluteLangUrl!==''):?><link rel="alternate" hreflang="<?=h($otherLocale)?>" href="<?=h($absoluteLangUrl)?>"><?php endif;?><?php if(!empty($site['seo']['favicon'])):?><link rel="icon" href="<?=h($site['seo']['favicon'])?>"><?php endif;?><style id="cms-system-styles" data-cms-responsive><?=cms_public_system_css_imports($assetVersion,$design,(bool)$materialContext)?></style><style id="cms-design-vars">@layer cms-system{<?=cms_design_system_css($design)?>}</style><style id="cms-custom-css"><?=cms_design_custom_css($design)?></style></head><body class="cms-public<?=$editor?' cms-editor-preview':''?><?=$materialContext?' cms-student-material':''?>" data-cms-page-id="<?=(int)$page['id']?>" data-cms-page-slug="<?=h((string)$page['slug'])?>" data-cms-locale="<?=h($locale)?>"><a class="skip-link" href="#main"><?=$locale===PUBLIC_LOCALE_PT_BR?'Pular para o conteúdo':'Skip to content'?></a><header class="<?=h($headerClass)?>" data-cms-public-header><a class="brand" href="<?=h($brandUrl)?>"><?=h($brand)?></a><?php if($materialContext):?><?php student_shell_nav('courses','student-desktop-nav');?><div class="cms-topbar-actions"><a class="cms-student-access" href="/aluno/perfil.php">Conta</a></div><?php else:?><button class="cms-nav-toggle" type="button" aria-expanded="false" aria-controls="cms-primary-nav"><?=h($menuLabel)?></button><nav id="cms-primary-nav" aria-label="<?=$locale===PUBLIC_LOCALE_PT_BR?'Navegação principal':'Primary navigation'?>"><?=cms_render_navigation_tree($nav,(int)$page['id'],$locale)?></nav><div class="cms-topbar-actions"><a class="cms-student-access" href="<?=h($studentWorkspaceUrl)?>"><?=h($studentAreaLabel)?></a><?php if(!empty($header['ctaLabel'])&&!empty($header['ctaUrl'])):?><a class="button cms-header-cta" href="<?=h($header['ctaUrl'])?>"><?=h($header['ctaLabel'])?></a><?php endif;?><?php if(!empty($header['showLanguageSwitch'])&&$langUrl!==''):?><a class="cms-language" href="<?=h($langUrl)?>" hreflang="<?=h($otherLocale)?>"><?=$otherLabel?></a><?php endif;?><?php if(!empty($header['showThemeSwitch'])):?><div aria-label="Theme" class="theme-switch"><button aria-pressed="true" data-theme-value="auto" type="button">Auto</button><button aria-pressed="false" data-theme-value="light" type="button">Light</button><button aria-pressed="false" data-theme-value="dark" type="button">Dark</button></div><?php endif;?></div><?php endif;?></header><main id="main" data-cms-page-main><?=$studyContext?><?=$body?></main><footer class="cms-footer"><p><?=h((string)$footer['line1'])?></p><p><?=h((string)$footer['line2'])?></p><?php if(!empty($footer['links'])&&is_array($footer['links'])):?><nav><?php foreach($footer['links'] as $link):if(!is_array($link)||empty($link['label'])||empty($link['url']))continue;?><a href="<?=h((string)$link['url'])?>"><?=h((string)$link['label'])?></a><?php endforeach;?></nav><?php endif;?></footer><?php if($materialContext)student_shell_nav('courses','student-mobile-nav');?><script defer src="/assets/public.js?v=<?=$assetVersionHtml?>"></script></body></html><?php
 }
