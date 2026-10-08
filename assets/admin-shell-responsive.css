@@ -1,6 +1,7 @@
 /* --------------------------------------------------------------------------
    Admin shell responsive authority
    -------------------------------------------------------------------------- */
+body.admin-page .admin-nav-backdrop{display:none}
 @media(max-width:1000px){
   body.admin-page .admin-mobile-header{
     display:flex;
