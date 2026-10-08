@@ -5,7 +5,7 @@ const path=require('path');
 const base='http://127.0.0.1:8099/tools/browser-fixture/admin-complete-product-audit.php';
 const views=[
   'overview','courses','course','cohorts','cohort','registrations','registration','students','student',
-  'questions','question','tests','test','lessons','material','pages','site','design','forms','form',
+  'questions','question','tests','test','lessons','material','pages','blocks','site','design','seo','forms','form',
   'responses','media','media-detail','analytics','processes','process','lab-catalogs','system','integrity',
   'activities','people','person'
 ];
