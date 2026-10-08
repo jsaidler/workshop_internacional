@@ -64,6 +64,7 @@ jobs:
           php tools/test-workshop-copy-refinements.php
           php tools/test-read-purity-activity-templates.php
           php tools/test-activity-locales-page-hierarchy.php
+          php tools/test-public-navigation-hierarchy.php
           php tools/test-public-errors.php
           php tools/test-task-centric-admin.php
           php tools/test-admin-submissions-layout.php
