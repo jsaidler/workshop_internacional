@@ -26,7 +26,7 @@ $title=match($view){
 };
 $styles=[];
 if($view==='overview')$styles=['/assets/admin-teaching.css'];
-if(in_array($view,['courses','course','cohorts','cohort','registrations','registration','students','student','questions','question','tests','test','lessons','material'],true))$styles=['/assets/admin-teaching.css','/assets/admin-operations.css'];
+if(in_array($view,['courses','course','cohorts','cohort','registrations','registration','students','course-students','student','questions','question','tests','test','lessons','material'],true))$styles=['/assets/admin-teaching.css','/assets/admin-operations.css'];
 if(in_array($view,['people','person'],true))$styles=['/assets/admin-operations.css'];
 if(in_array($view,['registrations','registration'],true))$styles[]='/assets/admin-registration.css';
 if(in_array($view,['pages','blocks','site','design','seo','forms','form'],true))$styles[]='/assets/admin-site.css';
