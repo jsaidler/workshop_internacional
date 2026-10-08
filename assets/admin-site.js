@@ -12,11 +12,22 @@
 
     let pages=[];
     try{pages=JSON.parse(host.dataset.pages||'[]');}catch(_error){pages=[];}
-    const pageOptions=()=>pages.map(page=>`<option value="${Number(page.id)}">${escapeHtml(page.title)}</option>`).join('');
+    const pageOptions=()=>pages.map(page=>`<option value="${Number(page.id)}">${escapeHtml(`${'— '.repeat(Number(page.depth)||0)}${page.title}`)}</option>`).join('');
+    const syncPageHint=row=>{
+      const select=row.querySelector('[data-field="pageId"]');
+      const hint=row.querySelector('[data-nav-parent-hint]');
+      if(!select||!hint)return;
+      const page=pages.find(item=>Number(item.id)===Number(select.value));
+      const parentTitle=String(page?.parentTitle||'').trim();
+      hint.hidden=!parentTitle;
+      hint.textContent=parentTitle?`Dentro de: ${parentTitle}`:'';
+    };
     let dragged=null;
 
     const bind=row=>{
       row.querySelector('[data-remove-nav]')?.addEventListener('click',()=>row.remove());
+      row.querySelector('[data-field="pageId"]')?.addEventListener('change',()=>syncPageHint(row));
+      syncPageHint(row);
       row.addEventListener('dragstart',()=>{dragged=row;row.classList.add('is-dragging');});
       row.addEventListener('dragend',()=>{row.classList.remove('is-dragging');dragged=null;});
       row.addEventListener('dragover',event=>{
@@ -32,7 +43,7 @@
       row.className='site-nav-row';
       row.draggable=true;
       row.dataset.navRow='';
-      row.innerHTML=`<span class="site-nav-handle" aria-hidden="true">⋮⋮</span><input type="hidden" data-field="type" value="${type}">${type==='page'?`<label>Página<select data-field="pageId">${pageOptions()}</select></label><label>Rótulo<input data-field="label" placeholder="Usar o título da página"></label>`:`<label>Rótulo<input data-field="label"></label><label>URL<input data-field="url" placeholder="https://…"></label>`}<label class="check-row compact"><input type="checkbox" data-field="newTab" value="1"> Nova aba</label><button type="button" class="link-button danger" data-remove-nav>Remover</button>`;
+      row.innerHTML=`<span class="site-nav-handle" aria-hidden="true">⋮⋮</span><input type="hidden" data-field="type" value="${type}">${type==='page'?`<label>Página<select data-field="pageId">${pageOptions()}</select><small class="site-nav-parent-hint" data-nav-parent-hint hidden></small></label><label>Rótulo<input data-field="label" placeholder="Usar o título da página"></label>`:`<label>Rótulo<input data-field="label"></label><label>URL<input data-field="url" placeholder="https://…"></label>`}<label class="check-row compact"><input type="checkbox" data-field="newTab" value="1"> Nova aba</label><button type="button" class="link-button danger" data-remove-nav>Remover</button>`;
       bind(row);
       return row;
     };
