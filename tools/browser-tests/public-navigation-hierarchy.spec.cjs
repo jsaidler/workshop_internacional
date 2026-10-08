@@ -17,9 +17,16 @@ test('desktop public navigation presents child pages as submenu',async({page})=>
   await expect(submenu.getByText('Inscrição',{exact:true})).toHaveAttribute('aria-current','page');
 
   await page.screenshot({path:'test-results/public-navigation-hierarchy-desktop.png',animations:'disabled'});
-  await toggle.click();
+  await page.mouse.move(1200,760);
+  await expect(submenu).toBeHidden();
+  await toggle.focus();
+  await toggle.press('Enter');
   await expect(toggle).toHaveAttribute('aria-expanded','true');
   await expect(parent).toHaveClass(/is-submenu-open/);
+  await toggle.press('Escape');
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
+  await expect(parent).not.toHaveClass(/is-submenu-open/);
+  await expect(submenu).toBeHidden();
 });
 
 test('mobile public navigation expands hierarchy vertically without overflow',async({page})=>{
