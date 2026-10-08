@@ -53,6 +53,9 @@
 .admin-workspace-nav a,.admin-content-tabs a,.admin-status-tabs a{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:7px 10px;border:1px solid var(--admin-line);border-radius:var(--admin-radius);color:var(--admin-muted);font-size:12px;font-weight:500;text-decoration:none;background:var(--admin-surface)}
 .admin-workspace-nav a[aria-current=page],.admin-content-tabs a[aria-current=page],.admin-status-tabs a[aria-current=page]{border-color:var(--admin-ink);background:var(--admin-ink);color:#fff}
 .admin-status-tabs span{font-variant-numeric:tabular-nums}
+.admin-work-queue{display:grid;gap:1px;border:1px solid var(--admin-line);border-radius:var(--admin-radius);overflow:hidden;background:var(--admin-line)}
+.admin-work-item{display:flex;justify-content:space-between;gap:18px;padding:13px 14px;background:var(--admin-surface);color:var(--admin-ink);text-decoration:none}
+.admin-work-item span{color:var(--admin-muted);font-size:12px}
 .admin-workspace-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .admin-release-list{display:grid;gap:14px}
 .admin-release-card{display:grid;gap:18px}
@@ -74,6 +77,7 @@
   .admin-teaching-detail>header .admin-card-actions{width:100%}
   .admin-teaching-detail>header .admin-card-actions .admin-button{width:100%}
   .admin-release-form{grid-template-columns:1fr}
+  .admin-work-item{display:grid;gap:4px}
   .admin-lesson-row{grid-template-columns:auto minmax(0,1fr)}
   .admin-lesson-row>.admin-inline-actions{grid-column:2}
 }
