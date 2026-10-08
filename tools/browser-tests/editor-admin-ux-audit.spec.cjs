@@ -46,7 +46,7 @@ test('editor canonical CSS declarations are consumed by the browser',async({page
   const styles=await page.evaluate(()=>({
     barPosition:getComputedStyle(document.querySelector('.cms-editor-bar')).position,
     wordmarkDecoration:getComputedStyle(document.querySelector('.editor-wordmark')).textDecorationLine,
-    pageMetaOpacity:getComputedStyle(document.querySelector('.editor-page-switcher span')).opacity,
+    pageMetaOpacity:getComputedStyle(document.querySelector('.editor-page-title span')).opacity,
     actionsJustify:getComputedStyle(document.querySelector('.editor-actions')).justifyContent,
     canvasOverflow:getComputedStyle(document.querySelector('.editor-canvas')).overflowX,
     frameTransition:getComputedStyle(document.querySelector('.device-frame')).transitionProperty,
