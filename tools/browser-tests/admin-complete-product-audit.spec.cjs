@@ -100,6 +100,22 @@ for(const [device,viewport] of Object.entries(viewports)){
   }
 }
 
+test('responses and analytics expose mobile/touch equivalents',async({page})=>{
+  await page.setViewportSize(viewports.phone);
+  await page.goto(base+'?view=responses&submission=1');
+  const detail=page.locator('#selected-response');
+  await expect(detail).toBeVisible();
+  await expect(detail).toBeFocused();
+
+  await page.goto(base+'?view=analytics');
+  const bar=page.locator('.analytics-bar').first();
+  await expect(bar).toHaveAttribute('tabindex','0');
+  await bar.focus();
+  await expect(bar).toBeFocused();
+  const opacity=await bar.locator('i').evaluate(el=>getComputedStyle(el).opacity);
+  expect(Number(opacity)).toBe(1);
+});
+
 for(const device of ['phone','tablet']){
   test('admin drawer keyboard and focus '+device,async({page})=>{
     const viewport=viewports[device];
