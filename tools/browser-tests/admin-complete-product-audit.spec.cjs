@@ -93,6 +93,9 @@ for(const device of ['phone','tablet']){
     await expect(backdrop).toBeVisible();
     await expect(toggle).toHaveAttribute('aria-expanded','true');
     await expect.poll(()=>page.evaluate(()=>document.querySelector('#admin-navigation').contains(document.activeElement))).toBe(true);
+    const out=path.join('test-results','admin-complete-audit',device);
+    fs.mkdirSync(out,{recursive:true});
+    await page.screenshot({path:path.join(out,'drawer-open.png'),fullPage:true,animations:'disabled'});
 
     await page.keyboard.press('Escape');
     await expect(sidebar).not.toHaveClass(/is-open/);
