@@ -103,7 +103,7 @@ if(($_GET['format']??'')==='json'){
 $hasIntegrityProblems=$summary['orphan_enrollments']>0||$summary['orphan_cohorts']>0||$summary['unscoped_registrations']>0||$summary['orphan_lessons']>0;
 admin_shell_start('integrity','Integridade',$state);
 ?>
-<section class="overview-hero"><div><p class="admin-kicker">Somente leitura</p><h2>Diagnóstico de integridade</h2><p>Esta tela não corrige nem migra dados. Ela mostra o estado real antes de qualquer reconciliação destrutiva ou inferencial.</p></div><div class="hero-actions"><a class="admin-button secondary" href="?<?=http_build_query(array_filter(['activity'=>$activityId?:null,'format'=>'json']))?>">Baixar diagnóstico JSON</a></div></section>
+<section class="admin-page-intro"><div><p class="admin-kicker">Somente leitura</p><h2>Diagnóstico de integridade</h2><p>Esta tela não corrige nem migra dados. Ela mostra o estado real antes de qualquer reconciliação destrutiva ou inferencial.</p></div><a class="admin-button secondary" href="?<?=http_build_query(array_filter(['activity'=>$activityId?:null,'format'=>'json']))?>">Baixar diagnóstico JSON</a></section>
 
 <?php if($hasIntegrityProblems):?><div class="admin-notice">Há vínculos que precisam de reconciliação explícita. Nenhum deles será corrigido automaticamente.</div><?php else:?><div class="admin-notice">Nenhum vínculo órfão foi detectado pelas verificações atuais.</div><?php endif;?>
 
