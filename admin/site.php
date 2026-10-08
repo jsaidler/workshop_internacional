@@ -24,7 +24,7 @@ $pages=cms_pages($db,$activityId,$locale,false);$pageById=[];foreach($pages as $
 $navItems=$site['navigation']['items']??[];if(!$navItems){foreach($pages as $page)if(!empty($page['show_in_nav']))$navItems[]=['type'=>'page','pageId'=>(int)$page['id'],'label'=>'','newTab'=>false];}
 $notice=$_SESSION['admin_notice']??null;unset($_SESSION['admin_notice']);
 $pageData=[];foreach($pageTree as $treeRow){$treePage=$treeRow['page'];$parentId=(int)($treePage['parent_page_id']??0);$pageData[]=['id'=>(int)$treePage['id'],'title'=>(string)$treePage['title'],'depth'=>(int)$treeRow['depth'],'parentId'=>$parentId,'parentTitle'=>$parentId>0?(string)($pageById[$parentId]['title']??''):'' ];}
-admin_shell_start('site','Navegação',$state,['/assets/admin-site.css']);?>
+admin_shell_start('site','Cabeçalho e navegação',$state,['/assets/admin-site.css']);?>
 <?php if($notice):?><div class="admin-notice"><?=h((string)$notice)?></div><?php endif;?>
 <section class="site-intro"><p class="site-intro-copy">Administre a identidade editorial e os elementos persistentes desta versão do site. O nome do curso é uma propriedade do curso; SEO tem uma área própria.</p><div class="site-intro-actions"><div class="site-language-switch" aria-label="Idioma do site"><a href="/admin/site.php?activity=<?=$activityId?>&lang=pt-br"<?=$locale===PUBLIC_LOCALE_PT_BR?' aria-current="page"':''?>>PT</a><a href="/admin/site.php?activity=<?=$activityId?>&lang=en"<?=$locale===PUBLIC_LOCALE_EN?' aria-current="page"':''?>>EN</a></div></div></section>
 <nav class="site-section-nav" aria-label="Seções de navegação"><a href="#site-identity">Identidade</a><a href="#site-header">Cabeçalho</a><a href="#site-navigation">Menu</a><a href="#site-footer">Rodapé</a></nav>
