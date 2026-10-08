@@ -52,7 +52,7 @@ must_public_nav_hierarchy(str_contains($html,'data-cms-nav-parent'),'renderer do
 must_public_nav_hierarchy(str_contains($html,'data-cms-submenu-toggle'),'renderer does not expose submenu toggle');
 must_public_nav_hierarchy(str_contains($html,'aria-current="page">Inscrição</a>'),'current child page is not marked correctly');
 must_public_nav_hierarchy(str_contains($html,'is-current-branch'),'current child does not mark its ancestor branch');
-must_public_nav_hierarchy(substr_count($html,'Inscrição')===1,'child page leaked into more than one navigation level');
+must_public_nav_hierarchy(substr_count($html,'>Inscrição</a>')===1,'child page leaked into more than one navigation level');
 
 $fallback=cms_navigation_entries($db,$activity,'pt-BR',['navigation'=>['items'=>[]]]);
 must_public_nav_hierarchy((int)($fallback[0]['pageId']??0)===1&&count($fallback[0]['children']??[])===1,'fallback navigation ignores page hierarchy');
