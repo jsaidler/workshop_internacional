@@ -114,6 +114,8 @@ for(const device of ['phone','tablet']){
     await expect(backdrop).toBeVisible();
     await expect(toggle).toHaveAttribute('aria-expanded','true');
     await expect.poll(()=>page.evaluate(()=>document.querySelector('#admin-navigation').contains(document.activeElement))).toBe(true);
+    const shortNavTargets=await sidebar.locator('.admin-nav-links a').evaluateAll(nodes=>nodes.map(el=>({text:(el.textContent||'').trim(),height:el.getBoundingClientRect().height})).filter(item=>item.height<39.5));
+    expect(shortNavTargets,device+'/drawer navigation touch targets').toEqual([]);
     const out=path.join('test-results','admin-complete-audit',device);
     fs.mkdirSync(out,{recursive:true});
     await page.screenshot({path:path.join(out,'drawer-open.png'),fullPage:true,animations:'disabled'});
