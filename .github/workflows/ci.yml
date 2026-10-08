@@ -36,6 +36,7 @@ jobs:
             php tools/test-cms-professional-3.php
             php tools/test-task-centric-admin.php
             php tools/test-admin-product-ux-foundation.php
+            php tools/test-admin-complete-ux.php
             php tools/test-admin-operational-ux.php
             php tools/test-admin-navigation-integrity.php
             php tools/test-admin-teaching-ux.php
