@@ -21,9 +21,24 @@ if (menuToggle && navigation) {
     if (mobileNav.matches && event.target.closest('a')) setAdminMenu(false);
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') {
+    if (menuToggle.getAttribute('aria-expanded') !== 'true') return;
+    if (event.key === 'Escape') {
       event.preventDefault();
       setAdminMenu(false, {returnFocus:true});
+      return;
+    }
+    if (event.key === 'Tab') {
+      const focusables=[...navigation.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+        .filter(el=>el.getClientRects().length>0);
+      if (!focusables.length) return;
+      const first=focusables[0],last=focusables[focusables.length-1];
+      if (event.shiftKey && document.activeElement===first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement===last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
   });
   mobileNav.addEventListener?.('change', event => { if (!event.matches) setAdminMenu(false); });
