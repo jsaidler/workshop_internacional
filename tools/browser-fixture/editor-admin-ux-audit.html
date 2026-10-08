@@ -29,16 +29,7 @@
     <div class="sections-list"><div class="section-row"><button class="section-row-main"><strong>Workshop</strong><span>workshop</span></button></div><div class="section-row"><button class="section-row-main"><strong>Processo</strong><span>processo</span></button></div></div>
   </aside>
   <section class="editor-canvas"><div class="device-frame desktop" id="device-frame"><iframe id="page-frame" title="Página em edição" srcdoc="<!doctype html><html><body style='font-family:Arial;margin:0;padding:30px'><h1>Positivo Direto em Filmes de Raios-X</h1><p>Conteúdo da página em edição.</p></body></html>"></iframe></div></section>
-  <aside class="editor-panel inspector" id="inspector">
-    <div class="inspector-section cms-coherent-inspector" data-inspector-mode="page">
-      <header><p class="eyebrow">Página</p><h2>Configurações</h2></header>
-      <section class="cms-inspector-group"><div><h3>Identidade</h3></div><label>Título<input value="Positivo Direto em Filmes de Raios-X"></label><label>Slug<input value=""></label></section>
-      <section class="cms-inspector-group"><div><h3>Navegação e aparência</h3></div><label>Tema<select><option>Automático</option></select></label></section>
-      <section class="cms-inspector-group"><div><h3>SEO e compartilhamento</h3></div><label>Descrição SEO<textarea>Workshop on-line e ao vivo.</textarea></label></section>
-      <section class="cms-inspector-group"><div><h3>Audiência</h3></div><label>Acesso<select><option>Pública</option></select></label></section>
-      <section class="cms-inspector-group"><div><h3>Configurações globais</h3></div><div class="button-row"><a class="panel-button" href="#">Design global</a><a class="panel-button" href="#">Header e footer</a></div></section>
-    </div>
-  </aside>
+  <aside class="editor-panel inspector" id="inspector"></aside>
 </main>
 <button type="button" id="editor-structure-backdrop" class="editor-structure-backdrop" aria-label="Fechar estrutura"></button>
 <div class="editor-page-title" style="visibility:hidden;position:absolute;left:-9999px"><span>pt-BR</span></div>
@@ -49,6 +40,15 @@
 <div class="media-grid" style="visibility:hidden;position:absolute;left:-9999px"><button class="media-item">Mídia</button></div>
 <div class="editor-toast" style="visibility:hidden">Salvo</div>
 <script>
+const auditState=new URLSearchParams(location.search).get('state')||'page';
+const inspector=document.querySelector('#inspector');
+if(auditState==='empty'){
+  inspector.innerHTML='<div class="inspector-empty"><p>Selecione um elemento na página.</p><button type="button" class="panel-button">Configurações da página</button></div>';
+}else if(auditState==='section'){
+  inspector.innerHTML='<div class="inspector-section cms-coherent-inspector" data-inspector-mode="section"><header><p class="eyebrow">Seção</p><h2>Processo</h2></header><section class="cms-inspector-group"><div><h3>Identidade</h3></div><label>Nome no editor<input value="Processo"></label></section><section class="cms-inspector-group"><div><h3>Layout</h3></div><label>Largura<select><option>Conteúdo</option></select></label><label>Espaçamento<select><option>Grande</option></select></label></section><section class="cms-inspector-group"><div><h3>Audiência</h3></div><label>Acesso<select><option>Participantes deste curso</option></select></label></section><section class="cms-inspector-group"><div><h3>Disponibilidade</h3></div><label>Quando<select><option>Controlada por aula</option></select></label><label>Aula<select><option>Aula 1</option></select></label></section></div>';
+}else{
+  inspector.innerHTML='<div class="inspector-section cms-coherent-inspector" data-inspector-mode="page"><header><p class="eyebrow">Página</p><h2>Configurações</h2></header><section class="cms-inspector-group"><div><h3>Identidade</h3></div><label>Título<input value="Positivo Direto em Filmes de Raios-X"></label><label>Slug<input value=""></label></section><section class="cms-inspector-group"><div><h3>Navegação e aparência</h3></div><label>Tema<select><option>Automático</option></select></label></section><section class="cms-inspector-group"><div><h3>SEO e compartilhamento</h3></div><label>Descrição SEO<textarea>Workshop on-line e ao vivo.</textarea></label></section><section class="cms-inspector-group"><div><h3>Audiência</h3></div><label>Acesso<select><option>Pública</option></select></label></section><section class="cms-inspector-group"><div><h3>Configurações globais</h3></div><div class="button-row"><a class="panel-button" href="#">Design global</a><a class="panel-button" href="#">Header e footer</a></div></section></div>';
+}
 window.fetch=(url)=>Promise.resolve(new Response(JSON.stringify({activity:{id:1,title:'JSaidler Fotografia',publicUrl:'/'},pages:[{id:1,locale:'pt-BR',title:'Positivo Direto',navTitle:'Positivo Direto',isHome:true,publishedRevision:1,draftRevision:1}],newResponses:0}),{status:200,headers:{'Content-Type':'application/json'}}));
 </script>
 <script src="/editor/task-centric.js"></script>
