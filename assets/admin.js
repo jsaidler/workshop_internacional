@@ -53,6 +53,17 @@ document.querySelectorAll('[data-confirm]').forEach(button => button.addEventLis
   if (!window.confirm(button.dataset.confirm || 'Confirmar esta ação?')) event.preventDefault();
 }));
 
+if (document.body.classList.contains('admin-section-responses') && window.matchMedia('(max-width: 900px)').matches) {
+  const selectedResponse = document.querySelector('#selected-response');
+  const params = new URL(window.location.href).searchParams;
+  if (selectedResponse && params.has('submission')) {
+    requestAnimationFrame(() => {
+      selectedResponse.scrollIntoView({block:'start',behavior:'auto'});
+      selectedResponse.focus({preventScroll:true});
+    });
+  }
+}
+
 document.querySelectorAll('[data-response-toggle]').forEach(toggle => toggle.addEventListener('click', () => { const panel=document.getElementById(toggle.getAttribute('aria-controls')); const open=toggle.getAttribute('aria-expanded')==='true'; document.querySelectorAll('[data-response-toggle]').forEach(other=>{if(other!==toggle){other.setAttribute('aria-expanded','false');document.getElementById(other.getAttribute('aria-controls')).hidden=true;}});toggle.setAttribute('aria-expanded',String(!open));panel.hidden=open;const url=new URL(location.href);open?url.searchParams.delete('response'):url.searchParams.set('response',toggle.dataset.responseId);history.replaceState({},'',url); }));
 document.querySelectorAll('[data-delete-dialog-open]').forEach(open => { const dialog=open.closest('[data-response-item]').querySelector('[data-delete-dialog]'); const close=()=>{dialog.close();open.focus();};open.addEventListener('click',()=>{dialog.showModal();dialog.querySelector('[data-delete-dialog-close]')?.focus();});dialog.querySelectorAll('[data-delete-dialog-close]').forEach(button=>button.addEventListener('click',close));dialog.addEventListener('cancel',event=>{event.preventDefault();close();});dialog.querySelector('form')?.addEventListener('submit',()=>{const button=dialog.querySelector('[data-delete-submit]');button.disabled=true;button.textContent='Excluindo…';});});
 
