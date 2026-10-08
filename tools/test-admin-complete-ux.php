@@ -15,6 +15,7 @@ $adminJs=(string)file_get_contents($root.'/assets/admin.js');
 need($adminJs,"matchMedia('(max-width: 1000px)')",'Drawer administrativo deve usar breakpoint intermediário canônico.');
 need($adminJs,"event.key === 'Escape'",'Drawer deve fechar por Escape.');
 need($adminJs,'navigationBackdrop','Drawer deve fechar pelo backdrop.');
+need($adminJs,"event.key === 'Tab'",'Drawer deve conter o foco de teclado enquanto estiver aberto.');
 
 $responsive=(string)file_get_contents($root.'/assets/admin-shell-responsive.css');
 need($responsive,'@media(max-width:1000px)','Shell responsivo deve cobrir tablet/desktop estreito.');
