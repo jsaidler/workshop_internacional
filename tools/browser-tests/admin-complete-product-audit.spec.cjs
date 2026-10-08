@@ -116,6 +116,13 @@ for(const device of ['phone','tablet']){
     await expect.poll(()=>page.evaluate(()=>document.querySelector('#admin-navigation').contains(document.activeElement))).toBe(true);
     const shortNavTargets=await sidebar.locator('.admin-nav-links a').evaluateAll(nodes=>nodes.map(el=>({text:(el.textContent||'').trim(),height:el.getBoundingClientRect().height})).filter(item=>item.height<39.5));
     expect(shortNavTargets,device+'/drawer navigation touch targets').toEqual([]);
+    const focusables=sidebar.locator('a[href],button:not([disabled])');
+    const focusableCount=await focusables.count();
+    await focusables.nth(focusableCount-1).focus();
+    await page.keyboard.press('Tab');
+    await expect(focusables.first()).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(focusables.nth(focusableCount-1)).toBeFocused();
     const out=path.join('test-results','admin-complete-audit',device);
     fs.mkdirSync(out,{recursive:true});
     await page.screenshot({path:path.join(out,'drawer-open.png'),fullPage:true,animations:'disabled'});
