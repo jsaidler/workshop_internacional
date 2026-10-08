@@ -1,10 +1,29 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><title>Inspector coherence fixture</title><style>body{margin:0;font-family:Arial,sans-serif;display:grid;grid-template-columns:700px 340px;gap:18px;padding:18px}#page-frame{width:700px;height:520px;border:1px solid #aaa}#inspector{border:1px solid #ccc;padding:18px}.inspector-section{display:flex;flex-direction:column;gap:12px}.button-row{display:flex;gap:6px}</style></head>
+<head><meta charset="utf-8"><title>Inspector coherence fixture</title><style>body{margin:0;font-family:Arial,sans-serif;display:grid;grid-template-columns:700px 340px;gap:18px;padding:18px}#page-frame{width:700px;height:520px;border:1px solid #aaa}#inspector{border:1px solid #ccc;padding:18px}.inspector-section{display:flex;flex-direction:column;gap:12px}.button-row{display:flex;gap:6px}.panel-button{border:1px solid #aaa;padding:8px;text-decoration:none;color:inherit}</style></head>
 <body>
 <iframe id="page-frame" title="Página"></iframe>
-<aside id="inspector">
-  <div class="inspector-section">
+<aside id="inspector"></aside>
+<script>
+const mode=new URLSearchParams(location.search).get('mode')||'section';
+window.fixtureChanges=0;
+const inspector=document.querySelector('#inspector');
+if(mode==='page'){
+  inspector.innerHTML=`<div class="inspector-section">
+    <header><p class="eyebrow">Página</p><h2>Configurações</h2></header>
+    <label>Título interno<input id="p-title" value="Positivo Direto em Filmes de Raios-X"></label>
+    <label>Título no menu<input id="p-nav" value="Positivo Direto em Filmes de Raios-X"></label>
+    <label>Slug<input id="p-slug" value=""></label>
+    <label class="check-row"><input id="p-show" type="checkbox" checked> Exibir no menu</label>
+    <hr>
+    <label>Título SEO<input id="p-seo-title" value="Positivo Direto"></label>
+    <label>Descrição SEO<textarea id="p-seo-description">Workshop on-line e ao vivo.</textarea></label>
+    <label>Tema<select id="p-theme"><option value="auto">Automático</option></select></label>
+    <hr>
+    <div class="button-row"><a class="panel-button" href="#">Design global</a><a class="panel-button" href="#">Header e footer</a></div>
+  </div>`;
+}else{
+  inspector.innerHTML=`<div class="inspector-section">
     <header><p class="eyebrow">Seção</p><h2>Aula 1</h2></header>
     <label>Nome no editor<input id="s-name" value="Aula 1"></label>
     <label>Largura<select id="s-width"><option>Padrão</option></select></label>
@@ -22,12 +41,43 @@
     <div data-access-schedule hidden><label>Liberar em<input id="cms-visible-from"></label></div>
     <label data-access-lesson hidden>Aula<select id="cms-access-lesson"></select></label>
     <p class="inspector-note">Servidor filtra a seção.</p>
-  </div>
-</aside>
-<script>window.fixtureChanges=0;document.querySelector('#s-name').addEventListener('change',()=>window.fixtureChanges++);</script>
+  </div>`;
+  document.querySelector('#s-name').addEventListener('change',()=>window.fixtureChanges++);
+}
+const nativeFetch=window.fetch.bind(window);
+window.fetch=(url,options)=>{
+  if(String(url).includes('/admin/api/cms-access-options.php')){
+    return new Promise(resolve=>setTimeout(()=>resolve(new Response(JSON.stringify({
+      csrf:'fixture',
+      pageAccess:'public',
+      pageCohortId:0,
+      timezone:'America/Sao_Paulo',
+      cohorts:[{id:21,title:'Outubro 2026'}],
+      lessons:[{id:31,title:'Aula 1'}]
+    }),{status:200,headers:{'Content-Type':'application/json'}})),70));
+  }
+  if(String(url).includes('/admin/api/cms-page-access-save.php')){
+    return Promise.resolve(new Response(JSON.stringify({access:'public',cohortId:0}),{status:200,headers:{'Content-Type':'application/json'}}));
+  }
+  return nativeFetch(url,options);
+};
+</script>
+<script src="/editor/cms-access-controls.js"></script>
 <script src="/editor/cms-inspector-coherence.js"></script>
 <script>
-document.querySelector('#page-frame').srcdoc='<!doctype html><html><body><main data-cms-page-main><section class="cms-section-selected" data-cms-section="aula-1" data-cms-section-name="Aula 1"><p>Conteúdo</p></section></main></body></html>';
+document.querySelector('#page-frame').srcdoc=mode==='section'
+  ?'<!doctype html><html><body><main data-cms-page-main><section class="cms-section-selected" data-cms-section="aula-1" data-cms-section-name="Aula 1"><p>Conteúdo</p></section></main></body></html>'
+  :'<!doctype html><html><body><main data-cms-page-main><section data-cms-section="intro"><p>Conteúdo</p></section></main></body></html>';
+if(mode==='page'){
+  let i=0;
+  const timer=setInterval(()=>{
+    const marker=document.createElement('span');
+    marker.dataset.fixtureMutation=String(++i);
+    inspector.append(marker);
+    marker.remove();
+    if(i>=8)clearInterval(timer);
+  },8);
+}
 </script>
 </body>
 </html>
