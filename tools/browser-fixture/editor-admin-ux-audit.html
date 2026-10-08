@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor admin UX audit</title>
+<link rel="stylesheet" href="/editor/editor-system.css">
+</head>
+<body class="task-centric-editor">
+<header class="cms-editor-bar task-editor-bar">
+  <a class="editor-wordmark" href="#">Site</a>
+  <div class="editor-page-switcher-wrap">
+    <span id="editor-site-name" class="editor-site-name">JSaidler Fotografia</span>
+    <label class="editor-page-switcher"><span>Página</span><select id="editor-page-switcher"><option>Positivo Direto em Filmes de Raios-X</option></select></label>
+  </div>
+  <div class="editor-toolbar viewport-toolbar" aria-label="Visualização"><button class="active">Desktop</button><button>Tablet</button><button>Celular</button></div>
+  <div class="editor-toolbar editor-actions">
+    <button type="button" id="editor-structure-mobile" class="editor-structure-mobile-toggle" aria-controls="editor-structure-panel" aria-expanded="false">Estrutura</button>
+    <a id="editor-submissions" class="editor-context-link" href="#">Inscrições</a>
+    <span id="save-status">Salvo</span>
+    <button type="button" class="publish">Publicar</button>
+    <details class="editor-more"><summary>•••</summary><div class="editor-more-menu"><a href="#">Páginas</a></div></details>
+  </div>
+</header>
+<main class="cms-editor-workspace task-editor-workspace">
+  <aside class="editor-panel sections-panel" id="editor-structure-panel">
+    <div class="panel-heading"><div><p>Estrutura</p><h2>Seções</h2></div><button id="editor-structure-mobile-close" class="structure-mobile-close" type="button">×</button></div>
+    <button class="panel-button">+ Adicionar seção</button>
+    <div class="sections-list"><div class="section-row"><button class="section-row-main"><strong>Workshop</strong><span>workshop</span></button></div><div class="section-row"><button class="section-row-main"><strong>Processo</strong><span>processo</span></button></div></div>
+  </aside>
+  <section class="editor-canvas"><div class="device-frame desktop" id="device-frame"><iframe id="page-frame" title="Página em edição" srcdoc="<!doctype html><html><body style='font-family:Arial;margin:0;padding:30px'><h1>Positivo Direto em Filmes de Raios-X</h1><p>Conteúdo da página em edição.</p></body></html>"></iframe></div></section>
+  <aside class="editor-panel inspector" id="inspector">
+    <div class="inspector-section cms-coherent-inspector" data-inspector-mode="page">
+      <header><p class="eyebrow">Página</p><h2>Configurações</h2></header>
+      <section class="cms-inspector-group"><div><h3>Identidade</h3></div><label>Título<input value="Positivo Direto em Filmes de Raios-X"></label><label>Slug<input value=""></label></section>
+      <section class="cms-inspector-group"><div><h3>Navegação e aparência</h3></div><label>Tema<select><option>Automático</option></select></label></section>
+      <section class="cms-inspector-group"><div><h3>SEO e compartilhamento</h3></div><label>Descrição SEO<textarea>Workshop on-line e ao vivo.</textarea></label></section>
+      <section class="cms-inspector-group"><div><h3>Audiência</h3></div><label>Acesso<select><option>Pública</option></select></label></section>
+      <section class="cms-inspector-group"><div><h3>Configurações globais</h3></div><div class="button-row"><a class="panel-button" href="#">Design global</a><a class="panel-button" href="#">Header e footer</a></div></section>
+    </div>
+  </aside>
+</main>
+<button type="button" id="editor-structure-backdrop" class="editor-structure-backdrop" aria-label="Fechar estrutura"></button>
+<div class="floating-format" style="visibility:hidden"><button>B</button></div>
+<dialog class="editor-dialog" open style="visibility:hidden;position:absolute;left:-9999px"><header><h2>Diálogo</h2><button>×</button></header></dialog>
+<div class="section-template" style="visibility:hidden;position:absolute;left:-9999px">Seção</div>
+<div class="pro-tabs" style="visibility:hidden;position:absolute;left:-9999px"><button>Tab</button></div>
+<div class="media-grid" style="visibility:hidden;position:absolute;left:-9999px"><button class="media-item">Mídia</button></div>
+<div class="editor-toast" style="visibility:hidden">Salvo</div>
+<script>
+window.fetch=(url)=>Promise.resolve(new Response(JSON.stringify({activity:{id:1,title:'JSaidler Fotografia',publicUrl:'/'},pages:[{id:1,locale:'pt-BR',title:'Positivo Direto',navTitle:'Positivo Direto',isHome:true,publishedRevision:1,draftRevision:1}],newResponses:0}),{status:200,headers:{'Content-Type':'application/json'}}));
+</script>
+<script src="/editor/task-centric.js"></script>
+</body>
+</html>
