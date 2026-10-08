@@ -1,6 +1,6 @@
 const {test,expect}=require('@playwright/test');
 
-const url='http://127.0.0.1:8099/tools/browser-fixture/editor-inspector-coherence.html';
+const url='http://127.0.0.1:8099/tools/browser-fixture/editor-inspector-coherence.html?page=1';
 
 test('section inspector is grouped by editorial responsibility',async({page})=>{
   await page.goto(url);
@@ -22,4 +22,22 @@ test('moving controls into coherent groups preserves their existing listeners',a
   await name.fill('Aula 1 revisada');
   await name.dispatchEvent('change');
   await expect.poll(()=>page.evaluate(()=>window.fixtureChanges)).toBe(1);
+});
+
+
+test('page inspector keeps one access control under concurrent mutations and puts global actions last',async({page})=>{
+  await page.goto(url+'&mode=page');
+  const inspector=page.locator('#inspector');
+  await expect(inspector.locator('[data-inspector-group="page-identity"]')).toContainText('Identidade');
+  await expect(inspector.locator('[data-inspector-group="page-navigation"]')).toContainText('Navegação e aparência');
+  await expect(inspector.locator('[data-inspector-group="page-seo"]')).toContainText('SEO e compartilhamento');
+  await expect(inspector.locator('[data-inspector-group="page-audience"]')).toContainText('Audiência');
+  await expect(inspector.locator('[data-inspector-group="page-global"]')).toContainText('Configurações globais');
+  await expect.poll(()=>inspector.locator('[data-cms-page-access]').count()).toBe(1);
+  await expect(inspector.locator('#cms-page-access')).toHaveCount(1);
+  await expect(inspector.locator('[data-inspector-group="page-audience"] #cms-page-access')).toHaveCount(1);
+  await expect(inspector.locator('[data-inspector-group="page-global"] .cms-inspector-global-links')).toContainText('Design global');
+  await expect(inspector.locator('[data-inspector-group="page-global"] .cms-inspector-global-links')).toContainText('Header e footer');
+  const order=await inspector.locator('.cms-inspector-group').evaluateAll(nodes=>nodes.map(node=>node.dataset.inspectorGroup));
+  expect(order).toEqual(['page-identity','page-navigation','page-seo','page-audience','page-global']);
 });
