@@ -45,7 +45,7 @@ foreach([
 $audit=(string)file_get_contents($root.'/tools/browser-tests/admin-complete-product-audit.spec.cjs');
 foreach(['390','768','1280','1600','media-detail','registration','person','process','responses','integrity','activities'] as $needle)need($audit,$needle,'Audit completo não cobre requisito: '.$needle);
 $editorAudit=(string)file_get_contents($root.'/tools/browser-tests/editor-admin-ux-audit.spec.cjs');
-foreach(['phone','tablet','compact','wide','canonical CSS declarations'] as $needle)need($editorAudit,$needle,'Audit do editor não cobre requisito: '.$needle);
+foreach(['phone','tablet','compact','wide','empty','page','section','structure-open','canonical CSS declarations'] as $needle)need($editorAudit,$needle,'Audit do editor não cobre requisito: '.$needle);
 
 if($fail){fwrite(STDERR,"Admin complete UX regression failed:\n - ".implode("\n - ",array_unique($fail))."\n");exit(1);}
 echo "Admin complete UX regression passed.\n";
