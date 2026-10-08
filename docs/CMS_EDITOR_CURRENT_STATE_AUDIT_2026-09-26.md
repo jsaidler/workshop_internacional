@@ -134,3 +134,15 @@ A correção desta revisão deve obedecer às seguintes invariantes:
 4. em largura estreita, estrutura e inspector são superfícies temporárias/drawers, não colunas que comprimem o canvas;
 5. CSS do editor precisa ser sintaticamente validado, além dos gates de ownership;
 6. o audit visual do editor cobre pelo menos 390, 768, 1280 e 1600 px e estados sem seleção, página, seção e inspector longo.
+
+
+## Estado após o PR #213 — correções aplicadas, revisão ainda não concluída
+
+O PR #213 foi integrado em `3617fcc69579c2439869576ee518d6730df9c39f` e corrigiu parte dos problemas desta revisão transversal, incluindo idempotência de acesso, CSS inválido, agrupamento do inspector e responsividade intermediária.
+
+Isso **não encerra a auditoria do editor**. A revisão visual posterior mostrou que ainda existem incongruências de UI/UX e elementos fora do padrão. A partir deste ponto:
+
+- os testes introduzidos no PR #213 são regressões mínimas, não selo de qualidade visual;
+- qualquer inspeção do editor deve usar o runtime real com os controladores integrados;
+- a próxima etapa deve procurar inconsistências de hierarquia, proporção, densidade, linguagem, responsividade, affordance e fluxo, mesmo quando não forem cobertas pelos testes atuais;
+- o editor só pode ser considerado fechado depois de uma nova inspeção transversal real e de uma matriz visual revisada manualmente.
