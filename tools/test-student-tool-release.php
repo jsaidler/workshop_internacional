@@ -50,7 +50,7 @@ $lessons=(string)file_get_contents(dirname(__DIR__).'/admin/lessons.php');
 $tools=(string)file_get_contents(dirname(__DIR__).'/aluno/ferramentas.php');
 $shell=(string)file_get_contents(dirname(__DIR__).'/app/student_shell.php');
 must_student_tool_release(str_contains($migration,"tool_key='solution_prep'")&&str_contains($migration,'ORDER BY l.sort_order,l.id'),'existing recipe access is not bound to the first course lesson');
-must_student_tool_release(str_contains($lessons,'set_tool_release')&&str_contains($lessons,'A URL direta obedece à mesma regra.'),'admin cannot configure or explain server-side tool release');
+must_student_tool_release(str_contains($lessons,'set_tool_release')&&str_contains($lessons,'O bloqueio vale também para acesso direto pela URL.'),'admin cannot configure or explain server-side tool release');
 must_student_tool_release(str_contains($tools,"isset(\$byKey['solution_prep'])?student_solution_formulas():[]"),'recipes are materialized even when the student is unauthorized');
 must_student_tool_release(str_contains($shell,"if(isset(\$toolKeys['solution_prep']))"),'quick access still leaks the recipes destination before authorization');
 
