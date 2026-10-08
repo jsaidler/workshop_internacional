@@ -64,9 +64,30 @@ for(const [device,viewport] of Object.entries(viewports)){
         const cols=await page.locator('.inbox-layout').evaluate(el=>getComputedStyle(el).gridTemplateColumns);
         expect(cols.trim().split(/\s+/).length,device+'/responses single column').toBe(1);
       }
+      if(view==='overview'&&viewport.width<=800){
+        const queue=page.locator('.admin-work-queue');
+        await expect(queue).toBeVisible();
+        const items=queue.locator('.admin-work-item');
+        await expect(items).toHaveCount(2);
+        const itemLayouts=await items.evaluateAll(nodes=>nodes.map(el=>getComputedStyle(el).display));
+        expect(itemLayouts.every(display=>display==='grid'),device+'/overview work queue').toBe(true);
+      }
+      if(view==='site'&&viewport.width<=650){
+        const nav=page.locator('.site-section-nav');
+        const navBox=await nav.evaluate(el=>({client:el.clientWidth,scroll:el.scrollWidth}));
+        expect(navBox.scroll,device+'/site tabs overflow').toBeLessThanOrEqual(navBox.client+1);
+        const savebar=page.locator('.site-savebar');
+        await expect(savebar).toHaveCSS('position','static');
+        const lastRow=page.locator('.site-nav-row').last();
+        const lastBox=await lastRow.boundingBox();
+        const saveBox=await savebar.boundingBox();
+        expect(saveBox.y,device+'/site savebar overlaps menu row').toBeGreaterThanOrEqual(lastBox.y+lastBox.height);
+      }
       if(view==='media-detail'){
         const dialog=page.locator('.media-detail-dialog');
         await expect(dialog).toBeVisible();
+        await expect(dialog.locator('.media-detail-header')).toBeVisible();
+        await expect(dialog.getByRole('button',{name:'Fechar'})).toBeVisible();
         const box=await dialog.boundingBox();
         expect(box.x).toBeGreaterThanOrEqual(-1);
         expect(box.x+box.width).toBeLessThanOrEqual(viewport.width+1);
