@@ -37,8 +37,9 @@ $index=(string)file_get_contents(__DIR__.'/../index.php');$media=(string)file_ge
 if(!str_contains($index,'$admin=current_admin()')||!str_contains($index,'if($admin)'))fail_material('admin protected-page bypass missing');
 if(!str_contains($media,'if(current_admin())')||!str_contains($media,'student_private_media_admin_asset'))fail_material('admin private-media bypass missing');
 if(!str_contains($shell,"/assets/admin-system.css")||str_contains($shell,"/assets/admin-student-area.css"))fail_material('admin shared UX stylesheet not canonical');
-if(str_contains($admin,'style='))fail_material('student admin contains page-local inline style');
-foreach(['view=','admin-subtabs','admin-data-toolbar','LIMIT ? OFFSET ?','slot_key'] as $needle)if(!str_contains($admin,$needle))fail_material('scalable student operations contract missing: '.$needle);
+if(str_contains($admin,'style='))fail_material('student compatibility route contains page-local inline style');
+if(str_contains($admin,'admin_shell_start(')||str_contains($admin,'admin-subtabs')||str_contains($admin,'admin-data-table'))fail_material('legacy student route still renders a parallel administrative interface');
+foreach(["'/admin/students.php'","'/admin/tests.php'","'/admin/lessons.php'","'/admin/material.php'","'/admin/cohorts.php'"] as $needle)if(!str_contains($admin,$needle))fail_material('legacy student route does not redirect to current workspace: '.$needle);
 if(!str_contains($guard,"'/admin/students.php'")||!str_contains($people,'FROM student_users u'))fail_material('global student identity and participation administration is not canonical');
 if(!str_contains($shell,"'content'=>['Conteúdo',admin_course_url")||!str_contains($materialAdmin,'course_material_add_page')||!str_contains($materialAdmin,'/editor/?page='))fail_material('course material does not consume canonical CMS pages/editor through the course workspace');
 if(str_contains($materialAdmin,'material-editor')||str_contains($materialAdmin,'material_renderer'))fail_material('parallel material editor/renderer leaked');
