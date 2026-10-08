@@ -35,8 +35,7 @@ admin_shell_start('activities','Identidade da instalação',$state);
 <?php if($error!==''):?><p class="admin-error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="admin-section-stack">
   <section class="admin-panel">
-    <p class="admin-kicker">Site principal</p>
-    <h2>Identidade da instalação</h2>
+    <h2>Site principal</h2>
     <p class="muted">Workshops são criados e organizados em Páginas. Esta tela existe apenas para a identidade do site e manutenção de estruturas antigas.</p>
     <form method="post" class="admin-form-grid">
       <input type="hidden" name="csrf" value="<?=h(csrf_token('activities'))?>">
