@@ -162,6 +162,26 @@ A liberação de conteúdo sensível também passa a ser autorização server-si
 
 O objetivo é impedir que uma matrícula recém-confirmada dê acesso antecipado a receitas ou outros conteúdos proprietários. O aluno pode ter conta e navegar pela plataforma antes do curso; o conteúdo marcado como sensível simplesmente não é autorizado até o momento pedagógico definido.
 
+## Auditoria integral da área administrativa — 08/10/2026
+
+A administração passa a tratar “inspeção visual completa” como uma matriz de produto, não como smoke da feature alterada.
+
+Contrato vigente:
+
+- cobrir 390×844, 768×1024, 1280×800 e 1600×900;
+- incluir shell, coleções, detalhes, formulários, dialogs/disclosures e editor visual em estados capazes de alterar a composição;
+- incluir Páginas, Navegação/estrutura do site, Design, SEO, Formulários, Respostas, Mídia, Métricas, Sistema, Integridade, Ensino, Operação, Laboratório e compatibilidades administrativas;
+- fixtures só valem quando reproduzem o DOM, os controladores e os estados relevantes da superfície real;
+- screenshots da instalação real têm precedência quando revelarem um estado ausente da fixture;
+- workflow verde não autoriza a expressão “aprovado visualmente” quando a superfície/estado não foi renderizada;
+- regressões devem rejeitar overflow global, controles duplicados, canvas/tarefa reduzidos a faixa residual, drawer sem Escape/backdrop/foco, tabelas operacionais mobile dependentes de scroll horizontal e alvos frequentes abaixo de 40 px no telefone;
+- editor visual precisa carregar em conjunto os controladores que disputam/organizam o inspector; testar módulos isoladamente não prova idempotência integrada;
+- compatibilidade antiga pode redirecionar, mas não pode manter uma segunda administração operacional alcançável.
+
+Falhas confirmadas que abrem esta revisão: duplicação assíncrona de Audiência/Acesso no editor, CSS inválido em `editor-system.css`, breakpoint intermediário frágil, hierarquia inadequada do inspector de página, drawer administrativo mobile incompleto e cobertura visual transversal insuficiente.
+
+A especificação detalhada e o inventário ficam em `docs/ADMIN_PRODUCT_UX_UI_AUDIT_2026-09-29.md`.
+
 ## Regra operacional obrigatória
 
 Para qualquer alteração:

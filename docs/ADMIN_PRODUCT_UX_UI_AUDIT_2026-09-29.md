@@ -295,3 +295,62 @@ Adicionar progressivamente ao CI:
 Não corrigir a interface acumulando exceções. Quando um defeito aparece em mais de uma tela, a correção pertence ao componente ou ao contrato global responsável por aquela relação.
 
 A meta não é apenas “ficar bonito”. A meta é que a administração seja rápida, previsível e legível com 1 ou 100 cursos, 10 ou 10.000 inscrições, em desktop ou telefone, usando o mesmo sistema de interface.
+
+
+## Auditoria integral de UI/UX — 08/10/2026
+
+A inspeção motivada pelo uso real demonstrou que o gate anterior não justificava a expressão “auditoria visual completa”. Ele exercitava um conjunto representativo de views, mas não a administração inteira, não todos os breakpoints mínimos definidos neste próprio documento e não os estados interativos capazes de alterar composição.
+
+### Falhas confirmadas
+
+1. **Duplicação assíncrona no inspector do editor.** `cms-access-controls.js` pode iniciar duas injeções antes de `loadOptions()` terminar. A checagem de existência feita apenas antes do `await` não impede uma segunda cópia de Audiência/Acesso.
+2. **Responsividade do editor com autoridades concorrentes.** A composição geral muda em 900 px enquanto a composição task-centric mantém o layout de três áreas até 820 px; 801–1100 px fica particularmente vulnerável a canvas comprimido.
+3. **Declarações CSS inválidas no editor.** Propriedades fundidas sem ponto e vírgula em `editor-system.css` fazem o navegador descartar partes da regra, tornando o resultado dependente de fallback/cascata posterior.
+4. **Hierarquia ruim nas configurações da página.** Ações globais de Design/Header podem aparecer antes das propriedades da página em edição.
+5. **Shell mobile incompleto como drawer.** Abrir/fechar menu não inclui backdrop, Escape, foco inicial e devolução de foco.
+6. **Faixa intermediária pouco auditada.** O breakpoint de colapso do sidebar ocorre em 800 px; tablet e desktop estreito precisam de validação explícita, não inferência.
+7. **IA com nomes herdados.** “Navegação” administra também identidade, cabeçalho e rodapé; “Estrutura do site” é na prática identidade da instalação/manutenção legada.
+8. **Rotas legadas completas ainda permanecem alcançáveis.** Compatibilidade deve redirecionar; não pode reabrir uma segunda administração antiga.
+9. **Alvos de interação de 34–36 px permanecem em ações frequentes no telefone.**
+10. **Cobertura visual insuficiente.** O audit anterior não cobria de forma equivalente Páginas, Design, SEO, builder de Formulários, Respostas master/detail, Mídia/detail dialog, Métricas, Integridade, Pessoas, Material, Aulas/acesso, editor de Processos e Catálogos, além de estados abertos/erro/sucesso/dialog/disclosure.
+
+### Definição canônica de “inspeção completa”
+
+A expressão só pode ser usada quando existir uma matriz declarada de superfícies e estados. O mínimo obrigatório passa a ser:
+
+- viewports **390×844**, **768×1024**, **1280×800** e **1600×900**;
+- shell: menu fechado/aberto, foco e Escape;
+- coleções: normal, filtros ativos, vazio, paginação e detalhe quando existir;
+- formulários: edição, ajuda, validação/erro e ação destrutiva quando existir;
+- dialogs/drawers/disclosures: pelo menos um estado aberto de cada padrão usado;
+- editor visual: sem seleção, configurações da página, seção, conteúdo contextual, estrutura aberta e inspector longo;
+- CMS estrutural: Páginas, Navegação/estrutura do site, Design, SEO, Formulários, Respostas e Mídia;
+- Ensino/Operação: Curso, Turma, Inscrições, Alunos, Pessoas, Aulas/acesso, Material, Dúvidas e Testes;
+- Laboratório: Processos e Catálogos;
+- Análise/Sistema: Métricas, Atualizações, Integridade e identidade/manutenção da instalação.
+
+O gate deve verificar automaticamente, quando aplicável:
+
+- ausência de overflow global;
+- ação primária e retornos dentro da viewport;
+- controles únicos para uma mesma decisão;
+- área de toque mínima administrativa de 40 px no telefone;
+- drawers fecháveis por botão, backdrop e Escape, com foco devolvido;
+- inspector/drawer com scroll próprio;
+- ausência de CSS autoral inválido;
+- ausência de rota legada renderizando uma administração paralela;
+- nenhuma tabela operacional mobile dependente de scroll horizontal;
+- nenhum painel lateral permanente reduzindo o canvas/tarefa a uma faixa residual.
+
+Screenshots continuam obrigatórios, mas são evidência de uma matriz coberta, não substituto dessa matriz.
+
+### Ordem de correção a partir desta auditoria
+
+1. editor visual: idempotência, CSS válido, hierarquia do inspector e responsividade;
+2. shell administrativo: drawer, foco, breakpoint intermediário e touch targets;
+3. IA e compatibilidade: nomes coerentes e rotas legadas apenas como redirecionadores;
+4. CMS operacional: Formulários, Respostas e Mídia;
+5. superfícies já estruturalmente boas: densidade, microcopy e refinamento;
+6. fechamento somente depois da inspeção humana dos quatro breakpoints e estados declarados.
+
+Uma correção não reduz o escopo do audit. O inventário completo permanece aberto até a matriz inteira estar verde e visualmente revisada.

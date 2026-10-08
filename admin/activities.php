@@ -29,14 +29,13 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
 $state=admin_activity_resolution($db);
 $localized=activity_locales($db,(int)$root['id']);$ptTitle=(string)($localized[PUBLIC_LOCALE_PT_BR]['public_title']??'');$enTitle=(string)($localized[PUBLIC_LOCALE_EN]['public_title']??'');
 $legacy=activity_legacy_non_root($db);
-admin_shell_start('activities','Estrutura do site',$state);
+admin_shell_start('activities','Identidade da instalação',$state);
 ?>
 <?php if($notice!==''):?><p class="admin-success"><?=h($notice)?></p><?php endif;?>
 <?php if($error!==''):?><p class="admin-error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="admin-section-stack">
   <section class="admin-panel">
-    <p class="admin-kicker">Site principal</p>
-    <h2>Identidade da instalação</h2>
+    <h2>Site principal</h2>
     <p class="muted">Workshops são criados e organizados em Páginas. Esta tela existe apenas para a identidade do site e manutenção de estruturas antigas.</p>
     <form method="post" class="admin-form-grid">
       <input type="hidden" name="csrf" value="<?=h(csrf_token('activities'))?>">

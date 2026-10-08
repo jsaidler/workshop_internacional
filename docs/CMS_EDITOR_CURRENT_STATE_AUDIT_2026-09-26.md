@@ -115,3 +115,22 @@ Uma função do CMS não é considerada concluída apenas porque existe backend 
 - comportamento correto no preview e no público;
 - ausência de UI editorial no HTML canônico;
 - regressão que cubra o runtime em que o usuário realmente trabalha.
+
+
+## Revisão transversal do editor — 08/10/2026
+
+O uso real mostrou que a classificação anterior de “coerência do inspector correta” era incompleta do ponto de vista de UI/UX integrada. O agrupamento existe, porém o runtime ainda permite uma corrida de injeção assíncrona em `cms-access-controls.js`, capaz de criar duas cópias dos controles de Audiência/Acesso antes da resposta de `loadOptions()`.
+
+Também foram confirmados dois riscos estruturais:
+
+- `editor-system.css` contém declarações fundidas sem delimitador, portanto propriedades inteiras podem ser descartadas pelo parser CSS;
+- a composição responsiva geral e a composição task-centric usam breakpoints diferentes, deixando a faixa intermediária sujeita a três áreas permanentes que comprimem o canvas.
+
+A correção desta revisão deve obedecer às seguintes invariantes:
+
+1. injeções assíncronas no inspector fazem a checagem de idempotência **antes e depois** de qualquer `await`;
+2. a regressão carrega `cms-access-controls.js` e `cms-inspector-coherence.js` juntos e força mutações concorrentes;
+3. configurações da página apresentam primeiro propriedades da página; Design/Header/Footer são ações globais secundárias;
+4. em largura estreita, estrutura e inspector são superfícies temporárias/drawers, não colunas que comprimem o canvas;
+5. CSS do editor precisa ser sintaticamente validado, além dos gates de ownership;
+6. o audit visual do editor cobre pelo menos 390, 768, 1280 e 1600 px e estados sem seleção, página, seção e inspector longo.

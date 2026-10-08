@@ -1,11 +1,47 @@
 const menuToggle = document.querySelector('.admin-menu-toggle');
 const navigation = document.querySelector('#admin-navigation');
+const navigationBackdrop = document.querySelector('.admin-nav-backdrop');
 if (menuToggle && navigation) {
-  menuToggle.addEventListener('click', () => {
-    const open = menuToggle.getAttribute('aria-expanded') === 'true';
-    menuToggle.setAttribute('aria-expanded', String(!open));
-    navigation.classList.toggle('is-open', !open);
+  const mobileNav = window.matchMedia('(max-width: 1000px)');
+  const setAdminMenu = (open, {returnFocus = false} = {}) => {
+    const next = Boolean(open) && mobileNav.matches;
+    menuToggle.setAttribute('aria-expanded', String(next));
+    navigation.classList.toggle('is-open', next);
+    document.body.classList.toggle('admin-nav-open', next);
+    navigationBackdrop?.setAttribute('aria-hidden', String(!next));
+    if (next) {
+      requestAnimationFrame(() => (navigation.querySelector('a[aria-current="page"]') || navigation.querySelector('a,button'))?.focus());
+    } else if (returnFocus || navigation.contains(document.activeElement)) {
+      menuToggle.focus();
+    }
+  };
+  menuToggle.addEventListener('click', () => setAdminMenu(menuToggle.getAttribute('aria-expanded') !== 'true', {returnFocus:true}));
+  navigationBackdrop?.addEventListener('click', () => setAdminMenu(false, {returnFocus:true}));
+  navigation.addEventListener('click', event => {
+    if (mobileNav.matches && event.target.closest('a')) setAdminMenu(false);
   });
+  document.addEventListener('keydown', event => {
+    if (menuToggle.getAttribute('aria-expanded') !== 'true') return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setAdminMenu(false, {returnFocus:true});
+      return;
+    }
+    if (event.key === 'Tab') {
+      const focusables=[...navigation.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+        .filter(el=>el.getClientRects().length>0);
+      if (!focusables.length) return;
+      const first=focusables[0],last=focusables[focusables.length-1];
+      if (event.shiftKey && document.activeElement===first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement===last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+  mobileNav.addEventListener?.('change', event => { if (!event.matches) setAdminMenu(false); });
 }
 
 document.querySelectorAll('[data-dialog-open]').forEach(button => button.addEventListener('click', () => {
@@ -16,6 +52,17 @@ document.querySelectorAll('[data-dialog-close]').forEach(button => button.addEve
 document.querySelectorAll('[data-confirm]').forEach(button => button.addEventListener('click', event => {
   if (!window.confirm(button.dataset.confirm || 'Confirmar esta ação?')) event.preventDefault();
 }));
+
+if (document.body.classList.contains('admin-section-responses') && window.matchMedia('(max-width: 900px)').matches) {
+  const selectedResponse = document.querySelector('#selected-response');
+  const params = new URL(window.location.href).searchParams;
+  if (selectedResponse && params.has('submission')) {
+    requestAnimationFrame(() => {
+      selectedResponse.scrollIntoView({block:'start',behavior:'auto'});
+      selectedResponse.focus({preventScroll:true});
+    });
+  }
+}
 
 document.querySelectorAll('[data-response-toggle]').forEach(toggle => toggle.addEventListener('click', () => { const panel=document.getElementById(toggle.getAttribute('aria-controls')); const open=toggle.getAttribute('aria-expanded')==='true'; document.querySelectorAll('[data-response-toggle]').forEach(other=>{if(other!==toggle){other.setAttribute('aria-expanded','false');document.getElementById(other.getAttribute('aria-controls')).hidden=true;}});toggle.setAttribute('aria-expanded',String(!open));panel.hidden=open;const url=new URL(location.href);open?url.searchParams.delete('response'):url.searchParams.set('response',toggle.dataset.responseId);history.replaceState({},'',url); }));
 document.querySelectorAll('[data-delete-dialog-open]').forEach(open => { const dialog=open.closest('[data-response-item]').querySelector('[data-delete-dialog]'); const close=()=>{dialog.close();open.focus();};open.addEventListener('click',()=>{dialog.showModal();dialog.querySelector('[data-delete-dialog-close]')?.focus();});dialog.querySelectorAll('[data-delete-dialog-close]').forEach(button=>button.addEventListener('click',close));dialog.addEventListener('cancel',event=>{event.preventDefault();close();});dialog.querySelector('form')?.addEventListener('submit',()=>{const button=dialog.querySelector('[data-delete-submit]');button.disabled=true;button.textContent='Excluindo…';});});

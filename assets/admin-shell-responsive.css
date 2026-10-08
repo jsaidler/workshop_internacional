@@ -1,8 +1,10 @@
 /* --------------------------------------------------------------------------
    Admin shell responsive authority
    -------------------------------------------------------------------------- */
-@media(max-width:800px){
+body.admin-page .admin-nav-backdrop{display:none}
+@media(max-width:1000px){
   body.admin-page .admin-mobile-header{
+    display:flex;
     position:sticky;
     top:0;
     z-index:60;
@@ -18,6 +20,17 @@
     overflow-y:auto;
   }
   body.admin-page .admin-sidebar.is-open{display:flex}
+  body.admin-page.admin-nav-open{overflow:hidden}
+  body.admin-page .admin-nav-backdrop{
+    position:fixed;
+    inset:52px 0 0;
+    z-index:45;
+    display:none;
+    padding:0;
+    border:0;
+    background:rgba(17,18,18,.34);
+  }
+  body.admin-page.admin-nav-open .admin-nav-backdrop{display:block}
   body.admin-page .admin-main{
     width:100%;
     max-width:none;
@@ -63,6 +76,35 @@
     width:100%;
     overflow-x:auto;
     overscroll-behavior-inline:contain;
+  }
+  body.admin-page .admin-button,
+  body.admin-page .admin-workspace-nav a,
+  body.admin-page .admin-content-tabs a,
+  body.admin-page .admin-status-tabs a,
+  body.admin-page .admin-context-back,
+  body.admin-page .admin-list-return,
+  body.admin-page .admin-menu-toggle,
+  body.admin-page .admin-nav-links a,
+  body.admin-page .admin-pagination a,
+  body.admin-page .admin-filter-chip,
+  body.admin-page .site-detail-index a,
+  body.admin-page .site-language-switch a,
+  body.admin-page .analytics-period a,
+  body.admin-page .link-button,
+  body.admin-page .admin-panel-toggle,
+  body.admin-page .media-detail-header button,
+  body.admin-page .dialog-close{
+    min-height:40px;
+  }
+  body.admin-page .site-detail-index a,
+  body.admin-page .site-language-switch a,
+  body.admin-page .analytics-period a,
+  body.admin-page .link-button,
+  body.admin-page .media-detail-header button,
+  body.admin-page .dialog-close{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
   }
 }
 @media(max-width:520px){
