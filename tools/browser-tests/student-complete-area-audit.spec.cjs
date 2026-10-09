@@ -264,3 +264,36 @@ for(const [device,viewport] of Object.entries(viewports)){
     });
   }
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`legacy saved note and validation error look correct — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.route('**/aluno/material-anotacao.php',route=>route.fulfill({
+      status:422,contentType:'application/json',
+      body:JSON.stringify({ok:false,error:'Não foi possível salvar. A anotação continua disponível para edição.'})
+    }));
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await page.evaluate(()=>{
+      const template=document.getElementById('fixture-legacy-note');
+      const list=document.querySelector('.student-notes-list');
+      if(!template||!list)throw new Error('Missing real legacy-note markup');
+      list.append(template.content.firstElementChild.cloneNode(true));
+    });
+    const legacy=panel.locator('[data-legacy-note]');
+    await expect(legacy.locator('.student-note-body-preview')).toBeVisible();
+    await expect(legacy.locator('form')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-legacy-list.png`,animations:'disabled'});
+    await legacy.locator('[data-legacy-edit]').click();
+    await expect(legacy.locator('textarea')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-legacy-edit.png`,animations:'disabled'});
+    await legacy.locator('textarea').fill('Meu rascunho não pode ser perdido na falha de gravação.');
+    await legacy.getByRole('button',{name:'Salvar alterações'}).click();
+    const warning=legacy.locator('[data-note-save-status]');
+    await expect(warning).toHaveAttribute('role','alert');
+    await expect(warning).toContainText('Não foi possível salvar.');
+    await expect(legacy.locator('textarea')).toHaveValue('Meu rascunho não pode ser perdido na falha de gravação.');
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-legacy-save-error.png`,animations:'disabled'});
+  });
+}
