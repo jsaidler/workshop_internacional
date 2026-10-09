@@ -245,6 +245,8 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
     await panel.locator('[data-student-note-new] [data-note-question]>summary').click();
     await expect(panel).toHaveClass(/is-page-questioning/);
+    await expect(panel.locator('[data-student-note-new]>summary')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new] [data-note-question]>summary')).toBeVisible();
     await expect(panel.locator('[data-student-note-new]>form>label')).toBeHidden();
     await expect(panel.locator('[data-student-note-new] [name="question_visibility"][value="course"]')).toBeVisible();
   });
