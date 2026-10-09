@@ -194,7 +194,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
             $id=(int)$note['id'];$selection=(string)$note['anchor_type']==='selection';
             $linkedQuestion=function_exists('student_question_from_annotation')?student_question_from_annotation($db,(int)$student['id'],$id):null;
             $panel.='<article class="student-note-item'.($selection?' is-selection':' is-page').'" id="anotacao-'.$id.'" data-annotation-item="'.$id.'">'
-                .'<header><span>'.($selection?'Trecho':'Página').'</span><strong>'.($selection?'Anotação vinculada ao texto':'Anotação geral').'</strong>'.($selection?'<small data-annotation-status="'.$id.'">Localizando trecho…</small>':'').'</header>'
+                .'<header><span>'.($selection?'Trecho':'Página').'</span><strong class="student-note-title">'.h($selection?mb_substr(trim((string)$note['quote_exact']),0,140):'Anotação geral').'</strong>'.($selection?'<small data-annotation-status="'.$id.'">Localizando trecho…</small>':'').'</header>'
                 .'<p class="student-note-body-preview">'.nl2br(h((string)$note['body'])).'</p>'
                 .'<button class="student-note-edit-trigger" type="button" data-annotation-edit="'.$id.'">Editar anotação</button>';
             if($selection)$panel.='<blockquote class="student-note-quote">'.h((string)$note['quote_exact']).'</blockquote>';
