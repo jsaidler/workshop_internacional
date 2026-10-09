@@ -27,7 +27,7 @@ const coarsePointer=window.matchMedia?.('(pointer: coarse)').matches||window.mat
 const sheet=panel.querySelector('.student-notes-sheet');
 const noteBack=panel.querySelector('[data-student-notes-back]');
 const listSavedNotes=()=>{
-  panel.classList.remove('is-editing','is-existing-questioning','is-page-questioning');
+  panel.classList.remove('is-editing','is-existing-questioning','is-page-questioning','is-general-composing');
   panel.querySelectorAll('.student-note-item').forEach(article=>{article.classList.remove('is-active');article.querySelectorAll('[data-note-question]').forEach(question=>question.open=false);});
   if(noteBack)noteBack.hidden=true;
   sheet?.scrollTo({top:0,behavior:'auto'});
@@ -35,6 +35,8 @@ const listSavedNotes=()=>{
 const editSavedNote=article=>{
   if(!article?.matches('.student-note-item'))return;
   compose.hidden=true;setComposeMode(false);
+  const general=panel.querySelector('[data-student-note-new]');if(general)general.open=false;
+  panel.classList.remove('is-general-composing');
   panel.querySelectorAll('.student-note-item').forEach(item=>{item.classList.toggle('is-active',item===article);if(item!==article)item.querySelectorAll('[data-note-question]').forEach(q=>q.open=false);});
   panel.classList.add('is-editing');
   panel.classList.remove('is-existing-questioning','is-page-questioning');
@@ -94,6 +96,17 @@ panel.addEventListener('click',event=>{
 panel.addEventListener('toggle',event=>{
   const details=event.target;
   if(details===panel){if(!panel.open)listSavedNotes();return;}
+  if(details.matches?.('[data-student-note-new]')){
+    panel.classList.toggle('is-general-composing',details.open);
+    const summary=details.querySelector('summary');
+    if(summary)summary.textContent=details.open?'← Todas as anotações':'Nova anotação geral';
+    if(details.open){
+      panel.classList.remove('is-editing','is-existing-questioning');
+      if(noteBack)noteBack.hidden=true;
+      sheet?.scrollTo({top:0,behavior:'auto'});
+    }else panel.classList.remove('is-page-questioning');
+    return;
+  }
   if(!details.matches?.('[data-note-question]'))return;
   const activeArticle=details.closest('.student-note-item.is-active');
   if(activeArticle&&panel.classList.contains('is-editing')){
