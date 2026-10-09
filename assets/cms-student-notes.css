@@ -80,6 +80,9 @@
 .cms-public .student-notes-back{padding:0 0 14px;border-bottom:1px solid var(--line)}
 .cms-public .student-notes-back[hidden]{display:none}
 .cms-public .student-notes-back button{min-height:40px;padding:0;border:0;background:transparent;color:var(--text);cursor:pointer;font:600 11px/1.4 var(--mono);text-transform:uppercase}
+.cms-public .student-note-item header .student-note-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.cms-public .student-note-item header small[data-anchor-state=linked]{display:none}
+.cms-public .student-notes-panel.is-editing .student-note-item.is-active header .student-note-title{display:none}
 .cms-public .student-note-body-preview{margin:12px 0 4px;color:var(--text);font:400 13px/1.55 var(--body);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .cms-public .student-note-edit-trigger{min-height:42px;margin-top:6px;padding:0;border:0;background:none;color:var(--text);cursor:pointer;font:600 11px/1.2 var(--mono);text-decoration:underline;text-underline-offset:4px;text-transform:uppercase}
 .cms-public .student-notes-panel:not(.is-editing) .student-note-item form,.cms-public .student-notes-panel:not(.is-editing) .student-note-item .student-note-quote{display:none}
