@@ -237,7 +237,6 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel).not.toHaveClass(/is-editing/);
     await expect(panel.locator('.student-notes-head')).toBeVisible();
     await expect(panel.locator('[data-annotation-item="2"] form')).toBeHidden();
-    await panel.locator('.student-notes-sheet').evaluate(el=>{el.scrollTop=el.scrollHeight;});
     await panel.locator('[data-student-note-new]>summary').click();
     await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
     await panel.locator('[data-student-note-new] [data-note-question]>summary').click();
