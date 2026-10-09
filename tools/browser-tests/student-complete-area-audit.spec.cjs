@@ -180,6 +180,10 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel.locator('[data-student-note-new]>summary')).toHaveText('← Todas as anotações');
     await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
     await panel.screenshot({path:`student-visual-audit/notes/${device}-general-note.png`,animations:'disabled'});
+    await panel.locator('[data-student-note-new] [data-note-question]>summary').click();
+    await expect(panel.locator('[data-student-note-new]>summary')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new] [data-note-question]>summary')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-general-question.png`,animations:'disabled'});
   });
 }
 
