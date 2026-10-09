@@ -88,7 +88,7 @@ Esta revisão não é intercambiável com a aprovação anterior do PR #215: aqu
 Em revisão no PR #216:
 - a lista apresenta prévias, identificação pelo trecho e ação editar; a edição de notas atuais e legadas ocupa um único estado focado;
 - a conversão em dúvida tem estado separado, mantendo privacidade por autor/turma/curso, o vínculo com o material e o retorno do rascunho;
-- `Nova anotação geral` fica no início da lista e permanece recolhida até acionamento;
+- `Nova anotação geral` fica no início da lista e permanece recolhida até acionamento; quando aberta, apresenta exclusivamente seu compositor e o retorno à lista, sem empilhar os registros existentes;
 - erros de salvamento são exibidos com `role=alert` preservando o rascunho; exclusão requer diálogo explícito com cancelamento;
 - o drawer tem altura efetivamente limitada e área de rolagem interna `position:absolute; top:48px/58px; bottom:0`. O uso de `display:grid` diretamente em `<details open>` sem contenção permitia o conteúdo escapar da viewport e tornava o último botão inacessível;
 - o shell mobile compensa a barra fixa por `scroll-padding-bottom`, não ajustes contraditórios por rota; o cabeçalho e a barra persistente são opacos, sem blur do conteúdo atrás;
