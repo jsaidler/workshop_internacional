@@ -93,6 +93,7 @@
 .cms-public .student-notes-panel.is-editing .student-note-quote{max-height:150px;overflow:auto}
 .cms-public .student-notes-panel.is-editing .student-note-actions-group{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
 .cms-public .student-note-actions-group .button{min-height:44px}
+.cms-public .student-notes-panel.is-existing-questioning .student-notes-back{display:none}
 .cms-public .student-notes-panel.is-existing-questioning .student-note-item.is-active .student-note-edit-field,.cms-public .student-notes-panel.is-existing-questioning .student-note-item.is-active .student-note-actions-group,.cms-public .student-notes-panel.is-existing-questioning .student-note-item.is-active .student-note-quote{display:none}
 .cms-public .student-notes-panel.is-existing-questioning .student-note-item.is-active .student-note-question{border-top:0;margin-top:0}
 .cms-public .student-notes-panel.is-existing-questioning .student-note-item.is-active .student-note-question>summary{justify-content:flex-start;font-size:11px}
