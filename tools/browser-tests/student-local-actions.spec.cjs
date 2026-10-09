@@ -56,3 +56,28 @@ test('expired session is reported explicitly and preserves the unsaved local val
   await expect(page.locator('form[data-student-local-form] [data-local-status]')).toHaveText('Sua sessão expirou. Entre novamente para continuar.');
   await expect(input).toHaveValue('ainda não salvo');
 });
+
+test('mobile AJAX update preserves inner scroll and keeps content above persistent navigation',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.route('**/fixture/save',route=>route.fulfill({status:200,contentType:'text/html',body:pageHtml('Atualizado no celular')}));
+  await page.goto(url,{waitUntil:'networkidle'});
+  const main=page.locator('.student-main'),nav=page.locator('.student-mobile-nav');
+  await expect(nav).toBeVisible();
+  const beforeGeometry=await page.evaluate(()=>{
+    const main=document.querySelector('.student-main'),nav=document.querySelector('.student-mobile-nav');
+    return{bottom:main.getBoundingClientRect().bottom,navTop:nav.getBoundingClientRect().top,height:main.clientHeight,total:main.scrollHeight,rootHeight:document.documentElement.scrollHeight,viewport:innerHeight};
+  });
+  expect(beforeGeometry.bottom).toBeLessThanOrEqual(beforeGeometry.navTop+1);
+  expect(beforeGeometry.total).toBeGreaterThan(beforeGeometry.height);
+  expect(beforeGeometry.rootHeight).toBeLessThanOrEqual(beforeGeometry.viewport+1);
+  await main.evaluate(el=>el.scrollTop=el.scrollHeight);
+  const record=page.locator('[data-student-local-key="fixture-list"]');
+  const before=await record.evaluate(el=>({top:el.getBoundingClientRect().top,y:document.querySelector('.student-main').scrollTop}));
+  await page.locator('form[data-student-local-form] input[name="value"]').fill('nova observação');
+  await page.locator('form[data-student-local-form] button[type="submit"]').click();
+  await expect(page.locator('[data-list-value]')).toHaveText('Atualizado no celular');
+  const after=await record.evaluate(el=>({top:el.getBoundingClientRect().top,y:document.querySelector('.student-main').scrollTop}));
+  expect(Math.abs(after.top-before.top)).toBeLessThan(4);
+  expect(Math.abs(after.y-before.y)).toBeLessThan(4);
+  await page.screenshot({path:'student-visual-audit/shell/phone-after-ajax.png',animations:'disabled'});
+});
