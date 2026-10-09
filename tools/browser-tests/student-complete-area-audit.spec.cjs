@@ -173,7 +173,6 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await panel.locator('[data-annotation-item="2"] [data-note-question]>summary').click();
     await expect(panel.locator('[data-student-notes-back-button]')).toBeVisible();
     await panel.locator('[data-student-notes-back-button]').click();
-    await panel.locator('.student-notes-sheet').evaluate(el=>{el.scrollTop=el.scrollHeight;});
     await panel.locator('[data-student-note-new]>summary').click();
     await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
     await panel.screenshot({path:`student-visual-audit/notes/${device}-general-note.png`,animations:'disabled'});
