@@ -81,6 +81,21 @@ Contrato de produto para Material:
 
 Este contrato é local ao compositor do material; não altera a navegação global (Início/Cursos/Caderno/Laboratório), suas URLs nem a política de histórico.
 
+### Revisão corretiva da UI/UX de anotações persistidas — 09/10/2026
+
+Esta revisão não é intercambiável com a aprovação anterior do PR #215: aquele teste cobriu só criação e publicação. O fluxo de anotação existente foi encontrado com texto, ações de edição, conversão em dúvida e anotação geral empilhados, sem inspeção do estado de edição, como comprovado por captura de produção.
+
+Em revisão no PR #216:
+- a lista apresenta prévias, identificação pelo trecho e ação editar; a edição de notas atuais e legadas ocupa um único estado focado;
+- a conversão em dúvida tem estado separado, mantendo privacidade por autor/turma/curso, o vínculo com o material e o retorno do rascunho;
+- `Nova anotação geral` fica no início da lista e permanece recolhida até acionamento;
+- erros de salvamento são exibidos com `role=alert` preservando o rascunho; exclusão requer diálogo explícito com cancelamento;
+- o drawer tem altura efetivamente limitada e área de rolagem interna `position:absolute; top:48px/58px; bottom:0`. O uso de `display:grid` diretamente em `<details open>` sem contenção permitia o conteúdo escapar da viewport e tornava o último botão inacessível;
+- o shell mobile compensa a barra fixa por `scroll-padding-bottom`, não ajustes contraditórios por rota; o cabeçalho e a barra persistente são opacos, sem blur do conteúdo atrás;
+- testes incluem muitos registros com última ação rolável, estados de anotação/edição/dúvida/geral, erro de atualização, remoção confirmada/cancelada, 46 superfícies básicas em desktop/telefone e verificação de controles alcançáveis sem sobreposição.
+
+A matriz de estados e respectivas lacunas obrigatórias está em `docs/STUDENT_UI_STATE_MATRIX_2026-10-09.md`. **Cobrir 46 composições de tela não significa ter avaliado todas as suas possibilidades.** Enquanto houver estado sem inspeção funcional e visual, não se deve afirmar auditoria completa da Área do aluno. A integração e atualização da hospedagem exigem gates verdes e revisão humana do material renderizado.
+
 ### Roteiro editável dentro do registro — 07/10/2026
 
 O roteiro associado ao Caderno é uma cópia contextual daquele registro, não um fluxo controlado pelo sistema. A própria folha do registro expõe, para cada etapa, ações independentes de **Marcar/Desmarcar**, **Editar** e **Timer**.
