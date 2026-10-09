@@ -27,6 +27,7 @@ const coarsePointer=window.matchMedia?.('(pointer: coarse)').matches||window.mat
 const sheet=panel.querySelector('.student-notes-sheet');
 const noteBack=panel.querySelector('[data-student-notes-back]');
 const listSavedNotes=()=>{
+  const general=panel.querySelector('[data-student-note-new]');if(general)general.open=false;
   panel.classList.remove('is-editing','is-existing-questioning','is-page-questioning','is-general-composing');
   panel.querySelectorAll('.student-note-item').forEach(article=>{article.classList.remove('is-active');article.querySelectorAll('[data-note-question]').forEach(question=>question.open=false);});
   if(noteBack)noteBack.hidden=true;
