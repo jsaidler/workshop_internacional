@@ -5,7 +5,7 @@ const number=v=>{const n=Number(String(v??'').replace(',','.'));return Number.is
 const pretty=n=>!Number.isFinite(n)?'':String(Math.round(n*1000)/1000).replace('.',',');
 const once=(el,key)=>{if(!el||el.dataset[key]==='1')return false;el.dataset[key]='1';return true;};
 function init(scope=document){
-  const togglePanel=(openSelector,panelSelector,cancelSelector)=>{const open=qs(openSelector,scope),panel=qs(panelSelector,document),cancel=qs(cancelSelector,panel||scope);if(!open||!panel||!once(open,'workbenchToggle'))return;open.addEventListener('click',()=>{panel.hidden=false;open.setAttribute('aria-expanded','true');qs('input,select,textarea',panel)?.focus();});cancel?.addEventListener('click',()=>{panel.hidden=true;open.setAttribute('aria-expanded','false');});};
+  const togglePanel=(openSelector,panelSelector,cancelSelector)=>{const open=qs(openSelector,scope),panel=qs(panelSelector,document),cancel=qs(cancelSelector,panel||scope);if(!open||!panel||!once(open,'workbenchToggle'))return;open.addEventListener('click',()=>{panel.hidden=false;open.setAttribute('aria-expanded','true');qsa('input:not([type="hidden"]):not([disabled]),select:not([disabled]),textarea:not([disabled])',panel).find(field=>field.getClientRects().length>0&&getComputedStyle(field).visibility!=='hidden')?.focus();});cancel?.addEventListener('click',()=>{panel.hidden=true;open.setAttribute('aria-expanded','false');});};
   togglePanel('[data-process-new-toggle]','[data-process-new-panel]','[data-process-new-cancel]');
   togglePanel('[data-inventory-new-toggle]','[data-inventory-new-panel]','[data-inventory-new-cancel]');
   togglePanel('[data-question-new-toggle]','[data-question-new-panel]','[data-question-new-cancel]');

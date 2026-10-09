@@ -50,6 +50,16 @@ O inventário de rotas canônicas está em `tools/browser-tests/student-complete
 
 Foi identificada uma falha transversal no workflow `student-visual-audit`: a geração do pacote de capturas da Aula 3 terminava em um commit automático na **branch de qualquer PR**, alterando a revisão durante a validação. A etapa de commit foi retirada, e o workflow passou a operar com `contents: read`. A saída visual fica disponível como artefato, sem modificar o código-fonte examinado. A atualização persistente de imagens da Aula 3 exige operação explícita, separada e revisada, no seu próprio escopo. Um PR não pode mudar de SHA por efeito colateral de testes.
 
+## Auditoria por domínio — Dúvidas e formulários (09/10/2026)
+
+**Achado D-01 — fixture incompleta:** `student-secondary-screens-audit.html?screen=question-new` só apresentava `private` e `cohort`; o formulário real `aluno/duvidas.php` também permite `course` (todas as turmas do mesmo curso). A fixture tinha ainda controles sem nomes e campos sem os atributos `required` reais. Corrigidos o markup da fixture, a verificação de paridade PHP e os testes de visibilidade em ambas as viewports. Teste e renderização: `tools/browser-tests/student-complete-area-audit.spec.cjs`, capturas em `student-visual-audit/questions/`.
+
+**Achado D-02 — foco em campo invisível:** o controlador compartilhado `assets/student-workbench.js` aplicava `.focus()` no primeiro `input`, inclusive campos `type=hidden` de formulários que o servidor já preenche automaticamente. A abertura podia manter foco no acionador. O seletor agora busca o primeiro controle visível e habilitado; o teste usa o JS real e verifica foco no assunto após reabrir o painel. Esta correção transversal também alcança painéis de inventário/processos que consomem o mesmo controlador.
+
+**Verificações introduzidas:** estado aberto e cancelado, `aria-expanded`, título/corpo obrigatórios, teto de 180 caracteres, exclusividade do grupo de três rádios, navegação por foco, renderização de cada visibilidade e **listagem simultânea de dúvida privada, da turma e do curso** em telefone 390×844 e desktop 1440×1100.
+
+**Ainda não certificados:** sucesso real de POST, erro de servidor, lista vazia/longa de conversas, professor/aluno com matrículas diferentes, deep link e resposta, reconciliação da conversa depois de exclusão e a ausência de oclusão visual causada pela navegação inferior durante o scroll. Os testes de autorização por curso introduzidos no PR #215 continuam necessários, mas não equivalem a essa inspeção.
+
 ## Gates que não podem ser flexibilizados
 
 - [ ] Todos os estados do fluxo de anotações, incluindo notas antigas, confirmação de remoção, erro e retorno, renderizados e inspecionados em ambas as viewports.

@@ -357,3 +357,73 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(converted.locator('.student-note-edit-trigger')).toBeVisible();
   });
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+  test(`real new-question form: disclosure, validation, all visibility scopes and keyboard focus — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-new'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    // The real student panel controller must be used rather than a fixture-only imitation.
+    await page.addScriptTag({url:'/assets/student-workbench.js'});
+    const trigger=page.locator('[data-question-new-toggle]');
+    const panel=page.locator('[data-question-new-panel]');
+    const form=panel.locator('form');
+    await expect(panel).toBeVisible();
+    await expect(form.locator('input[name="visibility"]')).toHaveCount(3);
+    await expect(form.locator('input[name="visibility"]:checked')).toHaveValue('private');
+    await expect(form.locator('[name="title"]')).toHaveAttribute('required','');
+    await expect(form.locator('[name="title"]')).toHaveAttribute('maxlength','180');
+    await expect(form.locator('[name="body"]')).toHaveAttribute('required','');
+    await form.locator('[data-question-new-cancel]').click();
+    await expect(panel).toBeHidden();
+    await trigger.click();
+    await expect(panel).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-expanded','true');
+    await expect(form.locator('select[name="topic"]')).toBeFocused();
+
+    await form.locator('[name="title"]').fill('');
+    await form.locator('[name="body"]').fill('');
+    expect(await form.evaluate(el=>el.checkValidity())).toBe(false);
+    await form.locator('[name="title"]').fill('Pergunta sobre a segunda revelação');
+    await form.locator('[name="body"]').fill('Posso reutilizar o banho da primeira revelação?');
+    expect(await form.evaluate(el=>el.checkValidity())).toBe(true);
+
+    for(const [scope,label] of [
+      ['private','Somente eu e o professor'],
+      ['cohort','Minha turma'],
+      ['course','Todas as turmas deste curso']
+    ]){
+      const radio=form.locator(`input[name="visibility"][value="${scope}"]`);
+      await expect(form.getByText(label,{exact:true})).toBeVisible();
+      await radio.scrollIntoViewIfNeeded();
+      await radio.locator('xpath=..').click();
+      await expect(radio).toBeChecked();
+      await expect(form.locator('input[name="visibility"]:checked')).toHaveCount(1);
+      await page.screenshot({path:`student-visual-audit/questions/${device}-new-question-${scope}.png`,animations:'disabled'});
+    }
+    await expect(form.getByRole('button',{name:'Publicar dúvida'})).toBeVisible();
+    await form.locator('[data-question-new-cancel]').click();
+    await expect(panel).toBeHidden();
+    await expect(trigger).toHaveAttribute('aria-expanded','false');
+  });
+}
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+  test(`question list distinguishes private, cohort and course-shared conversations — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    const items=page.locator('.student-test-row');
+    await expect(items).toHaveCount(3);
+    for(const [name,title] of [
+      ['Turma','Como avaliar as sombras no positivo?'],
+      ['Privada','Dúvida sobre o banho de amônia'],
+      ['Curso','Exposição com filme ortocromático']
+    ]){
+      const row=items.filter({hasText:title});
+      await expect(row).toHaveCount(1);
+      await expect(row.locator('.student-status',{hasText:name})).toBeVisible();
+    }
+    await page.screenshot({path:`student-visual-audit/questions/${device}-questions-three-scopes.png`,fullPage:true,animations:'disabled'});
+  });
+}
