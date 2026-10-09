@@ -146,7 +146,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
             .'<p>O texto da anotação será usado como a dúvida. Você não precisa escrevê-lo de novo.</p>'
             .'<input type="hidden" name="cohort" value="'.h($cohortUuid).'">'
             .'<label>Título da dúvida<input name="question_title" maxlength="180" placeholder="Resuma a dúvida em uma frase" data-note-question-title></label>'
-            .'<fieldset><legend>Quem pode participar?</legend><label><input type="radio" name="question_visibility" value="private" checked> Somente eu e o professor</label><label><input type="radio" name="question_visibility" value="cohort"> Minha turma</label></fieldset>'
+            .'<fieldset><legend>Quem pode participar?</legend><label><input type="radio" name="question_visibility" value="private" checked> Somente eu e o professor</label><label><input type="radio" name="question_visibility" value="cohort"> Minha turma</label><label><input type="radio" name="question_visibility" value="course"> Todas as turmas deste curso</label></fieldset>'
             .'<button class="button button-secondary" type="submit" name="'.$submitName.'" value="'.$submitValue.'" data-note-question-publish>'.$button.'</button>'
             .'</div></details>';
     };
