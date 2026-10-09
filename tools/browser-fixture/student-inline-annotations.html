@@ -67,4 +67,17 @@
 </template>
 <script type="application/json" data-student-annotation-data>[{"id":1,"anchorType":"selection","blockKey":"introducao:p:1","sectionKey":"introducao","exact":"fotografia experimental exige atenção ao processo","prefix":"A ","suffix":" e ao resultado.","start":2,"end":51,"sourceBlockHash":"old1"},{"id":2,"anchorType":"selection","blockKey":"processo:p:1","sectionKey":"processo","exact":"O texto antigo desta passagem.","prefix":"","suffix":"","start":0,"end":29,"sourceBlockHash":"old2"},{"id":3,"anchorType":"selection","blockKey":"processo:p:9","sectionKey":"processo","exact":"Um parágrafo que foi removido.","prefix":"","suffix":"","start":0,"end":31,"sourceBlockHash":"old3"}]</script>
 </div></details>
+<script>
+if(new URLSearchParams(location.search).get('state')==='empty'){
+  const panel=document.querySelector('[data-student-notes-panel]');
+  panel.querySelector('.student-notes-list')?.remove();
+  const msg=document.createElement('p');
+  msg.className='student-notes-empty';
+  msg.textContent='Você ainda não fez anotações nesta página.';
+  panel.querySelector('[data-student-note-new]')?.after(msg);
+  const source=panel.querySelector('[data-student-annotation-data]');
+  if(source)source.textContent='[]';
+  document.querySelectorAll('.student-notes-entry b,.student-notes-panel>summary b').forEach(b=>{b.textContent='0';b.hidden=true;});
+}
+</script>
 <script defer src="/assets/public.js?v=runtime-wiring-test"></script></body></html>
