@@ -51,7 +51,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   render:
@@ -74,20 +74,6 @@ jobs:
           npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-current-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-process-execution-state-audit.spec.cjs tools/browser-tests/admin-process-domain-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
           node tools/generate-aula3-screenshot-pack.cjs student-visual-audit/complete/desktop migrations/assets/aula3-hires.pack.b64
           npx playwright test tools/browser-tests/student-aula3-material-audit.spec.cjs --workers=1
-      - name: Commit refreshed Aula 3 screenshot pack
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          if [[ -z "$(git status --porcelain -- migrations/assets/aula3-hires.pack.b64)" ]]; then
-            echo 'Aula 3 screenshot pack already current.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add migrations/assets/aula3-hires.pack.b64
-          git commit -m 'Refresh Aula 3 screenshot pack'
-          git push origin HEAD:"$HEAD_REF"
       - name: Upload rendered screens
         if: always()
         uses: actions/upload-artifact@v4

@@ -46,6 +46,10 @@ O inventário de rotas canônicas está em `tools/browser-tests/student-complete
 - Regressões existentes cobrem uma série de processos e transições, mas **não são equivalentes à inspeção visual de cada um dos estados acima**.
 - Nenhuma superfície sem avaliação de seus estados aplicáveis pode ser declarada 'aprovada integralmente'. O PR #216 **não** representa por si só a conclusão da revisão de todas as telas.
 
+## Imutabilidade da auditoria visual (09/10/2026)
+
+Foi identificada uma falha transversal no workflow `student-visual-audit`: a geração do pacote de capturas da Aula 3 terminava em um commit automático na **branch de qualquer PR**, alterando a revisão durante a validação. A etapa de commit foi retirada, e o workflow passou a operar com `contents: read`. A saída visual fica disponível como artefato, sem modificar o código-fonte examinado. A atualização persistente de imagens da Aula 3 exige operação explícita, separada e revisada, no seu próprio escopo. Um PR não pode mudar de SHA por efeito colateral de testes.
+
 ## Gates que não podem ser flexibilizados
 
 - [ ] Todos os estados do fluxo de anotações, incluindo notas antigas, confirmação de remoção, erro e retorno, renderizados e inspecionados em ambas as viewports.
