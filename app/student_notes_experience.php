@@ -177,6 +177,17 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         .$questionComposer(false)
         .'</form>';
 
+    $panel.='<details class="student-note-new" data-student-note-new><summary>Nova anotação geral</summary><form method="post" action="/aluno/material-anotacao.php">'
+        .'<input type="hidden" name="_csrf" value="'.h(csrf_token('student-material-note')).'">'
+        .'<input type="hidden" name="page_id" value="'.(int)$page['id'].'">'
+        .'<input type="hidden" name="return_to" value="'.h($returnTo).'">'
+        .'<input type="hidden" name="annotation_action" value="create_page">'
+        .'<input type="hidden" name="source_page_revision" value="'.h($revision).'">'
+        .'<label>Anotação da página<textarea name="body" rows="4" maxlength="5000" placeholder="Para uma ideia que não pertence a um trecho específico."></textarea></label>'
+        .'<button class="button" type="submit">Salvar anotação da página</button>'
+        .$questionComposer(false)
+        .'</form></details>';
+
     if($annotations||$legacyNotes){
         $panel.='<div class="student-notes-list">';
         foreach($annotations as $note){
@@ -206,16 +217,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         $panel.='</div>';
     }else $panel.='<p class="student-notes-empty">Você ainda não fez anotações nesta página.</p>';
 
-    $panel.='<details class="student-note-new" data-student-note-new><summary>Nova anotação geral</summary><form method="post" action="/aluno/material-anotacao.php">'
-        .'<input type="hidden" name="_csrf" value="'.h(csrf_token('student-material-note')).'">'
-        .'<input type="hidden" name="page_id" value="'.(int)$page['id'].'">'
-        .'<input type="hidden" name="return_to" value="'.h($returnTo).'">'
-        .'<input type="hidden" name="annotation_action" value="create_page">'
-        .'<input type="hidden" name="source_page_revision" value="'.h($revision).'">'
-        .'<label>Anotação da página<textarea name="body" rows="4" maxlength="5000" placeholder="Para uma ideia que não pertence a um trecho específico."></textarea></label>'
-        .'<button class="button" type="submit">Salvar anotação da página</button>'
-        .$questionComposer(false)
-        .'</form></details>';
+
 
     $client=[];foreach($annotations as $note)$client[]=['id'=>(int)$note['id'],'anchorType'=>(string)$note['anchor_type'],'blockKey'=>(string)$note['block_key'],'sectionKey'=>(string)$note['section_key'],'exact'=>(string)$note['quote_exact'],'prefix'=>(string)$note['quote_prefix'],'suffix'=>(string)$note['quote_suffix'],'start'=>$note['start_offset']===null?null:(int)$note['start_offset'],'end'=>$note['end_offset']===null?null:(int)$note['end_offset'],'sourceBlockHash'=>(string)$note['source_block_hash']];
     $json=json_encode($client,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT)?:'[]';
