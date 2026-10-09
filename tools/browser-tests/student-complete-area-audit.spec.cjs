@@ -152,3 +152,27 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await panel.screenshot({path:`student-visual-audit/notes/${device}-question.png`,animations:'disabled'});
   });
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`student saved annotations — list, edit, question and general note — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await expect(panel.locator('[data-annotation-item="2"] .student-note-body-preview')).toBeVisible();
+    await expect(panel.locator('[data-annotation-item="2"] textarea')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-saved-list.png`,animations:'disabled'});
+    await panel.locator('[data-annotation-edit="2"]').click();
+    await expect(panel.locator('[data-student-notes-back-button]')).toBeVisible();
+    await expect(panel.locator('[data-annotation-item="2"] textarea')).toBeVisible();
+    await expect(panel.locator('[data-student-note-new]')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-saved-edit.png`,animations:'disabled'});
+    await panel.locator('[data-annotation-item="2"] [data-note-question]>summary').click();
+    await expect(panel.locator('[data-annotation-item="2"] .student-note-actions-group')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-saved-question.png`,animations:'disabled'});
+    await panel.locator('[data-student-notes-back-button]').click();
+    await panel.locator('[data-student-note-new]>summary').click();
+    await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-general-note.png`,animations:'disabled'});
+  });
+}
