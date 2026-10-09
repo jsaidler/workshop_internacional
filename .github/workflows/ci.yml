@@ -94,6 +94,7 @@ jobs:
             php tools/test-student-process-notes-ux.php
             php tools/test-student-notes-runtime.php
             php tools/test-student-question-annotation.php
+            php tools/test-student-question-course-visibility.php
             php tools/test-student-interaction-continuity.php
             php tools/test-student-mechanics-audit.php
             php tools/test-student-process-manager.php
