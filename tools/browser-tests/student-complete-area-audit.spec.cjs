@@ -103,9 +103,9 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar como concluída',exact:true})).toBeVisible();await expect(page.getByText('Ir para próxima etapa',{exact:false})).toHaveCount(0);
       }
       if(device==='phone'&&name!=='login'&&name!=='activation-password'){
-        const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar,.cms-topbar'),reserve=document.querySelector('.student-shell')||document.body;if(!nav||!top||!reserve)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),rs=getComputedStyle(reserve),nr=nav.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBottom:nr.bottom,navHeight:nr.height,viewportHeight:innerHeight,reservedBottom:parseFloat(rs.paddingBottom||'0')};});
+        const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar,.cms-topbar'),reserve=document.querySelector('.student-shell')||document.body;if(!nav||!top||!reserve)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),rs=getComputedStyle(reserve),nr=nav.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBottom:nr.bottom,navHeight:nr.height,viewportHeight:innerHeight,reservedBottom:parseFloat(rs.paddingBottom||'0'),scrollPaddingBottom:parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom||'0')};});
         expect(mobileChrome,`${name}: authenticated mobile surface must expose global chrome`).not.toBeNull();
-        expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);expect(mobileChrome.reservedBottom,`${name}: surface must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+        expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);expect(mobileChrome.reservedBottom,`${name}: surface must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);expect(mobileChrome.scrollPaddingBottom,`${name}: scrolling must account for the fixed mobile navigation`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
       }
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`${name} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await page.screenshot({path:`student-visual-audit/complete/${device}/${name}.png`,fullPage:true,animations:'disabled'});
@@ -150,5 +150,210 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(composer.locator('input[name="question_visibility"]')).toHaveCount(3);
     await expect(composer.locator('input[value="course"]')).toBeVisible();
     await panel.screenshot({path:`student-visual-audit/notes/${device}-question.png`,animations:'disabled'});
+  });
+}
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`student saved annotations — list, edit, question and general note — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await expect(panel.locator('[data-annotation-item="2"] .student-note-body-preview')).toBeVisible();
+    await expect(panel.locator('[data-annotation-item="2"] textarea')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-saved-list.png`,animations:'disabled'});
+    await panel.locator('[data-annotation-edit="2"]').click();
+    await expect(panel.locator('[data-student-notes-back-button]')).toBeVisible();
+    await expect(panel.locator('[data-annotation-item="2"] textarea')).toBeVisible();
+    await expect(panel.locator('[data-student-note-new]')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-saved-edit.png`,animations:'disabled'});
+    await panel.locator('[data-annotation-item="2"] [data-note-question]>summary').click();
+    await expect(panel.locator('[data-annotation-item="2"] .student-note-actions-group')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-saved-question.png`,animations:'disabled'});
+    await panel.locator('[data-annotation-item="2"] [data-note-question]>summary').click();
+    await expect(panel.locator('[data-student-notes-back-button]')).toBeVisible();
+    await panel.locator('[data-student-notes-back-button]').click();
+    await panel.locator('[data-student-note-new]>summary').click();
+    await expect(panel).toHaveClass(/is-general-composing/);
+    await expect(panel.locator('.student-notes-list')).toBeHidden();
+    await expect(panel.locator('.student-notes-head')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new]>summary')).toHaveText('← Todas as anotações');
+    await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-general-note.png`,animations:'disabled'});
+    await panel.locator('[data-student-note-new] [data-note-question]>summary').click();
+    await expect(panel.locator('[data-student-note-new]>summary')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new] [data-note-question]>summary')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-general-question.png`,animations:'disabled'});
+  });
+}
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`saved annotation deletion confirmation and cancellation — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await panel.locator('[data-annotation-edit="1"]').click();
+    await panel.locator('[data-annotation-item="1"] button[value="remove"]').click();
+    const dialog=panel.locator('[data-note-remove-confirm]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button',{name:'Cancelar'})).toBeVisible();
+    await expect(dialog.getByRole('button',{name:'Remover anotação'})).toBeVisible();
+    await page.screenshot({path:`student-visual-audit/notes/${device}-remove-confirmation.png`,animations:'disabled'});
+    await dialog.getByRole('button',{name:'Cancelar'}).click();
+    await expect(dialog).toBeHidden();
+    await expect(panel.locator('[data-annotation-item="1"] textarea')).toBeVisible();
+  });
+}
+
+for(const [device,viewport] of Object.entries(viewports)){
+  for(const [name,path] of screens){
+    test(`student visible controls are reachable and unobstructed — ${device} ${name}`,async({page})=>{
+      test.setTimeout(90000);
+      await page.setViewportSize(viewport);
+      await page.goto(fixture(path),{waitUntil:'networkidle'});
+      if(name!=='material')await ensureCanonicalShellStyles(page);
+      await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      if(name==='new-record'||name==='toolbox'){
+        await page.evaluate(selector=>{
+          const d=document.querySelector(selector);
+          if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}
+        },name==='new-record'?'.student-create-dialog':'.student-toolbox');
+      }
+      const controls=page.locator('button:visible,a[href]:visible,summary:visible,[role="button"]:visible');
+      const count=await controls.count();
+      expect(count,`${name} must contain visible interactive controls`).toBeGreaterThan(0);
+      for(let i=0;i<count;i++){
+        const locator=controls.nth(i);
+        if(!await locator.isVisible())continue;
+        const item=await locator.evaluate(el=>{
+          const modal=document.querySelector('dialog[open]:modal');
+          if(modal&&!modal.contains(el))return{skip:true};
+          const style=getComputedStyle(el);
+          if(style.pointerEvents==='none')return{skip:true};
+          return {skip:false,tag:el.tagName,label:(el.getAttribute('aria-label')||el.textContent||'').trim().slice(0,80)};
+        });
+        if(item.skip)continue;
+        await locator.scrollIntoViewIfNeeded({timeout:3000});
+        const measure=()=>locator.evaluate(el=>{
+          const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+          const hit=document.elementFromPoint(x,y);
+          return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height,
+            viewport:[innerWidth,innerHeight],hit:!!hit&&(hit===el||el.contains(hit)),
+            actual:hit?.tagName||null,actualClass:typeof hit?.className==='string'?hit.className.slice(0,120):'',
+            actualHref:hit?.getAttribute('href')||'',x,y};
+        });
+        let geometry=await measure();
+        // Browsers do not account for the fixed bottom navigation when deciding
+        // whether an element is "already in view". Try actual user-equivalent
+        // scrolling before declaring it blocked; never force-click the target.
+        for(let n=0;!geometry.hit&&n<5;n++){
+          await page.mouse.move(Math.round(viewport.width/2),Math.round(viewport.height*0.5));
+          await page.mouse.wheel(0,Math.round(viewport.height*0.25));
+          await page.waitForTimeout(60);
+          geometry=await measure();
+        }
+        expect(geometry.width,`${device} ${name} control "${item.label}" has no width`).toBeGreaterThan(0);
+        expect(geometry.height,`${device} ${name} control "${item.label}" has no height`).toBeGreaterThan(0);
+        expect(geometry.left,`${device} ${name} control "${item.label}" starts outside screen`).toBeGreaterThanOrEqual(-1);
+        expect(geometry.right,`${device} ${name} control "${item.label}" exceeds screen`).toBeLessThanOrEqual(viewport.width+1);
+        expect(geometry.top,`${device} ${name} control "${item.label}" is above visible viewport`).toBeGreaterThanOrEqual(-1);
+        expect(geometry.bottom,`${device} ${name} control "${item.label}" is below visible viewport`).toBeLessThanOrEqual(viewport.height+1);
+        expect(geometry.hit,`${device} ${name} control "${item.label}" blocked by ${geometry.actual}.${geometry.actualClass} href=${geometry.actualHref} at ${geometry.x},${geometry.y} after scroll`).toBe(true);
+      }
+    });
+  }
+}
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`legacy saved note and validation error look correct — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.route('**/aluno/material-anotacao.php',route=>route.fulfill({
+      status:422,contentType:'application/json',
+      body:JSON.stringify({ok:false,error:'Não foi possível salvar. A anotação continua disponível para edição.'})
+    }));
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await page.evaluate(()=>{
+      const template=document.getElementById('fixture-legacy-note');
+      const list=document.querySelector('.student-notes-list');
+      if(!template||!list)throw new Error('Missing real legacy-note markup');
+      list.append(template.content.firstElementChild.cloneNode(true));
+    });
+    const legacy=panel.locator('[data-legacy-note]');
+    await expect(legacy.locator('.student-note-body-preview')).toBeVisible();
+    await expect(legacy.locator('form')).toBeHidden();
+    await legacy.locator('[data-legacy-edit]').scrollIntoViewIfNeeded();
+    const inViewport=await legacy.locator('[data-legacy-edit]').evaluate(el=>{
+      const box=el.getBoundingClientRect();
+      const sheet=el.closest('.student-notes-sheet')?.getBoundingClientRect();
+      return !!sheet&&box.top>=sheet.top&&box.bottom<=sheet.bottom&&box.left>=sheet.left&&box.right<=sheet.right;
+    });
+    expect(inViewport,`${device}: legacy editor action must be visible in the actual notes sheet`).toBe(true);
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-legacy-list.png`,animations:'disabled'});
+    await legacy.locator('[data-legacy-edit]').click();
+    await expect(legacy.locator('textarea')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-legacy-edit.png`,animations:'disabled'});
+    await legacy.locator('textarea').fill('Meu rascunho não pode ser perdido na falha de gravação.');
+    await legacy.getByRole('button',{name:'Salvar alterações'}).click();
+    const warning=legacy.locator('[data-note-save-status]');
+    await expect(warning).toHaveAttribute('role','alert');
+    await expect(warning).toContainText('Não foi possível salvar.');
+    await expect(legacy.locator('textarea')).toHaveValue('Meu rascunho não pode ser perdido na falha de gravação.');
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-legacy-save-error.png`,animations:'disabled'});
+  });
+}
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`student notes empty state retains an accessible create action — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-inline-annotations.html?state=empty'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await expect(panel.locator('.student-notes-empty')).toHaveText('Você ainda não fez anotações nesta página.');
+    await expect(panel.locator('[data-annotation-item]')).toHaveCount(0);
+    await expect(panel.locator('[data-student-note-new]>summary')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-empty-list.png`,animations:'disabled'});
+    await panel.locator('[data-student-note-new]>summary').click();
+    await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
+    await expect(panel.locator('.student-notes-empty')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-empty-new-general.png`,animations:'disabled'});
+  });
+}
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`converting a saved selection note to a page note preserves its text — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.route('**/aluno/material-anotacao.php',route=>{
+      const form=route.request().postData()||'';
+      expect(form).toContain('name="annotation_action"');
+      expect(form).toContain('detach');
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+        ok:true,action:'detach',
+        annotation:{id:1,anchorType:'page',sectionKey:'introducao',body:'Nota vinculada ao processo e à exposição.',
+          exact:'',prefix:'',suffix:'',blockKey:'',start:null,end:null,sourceBlockHash:''}
+      })});
+    });
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await panel.locator('[data-annotation-edit="1"]').click();
+    const original=panel.locator('[data-annotation-item="1"]');
+    await expect(original).toHaveClass(/is-selection/);
+    await expect(panel.locator(':scope > summary b')).toHaveText('3');
+    await original.getByRole('button',{name:'Tornar geral'}).click();
+    await expect(panel.locator(':scope > summary b')).toHaveText('3');
+    const converted=panel.locator('[data-annotation-item="1"]');
+    await expect(converted).toHaveCount(1);
+    await expect(converted).toHaveClass(/is-page/);
+    await expect(converted).toHaveClass(/is-active/);
+    await expect(converted.locator('textarea[name="body"]')).toHaveValue('Nota vinculada ao processo e à exposição.');
+    await expect(converted.locator('.student-note-quote')).toHaveCount(0);
+    await expect(converted.getByRole('button',{name:'Tornar geral'})).toHaveCount(0);
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-detached-to-page.png`,animations:'disabled'});
+    await panel.locator('[data-student-notes-back-button]').click();
+    await expect(converted.locator('.student-note-body-preview')).toContainText('Nota vinculada ao processo');
+    await expect(converted.locator('.student-note-edit-trigger')).toBeVisible();
   });
 }

@@ -153,7 +153,8 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
     $entry='<div class="student-notes-entry"><a href="'.h($returnTo).'" aria-controls="anotacoes"><span>Anotações</span>'.($count>0?'<b>'.$count.'</b>':'').'</a></div>';
     $panel='<details class="student-notes-panel" id="anotacoes" data-student-notes-panel data-student-page-revision="'.h($revision).'"'.($open?' open':'').'>';
     $panel.='<summary><span>Anotações</span>'.($count>0?'<b>'.$count.'</b>':'').'</summary>';
-    $panel.='<div class="student-notes-sheet"><header class="student-notes-head"><div><span>Material</span><h2>Suas anotações</h2></div><p>Selecione um trecho do texto para anotar diretamente sobre ele. Anotações gerais continuam disponíveis para a página inteira.</p></header>';
+    $panel.='<div class="student-notes-sheet"><header class="student-notes-head"><div><span>Material</span><h2>Suas anotações</h2></div><p>Selecione uma anotação para editar ou marque um trecho do material.</p></header>';
+    $panel.='<div class="student-notes-back" data-student-notes-back hidden><button type="button" data-student-notes-back-button>← Todas as anotações</button></div>';
 
     $panel.='<form class="student-inline-note-compose" method="post" action="/aluno/material-anotacao.php" data-inline-note-compose hidden>'
         .'<input type="hidden" name="_csrf" value="'.h(csrf_token('student-material-note')).'">'
@@ -176,33 +177,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         .$questionComposer(false)
         .'</form>';
 
-    if($annotations||$legacyNotes){
-        $panel.='<div class="student-notes-list">';
-        foreach($annotations as $note){
-            $id=(int)$note['id'];$selection=(string)$note['anchor_type']==='selection';
-            $linkedQuestion=function_exists('student_question_from_annotation')?student_question_from_annotation($db,(int)$student['id'],$id):null;
-            $panel.='<article class="student-note-item'.($selection?' is-selection':' is-page').'" id="anotacao-'.$id.'" data-annotation-item="'.$id.'">'
-                .'<header><span>'.($selection?'Trecho':'Página').'</span><strong>'.($selection?'Anotação vinculada ao texto':'Anotação geral').'</strong>'.($selection?'<small data-annotation-status="'.$id.'">Localizando trecho…</small>':'').'</header>';
-            if($selection)$panel.='<blockquote class="student-note-quote">'.h((string)$note['quote_exact']).'</blockquote>';
-            $panel.='<form method="post" action="/aluno/material-anotacao.php">'.student_notes_hidden_fields((int)$page['id'],(string)$note['section_key'],$returnTo)
-                .'<input type="hidden" name="annotation_id" value="'.$id.'"><textarea name="body" rows="5" maxlength="5000" aria-label="Anotação">'.h((string)$note['body']).'</textarea>'
-                .'<div class="student-material-note-actions"><button class="button" type="submit" name="annotation_action" value="update">Salvar</button>';
-            if($selection)$panel.='<button class="student-material-note-secondary" type="button" data-annotation-reanchor="'.$id.'">Reassociar</button><button class="student-material-note-secondary" type="submit" name="annotation_action" value="detach">Tornar geral</button>';
-            if($linkedQuestion)$panel.='<a class="student-material-note-secondary" href="'.h($questionUrl($id,(int)$linkedQuestion['id'])).'">Ver dúvida</a>';
-            $panel.='<button class="student-material-note-remove" type="submit" name="annotation_action" value="remove">Remover</button></div>'
-                .(!$linkedQuestion?$questionComposer(true):'').'</form></article>';
-        }
-        foreach($legacyNotes as $key=>$note){
-            $meta=$sections[$key]??['title'=>'Trecho original removido','whole_page'=>false];$title=(string)$meta['title'];$context=!empty($meta['whole_page'])?'Página':'Anotação anterior';
-            $panel.='<article class="student-note-item is-legacy"><header><span>'.h($context).'</span><strong>'.h($title).'</strong></header>'
-                .'<form method="post" action="/aluno/material-anotacao.php">'.student_notes_hidden_fields((int)$page['id'],(string)$key,$returnTo)
-                .'<textarea name="body" rows="5" maxlength="5000" aria-label="Anotação sobre '.h($title).'">'.h((string)$note['body']).'</textarea>'
-                .'<div class="student-material-note-actions"><button class="button" type="submit">Salvar</button><button class="student-material-note-remove" type="submit" name="remove" value="1">Remover</button></div></form></article>';
-        }
-        $panel.='</div>';
-    }else $panel.='<p class="student-notes-empty">Você ainda não fez anotações nesta página.</p>';
-
-    $panel.='<form class="student-note-new" method="post" action="/aluno/material-anotacao.php">'
+    $panel.='<details class="student-note-new" data-student-note-new><summary>Nova anotação geral</summary><form method="post" action="/aluno/material-anotacao.php">'
         .'<input type="hidden" name="_csrf" value="'.h(csrf_token('student-material-note')).'">'
         .'<input type="hidden" name="page_id" value="'.(int)$page['id'].'">'
         .'<input type="hidden" name="return_to" value="'.h($returnTo).'">'
@@ -211,7 +186,40 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         .'<label>Anotação da página<textarea name="body" rows="4" maxlength="5000" placeholder="Para uma ideia que não pertence a um trecho específico."></textarea></label>'
         .'<button class="button" type="submit">Salvar anotação da página</button>'
         .$questionComposer(false)
-        .'</form>';
+        .'</form></details>';
+
+    if($annotations||$legacyNotes){
+        $panel.='<div class="student-notes-list">';
+        foreach($annotations as $note){
+            $id=(int)$note['id'];$selection=(string)$note['anchor_type']==='selection';
+            $linkedQuestion=function_exists('student_question_from_annotation')?student_question_from_annotation($db,(int)$student['id'],$id):null;
+            $panel.='<article class="student-note-item'.($selection?' is-selection':' is-page').'" id="anotacao-'.$id.'" data-annotation-item="'.$id.'">'
+                .'<header><span>'.($selection?'Trecho':'Página').'</span><strong class="student-note-title">'.h($selection?mb_substr(trim((string)$note['quote_exact']),0,140):'Anotação geral').'</strong>'.($selection?'<small data-annotation-status="'.$id.'">Localizando trecho…</small>':'').'</header>'
+                .'<p class="student-note-body-preview">'.nl2br(h((string)$note['body'])).'</p>'
+                .'<button class="student-note-edit-trigger" type="button" data-annotation-edit="'.$id.'">Editar anotação</button>';
+            if($selection)$panel.='<blockquote class="student-note-quote">'.h((string)$note['quote_exact']).'</blockquote>';
+            $panel.='<form method="post" action="/aluno/material-anotacao.php">'.student_notes_hidden_fields((int)$page['id'],(string)$note['section_key'],$returnTo)
+                .'<input type="hidden" name="annotation_id" value="'.$id.'"><label class="student-note-edit-field">Anotação<textarea name="body" rows="5" maxlength="5000">'.h((string)$note['body']).'</textarea></label>'
+                .'<div class="student-material-note-actions student-note-actions-group"><button class="button" type="submit" name="annotation_action" value="update">Salvar alterações</button>';
+            if($selection)$panel.='<button class="student-material-note-secondary" type="button" data-annotation-reanchor="'.$id.'">Reassociar</button><button class="student-material-note-secondary" type="submit" name="annotation_action" value="detach">Tornar geral</button>';
+            if($linkedQuestion)$panel.='<a class="student-material-note-secondary" href="'.h($questionUrl($id,(int)$linkedQuestion['id'])).'">Ver dúvida</a>';
+            $panel.='<button class="student-material-note-remove" type="submit" name="annotation_action" value="remove">Remover</button></div>'
+                .(!$linkedQuestion?$questionComposer(true):'').'</form></article>';
+        }
+        foreach($legacyNotes as $key=>$note){
+            $meta=$sections[$key]??['title'=>'Trecho original removido','whole_page'=>false];$title=(string)$meta['title'];$context=!empty($meta['whole_page'])?'Página':'Anotação anterior';
+            $panel.='<article class="student-note-item is-legacy" data-legacy-note><header><span>'.h($context).'</span><strong>'.h($title).'</strong></header>'
+                .'<p class="student-note-body-preview">'.nl2br(h((string)$note['body'])).'</p><button class="student-note-edit-trigger" type="button" data-legacy-edit>Editar anotação</button>'
+                .'<form method="post" action="/aluno/material-anotacao.php">'.student_notes_hidden_fields((int)$page['id'],(string)$key,$returnTo)
+                .'<label class="student-note-edit-field">Anotação<textarea name="body" rows="5" maxlength="5000">'.h((string)$note['body']).'</textarea></label>'
+                .'<div class="student-material-note-actions student-note-actions-group"><button class="button" type="submit">Salvar alterações</button><button class="student-material-note-remove" type="submit" name="remove" value="1">Remover</button></div></form></article>';
+        }
+        $panel.='</div>';
+    }else $panel.='<p class="student-notes-empty">Você ainda não fez anotações nesta página.</p>';
+
+
+
+    $panel.='<dialog class="student-note-confirm-dialog" data-note-remove-confirm aria-labelledby="note-remove-title"><form method="dialog"><h3 id="note-remove-title">Remover anotação?</h3><p>A anotação será excluída permanentemente. Esta ação não pode ser desfeita.</p><div class="student-note-confirm-actions"><button class="button button-secondary" type="submit" value="cancel">Cancelar</button><button class="button" type="submit" value="confirm">Remover anotação</button></div></form></dialog>';
 
     $client=[];foreach($annotations as $note)$client[]=['id'=>(int)$note['id'],'anchorType'=>(string)$note['anchor_type'],'blockKey'=>(string)$note['block_key'],'sectionKey'=>(string)$note['section_key'],'exact'=>(string)$note['quote_exact'],'prefix'=>(string)$note['quote_prefix'],'suffix'=>(string)$note['quote_suffix'],'start'=>$note['start_offset']===null?null:(int)$note['start_offset'],'end'=>$note['end_offset']===null?null:(int)$note['end_offset'],'sourceBlockHash'=>(string)$note['source_block_hash']];
     $json=json_encode($client,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT)?:'[]';

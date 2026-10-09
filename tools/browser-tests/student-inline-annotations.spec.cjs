@@ -143,8 +143,9 @@ test('orphaned notes can be reassociated without changing their body',async({pag
   await page.goto(url,{waitUntil:'networkidle'});
   await page.locator('[data-student-notes-panel]>summary').click();
   await expect(page.locator('[data-student-notes-panel]')).toHaveAttribute('open','');
-  await scrollBlockIntoViewInstantly(page.locator('[data-annotation-item="2"]'));
-  await page.locator('[data-annotation-reanchor="2"]').dispatchEvent('click');
+  await page.locator('[data-annotation-item="2"] [data-annotation-edit]').click();
+  await expect(page.locator('[data-student-notes-panel]')).toHaveClass(/is-editing/);
+  await page.locator('[data-annotation-reanchor="2"]').click();
   await expect(page.locator('.student-reanchor-hint')).toBeVisible();
   await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado');
   const action=page.locator('.student-selection-note-action');await expect(action).toHaveText('Reassociar seleção');await action.click();
@@ -198,6 +199,182 @@ test('desktop drawer separates note and question, and publishes to every cohort 
   await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toHaveAttribute('href','/aluno/duvidas.php?cohort=turma-1&id=31');
   await expect(panel).not.toHaveAttribute('open','');
   await panel.locator('summary').first().click();
+  await panel.locator('[data-annotation-edit="9"]').click();
   await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toBeVisible();
   expect(submitted).toBe(true);
 });
+
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`saved annotation editor is focused, with list and question as separate states — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(url,{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await expect(panel.locator('.student-notes-head')).toBeVisible();
+    await expect(panel.locator('[data-student-note-new]')).not.toHaveAttribute('open','');
+    await expect(panel.locator('[data-annotation-item="1"] form')).toBeHidden();
+    await expect(panel.locator('[data-annotation-item="1"] .student-note-body-preview')).toBeVisible();
+    await panel.locator('[data-annotation-item="2"] [data-annotation-edit]').click();
+    await expect(panel).toHaveClass(/is-editing/);
+    await expect(panel.locator('[data-student-notes-head]')).toHaveCount(0);
+    await expect(panel.locator('.student-notes-head')).toBeHidden();
+    await expect(panel.locator('[data-annotation-item="1"]')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new]')).toBeHidden();
+    await expect(panel.locator('[data-annotation-item="2"] textarea[name="body"]')).toBeVisible();
+    await expect(panel.locator('[data-annotation-item="2"] [name="annotation_action"][value="update"]')).toBeVisible();
+    const quote=panel.locator('[data-annotation-item="2"] .student-note-quote');
+    await expect(quote).toContainText('Uma receita pode ser um excelente ponto de partida');
+    const selected=panel.locator('[data-annotation-item="2"]');
+    await selected.locator('[data-note-question]>summary').click();
+    await expect(panel).toHaveClass(/is-existing-questioning/);
+    await expect(selected.locator('.student-note-edit-field')).toBeHidden();
+    await expect(selected.locator('.student-note-actions-group')).toBeHidden();
+    await expect(selected.locator('[name="question_visibility"][value="course"]')).toBeVisible();
+    await selected.locator('[data-note-question]>summary').click();
+    await expect(selected.locator('textarea[name="body"]')).toBeVisible();
+    await panel.locator('[data-student-notes-back-button]').click();
+    await expect(panel).not.toHaveClass(/is-editing/);
+    await expect(panel.locator('.student-notes-head')).toBeVisible();
+    await expect(panel.locator('[data-annotation-item="2"] form')).toBeHidden();
+    await panel.locator('[data-student-note-new]>summary').click();
+    await expect(panel).toHaveClass(/is-general-composing/);
+    await expect(panel.locator('.student-notes-list')).toBeHidden();
+    await expect(panel.locator('.student-notes-head')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new]>summary')).toHaveText('← Todas as anotações');
+    await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
+    await panel.locator('[data-student-note-new] [data-note-question]>summary').click();
+    await expect(panel).toHaveClass(/is-page-questioning/);
+    await expect(panel.locator('[data-student-note-new]>summary')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new] [data-note-question]>summary')).toBeVisible();
+    await expect(panel.locator('[data-student-note-new]>form>label')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new] [name="question_visibility"][value="course"]')).toBeVisible();
+    const publish=panel.locator('[data-student-note-new] [data-note-question-publish]');
+    await expect(publish).toHaveClass(/button-secondary/);
+    await expect(publish).toHaveText('Salvar e publicar dúvida');
+    const textStyles=await publish.evaluate(el=>({family:getComputedStyle(el).fontFamily,size:getComputedStyle(el).fontSize,height:el.getBoundingClientRect().height}));
+    const baseline=await panel.locator('[data-student-note-new]>form>.button').evaluate(el=>({family:getComputedStyle(el).fontFamily,size:getComputedStyle(el).fontSize}));
+    expect(textStyles.family).toBe(baseline.family);
+    expect(textStyles.size).toBe(baseline.size);
+    expect(textStyles.height).toBeGreaterThanOrEqual(44);
+  });
+}
+
+test('failed saved-note update preserves its draft and exposes an accessible error',async({page})=>{
+  await page.route('**/aluno/material-anotacao.php',route=>route.fulfill({
+    status:422,contentType:'application/json',body:JSON.stringify({ok:false,error:'Não foi possível salvar. Tente novamente.'})
+  }));
+  await page.goto(url,{waitUntil:'networkidle'});
+  const panel=page.locator('[data-student-notes-panel]');
+  await panel.locator('summary').first().click();
+  await panel.locator('[data-annotation-edit="1"]').click();
+  const form=panel.locator('[data-annotation-item="1"] form');
+  await form.locator('textarea[name="body"]').fill('Rascunho importante que não deve desaparecer.');
+  await form.locator('button[value="update"]').click();
+  await expect(form.locator('[data-note-save-status]')).toContainText('Não foi possível salvar.');
+  await expect(form.locator('[data-note-save-status]')).toHaveAttribute('role','alert');
+  await expect(form.locator('textarea[name="body"]')).toHaveValue('Rascunho importante que não deve desaparecer.');
+  await expect(panel).toHaveClass(/is-editing/);
+});
+
+test('deleting a saved annotation demands confirmation, and cancellation preserves the note',async({page})=>{
+  let sent=false;
+  await page.route('**/aluno/material-anotacao.php',route=>{sent=true;return route.fulfill({
+    status:200,contentType:'application/json',body:JSON.stringify({ok:true,action:'remove'})
+  });});
+  await page.goto(url,{waitUntil:'networkidle'});
+  const panel=page.locator('[data-student-notes-panel]');
+  await panel.locator('summary').first().click();
+  await panel.locator('[data-annotation-edit="1"]').click();
+  const confirmation=panel.locator('[data-note-remove-confirm]');
+  await panel.locator('[data-annotation-item="1"] button[value="remove"]').click();
+  await expect(confirmation).toBeVisible();
+  await expect(confirmation.getByText('Esta ação não pode ser desfeita.',{exact:false})).toBeVisible();
+  await confirmation.getByRole('button',{name:'Cancelar'}).click();
+  await expect(confirmation).toBeHidden();
+  await expect(panel.locator('[data-annotation-item="1"]')).toBeVisible();
+  expect(sent).toBe(false);
+  await panel.locator('[data-annotation-item="1"] button[value="remove"]').click();
+  await expect(confirmation).toBeVisible();
+  await confirmation.getByRole('button',{name:'Remover anotação'}).click();
+  await expect(panel.locator('[data-annotation-item="1"]')).toHaveCount(0);
+  expect(sent).toBe(true);
+});
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`a long saved-note list scrolls inside the drawer and reaches its last edit action — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(url,{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await page.evaluate(()=>{
+      const list=document.querySelector('.student-notes-list');
+      const sample=list?.querySelector('[data-annotation-item="1"]');
+      if(!list||!sample)throw new Error('Saved-note list fixture unavailable');
+      for(let i=0;i<12;i++){
+        const copy=sample.cloneNode(true);
+        copy.dataset.annotationItem=String(100+i);
+        copy.removeAttribute('id');
+        const button=copy.querySelector('[data-annotation-edit]');
+        if(button)button.dataset.annotationEdit=String(100+i);
+        const preview=copy.querySelector('.student-note-body-preview');
+        if(preview)preview.textContent='Anotação de teste '+i+' — trecho extenso para simular material com muitos registros.';
+        list.appendChild(copy);
+      }
+      list.lastElementChild?.setAttribute('data-test-last-annotation','');
+    });
+    const sheet=panel.locator('.student-notes-sheet');
+    const last=panel.locator('[data-test-last-annotation] [data-annotation-edit]');
+    const scrollData=await sheet.evaluate(el=>({height:el.clientHeight,total:el.scrollHeight}));
+    expect(scrollData.total,`${device}: a long list must overflow the sheet`).toBeGreaterThan(scrollData.height);
+    await last.scrollIntoViewIfNeeded();
+    const after=await sheet.evaluate(el=>el.scrollTop);
+    expect(after,`${device}: the notes sheet did not scroll to the final note`).toBeGreaterThan(0);
+    await last.click();
+    await expect(panel).toHaveClass(/is-editing/);
+    await expect(panel.locator('[data-test-last-annotation]')).toHaveClass(/is-active/);
+  });
+}
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`legacy note can be opened, edited, saved and removed — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    let saveCount=0,removeCount=0;
+    await page.route('**/aluno/material-anotacao.php',route=>{
+      const body=route.request().postData()||'';
+      const removing=body.includes('name="remove"')||body.includes('remove\r\n\r\n1')||body.includes('name="remove"\r\n');
+      if(removing)removeCount++;else saveCount++;
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,legacy:true,removed:removing})});
+    });
+    await page.goto(url,{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await page.evaluate(()=>{
+      const tmpl=document.getElementById('fixture-legacy-note');
+      const list=document.querySelector('.student-notes-list');
+      if(!tmpl||!list)throw new Error('legacy fixture unavailable');
+      list.append(tmpl.content.firstElementChild.cloneNode(true));
+    });
+    const legacy=panel.locator('[data-legacy-note]');
+    await expect(legacy.locator('textarea')).toBeHidden();
+    await legacy.locator('[data-legacy-edit]').click();
+    await expect(panel).toHaveClass(/is-editing/);
+    await expect(legacy).toHaveClass(/is-active/);
+    await expect(legacy.locator('textarea')).toBeVisible();
+    await legacy.locator('textarea').fill('Anotação anterior atualizada e preservada.');
+    await legacy.getByRole('button',{name:'Salvar alterações'}).click();
+    await expect(legacy.locator('[data-note-save-status]')).toHaveText('Salvo.');
+    await expect(legacy.locator('.student-note-body-preview')).toHaveText('Anotação anterior atualizada e preservada.');
+    expect(saveCount).toBe(1);
+    await legacy.getByRole('button',{name:'Remover'}).click();
+    const confirmation=panel.locator('[data-note-remove-confirm]');
+    await expect(confirmation).toBeVisible();
+    await confirmation.getByRole('button',{name:'Cancelar'}).click();
+    await expect(legacy).toBeVisible();
+    expect(removeCount).toBe(0);
+    await legacy.getByRole('button',{name:'Remover'}).click();
+    await confirmation.getByRole('button',{name:'Remover anotação'}).click();
+    await expect(legacy).toHaveCount(0);
+    expect(removeCount).toBe(1);
+  });
+}
