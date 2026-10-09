@@ -197,10 +197,11 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         }
         foreach($legacyNotes as $key=>$note){
             $meta=$sections[$key]??['title'=>'Trecho original removido','whole_page'=>false];$title=(string)$meta['title'];$context=!empty($meta['whole_page'])?'Página':'Anotação anterior';
-            $panel.='<article class="student-note-item is-legacy"><header><span>'.h($context).'</span><strong>'.h($title).'</strong></header>'
+            $panel.='<article class="student-note-item is-legacy" data-legacy-note><header><span>'.h($context).'</span><strong>'.h($title).'</strong></header>'
+                .'<p class="student-note-body-preview">'.nl2br(h((string)$note['body'])).'</p><button class="student-note-edit-trigger" type="button" data-legacy-edit>Editar anotação</button>'
                 .'<form method="post" action="/aluno/material-anotacao.php">'.student_notes_hidden_fields((int)$page['id'],(string)$key,$returnTo)
-                .'<textarea name="body" rows="5" maxlength="5000" aria-label="Anotação sobre '.h($title).'">'.h((string)$note['body']).'</textarea>'
-                .'<div class="student-material-note-actions"><button class="button" type="submit">Salvar</button><button class="student-material-note-remove" type="submit" name="remove" value="1">Remover</button></div></form></article>';
+                .'<label class="student-note-edit-field">Anotação<textarea name="body" rows="5" maxlength="5000">'.h((string)$note['body']).'</textarea></label>'
+                .'<div class="student-material-note-actions student-note-actions-group"><button class="button" type="submit">Salvar alterações</button><button class="student-material-note-remove" type="submit" name="remove" value="1">Remover</button></div></form></article>';
         }
         $panel.='</div>';
     }else $panel.='<p class="student-notes-empty">Você ainda não fez anotações nesta página.</p>';
