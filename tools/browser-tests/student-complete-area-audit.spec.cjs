@@ -227,20 +227,31 @@ for(const [device,viewport] of Object.entries(viewports)){
         });
         if(item.skip)continue;
         await locator.scrollIntoViewIfNeeded({timeout:3000});
-        const geometry=await locator.evaluate(el=>{
+        const measure=()=>locator.evaluate(el=>{
           const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
           const hit=document.elementFromPoint(x,y);
           return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height,
             viewport:[innerWidth,innerHeight],hit:!!hit&&(hit===el||el.contains(hit)),
-            actual:hit?.tagName||null,actualClass:typeof hit?.className==='string'?hit.className.slice(0,120):''};
+            actual:hit?.tagName||null,actualClass:typeof hit?.className==='string'?hit.className.slice(0,120):'',
+            actualHref:hit?.getAttribute('href')||'',x,y};
         });
+        let geometry=await measure();
+        // Browsers do not account for the fixed bottom navigation when deciding
+        // whether an element is "already in view". Try actual user-equivalent
+        // scrolling before declaring it blocked; never force-click the target.
+        for(let n=0;!geometry.hit&&n<5;n++){
+          await page.mouse.move(Math.round(viewport.width/2),Math.round(viewport.height*0.5));
+          await page.mouse.wheel(0,Math.round(viewport.height*0.25));
+          await page.waitForTimeout(60);
+          geometry=await measure();
+        }
         expect(geometry.width,`${device} ${name} control "${item.label}" has no width`).toBeGreaterThan(0);
         expect(geometry.height,`${device} ${name} control "${item.label}" has no height`).toBeGreaterThan(0);
         expect(geometry.left,`${device} ${name} control "${item.label}" starts outside screen`).toBeGreaterThanOrEqual(-1);
         expect(geometry.right,`${device} ${name} control "${item.label}" exceeds screen`).toBeLessThanOrEqual(viewport.width+1);
         expect(geometry.top,`${device} ${name} control "${item.label}" is above visible viewport`).toBeGreaterThanOrEqual(-1);
         expect(geometry.bottom,`${device} ${name} control "${item.label}" is below visible viewport`).toBeLessThanOrEqual(viewport.height+1);
-        expect(geometry.hit,`${device} ${name} control "${item.label}" blocked by ${geometry.actual}.${geometry.actualClass}`).toBe(true);
+        expect(geometry.hit,`${device} ${name} control "${item.label}" blocked by ${geometry.actual}.${geometry.actualClass} href=${geometry.actualHref} at ${geometry.x},${geometry.y} after scroll`).toBe(true);
       }
     });
   }
