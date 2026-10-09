@@ -162,7 +162,7 @@ test('desktop drawer separates note and question, and publishes to every cohort 
   await page.route('**/aluno/material-anotacao.php',async route=>{
     const body=route.request().postData()||'';
     expect(body).toContain('name="question_visibility"');
-    expect(body).toMatch(/name="question_visibility"[\\s\\S]*?course/);
+    expect(body).toContain('\r\n\r\ncourse\r\n');
     submitted=true;
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
       ok:true,action:'create_selection',annotation_id:9,
