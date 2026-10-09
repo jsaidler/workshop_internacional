@@ -129,6 +129,7 @@ test('an annotation can publish a question without leaving the material screen',
   await expect(page.locator('[data-student-notes-panel]')).toHaveClass(/is-questioning/);
   await expect(compose.locator('[data-note-question]>summary')).toHaveText('← Voltar à anotação');
   await expect(compose.locator('[data-inline-note-body]')).toBeHidden();
+  await expect(compose.locator('.student-inline-note-primary-actions')).toHaveCount(1);
   await expect(compose.locator('.student-inline-note-primary-actions')).toBeHidden();
   await compose.locator('[name="question_title"]').fill('Minha dúvida');
   await compose.locator('[name="question_visibility"][value="cohort"]').check();
@@ -177,6 +178,7 @@ test('desktop drawer separates note and question, and publishes to every cohort 
   const panel=page.locator('[data-student-notes-panel]');
   const compose=panel.locator('[data-inline-note-compose]');
   await expect(compose).toBeVisible();
+  await expect(compose.locator('.student-inline-note-primary-actions')).toBeVisible();
   await expect(panel.locator('.student-notes-head')).toBeHidden();
   await compose.locator('textarea[name="body"]').fill('Testando as tonalidades');
   await compose.locator('[data-note-question]>summary').click();
