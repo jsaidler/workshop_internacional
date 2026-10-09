@@ -249,6 +249,12 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel.locator('[data-student-note-new] [data-note-question]>summary')).toBeVisible();
     await expect(panel.locator('[data-student-note-new]>form>label')).toBeHidden();
     await expect(panel.locator('[data-student-note-new] [name="question_visibility"][value="course"]')).toBeVisible();
+    const publish=panel.locator('[data-student-note-new] [data-note-question-publish]');
+    await expect(publish).toHaveClass(/button-secondary/);
+    await expect(publish).toHaveText('Salvar e publicar dúvida');
+    const textStyles=await publish.evaluate(el=>({family:getComputedStyle(el).fontFamily,size:getComputedStyle(el).fontSize,height:el.getBoundingClientRect().height}));
+    expect(textStyles.family).toContain('mono');
+    expect(textStyles.height).toBeGreaterThanOrEqual(44);
   });
 }
 
