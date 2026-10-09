@@ -321,3 +321,37 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await panel.screenshot({path:`student-visual-audit/notes/${device}-empty-new-general.png`,animations:'disabled'});
   });
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`converting a saved selection note to a page note preserves its text — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.route('**/aluno/material-anotacao.php',route=>{
+      const form=route.request().postData()||'';
+      expect(form).toContain('name="annotation_action"');
+      expect(form).toContain('detach');
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+        ok:true,action:'detach',
+        annotation:{id:1,anchorType:'page',sectionKey:'introducao',body:'Nota vinculada ao processo e à exposição.',
+          exact:'',prefix:'',suffix:'',blockKey:'',start:null,end:null,sourceBlockHash:''}
+      })});
+    });
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await panel.locator('[data-annotation-edit="1"]').click();
+    const original=panel.locator('[data-annotation-item="1"]');
+    await expect(original).toHaveClass(/is-selection/);
+    await original.getByRole('button',{name:'Tornar geral'}).click();
+    const converted=panel.locator('[data-annotation-item="1"]');
+    await expect(converted).toHaveCount(1);
+    await expect(converted).toHaveClass(/is-page/);
+    await expect(converted).toHaveClass(/is-active/);
+    await expect(converted.locator('textarea[name="body"]')).toHaveValue('Nota vinculada ao processo e à exposição.');
+    await expect(converted.locator('.student-note-quote')).toHaveCount(0);
+    await expect(converted.getByRole('button',{name:'Tornar geral'})).toHaveCount(0);
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-detached-to-page.png`,animations:'disabled'});
+    await panel.locator('[data-student-notes-back-button]').click();
+    await expect(converted.locator('.student-note-body-preview')).toContainText('Nota vinculada ao processo');
+    await expect(converted.locator('.student-note-edit-trigger')).toBeVisible();
+  });
+}
