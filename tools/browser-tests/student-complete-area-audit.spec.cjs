@@ -197,3 +197,51 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel.locator('[data-annotation-item="1"] textarea')).toBeVisible();
   });
 }
+
+for(const [device,viewport] of Object.entries(viewports)){
+  for(const [name,path] of screens){
+    test(`student visible controls are reachable and unobstructed — ${device} ${name}`,async({page})=>{
+      test.setTimeout(90000);
+      await page.setViewportSize(viewport);
+      await page.goto(fixture(path),{waitUntil:'networkidle'});
+      if(name!=='material')await ensureCanonicalShellStyles(page);
+      await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      if(name==='new-record'||name==='toolbox'){
+        await page.evaluate(selector=>{
+          const d=document.querySelector(selector);
+          if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}
+        },name==='new-record'?'.student-create-dialog':'.student-toolbox');
+      }
+      const controls=page.locator('button:visible,a[href]:visible,summary:visible,[role="button"]:visible');
+      const count=await controls.count();
+      expect(count,`${name} must contain visible interactive controls`).toBeGreaterThan(0);
+      for(let i=0;i<count;i++){
+        const locator=controls.nth(i);
+        if(!await locator.isVisible())continue;
+        const item=await locator.evaluate(el=>{
+          const modal=document.querySelector('dialog[open]:modal');
+          if(modal&&!modal.contains(el))return{skip:true};
+          const style=getComputedStyle(el);
+          if(style.pointerEvents==='none')return{skip:true};
+          return {skip:false,tag:el.tagName,label:(el.getAttribute('aria-label')||el.textContent||'').trim().slice(0,80)};
+        });
+        if(item.skip)continue;
+        await locator.scrollIntoViewIfNeeded({timeout:3000});
+        const geometry=await locator.evaluate(el=>{
+          const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
+          const hit=document.elementFromPoint(x,y);
+          return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height,
+            viewport:[innerWidth,innerHeight],hit:!!hit&&(hit===el||el.contains(hit)),
+            actual:hit?.tagName||null,actualClass:typeof hit?.className==='string'?hit.className.slice(0,120):''};
+        });
+        expect(geometry.width,`${device} ${name} control "${item.label}" has no width`).toBeGreaterThan(0);
+        expect(geometry.height,`${device} ${name} control "${item.label}" has no height`).toBeGreaterThan(0);
+        expect(geometry.left,`${device} ${name} control "${item.label}" starts outside screen`).toBeGreaterThanOrEqual(-1);
+        expect(geometry.right,`${device} ${name} control "${item.label}" exceeds screen`).toBeLessThanOrEqual(viewport.width+1);
+        expect(geometry.top,`${device} ${name} control "${item.label}" is above visible viewport`).toBeGreaterThanOrEqual(-1);
+        expect(geometry.bottom,`${device} ${name} control "${item.label}" is below visible viewport`).toBeLessThanOrEqual(viewport.height+1);
+        expect(geometry.hit,`${device} ${name} control "${item.label}" blocked by ${geometry.actual}.${geometry.actualClass}`).toBe(true);
+      }
+    });
+  }
+}
