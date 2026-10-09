@@ -57,6 +57,7 @@ Anotação e dúvida são ações correlatas de leitura e não podem exigir nave
 Contrato vigente:
 - ao criar uma anotação sobre um trecho ou sobre a página, o aluno pode abrir **Também é uma dúvida?** no mesmo compositor;
 - o texto da anotação é reutilizado como corpo da dúvida; o aluno informa apenas título e visibilidade;
+- a dúvida oferece `private`, `cohort` e `course`: a última opção alcança apenas matrículas ativas de turmas com o mesmo `course_id`, sem compartilhar a anotação privada nem seu trecho original em contexto de outra turma;
 - **Salvar anotação e publicar dúvida** cria os dois registros em uma única operação transacional;
 - se a dúvida falhar, a anotação nova não fica salva pela metade;
 - uma anotação já existente pode usar **Transformar em dúvida** no próprio painel, sem navegar para `aluno/duvidas.php`;
@@ -147,7 +148,8 @@ A camada de anotações do material foi corrigida a partir do uso real em telefo
 - ao abrir a dúvida no telefone, o compositor entra em um segundo estado: trecho, textarea e ações da anotação saem de cena e aparecem somente título, visibilidade e publicação da dúvida;
 - o retorno **← Voltar à anotação** restaura o primeiro estado e preserva o rascunho;
 - a composição usa altura dinâmica de viewport e reserva de safe area;
-- a auditoria visual cobre explicitamente os dois estados em 390×844 e rejeita o empilhamento simultâneo dos dois formulários.
+- a auditoria visual cobre explicitamente os dois estados em 390×844 e rejeita o empilhamento simultâneo dos dois formulários;
+- em 09/10/2026, a separação anotação → dúvida passou a valer também no desktop, pois o painel lateral estreito não comporta os dois formulários simultaneamente; regressões exercitam também 1280×820 e a publicação em todas as turmas.
 
 A liberação de conteúdo sensível também passa a ser autorização server-side, não simples ocultação de links:
 
