@@ -407,3 +407,23 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await expect(trigger).toHaveAttribute('aria-expanded','false');
   });
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+  test(`question list distinguishes private, cohort and course-shared conversations — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    const items=page.locator('.student-test-row');
+    await expect(items).toHaveCount(3);
+    for(const [name,title] of [
+      ['Turma','Como avaliar as sombras no positivo?'],
+      ['Privada','Dúvida sobre o banho de amônia'],
+      ['Curso','Exposição com filme ortocromático']
+    ]){
+      const row=items.filter({hasText:title});
+      await expect(row).toHaveCount(1);
+      await expect(row.locator('.student-status',{hasText:name})).toBeVisible();
+    }
+    await page.screenshot({path:`student-visual-audit/questions/${device}-questions-three-scopes.png`,fullPage:true,animations:'disabled'});
+  });
+}
