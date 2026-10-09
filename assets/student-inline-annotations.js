@@ -92,7 +92,7 @@ panel.addEventListener('click',event=>{
   const back=event.target.closest('[data-student-notes-back-button]');
   if(back){listSavedNotes();return;}
   const edit=event.target.closest('[data-annotation-edit],[data-legacy-edit]');
-  if(edit){editSavedNote(edit.closest('[data-annotation-item]'));return;}
+  if(edit){editSavedNote(edit.closest('.student-note-item'));return;}
   const re=event.target.closest('[data-annotation-reanchor]');if(re){listSavedNotes();reanchorId=Number(re.dataset.annotationReanchor||0);if(!reanchorId)return;compose.hidden=true;setComposeMode(false);panel.open=false;reanchorHint.hidden=false;action.hidden=true;setSelectionActive(false);pendingAnchor=null;window.getSelection()?.removeAllRanges();return;}const cancel=event.target.closest('[data-inline-note-cancel]');if(cancel){compose.hidden=true;setComposeMode(false);reanchorId=0;reanchorHint.hidden=true;const body=compose.querySelector('textarea');if(body){body.disabled=false;body.value='';}panel.open=false;const origin=readingOrigin;readingOrigin=null;restoreReadingOrigin(origin);}});
 panel.addEventListener('toggle',event=>{
   const details=event.target;
