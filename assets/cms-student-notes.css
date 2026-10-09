@@ -62,7 +62,6 @@
 .cms-public .student-material-note-remove,.cms-public .student-material-note-secondary{border:0;padding:8px 0;background:none;color:var(--muted);cursor:pointer;font:500 10px/1.2 var(--mono);text-decoration:underline;text-underline-offset:4px}
 .cms-public .student-material-note-remove:hover,.cms-public .student-material-note-secondary:hover{color:var(--text)}
 .cms-public .student-notes-empty{margin:20px 0;color:var(--muted);font-size:13px;line-height:1.5}
-.cms-public .student-note-new{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
 .cms-public .student-note-new label,.cms-public .student-inline-note-compose label{display:grid;gap:7px;color:var(--muted);font:500 10px/1.3 var(--mono);letter-spacing:.04em;text-transform:uppercase}
 .cms-public [data-student-note-context]{scroll-margin-top:90px}
 .cms-public [data-student-anchor-block]{position:relative;-webkit-user-select:text;user-select:text}
