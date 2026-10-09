@@ -14,6 +14,8 @@ $files=[
   'notes_fixture'=>$root.'/tools/browser-fixture/student-inline-annotations.html',
   'notebook_php'=>$root.'/aluno/caderno.php',
   'notebook_fixture'=>$root.'/tools/browser-fixture/student-notebook-compare.html',
+  'questions_php'=>$root.'/aluno/duvidas.php',
+  'questions_fixture'=>$root.'/tools/browser-fixture/student-secondary-screens-audit.html',
 ];
 $source=[];
 foreach($files as $key=>$path){
@@ -28,6 +30,9 @@ $checks=[
   'legacy editor has the same trigger and note article structure'=>str_contains($source['notes_php'],'data-legacy-note')&&str_contains($source['notes_php'],'data-legacy-edit')&&str_contains($source['notes_fixture'],'data-legacy-note')&&str_contains($source['notes_fixture'],'data-legacy-edit'),
   'notebook fixture uses the real three-stage content summary'=>str_contains($source['notebook_php'],'student-record-summary')&&str_contains($source['notebook_fixture'],'class="student-record-summary" aria-label="Conteúdo do registro"'),
   'notebook fixture does not contain superseded stage-strip markup'=>!str_contains($source['notebook_fixture'],'student-record-progress'),
+  'question creation uses real scoped named radios'=>str_contains($source['questions_php'],'name="visibility" value="private"')&&str_contains($source['questions_php'],'name="visibility" value="cohort"')&&str_contains($source['questions_php'],'name="visibility" value="course"')&&str_contains($source['questions_fixture'],'name="visibility" value="private"')&&str_contains($source['questions_fixture'],'name="visibility" value="cohort"')&&str_contains($source['questions_fixture'],'name="visibility" value="course"'),
+  'question creation keeps required title and body'=>str_contains($source['questions_php'],'name="title" required maxlength="180"')&&str_contains($source['questions_php'],'name="body" rows="5" required')&&str_contains($source['questions_fixture'],'name="title" required maxlength="180"')&&str_contains($source['questions_fixture'],'name="body" rows="5" required'),
+  'question fixture keeps the actual show and cancel controls'=>str_contains($source['questions_php'],'data-question-new-toggle')&&str_contains($source['questions_php'],'data-question-new-cancel')&&str_contains($source['questions_fixture'],'data-question-new-toggle')&&str_contains($source['questions_fixture'],'data-question-new-cancel'),
 ];
 foreach($checks as $label=>$valid)if(!$valid){fwrite(STDERR,"fixture-parity: FAIL: $label\n");exit(1);}
 echo "fixture-parity: ok (".count($checks)." real-template assertions)\n";
