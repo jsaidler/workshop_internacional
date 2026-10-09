@@ -109,6 +109,8 @@
 .cms-public .student-note-new>form>.button{justify-self:start;min-height:44px}
 .cms-public .student-notes-panel.is-page-questioning .student-note-new>form>label,.cms-public .student-notes-panel.is-page-questioning .student-note-new>form>.button{display:none}
 .cms-public .student-notes-panel.is-page-questioning .student-note-new .student-note-question>summary::after{display:none}
+.cms-public .student-notes-panel [data-note-save-status]{display:block;margin:0;padding:10px 12px;border-left:2px solid var(--focus);background:var(--surface);font:400 12px/1.5 var(--body);color:var(--text)}
+.cms-public .student-notes-panel [data-note-save-status].is-error{border-left-color:#d68b76;color:#ecc5b7}
 .cms-public mark.student-inline-note-mark{margin:0;padding:0;background:color-mix(in srgb,var(--focus) 32%,transparent);color:inherit;box-decoration-break:clone;-webkit-box-decoration-break:clone;cursor:pointer;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--focus) 72%,transparent);text-decoration-thickness:1px;text-underline-offset:3px}
 .cms-public mark.student-inline-note-mark:hover,.cms-public mark.student-inline-note-mark:focus{background:color-mix(in srgb,var(--focus) 48%,transparent);outline:none}
 .cms-public .student-selection-note-action{position:fixed;z-index:520;box-sizing:border-box;min-height:36px;padding:0 12px;border:1px solid var(--focus);background:var(--bg);color:var(--text);box-shadow:0 9px 28px rgba(0,0,0,.32);cursor:pointer;font:600 10px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase}
