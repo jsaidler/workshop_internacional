@@ -335,3 +335,46 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel.locator('[data-test-last-annotation]')).toHaveClass(/is-active/);
   });
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`legacy note can be opened, edited, saved and removed — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    let saveCount=0,removeCount=0;
+    await page.route('**/aluno/material-anotacao.php',route=>{
+      const body=route.request().postData()||'';
+      const removing=body.includes('name="remove"')||body.includes('remove\r\n\r\n1')||body.includes('name="remove"\r\n');
+      if(removing)removeCount++;else saveCount++;
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,legacy:true,removed:removing})});
+    });
+    await page.goto(url,{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await page.evaluate(()=>{
+      const tmpl=document.getElementById('fixture-legacy-note');
+      const list=document.querySelector('.student-notes-list');
+      if(!tmpl||!list)throw new Error('legacy fixture unavailable');
+      list.append(tmpl.content.firstElementChild.cloneNode(true));
+    });
+    const legacy=panel.locator('[data-legacy-note]');
+    await expect(legacy.locator('textarea')).toBeHidden();
+    await legacy.locator('[data-legacy-edit]').click();
+    await expect(panel).toHaveClass(/is-editing/);
+    await expect(legacy).toHaveClass(/is-active/);
+    await expect(legacy.locator('textarea')).toBeVisible();
+    await legacy.locator('textarea').fill('Anotação anterior atualizada e preservada.');
+    await legacy.getByRole('button',{name:'Salvar alterações'}).click();
+    await expect(legacy.locator('[data-note-save-status]')).toHaveText('Salvo.');
+    await expect(legacy.locator('.student-note-body-preview')).toHaveText('Anotação anterior atualizada e preservada.');
+    expect(saveCount).toBe(1);
+    await legacy.getByRole('button',{name:'Remover'}).click();
+    const confirmation=panel.locator('[data-note-remove-confirm]');
+    await expect(confirmation).toBeVisible();
+    await confirmation.getByRole('button',{name:'Cancelar'}).click();
+    await expect(legacy).toBeVisible();
+    expect(removeCount).toBe(0);
+    await legacy.getByRole('button',{name:'Remover'}).click();
+    await confirmation.getByRole('button',{name:'Remover anotação'}).click();
+    await expect(legacy).toHaveCount(0);
+    expect(removeCount).toBe(1);
+  });
+}
