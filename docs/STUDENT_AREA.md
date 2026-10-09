@@ -206,6 +206,14 @@ Visibilidade:
 
 A configuração vale para o registro inteiro: ficha, imagens e conversa de avaliação/dúvidas. Usuários que recebem um teste compartilhado podem ler o registro e a conversa, mas não escrever no teste alheio.
 
+### Dúvidas e respostas — visibilidade por curso
+
+O compositor de anotação vinculada ao material e o formulário de nova dúvida compartilham a mesma semântica de visibilidade: `private` (aluno e professor), `cohort` (matriculados na turma original) e `course` (matriculados em qualquer turma do **mesmo curso**). A opção `course` exige um `course_cohorts.course_id` válido; uma activity comum não constitui autorização.
+
+A listagem, a abertura da conversa e o envio de respostas validam matrícula ativa e não admitem visibilidade de outra entidade Curso. A URL de uma conversa conserva o contexto da turma acessada, mesmo que a pergunta tenha sido criada em outra turma. O trecho da anotação privada original não é renderizado em contexto de uma turma diferente, inclusive quando a dúvida é compartilhada com todo o curso.
+
+O compositor de material usa duas etapas visuais mutuamente exclusivas (anotação e pergunta), tanto no desktop quanto no telefone. O teste completo cobre a publicação em `course`, resposta de outra turma, isolamento de outros cursos e matrícula inativa.
+
 ## Administração canônica
 
 `Admin → Inscrições → Área do aluno` administra somente:
