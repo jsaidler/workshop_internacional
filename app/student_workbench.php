@@ -257,14 +257,11 @@ function student_questions_for_cohort(PDO $db,int $studentId,int $cohortId): arr
                 q.visibility='course'
                 AND origin.course_id IS NOT NULL
                 AND origin.course_id=selected.course_id
-                AND EXISTS(
-                    SELECT 1 FROM course_enrollments e
-                    WHERE e.student_id=? AND e.cohort_id=selected.id AND e.status='active'
-                )
+
             )
         )
         ORDER BY CASE q.status WHEN 'open' THEN 0 ELSE 1 END,q.updated_at DESC,q.id DESC";
-    $q=$db->prepare($sql);$q->execute([$cohortId,$studentId,$studentId,$studentId]);return $q->fetchAll(PDO::FETCH_ASSOC);
+    $q=$db->prepare($sql);$q->execute([$cohortId,$studentId,$studentId]);return $q->fetchAll(PDO::FETCH_ASSOC);
 }
 function student_question_create(PDO $db,int $studentId,int $cohortId,array $input): array {student_test_assert_enrollment($db,$studentId,$cohortId);$title=student_workspace_text($input['title']??'',180);$body=student_workspace_text($input['body']??'',5000);if($title===''||$body==='')throw new RuntimeException('Informe o título e a dúvida.');$visibility=(string)($input['visibility']??'private');if(!in_array($visibility,['private','cohort','course'],true))$visibility='private';if($visibility==='course'){$scope=$db->prepare('SELECT course_id FROM course_cohorts WHERE id=?');$scope->execute([$cohortId]);if((int)$scope->fetchColumn()<1)throw new RuntimeException('Não foi possível identificar o curso desta dúvida.');}$testId=(int)($input['test_id']??0)?:null;if($testId&& !student_test_for_student($db,$testId,$studentId))throw new RuntimeException('Registro vinculado inválido.');$now=utc_now();$db->prepare("INSERT INTO student_questions(question_uuid,student_id,cohort_id,test_id,topic,title,body,visibility,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'open',?,?)")->execute([student_uuid(),$studentId,$cohortId,$testId,student_workspace_text($input['topic']??'',80),$title,$body,$visibility,$now,$now]);$q=$db->prepare('SELECT * FROM student_questions WHERE id=?');$q->execute([(int)$db->lastInsertId()]);return $q->fetch(PDO::FETCH_ASSOC)?:[];}
 function student_question_for_student(PDO $db,int $studentId,int $questionId): ?array {return student_question_for_enrolled_student($db,$studentId,$questionId);}
