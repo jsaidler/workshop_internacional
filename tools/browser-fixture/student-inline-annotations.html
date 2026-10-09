@@ -47,6 +47,24 @@
 </form></article></div>
 
 <dialog class="student-note-confirm-dialog" data-note-remove-confirm aria-labelledby="note-remove-title"><form method="dialog"><h3 id="note-remove-title">Remover anotação?</h3><p>A anotação será excluída permanentemente. Esta ação não pode ser desfeita.</p><div class="student-note-confirm-actions"><button class="button button-secondary" type="submit" value="cancel">Cancelar</button><button class="button" type="submit" value="confirm">Remover anotação</button></div></form></dialog>
+<template id="fixture-legacy-note">
+<article class="student-note-item is-legacy" data-legacy-note>
+  <header><span>Anotação anterior</span><strong>Observações antigas sobre o primeiro desenvolvimento</strong></header>
+  <p class="student-note-body-preview">Registro anterior ao sistema de anotações vinculadas.</p>
+  <button class="student-note-edit-trigger" type="button" data-legacy-edit>Editar anotação</button>
+  <form method="post" action="/aluno/material-anotacao.php">
+    <input type="hidden" name="_csrf" value="fixture-csrf">
+    <input type="hidden" name="page_id" value="11">
+    <input type="hidden" name="section_key" value="processo">
+    <input type="hidden" name="return_to" value="/tools/browser-fixture/student-inline-annotations.html">
+    <label class="student-note-edit-field">Anotação<textarea name="body" rows="5" maxlength="5000">Registro anterior ao sistema de anotações vinculadas.</textarea></label>
+    <div class="student-material-note-actions student-note-actions-group">
+      <button class="button" type="submit">Salvar alterações</button>
+      <button class="student-material-note-remove" type="submit" name="remove" value="1">Remover</button>
+    </div>
+  </form>
+</article>
+</template>
 <script type="application/json" data-student-annotation-data>[{"id":1,"anchorType":"selection","blockKey":"introducao:p:1","sectionKey":"introducao","exact":"fotografia experimental exige atenção ao processo","prefix":"A ","suffix":" e ao resultado.","start":2,"end":51,"sourceBlockHash":"old1"},{"id":2,"anchorType":"selection","blockKey":"processo:p:1","sectionKey":"processo","exact":"O texto antigo desta passagem.","prefix":"","suffix":"","start":0,"end":29,"sourceBlockHash":"old2"},{"id":3,"anchorType":"selection","blockKey":"processo:p:9","sectionKey":"processo","exact":"Um parágrafo que foi removido.","prefix":"","suffix":"","start":0,"end":31,"sourceBlockHash":"old3"}]</script>
 </div></details>
 <script defer src="/assets/public.js?v=runtime-wiring-test"></script></body></html>
