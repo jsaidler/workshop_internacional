@@ -143,8 +143,9 @@ test('orphaned notes can be reassociated without changing their body',async({pag
   await page.goto(url,{waitUntil:'networkidle'});
   await page.locator('[data-student-notes-panel]>summary').click();
   await expect(page.locator('[data-student-notes-panel]')).toHaveAttribute('open','');
-  await scrollBlockIntoViewInstantly(page.locator('[data-annotation-item="2"]'));
-  await page.locator('[data-annotation-reanchor="2"]').dispatchEvent('click');
+  await page.locator('[data-annotation-item="2"] [data-annotation-edit]').click();
+  await expect(page.locator('[data-student-notes-panel]')).toHaveClass(/is-editing/);
+  await page.locator('[data-annotation-reanchor="2"]').click();
   await expect(page.locator('.student-reanchor-hint')).toBeVisible();
   await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado');
   const action=page.locator('.student-selection-note-action');await expect(action).toHaveText('Reassociar seleção');await action.click();
@@ -201,3 +202,45 @@ test('desktop drawer separates note and question, and publishes to every cohort 
   await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toBeVisible();
   expect(submitted).toBe(true);
 });
+
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`saved annotation editor is focused, with list and question as separate states — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(url,{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await expect(panel.locator('.student-notes-head')).toBeVisible();
+    await expect(panel.locator('[data-student-note-new]')).not.toHaveAttribute('open','');
+    await expect(panel.locator('[data-annotation-item="1"] form')).toBeHidden();
+    await expect(panel.locator('[data-annotation-item="1"] .student-note-body-preview')).toBeVisible();
+    await panel.locator('[data-annotation-item="2"] [data-annotation-edit]').click();
+    await expect(panel).toHaveClass(/is-editing/);
+    await expect(panel.locator('[data-student-notes-head]')).toHaveCount(0);
+    await expect(panel.locator('.student-notes-head')).toBeHidden();
+    await expect(panel.locator('[data-annotation-item="1"]')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new]')).toBeHidden();
+    await expect(panel.locator('[data-annotation-item="2"] textarea[name="body"]')).toBeVisible();
+    await expect(panel.locator('[data-annotation-item="2"] [name="annotation_action"][value="update"]')).toBeVisible();
+    const quote=panel.locator('[data-annotation-item="2"] .student-note-quote');
+    await expect(quote).toContainText('Uma receita pode ser um excelente ponto de partida');
+    const selected=panel.locator('[data-annotation-item="2"]');
+    await selected.locator('[data-note-question]>summary').click();
+    await expect(panel).toHaveClass(/is-existing-questioning/);
+    await expect(selected.locator('.student-note-edit-field')).toBeHidden();
+    await expect(selected.locator('.student-note-actions-group')).toBeHidden();
+    await expect(selected.locator('[name="question_visibility"][value="course"]')).toBeVisible();
+    await selected.locator('[data-note-question]>summary').click();
+    await expect(selected.locator('textarea[name="body"]')).toBeVisible();
+    await panel.locator('[data-student-notes-back-button]').click();
+    await expect(panel).not.toHaveClass(/is-editing/);
+    await expect(panel.locator('.student-notes-head')).toBeVisible();
+    await expect(panel.locator('[data-annotation-item="2"] form')).toBeHidden();
+    await panel.locator('[data-student-note-new]>summary').click();
+    await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
+    await panel.locator('[data-student-note-new] [data-note-question]>summary').click();
+    await expect(panel).toHaveClass(/is-page-questioning/);
+    await expect(panel.locator('[data-student-note-new]>form>label')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new] [name="question_visibility"][value="course"]')).toBeVisible();
+  });
+}
