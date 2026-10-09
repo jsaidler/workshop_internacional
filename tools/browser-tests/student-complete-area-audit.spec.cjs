@@ -297,3 +297,20 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await panel.screenshot({path:`student-visual-audit/notes/${device}-legacy-save-error.png`,animations:'disabled'});
   });
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`student notes empty state retains an accessible create action — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-inline-annotations.html?state=empty'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await expect(panel.locator('.student-notes-empty')).toHaveText('Você ainda não fez anotações nesta página.');
+    await expect(panel.locator('[data-annotation-item]')).toHaveCount(0);
+    await expect(panel.locator('[data-student-note-new]>summary')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-empty-list.png`,animations:'disabled'});
+    await panel.locator('[data-student-note-new]>summary').click();
+    await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
+    await expect(panel.locator('.student-notes-empty')).toBeHidden();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-empty-new-general.png`,animations:'disabled'});
+  });
+}
