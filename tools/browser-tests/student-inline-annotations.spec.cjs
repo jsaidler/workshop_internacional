@@ -253,7 +253,9 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(publish).toHaveClass(/button-secondary/);
     await expect(publish).toHaveText('Salvar e publicar dúvida');
     const textStyles=await publish.evaluate(el=>({family:getComputedStyle(el).fontFamily,size:getComputedStyle(el).fontSize,height:el.getBoundingClientRect().height}));
-    expect(textStyles.family).toContain('mono');
+    const baseline=await panel.locator('[data-student-note-new]>form>.button').evaluate(el=>({family:getComputedStyle(el).fontFamily,size:getComputedStyle(el).fontSize}));
+    expect(textStyles.family).toBe(baseline.family);
+    expect(textStyles.size).toBe(baseline.size);
     expect(textStyles.height).toBeGreaterThanOrEqual(44);
   });
 }
