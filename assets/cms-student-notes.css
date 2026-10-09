@@ -115,6 +115,7 @@
 .cms-public .student-note-new>form{padding:10px 0 16px;min-width:0}
 .cms-public .student-note-new>form>.button{justify-self:start;min-height:44px}
 .cms-public .student-notes-panel.is-page-questioning .student-note-new>form>label,.cms-public .student-notes-panel.is-page-questioning .student-note-new>form>.button{display:none}
+.cms-public .student-notes-panel.is-page-questioning .student-note-new>summary{display:none}
 .cms-public .student-notes-panel.is-page-questioning .student-note-new .student-note-question>summary::after{display:none}
 .cms-public .student-notes-panel [data-note-save-status]{display:block;margin:0;padding:10px 12px;border-left:2px solid var(--focus);background:var(--surface);font:400 12px/1.5 var(--body);color:var(--text)}
 .cms-public .student-notes-panel [data-note-save-status].is-error{border-left-color:#d68b76;color:#ecc5b7}
