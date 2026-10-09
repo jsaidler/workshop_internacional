@@ -396,7 +396,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
       const radio=form.locator(`input[name="visibility"][value="${scope}"]`);
       await expect(form.getByText(label,{exact:true})).toBeVisible();
       await radio.scrollIntoViewIfNeeded();
-      await radio.check();
+      await radio.locator('xpath=..').click();
       await expect(radio).toBeChecked();
       await expect(form.locator('input[name="visibility"]:checked')).toHaveCount(1);
       await page.screenshot({path:`student-visual-audit/questions/${device}-new-question-${scope}.png`,animations:'disabled'});
