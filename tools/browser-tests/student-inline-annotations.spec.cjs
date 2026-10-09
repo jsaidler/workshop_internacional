@@ -199,6 +199,7 @@ test('desktop drawer separates note and question, and publishes to every cohort 
   await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toHaveAttribute('href','/aluno/duvidas.php?cohort=turma-1&id=31');
   await expect(panel).not.toHaveAttribute('open','');
   await panel.locator('summary').first().click();
+  await panel.locator('[data-annotation-edit="9"]').click();
   await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toBeVisible();
   expect(submitted).toBe(true);
 });
@@ -236,6 +237,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel).not.toHaveClass(/is-editing/);
     await expect(panel.locator('.student-notes-head')).toBeVisible();
     await expect(panel.locator('[data-annotation-item="2"] form')).toBeHidden();
+    await panel.locator('.student-notes-sheet').evaluate(el=>{el.scrollTop=el.scrollHeight;});
     await panel.locator('[data-student-note-new]>summary').click();
     await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
     await panel.locator('[data-student-note-new] [data-note-question]>summary').click();
