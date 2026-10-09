@@ -286,3 +286,38 @@ test('deleting a saved annotation demands confirmation, and cancellation preserv
   await expect(panel.locator('[data-annotation-item="1"]')).toHaveCount(0);
   expect(sent).toBe(true);
 });
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`a long saved-note list scrolls inside the drawer and reaches its last edit action — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(url,{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await page.evaluate(()=>{
+      const list=document.querySelector('.student-notes-list');
+      const sample=list?.querySelector('[data-annotation-item="1"]');
+      if(!list||!sample)throw new Error('Saved-note list fixture unavailable');
+      for(let i=0;i<12;i++){
+        const copy=sample.cloneNode(true);
+        copy.dataset.annotationItem=String(100+i);
+        copy.removeAttribute('id');
+        const button=copy.querySelector('[data-annotation-edit]');
+        if(button)button.dataset.annotationEdit=String(100+i);
+        const preview=copy.querySelector('.student-note-body-preview');
+        if(preview)preview.textContent='Anotação de teste '+i+' — trecho extenso para simular material com muitos registros.';
+        list.appendChild(copy);
+      }
+      list.lastElementChild?.setAttribute('data-test-last-annotation','');
+    });
+    const sheet=panel.locator('.student-notes-sheet');
+    const last=panel.locator('[data-test-last-annotation] [data-annotation-edit]');
+    const scrollData=await sheet.evaluate(el=>({height:el.clientHeight,total:el.scrollHeight}));
+    expect(scrollData.total,`${device}: a long list must overflow the sheet`).toBeGreaterThan(scrollData.height);
+    await last.scrollIntoViewIfNeeded();
+    const after=await sheet.evaluate(el=>el.scrollTop);
+    expect(after,`${device}: the notes sheet did not scroll to the final note`).toBeGreaterThan(0);
+    await last.click();
+    await expect(panel).toHaveClass(/is-editing/);
+    await expect(panel.locator('[data-test-last-annotation]')).toHaveClass(/is-active/);
+  });
+}
