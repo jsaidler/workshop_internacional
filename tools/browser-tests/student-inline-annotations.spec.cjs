@@ -195,6 +195,9 @@ test('desktop drawer separates note and question, and publishes to every cohort 
   await compose.locator('[name="question_title"]').fill('Compartilhar com o curso');
   await compose.locator('[name="question_visibility"][value="course"]').check();
   await compose.locator('[data-note-question-publish]').click();
+  await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toHaveAttribute('href','/aluno/duvidas.php?cohort=turma-1&id=31');
+  await expect(panel).not.toHaveAttribute('open','');
+  await panel.locator('summary').first().click();
   await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toBeVisible();
   expect(submitted).toBe(true);
 });
