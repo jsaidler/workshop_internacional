@@ -341,7 +341,9 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await panel.locator('[data-annotation-edit="1"]').click();
     const original=panel.locator('[data-annotation-item="1"]');
     await expect(original).toHaveClass(/is-selection/);
+    await expect(panel.locator(':scope > summary b')).toHaveText('3');
     await original.getByRole('button',{name:'Tornar geral'}).click();
+    await expect(panel.locator(':scope > summary b')).toHaveText('3');
     const converted=panel.locator('[data-annotation-item="1"]');
     await expect(converted).toHaveCount(1);
     await expect(converted).toHaveClass(/is-page/);
