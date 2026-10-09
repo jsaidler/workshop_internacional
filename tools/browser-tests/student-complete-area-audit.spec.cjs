@@ -284,6 +284,13 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     const legacy=panel.locator('[data-legacy-note]');
     await expect(legacy.locator('.student-note-body-preview')).toBeVisible();
     await expect(legacy.locator('form')).toBeHidden();
+    await legacy.locator('[data-legacy-edit]').scrollIntoViewIfNeeded();
+    const inViewport=await legacy.locator('[data-legacy-edit]').evaluate(el=>{
+      const box=el.getBoundingClientRect();
+      const sheet=el.closest('.student-notes-sheet')?.getBoundingClientRect();
+      return !!sheet&&box.top>=sheet.top&&box.bottom<=sheet.bottom&&box.left>=sheet.left&&box.right<=sheet.right;
+    });
+    expect(inViewport,`${device}: legacy editor action must be visible in the actual notes sheet`).toBe(true);
     await panel.screenshot({path:`student-visual-audit/notes/${device}-legacy-list.png`,animations:'disabled'});
     await legacy.locator('[data-legacy-edit]').click();
     await expect(legacy.locator('textarea')).toBeVisible();
