@@ -25,6 +25,13 @@ test('derived records expose lineage through the record menu instead of permanen
   await expect(page.locator('[data-compare-mode-open]')).toHaveCount(0);
   await expect(page.locator('.student-compare-pick')).toHaveCount(0);
   await expect(page.locator('.student-research-card-lineage')).toContainText('Continuação de');
+  const summary=page.locator('.student-record-summary');
+  await expect(summary).toBeVisible();
+  await expect(summary.locator('span')).toHaveCount(3);
+  await expect(summary).toContainText('Exposição ainda não registrada');
+  await expect(summary).toContainText('Processamento ainda não registrado');
+  await expect(summary).toContainText('Resultado ainda não registrado');
+  await expect(page.locator('.student-record-progress')).toHaveCount(0);
   const menu=page.locator('.student-record-menu');
   const compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});
   await expect(menu).toBeVisible();
