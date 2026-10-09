@@ -238,6 +238,10 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel.locator('.student-notes-head')).toBeVisible();
     await expect(panel.locator('[data-annotation-item="2"] form')).toBeHidden();
     await panel.locator('[data-student-note-new]>summary').click();
+    await expect(panel).toHaveClass(/is-general-composing/);
+    await expect(panel.locator('.student-notes-list')).toBeHidden();
+    await expect(panel.locator('.student-notes-head')).toBeHidden();
+    await expect(panel.locator('[data-student-note-new]>summary')).toHaveText('← Todas as anotações');
     await expect(panel.locator('[data-student-note-new] form')).toBeVisible();
     await panel.locator('[data-student-note-new] [data-note-question]>summary').click();
     await expect(panel).toHaveClass(/is-page-questioning/);
