@@ -56,7 +56,7 @@ Foi identificada uma falha transversal no workflow `student-visual-audit`: a ger
 
 **Achado D-02 — foco em campo invisível:** o controlador compartilhado `assets/student-workbench.js` aplicava `.focus()` no primeiro `input`, inclusive campos `type=hidden` de formulários que o servidor já preenche automaticamente. A abertura podia manter foco no acionador. O seletor agora busca o primeiro controle visível e habilitado; o teste usa o JS real e verifica foco no assunto após reabrir o painel. Esta correção transversal também alcança painéis de inventário/processos que consomem o mesmo controlador.
 
-**Verificações introduzidas:** estado aberto e cancelado, `aria-expanded`, título/corpo obrigatórios, teto de 180 caracteres, exclusividade do grupo de três rádios, navegação por foco, e renderização de cada visibilidade em telefone 390×844 e desktop 1440×1100.
+**Verificações introduzidas:** estado aberto e cancelado, `aria-expanded`, título/corpo obrigatórios, teto de 180 caracteres, exclusividade do grupo de três rádios, navegação por foco, renderização de cada visibilidade e **listagem simultânea de dúvida privada, da turma e do curso** em telefone 390×844 e desktop 1440×1100.
 
 **Ainda não certificados:** sucesso real de POST, erro de servidor, lista vazia/longa de conversas, professor/aluno com matrículas diferentes, deep link e resposta, reconciliação da conversa depois de exclusão e a ausência de oclusão visual causada pela navegação inferior durante o scroll. Os testes de autorização por curso introduzidos no PR #215 continuam necessários, mas não equivalem a essa inspeção.
 
