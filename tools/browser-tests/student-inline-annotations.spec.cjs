@@ -245,3 +245,39 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await expect(panel.locator('[data-student-note-new] [name="question_visibility"][value="course"]')).toBeVisible();
   });
 }
+
+test('failed saved-note update preserves its draft and exposes an accessible error',async({page})=>{
+  await page.route('**/aluno/material-anotacao.php',route=>route.fulfill({
+    status:422,contentType:'application/json',body:JSON.stringify({ok:false,error:'Não foi possível salvar. Tente novamente.'})
+  }));
+  await page.goto(url,{waitUntil:'networkidle'});
+  const panel=page.locator('[data-student-notes-panel]');
+  await panel.locator('summary').first().click();
+  await panel.locator('[data-annotation-edit="1"]').click();
+  const form=panel.locator('[data-annotation-item="1"] form');
+  await form.locator('textarea[name="body"]').fill('Rascunho importante que não deve desaparecer.');
+  await form.locator('button[value="update"]').click();
+  await expect(form.locator('[data-note-save-status]')).toContainText('Não foi possível salvar.');
+  await expect(form.locator('[data-note-save-status]')).toHaveAttribute('role','alert');
+  await expect(form.locator('textarea[name="body"]')).toHaveValue('Rascunho importante que não deve desaparecer.');
+  await expect(panel).toHaveClass(/is-editing/);
+});
+
+test('deleting a saved annotation demands confirmation, and cancellation preserves the note',async({page})=>{
+  let sent=false;
+  await page.route('**/aluno/material-anotacao.php',route=>{sent=true;return route.fulfill({
+    status:200,contentType:'application/json',body:JSON.stringify({ok:true,action:'remove'})
+  });});
+  await page.goto(url,{waitUntil:'networkidle'});
+  const panel=page.locator('[data-student-notes-panel]');
+  await panel.locator('summary').first().click();
+  await panel.locator('[data-annotation-edit="1"]').click();
+  page.once('dialog',async dialog=>{expect(dialog.message()).toContain('permanentemente');await dialog.dismiss();});
+  await panel.locator('[data-annotation-item="1"] button[value="remove"]').click();
+  await expect(panel.locator('[data-annotation-item="1"]')).toBeVisible();
+  expect(sent).toBe(false);
+  page.once('dialog',async dialog=>{expect(dialog.message()).toContain('permanentemente');await dialog.accept();});
+  await panel.locator('[data-annotation-item="1"] button[value="remove"]').click();
+  await expect(panel.locator('[data-annotation-item="1"]')).toHaveCount(0);
+  expect(sent).toBe(true);
+});
