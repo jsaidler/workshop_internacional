@@ -178,3 +178,22 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
     await panel.screenshot({path:`student-visual-audit/notes/${device}-general-note.png`,animations:'disabled'});
   });
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`saved annotation deletion confirmation and cancellation — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const panel=page.locator('[data-student-notes-panel]');
+    await panel.locator('summary').first().click();
+    await panel.locator('[data-annotation-edit="1"]').click();
+    await panel.locator('[data-annotation-item="1"] button[value="remove"]').click();
+    const dialog=panel.locator('[data-note-remove-confirm]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button',{name:'Cancelar'})).toBeVisible();
+    await expect(dialog.getByRole('button',{name:'Remover anotação'})).toBeVisible();
+    await page.screenshot({path:`student-visual-audit/notes/${device}-remove-confirmation.png`,animations:'disabled'});
+    await dialog.getByRole('button',{name:'Cancelar'}).click();
+    await expect(dialog).toBeHidden();
+    await expect(panel.locator('[data-annotation-item="1"] textarea')).toBeVisible();
+  });
+}
