@@ -57,3 +57,28 @@ test('material context and notes remain usable on a narrow phone',async({page})=
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
+
+test('authenticated material scrolls independently above persistent mobile navigation',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(url,{waitUntil:'networkidle'});
+  const read=page.locator('.cms-student-reading'),nav=page.locator('.student-mobile-nav');
+  await expect(read).toBeVisible();
+  await expect(nav).toBeVisible();
+  const geometry=await page.evaluate(()=>{
+    const root=document.querySelector('.cms-student-reading'),bar=document.querySelector('.student-mobile-nav');
+    return{bottom:root.getBoundingClientRect().bottom,navTop:bar.getBoundingClientRect().top,
+      pageScroll:document.documentElement.scrollHeight,viewport:innerHeight,
+      total:root.scrollHeight,visible:root.clientHeight};
+  });
+  expect(geometry.bottom).toBeLessThanOrEqual(geometry.navTop+1);
+  expect(geometry.pageScroll).toBeLessThanOrEqual(geometry.viewport+1);
+  expect(geometry.total).toBeGreaterThan(geometry.visible);
+  await page.screenshot({path:'student-visual-audit/material/phone-reading-start.png',animations:'disabled'});
+  await read.evaluate(el=>el.scrollTop=(el.scrollHeight-el.clientHeight)/2);
+  await page.screenshot({path:'student-visual-audit/material/phone-reading-middle.png',animations:'disabled'});
+  await read.evaluate(el=>el.scrollTop=el.scrollHeight);
+  await expect(page.getByTestId('notes-panel')).toBeVisible();
+  const end=await read.evaluate(el=>({position:el.scrollTop,max:el.scrollHeight-el.clientHeight}));
+  expect(Math.abs(end.max-end.position)).toBeLessThan(2);
+  await page.screenshot({path:'student-visual-audit/material/phone-reading-end.png',animations:'disabled'});
+});

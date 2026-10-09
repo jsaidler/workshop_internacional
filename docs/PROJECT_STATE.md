@@ -96,6 +96,12 @@ Em revisão no PR #216:
 
 A matriz de estados e respectivas lacunas obrigatórias está em `docs/STUDENT_UI_STATE_MATRIX_2026-10-09.md`. **Cobrir 46 composições de tela não significa ter avaliado todas as suas possibilidades.** Enquanto houver estado sem inspeção funcional e visual, não se deve afirmar auditoria completa da Área do aluno. A integração e atualização da hospedagem exigem gates verdes e revisão humana do material renderizado.
 
+### Auditoria mobile — região rolável sem oclusão — 09/10/2026
+
+O problema sistêmico da navegação inferior sobreposta ao conteúdo não é resolvido apenas por `padding-bottom` e `scroll-padding-bottom`. No shell autenticado, `.student-main` passa a ser a região rolável, terminando antes da barra global `student-mobile-nav`. No renderer de materiais CMS, o `main` e o rodapé passam para `.cms-student-reading` sem mover a barra para dentro da leitura. `student-area.css` é proprietário da geometria; CSS de experiência deixa de sobrescrever `padding-bottom` do shell.
+
+O JavaScript de anotações restaura o scroll do material; operações AJAX no Caderno preservam o scroll da região correta no telefone, sem interferir no scroll de janela no desktop. As fixtures de material e AJAX consomem a mesma estrutura. A inspeção obrigatória fotografa início, meio e fim da região interna nas 46 superfícies mobile, além de testar foco, contexto, navegação e retorno. Este item só pode ser aprovado após CI e inspeção efetiva; a auditoria de **todos os estados de todas as telas** permanece aberta em `docs/STUDENT_UI_STATE_MATRIX_2026-10-09.md`.
+
 ### Roteiro editável dentro do registro — 07/10/2026
 
 O roteiro associado ao Caderno é uma cópia contextual daquele registro, não um fluxo controlado pelo sistema. A própria folha do registro expõe, para cada etapa, ações independentes de **Marcar/Desmarcar**, **Editar** e **Timer**.

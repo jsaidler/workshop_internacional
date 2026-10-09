@@ -109,6 +109,27 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`${name} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await page.screenshot({path:`student-visual-audit/complete/${device}/${name}.png`,fullPage:true,animations:'disabled'});
+      if(device==='phone'&&name!=='login'&&name!=='activation-password'){
+        const root=page.locator(name==='material'?'.cms-student-reading':'.student-main');
+        await expect(root,`${name}: mobile scroll region missing`).toBeVisible();
+        const bounds=await page.evaluate(kind=>{
+          const node=document.querySelector(kind==='material'?'.cms-student-reading':'.student-main');
+          const nav=document.querySelector('.student-mobile-nav');
+          if(!node||!nav)return null;
+          const reading=node.getBoundingClientRect(),bar=nav.getBoundingClientRect();
+          return{bottom:reading.bottom,navTop:bar.top,viewport:innerHeight,pageHeight:document.documentElement.scrollHeight,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight};
+        },name);
+        expect(bounds,`${name}: missing global nav or scroll root`).not.toBeNull();
+        expect(bounds.bottom,`${name}: content overlaps navigation`).toBeLessThanOrEqual(bounds.navTop+1);
+        expect(bounds.pageHeight,`${name}: page must not scroll behind fixed nav`).toBeLessThanOrEqual(bounds.viewport+1);
+        if(bounds.scrollHeight>bounds.clientHeight+8){
+          await root.evaluate(el=>el.scrollTop=(el.scrollHeight-el.clientHeight)/2);
+          await page.screenshot({path:`student-visual-audit/complete/phone/${name}-middle.png`,animations:'disabled'});
+          await root.evaluate(el=>el.scrollTop=el.scrollHeight);
+          await page.screenshot({path:`student-visual-audit/complete/phone/${name}-end.png`,animations:'disabled'});
+          await root.evaluate(el=>el.scrollTop=0);
+        }
+      }
     });
   }
 }
