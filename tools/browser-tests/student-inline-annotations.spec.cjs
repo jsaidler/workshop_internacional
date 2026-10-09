@@ -129,6 +129,7 @@ test('an annotation can publish a question without leaving the material screen',
   await expect(page.locator('[data-student-notes-panel]')).toHaveClass(/is-questioning/);
   await expect(compose.locator('[data-note-question]>summary')).toHaveText('← Voltar à anotação');
   await expect(compose.locator('[data-inline-note-body]')).toBeHidden();
+  await expect(compose.locator('.student-inline-note-primary-actions')).toHaveCount(1);
   await expect(compose.locator('.student-inline-note-primary-actions')).toBeHidden();
   await compose.locator('[name="question_title"]').fill('Minha dúvida');
   await compose.locator('[name="question_visibility"][value="cohort"]').check();
@@ -154,4 +155,49 @@ test('orphaned notes can be reassociated without changing their body',async({pag
   await expect(compose.locator('[data-anchor-preview]')).toHaveText('parágrafo foi alterado');
   await expect(compose.locator('[data-inline-note-body]')).toBeHidden();
   await expect(compose.locator('[data-inline-note-submit]')).toHaveText('Confirmar reassociação');
+});
+
+test('desktop drawer separates note and question, and publishes to every cohort of the course',async({page})=>{
+  await page.setViewportSize({width:1280,height:820});
+  let submitted=false;
+  await page.route('**/aluno/material-anotacao.php',async route=>{
+    const body=route.request().postData()||'';
+    expect(body).toContain('name="question_visibility"');
+    expect(body).toContain('\r\n\r\ncourse\r\n');
+    submitted=true;
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      ok:true,action:'create_selection',annotation_id:9,
+      annotation:{id:9,anchorType:'selection',sectionKey:'processo',body:'Testando as tonalidades',quoteExact:'parágrafo foi alterado',quotePrefix:'Este ',quoteSuffix:' depois da anotação original.',blockKey:'processo:p:1',start:5,end:26,sourceBlockHash:'fixture9',sourcePageRevision:'rev-2'},
+      question:{id:31,title:'Compartilhar com o curso',status:'open'},
+      question_url:'/aluno/duvidas.php?cohort=turma-1&id=31'
+    })});
+  });
+  await page.goto(url,{waitUntil:'networkidle'});
+  await selectSubstring(page,'[data-student-anchor-block="processo:p:1"]','parágrafo foi alterado');
+  await page.locator('.student-selection-note-action').click();
+  const panel=page.locator('[data-student-notes-panel]');
+  const compose=panel.locator('[data-inline-note-compose]');
+  await expect(compose).toBeVisible();
+  await expect(compose.locator('.student-inline-note-primary-actions')).toBeVisible();
+  await expect(panel.locator('.student-notes-head')).toBeHidden();
+  await compose.locator('textarea[name="body"]').fill('Testando as tonalidades');
+  await compose.locator('[data-note-question]>summary').click();
+  await expect(panel).toHaveClass(/is-questioning/);
+  await expect(compose.locator('[data-inline-note-body]')).toBeHidden();
+  await expect(compose.locator('.student-inline-note-primary-actions')).toBeHidden();
+  await expect(compose.locator('[data-note-question]>summary')).toHaveText('← Voltar à anotação');
+  await expect(compose.locator('input[name="question_visibility"]')).toHaveCount(3);
+  await expect(compose.locator('[name="question_visibility"][value="course"]')).toBeVisible();
+  await compose.locator('[data-note-question]>summary').click();
+  await expect(panel).not.toHaveClass(/is-questioning/);
+  await expect(compose.locator('textarea[name="body"]')).toHaveValue('Testando as tonalidades');
+  await compose.locator('[data-note-question]>summary').click();
+  await compose.locator('[name="question_title"]').fill('Compartilhar com o curso');
+  await compose.locator('[name="question_visibility"][value="course"]').check();
+  await compose.locator('[data-note-question-publish]').click();
+  await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toHaveAttribute('href','/aluno/duvidas.php?cohort=turma-1&id=31');
+  await expect(panel).not.toHaveAttribute('open','');
+  await panel.locator('summary').first().click();
+  await expect(page.locator('[data-annotation-item="9"] a',{hasText:'Ver dúvida'})).toBeVisible();
+  expect(submitted).toBe(true);
 });

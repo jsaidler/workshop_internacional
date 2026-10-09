@@ -119,3 +119,36 @@ test('complete student visual audit declares all rendered student route families
   for(const obsolete of ['process-intent','recording-start','recording-associated','recording-partial','recording-complete'])expect(names.has(obsolete),`obsolete temporal processing surface ${obsolete}`).toBe(false);
   expect(screens.length,'full student audit surface count').toBe(46);
 });
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
+  test(`student material annotation and question composer — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-inline-annotations.html'),{waitUntil:'networkidle'});
+    const textBlock=page.locator('[data-student-anchor-block="processo:p:1"]');
+    await textBlock.scrollIntoViewIfNeeded();
+    await textBlock.evaluate(element=>{
+      const text=element.firstChild;
+      const needle='parágrafo foi alterado',start=text.nodeValue.indexOf(needle);
+      if(start<0)throw new Error('Fixture source excerpt missing');
+      const range=document.createRange();range.setStart(text,start);range.setEnd(text,start+needle.length);
+      window.getSelection().removeAllRanges();window.getSelection().addRange(range);
+      element.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+    });
+    const annotate=page.locator('.student-selection-note-action');
+    await expect(annotate).toBeVisible({timeout:2500});
+    await annotate.click();
+    const panel=page.locator('[data-student-notes-panel]');
+    const composer=panel.locator('[data-inline-note-compose]');
+    await expect(panel.locator('.student-notes-head')).toBeHidden();
+    await expect(composer.locator('[data-inline-note-body]')).toBeVisible();
+    await expect(composer.locator('.student-inline-note-primary-actions')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-annotation.png`,animations:'disabled'});
+    await composer.locator('[data-note-question]>summary').click();
+    await expect(panel).toHaveClass(/is-questioning/);
+    await expect(composer.locator('[data-inline-note-body]')).toBeHidden();
+    await expect(composer.locator('.student-inline-note-primary-actions')).toBeHidden();
+    await expect(composer.locator('input[name="question_visibility"]')).toHaveCount(3);
+    await expect(composer.locator('input[value="course"]')).toBeVisible();
+    await panel.screenshot({path:`student-visual-audit/notes/${device}-question.png`,animations:'disabled'});
+  });
+}

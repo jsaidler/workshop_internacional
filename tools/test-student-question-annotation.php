@@ -22,6 +22,7 @@ $db->exec('INSERT INTO course_cohorts VALUES(4,1,9)');
 $db->exec('INSERT INTO course_material_pages VALUES(2,11)');
 $db->exec("INSERT INTO student_material_annotations VALUES(5,7,11,'Minha anotação','Trecho estudado')");
 $db->exec("INSERT INTO student_material_annotations VALUES(6,7,11,'Por que isso acontece?','Outro trecho')");
+$db->exec("INSERT INTO student_material_annotations VALUES(7,7,11,'Outra dúvida sobre o filme','Terceiro trecho')");
 $db->exec("INSERT INTO student_questions(id,student_id,cohort_id,source_annotation_id,topic,title,body,visibility,status,updated_at) VALUES(8,7,3,NULL,'Material','Questão anterior','Corpo','private','open','2026-10-01')");
 
 $source=student_question_annotation_source($db,7,3,5);
@@ -42,4 +43,7 @@ must_question_annotation((string)($created['body']??'')==='Por que isso acontece
 must_question_annotation((string)($created['visibility']??'')==='cohort','same-screen question lost selected visibility');
 $again=student_question_create_from_annotation($db,7,3,6,['question_title'=>'Não duplicar','question_visibility'=>'private']);
 must_question_annotation((int)$again['id']===(int)$created['id'],'same annotation created a duplicate question');
+$courseShared=student_question_create_from_annotation($db,7,3,7,['question_title'=>'Pergunta para todas as turmas','question_visibility'=>'course']);
+must_question_annotation((string)($courseShared['visibility']??'')==='course','annotation did not persist visibility for all cohorts in the course');
+must_question_annotation((int)($courseShared['source_annotation_id']??0)===7,'course-shared question lost its source annotation');
 echo "student-question-annotation: ok\n";

@@ -69,6 +69,13 @@
 .cms-public .student-note-quote,.cms-public .student-inline-note-selected blockquote{margin:0 0 12px;padding:10px 12px;border-left:2px solid var(--focus);background:color-mix(in srgb,var(--surface) 78%,transparent);color:var(--text);font-size:13px;line-height:1.5}
 .cms-public .student-inline-note-compose{margin:20px 0 2px;padding:16px;border:1px solid var(--focus);background:color-mix(in srgb,var(--focus) 5%,var(--surface))}
 .cms-public .student-inline-note-selected{display:grid;gap:7px}
+.cms-public .student-notes-panel.is-composing .student-notes-head,.cms-public .student-notes-panel.is-composing .student-notes-list,.cms-public .student-notes-panel.is-composing .student-note-new,.cms-public .student-notes-panel.is-composing .student-notes-empty{display:none}
+.cms-public .student-notes-panel.is-questioning .student-inline-note-selected,.cms-public .student-notes-panel.is-questioning [data-inline-note-body],.cms-public .student-notes-panel.is-questioning .student-inline-note-primary-actions{display:none}
+.cms-public .student-notes-panel.is-questioning .student-note-question{margin:0;border-top:0}
+.cms-public .student-notes-panel.is-questioning .student-note-question>summary{justify-content:flex-start;border-bottom:1px solid var(--line);font-size:11px}
+.cms-public .student-notes-panel.is-questioning .student-note-question>summary::after{display:none}
+.cms-public .student-notes-panel.is-questioning .student-note-question-fields{gap:14px;padding:16px 0 0}
+.cms-public .student-notes-panel textarea::placeholder{color:var(--muted);opacity:1}
 .cms-public mark.student-inline-note-mark{margin:0;padding:0;background:color-mix(in srgb,var(--focus) 32%,transparent);color:inherit;box-decoration-break:clone;-webkit-box-decoration-break:clone;cursor:pointer;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--focus) 72%,transparent);text-decoration-thickness:1px;text-underline-offset:3px}
 .cms-public mark.student-inline-note-mark:hover,.cms-public mark.student-inline-note-mark:focus{background:color-mix(in srgb,var(--focus) 48%,transparent);outline:none}
 .cms-public .student-selection-note-action{position:fixed;z-index:520;box-sizing:border-box;min-height:36px;padding:0 12px;border:1px solid var(--focus);background:var(--bg);color:var(--text);box-shadow:0 9px 28px rgba(0,0,0,.32);cursor:pointer;font:600 10px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase}
@@ -89,10 +96,6 @@
   .cms-public .student-notes-panel[open]>summary{min-height:58px;padding:0 16px}
   .cms-public .student-notes-sheet{padding:16px 16px calc(30px + env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
   .cms-public .student-notes-head h2{font-size:28px}
-  .cms-public .student-notes-panel.is-composing .student-notes-head,
-  .cms-public .student-notes-panel.is-composing .student-notes-list,
-  .cms-public .student-notes-panel.is-composing .student-note-new,
-  .cms-public .student-notes-panel.is-composing .student-notes-empty{display:none}
   .cms-public .student-notes-panel.is-composing .student-notes-sheet{padding-top:10px}
   .cms-public .student-notes-panel.is-composing .student-inline-note-compose{margin:0;padding:12px;gap:12px}
   .cms-public .student-notes-panel.is-composing .student-inline-note-selected blockquote{max-height:112px;overflow:auto;margin-bottom:0;padding:10px 12px;font-size:13px;line-height:1.45}
@@ -106,14 +109,7 @@
   .cms-public .student-note-question-fields{gap:10px;padding-bottom:10px}
   .cms-public .student-note-question-fields fieldset label{min-height:34px}
   .cms-public .student-note-question-fields .button{width:100%}
-  .cms-public .student-notes-panel.is-questioning .student-inline-note-selected,
-  .cms-public .student-notes-panel.is-questioning [data-inline-note-body],
-  .cms-public .student-notes-panel.is-questioning .student-inline-note-primary-actions{display:none}
   .cms-public .student-notes-panel.is-questioning .student-inline-note-compose{padding:0 12px 12px;gap:0}
-  .cms-public .student-notes-panel.is-questioning .student-note-question{margin:0;border-top:0}
-  .cms-public .student-notes-panel.is-questioning .student-note-question>summary{justify-content:flex-start;border-bottom:1px solid var(--line);font-size:11px}
-  .cms-public .student-notes-panel.is-questioning .student-note-question>summary::after{display:none}
-  .cms-public .student-notes-panel.is-questioning .student-note-question-fields{gap:14px;padding:16px 0 0}
   .cms-public .student-notes-panel.is-questioning .student-note-question-fields>p{font-size:13px;line-height:1.5}
   .cms-public .student-selection-note-action.is-touch-selection{left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:auto;min-height:50px;padding:0 18px;text-align:center;font-size:11px}
   .student-selection-active .cms-public .student-notes-panel:not([open])>summary{visibility:hidden;pointer-events:none}

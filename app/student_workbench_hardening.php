@@ -8,8 +8,8 @@ declare(strict_types=1);
  * while enforcing the product contracts that depend on context: a fresh
  * Caffenol preparation is never inventory stock, drying closes processing,
  * deleting an earlier process step also removes the now-invalid tail of the
- * route, and cohort questions are only readable/repliable by students
- * enrolled in that exact cohort.
+ * route, and question conversations are only readable/repliable within their
+ * explicit private, cohort or course sharing boundaries.
  */
 function student_process_add_guided_step(PDO $db,int $testId,int $studentId,array $input): array {
     $steps=student_process_steps($db,$testId);
@@ -68,20 +68,40 @@ function student_question_for_enrolled_student(PDO $db,int $studentId,int $quest
     $q=$db->prepare("SELECT q.*,u.name student_name
         FROM student_questions q
         JOIN student_users u ON u.id=q.student_id
+        JOIN course_cohorts origin ON origin.id=q.cohort_id
         WHERE q.id=? AND (
-            q.student_id=? OR (
-                q.visibility='cohort' AND EXISTS(
-                    SELECT 1 FROM course_enrollments e
-                    WHERE e.student_id=? AND e.cohort_id=q.cohort_id AND e.status='active'
-                )
-            )
+            q.student_id=?
+            OR (q.visibility='cohort' AND EXISTS(
+                SELECT 1 FROM course_enrollments e
+                WHERE e.student_id=? AND e.cohort_id=q.cohort_id AND e.status='active'
+            ))
+            OR (q.visibility='course' AND origin.course_id IS NOT NULL AND EXISTS(
+                SELECT 1 FROM course_enrollments e
+                JOIN course_cohorts enrolled ON enrolled.id=e.cohort_id
+                WHERE e.student_id=? AND e.status='active'
+                  AND enrolled.status!='archived'
+                  AND enrolled.course_id=origin.course_id
+            ))
         ) LIMIT 1");
-    $q->execute([$questionId,$studentId,$studentId]);return $q->fetch(PDO::FETCH_ASSOC)?:null;
+    $q->execute([$questionId,$studentId,$studentId,$studentId]);return $q->fetch(PDO::FETCH_ASSOC)?:null;
+}
+
+function student_question_in_cohort_context(PDO $db,array $question,int $contextCohortId): bool {
+    if($contextCohortId<1)return false;
+    if((int)$question['cohort_id']===$contextCohortId)return true;
+    if((string)$question['visibility']!=='course')return false;
+    $q=$db->prepare("SELECT 1 FROM course_cohorts origin
+        JOIN course_cohorts selected ON selected.id=?
+        WHERE origin.id=? AND origin.course_id IS NOT NULL
+          AND origin.course_id=selected.course_id
+          AND selected.status!='archived'");
+    $q->execute([$contextCohortId,(int)$question['cohort_id']]);
+    return (bool)$q->fetchColumn();
 }
 
 function student_question_reply_enrolled(PDO $db,int $studentId,int $questionId,string $body): void {
     $question=student_question_for_enrolled_student($db,$studentId,$questionId)??throw new RuntimeException('Dúvida não encontrada.');
-    if((string)$question['visibility']!=='cohort'&&(int)$question['student_id']!==$studentId)throw new RuntimeException('Esta dúvida é privada.');
+    if((string)$question['visibility']==='private'&&(int)$question['student_id']!==$studentId)throw new RuntimeException('Esta dúvida é privada.');
     $body=student_workspace_text($body,4000);if($body==='')throw new RuntimeException('Escreva uma resposta.');$now=utc_now();
     $db->prepare("INSERT INTO student_question_messages(message_uuid,question_id,author_role,student_id,body,created_at) VALUES(?,?,'student',?,?,?)")
         ->execute([student_uuid(),$questionId,$studentId,$body,$now]);

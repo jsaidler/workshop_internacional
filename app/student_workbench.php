@@ -242,11 +242,31 @@ function student_inventory_move(PDO $db,int $studentId,int $itemId,float $delta,
 function student_inventory_movements(PDO $db,int $studentId,int $itemId=0,int $limit=100): array {$sql='SELECT m.*,i.name item_name,i.unit FROM student_inventory_movements m JOIN student_inventory_items i ON i.id=m.item_id WHERE m.student_id=?';$args=[$studentId];if($itemId>0){$sql.=' AND m.item_id=?';$args[]=$itemId;}$sql.=' ORDER BY m.id DESC LIMIT '.max(1,min(300,$limit));$q=$db->prepare($sql);$q->execute($args);return $q->fetchAll(PDO::FETCH_ASSOC);}
 function student_inventory_archive(PDO $db,int $studentId,int $itemId): void {$db->prepare('UPDATE student_inventory_items SET archived_at=?,updated_at=? WHERE id=? AND student_id=?')->execute([utc_now(),utc_now(),$itemId,$studentId]);}
 
-function student_questions_for_cohort(PDO $db,int $studentId,int $cohortId): array {$q=$db->prepare("SELECT q.*,u.name student_name FROM student_questions q JOIN student_users u ON u.id=q.student_id WHERE q.cohort_id=? AND (q.student_id=? OR q.visibility='cohort') ORDER BY CASE q.status WHEN 'open' THEN 0 ELSE 1 END,q.updated_at DESC");$q->execute([$cohortId,$studentId]);return $q->fetchAll(PDO::FETCH_ASSOC);}
-function student_question_create(PDO $db,int $studentId,int $cohortId,array $input): array {student_test_assert_enrollment($db,$studentId,$cohortId);$title=student_workspace_text($input['title']??'',180);$body=student_workspace_text($input['body']??'',5000);if($title===''||$body==='')throw new RuntimeException('Informe o título e a dúvida.');$visibility=(string)($input['visibility']??'private');if(!in_array($visibility,['private','cohort'],true))$visibility='private';$testId=(int)($input['test_id']??0)?:null;if($testId&& !student_test_for_student($db,$testId,$studentId))throw new RuntimeException('Registro vinculado inválido.');$now=utc_now();$db->prepare("INSERT INTO student_questions(question_uuid,student_id,cohort_id,test_id,topic,title,body,visibility,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'open',?,?)")->execute([student_uuid(),$studentId,$cohortId,$testId,student_workspace_text($input['topic']??'',80),$title,$body,$visibility,$now,$now]);$q=$db->prepare('SELECT * FROM student_questions WHERE id=?');$q->execute([(int)$db->lastInsertId()]);return $q->fetch(PDO::FETCH_ASSOC)?:[];}
-function student_question_for_student(PDO $db,int $studentId,int $questionId): ?array {$q=$db->prepare("SELECT q.*,u.name student_name FROM student_questions q JOIN student_users u ON u.id=q.student_id WHERE q.id=? AND (q.student_id=? OR q.visibility='cohort') LIMIT 1");$q->execute([$questionId,$studentId]);return $q->fetch(PDO::FETCH_ASSOC)?:null;}
+function student_questions_for_cohort(PDO $db,int $studentId,int $cohortId): array {
+    $sql="SELECT q.*,u.name student_name,origin.title source_cohort_title
+        FROM student_questions q
+        JOIN student_users u ON u.id=q.student_id
+        JOIN course_cohorts origin ON origin.id=q.cohort_id
+        JOIN course_cohorts selected ON selected.id=?
+        WHERE EXISTS(
+            SELECT 1 FROM course_enrollments enrollment
+            WHERE enrollment.student_id=? AND enrollment.cohort_id=selected.id AND enrollment.status='active'
+        ) AND (
+            (q.cohort_id=selected.id AND (q.student_id=? OR q.visibility='cohort'))
+            OR (
+                q.visibility='course'
+                AND origin.course_id IS NOT NULL
+                AND origin.course_id=selected.course_id
+
+            )
+        )
+        ORDER BY CASE q.status WHEN 'open' THEN 0 ELSE 1 END,q.updated_at DESC,q.id DESC";
+    $q=$db->prepare($sql);$q->execute([$cohortId,$studentId,$studentId]);return $q->fetchAll(PDO::FETCH_ASSOC);
+}
+function student_question_create(PDO $db,int $studentId,int $cohortId,array $input): array {student_test_assert_enrollment($db,$studentId,$cohortId);$title=student_workspace_text($input['title']??'',180);$body=student_workspace_text($input['body']??'',5000);if($title===''||$body==='')throw new RuntimeException('Informe o título e a dúvida.');$visibility=(string)($input['visibility']??'private');if(!in_array($visibility,['private','cohort','course'],true))$visibility='private';if($visibility==='course'){$scope=$db->prepare('SELECT course_id FROM course_cohorts WHERE id=?');$scope->execute([$cohortId]);if((int)$scope->fetchColumn()<1)throw new RuntimeException('Não foi possível identificar o curso desta dúvida.');}$testId=(int)($input['test_id']??0)?:null;if($testId&& !student_test_for_student($db,$testId,$studentId))throw new RuntimeException('Registro vinculado inválido.');$now=utc_now();$db->prepare("INSERT INTO student_questions(question_uuid,student_id,cohort_id,test_id,topic,title,body,visibility,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'open',?,?)")->execute([student_uuid(),$studentId,$cohortId,$testId,student_workspace_text($input['topic']??'',80),$title,$body,$visibility,$now,$now]);$q=$db->prepare('SELECT * FROM student_questions WHERE id=?');$q->execute([(int)$db->lastInsertId()]);return $q->fetch(PDO::FETCH_ASSOC)?:[];}
+function student_question_for_student(PDO $db,int $studentId,int $questionId): ?array {return student_question_for_enrolled_student($db,$studentId,$questionId);}
 function student_question_messages(PDO $db,int $questionId): array {$q=$db->prepare('SELECT m.*,u.name student_name FROM student_question_messages m LEFT JOIN student_users u ON u.id=m.student_id WHERE m.question_id=? ORDER BY m.id');$q->execute([$questionId]);return $q->fetchAll(PDO::FETCH_ASSOC);}
-function student_question_reply(PDO $db,int $studentId,int $questionId,string $body): void {$question=student_question_for_student($db,$studentId,$questionId)??throw new RuntimeException('Dúvida não encontrada.');if((string)$question['visibility']!=='cohort'&&(int)$question['student_id']!==$studentId)throw new RuntimeException('Esta dúvida é privada.');$body=student_workspace_text($body,4000);if($body==='')throw new RuntimeException('Escreva uma resposta.');$now=utc_now();$db->prepare("INSERT INTO student_question_messages(message_uuid,question_id,author_role,student_id,body,created_at) VALUES(?,?, 'student',?,?,?)")->execute([student_uuid(),$questionId,$studentId,$body,$now]);$db->prepare('UPDATE student_questions SET updated_at=? WHERE id=?')->execute([$now,$questionId]);}
+function student_question_reply(PDO $db,int $studentId,int $questionId,string $body): void {student_question_reply_enrolled($db,$studentId,$questionId,$body);}
 function student_question_resolve(PDO $db,int $studentId,int $questionId): void {$q=$db->prepare("UPDATE student_questions SET status='resolved',updated_at=? WHERE id=? AND student_id=?");$q->execute([utc_now(),$questionId,$studentId]);}
 
 function student_material_notes_for_page(PDO $db,int $studentId,int $pageId): array {$q=$db->prepare('SELECT * FROM student_material_notes WHERE student_id=? AND page_id=? ORDER BY id');$q->execute([$studentId,$pageId]);$out=[];foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row)$out[(string)$row['section_key']]=$row;return $out;}
