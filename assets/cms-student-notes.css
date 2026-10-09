@@ -82,7 +82,7 @@
 .cms-public .student-notes-back button{min-height:40px;padding:0;border:0;background:transparent;color:var(--text);cursor:pointer;font:600 11px/1.4 var(--mono);text-transform:uppercase}
 .cms-public .student-note-body-preview{margin:12px 0 4px;color:var(--text);font:400 13px/1.55 var(--body);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .cms-public .student-note-edit-trigger{min-height:42px;margin-top:6px;padding:0;border:0;background:none;color:var(--text);cursor:pointer;font:600 11px/1.2 var(--mono);text-decoration:underline;text-underline-offset:4px;text-transform:uppercase}
-.cms-public .student-notes-panel:not(.is-editing) .student-note-item[data-annotation-item] form{display:none}
+.cms-public .student-notes-panel:not(.is-editing) .student-note-item form,.cms-public .student-notes-panel:not(.is-editing) .student-note-item .student-note-quote{display:none}
 .cms-public .student-notes-panel.is-editing .student-notes-head,.cms-public .student-notes-panel.is-editing .student-inline-note-compose,.cms-public .student-notes-panel.is-editing .student-note-new,.cms-public .student-notes-panel.is-editing .student-notes-empty,.cms-public .student-notes-panel.is-editing .student-note-item:not(.is-active){display:none}
 .cms-public .student-notes-panel.is-editing .student-note-item.is-active{padding:16px 0;border-bottom:0}
 .cms-public .student-notes-panel.is-editing .student-note-item.is-active .student-note-body-preview,.cms-public .student-notes-panel.is-editing .student-note-item.is-active .student-note-edit-trigger{display:none}
