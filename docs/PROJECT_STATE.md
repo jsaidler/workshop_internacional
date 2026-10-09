@@ -67,6 +67,20 @@ Contrato vigente:
 
 `tools/test-student-question-annotation.php` cobre o vínculo e a não duplicação em SQLite; `tools/browser-tests/student-inline-annotations.spec.cjs` cobre a criação anotação+dúvida sem mudança de URL; o audit visual cobre o compositor aberto em telefone e desktop.
 
+### Correção do painel de anotações existentes — 09/10/2026
+
+A inspeção visual anterior do PR #215 cobriu somente **criação de anotação** e **criação de dúvida**. A captura de produção apresentada pelo usuário revelou que **edição de uma anotação existente** não foi renderizada, inspecionada nem aprovada; o formulário de edição, o de transformação em dúvida e a criação de anotação geral estavam empilhados.
+
+Contrato de produto para Material:
+- o painel aberto por Anotações apresenta uma lista de notas existentes com texto legível e a ação explícita **Editar anotação**, sem expor todos os textareas;
+- clicar no destaque de uma anotação no material abre **essa anotação em modo de edição**, com retorno **← Todas as anotações**, sem abrir editores de outras notas nem formulário geral;
+- o editor mostra trecho associado (quando houver), texto e ações de salvar/gerenciar; transformação em dúvida é uma segunda etapa, exclusiva em relação ao textarea/ações da edição e com retorno que preserva o rascunho;
+- **Nova anotação geral** é uma ação recolhida, não um formulário permanente abaixo dos registros; seu compositor mantém a opção de transformar em dúvida sem simultaneidade de tarefas;
+- preservar vínculo com o trecho, contexto de turma, AJAX, posição de leitura e o escopo `private/cohort/course` existente;
+- a auditoria deve conter casos reais de notas persistidas e longas, lista, edição, publicação de dúvida e anotação geral, em telefone e desktop. Capturas automáticas não substituem inspeção visual efetiva.
+
+Este contrato é local ao compositor do material; não altera a navegação global (Início/Cursos/Caderno/Laboratório), suas URLs nem a política de histórico.
+
 ### Roteiro editável dentro do registro — 07/10/2026
 
 O roteiro associado ao Caderno é uma cópia contextual daquele registro, não um fluxo controlado pelo sistema. A própria folha do registro expõe, para cada etapa, ações independentes de **Marcar/Desmarcar**, **Editar** e **Timer**.
