@@ -103,6 +103,10 @@
 .cms-public .student-notes-panel.is-existing-questioning .student-note-item.is-active .student-note-question>summary{justify-content:flex-start;font-size:11px}
 .cms-public .student-notes-panel.is-existing-questioning .student-note-item.is-active .student-note-question>summary::after{display:none}
 .cms-public .student-notes-panel.is-composing .student-notes-back{display:none}
+.cms-public .student-notes-panel.is-general-composing .student-notes-head,.cms-public .student-notes-panel.is-general-composing .student-notes-list,.cms-public .student-notes-panel.is-general-composing .student-notes-empty,.cms-public .student-notes-panel.is-general-composing .student-notes-back{display:none}
+.cms-public .student-notes-panel.is-general-composing .student-note-new{margin-top:0;border-top:0}
+.cms-public .student-notes-panel.is-general-composing .student-note-new>summary{justify-content:flex-start;border-bottom:1px solid var(--line)}
+.cms-public .student-notes-panel.is-general-composing .student-note-new>summary::after{display:none}
 .cms-public .student-note-new{margin-top:14px;padding:0;border-top:1px solid var(--line)}
 .cms-public .student-note-new>summary{display:flex;justify-content:space-between;align-items:center;min-height:52px;cursor:pointer;list-style:none;color:var(--text);font:600 11px/1.2 var(--mono);text-transform:uppercase}
 .cms-public .student-note-new>summary::-webkit-details-marker{display:none}
