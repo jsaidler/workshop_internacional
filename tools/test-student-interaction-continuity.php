@@ -24,6 +24,7 @@ continuity_must(!str_contains($local,'data-route-change-link')&&!str_contains($l
 continuity_must(str_contains($local,"form.setAttribute('action',stepEdit.href)")&&str_contains($local,"dangerForm.setAttribute('action',stepEdit.href)"),'contextual process-step editor posts to the wrong page');
 continuity_must(str_contains($local,"dangerForm.dataset.localConfirm='Remover somente esta etapa do registro?'"),'contextual step editor still describes removal as a tail operation');
 continuity_must(str_contains($local,'form?.requestSubmit()')&&!str_contains($local,'form?.submit()'),'record media upload bypasses the local submit contract');
+continuity_must(str_contains($local,`input[type="file"]`)&&str_contains($local,`input.files?.length`),'record multiple-file upload must use the local mutation handler');
 continuity_must(str_contains($local,"[data-process-runner][data-timer-state=\"running\"]")&&str_contains($local,'beforeunload'),'active route timer is not protected from accidental navigation');
 continuity_must(str_contains($local,"q('.ui-alert-error',doc)")&&str_contains($local,"pathname.endsWith('/aluno/login.php')"),'local mutation errors or expired sessions can be mistaken for successful saves');
 continuity_must(str_contains($local,'finalUrl.pathname+finalUrl.search+finalUrl.hash'),'record-local save loses the canonical section anchor');
