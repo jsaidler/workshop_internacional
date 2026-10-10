@@ -29,7 +29,7 @@ const screens={
 };
 
 const applyQuestionFailureState=(key,state)=>{
- if((key==='question-new'&&state!=='failed-create')||(key==='question-thread'&&state!=='failed-reply'))return;
+ if(!((key==='question-new'&&state==='failed-create')||(key==='question-thread'&&state==='failed-reply')))return;
  const root=document.getElementById('screen'),alert=document.createElement('p');alert.className='ui-alert ui-alert-error';alert.setAttribute('role','alert');
  alert.textContent=key==='question-new'?'Não foi possível publicar a dúvida. Revise os dados e tente novamente.':'Não foi possível enviar a resposta. O texto foi mantido.';
  root.prepend(alert);
