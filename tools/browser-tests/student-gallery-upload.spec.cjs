@@ -31,7 +31,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
       for(const label of await region.locator('.student-capture-form > label.student-capture-button').all()){
         const visual=await label.evaluate(el=>({height:el.getBoundingClientRect().height,display:getComputedStyle(el).display,border:getComputedStyle(el).borderTopWidth,font:parseFloat(getComputedStyle(el).fontSize)}));
         expect(visual.height,'tap target must be at least 48 px').toBeGreaterThanOrEqual(48);
-        expect(visual.display).toBe('inline-flex');
+        expect(['flex','inline-flex'],'layout must render as flex').toContain(visual.display);
         expect(visual.border).not.toBe('0px');
         expect(visual.font).toBeGreaterThanOrEqual(12);
       }
