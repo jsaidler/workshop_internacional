@@ -448,3 +448,35 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await page.screenshot({path:`student-visual-audit/questions/${device}-questions-three-scopes.png`,fullPage:true,animations:'disabled'});
   });
 }
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+  test(`failed question publication retains the complete draft — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-new&state=failed-create'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    const alert=page.getByRole('alert');
+    await expect(alert).toContainText('Não foi possível publicar');
+    const open=page.locator('[data-question-new-toggle]'),panel=page.locator('[data-question-new-panel]'),form=panel.locator('form');
+    await expect(open).toHaveAttribute('aria-expanded','true');
+    await expect(panel).toBeVisible();
+    await expect(form.locator('[name="topic"]')).toHaveValue('Química');
+    await expect(form.locator('[name="test_id"]')).toHaveValue('23');
+    await expect(form.locator('[name="title"]')).toHaveValue('Dúvida sobre o banho');
+    await expect(form.locator('[name="body"]')).toHaveValue('Meu rascunho sobre diluição e amônia precisa permanecer no formulário.');
+    await expect(form.locator('[name="visibility"]:checked')).toHaveValue('course');
+    await expect(form.getByRole('button',{name:'Publicar dúvida'})).toBeVisible();
+    await page.screenshot({path:`student-visual-audit/questions/${device}-create-error-draft.png`,animations:'disabled'});
+  });
+  test(`failed reply stays in its conversation and preserves text — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-thread&state=failed-reply&id=31'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    await expect(page.getByRole('alert')).toContainText('Não foi possível enviar a resposta');
+    await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();
+    const form=page.locator('form[data-local-refresh="question-thread"][data-local-success="reset"]');
+    await expect(form.locator('[name="question_id"]')).toHaveValue('31');
+    await expect(form.locator('[name="body"]')).toHaveValue('Minha resposta sobre segunda revelação continua aqui após a falha.');
+    await expect(form.getByRole('button',{name:'Enviar resposta'})).toBeVisible();
+    await page.screenshot({path:`student-visual-audit/questions/${device}-reply-error-draft.png`,animations:'disabled'});
+  });
+}
