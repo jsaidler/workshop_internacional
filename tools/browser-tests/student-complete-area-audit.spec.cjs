@@ -546,3 +546,35 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     });
   }
 }
+
+
+for(const width of [320,390]){
+  for(const [surface,url] of [
+    ['student-shell','student-secondary-screens-audit.html?screen=profile'],
+    ['material-reader','student-material-context.html'],
+  ]){
+    test(`mobile navigation is legible, separated and reachable at ${width}px — ${surface}`,async({page})=>{
+      await page.setViewportSize({width,height:720});
+      await page.goto(fixture(url),{waitUntil:'networkidle'});
+      if(surface==='student-shell')await ensureCanonicalShellStyles(page);
+      const nav=page.locator('.student-mobile-nav'),links=nav.locator('a');
+      await expect(nav).toBeVisible();
+      await expect(links).toHaveCount(4);
+      const items=await links.evaluateAll(nodes=>nodes.map(node=>{
+        const box=node.getBoundingClientRect(),style=getComputedStyle(node),x=box.left+box.width/2,y=box.top+box.height/2;
+        return {label:node.textContent.trim(),fontSize:parseFloat(style.fontSize),width:box.width,height:box.height,left:box.left,right:box.right,bottom:box.bottom,contentWidth:node.clientWidth,scrollWidth:node.scrollWidth,hittable:node===document.elementFromPoint(x,y)||node.contains(document.elementFromPoint(x,y))};
+      }));
+      for(const item of items){
+        expect(item.fontSize,`${surface}: ${item.label} has tiny text`).toBeGreaterThanOrEqual(11);
+        expect(item.height,`${surface}: ${item.label} has an undersized touch target`).toBeGreaterThanOrEqual(48);
+        expect(item.scrollWidth,`${surface}: ${item.label} is clipped horizontally`).toBeLessThanOrEqual(item.contentWidth+1);
+        expect(item.hittable,`${surface}: ${item.label} is not tappable`).toBe(true);
+        expect(item.left).toBeGreaterThanOrEqual(0);
+        expect(item.right).toBeLessThanOrEqual(width+1);
+      }
+      for(let i=1;i<items.length;i++)expect(items[i].left).toBeGreaterThanOrEqual(items[i-1].right-1);
+      expect(Math.abs(items[items.length-1].bottom-720)).toBeLessThanOrEqual(2);
+      await page.screenshot({path:`student-visual-audit/navigation/phone-${width}-${surface}.png`,animations:'disabled'});
+    });
+  }
+}

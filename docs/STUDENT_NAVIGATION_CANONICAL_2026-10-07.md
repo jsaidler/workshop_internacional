@@ -452,3 +452,13 @@ a implementação deve ser auditada contra **este contrato**.
 Teste ou fixture que imponha navegação conflitante deve ser atualizado. Não se preserva UX ruim para satisfazer regressão antiga.
 
 Este arquivo deve ser consultado novamente antes de qualquer nova tranche de UI/UX da Área do aluno.
+
+## 17. Legibilidade verificável da barra global no telefone — 10/10/2026
+
+A barra inferior tem quatro destinos persistentes. As legendas não podem ser reduzidas a texto ornamental ilegível para evitar overflow. O estilo antes da revisão usava fonte monoespaçada de **8,5 px**, observada nos artefatos mobile como muito pequena. A correção global ocorre em `assets/student-area.css`, sem alterações página a página.
+
+Critérios mínimos desta tranche: legendas de pelo menos **11 px**, ações com alvo de toque de pelo menos **48 px** de altura, quatro controles separados, sem truncamento ou sobreposição, alcançáveis a **320 px** e **390 px** em shell aluno e leitor de Material. As capturas dessas quatro combinações e os testes da barra global em todas as superfícies de telefone devem ser inspecionados antes da integração. O tamanho nominal não dispensa avaliação de contraste real, zoom de navegador e tecnologias assistivas, que permanecem na matriz de auditoria completa.
+
+**Diagnóstico e implementação:** a regressão inicial reprovou porque `assets/student-rendered-fixes.css` ainda possuía `font:500 8.5px/1 var(--mono)` em seletor mais específico, inclusive para o shell comum. Remover as três regras concorrentes nesse arquivo (tipografia, ativo e indicador) e manter a geometria e a apresentação exclusivamente em `student-area.css`. Para caber em 320 px com legibilidade, o proprietário usa fonte sem serifa de 11 px e capitalização normal; não reduzir a fonte nem truncar o destino Laboratório.
+
+**Verificação N-01 (10/10):** `validate`, `student-visual-audit` e `deploy` passaram no commit `a72b2f8`. O último ajuste trocou `var(--sans)` não definido na fixture por `var(--body,Arial,sans-serif)`, mantendo 11 px. As quatro capturas reais de `student-shell` e `material-reader` em 320/390 px foram abertas e inspecionadas, sem corte dos rótulos ou sobreposição visível. A aprovação é restrita ao menu inferior; a matriz ampla de 46 superfícies/estados segue aberta. PR #224 aguardava integração neste registro.

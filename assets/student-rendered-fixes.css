@@ -251,9 +251,6 @@ body.student-page{font-size:16px;line-height:1.55}
   .student-toolbox-body{padding:0 16px 20px}
   .student-toolbox-tool{padding:20px 0}
   .student-toolbox-links{grid-template-columns:1fr}
-  .student-mobile-nav :is(a,button){position:relative;min-width:0;min-height:64px;display:grid;place-items:center;align-content:center;padding:0 3px;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--muted);font:500 8.5px/1 var(--mono);text-decoration:none;text-transform:uppercase;letter-spacing:.025em;text-align:center;cursor:pointer;appearance:none;-webkit-appearance:none}
-  .student-mobile-nav :is(a,button)[aria-current=page]{color:var(--text);font-weight:600}
-  .student-mobile-nav :is(a,button)[aria-current=page]::before{content:"";position:absolute;top:0;width:30px;height:2px;background:var(--focus)}
 }
 
 @media(max-width:560px){
