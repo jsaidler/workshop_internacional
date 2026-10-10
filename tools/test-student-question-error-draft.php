@@ -17,6 +17,7 @@ $assert=static function(bool $valid,string $message): void {
 $simulate=static function(string $method,array $post,string $error,?array $sourceAnnotation)use($stateCode): array {
     $_SERVER['REQUEST_METHOD']=$method;
     $_POST=$post;
+    $question=null; // The simulated request has no opened conversation.
     eval($stateCode);
     return compact(
         'failedQuestionCreate','failedQuestionReply','questionDraftTopic',

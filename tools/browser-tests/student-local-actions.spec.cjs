@@ -81,3 +81,30 @@ test('mobile AJAX update preserves inner scroll and keeps content above persiste
   expect(Math.abs(after.y-before.y)).toBeLessThan(4);
   await page.screenshot({path:'student-visual-audit/shell/phone-after-ajax.png',animations:'disabled'});
 });
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+  test(`question reply AJAX rejection preserves the draft and shows an inline error — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.route('**/tools/browser-fixture/student-secondary-screens-audit.html**',async route=>{
+      if(route.request().method()!=='POST')return route.continue();
+      expect(route.request().postData()).toContain('Minha resposta ainda não enviada');
+      await route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><html><body><p class="ui-alert ui-alert-error" role="alert">Não foi possível publicar a resposta.</p></body></html>'});
+    });
+    await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-secondary-screens-audit.html?screen=question-thread',{waitUntil:'networkidle'});
+    await page.addScriptTag({url:'/assets/student-local-actions.js'});
+    const form=page.locator('form[data-local-refresh="question-thread"][data-local-success="reset"]');
+    await expect(form.locator('input[name="action"]')).toHaveValue('reply');
+    expect(await form.evaluate(el=>typeof el.action)).toBe('object');
+    expect(await form.evaluate(el=>el.getAttribute('action'))).toBeNull();
+    const draft=form.locator('textarea[name="body"]');
+    await draft.fill('Minha resposta ainda não enviada');
+    await form.getByRole('button',{name:'Enviar resposta'}).click();
+    const alert=form.locator('[data-local-status]');
+    await expect(alert).toHaveAttribute('role','alert');
+    await expect(alert).toContainText('Não foi possível publicar a resposta.');
+    await expect(draft).toHaveValue('Minha resposta ainda não enviada');
+    await expect(form.getByRole('button',{name:'Enviar resposta'})).toBeEnabled();
+    await expect(page.locator('.student-question-detail')).toBeVisible();
+    await page.screenshot({path:`student-visual-audit/questions/${device}-ajax-reply-error.png`,animations:'disabled'});
+  });
+}

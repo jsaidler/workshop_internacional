@@ -462,6 +462,11 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await ensureCanonicalShellStyles(page);
     const alert=page.getByRole('alert');
     await expect(alert).toContainText('Não foi possível publicar');
+    await expect(alert).toBeFocused();
+    await expect(alert).toBeInViewport();
+    expect(await alert.evaluate(el=>el.closest('[data-question-new-panel]')!==null)).toBe(true);
+    expect(await alert.evaluate(el=>el.nextElementSibling?.tagName)).toBe('FORM');
+    expect(await alert.evaluate(el=>el.nextElementSibling.getBoundingClientRect().top-el.getBoundingClientRect().bottom)).toBeGreaterThanOrEqual(12);
     const open=page.locator('[data-question-new-toggle]'),panel=page.locator('[data-question-new-panel]'),form=panel.locator('form');
     await expect(open).toHaveAttribute('aria-expanded','true');
     await expect(panel).toBeVisible();
@@ -477,7 +482,13 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await page.setViewportSize({width,height});
     await page.goto(fixture('student-secondary-screens-audit.html?screen=question-thread&state=failed-reply&id=31'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
-    await expect(page.getByRole('alert')).toContainText('Não foi possível enviar a resposta');
+    const alert=page.getByRole('alert');
+    await expect(alert).toContainText('Não foi possível enviar a resposta');
+    await expect(alert).toBeFocused();
+    await expect(alert).toBeInViewport();
+    expect(await alert.evaluate(el=>el.parentElement?.getAttribute('data-student-local-key'))).toBe('question-thread');
+    expect(await alert.evaluate(el=>el.nextElementSibling?.getAttribute('data-local-success'))).toBe('reset');
+    expect(await alert.evaluate(el=>el.nextElementSibling.getBoundingClientRect().top-el.getBoundingClientRect().bottom)).toBeGreaterThanOrEqual(12);
     await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();
     const form=page.locator('form[data-local-refresh="question-thread"][data-local-success="reset"]');
     await expect(form.locator('[name="question_id"]')).toHaveValue('31');
