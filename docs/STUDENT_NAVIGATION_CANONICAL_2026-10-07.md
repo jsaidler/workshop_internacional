@@ -93,6 +93,22 @@ Uma rota de página não pode decidir unilateralmente esconder a barra inferior.
 
 Exceções só existem para uma superfície realmente transitória que não seja uma página de navegação — por exemplo, um modal/fullscreen técnico deliberado — e precisam ser documentadas neste arquivo antes da implementação.
 
+### Separação física entre barra fixa e área de leitura (09/10/2026)
+
+A reserva de espaço somente no **final da página** (`padding-bottom`) não atende ao requisito de nunca cobrir conteúdo: durante a rolagem, a barra inferior fixa ainda atravessa parágrafos, mensagens e campos.
+
+No telefone, o shell autenticado deve oferecer duas regiões contíguas, sem sobreposição: (1) cabeçalho e **conteúdo com rolagem própria**; (2) barra de navegação persistente ocupando sua faixa real no limite inferior da viewport. A barra pode continuar tecnicamente `position: fixed` para preservar a navegação canônica, mas a região rolável termina **antes** dela. A mesma regra se aplica ao material CMS autenticado, inclusive rodapé e painel de anotações. Modais técnicos podem cobrir o shell conforme exceções já estabelecidas.
+
+Invariantes:
+- textos, campos, botões e foco não podem aparecer ou ser acionados sob a barra;
+- o último controle continua alcançável em viewport curta e após abrir o teclado;
+- conteúdo do material, listas longas e resultado mantêm retorno e posição de leitura;
+- atualizações AJAX preservam o scroll do contêiner correto, sem chamar `window.scrollTo` quando a rolagem pertence ao `main`;
+- mobile e desktop usam a mesma informação e navegação; somente o proprietário do scroll muda;
+- a auditoria fotografa o **início, o meio e o fim** da região rolável, pois um screenshot `fullPage` da página não captura automaticamente o conteúdo oculto por `overflow:auto`.
+
+Nenhuma mudança de scroll deve ser integrada sem testar Back/Forward, deep link, teclado e atualização parcial em Caderno, Inventário, Material e Dúvidas. A captura inicial e a mera ausência de overflow horizontal não aprovam esta decisão.
+
 ### Estado ativo
 
 O item ativo representa o **contexto do produto**, não simplesmente o nome do arquivo PHP.

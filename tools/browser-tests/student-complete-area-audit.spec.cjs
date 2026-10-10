@@ -71,8 +71,8 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.setViewportSize(viewport);await page.goto(fixture(path),{waitUntil:'networkidle'});
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
-      if(name==='new-record'||name==='toolbox'){
-        const selector=name==='new-record'?'.student-create-dialog':'.student-toolbox';
+      if(name==='new-record'||name==='toolbox'||name==='calibration-editor'){
+        const selector=name==='new-record'||name==='calibration-editor'?'.student-create-dialog':'.student-toolbox';
         await page.evaluate(sel=>{const d=document.querySelector(sel);if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}},selector);
       }
       if(name==='home-feedback'){await expect(page.getByText('Retorno do professor',{exact:true})).toBeVisible();await expect(page.getByText('Ler retorno e revisar →',{exact:true})).toBeVisible();}
@@ -109,6 +109,27 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`${name} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await page.screenshot({path:`student-visual-audit/complete/${device}/${name}.png`,fullPage:true,animations:'disabled'});
+      if(device==='phone'&&name!=='login'&&name!=='activation-password'){
+        const root=page.locator(name==='material'?'.cms-student-reading':'.student-main');
+        await expect(root,`${name}: mobile scroll region missing`).toBeVisible();
+        const bounds=await page.evaluate(kind=>{
+          const node=document.querySelector(kind==='material'?'.cms-student-reading':'.student-main');
+          const nav=document.querySelector('.student-mobile-nav');
+          if(!node||!nav)return null;
+          const reading=node.getBoundingClientRect(),bar=nav.getBoundingClientRect();
+          return{bottom:reading.bottom,navTop:bar.top,viewport:innerHeight,pageHeight:document.documentElement.scrollHeight,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight};
+        },name);
+        expect(bounds,`${name}: missing global nav or scroll root`).not.toBeNull();
+        expect(bounds.bottom,`${name}: content overlaps navigation`).toBeLessThanOrEqual(bounds.navTop+1);
+        expect(bounds.pageHeight,`${name}: page must not scroll behind fixed nav`).toBeLessThanOrEqual(bounds.viewport+1);
+        if(bounds.scrollHeight>bounds.clientHeight+8){
+          await root.evaluate(el=>el.scrollTop=(el.scrollHeight-el.clientHeight)/2);
+          await page.screenshot({path:`student-visual-audit/complete/phone/${name}-middle.png`,animations:'disabled'});
+          await root.evaluate(el=>el.scrollTop=el.scrollHeight);
+          await page.screenshot({path:`student-visual-audit/complete/phone/${name}-end.png`,animations:'disabled'});
+          await root.evaluate(el=>el.scrollTop=0);
+        }
+      }
     });
   }
 }
@@ -214,11 +235,11 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.goto(fixture(path),{waitUntil:'networkidle'});
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
-      if(name==='new-record'||name==='toolbox'){
+      if(name==='new-record'||name==='toolbox'||name==='calibration-editor'){
         await page.evaluate(selector=>{
           const d=document.querySelector(selector);
           if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}
-        },name==='new-record'?'.student-create-dialog':'.student-toolbox');
+        },name==='new-record'||name==='calibration-editor'?'.student-create-dialog':'.student-toolbox');
       }
       const controls=page.locator('button:visible,a[href]:visible,summary:visible,[role="button"]:visible');
       const count=await controls.count();

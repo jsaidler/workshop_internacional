@@ -168,7 +168,7 @@
   .cms-public .student-note-question-fields .button{width:100%}
   .cms-public .student-notes-panel.is-questioning .student-inline-note-compose{padding:0 12px 12px;gap:0}
   .cms-public .student-notes-panel.is-questioning .student-note-question-fields>p{font-size:13px;line-height:1.5}
-  .cms-public .student-selection-note-action.is-touch-selection{left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:auto;min-height:50px;padding:0 18px;text-align:center;font-size:11px}
+  .cms-public .student-selection-note-action.is-touch-selection{left:12px;right:12px;top:auto;bottom:calc(78px + env(safe-area-inset-bottom,0px));width:auto;min-height:50px;padding:0 18px;text-align:center;font-size:11px}
   .student-selection-active .cms-public .student-notes-panel:not([open])>summary{visibility:hidden;pointer-events:none}
   .cms-public .student-reanchor-hint{bottom:calc(76px + env(safe-area-inset-bottom,0px));width:calc(100vw - 24px);justify-content:space-between}
 }

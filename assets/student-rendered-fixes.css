@@ -7,7 +7,7 @@
 }
 
 body.student-page{font-size:16px;line-height:1.55}
-.student-shell{width:min(var(--student-reading),calc(100% - 56px));padding-bottom:96px}
+.student-shell{width:min(var(--student-reading),calc(100% - 56px))}
 .student-topbar{min-height:56px;gap:10px}
 .student-wordmark{font-size:18px}
 .student-desktop-nav{margin-left:18px}
@@ -181,7 +181,7 @@ body.student-page{font-size:16px;line-height:1.55}
 .student-toolbox-links a:hover{background:var(--student-panel-quiet)}
 
 @media(max-width:820px){
-  .student-shell{width:calc(100% - 24px);padding-bottom:92px}
+  .student-shell{width:calc(100% - 24px)}
   .student-topbar{min-height:54px;gap:8px}
   .student-wordmark{font-size:16px}
   .student-desktop-nav{display:none}

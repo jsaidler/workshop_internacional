@@ -60,6 +60,18 @@ Foi identificada uma falha transversal no workflow `student-visual-audit`: a ger
 
 **Ainda não certificados:** sucesso real de POST, erro de servidor, lista vazia/longa de conversas, professor/aluno com matrículas diferentes, deep link e resposta, reconciliação da conversa depois de exclusão e a ausência de oclusão visual causada pela navegação inferior durante o scroll. Os testes de autorização por curso introduzidos no PR #215 continuam necessários, mas não equivalem a essa inspeção.
 
+## Regiões de leitura e navegação mobile — auditoria estrutural (09/10/2026)
+
+**N-01 — Oclusão da barra fixa:** a reserva de 66–92 px apenas no final da página não protegia parágrafos, cards ou formulários durante a rolagem. Uma barra `position:fixed` continuava atravessando os conteúdos no meio da leitura. Contrato atualizado em `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md`.
+
+O shell autenticado usa `.student-main` como região rolável abaixo do cabeçalho e acima da barra inferior, e material CMS protegido usa `.cms-student-reading` envolvendo o conteúdo **e o rodapé**. Os dois rolam independentemente do documento; a faixa inferior da barra fica fisicamente fora da região de leitura. A CSS de geometria é centralizada em `student-area.css` e deixa de concorrer com paddings de `student-experience.css` e `student-rendered-fixes.css`. A ação de seleção de texto fica acima da barra no telefone.
+
+**Continuidade funcional:** o controlador AJAX `student-local-actions.js` lê e restaura `scrollTop` da região de leitura mobile, mantendo `window.scrollY` em desktop; o sistema de anotações usa o `scrollTop` da leitura do material CMS. Não foi mudado o significado dos quatro destinos globais nem suas URLs.
+
+**Nova evidência obrigatória:** em `student-complete-area-audit.spec.cjs`, cada superfície mobile autenticada deve ter o fim da região de leitura acima do topo da barra, sem rolagem paralela do documento. Para listas longas, capturar **início, meio e fim** do contêiner; adicionalmente, `student-local-actions.spec.cjs` verifica preservação da posição após salvar e `student-material-context.spec.cjs` registra leitura progressiva.
+
+**Ainda pendente de aprovação:** resultado real dos testes, inspeção crítica das capturas nas 46 superfícies e regressões de Back/Forward, deep link, formulários, estados de teclado virtual e foco. Um teste verde não substitui a inspeção visual por estado.
+
 ## Gates que não podem ser flexibilizados
 
 - [ ] Todos os estados do fluxo de anotações, incluindo notas antigas, confirmação de remoção, erro e retorno, renderizados e inspecionados em ambas as viewports.
