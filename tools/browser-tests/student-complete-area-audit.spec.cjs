@@ -530,7 +530,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await ensureCanonicalShellStyles(page);
     await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();
     const evaluation=page.locator('.student-evaluation-conversations .student-test-row');
-    await expect(evaluation).toHaveAttribute('href',/teste.php\\?id=17/);
+    await expect(evaluation).toHaveAttribute('href','/aluno/teste.php?id=17&view=review');
     await evaluation.scrollIntoViewIfNeeded();
     await page.screenshot({path:`student-visual-audit/questions/${device}-evaluation-conversations.png`,animations:'disabled'});
   });
