@@ -96,6 +96,7 @@ jobs:
             php tools/test-student-fixture-parity.php
             php tools/test-student-question-annotation.php
             php tools/test-student-question-course-visibility.php
+            php tools/test-student-question-related-record.php
             php tools/test-student-question-error-draft.php
             php tools/test-student-interaction-continuity.php
             php tools/test-student-mechanics-audit.php

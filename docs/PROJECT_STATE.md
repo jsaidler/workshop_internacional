@@ -67,6 +67,13 @@ Contrato vigente:
 
 `tools/test-student-question-annotation.php` cobre o vínculo e a não duplicação em SQLite; `tools/browser-tests/student-inline-annotations.spec.cjs` cobre a criação anotação+dúvida sem mudança de URL; o audit visual cobre o compositor aberto em telefone e desktop.
 
+### Auditoria do vínculo entre Dúvidas e Caderno — 10/10/2026
+
+Uma pergunta partilhada no curso pode referenciar ficha experimental sem estender a permissão dessa ficha aos seus leitores. A auditoria identificou link direto para `/aluno/teste.php` (rota do proprietário) apresentado inclusive a outros alunos, enquanto fichas compartilhadas exigem `/aluno/teste-compartilhado.php` e fichas privadas não devem oferecer link. A correção deve usar `student_test_accessible_to_student()` no momento de renderizar a conversa e restringir o vínculo na criação à turma atual. A regressão contempla leitor autor, outra turma do mesmo curso, outra atividade, matrícula inativa e ficha privada. A matriz `docs/STUDENT_UI_STATE_MATRIX_2026-10-09.md` registra o estado de aprovação real desta tranche; não atribuir inspeção visual antes de observar as capturas.
+
+
+**Achado transversal de qualidade (10/10):** o fixture `student-secondary-screens-audit.html` apresentava falsos alertas `Não foi possível enviar a resposta` em rotas alheias a Dúvidas, como Calibração, devido à condição incorreta de `applyQuestionFailureState()`. Capturas produzidas com esse defeito não comprovam fidelidade visual. A revisão deve corrigir a condição, reprovar `pageerror` e alertas espúrios no audit, regerar as capturas e inspecioná-las antes de aprovação.
+
 ### Correção do painel de anotações existentes — 09/10/2026
 
 A inspeção visual anterior do PR #215 cobriu somente **criação de anotação** e **criação de dúvida**. A captura de produção apresentada pelo usuário revelou que **edição de uma anotação existente** não foi renderizada, inspecionada nem aprovada; o formulário de edição, o de transformação em dúvida e a criação de anotação geral estavam empilhados.

@@ -10,7 +10,7 @@ function student_test_assert_enrollment(PDO $db,int $studentId,int $cohortId): v
     $q=$db->prepare("SELECT 1 FROM course_enrollments WHERE student_id=? AND cohort_id=? AND status='active'");
     $q->execute([$studentId,$cohortId]);if(!$q->fetchColumn())throw new RuntimeException('Matrícula inválida.');
 }
-function student_test_for_student(PDO $db,int $testId,int $studentId): ?array {return null;}
+function student_test_for_student(PDO $db,int $testId,int $studentId): ?array {if($studentId!==1)return null;return match($testId){51=>['id'=>51,'student_id'=>1,'cohort_id'=>10],52=>['id'=>52,'student_id'=>1,'cohort_id'=>30],default=>null};}
 
 require dirname(__DIR__).'/app/student_workbench.php';
 require dirname(__DIR__).'/app/student_workbench_hardening.php';
@@ -48,4 +48,7 @@ student_question_reply_enrolled($db,2,(int)$global['id'],'Resposta colaborativa'
 must_question_course((int)$db->query('SELECT COUNT(*) FROM student_question_messages')->fetchColumn()===1,'same-course student cannot reply');
 try{student_question_reply_enrolled($db,3,(int)$global['id'],'Resposta indevida');fail_question_course('another course could reply');}catch(RuntimeException $expected){}
 try{student_question_create($db,1,30,['title'=>'Não publicar sem curso','body'=>'Teste','visibility'=>'course']);fail_question_course('course sharing without course_id was permitted');}catch(RuntimeException $expected){}
+$linked=student_question_create($db,1,10,['title'=>'Registro da turma','body'=>'Conversa no contexto correto','visibility'=>'cohort','test_id'=>51]);
+must_question_course((int)$linked['test_id']===51,'a record in the same cohort could not be linked');
+try{student_question_create($db,1,10,['title'=>'Registro de outra turma','body'=>'Não misturar contexto','visibility'=>'course','test_id'=>52]);fail_question_course('a record from another cohort was linked to this question');}catch(RuntimeException $expected){}
 echo "student-question-course-visibility: ok\n";

@@ -68,6 +68,7 @@ async function ensureCanonicalShellStyles(page){
 for(const [device,viewport] of Object.entries(viewports)){
   for(const [name,path] of screens){
     test(`complete student area visual audit ${device} ${name}`,async({page})=>{
+      const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
       await page.setViewportSize(viewport);await page.goto(fixture(path),{waitUntil:'networkidle'});
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
@@ -106,6 +107,11 @@ for(const [device,viewport] of Object.entries(viewports)){
         const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar,.cms-topbar'),reserve=document.querySelector('.student-shell')||document.body;if(!nav||!top||!reserve)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),rs=getComputedStyle(reserve),nr=nav.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBottom:nr.bottom,navHeight:nr.height,viewportHeight:innerHeight,reservedBottom:parseFloat(rs.paddingBottom||'0'),scrollPaddingBottom:parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom||'0')};});
         expect(mobileChrome,`${name}: authenticated mobile surface must expose global chrome`).not.toBeNull();
         expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);expect(mobileChrome.reservedBottom,`${name}: surface must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);expect(mobileChrome.scrollPaddingBottom,`${name}: scrolling must account for the fixed mobile navigation`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+      }
+      if(path.startsWith('student-secondary-screens-audit.html')){
+        expect(pageErrors,`${name}: JS failure inside real-layout fixture`).toEqual([]);
+        if(!['question-new','question-thread'].includes(name))
+          await expect(page.getByRole('alert').filter({hasText:'Não foi possível enviar a resposta.'})).toHaveCount(0);
       }
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`${name} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await page.screenshot({path:`student-visual-audit/complete/${device}/${name}.png`,fullPage:true,animations:'disabled'});
@@ -479,4 +485,64 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await expect(form.getByRole('button',{name:'Enviar resposta'})).toBeVisible();
     await page.screenshot({path:`student-visual-audit/questions/${device}-reply-error-draft.png`,animations:'disabled'});
   });
+}
+
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+  test(`question list empty, with operational new-question composer — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=empty'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    await page.addScriptTag({url:'/assets/student-workbench.js'});
+    await expect(page.getByText('Ainda não há dúvidas nesta turma ou curso.')).toBeVisible();
+    const trigger=page.locator('[data-question-new-toggle]'),panel=page.locator('[data-question-new-panel]');
+    await expect(panel).toBeHidden();
+    await trigger.click();
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('[name="title"]')).toHaveAttribute('required','');
+    await expect(panel.locator('[name="body"]')).toHaveAttribute('required','');
+    await expect(panel.locator('[name="visibility"]')).toHaveCount(3);
+    await page.screenshot({path:`student-visual-audit/questions/${device}-empty-new-question-open.png`,animations:'disabled'});
+  });
+  test(`question list large, scroll beginning middle and final controls — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=many'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    const items=page.locator('.student-test-list .student-test-row');
+    await expect(items).toHaveCount(31);
+    await page.screenshot({path:`student-visual-audit/questions/${device}-many-start.png`,animations:'disabled'});
+    await items.nth(15).scrollIntoViewIfNeeded();
+    await expect(items.nth(15)).toBeInViewport();
+    await page.screenshot({path:`student-visual-audit/questions/${device}-many-middle.png`,animations:'disabled'});
+    await items.last().scrollIntoViewIfNeeded();
+    await expect(items.last()).toBeInViewport();
+    const finalBounds=await items.last().boundingBox();
+    if(!finalBounds)throw new Error('Last question cannot be reached');
+    if(device==='phone'){
+      const bottomBar=await page.locator('.student-mobile-nav').boundingBox();
+      if(bottomBar)expect(finalBounds.y+finalBounds.height).toBeLessThanOrEqual(bottomBar.y+1);
+    }
+    await page.screenshot({path:`student-visual-audit/questions/${device}-many-end.png`,animations:'disabled'});
+  });
+  test(`question list includes conditional evaluation discussions — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=evaluations'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();
+    const evaluation=page.locator('.student-evaluation-conversations .student-test-row');
+    await expect(evaluation).toHaveAttribute('href','/aluno/teste.php?id=17&view=review');
+    await evaluation.scrollIntoViewIfNeeded();
+    await page.screenshot({path:`student-visual-audit/questions/${device}-evaluation-conversations.png`,animations:'disabled'});
+  });
+  for(const state of ['linked-shared','linked-private']){
+    test(`question linked record is ${state} — ${device}`,async({page})=>{
+      await page.setViewportSize({width,height});
+      await page.goto(fixture(`student-secondary-screens-audit.html?screen=question-thread&state=${state}`),{waitUntil:'networkidle'});
+      await ensureCanonicalShellStyles(page);
+      const link=page.getByRole('link',{name:'Abrir registro relacionado'});
+      if(state==='linked-private')await expect(link).toHaveCount(0);
+      else await expect(link).toHaveAttribute('href','/aluno/teste-compartilhado.php?id=103');
+      await page.screenshot({path:`student-visual-audit/questions/${device}-${state}.png`,animations:'disabled'});
+    });
+  }
 }

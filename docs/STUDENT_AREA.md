@@ -212,7 +212,7 @@ O compositor de anotação vinculada ao material e o formulário de nova dúvida
 
 A listagem, a abertura da conversa e o envio de respostas validam matrícula ativa e não admitem visibilidade de outra entidade Curso. A URL de uma conversa conserva o contexto da turma acessada, mesmo que a pergunta tenha sido criada em outra turma. O trecho da anotação privada original não é renderizado em contexto de uma turma diferente, inclusive quando a dúvida é compartilhada com todo o curso.
 
-O compositor de material usa duas etapas visuais mutuamente exclusivas (anotação e pergunta), tanto no desktop quanto no telefone. O teste completo cobre a publicação em `course`, resposta de outra turma, isolamento de outros cursos e matrícula inativa.
+Ao abrir uma dúvida compartilhada, o vínculo com um registro experimental **não transfere a permissão** dessa ficha: só se exibe **Abrir registro relacionado** se o usuário atual tiver autorização própria para o registro. A rota é `/aluno/teste.php` para o proprietário e `/aluno/teste-compartilhado.php` para outros alunos autorizados; caso contrário a ação não aparece. Vincular um registro à criação da dúvida exige que a ficha pertença à turma escolhida, evitando contexto cruzado entre matrículas.\n\nO compositor de material usa duas etapas visuais mutuamente exclusivas (anotação e pergunta), tanto no desktop quanto no telefone. O teste completo cobre a publicação em `course`, resposta de outra turma, isolamento de outros cursos e matrícula inativa.
 
 ## Administração canônica
 

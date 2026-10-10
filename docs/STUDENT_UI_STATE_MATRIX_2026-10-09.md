@@ -88,3 +88,24 @@ O shell autenticado usa `.student-main` como região rolável abaixo do cabeçal
 - [ ] Só então considerar revisão completa e autorizar atualização da hospedagem.
 
 **Não utilizar a expressão “auditoria visual completa” enquanto restar qualquer gate sem evidência verificável.**
+
+## Tranche D-04 — registros vinculados em dúvidas e estados de listagem (10/10/2026)
+
+**Achado D-04 — link existente, porém inacessível:** a conversa de dúvida renderizava indiscriminadamente `/aluno/teste.php?id=...`, rota exclusiva do proprietário da ficha. Aluno de outra turma do mesmo curso podia receber esse link para uma ficha compartilhada ou privada; o resultado era navegação para uma tela inacessível. A visibilidade da **dúvida** não concede, por si só, acesso ao **registro** relacionado.
+
+Correção em revisão na branch `audit/student-question-linked-record-2026-10-10`:
+- consultar `student_test_accessible_to_student()` antes de apresentar a ação;
+- proprietário recebe `/aluno/teste.php`; colega autorizado recebe `/aluno/teste-compartilhado.php`; sem autorização, não apresentar ação;
+- na criação, não vincular ficha própria pertencente a outra turma à pergunta atual;
+- regressão com banco SQLite para autor, mesma turma, outra turma do mesmo curso, curso diferente, matrícula inativa, ficha privada, ficha compartilhada e registro inexistente;
+- fixtures expandidas: criação partindo da lista vazia, listagem extensa (início/meio/fim), seção condicional de conversas de avaliação e conversa com/sem vínculo visível, em telefone e desktop.
+
+**Status de evidências:** implementado na branch de revisão; regressões e inspeção das novas capturas dependem dos respectivos resultados CI e da leitura humana do artefato. Não atribuir aprovação antecipada. O banco real da hospedagem e a atualização instalada não foram examinados.
+
+**Ainda não certificados:** execução autenticada completa com usuários reais de turmas diferentes, retorno da ficha ao contexto de dúvida, lista real com alto volume no servidor, postagem persistente de perguntas e respostas, restrições/erro de serviço em cada dispositivo e todas as demais famílias de telas. A auditoria integral permanece aberta.
+
+### Achado D-05 — contaminação transversal das capturas-base
+
+A inspeção **efetiva** do artefato `student-visual-audit` do PR #222 encontrou a mensagem `Não foi possível enviar a resposta. O texto foi mantido.` na tela **Referências de calibração** e em outras superfícies não relacionadas. A causa foi o predicado de `applyQuestionFailureState()`, no fixture compartilhado `student-secondary-screens-audit.html`: a condição não retornava para telas diferentes de `question-new` e `question-thread`, inserindo um `role=alert` espúrio e podendo disparar erro JavaScript fora do contexto. Capturas antigas afetadas **não são evidência válida de inspeção fiel**.
+
+Em correção nesta tranche: a fixture só aplica o erro quando a combinação tela+estado é explicitamente `question-new/failed-create` ou `question-thread/failed-reply`. A regressão de 46 superfícies verifica erros de JavaScript e ausência de alerta indevido em telas vizinhas; o workflow deve renderizar novamente todo o conjunto, e as novas capturas exigem inspeção efetiva. Este registro não atesta que tal reinspeção já ocorreu.
