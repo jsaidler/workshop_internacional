@@ -18,7 +18,7 @@ const localSpec=form=>{
   if(path.endsWith('/aluno/duvidas.php')&&['reply','resolve'].includes(action))return {refresh:['question-thread'],mode:'',success:action==='reply'?'reset':'',confirm:''};
   return null;
 };
-const announce=(form,message,error=false)=>{let box=form.querySelector(':scope > [data-local-status]');if(!box){box=document.createElement('p');box.dataset.localStatus='';box.className='ui-alert';form.prepend(box);}box.classList.toggle('ui-alert-error',error);box.classList.toggle('ui-alert-notice',!error);box.textContent=message;box.hidden=false;};
+const announce=(form,message,error=false)=>{let box=form.querySelector(':scope > [data-local-status]');if(!box){box=document.createElement('p');box.dataset.localStatus='';box.className='ui-alert';form.prepend(box);}box.classList.toggle('ui-alert-error',error);box.classList.toggle('ui-alert-notice',!error);box.textContent=message;box.hidden=false;box.setAttribute('role',error?'alert':'status');box.setAttribute('aria-live',error?'assertive':'polite');};
 const preserveOpen=element=>qa('details[open][data-local-open]',element).map(item=>item.dataset.localOpen);
 const restoreOpen=(element,keys)=>keys.forEach(key=>{const item=q(`details[data-local-open="${CSS.escape(key)}"]`,element);if(item)item.open=true;});
 const localSelector=key=>({

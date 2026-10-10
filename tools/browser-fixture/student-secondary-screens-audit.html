@@ -32,18 +32,21 @@ const applyQuestionFailureState=(key,state)=>{
  if(!((key==='question-new'&&state==='failed-create')||(key==='question-thread'&&state==='failed-reply')))return;
  const root=document.getElementById('screen'),alert=document.createElement('p');alert.className='ui-alert ui-alert-error';alert.setAttribute('role','alert');
  alert.textContent=key==='question-new'?'Não foi possível publicar a dúvida. Revise os dados e tente novamente.':'Não foi possível enviar a resposta. O texto foi mantido.';
- root.prepend(alert);
+ alert.tabIndex=-1;
  if(key==='question-new'){
    const panel=root.querySelector('[data-question-new-panel]'),trigger=root.querySelector('[data-question-new-toggle]'),form=panel.querySelector('form');
-   panel.hidden=false;trigger.setAttribute('aria-expanded','true');
+   panel.hidden=false;trigger.setAttribute('aria-expanded','true');form.before(alert);
    form.querySelector('[name="topic"]').value='Química';
    const record=document.createElement('option');record.value='23';record.textContent='Registro do banho de amônia';record.selected=true;form.querySelector('[name="test_id"]').append(record);
    form.querySelector('[name="title"]').value='Dúvida sobre o banho';
    form.querySelector('[name="body"]').value='Meu rascunho sobre diluição e amônia precisa permanecer no formulário.';
    form.querySelector('[name="visibility"][value="course"]').checked=true;
  }else{
-   root.querySelector('[name="body"]').value='Minha resposta sobre segunda revelação continua aqui após a falha.';
+   const form=root.querySelector('form[data-local-refresh="question-thread"][data-local-success="reset"]');
+   form.before(alert);
+   form.querySelector('[name="body"]').value='Minha resposta sobre segunda revelação continua aqui após a falha.';
  }
+ alert.focus({preventScroll:false});
 };
 const expandQuestionAuditStates=(key,state)=>{
  const root=document.getElementById('screen');
