@@ -90,6 +90,48 @@ for(const [device,viewport] of Object.entries(viewports)){
 
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow,`Aula 2/Prática horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
-    await page.screenshot({path:`student-visual-audit/material/${device}/aula2-aula3-final.png`,fullPage:true,animations:'disabled'});
+    // The actual mobile CMS reader scrolls inside .cms-student-reading, not the document.
+    // Full-page screenshots would capture only the first viewport and falsely imply complete material coverage.
+    await expect(page.locator('body')).toHaveAttribute('data-audit-data-source','migration-fixture-not-live-cms');
+    await expect(page.locator('[data-audit-synthetic-transition]')).toHaveCount(1);
+    const context=page.getByTestId('study-context');
+    await expect(context).toContainText('Positivo direto em filme de raio-X');
+    const notes=page.getByTestId('notes-panel');
+    const read=page.locator('.cms-student-reading');
+    const mobileNav=page.locator('.student-mobile-nav');
+    if(device==='phone'){
+      await expect(mobileNav.locator('a')).toHaveCount(4);
+      await expect(mobileNav.locator('a[aria-current="page"]')).toHaveText('Cursos');
+      const geometry=await page.evaluate(()=>{
+        const area=document.querySelector('.cms-student-reading'),nav=document.querySelector('.student-mobile-nav');
+        return {readBottom:area.getBoundingClientRect().bottom,navTop:nav.getBoundingClientRect().top,
+          pageScroll:document.documentElement.scrollHeight,viewport:innerHeight,
+          areaScroll:area.scrollHeight,areaHeight:area.clientHeight};
+      });
+      expect(geometry.readBottom,'material reading must end before global nav').toBeLessThanOrEqual(geometry.navTop+1);
+      expect(geometry.pageScroll,'document must not scroll beneath the mobile nav').toBeLessThanOrEqual(geometry.viewport+1);
+      expect(geometry.areaScroll).toBeGreaterThan(geometry.areaHeight);
+    }
+    const take=async(state)=>{
+      await page.screenshot({path:`student-visual-audit/material/${device}/aula2-practice-${state}.png`,animations:'disabled'});
+    };
+    await take('start');
+    if(device==='phone'){
+      await read.evaluate(el=>{el.scrollTop=Math.round((el.scrollHeight-el.clientHeight)/2);});
+      await take('middle');
+      await read.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+      const bottom=await read.evaluate(el=>({actual:el.scrollTop,max:el.scrollHeight-el.clientHeight}));
+      expect(Math.abs(bottom.actual-bottom.max)).toBeLessThanOrEqual(2);
+    }else{
+      await page.evaluate(()=>window.scrollTo(0,Math.round((document.documentElement.scrollHeight-innerHeight)/2)));
+      await take('middle');
+      await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+    }
+    await expect(notes,'last reading control must be reachable').toBeVisible();
+    await take('end');
+    await notes.locator('summary').click();
+    await expect(notes).toHaveAttribute('open','');
+    await expect(notes).toContainText('Nenhuma anotação nesta amostra.');
+    await take('notes-open');
   });
 }
