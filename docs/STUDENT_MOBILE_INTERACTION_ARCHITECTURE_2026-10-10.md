@@ -45,3 +45,7 @@ O trabalho anterior validou responsividade de controles sem questionar se o tele
 **S-02:** revisar criação de registro, toolbox e menus rápidos conforme tamanho do formulário e fluxo do aluno, sem mudar direitos ou dados.
 **S-03:** depois de comparar os demais 46 estados com DOM real, decidir filtros/contextuais, sem transformar rascunhos longos ou tarefas laboratoriais em gavetas.
 **Gate:** as 46 superfícies e seus estados aplicáveis continuam sob `STUDENT_UI_STATE_MATRIX_2026-10-09.md`; screenshot verde e fixture de rota não autenticada não equivalem à inspeção integral. Em hospedagem é obrigatória confirmação real do picker Android, inclusive seleção múltipla, cancelamento, falha de upload, Back/Forward e atualização parcial.
+
+## Evidência e corte da implementação S-01 (10/10)
+
+A primeira aplicação do contrato usa um só botão **Adicionar imagens** por parte da ficha e dois inputs dentro do diálogo compartilhado. Em testes de Chromium a 390×844 e 1440×1100, estados abertos/erro foram renderizados e inspecionados: `sheets/*-scene-open.png`, `sheets/*-result-open.png`, `sheets/*-error.png` (seis imagens). A mudança preserva os endpoints e o limite de seis imagens; só altera apresentação e integração de erro/retorno na interface. A auditoria integral de 46 superfícies continua aberta. A verificação com picker nativo Android e gravação real depende de atualização e uso na hospedagem.
