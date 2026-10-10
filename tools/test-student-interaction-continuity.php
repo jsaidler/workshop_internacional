@@ -21,7 +21,7 @@ continuity_must(str_contains($local,"action==='delete_free_step'?'Remover soment
 foreach(['save_result','upload','delete_media','submit','message'] as $action)continuity_must(str_contains($local,"'$action'")||str_contains($local,"action==='$action'"),"record action $action is not covered by the local interaction runtime");
 continuity_must(str_contains($local,"'record-exposure':'#exposicao'")&&str_contains($local,"'record-processing':'#processamento'")&&str_contains($local,"'record-result':'#resultado'"),'record-local refresh targets are not bound to the three canonical sections');
 continuity_must(!str_contains($local,'data-route-change-link')&&!str_contains($local,'processamentos-trocar.php'),'client runtime still injects a competing route-change UI over the server-owned record');
-continuity_must(str_contains($local,"form.action=stepEdit.href")&&str_contains($local,"dangerForm.action=stepEdit.href"),'contextual process-step editor posts to the wrong page');
+continuity_must(str_contains($local,"form.setAttribute('action',stepEdit.href)")&&str_contains($local,"dangerForm.setAttribute('action',stepEdit.href)"),'contextual process-step editor posts to the wrong page');
 continuity_must(str_contains($local,"dangerForm.dataset.localConfirm='Remover somente esta etapa do registro?'"),'contextual step editor still describes removal as a tail operation');
 continuity_must(str_contains($local,'form?.requestSubmit()')&&!str_contains($local,'form?.submit()'),'record media upload bypasses the local submit contract');
 continuity_must(str_contains($local,"[data-process-runner][data-timer-state=\"running\"]")&&str_contains($local,'beforeunload'),'active route timer is not protected from accidental navigation');
