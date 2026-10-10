@@ -550,3 +550,5 @@ Implementada em `audit/form-purpose-enrollment-authority-2026-09-26`: `cms_forms
 ### Legibilidade da navegação global mobile — 10/10/2026
 
 Nas capturas da auditoria de 46 superfícies, as legendas do menu inferior usavam 8,5 px, sem teste explícito de legibilidade em telefones estreitos. A correção centralizada proposta para `assets/student-area.css` eleva para 11 px, preservando os quatro destinos e os alvos de 66 px já existentes; a nova regressão cobre 320/390 px nos shells de aluno e Material. A matriz `docs/STUDENT_UI_STATE_MATRIX_2026-10-09.md` registra o status real. Não atribuir aprovação nem integração antes do gate visual/funcional.
+
+**Validação corretiva N-01:** CI inicial do PR #224 encontrou conflito entre `student-area.css` (11 px) e `student-rendered-fixes.css` (8,5 px) e truncamento de Laboratório a 320 px. A mudança proposta remove a autoria duplicada em `student-rendered-fixes.css` e passa a renderizar as legendas em 11 px, fonte sem serifa e capitalização normal, pela única autoridade global `student-area.css`. A aprovação dependerá de novo CI e inspeção das quatro capturas.
