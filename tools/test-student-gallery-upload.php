@@ -38,4 +38,8 @@ gallery_must(str_contains($component,'data-student-action-sheet')&&str_contains(
 gallery_must(str_contains($component,'name="images[]"')&&str_contains($component,' multiple>'),'gallery multiple file selector missing');
 gallery_must(str_contains($component,'capture="environment"'),'camera option missing');
 gallery_must(str_contains($source,'student_test_add_media_batch_phase'),'batch handler disconnected');
+$cadernoFixture=(string)file_get_contents(__DIR__.'/browser-fixture/student-caderno-product-audit.php');
+$cadernoTemplate=(string)file_get_contents(__DIR__.'/browser-fixture/student-caderno-product-audit.template.html');
+gallery_must(str_contains($cadernoFixture,"student_record_media_controls('scene'")&&str_contains($cadernoFixture,"student_record_media_controls('result'"),'Caderno visual fixture must render canonical sheet');
+gallery_must(!str_contains($cadernoTemplate,'Fotografar ou anexar')&&str_contains($cadernoTemplate,'__STUDENT_MEDIA_SCENE__')&&str_contains($cadernoTemplate,'__STUDENT_MEDIA_RESULT__'),'Caderno template has stale legacy upload actions');
 echo "student-gallery-upload: ok\n";

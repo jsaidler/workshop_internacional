@@ -18,6 +18,9 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('3 registros',{exact:true})).toBeVisible();await expect(page.locator('.student-notebook-card')).toHaveCount(3);await expect(page.locator('.student-record-progress')).toHaveCount(0);await expect(page.getByText('Abrir registro →',{exact:true}).first()).toBeVisible();await expect(page.getByRole('button',{name:'Novo registro'})).toBeVisible();
       }
       if(recordScreens.has(screen)){
+        await expect(page.locator('#exposicao').getByRole('button',{name:'Adicionar imagens'})).toHaveCount(1);
+        await expect(page.locator('#resultado').getByRole('button',{name:'Adicionar imagens'})).toHaveCount(1);
+        await expect(page.getByText('Fotografar ou anexar',{exact:true})).toHaveCount(0);
         await expect(page.locator('.student-step-nav')).toHaveCount(0);await expect(page.locator('#exposicao')).toBeVisible();await expect(page.locator('#processamento')).toBeVisible();await expect(page.locator('#resultado')).toBeVisible();await expect(page.getByRole('link',{name:'Exposição',exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Processamento',exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Resultado',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Salvar exposição'})).toBeVisible();await expect(page.getByRole('button',{name:'Salvar resultado'})).toBeVisible();
       }
       if(screen==='record-empty'){
