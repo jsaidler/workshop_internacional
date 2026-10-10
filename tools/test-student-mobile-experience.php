@@ -26,9 +26,10 @@ if(substr_count($shell,'student_shell_active_area($path,$_GET)')<2)fail_student_
 if(!str_contains($shell,'cms_design_css')||!str_contains($shell,'cms_design_font_import_css'))fail_student_mobile('student shell does not inherit activity design tokens');
 foreach(['id="exposicao"','id="processamento"','id="resultado"'] as $anchor)if(!str_contains($test,$anchor))fail_student_mobile('mobile record does not expose all documentary sections together');
 if(str_contains($test,"['exposure','process','review']")||str_contains($test,'aria-disabled'))fail_student_mobile('mobile record returned to staged/gated navigation');
-if(substr_count($test,'capture="environment"')!==2||substr_count($test,'name="images[]"')!==2||substr_count($test,' multiple ')!==2)fail_student_mobile('scene and result must have camera and multi-gallery controls');
-if(substr_count($test,'>Escolher imagens<input')!==2||substr_count($test,'>Fotografar<input')!==2)fail_student_mobile('separate camera and gallery actions must exist for both media phases');
-if(substr_count($test,'capture="environment" onchange')!==2||str_contains($test,'Fotografar ou anexar'))fail_student_mobile('gallery must not force native camera capture');
+$component=(string)file_get_contents($root.'/app/student_record_media_controls.php');
+if(substr_count($test,"student_record_media_controls('scene'")!==1||substr_count($test,"student_record_media_controls('result'")!==1)fail_student_mobile('media actions must share one sheet');
+if(!str_contains($component,'data-student-action-sheet')||!str_contains($component,'data-student-sheet-open'))fail_student_mobile('media sheet missing');
+if(!str_contains($component,' multiple>')||!str_contains($component,'capture="environment"'))fail_student_mobile('camera and multi gallery must remain');
 if(!str_contains($test,'student_test_add_media_batch_phase')||!str_contains($helper,'function student_test_normalize_media_batch')||!str_contains($helper,'function student_test_add_media_batch_phase'))fail_student_mobile('gallery selection must be processed as a batch on the server');
 if(!str_contains($test,'name="phase" value="scene"')||!str_contains($test,'name="phase" value="result"'))fail_student_mobile('record media is not separated into scene and result');
 if(!str_contains($helper,'student_test_update_exposure')||!str_contains($helper,'student_test_add_media_phase')||!str_contains($hardening,'function student_process_add_guided_step'))fail_student_mobile('record persistence helpers are incomplete');
