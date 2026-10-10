@@ -452,3 +452,9 @@ a implementação deve ser auditada contra **este contrato**.
 Teste ou fixture que imponha navegação conflitante deve ser atualizado. Não se preserva UX ruim para satisfazer regressão antiga.
 
 Este arquivo deve ser consultado novamente antes de qualquer nova tranche de UI/UX da Área do aluno.
+
+## 17. Legibilidade verificável da barra global no telefone — 10/10/2026
+
+A barra inferior tem quatro destinos persistentes. As legendas não podem ser reduzidas a texto ornamental ilegível para evitar overflow. O estilo antes da revisão usava fonte monoespaçada de **8,5 px**, observada nos artefatos mobile como muito pequena. A correção global ocorre em `assets/student-area.css`, sem alterações página a página.
+
+Critérios mínimos desta tranche: legendas de pelo menos **11 px**, ações com alvo de toque de pelo menos **48 px** de altura, quatro controles separados, sem truncamento ou sobreposição, alcançáveis a **320 px** e **390 px** em shell aluno e leitor de Material. As capturas dessas quatro combinações e os testes da barra global em todas as superfícies de telefone devem ser inspecionados antes da integração. O tamanho nominal não dispensa avaliação de contraste real, zoom de navegador e tecnologias assistivas, que permanecem na matriz de auditoria completa.
