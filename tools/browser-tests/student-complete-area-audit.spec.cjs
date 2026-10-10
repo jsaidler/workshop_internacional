@@ -473,7 +473,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await ensureCanonicalShellStyles(page);
     await expect(page.getByRole('alert')).toContainText('Não foi possível enviar a resposta');
     await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();
-    const form=page.locator('form[data-local-refresh="question-thread"]');
+    const form=page.locator('form[data-local-refresh="question-thread"][data-local-success="reset"]');
     await expect(form.locator('[name="question_id"]')).toHaveValue('31');
     await expect(form.locator('[name="body"]')).toHaveValue('Minha resposta sobre segunda revelação continua aqui após a falha.');
     await expect(form.getByRole('button',{name:'Enviar resposta'})).toBeVisible();
