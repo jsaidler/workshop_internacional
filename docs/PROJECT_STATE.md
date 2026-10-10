@@ -547,3 +547,6 @@ Próximo trabalho sistêmico após estabilização e observação desta tranche:
 ## Tranche 2026-09-26 — finalidade de formulário como autoridade operacional
 
 Implementada em `audit/form-purpose-enrollment-authority-2026-09-26`: `cms_forms.purpose` é a autoridade explícita para comum/interesse/inscrição/inscrição que gera matrícula. O comportamento de matrícula deixou de ser decidido por `form_key='registration'`; a migração 069 preserva todas as chaves, IDs, submissões e o comportamento do formulário legado por backfill para `enrollment`. A interface permanece em `Admin → Formulários`. Ver `docs/FORM_PURPOSE_ENROLLMENT_AUTHORITY_2026-09-26.md`.
+### Legibilidade da navegação global mobile — 10/10/2026
+
+Nas capturas da auditoria de 46 superfícies, as legendas do menu inferior usavam 8,5 px, sem teste explícito de legibilidade em telefones estreitos. A correção centralizada proposta para `assets/student-area.css` eleva para 11 px, preservando os quatro destinos e os alvos de 66 px já existentes; a nova regressão cobre 320/390 px nos shells de aluno e Material. A matriz `docs/STUDENT_UI_STATE_MATRIX_2026-10-09.md` registra o status real. Não atribuir aprovação nem integração antes do gate visual/funcional.
