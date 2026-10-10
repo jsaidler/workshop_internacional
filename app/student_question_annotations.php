@@ -60,3 +60,13 @@ function student_question_source_context(PDO $db,array $question): ?array {
     $q=$db->prepare('SELECT a.*,p.title page_title FROM student_material_annotations a JOIN cms_pages p ON p.id=a.page_id WHERE a.id=? LIMIT 1');$q->execute([$annotationId]);
     return $q->fetch(PDO::FETCH_ASSOC)?:null;
 }
+
+/** Show a related record only when this student can open it. */
+function student_question_related_record_href(PDO $db,array $question,int $viewerId): string {
+    $testId=(int)($question['test_id']??0);
+    if($testId<1)return '';
+    $record=student_test_accessible_to_student($db,$testId,$viewerId);
+    if(!$record)return '';
+    $path=(int)$record['student_id']===$viewerId?'/aluno/teste.php':'/aluno/teste-compartilhado.php';
+    return $path.'?id='.$testId;
+}
