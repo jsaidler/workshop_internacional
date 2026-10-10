@@ -68,6 +68,7 @@ async function ensureCanonicalShellStyles(page){
 for(const [device,viewport] of Object.entries(viewports)){
   for(const [name,path] of screens){
     test(`complete student area visual audit ${device} ${name}`,async({page})=>{
+      const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
       await page.setViewportSize(viewport);await page.goto(fixture(path),{waitUntil:'networkidle'});
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
@@ -106,6 +107,11 @@ for(const [device,viewport] of Object.entries(viewports)){
         const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar,.cms-topbar'),reserve=document.querySelector('.student-shell')||document.body;if(!nav||!top||!reserve)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),rs=getComputedStyle(reserve),nr=nav.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBottom:nr.bottom,navHeight:nr.height,viewportHeight:innerHeight,reservedBottom:parseFloat(rs.paddingBottom||'0'),scrollPaddingBottom:parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom||'0')};});
         expect(mobileChrome,`${name}: authenticated mobile surface must expose global chrome`).not.toBeNull();
         expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);expect(mobileChrome.reservedBottom,`${name}: surface must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);expect(mobileChrome.scrollPaddingBottom,`${name}: scrolling must account for the fixed mobile navigation`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+      }
+      if(path.startsWith('student-secondary-screens-audit.html')){
+        expect(pageErrors,`${name}: JS failure inside real-layout fixture`).toEqual([]);
+        if(!['question-new','question-thread'].includes(name))
+          await expect(page.getByRole('alert').filter({hasText:'Não foi possível enviar a resposta.'})).toHaveCount(0);
       }
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`${name} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
       await page.screenshot({path:`student-visual-audit/complete/${device}/${name}.png`,fullPage:true,animations:'disabled'});
