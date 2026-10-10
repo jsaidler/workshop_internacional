@@ -60,11 +60,11 @@ $required=[
     'escaped title'=>'value="<?=h($questionDraftTitle)?>"',
     'escaped body'=>'<?=h($questionDraftBody)?>',
     'escaped reply'=>'<?=h($questionReplyDraft)?>',
-    'selected cohort scope'=>"$questionDraftVisibility==='cohort'",
-    'selected course scope'=>"$questionDraftVisibility==='course'",
+    'selected cohort scope'=>"\$questionDraftVisibility==='cohort'",
+    'selected course scope'=>"\$questionDraftVisibility==='course'",
     'selected related record'=>'$questionDraftRecord===(int)$record',
     'accessible server error'=>'class="ui-alert ui-alert-error" role="alert"',
-    'reply context on POST'=>"$_GET['id']??$_POST['question_id']"
+    'reply context on POST'=>"\$_GET['id']??\$_POST['question_id']"
 ];
 foreach($required as $label=>$literal)$assert(str_contains($source,$literal),"template missing $label");
 echo "question-error-draft: ok\n";
