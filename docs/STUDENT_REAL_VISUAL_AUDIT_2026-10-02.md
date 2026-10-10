@@ -81,3 +81,11 @@ A auditoria automatizada passa a falhar se:
 - o registro completo de 9 etapas não renderizar 9 etapas.
 
 Passar nesses gates não aprova o design. Após cada renderização, os screenshots mobile e desktop devem ser inspecionados e as telas problemáticas corrigidas antes do merge.
+
+## Material — fronteira de evidência M-01 (10/10/2026)
+
+A renderização `student-aula3-material-audit.php` usa banco temporário e a cadeia de migrations 085, 087, 089, 090 e 091, sobre um fim **sintético** da Aula 2. Ela não consulta a versão editorial publicada na hospedagem. A última migration preserva sete `data-study-image-placeholder` por decisão explícita; a aprovação de altura/largura dessas caixas comprova apenas a estrutura provisória, não as imagens finais. Não substituir conteúdo autoral ou receitas com inferências, nem converter placeholders em imagens fictícias.
+
+A revisão M-01 passa a distinguir evidência de **geometria do leitor autenticado** (scroll interno mobile, cabeçalho, barra global, rodapé e notas) de evidência de **conteúdo editorial final**. Capturas de início/meio/fim/notas abertas, em desktop e telefone, entram no gate; a fixture recebe marcador de origem, e a transição artificial da Aula 2 fica explicitamente marcada. A inspeção da publicação real, acessos, imagens prontas e estados persistidos de anotação depende de evidência autenticada adicional. Não atribuir status de auditoria integral.
+
+**Resultado M-01 em `033fe70` (10/10):** após CI visual aprovado, oito capturas foram inspecionadas em tamanho efetivo, incluindo rolagem do meio e fim e notas abertas nos dois dispositivos. A captura intermediária desktop do primeiro ensaio era uma repetição do início; a revisão instrumentou posição real e produziu cenas materialmente diferentes. No telefone, a faixa de leitura termina antes da navegação e o painel vazio demonstrativo continua alcançável. A inspeção aprova apenas esta configuração de **fixture de migração**, não conteúdos da hospedagem, infográficos ainda não publicados ou persistência real. Os sete placeholders `data-study-image-placeholder` continuam explicitamente pendentes, por decisão editorial da migração 091.

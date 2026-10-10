@@ -90,6 +90,66 @@ for(const [device,viewport] of Object.entries(viewports)){
 
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow,`Aula 2/Prática horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
-    await page.screenshot({path:`student-visual-audit/material/${device}/aula2-aula3-final.png`,fullPage:true,animations:'disabled'});
+    // The actual mobile CMS reader scrolls inside .cms-student-reading, not the document.
+    // Full-page screenshots would capture only the first viewport and falsely imply complete material coverage.
+    await expect(page.locator('body')).toHaveAttribute('data-audit-data-source','migration-fixture-not-live-cms');
+    await expect(page.locator('[data-audit-synthetic-transition]')).toHaveCount(1);
+    const context=page.getByTestId('study-context');
+    await expect(context).toContainText('Positivo direto em filme de raio-X');
+    const notes=page.getByTestId('notes-panel');
+    const read=page.locator('.cms-student-reading');
+    const mobileNav=page.locator('.student-mobile-nav');
+    if(device==='phone'){
+      await expect(mobileNav.locator('a')).toHaveCount(4);
+      await expect(mobileNav.locator('a[aria-current="page"]')).toHaveText('Cursos');
+      const geometry=await page.evaluate(()=>{
+        const area=document.querySelector('.cms-student-reading'),nav=document.querySelector('.student-mobile-nav');
+        return {readBottom:area.getBoundingClientRect().bottom,navTop:nav.getBoundingClientRect().top,
+          pageScroll:document.documentElement.scrollHeight,viewport:innerHeight,
+          areaScroll:area.scrollHeight,areaHeight:area.clientHeight};
+      });
+      expect(geometry.readBottom,'material reading must end before global nav').toBeLessThanOrEqual(geometry.navTop+1);
+      expect(geometry.pageScroll,'document must not scroll beneath the mobile nav').toBeLessThanOrEqual(geometry.viewport+1);
+      expect(geometry.areaScroll).toBeGreaterThan(geometry.areaHeight);
+    }
+    const take=async(state)=>{
+      await page.screenshot({path:`student-visual-audit/material/${device}/aula2-practice-${state}.png`,animations:'disabled'});
+    };
+    // Force immediate scroll and assert the actual destination before capturing.
+    // Pages may have smooth scrolling in their CSS; a single window.scrollTo followed by
+    // screenshot can silently duplicate the starting frame.
+    const setReadingPosition=async(target)=>{
+      const goal=await page.evaluate(({device,target})=>{
+        const el=device==='phone'?document.querySelector('.cms-student-reading'):document.scrollingElement;
+        if(!el)throw new Error('Material reading scroll host missing');
+        const max=Math.max(0,el.scrollHeight-el.clientHeight);
+        if(max<innerHeight*2)throw new Error('Audit source is not long enough to verify distinct reading positions');
+        const top=target==='start'?0:target==='middle'?Math.round(max/2):max;
+        const before=el.style.scrollBehavior;
+        el.style.scrollBehavior='auto';
+        el.scrollTop=top;
+        el.style.scrollBehavior=before;
+        return{top,max};
+      },{device,target});
+      await expect.poll(async()=>page.evaluate(device=>
+        device==='phone'?document.querySelector('.cms-student-reading').scrollTop:window.scrollY,device)
+      ).toBeGreaterThanOrEqual(goal.top-2);
+      await expect.poll(async()=>page.evaluate(device=>
+        device==='phone'?document.querySelector('.cms-student-reading').scrollTop:window.scrollY,device)
+      ).toBeLessThanOrEqual(goal.top+2);
+      return goal;
+    };
+    await setReadingPosition('start');
+    await take('start');
+    const middle=await setReadingPosition('middle');
+    await take('middle');
+    const endPosition=await setReadingPosition('end');
+    expect(endPosition.max-middle.top,'end must be visibly later than middle').toBeGreaterThan(viewport.height/2);
+    await expect(notes,'last reading control must be reachable').toBeVisible();
+    await take('end');
+    await notes.locator('summary').click();
+    await expect(notes).toHaveAttribute('open','');
+    await expect(notes).toContainText('Nenhuma anotação nesta amostra.');
+    await take('notes-open');
   });
 }
