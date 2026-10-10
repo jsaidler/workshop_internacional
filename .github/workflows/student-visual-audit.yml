@@ -47,6 +47,8 @@ on:
       - 'tools/browser-tests/student-caderno-product-audit.spec.cjs'
       - 'tools/browser-tests/student-lab-stock-product-audit.spec.cjs'
       - 'tools/browser-tests/student-complete-area-audit.spec.cjs'
+      - 'tools/browser-tests/student-gallery-upload.spec.cjs'
+      - 'tools/browser-fixture/student-record-gallery.php'
       - '.github/workflows/student-visual-audit.yml'
   workflow_dispatch:
 
@@ -74,6 +76,7 @@ jobs:
           npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-current-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-process-execution-state-audit.spec.cjs tools/browser-tests/admin-process-domain-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
           node tools/generate-aula3-screenshot-pack.cjs student-visual-audit/complete/desktop migrations/assets/aula3-hires.pack.b64
           npx playwright test tools/browser-tests/student-aula3-material-audit.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-gallery-upload.spec.cjs --workers=1
       - name: Upload rendered screens
         if: always()
         uses: actions/upload-artifact@v4
