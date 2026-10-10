@@ -88,3 +88,18 @@ O shell autenticado usa `.student-main` como região rolável abaixo do cabeçal
 - [ ] Só então considerar revisão completa e autorizar atualização da hospedagem.
 
 **Não utilizar a expressão “auditoria visual completa” enquanto restar qualquer gate sem evidência verificável.**
+
+## Tranche D-04 — registros vinculados em dúvidas e estados de listagem (10/10/2026)
+
+**Achado D-04 — link existente, porém inacessível:** a conversa de dúvida renderizava indiscriminadamente `/aluno/teste.php?id=...`, rota exclusiva do proprietário da ficha. Aluno de outra turma do mesmo curso podia receber esse link para uma ficha compartilhada ou privada; o resultado era navegação para uma tela inacessível. A visibilidade da **dúvida** não concede, por si só, acesso ao **registro** relacionado.
+
+Correção em revisão na branch `audit/student-question-linked-record-2026-10-10`:
+- consultar `student_test_accessible_to_student()` antes de apresentar a ação;
+- proprietário recebe `/aluno/teste.php`; colega autorizado recebe `/aluno/teste-compartilhado.php`; sem autorização, não apresentar ação;
+- na criação, não vincular ficha própria pertencente a outra turma à pergunta atual;
+- regressão com banco SQLite para autor, mesma turma, outra turma do mesmo curso, curso diferente, matrícula inativa, ficha privada, ficha compartilhada e registro inexistente;
+- fixtures expandidas: criação partindo da lista vazia, listagem extensa (início/meio/fim), seção condicional de conversas de avaliação e conversa com/sem vínculo visível, em telefone e desktop.
+
+**Status de evidências:** implementado na branch de revisão; regressões e inspeção das novas capturas dependem dos respectivos resultados CI e da leitura humana do artefato. Não atribuir aprovação antecipada. O banco real da hospedagem e a atualização instalada não foram examinados.
+
+**Ainda não certificados:** execução autenticada completa com usuários reais de turmas diferentes, retorno da ficha ao contexto de dúvida, lista real com alto volume no servidor, postagem persistente de perguntas e respostas, restrições/erro de serviço em cada dispositivo e todas as demais famílias de telas. A auditoria integral permanece aberta.
