@@ -480,3 +480,63 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await page.screenshot({path:`student-visual-audit/questions/${device}-reply-error-draft.png`,animations:'disabled'});
   });
 }
+
+
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+  test(`question list empty, with operational new-question composer — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=empty'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    await page.addScriptTag({url:'/assets/student-workbench.js'});
+    await expect(page.getByText('Ainda não há dúvidas nesta turma ou curso.')).toBeVisible();
+    const trigger=page.locator('[data-question-new-toggle]'),panel=page.locator('[data-question-new-panel]');
+    await expect(panel).toBeHidden();
+    await trigger.click();
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('[name="title"]')).toHaveAttribute('required','');
+    await expect(panel.locator('[name="body"]')).toHaveAttribute('required','');
+    await expect(panel.locator('[name="visibility"]')).toHaveCount(3);
+    await page.screenshot({path:`student-visual-audit/questions/${device}-empty-new-question-open.png`,animations:'disabled'});
+  });
+  test(`question list large, scroll beginning middle and final controls — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=many'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    const items=page.locator('.student-test-list .student-test-row');
+    await expect(items).toHaveCount(31);
+    await page.screenshot({path:`student-visual-audit/questions/${device}-many-start.png`,animations:'disabled'});
+    await items.nth(15).scrollIntoViewIfNeeded();
+    await expect(items.nth(15)).toBeInViewport();
+    await page.screenshot({path:`student-visual-audit/questions/${device}-many-middle.png`,animations:'disabled'});
+    await items.last().scrollIntoViewIfNeeded();
+    await expect(items.last()).toBeInViewport();
+    const finalBounds=await items.last().boundingBox();
+    if(!finalBounds)throw new Error('Last question cannot be reached');
+    if(device==='phone'){
+      const bottomBar=await page.locator('.student-mobile-nav').boundingBox();
+      if(bottomBar)expect(finalBounds.y+finalBounds.height).toBeLessThanOrEqual(bottomBar.y+1);
+    }
+    await page.screenshot({path:`student-visual-audit/questions/${device}-many-end.png`,animations:'disabled'});
+  });
+  test(`question list includes conditional evaluation discussions — ${device}`,async({page})=>{
+    await page.setViewportSize({width,height});
+    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=evaluations'),{waitUntil:'networkidle'});
+    await ensureCanonicalShellStyles(page);
+    await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();
+    const evaluation=page.locator('.student-evaluation-conversations .student-test-row');
+    await expect(evaluation).toHaveAttribute('href',/teste.php\\?id=17/);
+    await evaluation.scrollIntoViewIfNeeded();
+    await page.screenshot({path:`student-visual-audit/questions/${device}-evaluation-conversations.png`,animations:'disabled'});
+  });
+  for(const state of ['linked-shared','linked-private']){
+    test(`question linked record is ${state} — ${device}`,async({page})=>{
+      await page.setViewportSize({width,height});
+      await page.goto(fixture(`student-secondary-screens-audit.html?screen=question-thread&state=${state}`),{waitUntil:'networkidle'});
+      await ensureCanonicalShellStyles(page);
+      const link=page.getByRole('link',{name:'Abrir registro relacionado'});
+      if(state==='linked-private')await expect(link).toHaveCount(0);
+      else await expect(link).toHaveAttribute('href','/aluno/teste-compartilhado.php?id=103');
+      await page.screenshot({path:`student-visual-audit/questions/${device}-${state}.png`,animations:'disabled'});
+    });
+  }
+}
