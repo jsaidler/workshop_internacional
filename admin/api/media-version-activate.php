@@ -1,0 +1,7 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/../../app/bootstrap.php';security_headers();require_admin();header('Content-Type: application/json; charset=UTF-8');
+if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){http_response_code(405);echo json_encode(['error'=>'method_not_allowed']);exit;}
+$input=json_decode((string)file_get_contents('php://input'),true);if(!is_array($input))$input=$_POST;if(!verify_csrf('media',$input['csrf']??null)){http_response_code(403);echo json_encode(['error'=>'csrf_invalid']);exit;}
+$assetId=(int)($input['assetId']??0);$versionId=(int)($input['versionId']??0);if($assetId<1||$versionId<1){http_response_code(422);echo json_encode(['error'=>'invalid_version']);exit;}
+try{$db=database();$q=$db->prepare('SELECT * FROM media_versions WHERE id=? AND asset_id=? AND processing_status="ready"');$q->execute([$versionId,$assetId]);$version=$q->fetch();if(!$version)throw new RuntimeException('version_not_found');$q=$db->prepare('UPDATE media_assets SET active_version_id=?,mime_type=?,byte_size=?,width=?,height=?,checksum=?,updated_at=? WHERE id=?');$q->execute([$versionId,$version['mime_type'],(int)$version['byte_size'],$version['width'],$version['height'],$version['checksum'],gmdate('c'),$assetId]);echo json_encode(['item'=>media_asset_admin($db,$assetId)],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);}catch(Throwable $e){http_response_code(422);echo json_encode(['error'=>$e->getMessage()]);}

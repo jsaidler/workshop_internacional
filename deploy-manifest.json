@@ -1,0 +1,1743 @@
+{
+    "schema": 1,
+    "sourceSha": "11296767991f2fb3240e0541baa18b35e32dbd36",
+    "generatedAt": "2026-10-10T20:28:31+00:00",
+    "files": {
+        ".htaccess": {
+            "sha256": "c7313f7e46a21b5fe5a3982853cbc0cac3350e48349f595979952d47f20c62e1",
+            "bytes": 736
+        },
+        "admin/activities.php": {
+            "sha256": "9d228ed3ae2fae579f24736b65998a5bce252fb87047e6e6eec6c6ab4762393f",
+            "bytes": 4087
+        },
+        "admin/analytics.php": {
+            "sha256": "e5061ec7da91b785423ba93bd5935451276ff40f92d06dfe098342444b6a3928",
+            "bytes": 9140
+        },
+        "admin/api/blocks.php": {
+            "sha256": "79e6088f9ff4d8d8b8f0236f535aa586f42f9d54745eec0c64da6ee4d6dce6ae",
+            "bytes": 1988
+        },
+        "admin/api/cms-access-options.php": {
+            "sha256": "fb9e73e407d6047fc377c20487bea63fe3cef17952f09006397f0bf55de59399",
+            "bytes": 913
+        },
+        "admin/api/cms-form-load.php": {
+            "sha256": "285cf6a12ecd84f09057f442eac4c373fd06ec9b7acb16bde2d61d765d6ddc69",
+            "bytes": 669
+        },
+        "admin/api/cms-form-publish.php": {
+            "sha256": "e7ac88a528cf5002b1b54e5dd1f05d5022490e4e0d4bd4444a7ab53d1268d218",
+            "bytes": 487
+        },
+        "admin/api/cms-form-save.php": {
+            "sha256": "3bd82646a488419a6808d7d62ba2661424a6d46b7e9d2a695c9636ef421cb5b9",
+            "bytes": 872
+        },
+        "admin/api/cms-page-access-save.php": {
+            "sha256": "9abe697fd7d71561d54a8b25fc8867133478c3ab19460e5b9f03a5476242fcdf",
+            "bytes": 658
+        },
+        "admin/api/cms-page-load.php": {
+            "sha256": "43667920015644f0b3478def4e25bab8784019d4ee989ecc6ce2fcf0c0f59f1a",
+            "bytes": 1624
+        },
+        "admin/api/cms-page-publish.php": {
+            "sha256": "605dc40cff4e3f4d4214f08781f804154626e007c7a8693da7cd30acb2008f91",
+            "bytes": 708
+        },
+        "admin/api/cms-page-save.php": {
+            "sha256": "554b6cc285439ae8d98cb7dbd5c3ac30bdfb7fa25931e5e203b346e2571a0e14",
+            "bytes": 1187
+        },
+        "admin/api/cms-private-media-slots.php": {
+            "sha256": "d9565300dab0ec3119b10e7d087c9d440020d1d9cb3b7be7a16ef64202e15144",
+            "bytes": 3433
+        },
+        "admin/api/content-load.php": {
+            "sha256": "285266ab5030eb224d42d5b77ff5a1d69a42c39ec2b24a6395bc21f3f2c3b4e6",
+            "bytes": 431
+        },
+        "admin/api/content-publish.php": {
+            "sha256": "5cbbb4d71c0cfabcc38f1bba39a49c1dd815b394997580ca3c8c7479276dea70",
+            "bytes": 332
+        },
+        "admin/api/content-restore.php": {
+            "sha256": "a8131ede871f1d0a880736abb6bfcbf740c4be7ba8b67bcba24815b39a4b5f72",
+            "bytes": 388
+        },
+        "admin/api/content-save.php": {
+            "sha256": "eacba17a1e04cf81e9449084f2fd19fe065b782c3aa23e53958587262eb300e5",
+            "bytes": 553
+        },
+        "admin/api/course-lesson-release.php": {
+            "sha256": "9a4ba4f16dc2b8e7754b1ca56f3b69ea32524feaa7169a19a7e98133f1dbad95",
+            "bytes": 1421
+        },
+        "admin/api/editor-context.php": {
+            "sha256": "7eaf2ea7a8dbd28d1853413a604c165bc746d4a40df991f7f496ac80a33e0bd7",
+            "bytes": 1771
+        },
+        "admin/api/media-archive.php": {
+            "sha256": "8a811fdaf18e084942fc0541ba114992de11229273254c2c6b6c0993eb454c50",
+            "bytes": 883
+        },
+        "admin/api/media-bulk.php": {
+            "sha256": "6bcaf4b06e93e5b230b328f1445253da2172d7b05745cf5b7dc842b4ac1035c2",
+            "bytes": 1322
+        },
+        "admin/api/media-delete.php": {
+            "sha256": "909f1e897b9aeef5b1a0ffcdf95e49c698862c2a127b5799d4c0f220f5a73e29",
+            "bytes": 884
+        },
+        "admin/api/media-detail.php": {
+            "sha256": "943992c94fdde7d43f2b9954fd0f39e63bbaae6abe257340e8ac2826263466fd",
+            "bytes": 715
+        },
+        "admin/api/media-list.php": {
+            "sha256": "a5430e9091766bbcf48f2f31f54b1e2b5432cba2fba408d8678689f92aefd90c",
+            "bytes": 501
+        },
+        "admin/api/media-poster.php": {
+            "sha256": "3d1e90449892a4be04009b1281e521a8bb3b4f4f7923e855aacab08cc7f1b396",
+            "bytes": 595
+        },
+        "admin/api/media-regenerate.php": {
+            "sha256": "04c8fb9ff93218049d8ed2a38cda63776ac5231d68d57c1a24c8ed17b655f7b0",
+            "bytes": 949
+        },
+        "admin/api/media-update.php": {
+            "sha256": "5b06e7b878c1a49955c0cdf9ac44946f54b36a658b31aa696e6a616cc2812f83",
+            "bytes": 866
+        },
+        "admin/api/media-upload.php": {
+            "sha256": "6c6ea0f22455bc34cd46d44020fe3cdf0fcd0436cc8c1023574b6137d1a5c507",
+            "bytes": 1099
+        },
+        "admin/api/media-usage.php": {
+            "sha256": "b935fa7e6390372ef808a5bb1b8ef1f5756f865be5a43727f169e08f4ff180a2",
+            "bytes": 530
+        },
+        "admin/api/media-version-activate.php": {
+            "sha256": "c4ae848bafa40b55c570f46c3246a6ea3efa71a1b5bcc5207510704e6ff46d07",
+            "bytes": 1436
+        },
+        "admin/api/media-visibility.php": {
+            "sha256": "1e5f84caa67ec038051b7ae5135a7875a7bd1a8f2afff092636ec322624150ae",
+            "bytes": 804
+        },
+        "admin/api/student-test-detail.php": {
+            "sha256": "b8661be1ae3fd5eaabbd454434eaeea262869e5bf801483791ede17d75e09832",
+            "bytes": 388
+        },
+        "admin/blocks.php": {
+            "sha256": "c1e33c2deb87e8eb77001162ca1b0449813016e2dd6ce407222d10fe698dcc7f",
+            "bytes": 3322
+        },
+        "admin/cohorts.php": {
+            "sha256": "cb50ae9fe1c993da2644a0095469eadd3145b9b403dc476b00abd4b91b882e8e",
+            "bytes": 12582
+        },
+        "admin/course-preview.php": {
+            "sha256": "ea799a37f846bf1146f7747ba4ec28830b99d4c27a57dfe45952f827ef92421b",
+            "bytes": 2489
+        },
+        "admin/courses.php": {
+            "sha256": "5fc894ae271afd45c65fefec633c7b1f7ee33cacf026e919b5f863572601ed59",
+            "bytes": 17400
+        },
+        "admin/data-integrity.php": {
+            "sha256": "810f487aac396b32b9d6c9fefcd56c3fcfb1f001566e1ed789310124024a2a3e",
+            "bytes": 11404
+        },
+        "admin/design.php": {
+            "sha256": "bd2353e077ab03f388392b2fda5c4fcce6d1319d217fe2ccea90c2a9b2ac4d75",
+            "bytes": 9596
+        },
+        "admin/export.php": {
+            "sha256": "c659cce872c4df374a5748920d98c34399ac281ba1fb074498daec978361990c",
+            "bytes": 1197
+        },
+        "admin/forms.php": {
+            "sha256": "8fc6b363efd7538bd2b214652aad8bd02ad756abd2443d57007f6bc3b914cf39",
+            "bytes": 18345
+        },
+        "admin/index.php": {
+            "sha256": "f8e224e1e8fdee7d5ca6cd31f15cc0e21b7d8606757e7c58e316c0daf8b99ca1",
+            "bytes": 6826
+        },
+        "admin/interests.php": {
+            "sha256": "35ac3579ea29bf6a24b1e3a5610915f2c24f9982cba2338f6def0807dafc0023",
+            "bytes": 8436
+        },
+        "admin/lab-catalogs.php": {
+            "sha256": "3153ac680891cfbb10ce42356de796c9466f5c66b4a3ae2443f9106701830fd9",
+            "bytes": 10117
+        },
+        "admin/lessons.php": {
+            "sha256": "23c4b09b07dd053e614b0dd43d57d91f3852b48eaa4ae19550b643a41766d2b4",
+            "bytes": 11020
+        },
+        "admin/login.php": {
+            "sha256": "188c5ae329dc921407c6fecddf37737dc1f8d0eb58ec8d7b5b0c475bab05a892",
+            "bytes": 1179
+        },
+        "admin/logout.php": {
+            "sha256": "df8cc5cace929eeb95e368cc61b4b0867fd27fda4bf488b6d1d724b7278d0980",
+            "bytes": 210
+        },
+        "admin/material.php": {
+            "sha256": "e377b5913fce3e14d366b0ed49225ba4532a19764e5a1a5f1dfdaee1e9ad15bb",
+            "bytes": 9743
+        },
+        "admin/media-private.php": {
+            "sha256": "4b4734dc5af3845911d257e69736cf9e598663600a596dcfaddd7061165ba6d9",
+            "bytes": 975
+        },
+        "admin/media.php": {
+            "sha256": "05f7d1225cda410d0bc75f953b4b25a9a58ebe535c88b0ea6d7fe0f2d1a9a240",
+            "bytes": 2826
+        },
+        "admin/page-history.php": {
+            "sha256": "0db771b73dacffdc27df0af7757c2082f0e68f79e920f1b0370cd725ecca45c7",
+            "bytes": 3410
+        },
+        "admin/pages.php": {
+            "sha256": "6cf375783b6cc29d5487274eba35c73a19903d4d98fe14e431566b01499515fe",
+            "bytes": 13238
+        },
+        "admin/people.php": {
+            "sha256": "20fe168048a8f0b8381909bacec3914b91607d3e7c1ec74576a61fb571030ac5",
+            "bytes": 11357
+        },
+        "admin/preview.php": {
+            "sha256": "2c8dc3ab1c1e53a54f13bef6a778d5a160f5195011b4e3a84c8dfac36f9ecbd2",
+            "bytes": 965
+        },
+        "admin/processes.php": {
+            "sha256": "00d87ef5c591ccc6afb211e36bbf87a069e2dfbe80920d1687ed7c2fef7d5905",
+            "bytes": 20142
+        },
+        "admin/questions.php": {
+            "sha256": "fc316c798888c72192a98cdfde97bd25641cc95f23f1a6a9f5335a3f3864dc47",
+            "bytes": 9701
+        },
+        "admin/registrations.php": {
+            "sha256": "4e5e18f96a74ccc519f451e97eaa975c04f25951f5e63ed9a1426c22d24b8a1a",
+            "bytes": 20303
+        },
+        "admin/seo.php": {
+            "sha256": "ee32710c44d5868e1889f55bff7924094b1420a45e9554e26d8d86ca286671c1",
+            "bytes": 10834
+        },
+        "admin/setup.php": {
+            "sha256": "184e7ac586afa7fafc22a83be0871937525b1dce27b4775dde0e40b7da6e8441",
+            "bytes": 316
+        },
+        "admin/site.php": {
+            "sha256": "23898adb19c3a357f9c24188b5a70a3614ddc9ba858e0e897a9ac46941a8d9a6",
+            "bytes": 9316
+        },
+        "admin/student-area-legacy.php": {
+            "sha256": "f99c962dc1a37690663a13a4ec89188d911ac0c5cb97639cebe09f7de85c9159",
+            "bytes": 1014
+        },
+        "admin/student-area.php": {
+            "sha256": "a15234a59a07d0dbeb029c1ccc03427dda927baa891e54f46d3ecd7a56f339b6",
+            "bytes": 986
+        },
+        "admin/student-import-csv.php": {
+            "sha256": "1fedf70bf6c0e4b30220626811dbda56a978f064afae1e971507c9eb1cbb5f3e",
+            "bytes": 2012
+        },
+        "admin/student-operations.php": {
+            "sha256": "7132aa7a0342592856c027e12a364778d12143e151c9c3d8b3676c169c33f872",
+            "bytes": 870
+        },
+        "admin/student-test-media.php": {
+            "sha256": "3e31469d1ae89659e64d7fa050cee73798d559f2779e84ddd91c3d4b15f50198",
+            "bytes": 945
+        },
+        "admin/students.php": {
+            "sha256": "233a4ecb627e2f099f01354394e320e1d27e23de774fd4158715a54389aefaca",
+            "bytes": 18124
+        },
+        "admin/submissions-export.php": {
+            "sha256": "1a32862f0c571b70a561dd98a3ddc6dae59ee750fdde5af1536ad6765e615809",
+            "bytes": 1650
+        },
+        "admin/submissions.php": {
+            "sha256": "f1d1444f8cb35e546d49461ab95500b38b209fb1b1a236d112b58d3124f9e1e9",
+            "bytes": 10742
+        },
+        "admin/system.php": {
+            "sha256": "96cf61365a464ef80f01341bc1a20c823f6b6c63f8ba72e3368dc97e712e4487",
+            "bytes": 8251
+        },
+        "admin/tests.php": {
+            "sha256": "ba98329f37033e7729cf959babebf21bef2b683300ce80b1d631d25b1830d4af",
+            "bytes": 12787
+        },
+        "admin/workshop-values.php": {
+            "sha256": "699f5fa216f043a825665884873373a56a59e35b97967706c6bada6b69df3e3f",
+            "bytes": 2981
+        },
+        "aluno/caderno.php": {
+            "sha256": "77aa86f375143f662573c5fbd0c7b1da0c933698b6412b878f3d11fc70efd071",
+            "bytes": 12528
+        },
+        "aluno/calibracao.php": {
+            "sha256": "b47babf87e51df7aab8646ea0f875b9157b9b7e0892df2ed31c0ee5b2093fc1f",
+            "bytes": 5218
+        },
+        "aluno/comparar-processos.php": {
+            "sha256": "6609ba24a6bd1062d64fb798243adb1e2df14cbd9cabdaae3bc6f4016e89193e",
+            "bytes": 11510
+        },
+        "aluno/cursos.php": {
+            "sha256": "92187b03874ac4d7a73a94e46198f4b05073a4f6426fba479a55470fca4f7c9d",
+            "bytes": 7268
+        },
+        "aluno/duvidas.php": {
+            "sha256": "20102a1ac732564ad5779274b0afa927f58f1453bc325196f7d4ae9f623df3c6",
+            "bytes": 14199
+        },
+        "aluno/excluir-teste.php": {
+            "sha256": "7a574bedb4a3b23705e1f85c54e9477036bb3246b6931f5dfa49652ef269b202",
+            "bytes": 2186
+        },
+        "aluno/exposicao.php": {
+            "sha256": "cb3ed99fc907cfcbafcd0439fa4cd584ea380637151ab118c2980949b25da6b9",
+            "bytes": 484
+        },
+        "aluno/ferramentas.php": {
+            "sha256": "5a57794b88b12457670d196399b37757d77ef442c9690d1173b1e81e1b36a5cf",
+            "bytes": 5351
+        },
+        "aluno/index.php": {
+            "sha256": "fa752ba2eaddb4bb089c5a57845a3a9480f173faedd8d4bbeb84baacc3a5dc94",
+            "bytes": 6929
+        },
+        "aluno/inventario-item.php": {
+            "sha256": "0745dd4ca9b1c0c24395d1ada9b2b6e2ef63887279a5fdc02a304f32bb6bb818",
+            "bytes": 3888
+        },
+        "aluno/inventario.php": {
+            "sha256": "f61a4a14aef468a219628feb4d7019ab7a3c06a11ee1d5cb696b7ba4b3ddf022",
+            "bytes": 10743
+        },
+        "aluno/login.php": {
+            "sha256": "25a20f3ce2b2eb80e181b58336857049d031936fd81f5295e0bb29f369248477",
+            "bytes": 4212
+        },
+        "aluno/logout.php": {
+            "sha256": "27bdf475743c864ea2fb0dfa1abedcd495f4789c0efa2f69ccc32393af605ebc",
+            "bytes": 344
+        },
+        "aluno/material-anotacao.php": {
+            "sha256": "ae9c8c0ade163275389f7e09d62fdc86cda5294ee601f8d9eeafd84a497d081d",
+            "bytes": 8613
+        },
+        "aluno/material.php": {
+            "sha256": "22bacba4c5edd7f4691357de5fe7ba8989f1ebd51e234960a51c153112429d62",
+            "bytes": 142
+        },
+        "aluno/media.php": {
+            "sha256": "b17e01c6c9899d3bb70f876e020f2df9e8bc8ef1266b802cd3297138239cc485",
+            "bytes": 1760
+        },
+        "aluno/perfil.php": {
+            "sha256": "755711ea0f79b87ebfd293e99d44d845e993695d92328383f1a488c626037e46",
+            "bytes": 4272
+        },
+        "aluno/preparo-solucoes.php": {
+            "sha256": "ca41f6462baa42f699179dd699f85d4514eae75bcabd23e6c5197c1b5ade8cfd",
+            "bytes": 487
+        },
+        "aluno/preparos.php": {
+            "sha256": "e476809d583fcadd7ee77f9b90481d07b0741f1125906a21fe14ab2fd4dd3fdb",
+            "bytes": 10352
+        },
+        "aluno/processamento-realizado.php": {
+            "sha256": "c4f93903b501b9ebe9012c5c65f7dd9f5b8ad6950a7b1c293f41d605d8d46f71",
+            "bytes": 726
+        },
+        "aluno/processamentos-trocar.php": {
+            "sha256": "bd76eada41b70ba5e2810c776cdc1dffcd43caade34a68ead48367ea1488e6d2",
+            "bytes": 497
+        },
+        "aluno/processamentos.php": {
+            "sha256": "701caf158176ca43abc4f0cc83ba24cb254d1cf2e530d1f687fae4056a1333f6",
+            "bytes": 26566
+        },
+        "aluno/processar.php": {
+            "sha256": "03396da7f6a4ae31090b24fe8e09e5888300910067af2100e6627510f9bb497c",
+            "bytes": 15949
+        },
+        "aluno/reciprocidade.php": {
+            "sha256": "e18107e7d53bd7ac5f7dfca39aa2c801ef83c1d8d5305e64b2557f455727c325",
+            "bytes": 495
+        },
+        "aluno/registro-roteiro.php": {
+            "sha256": "dd8b9ffec5460bb069259b65311ef668cee95de60125820ff882b5dd563ad43e",
+            "bytes": 6556
+        },
+        "aluno/senha.php": {
+            "sha256": "4f39eeeae19edd5f84f44fd6fc58670bef5bad2068905ef4c0f80273659dd9f9",
+            "bytes": 3154
+        },
+        "aluno/temporizador.php": {
+            "sha256": "d8eefed7ba082b7395f97b0db90c07b8304b455a744c7e128637f579ca7ea8e3",
+            "bytes": 475
+        },
+        "aluno/teste-compartilhado.php": {
+            "sha256": "5b00892ff3acf34adf0874134564a3532995c719b073f65d04e591b8ef1fd764",
+            "bytes": 6052
+        },
+        "aluno/teste-etapa.php": {
+            "sha256": "2dfd9b073f0eec29f5af3cba3d3b777257275ebd30fc336cf3ed4b337741d0ce",
+            "bytes": 5065
+        },
+        "aluno/teste-media.php": {
+            "sha256": "b71d61a9a8dfd15c386c59068a8793df47c824c5f00afd36547c3646ef760ebf",
+            "bytes": 1011
+        },
+        "aluno/teste.php": {
+            "sha256": "bf90c88357429eef90b993e81e5e9066055bf848be3d9ba1df9416bc347bb604",
+            "bytes": 32926
+        },
+        "aluno/testes.php": {
+            "sha256": "95a6227a059d292c7d390219da8319a30c1c82f58d12783416d25150fdecdb2f",
+            "bytes": 322
+        },
+        "aluno/visibilidade-teste.php": {
+            "sha256": "7df91b6f6f9017849786876956a3c13b55c69fe5ce47e7c2bff5ccd0ff7ab94b",
+            "bytes": 1219
+        },
+        "app/activity_locales.php": {
+            "sha256": "3fee39fce67103694b9330c11b9688bec09a0218ede714a213f3b4d23870ca33",
+            "bytes": 2648
+        },
+        "app/activity_repository.php": {
+            "sha256": "e8b6949edd6fb2321c9bd34575021a69d1976f12ef87dae36f3aeecfe2cb82a3",
+            "bytes": 7181
+        },
+        "app/admin_course_workspace.php": {
+            "sha256": "a23d4e5120705a544eb32abf8c479b31cc7bf5871f5e8d42f20930f6b288de4b",
+            "bytes": 8994
+        },
+        "app/admin_shell.php": {
+            "sha256": "b71f8521cec9a606ba84ca7ead2e4f930b5ae6745b7c26016124b7a1907c3fc2",
+            "bytes": 14382
+        },
+        "app/analytics_repository.php": {
+            "sha256": "5799eece6e39aaeca1678be7b5bd65852df220658bc5a2a60455e105fdcb304a",
+            "bytes": 9568
+        },
+        "app/auth.php": {
+            "sha256": "b8757e04b47bc3a961a003ffb85a93e81a03d250160ffb94245454849449a3c3",
+            "bytes": 681
+        },
+        "app/bootstrap.php": {
+            "sha256": "b1bc574eb47b0d89a237cf6ad9179db65cb48592f36073a3461dd0e669a48a20",
+            "bytes": 1950
+        },
+        "app/brand.php": {
+            "sha256": "24f8df1d5ea787d0c8ffe237cec1e656300291152bf121043741be663a6931bd",
+            "bytes": 113
+        },
+        "app/cms_access.php": {
+            "sha256": "5b77efc895955281d968b2e4daad7a64a035e0c9533146b296fc697004465840",
+            "bytes": 14682
+        },
+        "app/cms_blocks.php": {
+            "sha256": "ae6d20f1f2b50d9459386865195a650f25fde16446db98101c6c834dae0bd92b",
+            "bytes": 2775
+        },
+        "app/cms_discovery.php": {
+            "sha256": "0a46108a95bb615fddb71cfba658635e8b7a87fc2ab6fb3fd05dd90615e55a08",
+            "bytes": 3521
+        },
+        "app/cms_forms.php": {
+            "sha256": "0badeec6ceea420bcfbaa8b2057564baac644882a3ada1b3dbfd1c4188667e61",
+            "bytes": 24069
+        },
+        "app/cms_media_video.php": {
+            "sha256": "140ccd0bf8d44d00cf9f3622493c9fd1e34f8ffa3b7671691537e71a2f5a92e8",
+            "bytes": 2499
+        },
+        "app/cms_page_structure.php": {
+            "sha256": "57bb9c42816b87add652b6dab20ec5d3a0b9b606dbd9aeb0a0b4700cbbf8f934",
+            "bytes": 10183
+        },
+        "app/cms_pages.php": {
+            "sha256": "feeeca23930443871f1dba6e50da9db5fe92e09e4ee63c72ee99643356335fdf",
+            "bytes": 29230
+        },
+        "app/cms_renderer.php": {
+            "sha256": "fdbfffaae1074a9bc586b7b513d720cd610399fac2b8ae20b7be62831d7bb98a",
+            "bytes": 20962
+        },
+        "app/cms_seo.php": {
+            "sha256": "b669222d8013bdf1914ded6797670fb480c4993815d8de69533eeb2847dac9fc",
+            "bytes": 3325
+        },
+        "app/cms_settings.php": {
+            "sha256": "c28089c095830bdcacb72090f9c456361497c4ac43337e198e87501951ff17bd",
+            "bytes": 17838
+        },
+        "app/config.php": {
+            "sha256": "ff2ec5bf5f909836df9728d96b394e58afccda02a8425d3ecab6399cfae88f23",
+            "bytes": 511
+        },
+        "app/content/content_repository.php": {
+            "sha256": "be8ad46c9895be017c0fcd7e833d6ca2a6101d3d67cfbc7e7c6a0b95d4bf7861",
+            "bytes": 1137
+        },
+        "app/content/content_response.php": {
+            "sha256": "ad9025633962a1fd6c895cf96cebc3f40409a92cb4fb3803b031db460e2b5cb2",
+            "bytes": 982
+        },
+        "app/content/content_service.php": {
+            "sha256": "e1305442d54d01695d6053b27791228250799e1cef88ede27e3f3a0cbdc69f27",
+            "bytes": 3250
+        },
+        "app/content/content_validator.php": {
+            "sha256": "e41f08bf94eeb56c0824dc1c6672414b712d262f7f21ae2aabc87905059e736a",
+            "bytes": 5268
+        },
+        "app/courses.php": {
+            "sha256": "7912dd3c2565c848a79229eec5f542bb71695ee11ec3e819e0e1e9099449699a",
+            "bytes": 20621
+        },
+        "app/csrf.php": {
+            "sha256": "a0f76da800e61daf000a7dcea0373c62944d460a8b5740f727d705b247e661fd",
+            "bytes": 264
+        },
+        "app/database.php": {
+            "sha256": "901a88af51d5a559958a39ce79b0846fd7e18dfb0b036152b07368de277fc3bd",
+            "bytes": 2067
+        },
+        "app/form_definition.php": {
+            "sha256": "0996e99ed5d93115a4099e651bdd8ce587844d5322e12297ced6a8696037f20b",
+            "bytes": 1668
+        },
+        "app/form_purpose.php": {
+            "sha256": "260cccde547191eee2c451a9c7613b4fb767d2097db31c11a6bce89a59f2d1d9",
+            "bytes": 1230
+        },
+        "app/form_validator.php": {
+            "sha256": "0a29baab0acecb3799e3729b941eb588eb6836b66af8d0eb6dcc0a9b657966f1",
+            "bytes": 3176
+        },
+        "app/form_workflow.php": {
+            "sha256": "b5e75f94ff6dc4f1f3146f2559534f09fe2aee789f537a24cf5f264da6f25386",
+            "bytes": 6885
+        },
+        "app/installation.php": {
+            "sha256": "62a2976fc4917a5fbaa59e1ba7e3a7f6cf5735d42b279561463840ec8bcfe4e7",
+            "bytes": 1053
+        },
+        "app/interest_presentation.php": {
+            "sha256": "7e2c50ffba853177b4d8e457d97dca8ddb95697bd1c213d035c7057b869fe22a",
+            "bytes": 2799
+        },
+        "app/interest_repository.php": {
+            "sha256": "66f82c80f8034e269d7898335ad76b091d3bdcb9500cdd36a89ff9d87ec5ec89",
+            "bytes": 1947
+        },
+        "app/media_admin_service.php": {
+            "sha256": "18b12b2c32aac7cc5273f4f0914fee89394ec9d88b261f5b581c14c1df85a190",
+            "bytes": 9103
+        },
+        "app/media_detail_service.php": {
+            "sha256": "4f6d9b4b93ee5913d10022ad2af59e752648e652618fad8911d22a524dae411e",
+            "bytes": 3517
+        },
+        "app/media_list_service.php": {
+            "sha256": "314de13545148c9cdea030df7e5bc93e626eb3e3c29d48609a763150771d31fa",
+            "bytes": 6531
+        },
+        "app/media_maintenance.php": {
+            "sha256": "a49678ead5e2af222772f5423d514df079a028eb29ec478ac4e3ab1b6d382d83",
+            "bytes": 12391
+        },
+        "app/media_privacy.php": {
+            "sha256": "0e8480d37a11d306582eae194fd6bbaed1137d003abaef0c67fa745a7f9c1135",
+            "bytes": 8631
+        },
+        "app/media_service.php": {
+            "sha256": "07246d37fb598c7a1397e6cc25416761913f84eb260d75ebb9512e97d7f73e08",
+            "bytes": 27723
+        },
+        "app/public_content.php": {
+            "sha256": "7758837dac007414c3e64311e8a0290225450038c211f42affd4368f8efb74d3",
+            "bytes": 532
+        },
+        "app/public_errors.php": {
+            "sha256": "e74a322610a881d2460405e29b94011202194797e80977170663f903700fbb46",
+            "bytes": 2290
+        },
+        "app/public_locale.php": {
+            "sha256": "4605eefab42f5e66e1e80a3fbdf29ab8e4cd8bcbb2346444956d8fb2b977756f",
+            "bytes": 16367
+        },
+        "app/response.php": {
+            "sha256": "b6cb12b334cd950e9a791d3e311e9dfff1854205fab10b92acc8e49c00700994",
+            "bytes": 668
+        },
+        "app/student_accounts.php": {
+            "sha256": "361039d8d974679ba79c917456c4c0c6998ea08edef73a234c314893ecf599b7",
+            "bytes": 34624
+        },
+        "app/student_auth.php": {
+            "sha256": "e2211568868e3b6068d1f73ab7acca14c2b1ae3f2a5273b0fe33dd6457ae455e",
+            "bytes": 14580
+        },
+        "app/student_auxiliary_ux.php": {
+            "sha256": "819465d9ee56b8c540231b0f2201c4d054313126717aeca4abe39faa03f89027",
+            "bytes": 4647
+        },
+        "app/student_enrollments.php": {
+            "sha256": "6efb05a2093e37d3bd1866581ea5e33a5e94e058d32a0307a3858034826bf121",
+            "bytes": 15606
+        },
+        "app/student_experience.php": {
+            "sha256": "514d7d79ad9072c36f737889cd3ce3738f43329c37950d749437378fe44682f0",
+            "bytes": 6692
+        },
+        "app/student_feedback.php": {
+            "sha256": "b391875093ed5f4643f5ea25c15311001235bb8868b234578cc5be63cfb8c395",
+            "bytes": 5560
+        },
+        "app/student_global_processes.php": {
+            "sha256": "52b3733c6504a45ed4cf5cbd45c2eb04653f32be5aac77e9980106612ccc068c",
+            "bytes": 21954
+        },
+        "app/student_lifecycle.php": {
+            "sha256": "0c3bdd1f2c8c1cf183f7bea57f87e116a3b3116a8a9792f703a40889c955ad12",
+            "bytes": 2455
+        },
+        "app/student_material.php": {
+            "sha256": "4d9b54470838ab304fc5409faa5b297604906910fee00ce84732a3d2c2cf161c",
+            "bytes": 4608
+        },
+        "app/student_notes_experience.php": {
+            "sha256": "8943373c760a7bcb069806c728b6aaf74168885bd7a781bd9804ff5fd9a102fa",
+            "bytes": 20799
+        },
+        "app/student_process_catalogs.php": {
+            "sha256": "38601928c85a060711a68e43c3dea7ea2a9e1c0a93d192446908a67734035829",
+            "bytes": 2932
+        },
+        "app/student_process_execution.php": {
+            "sha256": "4e4b4c093563aa61095bc2aa6b3444806fc78ca526afe1dcfe319b8832e44341",
+            "bytes": 13330
+        },
+        "app/student_process_lab_navigation.php": {
+            "sha256": "666374c1487dfa4cf1030c509de35e71a187f3b22ac1b7613124290f62a541e0",
+            "bytes": 12421
+        },
+        "app/student_process_notebook.php": {
+            "sha256": "0e8c7085513c4210fcfbe5cccd7ce30e1fcfff43b7e7519cbb503a020308e117",
+            "bytes": 18966
+        },
+        "app/student_process_notebook_free.php": {
+            "sha256": "6b1a924e64d80305edf7c77cbad34fe471ac9574a421539cb4965f6aba3ac041",
+            "bytes": 5124
+        },
+        "app/student_process_plan_mutation.php": {
+            "sha256": "200441681d2d0a11a684715a9435105d7d23ae00a044b670bd93b0a821c2ff44",
+            "bytes": 13828
+        },
+        "app/student_process_recording.php": {
+            "sha256": "611fc08dea25579dda716c5d85bfd0016b83ec11b30cce1626152812929b7442",
+            "bytes": 6441
+        },
+        "app/student_process_replanning.php": {
+            "sha256": "7b7c11d7d7a7e6f0acc88b8288f56ba4875193f274355113115b8d7042486d79",
+            "bytes": 7255
+        },
+        "app/student_process_standards.php": {
+            "sha256": "63cf0b531fe655549790ea79ef230cb942f66ce6cc6b569a434b3175573d694b",
+            "bytes": 2720
+        },
+        "app/student_process_templates.php": {
+            "sha256": "22bbbf381fdfbf8d2158a554c8228cb9ef37bcbebc7227ef0d74f4c501853301",
+            "bytes": 20038
+        },
+        "app/student_process_ux.php": {
+            "sha256": "7fa8d2e50f7dd033845b42cf9440a5c1be7f0640ed5c86a3d172e15a1a3be896",
+            "bytes": 10876
+        },
+        "app/student_question_annotations.php": {
+            "sha256": "ba4ad4774dff89492dd93a821c7255c62e101dfe3c33fa5af279aa7922268751",
+            "bytes": 4837
+        },
+        "app/student_research.php": {
+            "sha256": "8538ed836eb76d9670f0b6dd7a8ed64a033bbfb4d658b9e97303669a1a427715",
+            "bytes": 5691
+        },
+        "app/student_sharing.php": {
+            "sha256": "8cb8cbc12fde5bc8d8fa9dcf0a07c6037452a7b77ed07551af8726322e18c1fb",
+            "bytes": 4719
+        },
+        "app/student_shell.php": {
+            "sha256": "8377e403efc3871f10e73385ae870c5450c72f8b588e69ad4221ffd2456bd59c",
+            "bytes": 14100
+        },
+        "app/student_test_mobile.php": {
+            "sha256": "0f3d965496158ea6af3092ada8f06c0533a0f2eeb157805a8aa64ba732b5c739",
+            "bytes": 8386
+        },
+        "app/student_workbench.php": {
+            "sha256": "7d2bc4391dfd778ba2f7909fac0820056f6f680bd2f4531bd75c02a33ac830a9",
+            "bytes": 37397
+        },
+        "app/student_workbench_hardening.php": {
+            "sha256": "a63b0b800eaedc86d6f495b2b6a92890e61c1cd66565cfcba43cd62cb9102fe1",
+            "bytes": 9565
+        },
+        "app/student_workspace.php": {
+            "sha256": "6874ac1629cd606501c8aa27aab45646e7681a73df221ad7c5b9a179c191937c",
+            "bytes": 26360
+        },
+        "app/system_health.php": {
+            "sha256": "465242ae3dd8d2540613d17e9b325b0bb07e074701f3c47dedb6b849163b34e1",
+            "bytes": 4366
+        },
+        "app/update_restore.php": {
+            "sha256": "bb48d2b95233fbdc0dcea1478147ee7b68c5da2a31f052f10e3148c7001924ba",
+            "bytes": 5324
+        },
+        "app/update_service.php": {
+            "sha256": "374af5fb383fa0008b3afe502b2db06f026fde7b4691c0c3179b220580a56353",
+            "bytes": 13451
+        },
+        "app/workshop_cms_setup.php": {
+            "sha256": "6d1a3db15a1aa5ffc7fb7f490d310d12ce9385ef4c6c8f2beb81b48845bc0f8f",
+            "bytes": 11959
+        },
+        "app/workshop_copy_refinements.php": {
+            "sha256": "8dd6360771a62606e391a15104418b83f8bd5232b28685363c183f84da3b7ec6",
+            "bytes": 2669
+        },
+        "app/workshop_courses.php": {
+            "sha256": "6495d3337c403193c1f71483b62e98b23787a0d1a7e0ae8b84a36aecbc9439f5",
+            "bytes": 8689
+        },
+        "app/workshop_registration_content.php": {
+            "sha256": "9cd578df7f731c0c5d756f86e7697258aeb10146d8d15e1a18ffc269b71e9524",
+            "bytes": 9161
+        },
+        "app/workshop_settings.php": {
+            "sha256": "39ccc0f93329a6ecd34d994b5936499a1c57fe7177217da782d537ca5a2ed007",
+            "bytes": 3128
+        },
+        "assets/admin-analytics.css": {
+            "sha256": "0656a5c3473818c17ef97a1f20de7783ec7907c62ae62cba137451b7a7dc8243",
+            "bytes": 5765
+        },
+        "assets/admin-collection-ux.css": {
+            "sha256": "cc7848cefec2614ec1f069430f2fe547d5226bd14de2628fcdb40898c51889f5",
+            "bytes": 3797
+        },
+        "assets/admin-forms.css": {
+            "sha256": "4423a9bbf13dc7afe78e367d909465df3ad00cfa7e20add85d0dbce95f04705b",
+            "bytes": 873
+        },
+        "assets/admin-inbox.css": {
+            "sha256": "30358e33295d46f151986cebf2a0a04bbfab5104aadfe499d0230ddb8fc25059",
+            "bytes": 6392
+        },
+        "assets/admin-media-maintenance.js": {
+            "sha256": "1f0bc25fecf819f5b0764d3c22e11c2fe89b52dd588da431e0cd9ce49d8b7559",
+            "bytes": 6227
+        },
+        "assets/admin-media-privacy.js": {
+            "sha256": "c703933697a3c869040e26997006067f0b2de3f646d7928374c2eeb02d10fe96",
+            "bytes": 2680
+        },
+        "assets/admin-media-task.js": {
+            "sha256": "28a660a30c5d340d3db1a09d20ca9792c42524269af1f72ea2a403696a127472",
+            "bytes": 1533
+        },
+        "assets/admin-media.css": {
+            "sha256": "f85fa25ba35372db9c82b5cd4b9d1b31c5af42a038f49f11af8c4fd0c996901b",
+            "bytes": 5619
+        },
+        "assets/admin-media.js": {
+            "sha256": "7aa48960c23ff1e605b1088a73ab4e2ae36a13d7ddfe68f12d98cae59e3283ad",
+            "bytes": 14158
+        },
+        "assets/admin-operations.css": {
+            "sha256": "26e690662a6f2e283fae31eb5ed314d8b844d09a3a9c11c205f72326a2e688ba",
+            "bytes": 1862
+        },
+        "assets/admin-processes.css": {
+            "sha256": "09baf7585d7975127f2e14044ca7a01ff7f0b14242952e11ecc9e0bdb24b8056",
+            "bytes": 5904
+        },
+        "assets/admin-registration.css": {
+            "sha256": "8f5bd1f14307b68f912f58318d0bca67e9a97a3c4ab1c32e5c63c6d2410f67c2",
+            "bytes": 4041
+        },
+        "assets/admin-seo.css": {
+            "sha256": "c086d9858186e4e336640ca9378ee344e04cd28f5ae0712dc993fe47ad8c1b91",
+            "bytes": 708
+        },
+        "assets/admin-shell-responsive.css": {
+            "sha256": "f28bca6d8379f34ba5d211ccb9995c2246dbe0f2ba04b4a9504d9f606f1ca781",
+            "bytes": 3468
+        },
+        "assets/admin-site.css": {
+            "sha256": "fc9b1dd122b896b88ca79e08d6117295af924a2c38cb3a4cd70941256da02bec",
+            "bytes": 12005
+        },
+        "assets/admin-site.js": {
+            "sha256": "df8362e561e77789d076279be92fa5751f154c69a7b508c41b0563640c8bc839",
+            "bytes": 5473
+        },
+        "assets/admin-system.css": {
+            "sha256": "1acc69ff5354d6821e2a879ba1ab7111da33ff9cb6fbe640c9710d2dea00c899",
+            "bytes": 71222
+        },
+        "assets/admin-teaching.css": {
+            "sha256": "2220041c8430cf863b30e5b1d7355e6f24741cdae6b55e9c310d6e022f95348b",
+            "bytes": 7735
+        },
+        "assets/admin-ux-v2.js": {
+            "sha256": "74d6804357062e0f1c51e8ca661e5c83730333c66c685f08c6958e9973fc9249",
+            "bytes": 3512
+        },
+        "assets/admin.js": {
+            "sha256": "c27598522fbf12b6cb141fe81a84121d65146719006aa8cc2d9217056161441a",
+            "bytes": 9742
+        },
+        "assets/cms-content-layout.css": {
+            "sha256": "aeb43a19cab0be498c12458706d7847b58b39f56d3ff5edfd9846d4a10659b32",
+            "bytes": 16620
+        },
+        "assets/cms-core.css": {
+            "sha256": "c67795db4a94879228f89326ed2c7eda8b5a8a522e30925c3a38d5c448425aba",
+            "bytes": 10822
+        },
+        "assets/cms-editorial.css": {
+            "sha256": "e7c81b918142afe15cfaf8471666b1e31ee2be0ce8295970920522b28e8cb28c",
+            "bytes": 21949
+        },
+        "assets/cms-errors.css": {
+            "sha256": "2dc0f52771949b2a08e87852a11b3643cb65e151c142b2a12abd3298971c7f8c",
+            "bytes": 1260
+        },
+        "assets/cms-header.css": {
+            "sha256": "d2231f22c9c0c47f9aec523842d1df47a5607a3f6c5a2e85523a4b196a61fa4d",
+            "bytes": 5407
+        },
+        "assets/cms-pro.css": {
+            "sha256": "3d1d1afd43f305f412787287c244b63d4fac16be2a8663f2c49f4715afa5fef2",
+            "bytes": 15172
+        },
+        "assets/cms-responsive.css": {
+            "sha256": "d4c92e16fdd27e829b669f4bb3e5aab6b46de64984c42a7d4059d47f379b9b3e",
+            "bytes": 14157
+        },
+        "assets/cms-student-notes.css": {
+            "sha256": "b71cea726f006426d1d39310ed949a6fbab5adc59f86a0209d6382df7abb961b",
+            "bytes": 23284
+        },
+        "assets/cms-study.css": {
+            "sha256": "5184d8944eb3b5216663b9c6a47a1761e8e99cd36082f0b2942ab21322504ff0",
+            "bytes": 16556
+        },
+        "assets/conversion-bar.css": {
+            "sha256": "0cf3042a2837519ce2fa3b7b0a046cc2c8a037c4cb8fdefddd2bfe5545c72f6d",
+            "bytes": 2004
+        },
+        "assets/design-admin.js": {
+            "sha256": "4c900da296491459f3802134d35d3e7c8c583de62b7339f37fc84303c4941f53",
+            "bytes": 5322
+        },
+        "assets/fonts/saira-extra-condensed/OFL.txt": {
+            "sha256": "0e2ccc5da1dd979f08ba82bca2fb61592506a1e58d3cbfc26d904f0db71bd812",
+            "bytes": 4403
+        },
+        "assets/fonts/saira-extra-condensed/SairaExtraCondensed-Medium.woff2": {
+            "sha256": "1f76bf043099e05a57926ee6ff43d93210cd22e1ac662669c75fe77a40a8074e",
+            "bytes": 34616
+        },
+        "assets/fonts/saira-extra-condensed/SairaExtraCondensed-Regular.woff2": {
+            "sha256": "2825c620716a13cf424da1991b8045b866eb9deb4f1765bed2d329a620241389",
+            "bytes": 34348
+        },
+        "assets/fonts/saira-extra-condensed/SairaExtraCondensed-SemiBold.woff2": {
+            "sha256": "d305dc6d7a40d7aa02a9d44782438d3e8545502b22c01e39f7b20e4e7c456fa8",
+            "bytes": 34776
+        },
+        "assets/forms-admin.js": {
+            "sha256": "4a2b7d0423b0dc20846b18274efa2e4175505a2e88569d659a8f48f318a45443",
+            "bytes": 15284
+        },
+        "assets/media/hero-medusa.webp": {
+            "sha256": "8d489f446e18b789f3bcc92601e71dfff2af177ac38cc4bd95765e373b9ef7ad",
+            "bytes": 139014
+        },
+        "assets/media/joao-portrait.webp": {
+            "sha256": "60112ff6f420bdb94a91844a7d492471f0752526036ab16c55ea3f5ef06efd9e",
+            "bytes": 90402
+        },
+        "assets/media/nina-poster.webp": {
+            "sha256": "66f66c82aa7e841d736bfad14928029d2a3605f5717436af105ac0a66f84f43f",
+            "bytes": 148744
+        },
+        "assets/media/nina-preview.mp4": {
+            "sha256": "e78edbd50c6cf14447744e98e57a337f6388b4ba08fab6782ee8276b77e12f68",
+            "bytes": 819069
+        },
+        "assets/media/pix-workshop.svg": {
+            "sha256": "d5897173419ab09d53d4fff36b2cb283559eb3254fbe549431024980089df63c",
+            "bytes": 7372
+        },
+        "assets/modelo-importacao-alunos.csv": {
+            "sha256": "a29c80b3859c83f11f9c69fa628d682a91d981a3ed60e1af0e80e58d4c32a6bd",
+            "bytes": 62
+        },
+        "assets/public.js": {
+            "sha256": "341f255bc544442adaab6495ac050fdd30181488110e983614fc7c20e10284d1",
+            "bytes": 13899
+        },
+        "assets/registration.css": {
+            "sha256": "e38b3f0b8a49a3fcc20a2fa30c7e80a27f0e5eeadbb10b8ca4990fcaceb6df25",
+            "bytes": 3659
+        },
+        "assets/student-academic.css": {
+            "sha256": "38a5721055e6f0ee6c66cd40356cb9b47cc68e6160b56852cf835fa2ed14e26e",
+            "bytes": 6696
+        },
+        "assets/student-area.css": {
+            "sha256": "e4e80a259deed7f3cab39a0c9939b760939263ea9e14294483be131a94df47c4",
+            "bytes": 25327
+        },
+        "assets/student-auth.css": {
+            "sha256": "e0077b97ef54ac69f0b3c8a43b98ab45d73eb345c8ac33c9f3caa7edd4e5cf03",
+            "bytes": 2261
+        },
+        "assets/student-caderno.css": {
+            "sha256": "098ea20bd0bc0f231cda687d0d94d1f65531d4c4301ce26f75e3a51a0421ff47",
+            "bytes": 20269
+        },
+        "assets/student-experience.css": {
+            "sha256": "ec82b8030b2f95b0012263ae352be8646a53530b2ffa98f120fe7feaccedd065",
+            "bytes": 36601
+        },
+        "assets/student-experience.js": {
+            "sha256": "585f7708bbd81a50aa58fc92f8bbe25c8362a61d16c88b8029ffc7f490b0b2e4",
+            "bytes": 6520
+        },
+        "assets/student-feedback.css": {
+            "sha256": "0de180b358e111d503f84cf59650509edf707bbf0e057eefe0c53805a994c139",
+            "bytes": 3130
+        },
+        "assets/student-field-language.css": {
+            "sha256": "646e889f32ade81f260a4090229ea57605335c74c0e6a2e79fe90d1044ab79a0",
+            "bytes": 223
+        },
+        "assets/student-inline-annotations.js": {
+            "sha256": "b2e783373ee62993e76940fc82bad406840e3a4668556e4e3f17b66f9a1c8821",
+            "bytes": 28691
+        },
+        "assets/student-lab-stock.css": {
+            "sha256": "99757aeb3a725ac01910fff77b96a6ea04f4fccd01db9f4154bc663e5decc9de",
+            "bytes": 6222
+        },
+        "assets/student-local-actions.js": {
+            "sha256": "864eca5d54e6ea155589e1e0b65700539f6a342f7de55a47319be702517261c8",
+            "bytes": 11193
+        },
+        "assets/student-mechanics-after.js": {
+            "sha256": "24fa5167521a81be7e7b6b04a148f28556f99c10151c79f62a3eab79723bef8c",
+            "bytes": 1730
+        },
+        "assets/student-mechanics.css": {
+            "sha256": "18445db688ec2e18531f8ceac7141bb5ebaf8e65ab3a292dbe52623ca39f513d",
+            "bytes": 4303
+        },
+        "assets/student-mechanics.js": {
+            "sha256": "1d581fb6ad2801725cfb0dd35487295acc2d97e903e4814f6c06ef38ee2d3555",
+            "bytes": 14548
+        },
+        "assets/student-process-entry.js": {
+            "sha256": "13a69252f11b241584de9c0de453d1bf7725959bb82a1cacbc1e109034b250fa",
+            "bytes": 134
+        },
+        "assets/student-process-lab.css": {
+            "sha256": "789866e9ce27a6da28005304d7face5dbd3be33524401a49b42381df636a20e4",
+            "bytes": 7625
+        },
+        "assets/student-process-manager.js": {
+            "sha256": "15a0871f480b905162f026ce7bebb5ce3bd3186a5ae42bf18af4303d2aba72ef",
+            "bytes": 1437
+        },
+        "assets/student-process-recording.css": {
+            "sha256": "466a752d86439390ad7d8ef667f1e33217dcf7d0d6a9117408406d16ef4201c7",
+            "bytes": 2608
+        },
+        "assets/student-process-recording.js": {
+            "sha256": "5219fe522984c2faf8e02411194921fd2555ae709a28d6c59a683eaa4716ec16",
+            "bytes": 1217
+        },
+        "assets/student-process-replanning.css": {
+            "sha256": "24aa235df07ab254197a35faa041ea347848224083f9f47acec9cab73a2b54ed",
+            "bytes": 1260
+        },
+        "assets/student-process-runner.js": {
+            "sha256": "8eda7950dce19e882ddae6bacf4f5a52840632a2052406d43f5dcae4a3296340",
+            "bytes": 16412
+        },
+        "assets/student-process-ux.css": {
+            "sha256": "8dca7cb67783677494ae272289b17562d2aa2e0c6557c423773046df6bdef903",
+            "bytes": 6170
+        },
+        "assets/student-process-ux.js": {
+            "sha256": "acbdf41a1b95bd597bb4c29c9edebd889e0fb380ee20323bec1eef0ed0e55bcf",
+            "bytes": 11933
+        },
+        "assets/student-processes.css": {
+            "sha256": "137d72d136af0a332b3becb8b76e4cabf709637268b7f2a2a23a9e0692a2d7c7",
+            "bytes": 16022
+        },
+        "assets/student-quality-pass.css": {
+            "sha256": "aaf2920e3f319b4265897a7df64c4d8df8d8bbcba5eddadd671d58e708148e0e",
+            "bytes": 9919
+        },
+        "assets/student-reciprocity.js": {
+            "sha256": "0f736eca7563484072d1a5c302cbcfd398e49c1911c730b71043128b9001371a",
+            "bytes": 6509
+        },
+        "assets/student-rendered-fixes.css": {
+            "sha256": "92ce519c1615b220957566aba7cfa2bc53419468eb6944f9cd4c0019e3c1373a",
+            "bytes": 18256
+        },
+        "assets/student-workbench.css": {
+            "sha256": "244e2a1b553ed999da62cdca1dfb7d01bc77eab34493f959895ebc04bdc6281f",
+            "bytes": 14686
+        },
+        "assets/student-workbench.js": {
+            "sha256": "0bf0f7314c42bc78435254f3587e59af936a0238aa9c1008f4a85f10df4b02dc",
+            "bytes": 11258
+        },
+        "assets/ui-core.css": {
+            "sha256": "b16acd569473f4c0d4fd6000293c9151b25c1f20cf7aaab6f0fd8e4c4cce8345",
+            "bytes": 4539
+        },
+        "assets/ui-core.js": {
+            "sha256": "47d56f68e575720ae58d5d877daa6d6de2773d99cab08ad7fb55a371e9fe8025",
+            "bytes": 5020
+        },
+        "config/install.example.php": {
+            "sha256": "ba4460df2a4d9a6d8a5138a0b5436cf2d065971ac65f542ec9f57cd212f6b7a1",
+            "bytes": 72
+        },
+        "config/local.example.php": {
+            "sha256": "1270dc89ca4b4d7a110e97a2fd384545f0bb4caa7b1bed0cf33d33a278207fa4",
+            "bytes": 271
+        },
+        "data/public-content.json": {
+            "sha256": "96ab320e5d808c334578971f10bc23948f9386cbd22fa9e769c08e0dbe369b0a",
+            "bytes": 7849
+        },
+        "editor/.htaccess": {
+            "sha256": "6bd36881d91ed3d3447711f06a1c6b30bebef98e38d10fa8d11285cfe76285b1",
+            "bytes": 25
+        },
+        "editor/autosave.js": {
+            "sha256": "283ac2362cfd7b0a59b05f6b5286046f581d21fa3e6ee2b39446e746a217ec73",
+            "bytes": 1295
+        },
+        "editor/cms-access-controls.js": {
+            "sha256": "9f883bfdd435d2af8e26691c53e62ba22412ecea3aea9f12e0016dae6cf37918",
+            "bytes": 8306
+        },
+        "editor/cms-component-editor.css": {
+            "sha256": "4cf8d4268bc84b91da420d35099b5af6bddf1c1daa256b31e0f53773640c5a41",
+            "bytes": 2520
+        },
+        "editor/cms-component-editor.js": {
+            "sha256": "3595b14a48d498e35b10e745fdcb67d2cc9bab9f1e7362353653a78c71ab7850",
+            "bytes": 29544
+        },
+        "editor/cms-direct-structure-dnd.js": {
+            "sha256": "ff17486d4b67c947176c2194ea5a2f75abe088b40d20907157da43190756d381",
+            "bytes": 13020
+        },
+        "editor/cms-editor-consolidation.js": {
+            "sha256": "ae686dae60b6901275d79bdbfb7561c82ffac0cce53ac2a20af1ff9ca8b09f72",
+            "bytes": 10270
+        },
+        "editor/cms-editor-v3.js": {
+            "sha256": "b1164be12ed3872dfdefc069a884bb67a1ec34f02bfd2038cbe19efb70d74305",
+            "bytes": 20158
+        },
+        "editor/cms-editor.js": {
+            "sha256": "c7c78a747961787deddbfcce49e216f458644d5aa813415b93a4a964c2be4096",
+            "bytes": 31879
+        },
+        "editor/cms-form-editor.js": {
+            "sha256": "8dfa7ed4349c99aa55b99178ab47ba205cd83e715803b927fbe088e631483c12",
+            "bytes": 27789
+        },
+        "editor/cms-form-quick-edit.css": {
+            "sha256": "5c89a5db7f2d3fe660d1f8cadf73bdd0eb420e43ec1aec5b527d9e61baac3847",
+            "bytes": 956
+        },
+        "editor/cms-history-transactions.js": {
+            "sha256": "bacdfba05a4cd44fe4c18af1d7e05e5a7a09c28b9db9ab5b0823bc5490f2c2c0",
+            "bytes": 12277
+        },
+        "editor/cms-hover-selection.js": {
+            "sha256": "f3586dc62cebaad2e02294b4b047e8c96668260682457c4139de8089b1d2a21c",
+            "bytes": 5709
+        },
+        "editor/cms-inline-geometry.js": {
+            "sha256": "679e89d1fda7c40f43484276336a5ab8080499ba1c5d8d7c9c2338dd724f2064",
+            "bytes": 2005
+        },
+        "editor/cms-inline-reliability.js": {
+            "sha256": "3154e79c11ad03d1af30a0951a1280b54eed2db4d78bed3744fa4c53053ee74d",
+            "bytes": 2455
+        },
+        "editor/cms-inspector-coherence.js": {
+            "sha256": "e6789859a907fd63e6d8e323ebb87855456422a164f013cf227d775d5ca2c18b",
+            "bytes": 7379
+        },
+        "editor/cms-layout-editor.js": {
+            "sha256": "c88c91ecb6e8f5e28b38a35194a444c47569f1be039476e5f88693cd25037de3",
+            "bytes": 4290
+        },
+        "editor/cms-layout-properties.css": {
+            "sha256": "4d4a2ca077fce5228a2cf84d7508cb03a7e2e2fe7495987eb3b83f6a76ca210c",
+            "bytes": 570
+        },
+        "editor/cms-layout-properties.js": {
+            "sha256": "c153c72c060800e2057d78b4abb38fe2be8f867bb345e88cd7db91bc1cef6a82",
+            "bytes": 6821
+        },
+        "editor/cms-legacy-node-promotion.js": {
+            "sha256": "be841ff59fb6dc53dd2d5163a24546123c65116019ff0ccb965774e513a064bc",
+            "bytes": 2363
+        },
+        "editor/cms-private-media-preview.js": {
+            "sha256": "5202237a87ebecc0d12eac3d9341408b6f1f13ead2bc187b816a30d220ca5726",
+            "bytes": 14805
+        },
+        "editor/cms-pro-compat.js": {
+            "sha256": "095ad748b0a2a3efa0db468a609087eaf25454cb7292be5d7822f0d2845e5699",
+            "bytes": 1303
+        },
+        "editor/cms-pro-editor.js": {
+            "sha256": "c9ebb0d0b4000aad07cd9ab6c80aee52ff1c3a2fbb8926ae76d03126844f1a00",
+            "bytes": 22575
+        },
+        "editor/cms-pro-toolbar.js": {
+            "sha256": "5ab5803878d59f1df912e1dcfbafdc1274a59d41b2dac276b66034b51a9e1f4c",
+            "bytes": 1091
+        },
+        "editor/cms-rich-components.js": {
+            "sha256": "b24e5ce851a2020d36f76ffbfb3d1a867835b445b53eda925a47526e695edbc5",
+            "bytes": 15609
+        },
+        "editor/cms-section-coherence.js": {
+            "sha256": "bb592e6bee2a922dda8d90f3e666869990b8189349a482d416cf4e67b90c60df",
+            "bytes": 6742
+        },
+        "editor/cms-structure-authority.js": {
+            "sha256": "e82029834c497a6b1b28f8615197c0c23fdbb6da7af347269666dc0190b06e20",
+            "bytes": 2420
+        },
+        "editor/cms-structure-labels.js": {
+            "sha256": "52c484a3deed098ef1e553e2a68f1109a01380bc4d58642be84ddc085039d9dd",
+            "bytes": 3545
+        },
+        "editor/cms-structure-navigation.css": {
+            "sha256": "1467432a54418242dcd58ada5c607c5ccd7f542ef3f598b36dec5568747ae5d8",
+            "bytes": 2226
+        },
+        "editor/cms-structure-navigation.js": {
+            "sha256": "fa482d41f1f5b1e8c43861f7ae5ee1cb1dbde4e6fd248d8c5ac8bf1c28d9a855",
+            "bytes": 9930
+        },
+        "editor/cms-structure-sidebar.css": {
+            "sha256": "cb59dc796f9292f4d06de1fc0f9d24d294e6e0c3849be505f3afe7ed1802548b",
+            "bytes": 3063
+        },
+        "editor/cms-structure-sidebar.js": {
+            "sha256": "60f53f56d53200f5ccd3c1eddd20a594f4c53ecaaeaddb9c0b0966411ac55c81",
+            "bytes": 10069
+        },
+        "editor/cms-video-library.js": {
+            "sha256": "dd61cb2c96e21e34a2b59a3ba94ddeebb88892ce8459040933a3574d7e18e8ab",
+            "bytes": 11318
+        },
+        "editor/editor-system.css": {
+            "sha256": "ed5e7445ec8f6e4434c3ef3adb178f415047e31ffa54fe1dc302b456dc4b96fd",
+            "bytes": 26384
+        },
+        "editor/editor-ui.css": {
+            "sha256": "a946ffe1e77765e591560101c55064dc05092df62d80b8931b8dafbc8a46d3fd",
+            "bytes": 8766
+        },
+        "editor/editor-ui.js": {
+            "sha256": "3a6b3f471858bc42b75ab2afaa49a9d8b13c92bb628dfe89ef3c65d83a61b002",
+            "bytes": 34434
+        },
+        "editor/editor.css": {
+            "sha256": "0d634c713f3d6427611508ffe8310def2556e302fe52f66ecc90ee20a7507b4c",
+            "bytes": 17662
+        },
+        "editor/editor.js": {
+            "sha256": "c938b71a9e5cff0b0cc6cce340448c56abe24e8988de7da1d2e6e97e8c3605fe",
+            "bytes": 81262
+        },
+        "editor/framing.css": {
+            "sha256": "7b4d13887203dce0422654b4f41e97f167059162d7d47d5c6af8213db3adaf43",
+            "bytes": 1110
+        },
+        "editor/index.html": {
+            "sha256": "ca92993dd5dd65d54a0145071dc3c1096cc5aaa4fbc4b1102270bd4b7d4c715b",
+            "bytes": 7472
+        },
+        "editor/index.php": {
+            "sha256": "73d8772617dfd9702927d331eb5e35da6c7b0ff7ab73e5cb939ad1165ec76489",
+            "bytes": 934
+        },
+        "editor/media-library.js": {
+            "sha256": "881591242e8543d170c89586bd8542dc5a4838bd32b84be4fc3ac5e6d0ff1505",
+            "bytes": 6055
+        },
+        "editor/responsive-controls.js": {
+            "sha256": "dcf91e12325f4280de39842c911b020dcfe7a0d1764a93153679a363c6e645dd",
+            "bytes": 8848
+        },
+        "editor/sections.css": {
+            "sha256": "5a034741a114669a1f1e2593f09c9710013e633b35ae0afd006d57db9d5e616d",
+            "bytes": 1668
+        },
+        "editor/stage2.js": {
+            "sha256": "4e5faab271187b6d5bdfde4d611e84776da95ff704398ed50ee1f7d2eed8028e",
+            "bytes": 16380
+        },
+        "editor/task-centric.js": {
+            "sha256": "1f72f53ea5b75d46e71be63f7a5e0b2e647bb62f9cfe37641addca0bd6e7acbc",
+            "bytes": 5734
+        },
+        "form-config.php": {
+            "sha256": "9bc85108cdcbbff089f9e07bffb17dec627e9e35c08acb8ec40c3f6856563eba",
+            "bytes": 733
+        },
+        "form-submit.php": {
+            "sha256": "2e002c33f4acc0942a682db9846ae3b843fbf1d1cefb63217dcf7330d881c3d2",
+            "bytes": 3863
+        },
+        "index.php": {
+            "sha256": "b01cc35a82efea3a66cebd2b5de5165ba5140738270feed0a538d5444d6a7425",
+            "bytes": 3401
+        },
+        "inscricao/.htaccess": {
+            "sha256": "6bd36881d91ed3d3447711f06a1c6b30bebef98e38d10fa8d11285cfe76285b1",
+            "bytes": 25
+        },
+        "inscricao/index.php": {
+            "sha256": "a0f050b5ae329b8b1547d95ed75393b173f1fbc46c39174c8318e2042ca5d89d",
+            "bytes": 579
+        },
+        "install/index.php": {
+            "sha256": "0f17a3e6f7f7ea99111fc48c9ea85f12dde072fd0933d7a8cf127478a98e91cf",
+            "bytes": 12237
+        },
+        "interest-submit.php": {
+            "sha256": "2aea81fde46220aa2c28d594f3a120cf4746a936235bd8f2609f4cf975190417",
+            "bytes": 1966
+        },
+        "media-stream.php": {
+            "sha256": "0427355f364b69ac70c2ad07cc7bdeb041f3845bf709d9cd18d462295330ba1d",
+            "bytes": 3077
+        },
+        "migrations/001_initial.php": {
+            "sha256": "9f1e57463d4af081ddd09db190542e9b7486aa2b3f59b00aa4b0e385517104c2",
+            "bytes": 1095
+        },
+        "migrations/002_content_documents.php": {
+            "sha256": "80bee5b2bf859208b6c7cab938c4ea8d3e2e4d302b1ea6178ee529ea5ec0b078",
+            "bytes": 521
+        },
+        "migrations/003_activities_and_media.php": {
+            "sha256": "9f3f13640e2e085c4235b03211facd274fd6c7feee4d06e97ce6a8b9f281fde5",
+            "bytes": 3674
+        },
+        "migrations/004_migrate_current_media.php": {
+            "sha256": "159f0a7855932754b8d9fd9419e38842928f929f89ede54560afd5aafadca0b2",
+            "bytes": 1499
+        },
+        "migrations/005_immutable_video_posters.php": {
+            "sha256": "852809e5a6a7b050676031ba5c8e38ebcf472a66037fb776054d1b62d8e671ce",
+            "bytes": 1130
+        },
+        "migrations/006_media_derivative_metadata.php": {
+            "sha256": "3e63ca3fc4b85e46640862926cf895e8b47a10667d92f50625edccfb86e777db",
+            "bytes": 435
+        },
+        "migrations/007_interest_submission_status.php": {
+            "sha256": "b54d2046924b7b45dd55e9f52725305811717bb66f6e203b45e970e0c927c680",
+            "bytes": 428
+        },
+        "migrations/008_interest_submission_locale.php": {
+            "sha256": "5db83ed445c407aa7462dd77b7d5bc9822c983424ac4214f47dcd0214d4d6751",
+            "bytes": 454
+        },
+        "migrations/009_workshop_locale_settings.php": {
+            "sha256": "4a954ab5874128f929a112a762e728a0b39e9ade3bbe5cbe91d739ad5729ae7f",
+            "bytes": 1189
+        },
+        "migrations/010_form_field_audiences_and_city.php": {
+            "sha256": "ecb6dde2186fcb562eaa97fab2b2468c401e96f6d5120d207927d4a912102156",
+            "bytes": 1778
+        },
+        "migrations/011_cms_pages_forms.php": {
+            "sha256": "cc132a6ffb6ed1f269bda6785ce429990a99ddf14e75b877508ddbcac243c7e0",
+            "bytes": 3006
+        },
+        "migrations/012_preserve_legacy_media_in_cms.php": {
+            "sha256": "577124df3aabdd98782912789ef14b65916862cee7d2b38cd67b457db86cec76",
+            "bytes": 4302
+        },
+        "migrations/013_prepare_registration_page.php": {
+            "sha256": "31b262e91c18e93dda5ef97e2a8426823624a87bd26a14ed182177b4dba0d816",
+            "bytes": 752
+        },
+        "migrations/014_brazilian_workshop_price.php": {
+            "sha256": "85adfea041a08dd39f4444fe4808689eecb2b0ba89ed91d88fcec176b5017125",
+            "bytes": 466
+        },
+        "migrations/015_professional_cms_foundation.php": {
+            "sha256": "1c63f9a70d7fcb6457d0118c133eb09a7391453ce63080841744d374ca9a578e",
+            "bytes": 2007
+        },
+        "migrations/016_reconcile_legacy_media_to_cms.php": {
+            "sha256": "2b3fd0d89c264af9397b02a68c554e42ddbfb0ed8d3804d107fb9dc852304c5a",
+            "bytes": 3978
+        },
+        "migrations/017_reusable_blocks.php": {
+            "sha256": "51ed0a078029e2486ea1c5d56947655cfc5a534df1d89018a6b144fc3a335d06",
+            "bytes": 612
+        },
+        "migrations/018_page_seo.php": {
+            "sha256": "b4be8906e0f829693f71dfb7f9a3b43f8399a3395d394633628d208f485c4078",
+            "bytes": 618
+        },
+        "migrations/019_refine_live_session_copy.php": {
+            "sha256": "5aa2ae47fd4526af7d0e9f697acc8cde2d8b39bfb237e4604dbeee9aba1330bd",
+            "bytes": 2393
+        },
+        "migrations/020_registration_google_form_parity.php": {
+            "sha256": "0672086322d2238784578098bbf86018c1d10eab6488ca14d73ff4c699640253",
+            "bytes": 1521
+        },
+        "migrations/021_restore_process_editorial_hierarchy.php": {
+            "sha256": "9ea21d3f2145cb8d4fc27e79bd38e4acd020f7282e493bc9f4ce284dfc8b8a2b",
+            "bytes": 16702
+        },
+        "migrations/022_registration_native_editorial_content.php": {
+            "sha256": "c5346d8a6098a0b4f6eecb34a9fa111a2f7bfa799edb546e3a45ede7408a8b91",
+            "bytes": 3205
+        },
+        "migrations/023_repair_registration_editorial_blocks.php": {
+            "sha256": "8dc8edb24b9fcb7518246da35b1eaab39f283bf2e12ecf500736399368109c2f",
+            "bytes": 2963
+        },
+        "migrations/024_rebuild_png_derivatives.php": {
+            "sha256": "f34b895fb94cb4e919a45e23a7b9bde0616239ed17c23432fbbb2e29403af7fb",
+            "bytes": 1083
+        },
+        "migrations/025_republish_png_derivatives_with_new_urls.php": {
+            "sha256": "a6d81f444adb43e7d4a7f8a5bff263953438891e8e85d7fc08b48b7139d5436b",
+            "bytes": 1226
+        },
+        "migrations/026_repair_transparent_png_regeneration.php": {
+            "sha256": "0495ae610805928240f318b72d71237ed074284c6217a4b732d235c11067a8a7",
+            "bytes": 1224
+        },
+        "migrations/027_site_wide_additional_css.php": {
+            "sha256": "c6d1f2d44fc2225b60410525f1242b67935383b5b7e2fd4f98f5188e13b57061",
+            "bytes": 1581
+        },
+        "migrations/028_repair_png_regeneration_with_gd.php": {
+            "sha256": "af3d7cf3d29cc9da0103c3b847e4f2e1e167c2a75e03f3eb30a20034f6b07f00",
+            "bytes": 1364
+        },
+        "migrations/029_normalize_design_font_values.php": {
+            "sha256": "99a9c48415d177c25b1174f5e1c816a1cd96d04d095f82fee3200b6e5e814f07",
+            "bytes": 1511
+        },
+        "migrations/030_google_font_family_values.php": {
+            "sha256": "d74097c6bbb0a18e4478c64c3d62b3a918c11efef2d34dfb15bf5ef9d261abb8",
+            "bytes": 1946
+        },
+        "migrations/031_fill_page_seo.php": {
+            "sha256": "eda9ae00539265bd4531bd3775db6cdd73236208715ef9210242973dc20de470",
+            "bytes": 6231
+        },
+        "migrations/032_keep_registration_payment_on_success.php": {
+            "sha256": "0eb99086e17e038d57801571e9a7374e49a93c5350766d1403a942b86a3903b3",
+            "bytes": 2559
+        },
+        "migrations/033_analytics_dashboard.php": {
+            "sha256": "d685b24a80789ba258b8e335ac592d0917dc67fa06b50f798e1c44448ca3bc2f",
+            "bytes": 1503
+        },
+        "migrations/034_pinhole_lambe_lambe_landing.php": {
+            "sha256": "36071a7b8570de950f2145d6cd2599c20a060bfc99bf6cd33666ef06ab23b3f8",
+            "bytes": 20825
+        },
+        "migrations/035_pinhole_lambe_lambe_sales_rewrite.php": {
+            "sha256": "e3149fc05267461cb4b57775f74e37215fc9857e3322f8b1b85f8cb21f784447",
+            "bytes": 12270
+        },
+        "migrations/036_pinhole_public_copy.php": {
+            "sha256": "9c19ed86b6a6b2b839a888ebb60cc91881470f458dcdbed1462801efdb925ba6",
+            "bytes": 10381
+        },
+        "migrations/037_pinhole_uiux_and_site_identity.php": {
+            "sha256": "9afc2f6379fce19663c37bc3c363a9ac52c8ae9c8556e6dacdb7f6aa491f0396",
+            "bytes": 9414
+        },
+        "migrations/038_restore_pinhole_media_and_global_form_ux.php": {
+            "sha256": "d4ad750e623b10f44ec6bbed7bf8c3848be1bbef1afb0454cd94db75ff1241c2",
+            "bytes": 8543
+        },
+        "migrations/039_pinhole_camera_authority.php": {
+            "sha256": "fb223927e311fb475f4c09f8147a6a17f6fa85cf99e4eb90887aebfa0b7cd264",
+            "bytes": 4094
+        },
+        "migrations/040_pinhole_strkng_89.php": {
+            "sha256": "d9f36471530a628f98f44b8fdcf5b7e75a9fa6c943955160e9033e4f25058cb7",
+            "bytes": 1181
+        },
+        "migrations/041_pinhole_authority_refinement.php": {
+            "sha256": "ca1ba9cc53d234f890b43ca18414f1e972d954c775bd390f95c78b9790c3b285",
+            "bytes": 2586
+        },
+        "migrations/042_pinhole_hybrid_format.php": {
+            "sha256": "65d325d853b2cecea2ff6e4fb21653a3de45466d8dae1caf300f7a2b1b66cbd6",
+            "bytes": 6298
+        },
+        "migrations/043_pinhole_hybrid_coherence.php": {
+            "sha256": "50c467a7dad3bd23dd1b24dcdd84eb1b7c7302ba793317d1ddd206b7729c9594",
+            "bytes": 7828
+        },
+        "migrations/044_repair_pinhole_page_integrity.php": {
+            "sha256": "a190b76414fb8a09cc460d687deea798fa66c9a2a6292d2f65a7823268ea68db",
+            "bytes": 11273
+        },
+        "migrations/045_pinhole_two_versions_offer.php": {
+            "sha256": "782f17ecdecce57c243d6a00a4f5bfe29edd0fdca13e515b641ebb6c31528037",
+            "bytes": 15377
+        },
+        "migrations/046_student_area.php": {
+            "sha256": "b99ceffe14a04a97f5889e57ec79404e62fdf5d646553cd6552ab503cf82858a",
+            "bytes": 1951
+        },
+        "migrations/047_student_accounts_cohorts_privacy.php": {
+            "sha256": "7ac275bec0939ff2810e06b7ac498be76bc1c35ae5e873da705e8aee0bb979cf",
+            "bytes": 14274
+        },
+        "migrations/048_seed_positive_handbook.php": {
+            "sha256": "a17bba913faa2523566ea65c3bdeb6b692ce01ba0b62b7c88257f14332606818",
+            "bytes": 35607
+        },
+        "migrations/049_clarify_handbook_dilution_records.php": {
+            "sha256": "b0ec2afcccfec0d3118348f953da0fb4908bf016f455160865ddbf7caa53097c",
+            "bytes": 2700
+        },
+        "migrations/050_protected_handbook_media_slots.php": {
+            "sha256": "9c4c4ae02f891e7f169e569b74d0d70facc57ee4912c55add733169a5dd3d5d3",
+            "bytes": 3786
+        },
+        "migrations/051_handbook_document_lessons.php": {
+            "sha256": "94687f39f1d555cdfeea23a02d879382e99f820ef8dd745b84fe49c583011d7c",
+            "bytes": 5466
+        },
+        "migrations/052_remove_handbook_specific_visual_system.php": {
+            "sha256": "6734fb1dcfb28f2359bffee70280823d03d8b54262137d2d5f4e5922f6f2a4eb",
+            "bytes": 7121
+        },
+        "migrations/053_rebuild_handbook_from_email_sources.php": {
+            "sha256": "7fb8f6c872611e8ca68f17f32b47e6f53fb205c6ed0f7a371690aba4c38ecb1f",
+            "bytes": 63659
+        },
+        "migrations/054_complete_handbook_source_details.php": {
+            "sha256": "6cf68ae01041316cf10605738ad988230805de4df8367fa630ba0982bf738dfb",
+            "bytes": 2353
+        },
+        "migrations/055_apply_global_editorial_components_to_handbook.php": {
+            "sha256": "463b83de6d8669cbe40d463b8d62e8ea69b6c00e6e04f79264d1e10c20674e23",
+            "bytes": 2834
+        },
+        "migrations/056_study_material_source_fidelity.php": {
+            "sha256": "54d0e2c74ac5104b575cf636e0fd4c3556164587bae3cd69e93bb5ab26b28d20",
+            "bytes": 6607
+        },
+        "migrations/057_restore_source_titles_and_cover.php": {
+            "sha256": "9cd3bb0c3cf147aa6c9891e8694acb46c22ade1f27f11f6e4c3598de0c4225ac",
+            "bytes": 3380
+        },
+        "migrations/058_restore_omitted_source_sentences.php": {
+            "sha256": "bc6357fd492f29ecba6b1dd7a300eeb9928fc2e1b04eb331426571f4bf3b2024",
+            "bytes": 5483
+        },
+        "migrations/059_restore_source_numeric_wording.php": {
+            "sha256": "3ee5f4c3ee8e135a29f2c6706b65cac3a3b1f48f05ea73488b385cb840d96d8b",
+            "bytes": 3147
+        },
+        "migrations/060_refine_study_reference_hierarchy.php": {
+            "sha256": "d56751188c04aeb82abd098f28c0e6d3db01a6058fcb17a714ba9fefb0c80f8a",
+            "bytes": 3096
+        },
+        "migrations/061_refine_study_longform_semantics.php": {
+            "sha256": "cdc8a5f7b1f6dbad760a160b3c5205cacd6e71cf9ce6503ea4d502e4ba407ec2",
+            "bytes": 6850
+        },
+        "migrations/062_student_operations_and_test_log.php": {
+            "sha256": "7cbfdbf5de09f1eff0f3c65f5bcc96a6b6c8d66903c8fc68b637ea2fdb6be07d",
+            "bytes": 3956
+        },
+        "migrations/063_student_test_mobile_workflow.php": {
+            "sha256": "5fcb687ee54f8e60cfa2dde5ff5ea3ff390ce5a914fa470f915ede8a970d98ef",
+            "bytes": 480
+        },
+        "migrations/064_student_test_visibility.php": {
+            "sha256": "62a25ba3cdf56efc8fcfc2b378d048bcf3ee062376856fe4d767022f12a62c8c",
+            "bytes": 678
+        },
+        "migrations/065_unify_private_editorial_media.php": {
+            "sha256": "ea7e31d3f3c88d319056e27dd9889a3289bb119635d367279a6ce511729b89fc",
+            "bytes": 5382
+        },
+        "migrations/066_cms_section_access_and_test_bleach.php": {
+            "sha256": "aeb50c71f8995b1850a178b630e72de141e9544134f580a5f68b942adf1c13ce",
+            "bytes": 2721
+        },
+        "migrations/067_normalize_page_activity_access.php": {
+            "sha256": "bc4e597baaa4790bf117089998b1b7a3e4f9956458ead974943c41c4245d0e6a",
+            "bytes": 302
+        },
+        "migrations/068_activity_locales_page_hierarchy.php": {
+            "sha256": "f35c676b2b9b002cf239fc4eda443108244e31f50b5ff6b769edc18df467f3fd",
+            "bytes": 2602
+        },
+        "migrations/069_form_purpose_authority.php": {
+            "sha256": "1c216de1e2194e584aaaad54d9be16909396d75ccf46989d973107a1503c7a59",
+            "bytes": 1004
+        },
+        "migrations/070_cms_page_cohort_access.php": {
+            "sha256": "4d2b333a143e98689d5b38df0c686e4bcfd96250dbbfa58df275e43ce2598836",
+            "bytes": 639
+        },
+        "migrations/071_material_lesson_sections.php": {
+            "sha256": "7c72407d0b219fe9d076ffe5eb9afdf8450836eac892c84b553b948cbefdb8d3",
+            "bytes": 4271
+        },
+        "migrations/072_workshop_page_student_scope.php": {
+            "sha256": "cbf095ed6393634432f6c5bdce38f82149b81b119e9344a64dc6e14c5530b6b6",
+            "bytes": 5534
+        },
+        "migrations/073_course_domain_material.php": {
+            "sha256": "acfeee52ac53cc8a39866d8f0309e048f86eda2c7bcc58d3c528c752a0defc66",
+            "bytes": 11652
+        },
+        "migrations/074_reconcile_positive_course_snapshot.php": {
+            "sha256": "6aa9147f9da6ef1237a218fa5a7c3d893580502ded8e471b249e69501b5f7a83",
+            "bytes": 6695
+        },
+        "migrations/075_student_process_workbench.php": {
+            "sha256": "41071cd18324555a79ebb7017b5ad602d53ce5f0c530aff99183aa2d9f299bab",
+            "bytes": 9585
+        },
+        "migrations/076_student_process_calibrations.php": {
+            "sha256": "ed18e7ffbe0a9543ce120ccd9f77e3f4f116002c81ed7ddfbd9bb46933da82cc",
+            "bytes": 846
+        },
+        "migrations/077_student_inline_annotations.php": {
+            "sha256": "fb2be11b330728a98002c816f3583ce7ff2cbca02767923fc46ce819767a1dec",
+            "bytes": 1295
+        },
+        "migrations/078_question_annotation_source.php": {
+            "sha256": "f5a4a195202152952a3b3aaccbf89049dd7ab2889db84b57ae8b5cd43bf13762",
+            "bytes": 811
+        },
+        "migrations/079_student_process_templates_and_runner.php": {
+            "sha256": "b754e9fbec0e42609663042884799b2eca1b81ffe9f258bb3ad8e36a6e8e2cc5",
+            "bytes": 3161
+        },
+        "migrations/080_student_process_recording_modes.php": {
+            "sha256": "491dbec64449a61353ffa643867b10aaffb856580bc3e270260421e57dac038e",
+            "bytes": 683
+        },
+        "migrations/081_process_global_versioning_and_execution_state.php": {
+            "sha256": "0f8d22b6c16e3021795bc65497e9e5e9281fed40ef62d3306d25dcc9b8974337",
+            "bytes": 14558
+        },
+        "migrations/082_student_process_plan_mutations.php": {
+            "sha256": "1f9152cd8d226fc9b7699b78a5f8f4e98cff5429953476e9d7b4a38bae156e7b",
+            "bytes": 674
+        },
+        "migrations/083_student_pedagogical_feedback.php": {
+            "sha256": "af6b0a07880162248ecdb72043141f44e6553c57c2fdb94c353dc529e32cff0d",
+            "bytes": 2313
+        },
+        "migrations/084_student_research_lineage.php": {
+            "sha256": "7be2f219fa7784bda57741a406c5edae370c33353983074d345de739fa5961ec",
+            "bytes": 791
+        },
+        "migrations/085_aula3_student_area_research_guide.php": {
+            "sha256": "8fa3e38a4092cb8dc460e41d2f2d7881476f44377940c0a0c15dfbf63b1b20b9",
+            "bytes": 18951
+        },
+        "migrations/086_aula3_screenshot_media.php": {
+            "sha256": "131556b2c2f12ae10062bd3eff9d2b917d5eab20e20dcf9429a73247c4a1aacf",
+            "bytes": 6015
+        },
+        "migrations/087_aula2_practice_bridge.php": {
+            "sha256": "f6b1cf72529f2efaee56ce0cf65c301480d9b9e1329a7ee47ad9715dad584501",
+            "bytes": 8232
+        },
+        "migrations/088_aula3_hires_screenshot_media.php": {
+            "sha256": "84ba0a1c6b9e34939fb6ddf0343b9b71a81161fd014299d29289dd2abf235c1f",
+            "bytes": 7532
+        },
+        "migrations/089_restore_study_material_pedagogical_pattern.php": {
+            "sha256": "8b447d492ea0d66749a85aa023c0efcc0eb0e3420e4a6f684143b60ce65aebc2",
+            "bytes": 7036
+        },
+        "migrations/090_reframe_aula3_as_practice.php": {
+            "sha256": "381923774a810d8065027ed941bab0b1776f9dae42d53a1e95ca1a115b3a7fe5",
+            "bytes": 9664
+        },
+        "migrations/091_practice_infographic_placeholders.php": {
+            "sha256": "63791607eecd98cbd6dd0686bf55b44aaf41fb4acab8c32bf1f25c441a7e759c",
+            "bytes": 8449
+        },
+        "migrations/092_student_process_step_timers.php": {
+            "sha256": "25de0118d84fdba2e10dcaed11988354e3daef298fc9321d6fdac9c1d1bbc8b3",
+            "bytes": 1027
+        },
+        "migrations/093_experimental_large_format_course_page.php": {
+            "sha256": "b17187375c1e16464cf6850a478a7c9c622bc3aec28969c922fad4e9eaf7fe57",
+            "bytes": 23408
+        },
+        "migrations/094_large_format_reuse_canonical_components.php": {
+            "sha256": "09a8f6346ef2019d39eb1e92577ee67a9f6eec19d0bb27d7f06c3018408cc8fc",
+            "bytes": 18499
+        },
+        "migrations/095_large_format_restore_visual_placeholders.php": {
+            "sha256": "c52cbecc2ccbd962c060a14200fbae9d1c1ac9a0e4023b9fa8677aa920b2ddde",
+            "bytes": 19376
+        },
+        "migrations/096_student_tool_lesson_release.php": {
+            "sha256": "b14de38bbf9ca5f42daa6ff690be7438f4c6fa22e2538ac26c5942d5162dab42",
+            "bytes": 1118
+        },
+        "migrations/097_public_menu_page_hierarchy.php": {
+            "sha256": "2bae2db6222243a2c147e9348f9a4b7c5b3dc06976a0d5bf946b93068d5f2c81",
+            "bytes": 1723
+        },
+        "migrations/assets/.htaccess": {
+            "sha256": "6cb71b0cea790d8fbce27f8b31b5390cf8e902de4bf6b5a524ba700264e2eee6",
+            "bytes": 36
+        },
+        "migrations/assets/aula3-hires.pack.b64": {
+            "sha256": "4153c6dd8ee5f158adefaa98c34d870d11f7bfc3eeff35ca33769bf753c8d018",
+            "bytes": 546025
+        },
+        "migrations/assets/aula3/exposure.webp.b64": {
+            "sha256": "f0633f51d72d86595954086dcbac62883c7b2967868169c95bc515bdccda9471",
+            "bytes": 8848
+        },
+        "migrations/assets/aula3/notebook.webp.b64": {
+            "sha256": "3c73def81409104c2111e600c6590bd2434ba446f3a37c8b031ba5f01101f8ee",
+            "bytes": 10280
+        },
+        "migrations/assets/aula3/process-library.webp.b64": {
+            "sha256": "6bcd47466ec7651e07f2efde6f4022877c2b38719f9c8acf6a137def180e0a4d",
+            "bytes": 18016
+        },
+        "migrations/assets/aula3/recording-partial.webp.b64": {
+            "sha256": "9b37f2302749e970f13c8b7c1c359823a3d9f37702b5887184f9082d12ff91c0",
+            "bytes": 10376
+        },
+        "migrations/assets/aula3/research-derived.webp.b64": {
+            "sha256": "02c28e0b339e2bd99daa95e1a9407c98a286e2175c62fbeef0327e334a031385",
+            "bytes": 7360
+        },
+        "migrations/assets/aula3/result-reviewed.webp.b64": {
+            "sha256": "abe97fa85794fad793cef290dfc8b5697855862a5ff06482354e16d9048b1651",
+            "bytes": 17872
+        },
+        "preview/.htaccess": {
+            "sha256": "6bd36881d91ed3d3447711f06a1c6b30bebef98e38d10fa8d11285cfe76285b1",
+            "bytes": 25
+        },
+        "preview/index.html": {
+            "sha256": "0e12b4abd75d5aaae140231be2440b7aa8ea42bad9b93741f3854e959bb8f953",
+            "bytes": 517
+        },
+        "preview/index.php": {
+            "sha256": "2631fc95db96e4cd9c3c35abd08e8a3b23b42f4e9f574a13c3cfba90d4c903d6",
+            "bytes": 457
+        },
+        "preview/preview.js": {
+            "sha256": "2025fe6054456cca3bdff66d8fc6490f1b1283265a39f07cb1e3948b55bde7a5",
+            "bytes": 4657
+        },
+        "robots.php": {
+            "sha256": "f0819aa4145754b314dc95b2863be297f6a1f97f0ccb2848d5aefc8facb27fca",
+            "bytes": 190
+        },
+        "sitemap.php": {
+            "sha256": "d95c098743db5bd3cece72623a9b88ab2af6a581ecd66246f31536ef1429a75d",
+            "bytes": 205
+        },
+        "storage/.htaccess": {
+            "sha256": "6cb71b0cea790d8fbce27f8b31b5390cf8e902de4bf6b5a524ba700264e2eee6",
+            "bytes": 36
+        },
+        "storage/logs/.gitkeep": {
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "bytes": 1
+        },
+        "template/index.html": {
+            "sha256": "249110680e2c7c5cc8f23a3435b8e80eb96e270d1d7941da7f2a088a31c10c9b",
+            "bytes": 12707
+        },
+        "template/page.css": {
+            "sha256": "7214344448d5ca0c427f59fa663408728dc149d7f796e8cde5c394f28230f68b",
+            "bytes": 24444
+        },
+        "template/page.js": {
+            "sha256": "7aa2b6951377b0fc1cb43c4db838b24a0b15c6488175501e7227a87cecd5ce1c",
+            "bytes": 1103
+        },
+        "template/public.php": {
+            "sha256": "3ee47427f91dce2df173f7d836be0f9c7efdaa4f324c5a8f08d551dc4e41ad2c",
+            "bytes": 12307
+        },
+        "template/schema.json": {
+            "sha256": "0d139a1b8af975a764f6187c9bae37da04838b5a80d46e0d39fe385dd02df780",
+            "bytes": 4977
+        },
+        "uploads/.htaccess": {
+            "sha256": "d511ff75f0cd6aa5812b8e3f747b594ce77e2a011aa0dd4e5ba48bf03d20eab0",
+            "bytes": 98
+        }
+    }
+}
