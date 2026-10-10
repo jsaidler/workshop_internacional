@@ -95,3 +95,29 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
   .student-mobile-nav{position:fixed;z-index:70;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);padding:0 6px env(safe-area-inset-bottom);border-top:1px solid var(--line);background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none}.student-mobile-nav a{position:relative;min-width:0;min-height:66px;display:grid;place-items:center;align-content:center;padding:0 3px;color:var(--muted);font:600 11px/1.25 var(--body,Arial,sans-serif);text-decoration:none;text-transform:none;letter-spacing:0;text-align:center}.student-mobile-nav a[aria-current=page]{color:var(--text);font-weight:600}.student-mobile-nav a[aria-current=page]::before{content:"";position:absolute;top:0;width:30px;height:2px;background:var(--focus)}
   .student-login-card{margin-top:24px;padding:22px 18px}.student-auth-title{font-size:44px}.student-auth-copy{font-size:15px}
 }
+
+/* Shared transient action choice. The same dialog is a compact overlay on
+   desktop and a bottom sheet on the phone; the global navigation stays in DOM. */
+.student-page .student-capture-trigger{min-height:48px}
+.student-page .student-action-sheet[open]{position:fixed;inset:0;width:min(460px,calc(100vw - 32px));height:max-content;max-height:calc(100dvh - 24px);margin:auto;padding:0;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line-strong);background:var(--bg);color:var(--text);box-shadow:0 28px 70px rgba(0,0,0,.38)}
+.student-page .student-action-sheet::backdrop{background:rgba(0,0,0,.67)}
+.student-page .student-action-sheet-content{padding:24px;min-width:0}
+.student-page .student-action-sheet-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:0 0 18px;border-bottom:1px solid var(--line)}
+.student-page .student-action-sheet-heading h2{margin:5px 0 0;font:500 28px/1.15 var(--title)}
+.student-page .student-action-sheet-heading .student-kicker{margin:0}
+.student-page .student-action-sheet-close{flex:0 0 auto;min-height:44px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--text);font:600 11px var(--body);cursor:pointer}
+.student-page .student-action-sheet-options{display:grid;gap:10px;padding-top:18px}
+.student-page .student-action-sheet-choice{position:relative;display:grid;align-content:center;gap:3px;min-height:66px;padding:13px 16px;border:1px solid var(--line-strong);background:var(--surface);color:var(--text);cursor:pointer}
+.student-page .student-action-sheet-choice:hover{border-color:var(--focus)}
+.student-page .student-action-sheet-choice:focus-within{outline:2px solid var(--focus);outline-offset:2px}
+.student-page .student-action-sheet-choice>span{font:600 14px/1.35 var(--body)}
+.student-page .student-action-sheet-choice>small{color:var(--muted);font:400 12px/1.45 var(--body)}
+.student-page .student-action-sheet-choice input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.student-page .student-action-sheet-help{margin:16px 0 0;color:var(--muted);font:400 12px/1.55 var(--body)}
+.student-page .student-action-sheet-feedback{margin:16px 0 0}
+.student-page .student-action-sheet-feedback[hidden]{display:none}
+@media(max-width:760px){
+  .student-page .student-action-sheet[open]{inset:auto 0 0;width:100%;max-width:none;height:auto;max-height:calc(100dvh - 12px);margin:0;border-width:1px 0 0;border-radius:18px 18px 0 0}
+  .student-page .student-action-sheet-content{padding:22px 18px calc(24px + env(safe-area-inset-bottom,0px))}
+  .student-page .student-action-sheet-choice{min-height:72px}
+}
