@@ -60,6 +60,12 @@ Foi identificada uma falha transversal no workflow `student-visual-audit`: a ger
 
 **Ainda não certificados:** sucesso real de POST, erro de servidor, lista vazia/longa de conversas, professor/aluno com matrículas diferentes, deep link e resposta, reconciliação da conversa depois de exclusão e a ausência de oclusão visual causada pela navegação inferior durante o scroll. Os testes de autorização por curso introduzidos no PR #215 continuam necessários, mas não equivalem a essa inspeção.
 
+## Dúvidas e respostas — preservação de rascunho em erro (09/10/2026)
+
+**Achado D-03 — falha destrutiva de formulário:** o retorno de um POST inválido ou de erro no servidor exibia a mensagem no topo, mas mantinha o painel de criação recolhido e perdia o assunto, registro, título, corpo e visibilidade escolhidos. Na resposta, a falha poderia retornar à listagem porque a reabertura da conversa só consultava `GET.id`, não `POST.question_id`; o texto da resposta também podia se perder. O estado correto mantém a tarefa aberta, os dados digitados e o contexto da conversa, sinalizando a falha com `role=alert`. Os valores são escapados no HTML e a visibilidade continua limitada a `private/cohort/course`.
+
+Exigir inspeção e regressão de: falha de criação, falha de resposta, recuperação do estado, foco e rolagem no telefone, com material de origem e sem material de origem. A fixture sozinha não constitui prova de persistência real no servidor; a apresentação e a semântica da requisição também devem constar de verificações dos templates PHP.
+
 ## Regiões de leitura e navegação mobile — auditoria estrutural (09/10/2026)
 
 **N-01 — Oclusão da barra fixa:** a reserva de 66–92 px apenas no final da página não protegia parágrafos, cards ou formulários durante a rolagem. Uma barra `position:fixed` continuava atravessando os conteúdos no meio da leitura. Contrato atualizado em `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md`.
