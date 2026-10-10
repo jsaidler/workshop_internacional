@@ -55,6 +55,59 @@ function student_test_add_media_phase(PDO $db,int $testId,int $studentId,array $
     $q=$db->prepare('SELECT * FROM student_test_media WHERE id=?');$q->execute([(int)$db->lastInsertId()]);return $q->fetch();
 }
 
+
+/**
+ * Normaliza o shape de `$_FILES['images']` para os mesmos objetos usados pelo
+ * upload individual. Rejeita lote parcialmente formado antes de gravar qualquer
+ * imagem, e não perde arquivos quando o seletor móvel permite seleção múltipla.
+ */
+function student_test_normalize_media_batch(array $uploads): array {
+    if(!is_array($uploads['name']??null))throw new RuntimeException('Selecione uma ou mais imagens.');
+    $names=$uploads['name'];
+    $count=count($names);
+    if($count<1)throw new RuntimeException('Selecione uma ou mais imagens.');
+    if($count>STUDENT_TEST_MEDIA_MAX_FILES)throw new RuntimeException('Cada registro aceita no máximo '.STUDENT_TEST_MEDIA_MAX_FILES.' imagens.');
+    foreach(['name','type','tmp_name','error','size'] as $key){
+        if(!is_array($uploads[$key]??null)||array_keys($uploads[$key])!==array_keys($names))throw new RuntimeException('O envio das imagens está incompleto. Selecione os arquivos novamente.');
+    }
+    $result=[];
+    foreach(array_keys($names) as $i){
+        $result[]=[
+            'name'=>(string)$uploads['name'][$i],
+            'type'=>(string)$uploads['type'][$i],
+            'tmp_name'=>(string)$uploads['tmp_name'][$i],
+            'error'=>(int)$uploads['error'][$i],
+            'size'=>(int)$uploads['size'][$i],
+        ];
+    }
+    return $result;
+}
+function student_test_add_media_batch_phase(PDO $db,int $testId,int $studentId,array $uploads,string $phase): int {
+    $files=student_test_normalize_media_batch($uploads);
+    $count=$db->prepare('SELECT COUNT(*) FROM student_test_media WHERE test_id=?');
+    $count->execute([$testId]);
+    $remaining=STUDENT_TEST_MEDIA_MAX_FILES-(int)$count->fetchColumn();
+    if(count($files)>$remaining)throw new RuntimeException('Este registro tem espaço para apenas '.max(0,$remaining).' imagem(ns). Remova alguma imagem ou selecione menos arquivos.');
+    // Valide todos os arquivos antes de iniciar a gravação, evitando lote parcial
+    // por tamanho, formato ou erro no seletor do navegador.
+    $finfo=new finfo(FILEINFO_MIME_TYPE);
+    foreach($files as $file){
+        if($file['error']!==UPLOAD_ERR_OK||$file['name']==='')throw new RuntimeException('Não foi possível receber todas as imagens. Selecione os arquivos novamente.');
+        if($file['size']<1||$file['size']>STUDENT_TEST_MEDIA_MAX_BYTES)throw new RuntimeException('Cada imagem deve ter no máximo 12 MB.');
+        $tmp=$file['tmp_name'];
+        if($tmp===''||!is_file($tmp)||!in_array((string)$finfo->file($tmp),['image/jpeg','image/png','image/webp'],true))throw new RuntimeException('Formato de imagem não suportado. Use JPEG, PNG ou WebP.');
+    }
+    $added=[];
+    try{
+        foreach($files as $file)$added[]=student_test_add_media_phase($db,$testId,$studentId,$file,$phase);
+    }catch(Throwable $e){
+        // Compensação de erro de armazenamento: não deixar lote pela metade.
+        foreach($added as $item)student_test_delete_media($db,(int)$item['id'],$studentId);
+        throw $e;
+    }
+    return count($added);
+}
+
 function student_test_media_by_phase(array $media,string $phase): array {
     return array_values(array_filter($media,static fn(array $item): bool=>(string)($item['phase']??'result')===$phase));
 }
