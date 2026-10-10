@@ -127,3 +127,5 @@ A inspeção efetiva dos artefatos `questions/phone-create-error-draft.png` e `p
 **Status:** branch de auditoria em validação; CI, capturas e inspeção da correção ainda pendentes. O teste com resposta HTTP simulada não atesta persistência real na hospedagem nem a execução HTTP autenticada ponta a ponta.
 
 **Primeiro CI D-06:** reprovou duas asserções de paridade porque a fixture `question-thread` não possuía o wrapper `data-student-local-key="question-thread"`, presente no PHP real. O wrapper foi incluído na fixture e adicionado ao gate PHP de paridade. Correção aguarda novos testes e inspeção; a asserção não foi afrouxada.
+
+**Diagnóstico D-06 posterior (CI de `68bd837`):** regressão de resposta AJAX expôs defeito funcional transversal: `form.action` devolvia o elemento `input[name="action"]` em vez da URL, produzindo POST para `[object HTMLInputElement]` e 404. `student-local-actions.js` passa a usar `getAttribute('action')||location.href`, `getAttribute('method')` e `setAttribute('action',...)` em editores contextuais. O teste força o campo oculto homônimo e a resposta HTML 200 com alerta. Correção em revisão, CI e inspeção pendentes.

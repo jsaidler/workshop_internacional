@@ -93,6 +93,9 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await page.goto('http://127.0.0.1:8099/tools/browser-fixture/student-secondary-screens-audit.html?screen=question-thread',{waitUntil:'networkidle'});
     await page.addScriptTag({url:'/assets/student-local-actions.js'});
     const form=page.locator('form[data-local-refresh="question-thread"][data-local-success="reset"]');
+    await expect(form.locator('input[name="action"]')).toHaveValue('reply');
+    expect(await form.evaluate(el=>typeof el.action)).toBe('object');
+    expect(await form.evaluate(el=>el.getAttribute('action'))).toBeNull();
     const draft=form.locator('textarea[name="body"]');
     await draft.fill('Minha resposta ainda não enviada');
     await form.getByRole('button',{name:'Enviar resposta'}).click();
