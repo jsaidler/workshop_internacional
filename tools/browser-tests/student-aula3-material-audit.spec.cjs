@@ -115,18 +115,36 @@ for(const [device,viewport] of Object.entries(viewports)){
     const take=async(state)=>{
       await page.screenshot({path:`student-visual-audit/material/${device}/aula2-practice-${state}.png`,animations:'disabled'});
     };
+    // Force immediate scroll and assert the actual destination before capturing.
+    // Pages may have smooth scrolling in their CSS; a single window.scrollTo followed by
+    // screenshot can silently duplicate the starting frame.
+    const setReadingPosition=async(target)=>{
+      const goal=await page.evaluate(({device,target})=>{
+        const el=device==='phone'?document.querySelector('.cms-student-reading'):document.scrollingElement;
+        if(!el)throw new Error('Material reading scroll host missing');
+        const max=Math.max(0,el.scrollHeight-el.clientHeight);
+        if(max<innerHeight*2)throw new Error('Audit source is not long enough to verify distinct reading positions');
+        const top=target==='start'?0:target==='middle'?Math.round(max/2):max;
+        const before=el.style.scrollBehavior;
+        el.style.scrollBehavior='auto';
+        el.scrollTop=top;
+        el.style.scrollBehavior=before;
+        return{top,max};
+      },{device,target});
+      await expect.poll(async()=>page.evaluate(device=>
+        device==='phone'?document.querySelector('.cms-student-reading').scrollTop:window.scrollY,device)
+      ).toBeGreaterThanOrEqual(goal.top-2);
+      await expect.poll(async()=>page.evaluate(device=>
+        device==='phone'?document.querySelector('.cms-student-reading').scrollTop:window.scrollY,device)
+      ).toBeLessThanOrEqual(goal.top+2);
+      return goal;
+    };
+    await setReadingPosition('start');
     await take('start');
-    if(device==='phone'){
-      await read.evaluate(el=>{el.scrollTop=Math.round((el.scrollHeight-el.clientHeight)/2);});
-      await take('middle');
-      await read.evaluate(el=>{el.scrollTop=el.scrollHeight;});
-      const bottom=await read.evaluate(el=>({actual:el.scrollTop,max:el.scrollHeight-el.clientHeight}));
-      expect(Math.abs(bottom.actual-bottom.max)).toBeLessThanOrEqual(2);
-    }else{
-      await page.evaluate(()=>window.scrollTo(0,Math.round((document.documentElement.scrollHeight-innerHeight)/2)));
-      await take('middle');
-      await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
-    }
+    const middle=await setReadingPosition('middle');
+    await take('middle');
+    const endPosition=await setReadingPosition('end');
+    expect(endPosition.max-middle.top,'end must be visibly later than middle').toBeGreaterThan(viewport.height/2);
     await expect(notes,'last reading control must be reachable').toBeVisible();
     await take('end');
     await notes.locator('summary').click();
