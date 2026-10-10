@@ -49,3 +49,7 @@ O trabalho anterior validou responsividade de controles sem questionar se o tele
 ## Evidência e corte da implementação S-01 (10/10)
 
 A primeira aplicação do contrato usa um só botão **Adicionar imagens** por parte da ficha e dois inputs dentro do diálogo compartilhado. Em testes de Chromium a 390×844 e 1440×1100, estados abertos/erro foram renderizados e inspecionados: `sheets/*-scene-open.png`, `sheets/*-result-open.png`, `sheets/*-error.png` (seis imagens). A mudança preserva os endpoints e o limite de seis imagens; só altera apresentação e integração de erro/retorno na interface. A auditoria integral de 46 superfícies continua aberta. A verificação com picker nativo Android e gravação real depende de atualização e uso na hospedagem.
+
+### Auditoria de paridade visual do Caderno — atualização de 10/10
+
+O componente `student_record_media_controls()` deve abastecer tanto o PHP operacional quanto o renderer `student-caderno-product-audit.php`. O HTML de composição da fixture usa marcadores por fase e não pode reproduzir botão de imagem por texto independente. A inspeção do CI `5837a3c` confirmou isso em estados mobile de Exposição, Resultado, processamento com/sem roteiro e versão desktop de Exposição; ver matriz G-01/S-01. Uma falha secundária expôs stylesheet duplicado e fora de ordem na fixture; corrigiu-se sua marcação de carregamento para preservar o CSS canônico, sem alterações compensatórias de estilo. Essa evidência não completa a auditoria dos 46 estados, que permanece aberta.
