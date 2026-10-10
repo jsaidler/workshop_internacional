@@ -71,8 +71,8 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.setViewportSize(viewport);await page.goto(fixture(path),{waitUntil:'networkidle'});
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
-      if(name==='new-record'||name==='toolbox'){
-        const selector=name==='new-record'?'.student-create-dialog':'.student-toolbox';
+      if(name==='new-record'||name==='toolbox'||name==='calibration-editor'){
+        const selector=name==='new-record'||name==='calibration-editor'?'.student-create-dialog':'.student-toolbox';
         await page.evaluate(sel=>{const d=document.querySelector(sel);if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}},selector);
       }
       if(name==='home-feedback'){await expect(page.getByText('Retorno do professor',{exact:true})).toBeVisible();await expect(page.getByText('Ler retorno e revisar →',{exact:true})).toBeVisible();}
@@ -235,11 +235,11 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.goto(fixture(path),{waitUntil:'networkidle'});
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
-      if(name==='new-record'||name==='toolbox'){
+      if(name==='new-record'||name==='toolbox'||name==='calibration-editor'){
         await page.evaluate(selector=>{
           const d=document.querySelector(selector);
           if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}
-        },name==='new-record'?'.student-create-dialog':'.student-toolbox');
+        },name==='new-record'||name==='calibration-editor'?'.student-create-dialog':'.student-toolbox');
       }
       const controls=page.locator('button:visible,a[href]:visible,summary:visible,[role="button"]:visible');
       const count=await controls.count();
