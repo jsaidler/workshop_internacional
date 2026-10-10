@@ -28,6 +28,13 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
       await expect(region.getByText('Fotografar',{exact:true})).toBeVisible();
       await expect(region.getByText('Escolher imagens',{exact:true})).toBeVisible();
       await expect(gallery).toHaveAttribute('accept','image/jpeg,image/png,image/webp');
+      for(const label of await region.locator('.student-capture-form > label.student-capture-button').all()){
+        const visual=await label.evaluate(el=>({height:el.getBoundingClientRect().height,display:getComputedStyle(el).display,border:getComputedStyle(el).borderTopWidth,font:parseFloat(getComputedStyle(el).fontSize)}));
+        expect(visual.height,'tap target must be at least 48 px').toBeGreaterThanOrEqual(48);
+        expect(visual.display).toBe('inline-flex');
+        expect(visual.border).not.toBe('0px');
+        expect(visual.font).toBeGreaterThanOrEqual(12);
+      }
     }
     await scene.locator('input[name="images[]"]').setInputFiles([jpg(1),jpg(2)]);
     await expect.poll(()=>submissions.length).toBe(1);
@@ -48,6 +55,9 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     expect(submissions[2]).toContain('name="image"');
     expect(submissions[2]).toContain('filename="foto-5.jpg"');
     expect(submissions[2]).toContain('scene');
-    await page.screenshot({path:`student-visual-audit/gallery/${device}-camera-and-gallery.png`,animations:'disabled'});
+    await scene.scrollIntoViewIfNeeded();
+    await page.screenshot({path:`student-visual-audit/gallery/${device}-scene-buttons.png`,animations:'disabled'});
+    await result.scrollIntoViewIfNeeded();
+    await page.screenshot({path:`student-visual-audit/gallery/${device}-result-buttons.png`,animations:'disabled'});
  });
 }
