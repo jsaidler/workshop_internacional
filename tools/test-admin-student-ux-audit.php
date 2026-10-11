@@ -83,7 +83,8 @@ ux_expect(str_contains($studentCourses,'elseif(count($enrollments)===1)$selected
 ux_expect(str_contains($studentCourses,'student-academic-study')&&str_contains($studentCourses,'course_material_page_release_summary')&&str_contains($studentCourses,'Dúvidas e respostas'),'curso deve reunir material, disponibilidade e dúvidas no mesmo contexto acadêmico');
 ux_expect(str_contains($academicCss,'.student-dashboard-focus[hidden]{display:none}'),'estados alternativos do dashboard não podem aparecer simultaneamente');
 ux_expect(str_contains($studentNotebook,'Mais ações')&&str_contains($studentNotebook,'student-record-summary')&&!str_contains($studentNotebook,'student-record-progress'),'Caderno deve priorizar o registro e resumir o que existe sem prescrever uma etapa atual');
-ux_expect(str_contains($studentNotebook,'data-record-create-dialog'),'novo registro deve abrir diretamente em diálogo, sem etapa intermediária');
+$recordCreate=(string)file_get_contents($root.'/app/student_record_create_dialog.php');
+ux_expect(str_contains($studentNotebook,'student_record_create_dialog(')&&str_contains($recordCreate,'data-record-create-dialog'),'novo registro deve abrir o formulário compartilhado em diálogo único, sem etapa intermediária');
 ux_expect(!str_contains($studentNotebook,'student-process-compare'),'comparação não pode ocupar permanentemente cada registro');
 ux_expect(str_contains($studentRecord,'id="exposicao"')&&str_contains($studentRecord,'id="processamento"')&&str_contains($studentRecord,'id="resultado"'),'registro deve manter Exposição, Processamento e Resultado acessíveis na mesma página');
 ux_expect(str_contains($studentRecord,'student-process-path-choice')&&str_contains($studentRecord,'student-process-history')&&!str_contains($studentRecord,'$resultReady'),'processamento deve oferecer ações sem bloquear outras partes do registro');
