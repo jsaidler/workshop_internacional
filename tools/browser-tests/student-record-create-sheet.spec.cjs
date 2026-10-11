@@ -17,6 +17,13 @@ test(`new record: opens, draft stays, closes and restores focus — ${device}`,a
     expect(position.width).toBeGreaterThanOrEqual(width-2);
     expect(position.height).toBeLessThanOrEqual(height);
   }
+  const alignment=await dialog.evaluate(el=>{
+    const intro=el.querySelector('.student-create-dialog-intro'),form=el.querySelector('form.student-form-grid');
+    return {introLeft:parseFloat(getComputedStyle(intro).paddingLeft),
+      formLeft:parseFloat(getComputedStyle(form).paddingLeft)};
+  });
+  expect(alignment.introLeft,'intro text must not touch sheet edge').toBeGreaterThanOrEqual(16);
+  expect(Math.abs(alignment.introLeft-alignment.formLeft),'intro and form should share the same horizontal rhythm').toBeLessThanOrEqual(4);
   await expect(dialog.getByRole('textbox',{name:'Título'})).toBeVisible();
   await expect(dialog.getByLabel('Data')).toBeVisible();
   await dialog.getByRole('textbox',{name:'Título'}).fill('Teste com rascunho');

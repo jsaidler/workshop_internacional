@@ -939,6 +939,8 @@ body.student-page{font-size:16px;line-height:1.5}
 
 /* Only the short notebook creation form becomes a mobile sheet. Long editors
    retain their existing dedicated-page/dialog contracts. */
+.student-record-create-dialog .student-create-dialog-intro{padding:18px 22px 0}
+.student-record-create-dialog .student-create-dialog-intro p{margin:0;line-height:1.5}
 .student-record-create-dialog .student-create-error{margin:16px 22px 0}
 .student-record-create-dialog .student-create-dialog-head{position:sticky;top:0;z-index:2;background:var(--bg)}
 .student-record-create-dialog{max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain}
@@ -951,5 +953,6 @@ body.student-page{font-size:16px;line-height:1.5}
     border-radius:18px 18px 0 0;box-shadow:0 -18px 50px rgba(0,0,0,.35)
   }
   .student-record-create-dialog .student-create-dialog-head h2{font-size:27px}
+  .student-record-create-dialog .student-create-dialog-intro{padding:16px 18px 0}
   .student-record-create-dialog .student-create-error{margin:14px 18px 0}
 }
