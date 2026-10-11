@@ -5,7 +5,7 @@ declare(strict_types=1);
  * audit render the same dialog and preserve failed POST drafts.
  */
 function student_record_create_dialog(array $enrollments,string $csrfToken,array $draft=[],string $error=''): void {
-    $e=static fn(mixed $value):string=htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+    $e=static fn(mixed $value):string=>htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
     $title=(string)($draft['title']??'');
     $date=(string)($draft['test_date']??date('Y-m-d'));
     $scope=(($draft['context_scope']??'personal')==='course'&&$enrollments)?'course':'personal';
