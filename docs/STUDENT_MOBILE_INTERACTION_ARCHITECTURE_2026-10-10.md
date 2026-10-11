@@ -53,3 +53,7 @@ A primeira aplicação do contrato usa um só botão **Adicionar imagens** por p
 ### Auditoria de paridade visual do Caderno — atualização de 10/10
 
 O componente `student_record_media_controls()` deve abastecer tanto o PHP operacional quanto o renderer `student-caderno-product-audit.php`. O HTML de composição da fixture usa marcadores por fase e não pode reproduzir botão de imagem por texto independente. A inspeção do CI `5837a3c` confirmou isso em estados mobile de Exposição, Resultado, processamento com/sem roteiro e versão desktop de Exposição; ver matriz G-01/S-01. Uma falha secundária expôs stylesheet duplicado e fora de ordem na fixture; corrigiu-se sua marcação de carregamento para preservar o CSS canônico, sem alterações compensatórias de estilo. Essa evidência não completa a auditoria dos 46 estados, que permanece aberta.
+
+### S-02 — Formulário curto de criação de registro (11/10/2026)
+
+O diálogo `Novo registro` passa a ser gaveta inferior no telefone e permanece central no desktop. Os campos não se transformam em escolhas fragmentadas; são um formulário único, em contexto. Erro de POST de criação deve reabrir o mesmo formulário com dados anteriores e alerta focalizado, em vez de deixar uma mensagem no topo do Caderno. Cancelar/Escape não descarta o rascunho enquanto a página permanece aberta. Ação de criar continua POST/redirect do Caderno. Toolbox é uma camada transitória existente e permanece em análise; editores longos não recebem geometria de gaveta por efeito colateral. A alteração só pode ser aprovada após testes e inspeção visual real.
