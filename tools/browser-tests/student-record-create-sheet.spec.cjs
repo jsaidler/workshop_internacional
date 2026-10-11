@@ -20,7 +20,8 @@ test(`new record: opens, draft stays, closes and restores focus — ${device}`,a
   await expect(dialog.getByRole('textbox',{name:'Título'})).toBeVisible();
   await expect(dialog.getByLabel('Data')).toBeVisible();
   await dialog.getByRole('textbox',{name:'Título'}).fill('Teste com rascunho');
-  await dialog.getByRole('radio',{name:'Curso'}).check();
+  await dialog.getByText('Curso',{exact:true}).click();
+  await expect(dialog.getByRole('radio',{name:'Curso'})).toBeChecked();
   await dialog.getByLabel('Curso e turma').selectOption('17');
   await page.screenshot({path:`student-visual-audit/record-create/${device}-course-filled.png`,animations:'disabled'});
   await page.keyboard.press('Escape');
