@@ -30,6 +30,8 @@ on:
       - 'tools/browser-fixture/student-process-execution-state-audit.html'
       - 'tools/browser-fixture/admin-process-domain-audit.html'
       - 'tools/browser-fixture/student-caderno-product-audit.html'
+      - 'tools/browser-fixture/student-caderno-product-audit.php'
+      - 'tools/browser-fixture/student-caderno-product-audit.template.html'
       - 'tools/browser-fixture/student-lab-stock-product-audit.html'
       - 'tools/browser-fixture/student-secondary-screens-audit.html'
       - 'tools/browser-fixture/student-material-notes.html'

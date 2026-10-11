@@ -7,6 +7,34 @@ const ensureScript=(href,key)=>{if(document.querySelector(`script[${key}]`))retu
 ensureStyle('/assets/student-rendered-fixes.css','data-student-rendered-fixes');
 ensureStyle('/assets/student-mechanics.css','data-student-mechanics-style');
 ensureStyle('/assets/student-process-ux.css','data-student-process-ux-style');
+
+// A sheet is an ephemeral choice layer, not a route or a second workflow.
+// The same controller serves all student actions that opt in via data attributes.
+const studentSheetOpeners=new WeakMap();
+document.addEventListener('click',event=>{
+  const opener=event.target.closest('[data-student-sheet-open]');
+  if(opener){
+    event.preventDefault();
+    const sheet=document.getElementById(opener.dataset.studentSheetOpen||'');
+    if(!sheet||!sheet.matches('dialog[data-student-action-sheet]')||sheet.open)return;
+    studentSheetOpeners.set(sheet,opener);
+    const feedback=sheet.querySelector('[data-student-sheet-feedback]');
+    if(feedback){feedback.hidden=true;feedback.textContent='';}
+    sheet.addEventListener('close',()=>{
+      const source=studentSheetOpeners.get(sheet);
+      if(source?.isConnected)source.focus({preventScroll:true});
+    },{once:true});
+    if(typeof sheet.showModal==='function')sheet.showModal();
+    else sheet.setAttribute('open','');
+    return;
+  }
+  const closer=event.target.closest('[data-student-sheet-close]');
+  if(closer){event.preventDefault();const sheet=closer.closest('dialog[data-student-action-sheet]');if(sheet){if(typeof sheet.close==='function')sheet.close();else sheet.removeAttribute('open');}return;}
+  if(event.target.matches('dialog[data-student-action-sheet]')){
+    if(typeof event.target.close==='function')event.target.close();
+  }
+});
+
 const toolbox=document.querySelector('[data-student-toolbox]');
 document.querySelectorAll('[data-toolbox-open]').forEach(button=>button.addEventListener('click',event=>{if(!toolbox)return;if(button.tagName==='A')event.preventDefault();if(typeof toolbox.showModal==='function')toolbox.showModal();else toolbox.setAttribute('open','');}));
 document.querySelectorAll('[data-toolbox-close]').forEach(button=>button.addEventListener('click',()=>{if(!toolbox)return;if(typeof toolbox.close==='function')toolbox.close();else toolbox.removeAttribute('open');}));
