@@ -29,8 +29,10 @@ $dashboard=(string)file_get_contents($root.'/aluno/cursos.php');
 $visibility=(string)file_get_contents($root.'/aluno/visibilidade-teste.php');
 $workbench=(string)file_get_contents($root.'/app/student_workbench.php');
 
+$recordForm=(string)file_get_contents($root.'/app/student_record_create_dialog.php');
+if(!str_contains($notebook,'student_record_create_dialog('))fail_student_tests_context('notebook did not include shared create form');
 foreach(['context_scope','context_cohort_id','student_process_records_for_student','student_tests_shared_with_student'] as $needle){
-    if(!str_contains($notebook,$needle))fail_student_tests_context('global notebook missing context contract: '.$needle);
+    if(!str_contains($notebook.$recordForm,$needle))fail_student_tests_context('global notebook missing context contract: '.$needle);
 }
 if(!str_contains($notebook,'value="personal"')||!str_contains($notebook,'value="course"'))fail_student_tests_context('notebook no longer offers personal and course/turma contexts');
 if(!str_contains($workbench,"context_scope")||!str_contains($workbench,'context_cohort_id'))fail_student_tests_context('process domain does not persist optional record context');
