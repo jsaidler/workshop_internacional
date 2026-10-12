@@ -12,7 +12,7 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
       await expect(page.getByRole('heading',{name:'Meus encontros'})).toBeVisible();
       await expect(page.getByRole('heading',{name:'Próximas turmas'})).toBeVisible();
       const nav=page.locator('nav.student-mobile-nav');
-      await expect(nav.getByRole('link',{name:'Cursos'})).toHaveAttribute('aria-current','page');
+      await expect(nav.locator('a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
       await expect(nav.locator('a')).toHaveCount(4);
       if(state==='regular'||state==='listener'){
         await expect(page.locator('.agenda-meeting')).toHaveCount(1);
