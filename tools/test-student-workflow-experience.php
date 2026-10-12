@@ -8,7 +8,8 @@ $shell=(string)file_get_contents($root.'/app/student_shell.php');$home=(string)f
 foreach(["'home'=>['label'=>'Início','href'=>'/aluno/']","'courses'=>['label'=>'Cursos','href'=>'/aluno/cursos.php']","'notebook'=>['label'=>'Caderno','href'=>'/aluno/caderno.php']","'laboratory'=>['label'=>'Laboratório','href'=>'/aluno/ferramentas.php']"] as $destination)must_student_workflow(str_contains($shell,$destination),'primary navigation lost task-centered destination '.$destination);
 must_student_workflow(str_contains($shell,'data-student-toolbox')&&str_contains($shell,'data-toolbox-open'),'simple tools are not available as an integrated toolbox');
 must_student_workflow(!str_contains($home,'Escolha o que você veio fazer'),'home still asks the student to classify their intent');
-must_student_workflow(str_contains($home,'student_experience_dashboard_state')&&str_contains($home,'Continuar no Caderno'),'home no longer prioritizes Caderno continuity');
+$homeView=(string)file_get_contents($root.'/app/student_home_view.php');
+must_student_workflow(str_contains($home,'student_experience_dashboard_state')&&str_contains($homeView,'Continuar no Caderno')&&str_contains($homeView,'data-home-meeting'),'home no longer exposes Caderno continuation alongside the next meeting');
 must_student_workflow(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment still requires an intermediate course click');
 must_student_workflow(str_contains($notebook,'Mais ações')&&str_contains($notebook,'student-record-summary'),'notebook does not prioritize opening the record over secondary actions');
 must_student_workflow(!str_contains($notebook,'student-process-compare')&&!str_contains($notebook,'student-record-progress'),'notebook reintroduced comparison/progression chrome');
