@@ -23,7 +23,9 @@ check_long_editor(str_contains($new,'action="/aluno/preparos.php?novo=1"')&&str_
 ob_start();student_preparation_editor(null,$catalog,[],'Falha Caffenol','token',['label'=>'Caffenol','developer_key'=>'brewed-caffenol','fresh_volume'=>'650','coffee_amount'=>'45','carbonate_amount'=>'29','ascorbic_amount'=>'10']);$fresh=(string)ob_get_clean();
 check_long_editor(str_contains($fresh,'name="fresh_volume" data-fresh-volume-input value="650"')&&str_contains($fresh,'value="45"'),'fresh Caffenol failed draft lost volume or ingredients');
 $prepRoute=(string)file_get_contents(dirname(__DIR__).'/aluno/preparos.php');
-check_long_editor(str_contains($prepRoute,"if($action==='update')student_saved_preparation_update_guided")&&str_contains($prepRoute,"$_POST['ingredients']="),'Caffenol ingredients must be normalized for update and create');
+$normalizationPosition=strpos($prepRoute,'$_POST[\'ingredients\']');
+$updatePosition=strpos($prepRoute,'student_saved_preparation_update_guided(');
+check_long_editor($normalizationPosition!==false&&$updatePosition!==false&&$normalizationPosition<$updatePosition,'Caffenol ingredients must be normalized before update');
 $cal=['id'=>9,'label'=>'Referência','film'=>'Fuji','developer'=>'Parodinal','preparation'=>'15/550','temperature'=>'26 °C','prebath'=>'Sim','white_time'=>'03:00','notes'=>''];
 ob_start();student_calibration_editor($cal,'Falha <POST>','token',['label'=>'Nova <b>','white_time'=>'04:30','notes'=>'Campo <script>']);$edit=(string)ob_get_clean();
 check_long_editor(str_contains($edit,'value="Nova &lt;b&gt;"')&&!str_contains($edit,'value="Nova <b>"'),'calibration invalid label lost');
