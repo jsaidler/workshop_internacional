@@ -4,10 +4,10 @@ const fixture=p=>host+'/tools/browser-fixture/'+p;
 const screens=[
   ['login','student-auth-visual-audit.html?screen=login'],
   ['activation-password','student-auth-visual-audit.html?screen=password'],
-  ['home','student-dashboard-truth.html?state=active'],
-  ['home-feedback','student-pedagogical-feedback-audit.html?screen=home-feedback'],
-  ['home-study','student-dashboard-truth.html?state=study'],
-  ['home-multiple','student-dashboard-truth.html?state=multiple'],
+  ['home','student-home.php?state=active'],
+  ['home-feedback','student-home.php?state=feedback'],
+  ['home-study','student-home.php?state=study'],
+  ['home-multiple','student-home.php?state=multiple'],
   ['course-list','student-course-context.html'],
   ['course-detail','student-course-context.html?cohort=cohort-a'],
   ['course-feedback','student-pedagogical-feedback-audit.html?screen=course-feedback'],
@@ -77,7 +77,7 @@ for(const [device,viewport] of Object.entries(viewports)){
         const selector=name==='new-record'?'.student-create-dialog':'.student-toolbox';
         await page.evaluate(sel=>{const d=document.querySelector(sel);if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}},selector);
       }
-      if(name==='home-feedback'){await expect(page.getByText('Retorno do professor',{exact:true})).toBeVisible();await expect(page.getByText('Ler retorno e revisar →',{exact:true})).toBeVisible();}
+      if(name==='home-feedback'){await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();await expect(page.getByRole('link',{name:/Ler retorno e revisar/})).toBeVisible();}
       if(name==='course-feedback'){await expect(page.getByText('Há algo para retomar',{exact:true})).toBeVisible();await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();}
       if(name==='questions-feedback'){await expect(page.getByText('Conversas de avaliação',{exact:true})).toBeVisible();await expect(page.getByText('Dúvidas da turma',{exact:true})).toBeVisible();}
       if(name==='result-waiting')await expect(page.getByText('Enviado para avaliação',{exact:true})).toBeVisible();

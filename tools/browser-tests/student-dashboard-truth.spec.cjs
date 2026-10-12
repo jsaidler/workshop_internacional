@@ -1,43 +1,24 @@
 const {test,expect}=require('@playwright/test');
-
-const url='http://127.0.0.1:8099/tools/browser-fixture/student-dashboard-truth.html';
-
-test('dashboard prioritizes unfinished Caderno work instead of metrics',async({page})=>{
-  await page.goto(url+'?state=active');
-  await expect(page.locator('[data-fixture-state="active"]')).toBeVisible();
-  await expect(page.locator('[data-fixture-state="study"]')).not.toBeVisible();
-  await expect(page.locator('[data-fixture-state="multiple"]')).not.toBeVisible();
-  await expect(page.locator('[data-fixture-state="active"] h2')).toHaveText('Retrato 04 — janela lateral');
-  await expect(page.locator('[data-fixture-state="active"] .button')).toHaveText(/Continuar registro/);
-  await expect(page.locator('.student-dashboard-links')).toBeVisible();
-  await expect(page.locator('.student-home-primary')).toHaveCount(0);
+const base='http://127.0.0.1:8099/tools/browser-fixture/student-home.php';
+test('Home keeps next meeting, assessment and work visible simultaneously',async({page})=>{
+  await page.goto(base+'?state=active');
+  await expect(page.locator('[data-home-meeting]')).toBeVisible();
+  await expect(page.locator('[data-home-feedback]')).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Continuar'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Caderno recente'})).toBeVisible();
 });
-
-test('dashboard opens material directly for one enrollment when no record needs action',async({page})=>{
-  await page.goto(url+'?state=study');
-  await expect(page.locator('[data-fixture-state="study"]')).toBeVisible();
-  await expect(page.locator('[data-fixture-state="active"]')).not.toBeVisible();
-  await expect(page.locator('[data-fixture-state="multiple"]')).not.toBeVisible();
-  await expect(page.locator('[data-fixture-state="study"] h2')).toHaveText('Exposição pensando no positivo');
-  await expect(page.locator('[data-fixture-state="study"] .button')).toHaveText(/Abrir material/);
+test('Home opens material for a single enrollment without extra choice',async({page})=>{
+  await page.goto(base+'?state=study');
+  await expect(page.locator('[data-home-study-feature] a')).toHaveAttribute('href',/cohort=cohort-a/);
 });
-
-test('multiple enrollments create one reversible course decision',async({page})=>{
-  await page.goto(url+'?state=multiple');
-  await expect(page.locator('[data-fixture-state="multiple"]')).toBeVisible();
-  await expect(page.locator('[data-fixture-state="active"]')).not.toBeVisible();
-  await expect(page.locator('[data-fixture-state="study"]')).not.toBeVisible();
-  await expect(page.locator('[data-fixture-state="multiple"] h2')).toHaveText('Escolha o curso');
-  await expect(page.locator('[data-course-meta]')).toHaveText('2 matrículas ativas.');
+test('multiple enrollments expose scoped links, not a selector gate',async({page})=>{
+  await page.goto(base+'?state=multiple');
+  await expect(page.locator('.student-home-course')).toHaveCount(2);
+  await expect(page.locator('.student-home-course-actions a[href*="cohort-b"]')).toHaveCount(2);
 });
-
-test('dashboard remains usable on a phone viewport',async({page})=>{
+test('mobile first viewport contains primary action and bottom navigation',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto(url+'?state=study');
-  await expect(page.locator('[data-fixture-state="study"] .button')).toBeVisible();
-  await expect(page.locator('[data-fixture-state="active"]')).not.toBeVisible();
-  await expect(page.locator('[data-fixture-state="multiple"]')).not.toBeVisible();
+  await page.goto(base+'?state=active');
+  await expect(page.locator('.student-home-quick [data-record-create-open]')).toBeInViewport();
   await expect(page.locator('.student-mobile-nav')).toBeVisible();
-  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
-  expect(overflow).toBeLessThanOrEqual(1);
 });
