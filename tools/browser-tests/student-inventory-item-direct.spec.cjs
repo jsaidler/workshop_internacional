@@ -65,6 +65,15 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
      const dialog=page.locator('[data-student-editor-dialog]');
      await expect(dialog).toBeVisible();
      await expect(dialog.getByRole('heading',{name:'Editar item'})).toBeVisible();
+     const layout=await dialog.evaluate(el=>{
+       const box=el.getBoundingClientRect(),inner=el.querySelector('.student-inventory-editor-body').getBoundingClientRect(),small=el.querySelector('.student-inventory-editor-balance>small').getBoundingClientRect(),input=el.querySelector('input[name="name"]').getBoundingClientRect();
+       return{left:box.left,right:box.right,innerLeft:inner.left,innerRight:inner.right,smallRight:small.right,inputLeft:input.left,overflow:el.scrollWidth-el.clientWidth};
+     });
+     expect(layout.innerLeft-layout.left,'dialog body must have inset').toBeGreaterThanOrEqual(16);
+     expect(layout.right-layout.innerRight,'dialog body needs right inset').toBeGreaterThanOrEqual(16);
+     expect(layout.smallRight,'stock explanation must wrap inside modal').toBeLessThanOrEqual(layout.innerRight+1);
+     expect(layout.inputLeft,'form fields must not touch left frame').toBeGreaterThanOrEqual(layout.innerLeft);
+     expect(layout.overflow,'dialog must have no horizontal overflow').toBeLessThanOrEqual(1);
      await page.screenshot({path:'student-visual-audit/inventory-item/desktop-editor-modal.png',animations:'disabled'});
      await dialog.locator('input[name="lot_code"]').fill('Lote atualizado');
      await dialog.getByRole('button',{name:'Salvar alterações'}).click();

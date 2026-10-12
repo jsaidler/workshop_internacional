@@ -11,6 +11,7 @@ check_item(str_contains($html,'data-inventory-item-error-focus')&&str_contains($
 check_item(str_contains($html,'Teste &lt;script&gt;')&&!str_contains($html,'Teste <script>'),'unsafe draft rendering');
 check_item(str_contains($html,'Texto &lt;b&gt;'),'notes not escaped');
 check_item(str_contains($html,'55 ml')&&str_contains($html,'tipo e unidade não mudam'),'stock quantity and type must remain immutable');
+check_item(str_contains($html,'student-inventory-editor-body')&&str_contains($html,'student-inventory-editor-balance')&&!str_contains($html,'student-step-fixed'),'editor must use an inventory-owned quantity summary that wraps in modal and direct page');
 $route=(string)file_get_contents(__DIR__.'/../aluno/inventario-item.php');
 $local=(string)file_get_contents(__DIR__.'/../assets/student-local-actions.js');
 check_item(str_contains($route,'student_inventory_item_editor($item')&&str_contains($route,'is_scalar($_POST[$key])'),'route must reuse renderer and preserve failed POST draft');
