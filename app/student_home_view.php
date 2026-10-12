@@ -10,6 +10,8 @@ $courses=$home['courses']??[];
 $recent=$home['recent']??[];
 $firstMaterial=null;
 foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$item['material'];break;}}
+$hero=$meeting?'meeting':($feedback?'feedback':($focus?'focus':($firstMaterial?'study':'empty')));
+$showContinue=($firstMaterial && $hero!=='study') || ($focus && $hero!=='focus');
 ?>
 <div class="student-home" data-student-home>
   <header class="student-home-heading">
@@ -68,12 +70,12 @@ foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$
       <button type="button" data-toolbox-open><span class="student-home-quick-symbol" aria-hidden="true">⌁</span><span>Atalhos</span></button>
     </div>
   </section>
-  <?php if($firstMaterial || ($focus && !$meeting) || ($focus && $meeting)):?>
+  <?php if($showContinue):?>
   <section class="student-home-section" aria-labelledby="student-home-continue-title">
     <div class="student-home-section-head"><h2 id="student-home-continue-title">Continuar</h2></div>
     <div class="student-home-list">
-      <?php if($firstMaterial && (!$firstMaterial || !isset($home['study_hero']))):?><a class="student-home-row" href="<?=h((string)$firstMaterial['url'])?>"><span><small>Material</small><strong><?=h((string)$firstMaterial['title'])?></strong></span><span aria-hidden="true">→</span></a><?php endif;?>
-      <?php if($focus && (!$meeting && !$feedback ? false : true)):?><a class="student-home-row" href="<?=h((string)$focus['url'])?>"><span><small>Caderno</small><strong><?=h((string)$focus['title'])?></strong><em><?=h((string)$focus['status'])?></em></span><span aria-hidden="true">→</span></a><?php endif;?>
+      <?php if($firstMaterial && $hero!=='study'):?><a class="student-home-row" href="<?=h((string)$firstMaterial['url'])?>"><span><small>Material</small><strong><?=h((string)$firstMaterial['title'])?></strong></span><span aria-hidden="true">→</span></a><?php endif;?>
+      <?php if($focus && $hero!=='focus'):?><a class="student-home-row" href="<?=h((string)$focus['url'])?>"><span><small>Caderno</small><strong><?=h((string)$focus['title'])?></strong><em><?=h((string)$focus['status'])?></em></span><span aria-hidden="true">→</span></a><?php endif;?>
     </div>
   </section>
   <?php endif;?>
