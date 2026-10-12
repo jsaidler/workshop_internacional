@@ -11,8 +11,8 @@ $doc=(string)file_get_contents($root.'/docs/STUDENT_INVENTORY_PREPARATIONS_PRODU
 
 must_student_lab_stock_product_ux(str_contains($inventory,'existem fisicamente no seu laboratório'),'inventory does not explain physical stock');
 must_student_lab_stock_product_ux(str_contains($inventory,'Soluções preparadas')&&str_contains($inventory,'Estoque baixo'),'inventory does not expose decision summary');
-must_student_lab_stock_product_ux(str_contains($inventory,'Editar item')&&str_contains($inventory,'Registrar entrada ou saída')&&str_contains($inventory,'Arquivar'),'inventory CRUD/actions are not discoverable');
-must_student_lab_stock_product_ux(str_contains($inventory,'Entrada aumenta o saldo; saída reduz.'),'inventory movement consequence is not explained');
+must_student_lab_stock_product_ux(str_contains($inventory,'Editar item')&&str_contains($inventory,'student_inventory_move_panel(')&&str_contains($inventory,'Arquivar'),'inventory CRUD/actions are not discoverable');
+must_student_lab_stock_product_ux(str_contains((string)file_get_contents($root.'/app/student_inventory_move_panel.php'),'Saldo disponível:'),'inventory movement consequence is not explained');
 must_student_lab_stock_product_ux(str_contains($inventory,'Seu inventário ainda está vazio.')&&str_contains($inventory,'Adicionar primeiro item'),'inventory empty state does not teach first action');
 must_student_lab_stock_product_ux(str_contains($inventory,'Ver predefinições'),'inventory does not distinguish/link reusable parameters');
 

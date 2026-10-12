@@ -24,7 +24,7 @@ function student_inventory_move_panel(array $item,string $csrf,array $draft=[],s
   </div>
   <div class="student-inventory-move-context"><strong><?=h((string)$item['name'])?></strong><span>Saldo disponível: <?=h(student_workbench_number((float)$item['quantity']).' '.(string)$item['unit'])?></span></div>
   <?php if($failed):?><p class="ui-alert ui-alert-error student-inventory-move-error" role="alert" tabindex="-1" data-inventory-move-error-focus><?=h($error)?></p><?php endif;?>
-  <form method="post" class="student-form-grid" data-student-local-form data-local-refresh="inventory-stock inventory-history" data-local-success="inventory-move">
+  <form method="post" class="student-form-grid">
     <input type="hidden" name="_csrf" value="<?=h($csrf)?>">
     <input type="hidden" name="action" value="move">
     <input type="hidden" name="item_id" value="<?=$id?>">

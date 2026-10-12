@@ -6,7 +6,7 @@ for(const [device,viewport] of Object.entries(viewports)){
   for(const screen of screens){
     test(`lab stock product visual audit ${device} ${screen}`,async({page})=>{
       await page.setViewportSize(viewport);
-      await page.goto(`${base}?screen=${screen}`,{waitUntil:'networkidle'});
+      await page.goto(screen==='movement'?'http://127.0.0.1:8099/tools/browser-fixture/student-inventory-movement.php':`${base}?screen=${screen}`,{waitUntil:'networkidle'});
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${screen} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
@@ -18,7 +18,8 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(screen==='empty')await expect(page.getByText('Seu inventário ainda está vazio.')).toBeVisible();
       if(screen==='movement'){
-        await expect(page.getByText('Entrada aumenta o saldo; saída reduz.',{exact:false})).toBeVisible();
+        await page.getByRole('button',{name:'Movimentar estoque'}).click();
+        await expect(page.getByText('Saldo disponível: 180 ml')).toBeVisible();
         await expect(page.getByRole('button',{name:'Registrar movimentação'})).toBeVisible();
       }
       if(screen==='preparations'){
