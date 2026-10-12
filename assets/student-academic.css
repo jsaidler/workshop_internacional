@@ -91,7 +91,7 @@ a.student-academic-material-row:hover .student-academic-material-title,a.student
 .student-home-attention small,.student-home-row small{font:500 10px/1.45 var(--mono);color:var(--focus);letter-spacing:.02em;text-transform:uppercase}
 .student-home-attention strong,.student-home-row strong{font-size:15px;line-height:1.4;font-weight:600;overflow-wrap:anywhere}
 .student-home-attention em,.student-home-row em{font-size:12px;line-height:1.4;color:var(--muted);font-style:normal}
-.student-home-section{margin-top:25px}
+.student-home-block{margin-top:25px}
 .student-home-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
 .student-home-section-head h2{margin:0;font:600 17px/1.3 var(--body);text-transform:none}
 .student-home-section-head a{display:inline-flex;align-items:center;min-height:40px;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;text-decoration:none}
@@ -127,7 +127,7 @@ a.student-academic-material-row:hover .student-academic-material-title,a.student
   .student-home-feature-actions{gap:10px;margin-top:14px}
   .student-home-feature-actions .button{flex:1 1 auto;justify-content:center;min-width:0}
   .student-home-feature-more{min-width:88px;justify-content:center}
-  .student-home-section{margin-top:21px}
+  .student-home-block{margin-top:21px}
   .student-home-quick{gap:6px}
   .student-home-quick>a,.student-home-quick>button{flex-direction:column;gap:5px;min-height:75px;padding:9px 4px;font-size:11px}
   .student-home-quick-symbol{font-size:23px}

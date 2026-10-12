@@ -63,7 +63,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
       <span><small>Retorno do professor</small><strong><?=h((string)$feedback['title'])?></strong><em><?=h((string)$feedback['status'])?></em></span><span aria-hidden="true">→</span>
     </a>
   <?php endif;?>
-  <?php if($showQuick):?><section class="student-home-section" aria-labelledby="student-home-quick-title">
+  <?php if($showQuick):?><section class="student-home-block" aria-labelledby="student-home-quick-title">
     <div class="student-home-section-head"><h2 id="student-home-quick-title">Acesso rápido</h2></div>
     <div class="student-home-quick">
       <?php if($hero!=='empty'):?><button type="button" data-record-create-open><span class="student-home-quick-symbol" aria-hidden="true">+</span><span>Novo registro</span></button><?php endif;?>
@@ -72,7 +72,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
     </div>
   </section><?php endif;?>
   <?php if($showContinue):?>
-  <section class="student-home-section" aria-labelledby="student-home-continue-title">
+  <section class="student-home-block" aria-labelledby="student-home-continue-title">
     <div class="student-home-section-head"><h2 id="student-home-continue-title">Continuar</h2></div>
     <div class="student-home-list">
       <?php if($firstMaterial && $hero!=='study'):?><a class="student-home-row" href="<?=h((string)$firstMaterial['url'])?>"><span><small>Material</small><strong><?=h((string)$firstMaterial['title'])?></strong></span><span aria-hidden="true">→</span></a><?php endif;?>
@@ -80,7 +80,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
     </div>
   </section>
   <?php endif;?>
-  <section class="student-home-section" aria-labelledby="student-home-courses-title">
+  <section class="student-home-block" aria-labelledby="student-home-courses-title">
     <div class="student-home-section-head"><h2 id="student-home-courses-title">Meus cursos</h2><a href="/aluno/cursos.php">Ver todos →</a></div>
     <?php if(!$courses):?><p class="student-home-muted">Nenhuma matrícula ativa. Seu Caderno e o Laboratório continuam disponíveis.</p>
     <?php else:?><div class="student-home-courses"><?php foreach(array_slice($courses,0,3) as $item):?>
@@ -94,7 +94,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
       </article>
     <?php endforeach;?></div><?php endif;?>
   </section>
-  <section class="student-home-section" aria-labelledby="student-home-records-title">
+  <section class="student-home-block" aria-labelledby="student-home-records-title">
     <div class="student-home-section-head"><h2 id="student-home-records-title">Caderno recente</h2><a href="/aluno/caderno.php">Ver caderno →</a></div>
     <?php if(!$recent):?><p class="student-home-muted">Nenhum registro ainda.</p>
     <?php else:?><div class="student-home-list"><?php foreach($recent as $record):?><a class="student-home-row" href="<?=h((string)$record['url'])?>"><span><small><?=h((string)$record['scope'])?> · <?=h((string)$record['date'])?></small><strong><?=h((string)$record['title'])?></strong></span><span aria-hidden="true">→</span></a><?php endforeach;?></div><?php endif;?>
