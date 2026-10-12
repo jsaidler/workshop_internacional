@@ -16,9 +16,9 @@ if($mode==='error'){
 ?><!doctype html><html lang="pt-BR" data-theme="dark"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{--bg:#101010;--surface:#171717;--surface-2:#222;--text:#f3f1ec;--muted:#aaa;--line:#383633;--line-strong:#666;--focus:#73d2ac;--body:Arial,sans-serif;--title:Georgia,serif;--mono:monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px;--ux-space-8:64px}</style>
-<link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css" data-student-rendered-fixes><link rel="stylesheet" href="/assets/student-lab-stock.css"><link rel="stylesheet" href="/assets/student-quality-pass.css">
+<link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css" data-student-rendered-fixes><link rel="stylesheet" href="/assets/student-lab-stock.css"><link rel="stylesheet" href="/assets/student-quality-pass.css">
 <title>Auditoria editor de item</title></head><body class="student-page" data-testid="item-route-fixture">
-<div class="student-shell"><header class="student-topbar"><a class="student-wordmark" href="/aluno/">JSaidler Fotografia</a></header>
+<div class="student-shell"><header class="student-topbar"><a class="brand student-wordmark" href="/aluno/">JSaidler Fotografia</a></header>
 <main class="student-main" data-student-scroll-root>
 <?php if(in_array($mode,['list','updated'],true)):?>
  <div class="student-appbar"><a class="student-back" href="/aluno/ferramentas.php">← Laboratório</a></div>
