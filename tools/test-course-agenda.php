@@ -43,7 +43,7 @@ must_agenda(course_agenda_capacity($db,2)['occupied']===10,'shared capacity is t
 $blocked=false;try{$db->exec("INSERT INTO course_enrollments(student_id,cohort_id,status) VALUES(40,2,'active')");}catch(PDOException $e){$blocked=str_contains($e->getMessage(),'cohort_capacity_full');}
 must_agenda($blocked,'direct enrollment blocked even outside PHP business flow');
 must_agenda(course_agenda_request($db,10,2)['status']==='confirmed','double request idempotent');
-must_agenda((int)$db->query('SELECT COUNT(*) FROM course_listener_reservations WHERE cohort_id=2')===8,'no duplicate listener record');
+must_agenda((int)$db->query('SELECT COUNT(*) FROM course_listener_reservations WHERE cohort_id=2')->fetchColumn()===8,'no duplicate listener record');
 course_agenda_cancel($db,10,2);
 $q=$db->query("SELECT status FROM course_listener_reservations WHERE student_id=17 AND cohort_id=2");
 must_agenda($q->fetchColumn()==='confirmed','cancellation promotes first waiting listener');
@@ -51,7 +51,7 @@ must_agenda(course_agenda_capacity($db,2)['occupied']===10,'capacity after queue
 $settings['agenda_capacity']='5';course_agenda_save_settings($db,1,2,$settings);
 must_agenda(course_agenda_capacity($db,2)['excess']===5,'reduced capacity preserves already confirmed attendees');
 course_agenda_request($db,10,2);
-must_agenda((int)$db->query("SELECT COUNT(*) FROM course_listener_reservations WHERE cohort_id=2 AND status='confirmed'")===7,'reduced capacity does not force or admit changes');
+must_agenda((int)$db->query("SELECT COUNT(*) FROM course_listener_reservations WHERE cohort_id=2 AND status='confirmed'")->fetchColumn()===7,'reduced capacity does not force or admit changes');
 $settings['agenda_capacity']='';course_agenda_save_settings($db,1,2,$settings);
 course_sync_release_rows_for_course($db,2,1);
 $db->exec("UPDATE cohort_lesson_releases SET released_at='2028-01-01T12:00:00Z' WHERE cohort_id=2 AND lesson_id=101");
