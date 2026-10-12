@@ -22,6 +22,7 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
         await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveCount(0);
         await expect(page.locator('body')).not.toContainText('https://example.org/private-meeting');
       }
+      if(state!=='empty')await expect(page.locator('.agenda-offer .student-academic-release-line')).toHaveCount(3);
       if(state==='waiting')await expect(page.getByText('Na lista de espera')).toBeVisible();
       if(state==='full')await expect(page.getByText('Lotada (lista de espera)')).toBeVisible();
       if(state==='empty')await expect(page.getByText('Ainda não há encontros com data definida')).toBeVisible();
