@@ -23,6 +23,8 @@ SQL);
 for($id=1;$id<=50;$id++)$db->prepare("INSERT INTO student_users(id,status,name) VALUES(?,'active',?)")->execute([$id,'Aluno '.$id]);
 $migrate=require __DIR__.'/../migrations/098_course_cohort_agenda.php';$migrate($db);$migrate($db); // idempotente
 require __DIR__.'/../app/course_agenda.php';
+course_sync_release_rows_for_course($db,2,1);
+$db->exec("UPDATE cohort_lesson_releases SET meeting_starts_at='2030-07-01T22:30:00Z',meeting_timezone='America/Sao_Paulo' WHERE cohort_id=2 AND lesson_id=101");
 for($id=1;$id<=3;$id++)$db->prepare("INSERT INTO course_enrollments(student_id,cohort_id,status) VALUES(?,2,'active')")->execute([$id]);
 for($id=10;$id<=17;$id++)$db->prepare("INSERT INTO course_enrollments(student_id,cohort_id,status) VALUES(?,1,'active')")->execute([$id]);
 $db->exec("INSERT INTO course_enrollments(student_id,cohort_id,status) VALUES(30,3,'active')");
