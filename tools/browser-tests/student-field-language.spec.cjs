@@ -14,6 +14,7 @@ const studentUiFiles=[
   'aluno/inventario.php',
   'app/student_inventory_create_panel.php',
   'aluno/inventario-item.php',
+  'app/student_inventory_item_editor.php',
   'aluno/perfil.php',
   'aluno/preparos.php',
   'aluno/processamentos.php',
@@ -115,11 +116,12 @@ test('student fields use one canonical vocabulary at the source',()=>{
     'aluno/duvidas.php':['>Resposta<textarea name="body"'],
     'aluno/calibracao.php':['>Nome da referência<input name="label"','>Preparo ou diluição<input name="preparation"'],
     'app/student_inventory_create_panel.php':['<span>Solução preparada</span>','>Lote ou identificação<input name="lot_code"','>Data de entrada<input type="date" name="acquired_or_prepared_at"'],
-    'aluno/inventario-item.php':['>Lote ou identificação<input name="lot_code"'],
+    'app/student_inventory_item_editor.php':['>Lote ou identificação<input name="lot_code"'],
     'aluno/perfil.php':['>Telefone para contato<input name="phone"','>Cidade e UF<input name="city_state"'],
     'aluno/preparos.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
   };
   expect(read('aluno/inventario.php')).toContain('student_inventory_create_panel($createDraft');
+  expect(read('aluno/inventario-item.php')).toContain('student_inventory_item_editor($item');
   for(const [file,needles] of Object.entries(required)){
     const text=compactMarkup(read(file));
     for(const needle of needles)expect(text,`${file} missing canonical label: ${needle}`).toContain(needle);
