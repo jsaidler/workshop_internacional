@@ -120,6 +120,7 @@ function student_import_upsert_student(PDO $db,int $cohortId,array $payload): ar
         $db->prepare("UPDATE student_users SET status='active',updated_at=? WHERE id=?")->execute([$now,$studentId]);
     }
     $db->prepare("INSERT INTO course_enrollments(enrollment_uuid,student_id,cohort_id,source_submission_id,status,confirmed_at,created_at,updated_at) VALUES(?,?,?,NULL,'active',?,?,?) ON CONFLICT(student_id,cohort_id) DO UPDATE SET status='active',updated_at=excluded.updated_at")->execute([student_uuid(),$studentId,$cohortId,$now,$now,$now]);
+    if(function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);
     return ['student_id'=>$studentId,'created'=>$created,'name'=>$name,'email'=>$email];
 }
 function student_import_historical_students(PDO $db,int $activityId,int $cohortId,array $file): array {
