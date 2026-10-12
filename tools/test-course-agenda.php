@@ -82,7 +82,7 @@ course_agenda_save_lesson_configuration($db,1,2,101,$updated);
 $updatedMeeting=course_agenda_student_meetings($db,11);
 must_agenda(count($updatedMeeting)===1 && $updatedMeeting[0]['meeting_starts_at']==='2030-08-03T23:30:00Z','rescheduled meeting appears for confirmed listener');
 must_agenda($updatedMeeting[0]['meeting_url']==='https://example.org/updated-class','new meeting link appears without duplicate');
-must_agenda($db->query('SELECT COUNT(*) FROM cohort_lesson_releases WHERE cohort_id=2 AND lesson_id=101')->fetchColumn()==='1','single canonical occurrence after edits');
+must_agenda((int)$db->query('SELECT COUNT(*) FROM cohort_lesson_releases WHERE cohort_id=2 AND lesson_id=101')->fetchColumn()===1,'single canonical occurrence after edits');
 course_sync_release_rows_for_course($db,1,1);
 $otherDate=$updated;
 $otherDate['meeting_starts_at']='2030-09-09T19:30';
