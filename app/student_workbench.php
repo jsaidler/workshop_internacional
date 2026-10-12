@@ -235,9 +235,53 @@ function student_inventory_create(PDO $db,int $studentId,array $input): array {
     $quantity=student_workbench_float($input['quantity']??0)??0;if($quantity<0)throw new RuntimeException('A quantidade inicial não pode ser negativa.');$unit=student_workspace_text($input['unit']??'ml',20);if($unit==='')$unit='ml';$now=utc_now();
     $db->beginTransaction();try{$db->prepare('INSERT INTO student_inventory_items(item_uuid,student_id,item_kind,name,category,quantity,unit,minimum_quantity,lot_code,acquired_or_prepared_at,expires_at,location,storable,notes,created_at,updated_at) VALUES(?,?,?,?,?,0,?,?,?,?,?,?,1,?,?,?)')->execute([student_uuid(),$studentId,$kind,$name,student_workspace_text($input['category']??'',100),$unit,student_workbench_float($input['minimum_quantity']??null),student_workspace_text($input['lot_code']??'',100),student_workspace_date($input['acquired_or_prepared_at']??null),student_workspace_date($input['expires_at']??null),student_workspace_text($input['location']??'',160),student_workspace_text($input['notes']??'',2000),$now,$now]);$id=(int)$db->lastInsertId();if($quantity>0)student_inventory_move($db,$studentId,$id,$quantity,'in','Quantidade inicial',null,null,false);$db->commit();}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}return student_inventory_item($db,$studentId,$id)??[];
 }
-function student_inventory_move(PDO $db,int $studentId,int $itemId,float $delta,string $type,string $note='',?int $testId=null,?int $stepId=null,bool $manageTransaction=true): void {
-    if(abs($delta)<0.0000001)throw new RuntimeException('Informe uma quantidade diferente de zero.');$item=student_inventory_item($db,$studentId,$itemId)??throw new RuntimeException('Item de inventário inválido.');$next=(float)$item['quantity']+$delta;if($next<-0.000001)throw new RuntimeException('O estoque não é suficiente para esta baixa.');
-    $started=$manageTransaction&&!$db->inTransaction();if($started)$db->beginTransaction();try{$now=utc_now();$db->prepare('UPDATE student_inventory_items SET quantity=?,updated_at=? WHERE id=? AND student_id=?')->execute([max(0,$next),$now,$itemId,$studentId]);$db->prepare('INSERT INTO student_inventory_movements(movement_uuid,student_id,item_id,test_id,step_id,movement_type,quantity_delta,note,created_at) VALUES(?,?,?,?,?,?,?,?,?)')->execute([student_uuid(),$studentId,$itemId,$testId,$stepId,$type,$delta,student_workspace_text($note,500),$now]);if($started)$db->commit();}catch(Throwable $e){if($started&&$db->inTransaction())$db->rollBack();throw $e;}
+/**
+ * Stock and audit event are one atomic database change. The optional request UUID
+ * belongs only to explicitly submitted manual operations; internal process calls
+ * retain fresh identities and any transaction already owned by their caller.
+ */
+function student_inventory_move(PDO $db,int $studentId,int $itemId,float $delta,string $type,string $note='',?int $testId=null,?int $stepId=null,bool $manageTransaction=true,?string $requestUuid=null): void {
+    if(!is_finite($delta)||abs($delta)<0.0000001)throw new RuntimeException('Informe uma quantidade diferente de zero.');
+    if(!in_array($type,['in','consume','adjust'],true))throw new RuntimeException('Tipo de movimentação inválido.');
+    $note=student_workspace_text($note,500);
+    if($requestUuid!==null&&!preg_match('/^[a-zA-Z0-9-]{16,80}$/D',$requestUuid))throw new RuntimeException('Identificação de movimentação inválida.');
+    $uuid=$requestUuid??student_uuid();
+    $sameRequest=static function() use($db,$uuid,$studentId,$itemId,$delta,$type,$note):bool {
+        $lookup=$db->prepare('SELECT student_id,item_id,quantity_delta,movement_type,note FROM student_inventory_movements WHERE movement_uuid=?');
+        $lookup->execute([$uuid]);
+        $existing=$lookup->fetch(PDO::FETCH_ASSOC);
+        if(!$existing)return false;
+        if((int)$existing['student_id']!==$studentId||(int)$existing['item_id']!==$itemId
+            ||abs((float)$existing['quantity_delta']-$delta)>0.00000001
+            ||(string)$existing['movement_type']!==$type||(string)$existing['note']!==$note)
+            throw new RuntimeException('Esta solicitação já foi utilizada com outros dados. Reabra a movimentação.');
+        return true;
+    };
+    if($requestUuid!==null&&$sameRequest())return;
+    $started=$manageTransaction&&!$db->inTransaction();
+    if($started)$db->beginTransaction();
+    try{
+        $now=utc_now();
+        // Reserve the UUID first: a concurrent replay cannot change the balance twice.
+        $db->prepare('INSERT INTO student_inventory_movements(movement_uuid,student_id,item_id,test_id,step_id,movement_type,quantity_delta,note,created_at) VALUES(?,?,?,?,?,?,?,?,?)')
+           ->execute([$uuid,$studentId,$itemId,$testId,$stepId,$type,$delta,$note,$now]);
+        $update=$db->prepare('UPDATE student_inventory_items SET quantity=quantity+?,updated_at=? WHERE id=? AND student_id=? AND archived_at IS NULL AND quantity+?>=-0.0000000001');
+        $update->execute([$delta,$now,$itemId,$studentId,$delta]);
+        if($update->rowCount()!==1){
+            $item=student_inventory_item($db,$studentId,$itemId);
+            if(!$item||$item['archived_at']!==null)throw new RuntimeException('Item indisponível no estoque ativo.');
+            throw new RuntimeException('O estoque não é suficiente para esta baixa.');
+        }
+        // Normalize floating point residue without allowing negative physical stock.
+        $db->prepare('UPDATE student_inventory_items SET quantity=MAX(0,quantity) WHERE id=? AND student_id=?')->execute([$itemId,$studentId]);
+        if($started)$db->commit();
+    }catch(Throwable $e){
+        if($started&&$db->inTransaction())$db->rollBack();
+        // A replay racing with the first submission may hit the ledger UNIQUE key.
+        // Only an identical, committed movement can be acknowledged as success.
+        if($started&&$requestUuid!==null&&$e instanceof PDOException&&$sameRequest())return;
+        throw $e;
+    }
 }
 function student_inventory_movements(PDO $db,int $studentId,int $itemId=0,int $limit=100): array {$sql='SELECT m.*,i.name item_name,i.unit FROM student_inventory_movements m JOIN student_inventory_items i ON i.id=m.item_id WHERE m.student_id=?';$args=[$studentId];if($itemId>0){$sql.=' AND m.item_id=?';$args[]=$itemId;}$sql.=' ORDER BY m.id DESC LIMIT '.max(1,min(300,$limit));$q=$db->prepare($sql);$q->execute($args);return $q->fetchAll(PDO::FETCH_ASSOC);}
 function student_inventory_archive(PDO $db,int $studentId,int $itemId): void {$db->prepare('UPDATE student_inventory_items SET archived_at=?,updated_at=? WHERE id=? AND student_id=?')->execute([utc_now(),utc_now(),$itemId,$studentId]);}
