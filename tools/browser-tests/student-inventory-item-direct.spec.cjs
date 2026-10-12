@@ -1,0 +1,74 @@
+const {test,expect}=require('@playwright/test');
+const root='http://127.0.0.1:8099',fixture=root+'/tools/browser-fixture/student-inventory-item-direct.php';
+const html=async(page,mode)=>{const res=await page.request.get(fixture+'?mode='+mode);expect(res.ok()).toBeTruthy();return res.text();};
+async function mockRoutes(page){
+ const [list,updated,editor]=await Promise.all(['list','updated','editor'].map(mode=>html(page,mode)));
+ const seen=[];
+ await page.route('**/aluno/inventario.php**',route=>route.fulfill({status:200,contentType:'text/html',body:route.request().url().includes('saved=1')?updated:list}));
+ await page.route('**/aluno/inventario-item.php**',async route=>{
+   if(route.request().method()==='POST'){
+     const values=Object.fromEntries(new URLSearchParams(route.request().postData()||''));
+     const ajax=route.request().headers()['x-requested-with']==='XMLHttpRequest';
+     seen.push({ajax,values});
+     if(String(values.name).includes('Recusado')){
+       const result=await page.request.post(fixture+'?mode=error',{form:values});
+       return route.fulfill({status:200,contentType:'text/html',body:await result.text()});
+     }
+     if(ajax)return route.fulfill({status:200,contentType:'text/html',body:updated});
+     return route.fulfill({status:303,headers:{location:'/aluno/inventario.php?saved=1'},body:''});
+   }
+   return route.fulfill({status:200,contentType:'text/html',body:editor});
+ });
+ return seen;
+}
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+ test(`direct metadata editor retains failing draft, then redirects after native save — ${device}`,async({page})=>{
+   await page.setViewportSize({width,height});const posts=await mockRoutes(page);
+   await page.goto(root+'/aluno/inventario-item.php?id=7',{waitUntil:'networkidle'});
+   await expect(page.getByRole('heading',{name:'Editar item'})).toBeVisible();
+   const form=page.locator('[data-student-editor] form');
+   await form.locator('[name="name"]').fill('Recusado <lote>');
+   await form.locator('[name="lot_code"]').fill('ETAPA-123');
+   await form.locator('[name="notes"]').fill('Anotação em edição');
+   await form.getByRole('button',{name:'Salvar alterações'}).click();
+   await expect(page).toHaveURL(/aluno\/inventario-item.php/);
+   await expect(page.locator('[data-inventory-item-error-focus]')).toBeVisible();
+   await expect(page.locator('[data-inventory-item-error-focus]')).toBeFocused();
+   await expect(page.locator('[name="name"]')).toHaveValue('Recusado <lote>');
+   await expect(page.locator('[name="lot_code"]')).toHaveValue('ETAPA-123');
+   await expect(page.locator('[name="notes"]')).toHaveValue('Anotação em edição');
+   expect(posts[0].ajax).toBe(false);
+   await page.screenshot({path:`student-visual-audit/inventory-item/${device}-direct-error.png`,animations:'disabled'});
+   await page.locator('[name="name"]').fill('Corrigido');
+   await page.getByRole('button',{name:'Salvar alterações'}).click();
+   await expect(page).toHaveURL(/aluno\/inventario.php\?saved=1/);
+   await expect(page.getByText('Lote atualizado')).toBeVisible();
+   expect(posts[1].ajax).toBe(false);
+   await page.screenshot({path:`student-visual-audit/inventory-item/${device}-redirect-after-save.png`,animations:'disabled'});
+ });
+ test(`record list editor uses mobile navigation or desktop contextual modal — ${device}`,async({page})=>{
+   await page.setViewportSize({width,height});const posts=await mockRoutes(page);
+   await page.goto(root+'/aluno/inventario.php',{waitUntil:'networkidle'});
+   const link=page.locator('[data-student-editor-link]');
+   await link.click();
+   if(device==='phone'){
+     await expect(page).toHaveURL(/aluno\/inventario-item.php/);
+     await expect(page.getByRole('heading',{name:'Editar item'})).toBeVisible();
+     await expect(page.locator('.student-mobile-nav a')).toHaveCount(4);
+     await page.screenshot({path:'student-visual-audit/inventory-item/phone-dedicated-page.png',animations:'disabled'});
+     await page.getByRole('link',{name:'← Inventário'}).first().click();
+     await expect(page).toHaveURL(/aluno\/inventario.php/);
+   }else{
+     await expect(page).toHaveURL(/aluno\/inventario.php/);
+     const dialog=page.locator('[data-student-editor-dialog]');
+     await expect(dialog).toBeVisible();
+     await expect(dialog.getByRole('heading',{name:'Editar item'})).toBeVisible();
+     await page.screenshot({path:'student-visual-audit/inventory-item/desktop-editor-modal.png',animations:'disabled'});
+     await dialog.locator('input[name="lot_code"]').fill('Lote atualizado');
+     await dialog.getByRole('button',{name:'Salvar alterações'}).click();
+     await expect(dialog).toBeHidden();
+     await expect(page.getByText('Lote atualizado')).toBeVisible();
+     expect(posts[0].ajax).toBe(true);
+   }
+ });
+}
