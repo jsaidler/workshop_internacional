@@ -73,4 +73,23 @@ $input['release_mode']='schedule';$input['release_scheduled_at']='';$invalid=fal
 try{course_agenda_save_lesson_configuration($db,1,2,101,$input);}catch(RuntimeException){$invalid=true;}
 must_agenda($invalid,'invalid scheduled release rejected');
 must_agenda($db->query('SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=2 AND lesson_id=101')->fetchColumn()==='2028-01-01T12:00:00Z','rollback preserves existing release');
+// Alterações na ficha única devem refletir a mesma ocorrência, sem criar outra aula.
+$updated=$input;
+$updated['release_mode']='keep';
+$updated['meeting_starts_at']='2030-08-03T20:30';
+$updated['meeting_url']='https://example.org/updated-class';
+course_agenda_save_lesson_configuration($db,1,2,101,$updated);
+$updatedMeeting=course_agenda_student_meetings($db,11);
+must_agenda(count($updatedMeeting)===1 && $updatedMeeting[0]['meeting_starts_at']==='2030-08-03T23:30:00Z','rescheduled meeting appears for confirmed listener');
+must_agenda($updatedMeeting[0]['meeting_url']==='https://example.org/updated-class','new meeting link appears without duplicate');
+must_agenda($db->query('SELECT COUNT(*) FROM cohort_lesson_releases WHERE cohort_id=2 AND lesson_id=101')->fetchColumn()==='1','single canonical occurrence after edits');
+course_sync_release_rows_for_course($db,1,1);
+$otherDate=$updated;
+$otherDate['meeting_starts_at']='2030-09-09T19:30';
+$otherDate['meeting_url']='https://example.org/old-cohort';
+course_agenda_save_lesson_configuration($db,1,1,101,$otherDate);
+$oldCohort=$db->query('SELECT meeting_starts_at FROM cohort_lesson_releases WHERE cohort_id=1 AND lesson_id=101')->fetchColumn();
+$newCohort=$db->query('SELECT meeting_starts_at FROM cohort_lesson_releases WHERE cohort_id=2 AND lesson_id=101')->fetchColumn();
+must_agenda($oldCohort!==$newCohort && $newCohort==='2030-08-03T23:30:00Z','cohorts reuse lesson identity but maintain separate calendars');
+must_agenda($db->query('SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=1 AND lesson_id=101')->fetchColumn()===null,'new cohort configuration does not release old cohort material');
 echo "course-agenda: ok\n";
