@@ -29,5 +29,6 @@ $meetingRows=[['meeting_status'=>'completed','meeting_starts_at'=>'2030-01-05T00
 $meeting=student_home_next_meeting($meetingRows,strtotime('2030-01-04T00:00:00Z'));
 must_student_dashboard_truth(($meeting['lesson']??'')==='Aula 2'&&($meeting['url']??'')==='','Home did not reject a dangerous meeting URL while selecting the first scheduled meeting');
 must_student_dashboard_truth(student_home_next_meeting($meetingRows,strtotime('2030-01-08T00:00:00Z'))===null,'Home displayed past meetings');
+must_student_dashboard_truth(str_contains(course_agenda_when('2030-01-06T22:00:00Z','America/Sao_Paulo'),'Brasília'),'Agenda exposes raw IANA timezone to students');
 must_student_dashboard_truth(!str_contains($home,'student-home-primary'),'dashboard returned to the old latest-record card');
 echo "student-dashboard-truth: ok\n";
