@@ -81,6 +81,9 @@ function course_agenda_reconcile_cohort(PDO $db,int $cohortId): void {
 function course_agenda_request(PDO $db,int $studentId,int $cohortId): array {
     return course_agenda_with_lock($db,static function() use($db,$studentId,$cohortId): array {
         if(!course_agenda_can_listen($db,$studentId,$cohortId))throw new RuntimeException('Esta turma não está disponível para retorno como ouvinte.');
+        $future=$db->prepare("SELECT 1 FROM cohort_lesson_releases WHERE cohort_id=? AND meeting_starts_at>? AND meeting_status='scheduled' LIMIT 1");
+        $future->execute([$cohortId,gmdate('Y-m-d\\TH:i:s\\Z')]);
+        if(!$future->fetchColumn())throw new RuntimeException('Esta turma ainda não possui encontros futuros disponíveis.');
         $q=$db->prepare('SELECT * FROM course_listener_reservations WHERE student_id=? AND cohort_id=?');$q->execute([$studentId,$cohortId]);$prior=$q->fetch();
         $now=utc_now();
         if(!$prior || $prior['status']==='cancelled'){
@@ -154,7 +157,7 @@ function course_agenda_student_meetings(PDO $db,int $studentId): array {
     $q=$db->prepare($sql);$q->execute([$studentId,$studentId,$studentId,$studentId,$studentId]);return $q->fetchAll();
 }
 function course_agenda_student_offers(PDO $db,int $studentId): array {
-    $sql="SELECT c.id cohort_id,c.title cohort_title,c.agenda_enrollment_closes_at,c.agenda_listeners_open_at,cr.title course_title,(SELECT MIN(r.meeting_starts_at) FROM cohort_lesson_releases r WHERE r.cohort_id=c.id AND r.meeting_starts_at>?) next_meeting,(SELECT COUNT(*) FROM cohort_lesson_releases r WHERE r.cohort_id=c.id AND r.meeting_starts_at>?) future_meetings,lr.status reservation_status FROM course_cohorts c JOIN courses cr ON cr.id=c.course_id LEFT JOIN course_listener_reservations lr ON lr.cohort_id=c.id AND lr.student_id=? WHERE c.status='active' AND cr.status!='archived' AND EXISTS(SELECT 1 FROM course_enrollments e JOIN course_cohorts own ON own.id=e.cohort_id WHERE e.student_id=? AND e.status='active' AND own.course_id=c.course_id AND own.id!=c.id) AND NOT EXISTS(SELECT 1 FROM course_enrollments own WHERE own.student_id=? AND own.cohort_id=c.id AND own.status='active') AND EXISTS(SELECT 1 FROM cohort_lesson_releases r WHERE r.cohort_id=c.id AND r.meeting_starts_at>?) ORDER BY next_meeting,c.id";
+    $sql="SELECT c.id cohort_id,c.title cohort_title,c.agenda_enrollment_closes_at,c.agenda_listeners_open_at,cr.title course_title,(SELECT MIN(r.meeting_starts_at) FROM cohort_lesson_releases r WHERE r.cohort_id=c.id AND r.meeting_starts_at>? AND r.meeting_status='scheduled') next_meeting,(SELECT COUNT(*) FROM cohort_lesson_releases r WHERE r.cohort_id=c.id AND r.meeting_starts_at>? AND r.meeting_status='scheduled') future_meetings,lr.status reservation_status FROM course_cohorts c JOIN courses cr ON cr.id=c.course_id LEFT JOIN course_listener_reservations lr ON lr.cohort_id=c.id AND lr.student_id=? WHERE c.status='active' AND cr.status!='archived' AND EXISTS(SELECT 1 FROM course_enrollments e JOIN course_cohorts own ON own.id=e.cohort_id WHERE e.student_id=? AND e.status='active' AND own.course_id=c.course_id AND own.id!=c.id) AND NOT EXISTS(SELECT 1 FROM course_enrollments own WHERE own.student_id=? AND own.cohort_id=c.id AND own.status='active') AND EXISTS(SELECT 1 FROM cohort_lesson_releases r WHERE r.cohort_id=c.id AND r.meeting_starts_at>? AND r.meeting_status='scheduled') ORDER BY next_meeting,c.id";
     $now=gmdate('Y-m-d\TH:i:s\Z');$q=$db->prepare($sql);$q->execute([$now,$now,$studentId,$studentId,$studentId,$now]);$rows=$q->fetchAll();
     foreach($rows as &$row)$row['capacity']=course_agenda_capacity($db,(int)$row['cohort_id']);unset($row);
     return $rows;
