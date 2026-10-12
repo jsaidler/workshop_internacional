@@ -10,10 +10,6 @@ function student_uuid():string{
 function student_workspace_text(mixed $value,int $max):string{
   return mb_substr(trim((string)$value),0,$max);
 }
-function student_workbench_float(mixed $value):?float{
-  if($value===null||trim((string)$value)==='')return null;
-  return (float)str_replace(',','.',trim((string)$value));
-}
 require_once dirname(__DIR__).'/app/student_workbench.php';
 require_once dirname(__DIR__).'/app/student_process_catalogs.php';
 require_once dirname(__DIR__).'/app/student_auxiliary_ux.php';
