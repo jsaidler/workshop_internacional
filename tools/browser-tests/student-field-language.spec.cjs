@@ -8,6 +8,8 @@ const compactMarkup=text=>text.replace(/\s+(?=<)/g,'');
 const studentUiFiles=[
   'aluno/caderno.php',
   'aluno/calibracao.php',
+  'app/student_calibration_editor.php',
+  'app/student_preparation_editor.php',
   'aluno/comparar-processos.php',
   'aluno/duvidas.php',
   'aluno/ferramentas.php',
@@ -114,11 +116,11 @@ test('student fields use one canonical vocabulary at the source',()=>{
     ],
     'aluno/caderno.php':['>Visibilidade<select name="visibility"'],
     'aluno/duvidas.php':['>Resposta<textarea name="body"'],
-    'aluno/calibracao.php':['>Nome da referência<input name="label"','>Preparo ou diluição<input name="preparation"'],
+    'app/student_calibration_editor.php':['>Nome da referência<input name="label"','>Preparo ou diluição<input name="preparation"'],
     'app/student_inventory_create_panel.php':['<span>Solução preparada</span>','>Lote ou identificação<input name="lot_code"','>Data de entrada<input type="date" name="acquired_or_prepared_at"'],
     'app/student_inventory_item_editor.php':['>Lote ou identificação<input name="lot_code"'],
     'aluno/perfil.php':['>Telefone para contato<input name="phone"','>Cidade e UF<input name="city_state"'],
-    'aluno/preparos.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
+    'app/student_preparation_editor.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
   };
   expect(read('aluno/inventario.php')).toContain('student_inventory_create_panel($createDraft');
   expect(read('aluno/inventario-item.php')).toContain('student_inventory_item_editor($item');
@@ -136,7 +138,8 @@ test('student field controls never rely on an empty visible label',()=>{
       expect(match[1],`${file} has a form control with no visible label and no accessible name`).toMatch(/\baria-label=/);
     }
   }
-  expect(read('aluno/calibracao.php')).toContain('aria-label="Anotações da calibração"');
+  expect(read('aluno/calibracao.php')).toContain('student_calibration_editor($editing');
+  expect(read('app/student_calibration_editor.php')).toContain('aria-label="Anotações da calibração"');
   expect(read('app/student_inventory_create_panel.php')).toContain('aria-label="Anotações do item"');
   expect(compactMarkup(read('aluno/teste.php'))).toContain('>Anotações<textarea name="notes"');
   expect(compactMarkup(read('aluno/teste-etapa.php'))).toContain('>Anotações<textarea name="notes"');
