@@ -121,6 +121,21 @@ function course_agenda_save_meeting(PDO $db,int $courseId,int $cohortId,int $les
     course_sync_release_rows_for_course($db,$cohortId,$courseId);
     $db->prepare('UPDATE cohort_lesson_releases SET meeting_starts_at=?,meeting_timezone=?,meeting_duration_minutes=?,meeting_url=?,meeting_notes=?,meeting_status=?,updated_at=? WHERE cohort_id=? AND lesson_id=?')->execute([$starts,$timezone,$minutes,$url,$notes,$state,utc_now(),$cohortId,$lessonId]);
 }
+function course_agenda_save_lesson_configuration(PDO $db,int $courseId,int $cohortId,int $lessonId,array $input): void {
+    course_agenda_with_lock($db,static function() use($db,$courseId,$cohortId,$lessonId,$input): void {
+        course_agenda_save_meeting($db,$courseId,$cohortId,$lessonId,$input);
+        $mode=(string)($input['release_mode']??'keep');
+        if($mode==='keep')return;
+        if(!in_array($mode,['schedule','release','block'],true))throw new RuntimeException('Decisão de liberação inválida.');
+        $value=null;
+        if($mode==='release')$value=utc_now();
+        elseif($mode==='schedule'){
+            $value=course_agenda_to_utc((string)($input['release_scheduled_at']??''),(string)($input['meeting_timezone']??'America/Sao_Paulo'));
+            if(!$value)throw new RuntimeException('Informe quando o material será liberado.');
+        }
+        $db->prepare('UPDATE cohort_lesson_releases SET released_at=?,updated_at=? WHERE cohort_id=? AND lesson_id=?')->execute([$value,utc_now(),$cohortId,$lessonId]);
+    });
+}
 function course_agenda_student_meetings(PDO $db,int $studentId): array {
     $sql="SELECT c.id cohort_id,c.title cohort_title,cr.title course_title,l.id lesson_id,l.title lesson_title,r.meeting_starts_at,r.meeting_timezone,r.meeting_duration_minutes,r.meeting_url,r.meeting_notes,r.meeting_status,CASE WHEN EXISTS(SELECT 1 FROM course_enrollments e WHERE e.cohort_id=c.id AND e.student_id=? AND e.status='active') THEN 'regular' ELSE 'listener' END participation FROM course_cohorts c JOIN courses cr ON cr.id=c.course_id JOIN course_lessons l ON l.course_id=c.course_id JOIN cohort_lesson_releases r ON r.cohort_id=c.id AND r.lesson_id=l.id JOIN student_users u ON u.id=? AND u.status='active' WHERE c.status!='archived' AND r.meeting_starts_at IS NOT NULL AND (EXISTS(SELECT 1 FROM course_enrollments e WHERE e.cohort_id=c.id AND e.student_id=? AND e.status='active') OR (EXISTS(SELECT 1 FROM course_listener_reservations lr WHERE lr.cohort_id=c.id AND lr.student_id=? AND lr.status='confirmed') AND EXISTS(SELECT 1 FROM course_enrollments e JOIN course_cohorts oc ON oc.id=e.cohort_id WHERE e.student_id=? AND e.status='active' AND oc.course_id=c.course_id AND oc.id!=c.id))) ORDER BY r.meeting_starts_at,c.id,l.sort_order,l.id";
     $q=$db->prepare($sql);$q->execute([$studentId,$studentId,$studentId,$studentId,$studentId]);return $q->fetchAll();
