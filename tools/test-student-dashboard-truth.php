@@ -23,7 +23,7 @@ must_student_dashboard_truth(str_contains($courses,'$pendingLessons')&&str_conta
 must_student_dashboard_truth(!str_contains($courses,'$releasedCount')&&!str_contains($courses,'student-course-dashboard'),'course surface returned to progress-style parallel cards');
 must_student_dashboard_truth(str_contains($home,'student_experience_dashboard_state'),'dashboard still prioritizes the newest record without checking whether it needs action');
 must_student_dashboard_truth(str_contains($home,'course_agenda_student_meetings'),'Home does not consume the canonical Agenda');
-must_student_dashboard_truth(str_contains($home,'student_home_course_items'),'Home does not show the student's available course materials');
+must_student_dashboard_truth(str_contains($home,'student_home_course_items'),'Home does not show available course materials');
 must_student_dashboard_truth(str_contains((string)file_get_contents($root.'/app/student_home_view.php'),'data-record-create-open'),'Home does not offer direct record creation');
 $meetingRows=[['meeting_status'=>'completed','meeting_starts_at'=>'2030-01-05T00:00:00Z','meeting_url'=>'https://example.org/completed'],['meeting_status'=>'scheduled','meeting_starts_at'=>'2030-01-06T00:00:00Z','meeting_timezone'=>'UTC','meeting_url'=>'javascript:alert(1)','lesson_title'=>'Aula 2'],['meeting_status'=>'scheduled','meeting_starts_at'=>'2030-01-07T00:00:00Z','meeting_timezone'=>'UTC','meeting_url'=>'https://example.org/allowed','lesson_title'=>'Aula 3']];
 $meeting=student_home_next_meeting($meetingRows,strtotime('2030-01-04T00:00:00Z'));
