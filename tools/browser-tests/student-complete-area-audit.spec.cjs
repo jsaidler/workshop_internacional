@@ -45,7 +45,7 @@ const screens=[
   ['calibration-list','student-secondary-screens-audit.html?screen=calibration-list'],
   ['calibration-editor','student-secondary-screens-audit.html?screen=calibration-editor'],
   ['tools','student-visual-audit.html?screen=tools'],
-  ['toolbox','student-visual-audit.html?screen=toolbox'],
+  ['toolbox','student-toolbox-real-audit.php'],
   ['profile','student-secondary-screens-audit.html?screen=profile'],
   ['password-change','student-secondary-screens-audit.html?screen=password-change'],
 ];

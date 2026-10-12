@@ -112,6 +112,7 @@ jobs:
             php tools/test-student-area-information-architecture.php
             php tools/test-student-mobile-experience.php
             php tools/test-student-gallery-upload.php
+            php tools/test-student-toolbox-parity.php
             php tools/test-student-record-create-sheet.php
             php tools/test-admin-lifecycle-and-student-design.php
             php tools/test-student-platform-coherence.php
