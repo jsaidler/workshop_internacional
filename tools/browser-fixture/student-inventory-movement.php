@@ -34,7 +34,7 @@ if($mode==='error')$error='Erro de servidor ao salvar.';
 <?php if($mode==='success'):?><p class="ui-alert ui-alert-notice" role="status">Movimentação registrada.</p><?php endif;?>
 <section class="student-stock-summary" aria-label="Resumo do inventário"><article><span>Itens ativos</span><strong><?= $mode==='empty'?0:1 ?></strong><small>insumos e soluções disponíveis</small></article><article><span>Estoque baixo</span><strong>0</strong><small>itens no mínimo definido ou abaixo</small></article><article><span>Soluções preparadas</span><strong>0</strong><small>banhos ou soluções fisicamente disponíveis</small></article></section>
 <section class="student-section" data-student-local-key="inventory-stock">
-<div class="student-stock-section-heading"><div><p class="student-kicker">Estoque</p><h2 class="student-subtitle">O que tenho disponível</h2></div><p>O saldo muda apenas com movimentações explícitas.</p></div>
+<div class="student-stock-section-heading"><div><p class="student-kicker">Estoque</p><h2 class="student-subtitle">O que tenho disponível</h2></div></div>
 <div class="student-inventory-list">
 <?php if($mode==='empty'):?><div class="student-empty student-preparation-empty"><strong>Seu inventário ainda está vazio.</strong><p>Comece cadastrando um produto que você realmente tem no laboratório.</p><button class="button button-primary">Adicionar primeiro item</button></div><?php else:?>
 <article class="student-inventory-item" id="inventory-item-7"><div class="student-inventory-main"><span class="student-status">Insumo</span><h3><?=h($item['name'])?></h3><p>Lote P-07 · Armário químico</p></div>
