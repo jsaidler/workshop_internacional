@@ -90,3 +90,18 @@ test('inventory short sheet keeps last action scrollable with reduced mobile hei
  expect(box.y+box.height).toBeLessThanOrEqual(501);
  await page.screenshot({path:'student-visual-audit/inventory-movement/compact-reduced-height.png',animations:'disabled'});
 });
+
+test('inventory mobile prioritizes physical items over secondary presets',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto(fixture+'?mode=inventory',{waitUntil:'networkidle'});
+ const item=page.locator('.student-inventory-item');
+ const summary=page.locator('.student-stock-summary');
+ await expect(item).toBeVisible();
+ await expect(summary.locator('article')).toHaveCount(3);
+ const b=await item.boundingBox(),link=await page.locator('.student-lab-crosslink').boundingBox();
+ expect(b.y,'first stock entry should be discoverable in the first mobile screen').toBeLessThan(830);
+ expect(link.y,'secondary presets must follow physical inventory').toBeGreaterThan(b.y);
+ const height=await summary.evaluate(node=>node.getBoundingClientRect().height);
+ expect(height,'three stacked stat cards bury physical inventory').toBeLessThan(145);
+ await page.screenshot({path:'student-visual-audit/inventory-movement/phone-prioritized-stock.png',animations:'disabled'});
+});
