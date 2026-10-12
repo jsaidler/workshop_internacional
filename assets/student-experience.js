@@ -36,7 +36,7 @@ document.addEventListener('click',event=>{
 });
 
 const toolbox=document.querySelector('[data-student-toolbox]');
-document.querySelectorAll('[data-toolbox-open]').forEach(button=>button.addEventListener('click',event=>{if(!toolbox)return;if(button.tagName==='A')event.preventDefault();if(typeof toolbox.showModal==='function')toolbox.showModal();else toolbox.setAttribute('open','');}));
+document.querySelectorAll('[data-toolbox-open]').forEach(button=>button.addEventListener('click',event=>{if(!toolbox||toolbox.open)return;if(button.tagName==='A')event.preventDefault();toolbox.addEventListener('close',()=>{if(button.isConnected)button.focus({preventScroll:true});},{once:true});if(typeof toolbox.showModal==='function')toolbox.showModal();else toolbox.setAttribute('open','');}));
 document.querySelectorAll('[data-toolbox-close]').forEach(button=>button.addEventListener('click',()=>{if(!toolbox)return;if(typeof toolbox.close==='function')toolbox.close();else toolbox.removeAttribute('open');}));
 const createDialog=document.querySelector('[data-record-create-dialog]');
 let recordCreateOpener=null;

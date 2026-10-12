@@ -6,12 +6,12 @@ for(const [device,viewport] of Object.entries(viewports)){
   for(const screen of screens){
     test(`visual audit ${device} ${screen}`,async({page})=>{
       await page.setViewportSize(viewport);
-      await page.goto(`${base}?screen=${encodeURIComponent(screen)}`,{waitUntil:'networkidle'});
-      await page.addStyleTag({url:'/assets/student-rendered-fixes.css'});
-      await page.addStyleTag({url:'/assets/student-field-language.css'});
+      await page.goto(screen==='toolbox'?'http://127.0.0.1:8099/tools/browser-fixture/student-toolbox-real-audit.php':`${base}?screen=${encodeURIComponent(screen)}`,{waitUntil:'networkidle'});
+      if(screen!=='toolbox'){await page.addStyleTag({url:'/assets/student-rendered-fixes.css'});await page.addStyleTag({url:'/assets/student-field-language.css'});}
       await page.evaluate(screenName=>{
         document.documentElement.setAttribute('data-theme','dark');
-        const selector=screenName==='new-record'?'.student-create-dialog':screenName==='toolbox'?'.student-toolbox':'';
+        if(screenName==='toolbox'){document.querySelector('[data-toolbox-open]')?.click();return;}
+        const selector=screenName==='new-record'?'.student-create-dialog':'';
         if(selector){const dialog=document.querySelector(selector);if(dialog){if(dialog.open)dialog.removeAttribute('open');if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');}}
       },screen);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
