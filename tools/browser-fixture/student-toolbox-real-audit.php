@@ -27,7 +27,7 @@ require_once __DIR__.'/../../app/student_shell.php';
 <link rel="stylesheet" href="/assets/student-quality-pass.css">
 <title>Atalhos — auditoria fiel ao PHP operacional</title></head>
 <body class="student-page" data-toolbox-fixture="real-php-controlled-permissions">
-<div class="student-shell"><header class="student-topbar"><a class="student-wordmark" href="/aluno/">JSaidler Fotografia</a><span class="student-topbar-spacer"></span><button class="button button-secondary button-compact student-tools-trigger" type="button" data-toolbox-open>Atalhos</button></header>
+<div class="student-shell"><header class="student-topbar"><a class="student-wordmark" href="/aluno/">JSaidler Fotografia</a><span class="student-topbar-spacer"></span><button class="button button-secondary button-compact student-tools-trigger" type="button" data-toolbox-open>Atalhos</button><details class="student-user-menu"><summary>Conta</summary><div class="student-user-menu-panel"><a href="/aluno/perfil.php">Gerenciar conta</a></div></details></header>
 <?php student_shell_toolbox(['id'=>42]); ?>
 <main class="student-main" data-student-scroll-root><h1 class="student-title">Caderno</h1><p class="student-lead">O conteúdo mantém sua posição quando os atalhos são abertos e fechados.</p><div style="min-height:120vh"></div><p id="last-content">Último conteúdo para testar rolagem.</p></main>
 <nav class="student-mobile-nav" aria-label="Área do aluno"><a href="/aluno/">Início</a><a href="/aluno/cursos.php">Cursos</a><a href="/aluno/caderno.php" aria-current="page">Caderno</a><a href="/aluno/ferramentas.php">Laboratório</a></nav></div>

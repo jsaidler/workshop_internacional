@@ -7,9 +7,10 @@ for(const [device,width,height] of [['phone-compact',320,720],['phone',390,844],
     const dialog=page.locator('dialog[data-student-toolbox]');
     await expect(dialog).not.toBeVisible();
     await expect(trigger,'toolbox must be operable directly from the mobile header').toBeVisible();
-    const header=await page.evaluate(()=>{const brand=document.querySelector('.student-wordmark').getBoundingClientRect(),tools=document.querySelector('[data-toolbox-open]').getBoundingClientRect(),account=document.querySelector('.student-mobile-nav').getBoundingClientRect();return{brandRight:brand.right,toolsLeft:tools.left,toolsRight:tools.right,viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,navWidth:account.width};});
+    const header=await page.evaluate(()=>{const brand=document.querySelector('.student-wordmark').getBoundingClientRect(),tools=document.querySelector('[data-toolbox-open]').getBoundingClientRect(),account=document.querySelector('.student-user-menu>summary').getBoundingClientRect();return{brandRight:brand.right,toolsLeft:tools.left,toolsRight:tools.right,accountLeft:account.left,accountRight:account.right,viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth};});
     expect(header.toolsLeft,'Atalhos must not cover the brand').toBeGreaterThanOrEqual(header.brandRight-1);
-    expect(header.toolsRight,'Atalhos must fit in the viewport').toBeLessThanOrEqual(header.viewport+1);
+    expect(header.toolsRight,'Atalhos must not overlap Conta').toBeLessThanOrEqual(header.accountLeft+1);
+    expect(header.accountRight,'Conta must fit in viewport').toBeLessThanOrEqual(header.viewport+1);
     expect(header.scrollWidth,'Atalhos must not create horizontal overflow').toBeLessThanOrEqual(header.viewport+1);
     await page.screenshot({path:`student-visual-audit/toolbox-real/${device}-closed.png`,animations:'disabled'});
     await trigger.click();
