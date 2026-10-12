@@ -28,6 +28,7 @@ $home=[
  'courses'=>match($state){'empty'=>[],'multiple'=>[$course,$course2],'long'=>[$course,$course2,$course3],'restricted'=>[array_replace($course,['material'=>null,'available'=>0])],default=>[$course]},
  'recent'=>in_array($state,['empty','study','feedback','restricted'],true)?[]:$recent,
  'can_timer'=>$state!=='restricted',
+ 'can_reciprocity'=>$state!=='restricted',
 ];
 ?><!doctype html>
 <html lang="pt-BR" data-theme="dark"><head>

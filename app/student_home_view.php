@@ -12,6 +12,7 @@ $firstMaterial=null;
 foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$item['material'];break;}}
 $hero=$meeting?'meeting':($feedback?'feedback':($focus?'focus':($firstMaterial?'study':'empty')));
 $showContinue=($firstMaterial && $hero!=='study') || ($focus && $hero!=='focus');
+$showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_reciprocity']);
 ?>
 <div class="student-home" data-student-home>
   <header class="student-home-heading">
@@ -62,14 +63,14 @@ $showContinue=($firstMaterial && $hero!=='study') || ($focus && $hero!=='focus')
       <span><small>Retorno do professor</small><strong><?=h((string)$feedback['title'])?></strong><em><?=h((string)$feedback['status'])?></em></span><span aria-hidden="true">→</span>
     </a>
   <?php endif;?>
-  <section class="student-home-section" aria-labelledby="student-home-quick-title">
+  <?php if($showQuick):?><section class="student-home-section" aria-labelledby="student-home-quick-title">
     <div class="student-home-section-head"><h2 id="student-home-quick-title">Acesso rápido</h2></div>
     <div class="student-home-quick">
-      <button type="button" data-record-create-open><span class="student-home-quick-symbol" aria-hidden="true">+</span><span>Novo registro</span></button>
+      <?php if($hero!=='empty'):?><button type="button" data-record-create-open><span class="student-home-quick-symbol" aria-hidden="true">+</span><span>Novo registro</span></button><?php endif;?>
       <?php if(!empty($home['can_timer'])):?><a href="/aluno/temporizador.php"><span class="student-home-quick-symbol" aria-hidden="true">◷</span><span>Temporizador</span></a><?php endif;?>
-      <button type="button" data-toolbox-open><span class="student-home-quick-symbol" aria-hidden="true">⌁</span><span>Atalhos</span></button>
+      <?php if(!empty($home['can_reciprocity'])):?><a href="/aluno/reciprocidade.php"><span class="student-home-quick-symbol" aria-hidden="true">ƒ</span><span>Reciprocidade</span></a><?php endif;?>
     </div>
-  </section>
+  </section><?php endif;?>
   <?php if($showContinue):?>
   <section class="student-home-section" aria-labelledby="student-home-continue-title">
     <div class="student-home-section-head"><h2 id="student-home-continue-title">Continuar</h2></div>

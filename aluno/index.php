@@ -40,8 +40,11 @@ foreach($records as $candidate){
     ];
     break;
 }
-$canTimer=false;
-foreach(student_tools_for_student($db,$studentId) as $tool)if((string)$tool['tool_key']==='lab_timer')$canTimer=true;
+$canTimer=false;$canReciprocity=false;
+foreach(student_tools_for_student($db,$studentId) as $tool){
+    if((string)$tool['tool_key']==='lab_timer')$canTimer=true;
+    if((string)$tool['tool_key']==='reciprocity')$canReciprocity=true;
+}
 $home=[
     'meeting'=>student_home_next_meeting(course_agenda_student_meetings($db,$studentId)),
     'feedback'=>$feedback,
@@ -49,6 +52,7 @@ $home=[
     'courses'=>student_home_course_items($db,$enrollments),
     'recent'=>student_home_record_items($records),
     'can_timer'=>$canTimer,
+    'can_reciprocity'=>$canReciprocity,
 ];
 student_shell_start('Início',null,$student);
 require __DIR__.'/../app/student_home_view.php';
