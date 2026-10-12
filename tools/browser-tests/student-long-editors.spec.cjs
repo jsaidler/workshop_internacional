@@ -81,6 +81,21 @@ for(const f of families){
     await expect(modal).toBeVisible();
     await expect(modal.getByRole('heading',{name:f.title})).toBeVisible();
     await expect(modal.locator('[data-student-editor-close]').first()).toBeVisible();
+    const layout=await modal.evaluate(node=>{
+      const a=node.getBoundingClientRect(),inner=node.querySelector('form label.form-field').getBoundingClientRect();
+      return{left:inner.left-a.left,right:a.right-inner.right,overflow:node.scrollWidth-node.clientWidth};
+    });
+    expect(layout.left,'modal form requires left inset').toBeGreaterThanOrEqual(16);
+    expect(layout.right,'modal form requires right inset').toBeGreaterThanOrEqual(16);
+    expect(layout.overflow,'modal has horizontal overflow').toBeLessThanOrEqual(1);
+    if(f.kind==='preparation'){
+      const custom=modal.locator('[data-custom-developer]');
+      await expect(custom).toBeHidden();
+      await modal.locator('[name="developer_key"]').selectOption('other');
+      await expect(custom).toBeVisible();
+      await modal.locator('[name="developer_key"]').selectOption('parodinal');
+      await expect(custom).toBeHidden();
+    }
     await page.screenshot({path:`student-visual-audit/long-editors/${f.kind}-desktop-modal.png`,animations:'disabled'});
     await modal.locator('[name="label"]').fill('Recusado teste');
     if(f.kind==='calibration')await modal.locator('[name="white_time"]').fill('04:30');

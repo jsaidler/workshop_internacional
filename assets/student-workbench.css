@@ -157,3 +157,6 @@
   .student-simple-row{align-items:flex-start;padding:var(--ux-space-4) 0}
   .student-question-detail{margin-inline:0;padding:var(--ux-space-5) 0;border-inline:0}
 }
+
+/* UI form display rules must never negate the semantic hidden state. */
+.student-form-grid [data-custom-developer][hidden]{display:none}

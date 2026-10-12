@@ -134,3 +134,9 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
  .student-main>.student-long-editor .student-create-dialog-head h2{font-size:28px}
  .student-main>.student-long-editor .student-tool-workspace{padding:var(--ux-space-4) 0}
 }
+
+/* The same operational renderer is nested inside desktop dialog rather than
+   being a direct child <form>. The dialog owns its inner breathing room. */
+.student-create-dialog>.student-long-editor>.student-tool-workspace{min-width:0;padding:24px}
+.student-create-dialog>.student-long-editor>.student-long-editor-error{margin:16px 24px 0}
+@media(max-width:760px){.student-create-dialog>.student-long-editor>.student-tool-workspace{padding:18px}}
