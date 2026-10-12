@@ -121,3 +121,16 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
   .student-page .student-action-sheet-content{padding:22px 18px calc(24px + env(safe-area-inset-bottom,0px))}
   .student-page .student-action-sheet-choice{min-height:72px}
 }
+
+/* Shared long-form editor used as a dedicated route on mobile and loaded into
+   the existing contextual dialog on desktop. One operational PHP renderer. */
+.student-main>.student-long-editor{width:100%;max-width:830px;min-width:0}
+.student-main>.student-long-editor .student-create-dialog-head{padding:0 0 var(--ux-space-5);border-bottom:1px solid var(--line)}
+.student-main>.student-long-editor .student-create-dialog-head [data-student-editor-close]{display:none}
+.student-main>.student-long-editor .student-tool-workspace{padding:var(--ux-space-5) 0}
+.student-main>.student-long-editor .student-editor-explainer{padding:var(--ux-space-4) 0}
+.student-main>.student-long-editor .student-long-editor-error{margin:var(--ux-space-4) 0}
+@media(max-width:760px){
+ .student-main>.student-long-editor .student-create-dialog-head h2{font-size:28px}
+ .student-main>.student-long-editor .student-tool-workspace{padding:var(--ux-space-4) 0}
+}
