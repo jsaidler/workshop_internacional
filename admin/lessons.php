@@ -22,7 +22,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
 $lessons=course_lessons_for_course($db,$courseId);$impact=admin_course_lesson_material_impact($db,$courseId);$materials=course_material_pages($db,$courseId);$notice=(string)($_SESSION['admin_lessons_notice']??'');unset($_SESSION['admin_lessons_notice']);$tone=str_starts_with($notice,'Não foi possível')?'error':'success';
 admin_shell_start('lessons',$cohort?'Aulas e acesso':'Aulas',$state,['/assets/admin-teaching.css','/assets/admin-operations.css']);?>
 <?php if($notice!==''):?><div class="admin-notice <?=h($tone)?>" role="<?=$tone==='error'?'alert':'status'?>"><?=h($notice)?></div><?php endif;?>
-<?php if($cohort):require __DIR__.'/../app/admin_course_agenda_cohort.php';?>
+<?php if($cohort):$releaseRows=course_lesson_release_rows_for_course($db,$cohortId,$courseId);course_agenda_reconcile_cohort($db,$cohortId);$capacity=course_agenda_capacity($db,$cohortId);$listeners=course_agenda_reservations($db,$cohortId);$defaultTimezone='America/Sao_Paulo';require __DIR__.'/../app/admin_course_agenda_cohort.php';?>
 <?php else:admin_course_context($course,$activityId,'content','Estrutura didática compartilhada pelas turmas.');?>
 <nav class="admin-content-tabs" aria-label="Conteúdo do curso"><a href="<?=h(admin_course_url($activityId,$courseId,'lessons'))?>" aria-current="page">Aulas</a><a href="<?=h(admin_course_url($activityId,$courseId,'material'))?>">Material</a></nav>
 <section class="admin-card admin-teaching-detail"><header><div><h2>Aulas</h2><p>Defina a ordem e os nomes das aulas. A disponibilidade é controlada dentro de cada turma.</p></div></header></section>
