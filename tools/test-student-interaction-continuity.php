@@ -8,7 +8,8 @@ $shell=$read('app/student_shell.php');
 $local=$read('assets/student-local-actions.js');
 $annotations=$read('assets/student-inline-annotations.js');
 $inventory=$read('aluno/inventario.php');
- $inventoryPanel=$read('app/student_inventory_create_panel.php');
+$inventoryPanel=$read('app/student_inventory_create_panel.php');
+$inventoryMovement=$read('app/student_inventory_move_panel.php');
 $inventoryItem=$read('aluno/inventario-item.php').$read('app/student_inventory_item_editor.php');
 $questions=$read('aluno/duvidas.php');
 $preparations=$read('aluno/preparos.php');
@@ -30,7 +31,11 @@ continuity_must(str_contains($local,"[data-process-runner][data-timer-state=\"ru
 continuity_must(str_contains($local,"q('.ui-alert-error',doc)")&&str_contains($local,"pathname.endsWith('/aluno/login.php')"),'local mutation errors or expired sessions can be mistaken for successful saves');
 continuity_must(str_contains($local,'finalUrl.pathname+finalUrl.search+finalUrl.hash'),'record-local save loses the canonical section anchor');
 
-continuity_must((substr_count($inventory,'data-student-local-form')+substr_count($inventoryPanel,'data-student-local-form'))>=3,'inventory mutations are not consistently local');
+// Creation and archive remain in-place. Manual physical stock movements are a
+// distinct, intentionally native PRG operation protected by ledger idempotency.
+continuity_must((substr_count($inventory,'data-student-local-form')+substr_count($inventoryPanel,'data-student-local-form'))>=2,'inventory creation/archive must retain in-place mutations');
+continuity_must(str_contains($inventory,'student_inventory_move_panel(')&&str_contains($inventoryMovement,'name="movement_uuid"'),'inventory movement must reuse the operational form with a durable request key');
+continuity_must(!str_contains($inventoryMovement,'data-student-local-form')&&str_contains($inventory,'$failedMove'),'stock movement must preserve native POST/redirect and failed draft');
 continuity_must(str_contains($inventory,'data-student-local-key="inventory-stock"')&&str_contains($inventory,'data-student-local-key="inventory-history"'),'inventory has no stable local-refresh regions');
 continuity_must(str_contains($inventory,'/aluno/inventario-item.php?id=')&&str_contains($inventory,'data-student-editor-link')&&str_contains($inventory,'data-student-editor-dialog'),'inventory metadata editing is still a separate-page interaction');
 continuity_must(str_contains($inventoryItem,'data-student-editor')&&str_contains($inventoryItem,'data-student-local-form')&&str_contains($inventoryItem,'data-local-refresh="inventory-stock inventory-history"'),'inventory metadata editor cannot update its parent context locally');
