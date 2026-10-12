@@ -13,7 +13,7 @@ function student_shell_active_area(string $path,array $query=[]): string {
     $route=basename($path);
     if(in_array($route,['perfil.php','senha.php'],true))return 'account';
     if(in_array($route,['caderno.php','teste.php','teste-etapa.php','teste-compartilhado.php','excluir-teste.php','comparar-processos.php','processamento-realizado.php','registro-roteiro.php'],true))return 'notebook';
-    if(in_array($route,['cursos.php','duvidas.php'],true))return 'courses';
+    if(in_array($route,['cursos.php','agenda.php','duvidas.php'],true))return 'courses';
     if($route==='processar.php')return (int)($query['test']??0)>0?'notebook':'laboratory';
     if($route==='processamentos.php'&&(int)($query['test']??0)>0)return 'notebook';
     if(in_array($route,['ferramentas.php','reciprocidade.php','exposicao.php','temporizador.php','processamentos.php','processamentos-trocar.php','calibracao.php','preparo-solucoes.php','inventario.php','inventario-item.php','preparos.php'],true))return 'laboratory';
