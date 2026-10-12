@@ -1,11 +1,16 @@
 const {test,expect}=require('@playwright/test');
 const url='http://127.0.0.1:8099/tools/browser-fixture/student-toolbox-real-audit.php';
-for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+for(const [device,width,height] of [['phone-compact',320,720],['phone',390,844],['desktop',1440,1100]]){
   test(`real toolbox has quick links, progressive calculators, focus and safe scrolling — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});await page.goto(url,{waitUntil:'networkidle'});
     const trigger=page.getByRole('button',{name:'Atalhos'});
     const dialog=page.locator('dialog[data-student-toolbox]');
     await expect(dialog).not.toBeVisible();
+    await expect(trigger,'toolbox must be operable directly from the mobile header').toBeVisible();
+    const header=await page.evaluate(()=>{const brand=document.querySelector('.student-wordmark').getBoundingClientRect(),tools=document.querySelector('[data-toolbox-open]').getBoundingClientRect(),account=document.querySelector('.student-mobile-nav').getBoundingClientRect();return{brandRight:brand.right,toolsLeft:tools.left,toolsRight:tools.right,viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,navWidth:account.width};});
+    expect(header.toolsLeft,'Atalhos must not cover the brand').toBeGreaterThanOrEqual(header.brandRight-1);
+    expect(header.toolsRight,'Atalhos must fit in the viewport').toBeLessThanOrEqual(header.viewport+1);
+    expect(header.scrollWidth,'Atalhos must not create horizontal overflow').toBeLessThanOrEqual(header.viewport+1);
     await page.screenshot({path:`student-visual-audit/toolbox-real/${device}-closed.png`,animations:'disabled'});
     await trigger.click();
     await expect(dialog).toBeVisible();
@@ -20,7 +25,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
     await expect(summary.last()).toHaveText('Exposição equivalente');
     const touch=await summary.first().evaluate(el=>el.getBoundingClientRect().height);
     expect(touch).toBeGreaterThanOrEqual(48);
-    if(device==='phone'){
+    if(device!=='desktop'){
       const box=await dialog.evaluate(el=>({bottom:el.getBoundingClientRect().bottom,height:el.getBoundingClientRect().height,viewport:innerHeight}));
       expect(Math.abs(box.bottom-box.viewport)).toBeLessThanOrEqual(2);
       expect(box.height).toBeLessThanOrEqual(box.viewport);
