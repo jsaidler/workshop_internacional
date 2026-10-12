@@ -30,9 +30,12 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
    await expect(page.getByRole('heading',{name:'Editar item'})).toBeVisible();
    // Dedicated route must offer both return actions; no modal is active here.
    await expect(page.locator('dialog[data-student-editor-dialog]')).toHaveCount(0);
-   for(const name of ['Fechar','Cancelar']){
-     const link=page.getByRole('link',{name,exact:true});
+   const returnLinks=page.locator('.student-main > [data-student-editor] a[data-student-editor-close]');
+   await expect(returnLinks).toHaveCount(2);
+   for(const [index,name] of ['Fechar','Cancelar'].entries()){
+     const link=returnLinks.nth(index);
      await expect(link).toBeVisible();
+     await expect(link).toHaveText(name);
      await expect(link).toHaveAttribute('href','/aluno/inventario.php');
    }
    await expect(page.getByRole('link',{name:'← Inventário'})).toBeVisible();
