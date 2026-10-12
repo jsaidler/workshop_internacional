@@ -5,7 +5,7 @@ function teaching_ux_expect(bool $ok,string $message): void {if(!$ok){fwrite(STD
 $shell=(string)file_get_contents($root.'/app/admin_shell.php');
 $courses=(string)file_get_contents($root.'/admin/courses.php');
 $cohorts=(string)file_get_contents($root.'/admin/cohorts.php');
-$lessons=(string)file_get_contents($root.'/admin/lessons.php');
+$lessons=(string)file_get_contents($root.'/admin/lessons.php').(string)file_get_contents($root.'/app/admin_course_agenda_cohort.php');
 $material=(string)file_get_contents($root.'/admin/material.php');
 $teachingCss=(string)file_get_contents($root.'/assets/admin-teaching.css');
 $collectionCss=(string)file_get_contents($root.'/assets/admin-collection-ux.css');
