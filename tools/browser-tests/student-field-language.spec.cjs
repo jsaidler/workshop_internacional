@@ -12,6 +12,7 @@ const studentUiFiles=[
   'aluno/duvidas.php',
   'aluno/ferramentas.php',
   'aluno/inventario.php',
+  'app/student_inventory_create_panel.php',
   'aluno/inventario-item.php',
   'aluno/perfil.php',
   'aluno/preparos.php',
@@ -113,11 +114,12 @@ test('student fields use one canonical vocabulary at the source',()=>{
     'aluno/caderno.php':['>Visibilidade<select name="visibility"'],
     'aluno/duvidas.php':['>Resposta<textarea name="body"'],
     'aluno/calibracao.php':['>Nome da referência<input name="label"','>Preparo ou diluição<input name="preparation"'],
-    'aluno/inventario.php':['<span>Solução preparada</span>','>Lote ou identificação<input name="lot_code"','>Data de entrada<input type="date" name="acquired_or_prepared_at"'],
+    'app/student_inventory_create_panel.php':['<span>Solução preparada</span>','>Lote ou identificação<input name="lot_code"','>Data de entrada<input type="date" name="acquired_or_prepared_at"'],
     'aluno/inventario-item.php':['>Lote ou identificação<input name="lot_code"'],
     'aluno/perfil.php':['>Telefone para contato<input name="phone"','>Cidade e UF<input name="city_state"'],
     'aluno/preparos.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
   };
+  expect(read('aluno/inventario.php')).toContain('student_inventory_create_panel($createDraft');
   for(const [file,needles] of Object.entries(required)){
     const text=compactMarkup(read(file));
     for(const needle of needles)expect(text,`${file} missing canonical label: ${needle}`).toContain(needle);
@@ -133,7 +135,7 @@ test('student field controls never rely on an empty visible label',()=>{
     }
   }
   expect(read('aluno/calibracao.php')).toContain('aria-label="Anotações da calibração"');
-  expect(read('aluno/inventario.php')).toContain('aria-label="Anotações do item"');
+  expect(read('app/student_inventory_create_panel.php')).toContain('aria-label="Anotações do item"');
   expect(compactMarkup(read('aluno/teste.php'))).toContain('>Anotações<textarea name="notes"');
   expect(compactMarkup(read('aluno/teste-etapa.php'))).toContain('>Anotações<textarea name="notes"');
 });
