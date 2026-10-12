@@ -17,7 +17,7 @@ async function mock(page,f){
    const data=Object.fromEntries(new URLSearchParams(req.postData()||''));
    const ajax=req.headers()['x-requested-with']==='XMLHttpRequest';
    posts.push({data,ajax,url:url.pathname+url.search});
-   if(String(data.label).includes('Recusado')){
+   if((req.postData()||'').includes('Recusado')){
     const invalid=await page.request.post(fixture+'?kind='+f.kind+'&mode=error',{form:data});
     return route.fulfill({status:200,contentType:'text/html',body:await invalid.text()});
    }
@@ -83,6 +83,7 @@ for(const f of families){
     await expect(modal.locator('[data-student-editor-close]').first()).toBeVisible();
     await page.screenshot({path:`student-visual-audit/long-editors/${f.kind}-desktop-modal.png`,animations:'disabled'});
     await modal.locator('[name="label"]').fill('Recusado teste');
+    if(f.kind==='calibration')await modal.locator('[name="white_time"]').fill('04:30');
     await modal.getByRole('button',{name:/Salvar /}).click();
     await expect(modal.getByRole('alert')).toContainText('Não foi possível salvar');
     await expect(modal.locator('[name="label"]')).toHaveValue('Recusado teste');
