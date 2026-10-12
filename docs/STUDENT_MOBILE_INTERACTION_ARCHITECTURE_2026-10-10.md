@@ -73,3 +73,5 @@ O inventário não precisa de gaveta para cada formulário. O cadastro de um ite
 
 
 **I-02 — edição de item, em revisão (12/10):** a edição extensa é página dedicada no telefone, com retorno explícito. No desktop continua disponível como editor contextual da lista. Ambos usam o mesmo renderer PHP e o mesmo endpoint. A URL direta usa POST/redirect nativos, evitando AJAX que exige regiões de listagem inexistentes; erro de formulário preserva valores e fica em contexto, sem alterar o estoque por efeitos de interface. A implantação e o teste Android não estão atestados.
+
+**I-02 — refinamento de retorno contextual (12/10):** a captura da página dedicada de edição em telefone mostrou duas ações equivalentes — `← Inventário` e `Fechar`, ambas retornando à mesma lista —, enquanto no diálogo desktop `Fechar` é necessário. O renderer continua único, mas a superfície direta suprime apenas a ação duplicada por seletor contextual proprietário `student-lab-stock.css`; a página conserva o retorno explícito e o diálogo conserva o fechamento. A regressão distingue ambos os contextos. Integração e instalação ainda pendentes.

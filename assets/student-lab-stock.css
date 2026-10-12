@@ -10,3 +10,7 @@
 .student-create-dialog .student-inventory-editor-body>.student-lead{margin:0}
 .student-create-dialog .student-inventory-editor-body>.student-tool-workspace{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
 @media(max-width:760px){.student-create-dialog .student-inventory-editor-body{padding:18px}}
+/* On a dedicated inventory editor route the parent page already has an explicit
+   contextual Back link; do not show a second identical Fechar action in the title.
+   The same source renderer keeps this close control inside its modal context. */
+.student-main>[data-student-editor] .student-create-dialog-head [data-student-editor-close]{display:none}

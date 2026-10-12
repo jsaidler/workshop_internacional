@@ -28,6 +28,8 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
    await page.setViewportSize({width,height});const posts=await mockRoutes(page);
    await page.goto(root+'/aluno/inventario-item.php?id=7',{waitUntil:'networkidle'});
    await expect(page.getByRole('heading',{name:'Editar item'})).toBeVisible();
+   await expect(page.locator('.student-main > [data-student-editor] [data-student-editor-close]')).not.toBeVisible();
+   await expect(page.getByRole('link',{name:'← Inventário'})).toBeVisible();
    const form=page.locator('[data-student-editor] form');
    await form.locator('[name="name"]').fill('Recusado <lote>');
    await form.locator('[name="lot_code"]').fill('ETAPA-123');
