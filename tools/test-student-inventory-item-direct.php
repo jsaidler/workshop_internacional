@@ -15,5 +15,6 @@ $route=(string)file_get_contents(__DIR__.'/../aluno/inventario-item.php');
 $local=(string)file_get_contents(__DIR__.'/../assets/student-local-actions.js');
 check_item(str_contains($route,'student_inventory_item_editor($item')&&str_contains($route,'is_scalar($_POST[$key])'),'route must reuse renderer and preserve failed POST draft');
 check_item(str_contains($local,"if(path.endsWith('/aluno/inventario-item.php'))return null;"),'direct item edit must use native POST/redirect');
+check_item(str_contains($route,"header('Location: /aluno/inventario.php?saved=1',true,303)"),'native successful POST must redirect to the real inventory list');
 check_item(str_contains($local,'matchMedia(\'(max-width:760px)\').matches'),'mobile item link must preserve dedicated page navigation');
 echo "inventory-item-direct: ok\n";

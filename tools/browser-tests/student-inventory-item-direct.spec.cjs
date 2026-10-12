@@ -15,7 +15,9 @@ async function mockRoutes(page){
        return route.fulfill({status:200,contentType:'text/html',body:await result.text()});
      }
      if(ajax)return route.fulfill({status:200,contentType:'text/html',body:updated});
-     return route.fulfill({status:303,headers:{location:'/aluno/inventario.php?saved=1'},body:''});
+     // A Playwright-fulfilled 303 bypasses page.route for the redirected request.
+     // Redirect to the real, accessible fixture URL; verify production's 303 destination in PHP regression.
+     return route.fulfill({status:303,headers:{location:'/tools/browser-fixture/student-inventory-item-direct.php?mode=updated'},body:''});
    }
    return route.fulfill({status:200,contentType:'text/html',body:editor});
  });
@@ -41,7 +43,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
    await page.screenshot({path:`student-visual-audit/inventory-item/${device}-direct-error.png`,animations:'disabled'});
    await page.locator('[name="name"]').fill('Corrigido');
    await page.getByRole('button',{name:'Salvar alterações'}).click();
-   await expect(page).toHaveURL(/aluno\/inventario.php\?saved=1/);
+   await expect(page).toHaveURL(/tools\/browser-fixture\/student-inventory-item-direct.php\?mode=updated/);
    await expect(page.getByText('Lote atualizado')).toBeVisible();
    expect(posts[1].ajax).toBe(false);
    await page.screenshot({path:`student-visual-audit/inventory-item/${device}-redirect-after-save.png`,animations:'disabled'});
