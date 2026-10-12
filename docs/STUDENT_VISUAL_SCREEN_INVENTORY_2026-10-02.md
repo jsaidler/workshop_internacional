@@ -10,6 +10,7 @@ A revisão de 05/10/2026 incorpora o contrato não linear do Caderno. Modos visu
 |---|---|
 | `aluno/login.php` | entrada e ativação inicial |
 | `aluno/index.php` | Caderno em andamento; retorno do professor pendente; uma matrícula sem pendência no Caderno e com material utilizável; múltiplas matrículas |
+| `aluno/agenda.php` | Meus encontros: vazio, matrícula regular, ouvinte confirmado e links protegidos; Próximas turmas: reserva fechada, espera, lotação, cancelamento e sem encontros; telefone estreito, telefone e desktop, antes e depois da rolagem. Cobertura suplementar de 15 estados em `tools/browser-tests/student-agenda.spec.cjs`, com renderizador PHP operacional reutilizado na fixture. |
 | `aluno/cursos.php` | múltiplas matrículas; curso/turma com material disponível, parcial e agendado; curso com acompanhamento pedagógico pendente; curso sem material |
 | material do curso (CMS autenticado) | leitura parcial com seções de aulas diferentes filtradas no servidor; contexto curso/turma; anterior/próximo preservando `cohort`; painel de anotações; criação de dúvida a partir de anotação no mesmo painel; telefone estreito e desktop |
 | `aluno/duvidas.php` | lista; lista com conversa de avaliação contextual; nova dúvida; conversa |
