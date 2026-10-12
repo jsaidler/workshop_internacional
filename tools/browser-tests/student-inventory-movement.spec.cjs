@@ -14,6 +14,14 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100],['co
    await expect(dialog).toHaveJSProperty('open',true);
    await expect(dialog.getByText('Saldo disponível: 180 ml')).toBeVisible();
    await expect(dialog.locator('[name="amount"]')).toBeFocused();
+   const headerClose=dialog.getByRole('button',{name:'Fechar'});
+   const closeGeometry=await headerClose.boundingBox();
+   expect(closeGeometry.width,'header close must remain a compact contextual action').toBeLessThan(130);
+   if(width>=390&&device==='phone'){
+     const head=await dialog.locator('.student-inventory-move-head').boundingBox();
+     expect(head.height,'mobile header must not be crowded by item-card button styles').toBeLessThan(108);
+   }
+
    if(device!=='desktop'){
      await expect(bar).toHaveCount(4);
      const geometry=await dialog.evaluate(node=>{
