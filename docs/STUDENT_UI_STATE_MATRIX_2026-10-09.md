@@ -243,3 +243,8 @@ Auditoria do PHP: `aluno/preparos.php` e `aluno/calibracao.php` mantêm formulá
 **Escopo da aprovação:** P-01 em **fixture PHP com renderer operacional e POST simulado**, teste PHP de contratos e suíte de navegador. Não foram demonstrados autenticação e persistência reais na hospedagem; não é uma aprovação de todos os estados das 46 superfícies da Área do aluno. O workflow `deploy` de PR valida o pacote, não comprova publicação da branch `production-dist` após o merge nem instalação no servidor. O estado de integração deve ser conferido no GitHub.
 
 **P-01 — ampliação do teste funcional (12/10):** acrescentada prova em SQLite local para criar e atualizar dados reais de Caffenol e calibração, incluindo proteção contra alteração entre estudantes. Complementa a fixture visual e o teste de contratos PHP; não substitui teste autenticado na hospedagem. `validate` e `deploy` executam `tools/test-student-long-editors-db.php` como gate. Aprovação condicionada a workflow verde após esta inclusão.
+
+
+### Frente Agenda (#234): novos estados a auditar
+
+A introdução de `/aluno/agenda.php` exige registrar visualmente no telefone e no desktop: sem encontros; encontro regular com data/link; ouvinte confirmado; próxima turma elegível com vagas potenciais mas confirmações fechadas; reserva aguardando; turma lotada; cancelamento; link ainda não cadastrado; erro server-side com retorno a Cursos. O gate SQLite comprova autorização e consistência, **não substitui** a inspeção do DOM real com autenticação. A Agenda não modifica as quatro seções principais nem valida retrospectivamente os demais estados pendentes da matriz.
