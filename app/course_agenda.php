@@ -43,9 +43,22 @@ function course_agenda_window_open(array $cohort,?int $now=null): bool {
     return $close!==false && $open!==false && $close<=$now && $open<=$now;
 }
 function course_agenda_with_lock(PDO $db,callable $work): mixed {
-    $owned=!$db->inTransaction();if($owned)$db->exec('BEGIN IMMEDIATE');
-    try{$result=$work();if($owned)$db->commit();return $result;}
-    catch(Throwable $e){if($owned && $db->inTransaction())$db->rollBack();throw $e;}
+    // PDO::inTransaction() não reconhece de modo portátil BEGIN IMMEDIATE enviado via exec.
+    // Rastrear a seção crítica da Agenda permite chamadas aninhadas sem segunda transação.
+    static $held=null;
+    if($held===null)$held=new WeakMap();
+    $owned=!$db->inTransaction() && empty($held[$db]);
+    if($owned){$db->exec('BEGIN IMMEDIATE');$held[$db]=true;}
+    try{
+        $result=$work();
+        if($owned)$db->exec('COMMIT');
+        return $result;
+    }catch(Throwable $e){
+        if($owned)$db->exec('ROLLBACK');
+        throw $e;
+    }finally{
+        if($owned)unset($held[$db]);
+    }
 }
 /** Apenas vagas efetivas, após o término da janela comercial. */
 function course_agenda_reconcile_cohort(PDO $db,int $cohortId): void {
