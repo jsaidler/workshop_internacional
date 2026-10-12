@@ -105,6 +105,7 @@ jobs:
           npx playwright test tools/browser-tests/student-inventory-item-direct.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-inventory-movement.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-long-editors.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-agenda.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-toolbox-real-audit.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-record-create-sheet.spec.cjs --workers=1
       - name: Upload rendered screens
