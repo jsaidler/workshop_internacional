@@ -79,6 +79,7 @@ function course_agenda_reconcile_cohort(PDO $db,int $cohortId): void {
     });
 }
 function course_agenda_reconcile_student(PDO $db,int $studentId): void {
+    if(!$db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='course_listener_reservations'")->fetchColumn())return;
     $q=$db->prepare("SELECT DISTINCT cohort_id FROM course_listener_reservations WHERE student_id=? AND status IN ('waiting','confirmed')");
     $q->execute([$studentId]);
     foreach($q->fetchAll(PDO::FETCH_COLUMN) as $id)course_agenda_reconcile_cohort($db,(int)$id);
