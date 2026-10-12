@@ -220,6 +220,20 @@ function student_process_path_label(array $steps): string {
     $labels=[];foreach($steps as $step){$label=(string)$step['label'];if($step['chemical_name']!=='')$label=(string)$step['chemical_name'];$labels[]=$label;}return implode(' → ',$labels);
 }
 
+/**
+ * One input normalization for prepared Caffenol, shared by create and update.
+ * A predefinition is only a parameter record; this does not change stock.
+ */
+function student_preparation_normalize_input(array $input): array {
+    if((string)($input['developer_key']??'')!=='brewed-caffenol')return $input;
+    $input['ingredients']=[
+        ['name'=>'Café torrado e moído extra-forte','amount'=>$input['coffee_amount']??'','unit'=>'g'],
+        ['name'=>'Carbonato de sódio','amount'=>$input['carbonate_amount']??'','unit'=>'g'],
+        ['name'=>'Ácido ascórbico','amount'=>$input['ascorbic_amount']??'','unit'=>'g'],
+        ['name'=>'Água','amount'=>$input['fresh_volume']??'','unit'=>'ml'],
+    ];
+    return $input;
+}
 function student_saved_preparations(PDO $db,int $studentId,string $developerKey=''): array {$sql='SELECT * FROM student_saved_preparations WHERE student_id=?';$args=[$studentId];if($developerKey!==''){$sql.=' AND developer_key=?';$args[]=$developerKey;}$sql.=' ORDER BY developer_key,label,id';$q=$db->prepare($sql);$q->execute($args);return $q->fetchAll(PDO::FETCH_ASSOC);}
 function student_saved_preparation_create(PDO $db,int $studentId,array $input): array {
     $developer=student_process_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''));$label=student_workspace_text($input['label']??'',120);if($label==='')throw new RuntimeException('Dê um nome ao preparo.');
