@@ -28,16 +28,17 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
    await page.setViewportSize({width,height});const posts=await mockRoutes(page);
    await page.goto(root+'/aluno/inventario-item.php?id=7',{waitUntil:'networkidle'});
    await expect(page.getByRole('heading',{name:'Editar item'})).toBeVisible();
-   // Dedicated route must offer both return actions; no modal is active here.
+   // Page-specific back link replaces the duplicate header close.
+   // Cancel remains available at the form footer; the modal keeps its header close.
    await expect(page.locator('dialog[data-student-editor-dialog]')).toHaveCount(0);
-   const returnLinks=page.locator('.student-main > [data-student-editor] a[data-student-editor-close]');
-   await expect(returnLinks).toHaveCount(2);
-   for(const [index,name] of ['Fechar','Cancelar'].entries()){
-     const link=returnLinks.nth(index);
-     await expect(link).toBeVisible();
-     await expect(link).toHaveText(name);
-     await expect(link).toHaveAttribute('href','/aluno/inventario.php');
-   }
+   const headerClose=page.locator('.student-main > [data-student-editor] .student-create-dialog-head a[data-student-editor-close]');
+   await expect(headerClose).toHaveCount(1);
+   await expect(headerClose).toBeHidden();
+   await expect(headerClose).toHaveAttribute('href','/aluno/inventario.php');
+   const cancel=page.locator('.student-main > [data-student-editor] .student-actions a[data-student-editor-close]');
+   await expect(cancel).toBeVisible();
+   await expect(cancel).toHaveText('Cancelar');
+   await expect(cancel).toHaveAttribute('href','/aluno/inventario.php');
    await expect(page.getByRole('link',{name:'← Inventário'})).toBeVisible();
    const form=page.locator('[data-student-editor] form');
    await form.locator('[name="name"]').fill('Recusado <lote>');
@@ -76,6 +77,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
      const dialog=page.locator('[data-student-editor-dialog]');
      await expect(dialog).toBeVisible();
      await expect(dialog.getByRole('heading',{name:'Editar item'})).toBeVisible();
+     await expect(dialog.locator('.student-create-dialog-head a[data-student-editor-close]')).toBeVisible();
      await page.screenshot({path:'student-visual-audit/inventory-item/desktop-editor-modal.png',animations:'disabled'});
      const layout=await dialog.evaluate(el=>{
        const box=el.getBoundingClientRect(),inner=el.querySelector('.student-inventory-editor-body>.student-lead').getBoundingClientRect(),small=el.querySelector('.student-inventory-editor-balance>small').getBoundingClientRect(),input=el.querySelector('input[name="name"]').getBoundingClientRect();
