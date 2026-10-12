@@ -41,8 +41,9 @@ foreach(['.form-field','.choice-field','.check-field','.button-compact','.button
 must_student_premium_ui(str_contains($uiCss,'appearance:none')&&str_contains($uiCss,'[aria-invalid=true]'),'global field states are incomplete');
 must_student_premium_ui(str_contains($uiJs,"form[data-ui-validate]")&&str_contains($uiJs,'workshop-theme'),'global UI behavior does not own validation and theme');
 
-must_student_premium_ui(str_contains($home,'student_experience_dashboard_state')&&str_contains($home,'<h1 class="student-title">Início</h1>'),'student home is not a next-action surface');
-must_student_premium_ui(str_contains($home,'student-dashboard-focus')&&str_contains($home,'student-dashboard-links'),'student home does not preserve a clear primary action plus secondary destinations');
+$homeView=(string)file_get_contents($root.'/app/student_home_view.php');
+must_student_premium_ui(str_contains($home,'student_experience_dashboard_state')&&str_contains($homeView,'<h1 class="student-title">Início</h1>')&&str_contains($homeView,'data-home-meeting'),'student Home must retain direct actions and Agenda');
+must_student_premium_ui(str_contains($homeView,'student-home-feature')&&str_contains($homeView,'student-home-quick')&&str_contains($homeView,'student-home-courses')&&str_contains($homeView,'student-home-list'),'student Home must present contextual action and independent destinations');
 must_student_premium_ui(!str_contains($home,'Escolha o que você veio fazer')&&!str_contains($home,'Abrir laboratório'),'student home regressed to a duplicate navigation catalog');
 must_student_premium_ui(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment still requires a course-selector click');
 must_student_premium_ui(str_contains($courses,'student-academic-material-list')&&str_contains($courses,'Dúvidas e respostas'),'course workspace is not flattened around study tasks');
