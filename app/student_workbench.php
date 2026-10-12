@@ -266,8 +266,8 @@ function student_inventory_move(PDO $db,int $studentId,int $itemId,float $delta,
         // Reserve the UUID first: a concurrent replay cannot change the balance twice.
         $db->prepare('INSERT INTO student_inventory_movements(movement_uuid,student_id,item_id,test_id,step_id,movement_type,quantity_delta,note,created_at) VALUES(?,?,?,?,?,?,?,?,?)')
            ->execute([$uuid,$studentId,$itemId,$testId,$stepId,$type,$delta,$note,$now]);
-        $update=$db->prepare('UPDATE student_inventory_items SET quantity=quantity+?,updated_at=? WHERE id=? AND student_id=? AND (archived_at IS NULL OR ?=1) AND quantity+?>=-0.0000000001');
-        $update->execute([$delta,$now,$itemId,$studentId,$allowArchivedCompensation?1:0,$delta]);
+        $update=$db->prepare('UPDATE student_inventory_items SET quantity=quantity+?,updated_at=? WHERE id=? AND student_id=?'.($allowArchivedCompensation?'':' AND archived_at IS NULL').' AND quantity+?>=-0.0000000001');
+        $update->execute([$delta,$now,$itemId,$studentId,$delta]);
         if($update->rowCount()!==1){
             $item=student_inventory_item($db,$studentId,$itemId);
             if(!$item||($item['archived_at']!==null&&!$allowArchivedCompensation))throw new RuntimeException('Item indisponível no estoque ativo.');
