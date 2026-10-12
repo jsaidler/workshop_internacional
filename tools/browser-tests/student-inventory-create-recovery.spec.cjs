@@ -43,7 +43,12 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   await panel.locator('input[name="quantity"]').fill('22');
   await panel.getByRole('button',{name:'Adicionar ao inventário'}).click();
   await expect(panel).toBeVisible();
-  await expect(panel.getByRole('alert')).toContainText('Não foi possível cadastrar');
+  const alert=panel.getByRole('alert');
+  await expect(alert).toContainText('Não foi possível cadastrar');
+  await expect(alert).toBeFocused();
+  const visibility=await alert.evaluate(el=>{const rect=el.getBoundingClientRect(),scroll=document.querySelector('.student-main')?.getBoundingClientRect();return{top:rect.top,bottom:rect.bottom,viewport:innerHeight,scrollTop:scroll?.top??0,scrollBottom:scroll?.bottom??innerHeight};});
+  expect(visibility.top,'error must be within the reading area').toBeGreaterThanOrEqual(visibility.scrollTop-1);
+  expect(visibility.bottom,'error must not fall behind global nav').toBeLessThanOrEqual(visibility.scrollBottom+1);
   await expect(panel.locator('input[name="name"]')).toHaveValue('Teste de falha AJAX');
   await expect(panel.locator('input[name="quantity"]')).toHaveValue('22');
   await page.screenshot({path:`student-visual-audit/inventory-create/${device}-ajax-error.png`,animations:'disabled'});
