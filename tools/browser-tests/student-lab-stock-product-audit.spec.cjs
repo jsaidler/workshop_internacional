@@ -6,7 +6,7 @@ for(const [device,viewport] of Object.entries(viewports)){
   for(const screen of screens){
     test(`lab stock product visual audit ${device} ${screen}`,async({page})=>{
       await page.setViewportSize(viewport);
-      await page.goto(['movement','inventory','empty'].includes(screen)?'http://127.0.0.1:8099/tools/browser-fixture/student-inventory-movement.php?mode='+screen:`${base}?screen=${screen}`,{waitUntil:'networkidle'});
+      await page.goto(screen==='editor'?'http://127.0.0.1:8099/tools/browser-fixture/student-long-editors.php?kind=preparation&mode=edit':['movement','inventory','empty'].includes(screen)?'http://127.0.0.1:8099/tools/browser-fixture/student-inventory-movement.php?mode='+screen:`${base}?screen=${screen}`,{waitUntil:'networkidle'});
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${screen} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);

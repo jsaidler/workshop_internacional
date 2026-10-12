@@ -56,6 +56,7 @@ function student_process_delete_from_step(PDO $db,int $testId,int $stepId,int $s
 }
 
 function student_saved_preparation_create_guided(PDO $db,int $studentId,array $input): array {
+    $input=student_preparation_normalize_input($input);
     $developer=student_process_managed_developer((string)($input['developer_key']??''),(string)($input['developer_name']??''),$db,true);
     if((string)$developer['mode']==='fresh'){
         $input['developer_amount']=$input['fresh_volume']??null;

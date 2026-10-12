@@ -12,6 +12,7 @@ $editor=(string)file_get_contents($root.'/aluno/teste-etapa.php');
 $record=(string)file_get_contents($root.'/aluno/teste.php');
 $inventoryEditor=(string)file_get_contents($root.'/aluno/inventario-item.php').(string)file_get_contents($root.'/app/student_inventory_item_editor.php');
 $calibration=(string)file_get_contents($root.'/aluno/calibracao.php');
+$calibrationEditor=(string)file_get_contents($root.'/app/student_calibration_editor.php');
 $index=(string)file_get_contents($root.'/index.php');
 $noteEndpoint=(string)file_get_contents($root.'/aluno/material-anotacao.php');
 $notes=(string)file_get_contents($root.'/app/student_notes_experience.php');
@@ -43,5 +44,5 @@ must_process_notes(str_contains($notesCss,'.student-notes-panel[open]')&&str_con
 must_process_notes(str_contains($presets,'Predefinições de revelação')&&!str_contains($presets,'salvo(s)')&&str_contains($presets,'student_saved_preparation_update_guided')&&str_contains($presets,'?editar='),'reusable development presets cannot be edited coherently');
 must_process_notes(str_contains($auxiliary,'student_saved_preparation_update_guided')&&str_contains($auxiliary,'student_inventory_update_metadata'),'persisted laboratory helpers do not have update services');
 must_process_notes(str_contains($inventoryEditor,'O saldo continua sendo controlado pelas movimentações.')&&str_contains($inventoryEditor,'Salvar alterações'),'inventory metadata cannot be corrected without inventing a stock movement');
-must_process_notes(str_contains($calibration,'?editar=')&&str_contains($calibration,'Salvar alterações'),'calibration references remain write-once records');
+must_process_notes(str_contains($calibration,'?editar=')&&str_contains($calibration,'student_calibration_editor(')&&str_contains($calibrationEditor,'Salvar alterações'),'calibration references remain write-once records');
 echo "student-process-notes-ux: ok\n";

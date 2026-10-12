@@ -53,6 +53,11 @@ on:
       - 'tools/browser-tests/student-inventory-item-direct.spec.cjs'
       - 'tools/browser-fixture/student-inventory-movement.php'
       - 'tools/browser-tests/student-inventory-movement.spec.cjs'
+      - 'tools/browser-fixture/student-long-editors.php'
+      - 'tools/browser-tests/student-long-editors.spec.cjs'
+      - 'app/student_preparation_editor.php'
+      - 'app/student_calibration_editor.php'
+      - 'tools/test-student-long-editors.php'
       - 'app/student_inventory_move_panel.php'
       - 'tools/test-student-inventory-movement.php'
       - 'tools/browser-fixture/student-inventory-item-direct.php'
@@ -99,6 +104,7 @@ jobs:
           npx playwright test tools/browser-tests/student-inventory-create-recovery.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-inventory-item-direct.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-inventory-movement.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-long-editors.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-toolbox-real-audit.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-record-create-sheet.spec.cjs --workers=1
       - name: Upload rendered screens

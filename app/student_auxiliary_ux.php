@@ -21,7 +21,7 @@ function student_saved_preparation_input(array $input): array {
 
 function student_saved_preparation_update_guided(PDO $db,int $studentId,int $id,array $input): array {
     student_saved_preparation_for_student($db,$studentId,$id)??throw new RuntimeException('Predefinição não encontrada.');
-    if((string)($input['developer_key']??'')==='brewed-caffenol')$input['ingredients']=[['name'=>'Café torrado e moído extra-forte','amount'=>$input['coffee_amount']??'','unit'=>'g'],['name'=>'Carbonato de sódio','amount'=>$input['carbonate_amount']??'','unit'=>'g'],['name'=>'Ácido ascórbico','amount'=>$input['ascorbic_amount']??'','unit'=>'g'],['name'=>'Água','amount'=>$input['fresh_volume']??'','unit'=>'ml']];
+    $input=student_preparation_normalize_input($input);
     $v=student_saved_preparation_input($input);$now=utc_now();
     $db->prepare('UPDATE student_saved_preparations SET developer_key=?,developer_name=?,label=?,preparation_mode=?,developer_amount=?,water_amount=?,amount_unit=?,temperature=?,duration=?,agitation=?,ingredients_json=?,updated_at=? WHERE id=? AND student_id=?')
         ->execute([$v['developer_key'],$v['developer_name'],$v['label'],$v['preparation_mode'],$v['developer_amount'],$v['water_amount'],'ml',$v['temperature'],$v['duration'],$v['agitation'],$v['ingredients_json'],$now,$id,$studentId]);
