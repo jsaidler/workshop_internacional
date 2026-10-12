@@ -36,9 +36,9 @@ const screens=[
   ['process-library','student-process-product-audit.html?screen=library'],
   ['process-editor','student-process-product-audit.html?screen=editor'],
   ['lab-runner','student-process-execution-state-audit.html?state=idle'],
-  ['inventory','student-lab-stock-product-audit.html?screen=inventory'],
-  ['inventory-empty','student-lab-stock-product-audit.html?screen=empty'],
-  ['inventory-movement','student-lab-stock-product-audit.html?screen=movement'],
+  ['inventory','student-inventory-movement.php?mode=inventory'],
+  ['inventory-empty','student-inventory-movement.php?mode=empty'],
+  ['inventory-movement','student-inventory-movement.php'],
   ['inventory-item-editor','student-inventory-item-direct.php?mode=editor'],
   ['preparations','student-lab-stock-product-audit.html?screen=preparations'],
   ['preparation-editor','student-lab-stock-product-audit.html?screen=editor'],
@@ -72,6 +72,7 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.setViewportSize(viewport);await page.goto(fixture(path),{waitUntil:'networkidle'});
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      if(name==='inventory-movement'){await page.getByRole('button',{name:'Movimentar estoque'}).click();}
       if(name==='new-record'||name==='toolbox'||name==='calibration-editor'){
         const selector=name==='new-record'||name==='calibration-editor'?'.student-create-dialog':'.student-toolbox';
         await page.evaluate(sel=>{const d=document.querySelector(sel);if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}},selector);
