@@ -32,6 +32,13 @@ check_movement($count()===3,'cross-owner ledger row remained');
 $db->exec("UPDATE student_inventory_items SET archived_at='today' WHERE id=3");
 try{student_inventory_move($db,7,3,1,'in','',null,null,true,'ffffffff-1111-4111-8111-ffffffffffff');check_movement(false,'archived item was modified');}catch(RuntimeException $e){}
 check_movement($balance()===85.0&&$count()===3,'archived stock was modified');
+// Existing Caderno deletion compensates a documented consumption in the
+// caller transaction even if the inventory item was archived afterward.
+$db->beginTransaction();
+student_inventory_move($db,7,3,1,'adjust','Estorno por remoção de etapa',9,null,false,null,true);
+check_movement($balance()===86.0&&$count()===4,'archived internal compensation failed');
+$db->rollBack();
+check_movement($balance()===85.0&&$count()===3,'archived compensation did not roll back');
 $db->exec("UPDATE student_inventory_items SET archived_at=NULL WHERE id=3");
 $db->beginTransaction();
 student_inventory_move($db,7,3,-4,'consume','Processo',9,11,false);

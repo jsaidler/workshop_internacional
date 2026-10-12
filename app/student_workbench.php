@@ -214,7 +214,7 @@ function student_process_add_step(PDO $db,int $testId,int $studentId,array $inpu
 function student_process_delete_step(PDO $db,int $testId,int $stepId,int $studentId): void {
     student_test_for_student($db,$testId,$studentId)??throw new RuntimeException('Registro não encontrado.');$q=$db->prepare('SELECT * FROM student_process_steps WHERE id=? AND test_id=?');$q->execute([$stepId,$testId]);$step=$q->fetch(PDO::FETCH_ASSOC);if(!$step)throw new RuntimeException('Etapa inválida.');
     $sum=$db->prepare('SELECT COALESCE(SUM(quantity_delta),0) FROM student_inventory_movements WHERE step_id=?');$sum->execute([$stepId]);$delta=(float)$sum->fetchColumn();
-    $db->beginTransaction();try{if($delta<0&&$step['inventory_item_id'])student_inventory_move($db,$studentId,(int)$step['inventory_item_id'],-$delta,'adjust','Estorno por remoção de etapa',$testId,null,false);$db->prepare('DELETE FROM student_process_steps WHERE id=? AND test_id=?')->execute([$stepId,$testId]);$db->prepare('UPDATE student_tests SET updated_at=? WHERE id=?')->execute([utc_now(),$testId]);$db->commit();}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+    $db->beginTransaction();try{if($delta<0&&$step['inventory_item_id'])student_inventory_move($db,$studentId,(int)$step['inventory_item_id'],-$delta,'adjust','Estorno por remoção de etapa',$testId,null,false,null,true);$db->prepare('DELETE FROM student_process_steps WHERE id=? AND test_id=?')->execute([$stepId,$testId]);$db->prepare('UPDATE student_tests SET updated_at=? WHERE id=?')->execute([utc_now(),$testId]);$db->commit();}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
 }
 function student_process_path_label(array $steps): string {
     $labels=[];foreach($steps as $step){$label=(string)$step['label'];if($step['chemical_name']!=='')$label=(string)$step['chemical_name'];$labels[]=$label;}return implode(' → ',$labels);
@@ -240,7 +240,7 @@ function student_inventory_create(PDO $db,int $studentId,array $input): array {
  * belongs only to explicitly submitted manual operations; internal process calls
  * retain fresh identities and any transaction already owned by their caller.
  */
-function student_inventory_move(PDO $db,int $studentId,int $itemId,float $delta,string $type,string $note='',?int $testId=null,?int $stepId=null,bool $manageTransaction=true,?string $requestUuid=null): void {
+function student_inventory_move(PDO $db,int $studentId,int $itemId,float $delta,string $type,string $note='',?int $testId=null,?int $stepId=null,bool $manageTransaction=true,?string $requestUuid=null,bool $allowArchivedCompensation=false): void {
     if(!is_finite($delta)||abs($delta)<0.0000001)throw new RuntimeException('Informe uma quantidade diferente de zero.');
     if(!in_array($type,['in','consume','adjust'],true))throw new RuntimeException('Tipo de movimentação inválido.');
     $note=student_workspace_text($note,500);
@@ -258,6 +258,7 @@ function student_inventory_move(PDO $db,int $studentId,int $itemId,float $delta,
         return true;
     };
     if($requestUuid!==null&&$sameRequest())return;
+    if($allowArchivedCompensation&&($manageTransaction||$type!=='adjust'||$testId===null||$stepId!==null))throw new RuntimeException('Estorno interno inválido.');
     $started=$manageTransaction&&!$db->inTransaction();
     if($started)$db->beginTransaction();
     try{
@@ -265,11 +266,11 @@ function student_inventory_move(PDO $db,int $studentId,int $itemId,float $delta,
         // Reserve the UUID first: a concurrent replay cannot change the balance twice.
         $db->prepare('INSERT INTO student_inventory_movements(movement_uuid,student_id,item_id,test_id,step_id,movement_type,quantity_delta,note,created_at) VALUES(?,?,?,?,?,?,?,?,?)')
            ->execute([$uuid,$studentId,$itemId,$testId,$stepId,$type,$delta,$note,$now]);
-        $update=$db->prepare('UPDATE student_inventory_items SET quantity=quantity+?,updated_at=? WHERE id=? AND student_id=? AND archived_at IS NULL AND quantity+?>=-0.0000000001');
-        $update->execute([$delta,$now,$itemId,$studentId,$delta]);
+        $update=$db->prepare('UPDATE student_inventory_items SET quantity=quantity+?,updated_at=? WHERE id=? AND student_id=? AND (archived_at IS NULL OR ?=1) AND quantity+?>=-0.0000000001');
+        $update->execute([$delta,$now,$itemId,$studentId,$allowArchivedCompensation?1:0,$delta]);
         if($update->rowCount()!==1){
             $item=student_inventory_item($db,$studentId,$itemId);
-            if(!$item||$item['archived_at']!==null)throw new RuntimeException('Item indisponível no estoque ativo.');
+            if(!$item||($item['archived_at']!==null&&!$allowArchivedCompensation))throw new RuntimeException('Item indisponível no estoque ativo.');
             throw new RuntimeException('O estoque não é suficiente para esta baixa.');
         }
         // Normalize floating point residue without allowing negative physical stock.
