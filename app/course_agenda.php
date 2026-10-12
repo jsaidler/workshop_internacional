@@ -78,6 +78,11 @@ function course_agenda_reconcile_cohort(PDO $db,int $cohortId): void {
         }
     });
 }
+function course_agenda_reconcile_student(PDO $db,int $studentId): void {
+    $q=$db->prepare("SELECT DISTINCT cohort_id FROM course_listener_reservations WHERE student_id=? AND status IN ('waiting','confirmed')");
+    $q->execute([$studentId]);
+    foreach($q->fetchAll(PDO::FETCH_COLUMN) as $id)course_agenda_reconcile_cohort($db,(int)$id);
+}
 function course_agenda_request(PDO $db,int $studentId,int $cohortId): array {
     return course_agenda_with_lock($db,static function() use($db,$studentId,$cohortId): array {
         if(!course_agenda_can_listen($db,$studentId,$cohortId))throw new RuntimeException('Esta turma não está disponível para retorno como ouvinte.');
