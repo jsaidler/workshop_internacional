@@ -32,7 +32,7 @@ $assert(str_contains($cohorts,'Abrir turma'),'Cohort collection must open the op
 $assert(str_contains($cohorts,'Visualizar como esta turma'),'Cohort workspace must expose effective-access preview.');
 $assert(!str_contains($cohorts,'name="slug"'),'Ordinary cohort creation must not require an internal slug decision.');
 
-$lessons=$read('admin/lessons.php');
+$lessons=$read('admin/lessons.php').$read('app/admin_course_agenda_cohort.php');
 $assert(str_contains($lessons,'admin_course_context($course')&&str_contains($lessons,'admin_cohort_context($course,$cohort'),'Lessons must distinguish course structure from cohort access.');
 $assert(str_contains($lessons,"\$action==='update_lesson'")&&str_contains($lessons,"\$action==='move_lesson'"),'Course lesson structure must be editable and reorderable.');
 $assert(str_contains($lessons,'Ver seções de material')&&str_contains($lessons,'admin_course_lesson_material_items')&&str_contains($lessons,'name="release_mode"'),'Release decisions must expose their material consequences.');
