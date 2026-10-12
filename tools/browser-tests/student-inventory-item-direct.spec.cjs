@@ -28,7 +28,13 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
    await page.setViewportSize({width,height});const posts=await mockRoutes(page);
    await page.goto(root+'/aluno/inventario-item.php?id=7',{waitUntil:'networkidle'});
    await expect(page.getByRole('heading',{name:'Editar item'})).toBeVisible();
-   await expect(page.locator('.student-main > [data-student-editor] [data-student-editor-close]')).not.toBeVisible();
+   // Dedicated route must offer both return actions; no modal is active here.
+   await expect(page.locator('dialog[data-student-editor-dialog]')).toHaveCount(0);
+   for(const name of ['Fechar','Cancelar']){
+     const link=page.getByRole('link',{name,exact:true});
+     await expect(link).toBeVisible();
+     await expect(link).toHaveAttribute('href','/aluno/inventario.php');
+   }
    await expect(page.getByRole('link',{name:'← Inventário'})).toBeVisible();
    const form=page.locator('[data-student-editor] form');
    await form.locator('[name="name"]').fill('Recusado <lote>');
