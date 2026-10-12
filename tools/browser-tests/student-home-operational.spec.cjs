@@ -58,6 +58,27 @@ test('New record opens one operational sheet in Home and preserves native POST d
   await expect(opener).toBeFocused();
   fs.mkdirSync('student-visual-audit/home',{recursive:true});
 });
+for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['desktop',1440,1100]]){
+ test('shared creation drawer toggles personal/course fields '+device,async({page})=>{
+   await page.setViewportSize({width,height});
+   await page.goto(base+'?state=active');
+   await page.locator('.student-home-quick [data-record-create-open]').click();
+   const dialog=page.locator('[data-record-create-dialog]');
+   const courseFields=dialog.locator('[data-process-course-context]');
+   await expect(dialog.locator('input[name="context_scope"][value="personal"]')).toBeChecked();
+   await expect(courseFields).toBeHidden();
+   await expect(courseFields.locator('select')).not.toHaveAttribute('required','');
+   await dialog.locator('input[name="context_scope"][value="course"]').check();
+   await expect(courseFields).toBeVisible();
+   await expect(courseFields.locator('select')).toHaveAttribute('required','');
+   fs.mkdirSync('student-visual-audit/home',{recursive:true});
+   await page.screenshot({path:'student-visual-audit/home/context-course-'+device+'.png'});
+   await dialog.locator('input[name="context_scope"][value="personal"]').check();
+   await expect(courseFields).toBeHidden();
+   await expect(courseFields.locator('select')).not.toHaveAttribute('required','');
+   await page.screenshot({path:'student-visual-audit/home/context-personal-'+device+'.png'});
+ });
+}
 test('failed Home creation restores saved draft and sheet focus instead of sending user to Caderno',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto(base+'?state=error');
