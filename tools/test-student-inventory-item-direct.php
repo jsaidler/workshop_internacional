@@ -18,4 +18,7 @@ check_item(str_contains($route,'student_inventory_item_editor($item')&&str_conta
 check_item(str_contains($local,"if(path.endsWith('/aluno/inventario-item.php'))return null;"),'direct item edit must use native POST/redirect');
 check_item(str_contains($route,"header('Location: /aluno/inventario.php?saved=1',true,303)"),'native successful POST must redirect to the real inventory list');
 check_item(str_contains($local,'matchMedia(\'(max-width:760px)\').matches'),'mobile item link must preserve dedicated page navigation');
+$completeAudit=(string)file_get_contents(__DIR__.'/browser-tests/student-complete-area-audit.spec.cjs');
+check_item(str_contains($completeAudit,"['inventory-item-editor','student-inventory-item-direct.php?mode=editor']"),'complete area screenshots must use real item editor renderer');
+check_item(!str_contains($completeAudit,"['inventory-item-editor','student-secondary-screens-audit.html?screen=inventory-item']"),'obsolete synthetic item editor must not be used for global screenshots');
 echo "inventory-item-direct: ok\n";
