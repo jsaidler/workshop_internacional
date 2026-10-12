@@ -4,7 +4,7 @@ declare(strict_types=1);
  * Shared short creation form, so the operational notebook and the mobile
  * audit render the same dialog and preserve failed POST drafts.
  */
-function student_record_create_dialog(array $enrollments,string $csrfToken,array $draft=[],string $error=''): void {
+function student_record_create_dialog(array $enrollments,string $csrfToken,array $draft=[],string $error='',string $actionUrl=''): void {
     $e=static fn(mixed $value):string=>htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
     $title=(string)($draft['title']??'');
     $date=(string)($draft['test_date']??date('Y-m-d'));
@@ -18,7 +18,7 @@ function student_record_create_dialog(array $enrollments,string $csrfToken,array
   </div>
   <div class="student-create-dialog-intro"><p>Comece com o que já sabe. O restante pode ser preenchido depois.</p></div>
   <?php if($error!==''):?><p class="ui-alert ui-alert-error student-create-error" data-record-create-alert role="alert" tabindex="-1"><?=$e($error)?></p><?php endif;?>
-  <form method="post" class="student-form-grid" data-ui-validate>
+  <form method="post"<?=$actionUrl!==''?' action="'.$e($actionUrl).'"':''?> class="student-form-grid" data-ui-validate>
     <input type="hidden" name="_csrf" value="<?=$e($csrfToken)?>">
     <input type="hidden" name="action" value="create">
     <label class="form-field student-span-2">Título<input name="title" maxlength="180" value="<?=$e($title)?>" placeholder="Ex.: EI 200 — primeiro teste"></label>
