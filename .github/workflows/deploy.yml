@@ -50,6 +50,7 @@ jobs:
           php tools/test-student-tool-release.php
           php tools/test-student-process-notebook-runtime.php
           php tools/test-student-inventory-movement.php
+          php tools/test-student-long-editors.php
           php tools/test-aula3-student-area-material.php
           php tools/test-cms-v3.php
           php tools/test-media-image-policy.php

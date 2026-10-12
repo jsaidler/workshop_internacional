@@ -41,9 +41,9 @@ const screens=[
   ['inventory-movement','student-inventory-movement.php'],
   ['inventory-item-editor','student-inventory-item-direct.php?mode=editor'],
   ['preparations','student-lab-stock-product-audit.html?screen=preparations'],
-  ['preparation-editor','student-lab-stock-product-audit.html?screen=editor'],
+  ['preparation-editor','student-long-editors.php?kind=preparation&mode=edit'],
   ['calibration-list','student-secondary-screens-audit.html?screen=calibration-list'],
-  ['calibration-editor','student-secondary-screens-audit.html?screen=calibration-editor'],
+  ['calibration-editor','student-long-editors.php?kind=calibration&mode=edit'],
   ['tools','student-visual-audit.html?screen=tools'],
   ['toolbox','student-toolbox-real-audit.php'],
   ['profile','student-secondary-screens-audit.html?screen=profile'],
@@ -73,8 +73,8 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
       if(name==='inventory-movement'){await page.getByRole('button',{name:'Movimentar estoque'}).click();}
-      if(name==='new-record'||name==='toolbox'||name==='calibration-editor'){
-        const selector=name==='new-record'||name==='calibration-editor'?'.student-create-dialog':'.student-toolbox';
+      if(name==='new-record'||name==='toolbox'){
+        const selector=name==='new-record'?'.student-create-dialog':'.student-toolbox';
         await page.evaluate(sel=>{const d=document.querySelector(sel);if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}},selector);
       }
       if(name==='home-feedback'){await expect(page.getByText('Retorno do professor',{exact:true})).toBeVisible();await expect(page.getByText('Ler retorno e revisar →',{exact:true})).toBeVisible();}
@@ -242,11 +242,11 @@ for(const [device,viewport] of Object.entries(viewports)){
       await page.goto(fixture(path),{waitUntil:'networkidle'});
       if(name!=='material')await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
-      if(name==='new-record'||name==='toolbox'||name==='calibration-editor'){
+      if(name==='new-record'||name==='toolbox'){
         await page.evaluate(selector=>{
           const d=document.querySelector(selector);
           if(d){if(d.open)d.removeAttribute('open');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');}
-        },name==='new-record'||name==='calibration-editor'?'.student-create-dialog':'.student-toolbox');
+        },name==='new-record'?'.student-create-dialog':'.student-toolbox');
       }
       const controls=page.locator('button:visible,a[href]:visible,summary:visible,[role="button"]:visible');
       const count=await controls.count();
