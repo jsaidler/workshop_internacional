@@ -24,7 +24,7 @@ for($id=1;$id<=50;$id++)$db->prepare("INSERT INTO student_users(id,status,name) 
 $migrate=require __DIR__.'/../migrations/098_course_cohort_agenda.php';$migrate($db);$migrate($db); // idempotente
 require __DIR__.'/../app/course_agenda.php';
 for($id=1;$id<=3;$id++)$db->prepare("INSERT INTO course_enrollments(student_id,cohort_id,status) VALUES(?,2,'active')")->execute([$id]);
-for($id=10;$id<=20;$id++)$db->prepare("INSERT INTO course_enrollments(student_id,cohort_id,status) VALUES(?,1,'active')")->execute([$id]);
+for($id=10;$id<=17;$id++)$db->prepare("INSERT INTO course_enrollments(student_id,cohort_id,status) VALUES(?,1,'active')")->execute([$id]);
 $db->exec("INSERT INTO course_enrollments(student_id,cohort_id,status) VALUES(30,3,'active')");
 must_agenda(course_agenda_capacity($db,2)['remaining']===7,'initial seven seats');
 must_agenda(!course_agenda_can_listen($db,1,2),'regular student cannot reserve own cohort');
