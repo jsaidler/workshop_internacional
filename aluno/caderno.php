@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';
+require_once __DIR__.'/../app/student_record_create_dialog.php';
 security_headers();
 student_private_headers();
 
@@ -48,6 +49,7 @@ unset($_SESSION['student_process_notice']);
 $records=student_process_records_for_student($db,$studentId);
 $shared=student_tests_shared_with_student($db,$studentId);
 
+$failedCreate=$error!==''&&($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&(string)($_POST['action']??'create')==='create';
 student_shell_start('Caderno de Processos',null,$student);
 ?>
 <div class="student-page-heading student-notebook-heading">
@@ -60,39 +62,9 @@ student_shell_start('Caderno de Processos',null,$student);
 </div>
 
 <?php if($notice!==''):?><p class="ui-alert ui-alert-notice"><?=h($notice)?></p><?php endif;?>
-<?php if($error!==''):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
+<?php if($error!==''&&!$failedCreate):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
 
-<dialog class="student-create-dialog" data-record-create-dialog aria-labelledby="student-create-title">
-  <div class="student-create-dialog-head">
-    <div><p class="student-kicker">Caderno</p><h2 id="student-create-title">Novo registro</h2></div>
-    <button class="button button-secondary button-compact" type="button" data-record-create-close>Fechar</button>
-  </div>
-  <div class="student-create-dialog-intro">
-    <p>Comece com um título e uma data. O registro não precisa ser preenchido em sequência: salve o que souber agora e complete ou corrija depois.</p>
-  </div>
-  <form method="post" class="student-form-grid" data-ui-validate>
-    <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-notebook'))?>">
-    <input type="hidden" name="action" value="create">
-    <label class="form-field student-span-2">Título<input name="title" maxlength="180" placeholder="Ex.: EI 200 — primeiro teste"></label>
-    <label class="form-field">Data<input type="date" name="test_date" value="<?=h(date('Y-m-d'))?>"></label>
-    <fieldset class="choice-field">
-      <legend>Contexto</legend>
-      <div class="choice-row">
-        <label class="choice-option"><input type="radio" name="context_scope" value="personal" checked data-process-context-radio><span>Pessoal</span></label>
-        <?php if($enrollments):?><label class="choice-option"><input type="radio" name="context_scope" value="course" data-process-context-radio><span>Curso</span></label><?php endif;?>
-      </div>
-    </fieldset>
-    <?php if($enrollments):?>
-      <label class="form-field student-span-2" data-process-course-context hidden>Curso e turma
-        <select name="context_cohort_id">
-          <option value="">Escolha…</option>
-          <?php foreach($enrollments as $enrollment):?><option value="<?=(int)$enrollment['cohort_id']?>"><?=h((string)$enrollment['course_title'])?> · <?=h((string)$enrollment['cohort_title'])?></option><?php endforeach;?>
-        </select>
-      </label>
-    <?php endif;?>
-    <div class="student-actions student-span-2"><button class="button button-primary" type="submit">Criar registro</button></div>
-  </form>
-</dialog>
+<?php student_record_create_dialog($enrollments,csrf_token('student-process-notebook'),$failedCreate?$_POST:[], $failedCreate?$error:''); ?>
 
 <section class="student-section student-notebook-records">
   <div class="student-section-heading student-notebook-section-heading">

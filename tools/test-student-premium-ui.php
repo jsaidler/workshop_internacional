@@ -61,7 +61,9 @@ foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem e
 must_student_premium_ui(str_contains($notebook,'student-process-card')&&str_contains($notebook,'Mais ações'),'notebook does not subordinate administrative actions');
 must_student_premium_ui(!str_contains($notebook,'student-process-compare')&&!str_contains($notebook,'student-record-progress'),'notebook reintroduced permanent comparison or staged progress controls');
 must_student_premium_ui(str_contains($notebook,'button button-danger button-compact')&&str_contains($notebook,'name="visibility"'),'secondary/destructive notebook controls are not explicit inside secondary actions');
-must_student_premium_ui(str_contains($notebook,'data-ui-validate')&&str_contains($notebook,'data-record-create-dialog'),'new-record flow must be one-click and consume global validation');
+$createForm=(string)file_get_contents($root.'/app/student_record_create_dialog.php');
+must_student_premium_ui(str_contains($notebook,'student_record_create_dialog(')&&str_contains($notebook,'data-record-create-open')&&str_contains($createForm,'data-ui-validate')&&str_contains($createForm,'data-record-create-dialog'),'new-record must use shared one-click form with global validation');
+must_student_premium_ui(str_contains($createForm,'data-record-create-error')&&str_contains($createForm,'data-record-create-alert'),'new record creation errors must stay inside the dialog');
 must_student_premium_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route does not redirect to notebook');
 
 foreach(['id="exposicao"','id="processamento"','id="resultado"'] as $anchor)must_student_premium_ui(str_contains($test,$anchor),'record lost always-available documentary section '.$anchor);
