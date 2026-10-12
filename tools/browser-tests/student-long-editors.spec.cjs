@@ -89,8 +89,17 @@ for(const f of families){
     await expect(modal.locator('[name="label"]')).toHaveValue('Recusado teste');
     expect(posts[0].ajax).toBe(true);
     await page.screenshot({path:`student-visual-audit/long-editors/${f.kind}-desktop-modal-error.png`,animations:'disabled'});
-    await modal.getByRole('link',{name:'Fechar'}).click();
+    await modal.locator('[name="label"]').fill('Revisado');
+    await modal.getByRole('button',{name:/Salvar /}).click();
     await expect(modal).toBeHidden();
+    await expect(page.getByText('Registro atualizado')).toBeVisible();
+    await expect(create).toBeFocused();
+    expect(posts[1].ajax).toBe(true);
+    await create.click();
+    await expect(modal).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(modal).toBeHidden();
+    await expect(create).toBeFocused();
    }
   });
  }
