@@ -185,7 +185,7 @@ body.student-page{font-size:16px;line-height:1.55}
   .student-topbar{min-height:54px;gap:8px}
   .student-wordmark{font-size:16px}
   .student-desktop-nav{display:none}
-  .student-tools-trigger{display:none}
+  .student-tools-trigger{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-height:44px;padding-inline:9px;white-space:nowrap}
   .student-user-menu{margin-left:auto}
   .student-user-menu>summary{min-height:38px;padding-inline:11px;font-size:9px}
   .student-main{padding-top:28px}

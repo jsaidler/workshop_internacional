@@ -49,6 +49,9 @@ on:
       - 'tools/browser-tests/student-caderno-product-audit.spec.cjs'
       - 'tools/browser-tests/student-lab-stock-product-audit.spec.cjs'
       - 'tools/browser-tests/student-complete-area-audit.spec.cjs'
+      - 'tools/browser-fixture/student-toolbox-real-audit.php'
+      - 'tools/browser-tests/student-toolbox-real-audit.spec.cjs'
+      - 'tools/test-student-toolbox-parity.php'
       - 'tools/browser-tests/student-gallery-upload.spec.cjs'
       - 'tools/browser-tests/student-record-create-sheet.spec.cjs'
       - 'tools/browser-fixture/student-record-create-sheet.php'
@@ -82,6 +85,7 @@ jobs:
           node tools/generate-aula3-screenshot-pack.cjs student-visual-audit/complete/desktop migrations/assets/aula3-hires.pack.b64
           npx playwright test tools/browser-tests/student-aula3-material-audit.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-gallery-upload.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-toolbox-real-audit.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-record-create-sheet.spec.cjs --workers=1
       - name: Upload rendered screens
         if: always()
