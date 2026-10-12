@@ -10,6 +10,20 @@ $student=student_account_current($db);
 if(!$student){header('Location: /aluno/login.php?next=%2Faluno%2F',true,303);exit;}
 $studentId=(int)$student['id'];
 $enrollments=student_enrollment_list($db,$studentId);
+$createError='';$createDraft=[];
+if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+    $createDraft=$_POST;
+    if(!verify_csrf('student-process-notebook',$_POST['_csrf']??null))$createError='Solicitação inválida.';
+    else{
+        try{
+            if((string)($_POST['action']??'')!=='create')throw new RuntimeException('Ação inválida.');
+            $record=student_process_create_record($db,$studentId,$_POST);
+            header('Location: /aluno/teste.php?id='.(int)$record['id'],true,303);
+            exit;
+        }catch(Throwable $e){$createError=$e->getMessage();}
+    }
+}
+
 $records=student_process_records_for_student($db,$studentId);
 $feedbackRecord=student_feedback_pending_for_student($db,$studentId,null,1)[0]??null;
 $feedback=null;
@@ -56,5 +70,5 @@ $home=[
 ];
 student_shell_start('Início',null,$student);
 require __DIR__.'/../app/student_home_view.php';
-student_record_create_dialog($enrollments,csrf_token('student-process-notebook'),[],'','/aluno/caderno.php');
+student_record_create_dialog($enrollments,csrf_token('student-process-notebook'),$createDraft,$createError,'/aluno/');
 student_shell_end();

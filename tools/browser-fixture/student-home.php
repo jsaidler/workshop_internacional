@@ -7,7 +7,7 @@ require_once __DIR__.'/../../app/student_home.php';
 require_once __DIR__.'/../../app/student_shell.php';
 require_once __DIR__.'/../../app/student_record_create_dialog.php';
 $state=(string)($_GET['state']??'active');
-$scenario=['active','study','multiple','empty','feedback','no-link','long','restricted','record'];
+$scenario=['active','study','multiple','empty','feedback','no-link','long','restricted','record','error'];
 if(!in_array($state,$scenario,true))$state='active';
 $course=['title'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','url'=>'/aluno/cursos.php?cohort=cohort-a','questions_url'=>'/aluno/duvidas.php?cohort=cohort-a','material'=>['title'=>'Exposição pensando no positivo','url'=>'/material-do-curso?cohort=cohort-a'],'available'=>2];
 $course2=['title'=>'Pesquisa em processos fotográficos','cohort'=>'Turma Novembro 2026','url'=>'/aluno/cursos.php?cohort=cohort-b','questions_url'=>'/aluno/duvidas.php?cohort=cohort-b','material'=>['title'=>'Química de revelação','url'=>'/processos?cohort=cohort-b'],'available'=>1];
@@ -43,7 +43,7 @@ $home=[
 <dialog class="student-toolbox" data-student-toolbox aria-labelledby="student-toolbox-title"><div class="student-toolbox-head"><h2 id="student-toolbox-title">Ferramentas</h2><button type="button" class="button button-secondary" data-toolbox-close>Fechar</button></div></dialog>
 <main class="student-main">
 <?php require __DIR__.'/../../app/student_home_view.php'; ?>
-<?php student_record_create_dialog($state==='empty'?[]:[['cohort_id'=>12,'course_title'=>$course['title'],'cohort_title'=>$course['cohort']]],'fixture-csrf',[],'','/aluno/caderno.php'); ?>
+<?php student_record_create_dialog($state==='empty'?[]:[['cohort_id'=>12,'course_title'=>$course['title'],'cohort_title'=>$course['cohort']]],'fixture-csrf',$state==='error'?['title'=>'EI 400 — tratamento alterado','context_scope'=>'course','context_cohort_id'=>'12']:[],$state==='error'?'Verifique o título e tente novamente.':'','/aluno/'); ?>
 </main>
 <?php student_shell_nav('home','student-mobile-nav'); ?>
 </div>

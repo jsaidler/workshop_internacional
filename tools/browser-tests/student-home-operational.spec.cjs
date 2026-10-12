@@ -25,7 +25,7 @@ test('no enrollment and restricted tools stay functional without fabricated metr
   await page.goto(base+'?state=empty');
   await expect(page.getByText('Nenhuma matrícula ativa')).toBeVisible();
   await expect(page.locator('[data-home-empty-feature]')).toBeVisible();
-  await expect(page.getByRole('button',{name:'Novo registro',exact:true})).toBeVisible();
+  await expect(page.locator('[data-record-create-open]')).toHaveCount(1);
   await page.goto(base+'?state=restricted');
   await expect(page.getByText('Material aguardando liberação')).toBeVisible();
   await expect(page.getByRole('link',{name:'Temporizador'})).toHaveCount(0);
@@ -45,7 +45,7 @@ test('New record opens one operational sheet in Home and preserves native POST d
   await opener.click();
   const dialog=page.locator('[data-record-create-dialog]');
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator('form')).toHaveAttribute('action','/aluno/caderno.php');
+  await expect(dialog.locator('form')).toHaveAttribute('action','/aluno/');
   await expect(dialog.getByRole('textbox',{name:'Título'})).toBeVisible();
   await expect(dialog.locator('form [name="_csrf"]')).toHaveValue('fixture-csrf');
   await dialog.getByRole('textbox',{name:'Título'}).fill('Experimento não salvo');
@@ -57,6 +57,19 @@ test('New record opens one operational sheet in Home and preserves native POST d
   await dialog.getByRole('button',{name:'Fechar'}).click();
   await expect(opener).toBeFocused();
   fs.mkdirSync('student-visual-audit/home',{recursive:true});
+});
+test('failed Home creation restores saved draft and sheet focus instead of sending user to Caderno',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(base+'?state=error');
+  const dialog=page.locator('[data-record-create-dialog]');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('[role="alert"]')).toBeVisible();
+  await expect(dialog.locator('[role="alert"]')).toBeFocused();
+  await expect(dialog.getByRole('textbox',{name:'Título'})).toHaveValue('EI 400 — tratamento alterado');
+  await expect(dialog.locator('select[name="context_cohort_id"]')).toHaveValue('12');
+  await expect(dialog.locator('form')).toHaveAttribute('action','/aluno/');
+  fs.mkdirSync('student-visual-audit/home',{recursive:true});
+  await page.screenshot({path:'student-visual-audit/home/error-phone-drawer.png'});
 });
 for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['desktop',1440,1100]]){
   for(const state of ['active','study','multiple','empty','feedback','no-link','long','restricted']){
