@@ -11,6 +11,11 @@ $future='2030-10-12T22:00:00Z';$tz='America/Sao_Paulo';
 $meeting=['cohort_id'=>2,'cohort_title'=>'Turma de outubro','course_title'=>'Positivo Direto em Filme de Raios X','lesson_id'=>101,'lesson_title'=>'Características do filme e exposição','meeting_starts_at'=>$future,'meeting_timezone'=>$tz,'meeting_duration_minutes'=>120,'meeting_url'=>'https://example.org/private-meeting','meeting_notes'=>'Acesse pelo link informado alguns minutos antes.','meeting_status'=>'scheduled','participation'=>$state==='listener'?'listener':'regular'];
 $meetings=in_array($state,['regular','listener'],true)?[$meeting]:[];
 $offer=['cohort_id'=>3,'cohort_title'=>'Turma de novembro','course_title'=>'Positivo Direto em Filme de Raios X','agenda_enrollment_closes_at'=>'2025-09-10T20:00:00Z','agenda_listeners_open_at'=>'2031-09-10T20:00:00Z','next_meeting'=>'2031-11-18T22:00:00Z','future_meetings'=>3,'reservation_status'=>$state==='waiting'?'waiting':($state==='full'?'':'') ,'capacity'=>['limit'=>10,'occupied'=>$state==='full'?10:3,'remaining'=>$state==='full'?0:7,'regular'=>3,'excess'=>0]];
+$offer['schedule']=[
+ ['lesson_title'=>'Filme de raio X e exposição','meeting_starts_at'=>'2031-11-18T22:00:00Z','meeting_timezone'=>$tz,'meeting_duration_minutes'=>120],
+ ['lesson_title'=>'Produção dos positivos','meeting_starts_at'=>'2031-11-19T22:00:00Z','meeting_timezone'=>$tz,'meeting_duration_minutes'=>120],
+ ['lesson_title'=>'Revisão dos resultados','meeting_starts_at'=>'2031-11-20T22:00:00Z','meeting_timezone'=>$tz,'meeting_duration_minutes'=>120],
+];
 if($state==='full')$offer['agenda_listeners_open_at']='2025-09-10T20:00:00Z';
 $offers=$state==='empty'?[]:[$offer];$notice='';$error='';
 ?><!doctype html><html lang="pt-BR" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
