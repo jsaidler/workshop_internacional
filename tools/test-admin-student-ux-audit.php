@@ -67,7 +67,7 @@ ux_expect(str_contains($people,'FROM student_users u'),'Pessoas deve continuar b
 
 ux_expect(str_contains($lessons,'admin_course_context($course')&&str_contains($lessons,'admin_cohort_context($course,$cohort'),'Aulas deve separar estrutura do curso e acesso da turma');
 ux_expect(str_contains($lessons,"\$action==='update_lesson'")&&str_contains($lessons,"\$action==='move_lesson'"),'estrutura de aulas deve permitir correção de nome e ordem');
-ux_expect(str_contains($lessons,'Ver conteúdo afetado')&&str_contains($lessons,'Liberar agora')&&str_contains($lessons,'Agendar')&&str_contains($lessons,'Bloquear'),'liberação deve mostrar consequência e ações no próprio contexto da turma');
+ux_expect(str_contains($lessons,'Ver seções de material')&&str_contains($lessons,'Manter liberação atual')&&str_contains($lessons,'Agendar liberação')&&str_contains($lessons,'Liberar agora')&&str_contains($lessons,'Bloquear material'),'liberação deve mostrar consequência e ações no próprio contexto da turma');
 ux_expect(str_contains($lessons,'Visualizar como esta turma'),'Aulas e acesso deve permitir verificar o resultado efetivo');
 ux_expect(str_contains($material,'course_material_add_page'),'Material deve preservar a relação canônica com páginas CMS');
 ux_expect(str_contains($material,'/editor/?page='),'Material deve continuar usando o editor CMS canônico');
