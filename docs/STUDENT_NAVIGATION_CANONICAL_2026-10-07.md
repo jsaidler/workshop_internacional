@@ -466,3 +466,8 @@ Critérios mínimos desta tranche: legendas de pelo menos **11 px**, ações com
 ## Decisão de navegação para gavetas transitórias — 10/10/2026
 
 A arquitetura de interação contextual é detalhada em `docs/STUDENT_MOBILE_INTERACTION_ARCHITECTURE_2026-10-10.md`. Gavetas são **diálogos transitórios** acionados por intenção, não destinos da navegação. Elas podem cobrir momentaneamente a barra inferior no top layer nativo enquanto abertas (exceção modal prevista na seção 3); ao fecharem, os quatro destinos, o destaque ativo e a posição de leitura retornam intactos. Escape/Cancel e fechamento explícito não criam entradas de histórico fictícias; Back/Forward deve permanecer canônico fora da gaveta. Nenhuma interface de processamento pode usar fechamento de gaveta como prova de etapa executada.
+
+
+## Agenda como destino contextual de Cursos (12/10/2026)
+
+`/aluno/agenda.php` apresenta os encontros dos cursos do estudante, incluindo participação regular e retorno confirmado como ouvinte. A Agenda **não é quinto destino global**: permanece sob **Cursos** na barra mobile e na navegação desktop, acessível a partir da página de Cursos e com retorno explícito à mesma. Não existe navegação global paralela para as reservas, nem link privado de encontro na lista de espera.
