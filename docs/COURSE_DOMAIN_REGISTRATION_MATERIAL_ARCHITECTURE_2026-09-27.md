@@ -151,3 +151,16 @@ Inscrições antigas recebem `course_id` somente quando a associação por formu
 6. seção vinculada a aula bloqueada não chega ao HTML;
 7. um aluno pode ter inscrições/matrículas em vários cursos sem duplicar identidade;
 8. a administração não mistura inscrições de cursos diferentes como lista padrão.
+
+
+## Agenda integrada — decisão de produto de 12/10/2026 (#234)
+
+A identidade pedagógica continua em `course_lessons` (`course_id`, título, ordem, material e recursos). Cada turma configura a **ocorrência** da mesma aula em `cohort_lesson_releases`, estendida por `migrations/098_course_cohort_agenda.php` com data/hora UTC, fuso IANA, duração, URL, instruções e estado operacional. A Agenda é uma **projeção**, não um novo cadastro de aula. Encontros sem data continuam administráveis mas não aparecem como agendados; data e link nunca são inventados.
+
+`released_at` continua sendo a **única autoridade de liberação** da combinação turma + aula. Marcar um encontro, atribuir um link ou concluir uma transmissão não libera material, seções CMS nem ferramentas protegidas. A ficha única `Cursos → Turma → Aulas` mantém encontro e liberação no mesmo contexto, com escolha explícita de manter/alterar a liberação.
+
+A turma herda `courses.agenda_default_capacity` (10, salvo configuração) ou utiliza `course_cohorts.agenda_capacity`. Vagas são compartilhadas entre estudantes com `course_enrollments.status='active'` e ouvintes com `course_listener_reservations.status='confirmed'`, sem contar duas vezes a mesma pessoa. Os gatilhos SQLite são parte da fronteira transacional: nenhuma outra rota de criação de matrícula pode exceder o limite. Reduzir capacidade não expulsa ninguém; mostra excesso e impede novos ingressos.
+
+O retorno como ouvinte exige identidade ativa e matrícula elegível de outro `cohort_id` do **mesmo curso** (a turma de origem pode ter terminado). A reserva pertence à turma inteira, tem fila cronológica e idempotência `UNIQUE(student_id,cohort_id)`; não cria inscrição financeira, segunda matrícula nem direito a material/testes. A confirmação só ocorre após **ambos** `agenda_enrollment_closes_at` e `agenda_listeners_open_at`; antes disso a fila não ocupa vagas. Cancelamento convoca o primeiro elegível, sob transação SQLite com `BEGIN IMMEDIATE`. O cronograma do encontro é distinto dos prazos comerciais. Links e instruções privados só entram na resposta autenticada de matrícula ativa ou ouvinte confirmado com elegibilidade atual. Ausência de turmas futuras não representa promessa de retorno ilimitado.
+
+A atribuição ou transferência de inscrição paga em `course_registration_assign_cohort()` é transacional: modifica a turma e reconcilia a matrícula no mesmo commit. Se a capacidade impedir a matrícula, desfaz inclusive a troca de turma e apresenta uma mensagem administrativa de indisponibilidade; não é permitido informar sucesso com matrícula recusada. Desvinculação ou desativação de matrícula reavalia ouvintes e libera a capacidade da turma anterior, respeitando a fila.

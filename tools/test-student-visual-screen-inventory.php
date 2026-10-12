@@ -4,7 +4,7 @@ function fail_student_visual_inventory(string $message): never {fwrite(STDERR,"s
 function must_student_visual_inventory(bool $ok,string $message): void {if(!$ok)fail_student_visual_inventory($message);}
 $root=dirname(__DIR__);
 $rendered=[
-'caderno.php','calibracao.php','comparar-processos.php','cursos.php','duvidas.php','excluir-teste.php','ferramentas.php','index.php','inventario-item.php','inventario.php','login.php','perfil.php','preparos.php','processamentos.php','processar.php','registro-roteiro.php','senha.php','teste-compartilhado.php','teste-etapa.php','teste.php',
+'agenda.php','caderno.php','calibracao.php','comparar-processos.php','cursos.php','duvidas.php','excluir-teste.php','ferramentas.php','index.php','inventario-item.php','inventario.php','login.php','perfil.php','preparos.php','processamentos.php','processar.php','registro-roteiro.php','senha.php','teste-compartilhado.php','teste-etapa.php','teste.php',
 ];
 $nonScreens=[
 'exposicao.php','logout.php','material-anotacao.php','material.php','media.php','preparo-solucoes.php','reciprocidade.php','temporizador.php','teste-media.php','testes.php','visibilidade-teste.php','processamento-realizado.php','processamentos-trocar.php',

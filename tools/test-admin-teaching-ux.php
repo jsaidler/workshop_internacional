@@ -5,7 +5,7 @@ function teaching_ux_expect(bool $ok,string $message): void {if(!$ok){fwrite(STD
 $shell=(string)file_get_contents($root.'/app/admin_shell.php');
 $courses=(string)file_get_contents($root.'/admin/courses.php');
 $cohorts=(string)file_get_contents($root.'/admin/cohorts.php');
-$lessons=(string)file_get_contents($root.'/admin/lessons.php');
+$lessons=(string)file_get_contents($root.'/admin/lessons.php').(string)file_get_contents($root.'/app/admin_course_agenda_cohort.php');
 $material=(string)file_get_contents($root.'/admin/material.php');
 $teachingCss=(string)file_get_contents($root.'/assets/admin-teaching.css');
 $collectionCss=(string)file_get_contents($root.'/assets/admin-collection-ux.css');
@@ -26,10 +26,10 @@ teaching_ux_expect(str_contains($cohorts,'Aulas e acesso')&&str_contains($cohort
 teaching_ux_expect(str_contains($cohorts,'Visualizar como esta turma'),'turma deve permitir verificar o estado efetivo de acesso');
 
 teaching_ux_expect(str_contains($lessons,'admin_course_context($course,$activityId,\'content\'')&&str_contains($lessons,"'Aulas'"),'estrutura de aulas deve pertencer ao contexto persistente do curso');
-teaching_ux_expect(str_contains($lessons,'Aulas e acesso'),'disponibilidade deve pertencer à turma');
+teaching_ux_expect(str_contains($lessons,'Aulas da turma')&&str_contains($lessons,'save_meeting'),'disponibilidade deve pertencer à turma');
 teaching_ux_expect(str_contains($lessons,'update_lesson')&&str_contains($lessons,'move_lesson'),'estrutura deve permitir corrigir e ordenar aulas existentes');
-teaching_ux_expect(str_contains($lessons,'Ver conteúdo afetado'),'decisão de liberação deve revelar a consequência sobre o material');
-teaching_ux_expect(str_contains($lessons,'name="scheduled_at"')&&str_contains($lessons,'value="schedule"')&&str_contains($lessons,'value="release"')&&str_contains($lessons,'value="block"'),'turma deve expor agendamento, liberação imediata e bloqueio');
+teaching_ux_expect(str_contains($lessons,'Ver seções de material')&&str_contains($lessons,'Recursos liberados com esta aula'),'decisão de liberação deve revelar a consequência sobre o material');
+teaching_ux_expect(str_contains($lessons,'name="meeting_starts_at"')&&str_contains($lessons,'name="release_scheduled_at"')&&str_contains($lessons,'value="schedule"')&&str_contains($lessons,'value="release"')&&str_contains($lessons,'value="block"')&&str_contains($lessons,'value="keep"'),'turma deve expor agendamento, liberação imediata e bloqueio');
 teaching_ux_expect(str_contains($lessons,"admin_status_label('release'"),'estado de liberação não deve vazar enum técnico');
 teaching_ux_expect(!str_contains($lessons,'Gerenciar liberação'),'liberação não deve exigir round-trip por detalhe de aula');
 

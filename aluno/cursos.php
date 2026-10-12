@@ -7,6 +7,7 @@ $studentId=(int)$student['id'];$enrollments=student_enrollment_list($db,$student
 $selectedEnrollment=null;if($requestedCohortUuid!=='')$selectedEnrollment=student_enrollment_dashboard_context($enrollments,$requestedCohortUuid);elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0];
 $selectedActivity=null;if($selectedEnrollment){$selectedActivity=activity_by_id($db,(int)$selectedEnrollment['activity_id']);if(!$selectedActivity)$selectedEnrollment=null;}
 student_shell_start('Curso',$selectedActivity,$student);?>
+<nav class="student-academic-course-actions" aria-label="Agenda dos cursos"><a class="button button-secondary" href="/aluno/agenda.php">Agenda de encontros →</a></nav>
 <?php if(!$enrollments):?>
   <p class="student-kicker">Curso</p><h1 class="student-title">Nenhuma matrícula ativa</h1><p class="student-lead">Quando uma matrícula estiver ativa, o material e as aulas aparecem aqui.</p>
 <?php elseif(!$selectedEnrollment):?>
