@@ -19,7 +19,7 @@ verify_step_editor(str_contains($new,'data-process-template-stage')&&str_contain
 verify_step_editor(str_contains($new,'name="_csrf"')&&str_contains($new,'name="template_id"'),'CSRF/template identity lost');
 verify_step_editor(str_contains($new,'name="duration"')&&str_contains($new,'name="developer_amount"')&&str_contains($new,'name="water_amount"'),'time/volume fields lost');
 verify_step_editor(strpos($new,'name="duration"')<strpos($new,'Agitação e observações'),'time cannot be buried after optional agitation');
-verify_step_editor(substr_count($new,'student-process-task-disclosure')===2,'must expose exactly two optional detail groups');
+verify_step_editor(substr_count($new,'<details class="student-process-task-disclosure ')===2,'must expose exactly two optional detail groups');
 verify_step_editor(str_contains($new,'data-process-template-other-developer hidden'),'other developer must begin conditional');
 $payload=['developer_key'=>'parodinal','developer_amount'=>'10','water_amount'=>'540','temperature'=>'26 °C','agitation_mode'=>'periodic','agitation_duration'=>'00:10','agitation_interval'=>'01:00','agitation'=>'Inversões','notes'=>'Observado','reuse_source_stage_key'=>'first_development'];
 $edit=show_step(['id'=>16,'stage_key'=>'second_development','duration'=>'07:00','agitation_interval'=>'01:00','payload_json'=>json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)]);
