@@ -30,7 +30,7 @@ for(const [device,width,height] of [['phone-compact',320,720],['phone',390,844],
       const box=await dialog.evaluate(el=>({bottom:el.getBoundingClientRect().bottom,height:el.getBoundingClientRect().height,viewport:innerHeight}));
       expect(Math.abs(box.bottom-box.viewport)).toBeLessThanOrEqual(2);
       expect(box.height).toBeLessThanOrEqual(box.viewport);
-      await expect(page.locator('.student-mobile-nav a')).toHaveCount(4);
+      await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
     }
     await page.screenshot({path:`student-visual-audit/toolbox-real/${device}-menu.png`,animations:'disabled'});
     await summary.first().click();

@@ -34,7 +34,7 @@ const screen=params.get('screen')||'home';
 const cohort=params.get('cohort')||'cohort-a';
 const record=params.get('id')||'42';
 const item=params.get('item')||'9';
-const active=screen==='home'?'home':['courses','course','material','question'].includes(screen)?'courses':['notebook','record','step'].includes(screen)?'notebook':['laboratory','inventory','item'].includes(screen)?'laboratory':'';
+const active=screen==='home'?'home':screen==='agenda'?'agenda':['courses','course','material','question'].includes(screen)?'courses':['notebook','record','step'].includes(screen)?'notebook':['laboratory','inventory','item'].includes(screen)?'laboratory':'';
 document.querySelectorAll('[data-global-nav] [data-area]').forEach(link=>{if(link.dataset.area===active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
 const h=(title,body='')=>`<p class="student-kicker">Navegação</p><h1 class="student-title">${title}</h1>${body}`;
 if(screen==='home')app.innerHTML=h('Início','<p class="student-lead">Entrada da Área do aluno.</p>');

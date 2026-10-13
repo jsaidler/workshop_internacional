@@ -13,12 +13,13 @@ test('Home opens material for a single enrollment without extra choice',async({p
 });
 test('multiple enrollments expose scoped links, not a selector gate',async({page})=>{
   await page.goto(base+'?state=multiple');
-  await expect(page.locator('.student-home-course')).toHaveCount(2);
+  await expect(page.locator('.student-v2-course')).toHaveCount(2);
   await expect(page.locator('.student-home-course-actions a[href*="cohort-b"]')).toHaveCount(2);
 });
 test('mobile first viewport contains primary action and bottom navigation',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto(base+'?state=active');
-  await expect(page.locator('.student-home-quick [data-record-create-open]')).toBeInViewport();
+  await expect(page.locator('[data-home-meeting] .student-v2-cta')).toBeInViewport();
+  await expect(page.locator('.student-v2-footer-actions [data-record-create-open]')).toHaveCount(1);
   await expect(page.locator('.student-mobile-nav')).toBeVisible();
 });

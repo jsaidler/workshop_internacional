@@ -105,9 +105,20 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar como concluída',exact:true})).toBeVisible();await expect(page.getByText('Ir para próxima etapa',{exact:false})).toHaveCount(0);
       }
       if(device==='phone'&&name!=='login'&&name!=='activation-password'){
-        const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar,.cms-topbar'),reserve=document.querySelector('.student-shell')||document.body;if(!nav||!top||!reserve)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),rs=getComputedStyle(reserve),nr=nav.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBottom:nr.bottom,navHeight:nr.height,viewportHeight:innerHeight,reservedBottom:parseFloat(rs.paddingBottom||'0'),scrollPaddingBottom:parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom||'0')};});
+        const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar,.cms-topbar'),reserve=document.querySelector('.student-shell')||document.body,reading=document.querySelector('.student-main');if(!nav||!top||!reserve)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),rs=getComputedStyle(reserve),nr=nav.getBoundingClientRect(),mr=reading?.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navTop:nr.top,navBottom:nr.bottom,mainBottom:mr?.bottom??null,navHeight:nr.height,viewportHeight:innerHeight,reservedBottom:parseFloat(rs.paddingBottom||'0'),scrollPaddingBottom:parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom||'0')};});
         expect(mobileChrome,`${name}: authenticated mobile surface must expose global chrome`).not.toBeNull();
-        expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);expect(mobileChrome.reservedBottom,`${name}: surface must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);expect(mobileChrome.scrollPaddingBottom,`${name}: scrolling must account for the fixed mobile navigation`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+        expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');
+        expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');
+        expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);
+        if(mobileChrome.navPosition==='fixed'){
+          expect(mobileChrome.reservedBottom,`${name}: fixed navigation must reserve its footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+          expect(mobileChrome.scrollPaddingBottom,`${name}: fixed navigation must reserve scroll padding`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+        }else{
+          // The mobile-first shell uses a real grid row for the nav. The scroll
+          // region must physically terminate above it; no fake padding is needed.
+          expect(mobileChrome.mainBottom,`${name}: grid scroll region missing`).not.toBeNull();
+          expect(mobileChrome.mainBottom,`${name}: content overlaps in-flow navigation`).toBeLessThanOrEqual(mobileChrome.navTop+1);
+        }
       }
       if(path.startsWith('student-secondary-screens-audit.html')){
         expect(pageErrors,`${name}: JS failure inside real-layout fixture`).toEqual([]);
@@ -571,7 +582,7 @@ for(const width of [320,390]){
       if(surface==='student-shell')await ensureCanonicalShellStyles(page);
       const nav=page.locator('.student-mobile-nav'),links=nav.locator('a');
       await expect(nav).toBeVisible();
-      await expect(links).toHaveCount(4);
+      await expect(links).toHaveCount(5);
       const items=await links.evaluateAll(nodes=>nodes.map(node=>{
         const box=node.getBoundingClientRect(),style=getComputedStyle(node),x=box.left+box.width/2,y=box.top+box.height/2;
         return {label:node.textContent.trim(),fontSize:parseFloat(style.fontSize),width:box.width,height:box.height,left:box.left,right:box.right,bottom:box.bottom,contentWidth:node.clientWidth,scrollWidth:node.scrollWidth,hittable:node===document.elementFromPoint(x,y)||node.contains(document.elementFromPoint(x,y))};
