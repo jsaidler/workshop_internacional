@@ -1,0 +1,27 @@
+# Laboratório — reconstrução mobile-first v2
+Data: 13/10/2026. PR #243, **branch de trabalho não publicada**.
+
+## Modelo de navegação
+
+Laboratório é um destino global da área do aluno. Sua tela principal passa a ser um ponto de entrada **operacional**, não um painel que expõe simultaneamente todos os formulários.
+
+- **Suas ferramentas:** Processamentos, Inventário, Predefinições de revelação e Referências de calibração. As operações liberadas pelo `student_tools_for_student` são respeitadas: Processamentos requer `lab_timer`; Inventário requer `lab_inventory`; Calibração requer `calibration`. Predefinições continua acessível conforme o contrato preexistente.
+- **Cálculos e receitas:** Reciprocidade, Exposição equivalente e Receitas são `details` nativos. Esses recursos são renderizados somente se suas chaves de ferramenta estiverem liberadas. Os campos de entrada e os marcadores `data-quick-reciprocity`, `data-exposure-tool`, `data-solution-tool`, `data-solution-formula` e `data-solution-amount` permanecem ligados ao JavaScript/calculadoras existentes. Não há nova matemática ou nova receita dentro da camada visual.
+- **Links legados:** `/aluno/ferramentas.php#reciprocidade`, `#exposicao` e `#receitas` continuam funcionando e expandem a calculadora correspondente. Back/Forward usa o histórico nativo.
+- **Sem ferramentas liberadas:** estado explícito; não renderiza conteúdos restritos nem cálculos por padrão.
+
+## Autoridade e segurança
+
+`aluno/ferramentas.php` mantém autenticação, cabeçalhos privados, consulta de liberações, projeção das receitas e notas químicas autorizadas. `app/student_laboratory_view.php` só transforma essa projeção em HTML. `assets/student-laboratory.css` é a autoridade visual exclusiva da página; o shell carrega a folha apenas em sua rota.
+
+Os serviços de roteiros de processamento, estoque, preparos, calibrações e as regras de cálculo de exposição e reciprocidade **não foram alterados**. Receitas, quantidades e avisos são provenientes de `student_solution_formulas()` e `student_experience_recipe_notes()`, sem substituição por valores fictícios em produção.
+
+## Testes e cobertura
+
+`tools/browser-fixture/student-laboratory.php` usa o componente real com dados controlados e identificados como ilustrativos. A suíte `student-laboratory-v2.spec.cjs` cobre vazio, liberação parcial, receitas apenas, operações apenas e acesso completo; 320 × 720, 390 × 844 e 1440 × 1100; tema claro/escuro; links e navegação; scroll e overflow; deep links; expansão das calculadoras; atualização de exposição e receita via mecânica real. A matriz de 46 telas no `student-complete-area-audit.spec.cjs` também utiliza o renderer novo na entrada Laboratório.
+
+## Limites para integração
+
+Esta etapa reconstrói a **página principal do Laboratório**, não todas as telas detalhadas de Processamentos, Inventário, Predefinições ou Calibrações. Suas funções e editores permanecem operacionais, mas a aceitação visual transversal deve verificar essas rotas junto com o shell novo.
+
+O PR deve continuar em rascunho e sem merge até aprovação dos três workflows (`validate`, `student-visual-audit` e `deploy`) **no mesmo SHA final**, inspeção das capturas e verificação do percurso autenticado em ambiente de teste. O pacote gerado por `deploy` no PR não altera a hospedagem.
