@@ -10,70 +10,7 @@ function student_process_template_href(int $id,int $testId=0,int $stepId=0): str
     return $url;
 }
 
-function student_process_render_step_form(array $catalog,array $developers,array $preparations,string $csrf,int $templateId,int $testId,?array $step=null): void {
-    $payload=$step?student_process_json_array((string)$step['payload_json']):[];
-    $stageKey=(string)($step['stage_key']??'first_development');
-    $customLabel=(string)($payload['custom_label']??'');
-    $developerKey=(string)($payload['developer_key']??array_key_first($developers)??'');
-    $savedPreparationId=(int)($payload['saved_preparation_id']??0);
-    $reuseSource=(string)($payload['reuse_source_stage_key']??'');
-    $profile=student_process_lab_agitation_profile([
-        'payload_json'=>json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),
-        'agitation_interval'=>(string)($step['agitation_interval']??$payload['agitation_interval']??''),
-    ]);
-    $action=$step?'update_step':'add_step';
-    ?>
-    <form method="post" class="student-form-grid student-process-step-form" data-process-template-step-form>
-      <input type="hidden" name="_csrf" value="<?=h($csrf)?>">
-      <input type="hidden" name="action" value="<?=h($action)?>">
-      <input type="hidden" name="template_id" value="<?=$templateId?>">
-      <input type="hidden" name="test_id" value="<?=$testId?>">
-      <?php if($step):?><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><?php endif;?>
-      <label class="form-field student-span-2">Etapa
-        <select name="stage_key" data-process-template-stage>
-          <?php foreach($catalog as $key=>$stage):?><option value="<?=h((string)$key)?>"<?=$stageKey===(string)$key?' selected':''?>><?=h((string)$stage['label'])?></option><?php endforeach;?>
-        </select>
-      </label>
-      <label class="form-field student-span-2" data-process-template-custom<?=$stageKey==='custom'?'':' hidden'?>>Nome da etapa
-        <input name="custom_label" maxlength="120" value="<?=h($customLabel)?>">
-      </label>
-      <div class="student-span-2 student-form-grid" data-process-template-development<?=in_array($stageKey,['first_development','second_development'],true)?'':' hidden'?>>
-        <label class="form-field">Revelador
-          <select name="developer_key"><?php foreach($developers as $key=>$developer):?><option value="<?=h($key)?>"<?=$developerKey===(string)$key?' selected':''?>><?=h((string)$developer['label'])?></option><?php endforeach;?></select>
-        </label>
-        <label class="form-field">Predefinição de revelação
-          <select name="saved_preparation_id"><option value="">Nenhuma</option><?php foreach($preparations as $prep):?><option value="<?=(int)$prep['id']?>"<?=$savedPreparationId===(int)$prep['id']?' selected':''?>><?=h((string)$prep['label'])?></option><?php endforeach;?></select>
-        </label>
-        <label class="form-field">Revelador ou solução estoque (ml)<input type="number" min="0" step="0.1" name="developer_amount" value="<?=h((string)($payload['developer_amount']??''))?>"></label>
-        <label class="form-field">Água (ml)<input type="number" min="0" step="0.1" name="water_amount" value="<?=h((string)($payload['water_amount']??''))?>"></label>
-        <label class="form-field student-span-2">Outro revelador<input name="developer_name" value="<?=h((string)($payload['developer_name']??''))?>"></label>
-      </div>
-      <label class="student-process-reuse student-span-2" data-process-template-reuse<?=$stageKey==='second_development'?'':' hidden'?>>
-        <input type="checkbox" name="reuse_source_stage_key" value="first_development"<?=$reuseSource==='first_development'?' checked':''?>>
-        <span><strong>Reutilizar o banho da primeira revelação</strong><small>Marque quando a segunda revelação usa a mesma solução já preparada. Isso não representa uma nova preparação nem um novo consumo.</small></span>
-      </label>
-      <label class="form-field">Tempo<input name="duration" value="<?=h((string)($step['duration']??''))?>" placeholder="07:00"></label>
-      <label class="form-field">Temperatura<input name="temperature" value="<?=h((string)($payload['temperature']??''))?>" placeholder="26 °C"></label>
-      <label class="form-field student-span-2">Controle de agitação
-        <select name="agitation_mode" data-process-agitation-mode>
-          <option value="none"<?=$profile['mode']==='none'?' selected':''?>>Sem temporização</option>
-          <option value="periodic"<?=$profile['mode']==='periodic'?' selected':''?>>Periódica</option>
-          <option value="continuous"<?=$profile['mode']==='continuous'?' selected':''?>>Contínua</option>
-        </select>
-      </label>
-      <div class="student-span-2 student-form-grid" data-process-agitation-periodic<?=$profile['mode']==='periodic'?'':' hidden'?>>
-        <label class="form-field">Duração de cada agitação<input name="agitation_duration" value="<?=h((string)$profile['duration'])?>" placeholder="00:10"></label>
-        <label class="form-field">Intervalo entre inícios<input name="agitation_interval" value="<?=h((string)$profile['interval'])?>" placeholder="01:00"></label>
-      </div>
-      <label class="form-field student-span-2">Observação de agitação<input name="agitation" value="<?=h((string)($payload['agitation']??''))?>" placeholder="Ex.: inversões suaves"></label>
-      <label class="form-field student-span-2">Anotações<textarea name="notes" rows="2" maxlength="3000"><?=h((string)($payload['notes']??''))?></textarea></label>
-      <div class="student-actions student-span-2">
-        <button class="button button-primary" type="submit"><?=$step?'Salvar etapa':'Adicionar etapa'?></button>
-        <?php if($step):?><a class="button button-secondary" href="<?=h(student_process_template_href($templateId,$testId))?>">Cancelar</a><?php endif;?>
-      </div>
-    </form>
-    <?php
-}
+require_once __DIR__.'/../app/student_process_template_step_editor.php';
 
 $db=database();$student=student_account_current($db);$next='/aluno/processamentos.php';
 if(!$student){header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}

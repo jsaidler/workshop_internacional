@@ -153,3 +153,75 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
   .student-process-runner-controls .button{width:100%}
   .student-process-runner-advance .button{width:100%}
 }
+
+
+/* Process-editor task hierarchy belongs here, not in the global shell.
+   Native disclosures preserve entered values and form semantics. */
+.student-process-task-form{
+  max-width:760px;min-width:0;gap:15px
+}
+.student-process-task-form [hidden],
+.student-process-task-form [data-process-template-development][hidden],
+.student-process-task-form [data-process-agitation-periodic][hidden]{
+  display:none
+}
+.student-process-task-form .student-process-task-head{
+  display:grid;gap:4px;margin:0 0 3px
+}
+.student-process-task-form .student-process-task-eyebrow{
+  color:var(--focus);font:700 10px/1.3 var(--body,Arial,sans-serif);
+  letter-spacing:.08em;text-transform:uppercase
+}
+.student-process-task-form .student-process-task-head h3{
+  margin:0;color:var(--text);font:700 clamp(19px,2.4vw,25px)/1.2 var(--body,Arial,sans-serif);
+  letter-spacing:-.025em;text-transform:none
+}
+.student-process-task-form .student-process-task-development,
+.student-process-task-form .student-process-task-time{
+  min-width:0;gap:14px
+}
+.student-process-task-form .form-field{min-width:0}
+.student-process-task-form .form-field :is(input,select,textarea){
+  min-width:0;width:100%;box-sizing:border-box
+}
+.student-process-task-form .student-process-task-disclosure{
+  min-width:0;margin:0;border:1px solid var(--line);
+  border-radius:12px;overflow:clip;background:var(--surface)
+}
+.student-process-task-form .student-process-task-disclosure>summary{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  min-height:60px;padding:12px 16px;cursor:pointer;list-style:none
+}
+.student-process-task-form .student-process-task-disclosure>summary::-webkit-details-marker{display:none}
+.student-process-task-form .student-process-task-disclosure>summary>span:first-child{
+  min-width:0;display:grid;gap:5px
+}
+.student-process-task-form .student-process-task-disclosure strong{
+  color:var(--text);font:700 14px/1.25 var(--body,Arial,sans-serif)
+}
+.student-process-task-form .student-process-task-disclosure small{
+  color:var(--muted);font:400 12px/1.45 var(--body,Arial,sans-serif)
+}
+.student-process-task-form .student-process-task-disclosure>summary>span:last-child{
+  flex:0 0 auto;color:var(--muted);font-size:19px
+}
+.student-process-task-form .student-process-task-disclosure[open]>summary{
+  border-bottom:1px solid var(--line)
+}
+.student-process-task-form .student-process-task-disclosure-body{
+  min-width:0;padding:16px;gap:14px
+}
+.student-process-task-form .student-process-task-actions{
+  padding-top:15px;margin-top:2px;border-top:1px solid var(--line);gap:9px
+}
+.student-process-task-form .student-process-task-actions .button{
+  min-height:46px;border-radius:10px
+}
+@media(max-width:760px){
+  .student-process-task-form{gap:13px}
+  .student-process-task-form .student-process-task-development,
+  .student-process-task-form .student-process-task-time{gap:12px}
+  .student-process-task-form .student-process-task-disclosure>summary{padding:13px}
+  .student-process-task-form .student-process-task-disclosure-body{padding:13px}
+  .student-process-task-form .student-process-task-actions .button-primary{flex:1 1 180px}
+}
