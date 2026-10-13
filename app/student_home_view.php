@@ -79,11 +79,8 @@ $continueFocus=$focus && $hero!=='focus';
         <?=student_shell_nav_icon('laboratory')?>
         <strong>Processamentos</strong><small>Roteiros e temporização</small>
       </a><?php endif;?>
-      <?php if(!empty($home['can_reciprocity'])):?><a class="student-v2-tool-tile" href="/aluno/reciprocidade.php">
-        <?=student_shell_nav_icon('laboratory')?>
-        <strong>Reciprocidade</strong><small>Compensação de exposição</small>
-      </a><?php endif;?>
     </div>
+    <?php if(!empty($home['can_reciprocity'])):?><a class="student-v2-calculation-link" href="/aluno/reciprocidade.php">Calcular reciprocidade →</a><?php endif;?>
   </section>
   <?php endif;?>
   <section class="student-v2-section" aria-labelledby="student-v2-courses-title">
