@@ -43,7 +43,7 @@ test('no enrollment and restricted tools stay functional without fabricated metr
   await page.goto(base+'?state=empty');
   await expect(page.getByText('Nenhuma matrícula ativa')).toBeVisible();
   await expect(page.locator('[data-home-empty-feature]')).toBeVisible();
-  await expect(page.locator('[data-record-create-open]')).toHaveCount(2);
+  await expect(page.locator('[data-record-create-open]')).toHaveCount(1);
   await page.goto(base+'?state=restricted');
   await expect(page.getByText('Material aguardando liberação')).toBeVisible();
   await expect(page.getByRole('link',{name:'Processamentos'})).toHaveCount(0);
@@ -195,4 +195,17 @@ test('secondary continuation never duplicates the prominent Home action',async({
   await page.goto(base+'?state=study');
   await expect(page.locator('[data-home-study-feature]')).toBeVisible();
   await expect(page.locator('.student-v2-row[href*="/material-do-curso"]')).toHaveCount(0);
+});
+
+test('Home offers direct record and processing actions before the long course lists',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(base+'?state=active',{waitUntil:'networkidle'});
+  const order=await page.locator('main.student-main').evaluate(main=>{
+    const tile=main.querySelector('.student-v2-shortcuts'),courses=main.querySelector('#student-v2-courses-title'),notebook=main.querySelector('#student-v2-notebook-title');
+    return [Boolean(tile),Boolean(courses),Boolean(notebook),tile?.compareDocumentPosition(courses)&Node.DOCUMENT_POSITION_FOLLOWING,tile?.compareDocumentPosition(notebook)&Node.DOCUMENT_POSITION_FOLLOWING];
+  });
+  expect(order).toEqual([true,true,true,Node.DOCUMENT_POSITION_FOLLOWING,Node.DOCUMENT_POSITION_FOLLOWING]);
+  const tools=page.locator('.student-v2-footer-actions');
+  await expect(tools.locator('[data-record-create-open]')).toHaveCount(1);
+  await expect(tools.locator('a[href="/aluno/processamentos.php"]')).toHaveCount(1);
 });

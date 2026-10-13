@@ -67,6 +67,25 @@ $continueFocus=$focus && $hero!=='focus';
     <h2 id="student-v2-feedback-title">Retorno do professor</h2>
     <a class="student-v2-feedback" href="<?=h((string)$feedback['url'])?>"><span><small><?=h((string)$feedback['status'])?></small><strong><?=h((string)$feedback['title'])?></strong></span><span aria-hidden="true">›</span></a>
   </section><?php endif;?>
+  <?php if($hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_reciprocity'])):?>
+  <section class="student-v2-section student-v2-shortcuts" aria-labelledby="student-v2-shortcuts-title">
+    <h2 id="student-v2-shortcuts-title">Acesso direto</h2>
+    <div class="student-v2-footer-actions">
+      <?php if($hero!=='empty'):?><button class="student-v2-tool-tile" type="button" data-record-create-open>
+        <?=student_shell_nav_icon('notebook')?>
+        <strong>Novo registro</strong><small>Exposição, processo ou resultado</small>
+      </button><?php endif;?>
+      <?php if(!empty($home['can_timer'])):?><a class="student-v2-tool-tile" href="/aluno/processamentos.php">
+        <?=student_shell_nav_icon('laboratory')?>
+        <strong>Processamentos</strong><small>Roteiros e temporização</small>
+      </a><?php endif;?>
+      <?php if(!empty($home['can_reciprocity'])):?><a class="student-v2-tool-tile" href="/aluno/reciprocidade.php">
+        <?=student_shell_nav_icon('laboratory')?>
+        <strong>Reciprocidade</strong><small>Compensação de exposição</small>
+      </a><?php endif;?>
+    </div>
+  </section>
+  <?php endif;?>
   <section class="student-v2-section" aria-labelledby="student-v2-courses-title">
     <div class="student-v2-section-heading"><h2 id="student-v2-courses-title">Meus cursos</h2><a href="/aluno/cursos.php">Ver todos →</a></div>
     <?php if(!$courses):?><p class="student-v2-muted">Nenhuma matrícula ativa. O Caderno pessoal permanece disponível.</p>
@@ -81,5 +100,5 @@ $continueFocus=$focus && $hero!=='focus';
     <?php if(!$recent):?><p class="student-v2-muted">Nenhum registro ainda.</p>
     <?php else:?><div class="student-v2-list"><?php foreach($recent as $record):?><a class="student-v2-row" href="<?=h((string)$record['url'])?>"><span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('notebook')?></span><span class="student-v2-row-text"><small><?=h((string)$record['scope'])?> · <?=h((string)$record['date'])?></small><strong><?=h((string)$record['title'])?></strong></span><span aria-hidden="true">›</span></a><?php endforeach;?></div><?php endif;?>
   </section>
-  <div class="student-v2-footer-actions"><button type="button" class="student-v2-outline" data-record-create-open>+ Novo registro</button><?php if(!empty($home['can_timer'])):?><a href="/aluno/processamentos.php">Processamentos →</a><?php endif;?><?php if(!empty($home['can_reciprocity'])):?><a href="/aluno/reciprocidade.php">Reciprocidade →</a><?php endif;?></div>
+
 </div>
