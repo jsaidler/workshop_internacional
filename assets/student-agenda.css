@@ -54,7 +54,7 @@
 .student-v2-agenda-offer-date-copy{min-width:0;display:grid;gap:4px}
 .student-v2-agenda-offer-date-copy strong{font:600 13px/1.3 var(--body,Arial,sans-serif)}
 .student-v2-agenda-offer-date-copy small{font:400 11px/1.45 var(--body,Arial,sans-serif);color:var(--muted)}
-.student-v2-agenda-capacity{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:15px 0!important;font-size:12px!important;color:var(--muted)}
+.student-v2-agenda-capacity{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:15px 0;font-size:12px;color:var(--muted)}
 .student-v2-agenda-capacity strong{font:700 18px/1 var(--body,Arial,sans-serif);color:var(--text)}
 .student-v2-agenda-capacity small{width:100%;color:var(--muted);font-size:11px}
 .student-v2-agenda-schedule>summary{border:0;padding:8px 0;font-size:12px;color:var(--focus)}
