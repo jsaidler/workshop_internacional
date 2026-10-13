@@ -6,9 +6,17 @@ require_once __DIR__.'/../../app/student_preparation_editor.php';
 require_once __DIR__.'/../../app/student_calibration_editor.php';
 require_once __DIR__.'/../../app/student_shell.php';
 function h(string $s):string{return htmlspecialchars($s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
-function database(): PDO {static $db=null;return $db??=new PDO('sqlite::memory:');}
+function database(): PDO {
+ static $db=null;
+ if($db instanceof PDO)return $db;
+ $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+ $db->exec('CREATE TABLE student_tools(tool_key TEXT,enabled INTEGER,access_mode TEXT,sort_order INTEGER,label TEXT);
+ CREATE TABLE student_tool_courses(tool_key TEXT,course_id INTEGER);
+ CREATE TABLE course_cohorts(id INTEGER,course_id INTEGER,status TEXT);
+ CREATE TABLE course_enrollments(id INTEGER,cohort_id INTEGER,student_id INTEGER,status TEXT)');
+ return $db;
+}
 function student_account_current(PDO $db): ?array {return ['id'=>1,'name'=>'Aluno'];}
-function student_tools_for_student(PDO $db,int $studentId): array {return [];}
 function csrf_token(string $scope): string {return 'fixture-only-token';}
 function cms_design_defaults(): array {return ['colors'=>['bg'=>'#101010']];}
 function cms_design_font_import_css(array $design): string {return '';}

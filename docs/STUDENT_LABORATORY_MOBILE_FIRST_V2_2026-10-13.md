@@ -33,3 +33,7 @@ A fixture PHP de movimentação reutilizava o renderer real do movimento, mas co
 ### Reinspeção do cabeçalho de movimentação
 
 O primeiro CI com shell real de Inventário reprovou a asserção de altura `< 108 px` no diálogo a 390 px (medidos 115,09 px). O screenshot `complete/phone/inventory-movement.png` mostra título em duas linhas e botão Fechar compacto, sem colisão. A regressão histórica era o controle Fechar ocupar a largura inteira e comprimir o título; reduzir tipografia ou forçar uma linha seria correção cosmética sem benefício funcional. A asserção foi redefinida para inspecionar ausência de interseção entre título/Fechar, contenção horizontal, largura de Fechar menor que 130 px e limite razoável de altura (< 150 px). Nova execução e captura final ainda necessárias.
+
+### Diagnóstico de regressão das fixtures de edição (13/10/2026)
+
+O CI do commit `6aebed1` identificou páginas de Predefinições e Calibração vazias, não um problema de estilo: a fixture incluía `app/student_workbench.php` e redeclarava `student_tools_for_student()`, causando falha fatal de execução PHP. A correção remove a função fictícia duplicada e fornece um SQLite mínimo para que o serviço canônico decida ferramentas disponíveis sem inventar permissões de curso. A auditoria geral passa a verificar HTTP 200 em todas as fixtures e existência do formulário real nas duas telas de edição. O percurso de navegação continua usando os renderers e o shell PHP de produção; dados do cenário não equivalem a login na hospedagem. CI e capturas no novo SHA seguem pendentes.
