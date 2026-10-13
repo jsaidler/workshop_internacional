@@ -10,7 +10,7 @@ $bootstrap=(string)file_get_contents($root.'/app/bootstrap.php');$shell=(string)
 must_student_caderno_product_ux(!str_contains($notebook,'student-record-progress')&&!str_contains($notebook,'is-current')&&!str_contains($notebook,'is-pending'),'Caderno list still exposes wizard progression');
 must_student_caderno_product_ux(str_contains($notebook,'Abrir registro →'),'record itself must remain the primary Caderno action');
 foreach(['id="exposicao"','id="processamento"','id="resultado"'] as $anchor)must_student_caderno_product_ux(str_contains($record,$anchor),'record page lost '.$anchor);
-must_student_caderno_product_ux(str_contains($record,'podem ser preenchidos, corrigidos ou deixados em aberto independentemente'),'record purpose no longer states the notebook model');
+must_student_caderno_product_ux(str_contains($record,'Três partes independentes do mesmo registro.')&&str_contains($record,'Comece por qualquer uma delas.'),'record purpose no longer states the notebook model');
 must_student_caderno_product_ux(str_contains($record,'Salvar exposição')&&!str_contains($record,'Salvar exposição e continuar'),'exposure still forces progression');
 must_student_caderno_product_ux(str_contains($record,'Ele não depende de nenhuma etapa anterior.'),'result is not explicitly independent');
 foreach(['O processamento já aconteceu?','Vou revelar agora','Já revelei','Registrar manualmente','Continuar laboratório','Próxima etapa','intent=live'] as $obsolete)must_student_caderno_product_ux(!str_contains($record,$obsolete),'record reintroduced obsolete workflow language: '.$obsolete);

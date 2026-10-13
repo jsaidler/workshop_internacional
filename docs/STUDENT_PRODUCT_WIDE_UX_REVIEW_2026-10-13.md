@@ -38,3 +38,9 @@ Foram extraídas e abertas capturas `complete/phone/*` do artefato `student-visu
 - **Gate:** manter PR draft até as evidências do conjunto, sem declarar aprovação estética por workflows verdes.
 
 Os contratos de domínio e segurança de `docs/STUDENT_PRODUCT_UX_CANONICAL_RULES_2026-10-02.md` continuam superiores a ajustes cosméticos. Esta auditoria não autoriza remover dados, campos válidos, estados de timer, autorização ou validações.
+
+## Não conformidade mensurada nas fixtures do inventário básico
+
+Uma amostra orientada às superfícies `student-visual-audit.html`, `student-caderno-product-audit.template.html`, `student-pedagogical-feedback-audit.html`, `student-notebook-compare.html`, `student-process-product-audit.html` e `student-process-routes-audit.html` mostrou **quatro links no `student-mobile-nav`, sem Agenda, sem `student-app-shell.css` e sem `body.student-app`**. Duas outras fixtures amostradas (`student-secondary-screens-audit.html`, `student-material-context.html`) mostram cinco links, mas ainda não usam o shell v2 integral. Portanto a matriz de 46 screenshots **mistura projetos de shell diferentes**. Não há fundamento para chamar essa matriz de "46 telas reais do produto atual" e não bastaria acrescentar um quinto link visualmente: a prova exige os mesmos renderers, fontes, scroll ownership e permissões da aplicação. As capturas antigas permanecem úteis somente como inventário de conteúdo/ações legadas; a inspeção estética deve priorizar fixtures PHP operacionais e percursos com shell real.
+
+**Bloqueio de homologação:** confrontar e substituir as fixtures legadas antes da aceitação final das 46 superfícies. Não relaxar as checagens de navegação de 5 destinos nem fingir que imagens de template antigo representam a interface real.
