@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /** Operational Home view, also imported unchanged by the browser audit fixture.
- * $home: meeting, feedback, focus, courses, recent, can_timer, records_count.
+ * $home: meeting, feedback, focus, courses, recent, can_timer, can_reciprocity.
  */
 $meeting=$home['meeting']??null;
 $feedback=$home['feedback']??null;
@@ -67,7 +67,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
     <div class="student-home-section-head"><h2 id="student-home-quick-title">Acesso rápido</h2></div>
     <div class="student-home-quick">
       <?php if($hero!=='empty'):?><button type="button" data-record-create-open><span class="student-home-quick-symbol" aria-hidden="true">+</span><span>Novo registro</span></button><?php endif;?>
-      <?php if(!empty($home['can_timer'])):?><a href="/aluno/temporizador.php"><span class="student-home-quick-symbol" aria-hidden="true">◷</span><span>Temporizador</span></a><?php endif;?>
+      <?php if(!empty($home['can_timer'])):?><a href="/aluno/processamentos.php"><span class="student-home-quick-symbol" aria-hidden="true">◷</span><span>Processamentos</span></a><?php endif;?>
       <?php if(!empty($home['can_reciprocity'])):?><a href="/aluno/reciprocidade.php"><span class="student-home-quick-symbol" aria-hidden="true">ƒ</span><span>Reciprocidade</span></a><?php endif;?>
     </div>
   </section><?php endif;?>

@@ -12,6 +12,7 @@ test('all independent sources are visible together; private links belong only to
   await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
   await expect(page.locator('.student-home-course-actions a[href*="duvidas.php?cohort=cohort-a"]')).toHaveCount(1);
   await expect(page.locator('.student-home-course-actions a[href*="material-do-curso?cohort=cohort-a"]')).toHaveCount(1);
+  await expect(page.getByRole('link',{name:'Processamentos'})).toHaveAttribute('href','/aluno/processamentos.php');
   await expect(page.locator('body')).not.toContainText('https://example.org/completed');
 });
 test('Home never exposes non-http meeting URL and keeps Agenda discoverable',async({page})=>{
@@ -28,7 +29,7 @@ test('no enrollment and restricted tools stay functional without fabricated metr
   await expect(page.locator('[data-record-create-open]')).toHaveCount(1);
   await page.goto(base+'?state=restricted');
   await expect(page.getByText('Material aguardando liberação')).toBeVisible();
-  await expect(page.getByRole('link',{name:'Temporizador'})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Processamentos'})).toHaveCount(0);
 });
 test('multiple courses expose scoped materials and questions without mandatory course selection',async({page})=>{
   await page.goto(base+'?state=multiple');
@@ -68,12 +69,12 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
    await expect(dialog.locator('input[name="context_scope"][value="personal"]')).toBeChecked();
    await expect(courseFields).toBeHidden();
    await expect(courseFields.locator('select')).not.toHaveAttribute('required','');
-   await dialog.locator('input[name="context_scope"][value="course"]').check();
+   await dialog.locator('label.choice-option:has(input[value="course"])').click();
    await expect(courseFields).toBeVisible();
    await expect(courseFields.locator('select')).toHaveAttribute('required','');
    fs.mkdirSync('student-visual-audit/home',{recursive:true});
    await page.screenshot({path:'student-visual-audit/home/context-course-'+device+'.png'});
-   await dialog.locator('input[name="context_scope"][value="personal"]').check();
+   await dialog.locator('label.choice-option:has(input[value="personal"])').click();
    await expect(courseFields).toBeHidden();
    await expect(courseFields.locator('select')).not.toHaveAttribute('required','');
    await page.screenshot({path:'student-visual-audit/home/context-personal-'+device+'.png'});
