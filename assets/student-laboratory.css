@@ -31,7 +31,9 @@
 .student-v2-lab-calculator-body{margin:0 21px 21px;padding:17px 0 0;border-top:1px solid var(--line)}
 .student-v2-lab-calculator-body>.student-form-grid{margin:0;row-gap:16px}
 .student-v2-lab-calculator-body>.student-tool-result{margin-top:15px}
-.student-v2-lab-calculator-body>h2{margin:0 0 12px;font:700 16px/1.3 var(--body,Arial,sans-serif);color:var(--text)}
+.student-v2-lab-calculator-body .student-solution-ingredients>div{flex-wrap:wrap;gap:7px 18px}
+.student-v2-lab-calculator-body .student-solution-ingredients span{min-width:0;overflow-wrap:anywhere}
+.student-v2-lab-calculator-body .student-tool-result strong{overflow-wrap:anywhere}
 .student-v2-lab-calculator-body .student-recipe-preparation{margin-top:14px}
 .student-v2-lab-end{margin:30px 0 0;padding:18px 0 0;border-top:1px solid var(--line)}
 .student-v2-lab-end h2{margin:0;font:600 14px/1.3 var(--body,Arial,sans-serif)}

@@ -89,7 +89,6 @@ declare(strict_types=1);
         <details class="student-bench-tool student-v2-lab-calculator" id="receitas" data-lab-calculator>
           <summary><span><strong>Receitas</strong><small>Quantidades por volume e modo de preparo</small></span><span class="student-v2-lab-expand" aria-hidden="true">+</span></summary>
           <div class="student-v2-lab-calculator-body" data-solution-tool>
-            <h2>Receitas</h2>
             <div class="student-form-grid">
               <label class="form-field">Receita<select data-solution-select>
                 <?php foreach($formulas as $key=>$formula):?><option value="<?=h($key)?>"><?=h((string)$formula['label'])?></option><?php endforeach;?>

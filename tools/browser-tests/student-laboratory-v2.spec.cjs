@@ -67,7 +67,9 @@ for(const [device,width,height] of viewports)for(const state of states){
       await expect(recipe.locator('[data-solution-tool]')).toBeVisible();
       await expect(recipe.locator('[data-solution-formula]')).toHaveCount(2);
       await expect(recipe.getByText('Modo de preparo',{exact:true})).toBeVisible();
-      await expect(recipe.getByText('Segurança')).toBeVisible();
+      await expect(recipe.getByText('Segurança',{exact:true})).toBeVisible();
+      const expandedOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+      expect(expandedOverflow).toBeLessThanOrEqual(1);
       await recipe.locator('summary').click();
     }
     await page.locator('main.student-main').evaluate(el=>el.scrollTop=el.scrollHeight);

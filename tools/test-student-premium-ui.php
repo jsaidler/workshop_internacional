@@ -59,7 +59,7 @@ must_student_premium_ui(str_contains($processManager,'Associar ao registro'),'pr
 must_student_premium_ui(str_contains($processRunner,'data-process-runner')&&str_contains($processRunner,'Marcar como concluída')&&str_contains($processRunner,'Desmarcar etapa'),'route tool must allow independent reversible step checks');
 must_student_premium_ui(str_contains($processRunner,'Editar dados da etapa')&&str_contains($processRunner,'Movimentar estoque'),'route tool must expose editing and stock as independent notebook tools');
 foreach(['Estou nesta etapa','Ir para próxima etapa','Concluir processamento','Interromper a etapa atual','Concluir esta etapa','Registrar o processamento realizado'] as $forbidden)must_student_premium_ui(!str_contains($processRunner,$forbidden),'route tool reintroduced workflow language: '.$forbidden);
-must_student_premium_ui(str_contains($bench,'<h2>Receitas</h2>')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
+must_student_premium_ui(str_contains($bench,'id="receitas" data-lab-calculator')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
 foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual','registre apenas os dados que usou'] as $internalCopy)must_student_premium_ui(!str_contains($home.$bench.$test,$internalCopy),'internal design commentary leaked into student UI: '.$internalCopy);
 
 must_student_premium_ui(str_contains($notebook,'student-process-card')&&str_contains($notebook,'Mais ações'),'notebook does not subordinate administrative actions');
