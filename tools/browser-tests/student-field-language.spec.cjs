@@ -14,6 +14,7 @@ const studentUiFiles=[
   'aluno/comparar-processos.php',
   'aluno/duvidas.php',
   'aluno/ferramentas.php',
+  'app/student_laboratory_view.php',
   'aluno/inventario.php',
   'app/student_inventory_create_panel.php',
   'aluno/inventario-item.php',
@@ -94,7 +95,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Agitação<input name="agitation"',
       '>Anotações<textarea name="notes"',
     ],
-    'aluno/ferramentas.php':[
+    'app/student_laboratory_view.php':[
       '>Tempo sem reciprocidade<input data-quick-reciprocity-source',
       '>Tempo com reciprocidade<input data-quick-reciprocity-target',
       '>Tempo inicial<input',
