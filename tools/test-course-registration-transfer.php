@@ -107,4 +107,8 @@ cr_transfer_must(course_agenda_request($db,6,20)['status']==='confirmed','unassi
 cr_transfer_must(transfer_enrollment($db,3,30)===null,'unassignment does not reconcile other paid submissions');
 $admin=file_get_contents(__DIR__.'/../admin/registrations.php');
 cr_transfer_must(str_contains($admin, "!in_array(\$action,['assign_cohort','unassign_cohort'],true)"),'registrations POST must not trigger a second global reconciliation');
+$hook=file_get_contents(__DIR__.'/../app/student_enrollments.php');
+cr_transfer_must(str_contains($hook, "in_array((string)(\$_POST['action']??''),['assign_cohort','unassign_cohort'],true)"),'shutdown hook must skip per-registration assignment paths');
+$accounts=file_get_contents(__DIR__.'/../app/student_accounts.php');
+cr_transfer_must(str_contains($accounts, 'return student_enrollment_reconcile_confirmed($db,$activityId);'),'login and activation must delegate to the explicit-course authority');
 echo "course-registration-transfer: ok\n";

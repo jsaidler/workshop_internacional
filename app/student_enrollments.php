@@ -25,7 +25,17 @@ function student_enrollment_reconcile_confirmed(PDO $db,?int $activityId=null,?i
     }catch(Throwable $e){$errors[]=['submission_id'=>(int)$row['id'],'error'=>$e->getMessage()];error_log('Student enrollment reconciliation failed for submission '.(int)$row['id'].': '.$e->getMessage());}}
     return ['processed'=>$processed,'pending_assignment'=>$pendingAssignment,'disabled'=>$disabled,'errors'=>$errors];
 }
-function student_enrollment_install_reconciliation_hook(): void {$script=str_replace('\\','/',(string)($_SERVER['SCRIPT_NAME']??$_SERVER['PHP_SELF']??''));if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'||(!str_ends_with($script,'/admin/submissions.php')&&!str_ends_with($script,'/admin/registrations.php')))return;register_shutdown_function(static function(): void {try{student_enrollment_reconcile_confirmed(database());}catch(Throwable $e){error_log('Student enrollment reconciliation hook failed: '.$e->getMessage());}});}
+function student_enrollment_install_reconciliation_hook(): void {
+    $script=str_replace('\\','/',(string)($_SERVER['SCRIPT_NAME']??$_SERVER['PHP_SELF']??''));
+    if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'||(!str_ends_with($script,'/admin/submissions.php')&&!str_ends_with($script,'/admin/registrations.php')))return;
+    // Assignment/unassignment already reconciles its own submission in a transaction.
+    // The shutdown hook must not silently run a site-wide reconciliation afterward.
+    if(str_ends_with($script,'/admin/registrations.php')&&in_array((string)($_POST['action']??''),['assign_cohort','unassign_cohort'],true))return;
+    register_shutdown_function(static function(): void {
+        try{student_enrollment_reconcile_confirmed(database());}
+        catch(Throwable $e){error_log('Student enrollment reconciliation hook failed: '.$e->getMessage());}
+    });
+}
 
 function student_enrollment_list(PDO $db,int $studentId): array {
     $hasCourse=student_enrollment_course_domain_available($db);$courseSelect=$hasCourse?'c.course_id,cr.title canonical_course_title,cr.public_page_id,':'NULL course_id,NULL canonical_course_title,NULL public_page_id,';$courseJoin=$hasCourse?' LEFT JOIN courses cr ON cr.id=c.course_id ':'';$hasWorkshop=function_exists('workshop_course_scope_available')&&workshop_course_scope_available($db);$workshopSelect=$hasWorkshop?'c.workshop_page_id,wp.title workshop_title,wp.slug workshop_slug,wp.locale workshop_locale,':'NULL workshop_page_id,NULL workshop_title,NULL workshop_slug,NULL workshop_locale,';$workshopJoin=$hasWorkshop?' LEFT JOIN cms_pages wp ON wp.id=c.workshop_page_id ':'';
