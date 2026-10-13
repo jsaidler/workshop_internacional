@@ -268,3 +268,7 @@ Um encontro em horário ainda coberto por duração programada permanece acessí
 
 
 **Correção da evidência de rolagem H-01 (12/10):** a inspeção da captura `context-course-narrow-submit.png` do SHA `77a27b5` encontrou o botão final no limite inferior, parcialmente cortado, embora `toBeInViewport()` tivesse passado com uma interseção mínima. Esse teste era insuficiente. O gate agora rola a própria gaveta até o fim, exige proporção visível 1 e folga de ao menos 12 px para o botão. O proprietário `student-experience.css` acrescenta `scroll-padding-bottom` no diálogo compartilhado. Apenas nova captura e novo CI poderão validar a correção.
+
+## Revisão transversal de produto — 13/10/2026
+
+A avaliação da aparência e do comportamento continua **aberta em todas as 46 superfícies**, incluindo telas não alteradas pela implementação. Mosaicos extraídos do artefato de screenshots no SHA `bc94bbcc` revelaram heterogeneidade entre interfaces de entrada v2 e detalhes legados (formulários, tipografia, botões, scroll, navbar em fixtures antigas). O problema **não é restrito ao Caderno**. Autoridade da auditoria global: `docs/STUDENT_PRODUCT_WIDE_UX_REVIEW_2026-10-13.md`. A tranche de registro individual preserva o DOM dos formulários em alternância Exposição/Processamento/Resultado para não perder rascunhos; seus testes não equivalem à aprovação de Cursos, Dúvidas, Inventário, Conta, timer ou material.

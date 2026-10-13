@@ -58,6 +58,10 @@ on:
       - 'tools/browser-tests/student-inventory-movement.spec.cjs'
       - 'tools/browser-fixture/student-long-editors.php'
       - 'tools/browser-tests/student-long-editors.spec.cjs'
+      - 'tools/browser-fixture/student-record-workspace.php'
+      - 'tools/browser-tests/student-record-workspace.spec.cjs'
+      - 'app/student_record_workspace_navigation.php'
+      - 'tools/test-student-record-workspace.php'
       - 'app/student_preparation_editor.php'
       - 'app/student_calibration_editor.php'
       - 'tools/test-student-long-editors.php'
@@ -110,6 +114,7 @@ jobs:
           npx playwright test tools/browser-tests/student-inventory-item-direct.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-inventory-movement.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-long-editors.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-record-workspace.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-agenda.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-home-operational.spec.cjs --workers=1
           npx playwright test tools/browser-tests/admin-course-agenda.spec.cjs --workers=1

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';
 require_once __DIR__.'/../app/student_record_media_controls.php';
+require_once __DIR__.'/../app/student_record_workspace_navigation.php';
 security_headers();student_private_headers();
 
 $db=database();student_account_reconcile_confirmed_registrations($db);$student=student_account_current($db);
@@ -16,7 +17,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&isset($_GET['view'])){
     header('Location: /aluno/teste.php?id='.$id.'#'.$anchor,true,303);exit;
 }
 
-$error='';$contextScope=(string)($record['context_scope']??'course');
+$error='';$contextScope=(string)($record['context_scope']??'course');$recordDefaultPart='exposicao';if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){$postedAction=(string)($_POST['action']??'');if(in_array($postedAction,['save_result','submit','message'],true)||($postedAction==='upload'&&(string)($_POST['phase']??'result')==='result'))$recordDefaultPart='resultado';elseif(in_array($postedAction,['toggle_plan_step','save_plan_step','move_plan_step','add_plan_step','add_free_step','delete_free_step'],true))$recordDefaultPart='processamento';}
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('student-process-'.$id,$_POST['_csrf']??null))$error='Solicitação inválida.';
     else try{
@@ -76,28 +77,32 @@ student_shell_start((string)$record['title'].' · Caderno',null,$student);?>
   <div class="student-record-context"><a class="student-back" href="/aluno/caderno.php">← Caderno</a><span class="student-status student-status-<?=h((string)$record['status'])?>"><?=h(student_test_status_label((string)$record['status']))?></span></div>
   <p class="student-kicker"><?=$contextScope==='personal'?'Registro pessoal':h((string)$record['public_title'].' · '.$record['cohort_title'])?></p>
   <h1 class="student-title student-title-record"><?=h((string)$record['title'])?></h1>
-  <p class="student-record-purpose">Este é um registro único. Exposição, processamento e resultado podem ser preenchidos, corrigidos ou deixados em aberto independentemente.</p>
-  <nav class="student-actions student-record-section-links" aria-label="Ir para uma parte do registro"><a class="button button-secondary button-compact" href="#exposicao">Exposição</a><a class="button button-secondary button-compact" href="#processamento">Processamento</a><a class="button button-secondary button-compact" href="#resultado">Resultado</a></nav>
+  <p class="student-record-purpose">Três partes independentes do mesmo registro. Comece por qualquer uma delas.</p>
 </header>
+<?php student_record_workspace_navigation(); ?><span data-record-workspace-default="<?=h($recordDefaultPart)?>" hidden></span>
 <?php if($notice!==''):?><p class="ui-alert ui-alert-notice"><?=h($notice)?></p><?php endif;?>
 <?php if($error!==''):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
 <?php if($locked):?><p class="ui-alert ui-alert-notice">Este registro já foi avaliado. Você pode consultá-lo e continuar a conversa com o professor.</p><?php endif;?>
 
-<section class="student-section student-record-section" id="exposicao">
+<section class="student-section student-record-section" id="exposicao" data-record-workspace-panel>
   <div class="student-workflow-heading"><div><p class="student-kicker">Exposição</p><h2 class="student-subtitle">Como expus</h2></div><p>Registre ou corrija o que quiser documentar sobre a exposição.</p></div>
   <form method="post" enctype="multipart/form-data" class="student-mobile-form student-record-form" data-ui-validate>
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="phase" value="scene"><input type="hidden" name="action" value="save_exposure" data-process-action>
-    <div class="student-capture-block"><div><span class="student-capture-number">A</span><div><h3>Referência da cena</h3><p>Opcional. Serve para lembrar a situação fotografada; não é a imagem do resultado.</p></div></div><?php if(!$locked&&count($media)<STUDENT_TEST_MEDIA_MAX_FILES):?><?=student_record_media_controls('scene',STUDENT_TEST_MEDIA_MAX_FILES-count($media))?><?php endif;?></div>
-    <?php if($sceneMedia):?><div class="student-media-strip"><?php foreach($sceneMedia as $item):?><figure class="student-media-card"><img src="/aluno/teste-media.php?id=<?=(int)$item['id']?>" alt="Cena registrada" loading="lazy"><?php if(!$locked):?><figcaption><button class="student-link" type="submit" name="media_id" value="<?=(int)$item['id']?>" onclick="this.form.querySelector('[data-process-action]').value='delete_media'">Remover</button></figcaption><?php endif;?></figure><?php endforeach;?></div><?php endif;?>
+
     <div class="student-form-group"><h3>Dados da exposição</h3><p class="student-form-group-intro">Preencha apenas o que fizer sentido para este registro.</p><div class="student-form-grid">
       <label class="form-field student-span-2">Título<input name="title" value="<?=h((string)$record['title'])?>" required maxlength="180"<?=$locked?' disabled':''?>></label><label class="form-field">Data<input type="date" name="test_date" value="<?=h((string)($record['test_date']??''))?>"<?=$locked?' disabled':''?>></label><label class="form-field">Filme<input name="film" value="<?=h((string)$record['film'])?>"<?=$locked?' disabled':''?>></label><label class="form-field">EI<input name="iso_reference" value="<?=h((string)$record['iso_reference'])?>"<?=$locked?' disabled':''?>></label><label class="form-field">Abertura<input name="aperture" value="<?=h((string)$record['aperture'])?>" placeholder="f/64"<?=$locked?' disabled':''?>></label><label class="form-field">Tempo sem reciprocidade<input name="calculated_time" value="<?=h((string)$record['calculated_time'])?>" data-reciprocity-source<?=$locked?' disabled':''?>></label><label class="form-field">Tempo com reciprocidade<input name="reciprocity_time" value="<?=h((string)$record['reciprocity_time'])?>" data-reciprocity-target readonly></label>
       <details class="student-optional-fields student-span-2"><summary>Dados opcionais</summary><div class="student-form-grid"><label class="form-field">Lote<input name="lot" value="<?=h((string)$record['lot'])?>"<?=$locked?' disabled':''?>></label><label class="form-field student-span-2">Condição de luz<textarea name="light_condition" rows="2"<?=$locked?' disabled':''?>><?=h((string)$record['light_condition'])?></textarea></label><label class="form-field student-span-2">Faixa tonal e intenção<textarea name="tonal_range" rows="2"<?=$locked?' disabled':''?>><?=h((string)$record['tonal_range'])?></textarea></label></div></details>
     </div></div>
-    <?php if(!$locked):?><div class="student-actions"><button class="button button-primary" type="submit">Salvar exposição</button></div><?php endif;?>
+    <details class="student-record-media-disclosure"<?= $sceneMedia?' open':''?>>
+      <summary><span><strong>Referência da cena</strong><small>Imagem opcional para documentar a situação fotografada<?=$sceneMedia?' · '.count($sceneMedia).' imagem(ns)':''?></small></span><span class="student-record-disclosure-chevron" aria-hidden="true"></span></summary>
+      <div class="student-capture-block"><div><span class="student-capture-number">A</span><div><h3>Imagem da cena</h3><p>Não é a fotografia obtida no processo.</p></div></div><?php if(!$locked&&count($media)<STUDENT_TEST_MEDIA_MAX_FILES):?><?=student_record_media_controls('scene',STUDENT_TEST_MEDIA_MAX_FILES-count($media))?><?php endif;?></div>
+      <?php if($sceneMedia):?><div class="student-media-strip"><?php foreach($sceneMedia as $item):?><figure class="student-media-card"><img src="/aluno/teste-media.php?id=<?=(int)$item['id']?>" alt="Cena registrada" loading="lazy"><?php if(!$locked):?><figcaption><button class="student-link" type="submit" name="media_id" value="<?=(int)$item['id']?>" onclick="this.form.querySelector('[data-process-action]').value='delete_media'">Remover</button></figcaption><?php endif;?></figure><?php endforeach;?></div><?php endif;?>
+    </details>
+    <?php if(!$locked):?><div class="student-actions student-record-save-actions"><button class="button button-primary" type="submit">Salvar exposição</button></div><?php endif;?>
   </form>
 </section>
 
-<section class="student-workflow-panel student-record-section" id="processamento">
+<section class="student-workflow-panel student-record-section" id="processamento" data-record-workspace-panel>
   <div class="student-workflow-heading"><div><p class="student-kicker">Processamento</p><h2 class="student-subtitle">Roteiro e etapas</h2></div><p><?=$plan?'O roteiro é uma referência. Marque, edite ou abra qualquer etapa na ordem que quiser.':'Associe um roteiro como referência ou anote etapas livremente.'?></p></div>
 
   <?php if($plan):?>
@@ -185,7 +190,7 @@ student_shell_start((string)$record['title'].' · Caderno',null,$student);?>
   <?php endif;?>
 </section>
 
-<section class="student-section student-record-section" id="resultado">
+<section class="student-section student-record-section" id="resultado" data-record-workspace-panel>
   <div class="student-workflow-heading"><div><p class="student-kicker">Resultado</p><h2 class="student-subtitle">O que obtive</h2></div><p>Registre o resultado quando quiser. Ele não depende de nenhuma etapa anterior.</p></div>
   <details class="student-result-context">
     <summary><span>Resumo do registro</span><small>Exposição e processamento</small></summary>
@@ -198,7 +203,7 @@ student_shell_start((string)$record['title'].' · Caderno',null,$student);?>
   <div class="student-result-flow"><form method="post" enctype="multipart/form-data" class="student-mobile-form student-result-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="phase" value="result"><input type="hidden" name="action" value="save_result" data-process-action>
     <div class="student-capture-block"><div><span class="student-capture-number">B</span><div><h3>Imagem do resultado</h3><p>Fotografia da chapa processada ou outra evidência que queira guardar neste registro.</p></div></div><?php if(!$locked&&count($media)<STUDENT_TEST_MEDIA_MAX_FILES):?><?=student_record_media_controls('result',STUDENT_TEST_MEDIA_MAX_FILES-count($media))?><?php endif;?></div>
     <?php if($resultMedia):?><div class="student-media-strip"><?php foreach($resultMedia as $item):?><figure class="student-media-card"><img src="/aluno/teste-media.php?id=<?=(int)$item['id']?>" alt="Resultado" loading="lazy"><?php if(!$locked):?><figcaption><button class="student-link" type="submit" name="media_id" value="<?=(int)$item['id']?>" onclick="this.form.querySelector('[data-process-action]').value='delete_media'">Remover</button></figcaption><?php endif;?></figure><?php endforeach;?></div><?php endif;?>
-    <label class="form-field">Anotações sobre o resultado<textarea name="notes" rows="5"<?=$locked?' disabled':''?>><?=h((string)$record['notes'])?></textarea></label><p class="student-field-help">Anote o que observou, inclusive quando a experiência foi abandonada antes do fim do roteiro.</p><?php if(!$locked):?><div class="student-actions"><button class="button button-primary" type="submit">Salvar resultado</button></div><?php endif;?>
+    <label class="form-field">Anotações sobre o resultado<textarea name="notes" rows="5"<?=$locked?' disabled':''?>><?=h((string)$record['notes'])?></textarea></label><p class="student-field-help">Anote o que observou, inclusive quando a experiência foi abandonada antes do fim do roteiro.</p><?php if(!$locked):?><div class="student-actions student-record-save-actions"><button class="button button-primary" type="submit">Salvar resultado</button></div><?php endif;?>
   </form>
 
   <?php if($contextScope==='course'):?><section class="student-review-thread student-review-thread-<?=h((string)$feedbackState['kind'])?>"><p class="student-kicker">Acompanhamento do curso</p><h3>Avaliação</h3>

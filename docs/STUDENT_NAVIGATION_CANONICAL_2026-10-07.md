@@ -492,3 +492,7 @@ A decisão de produto revisada substitui expressamente a arquitetura antiga de q
 - **Implementação incremental:** a nova arquitetura é estabelecida no shell e na Home. As demais telas continuam consumindo os dados e serviços vigentes até sua migração, mantendo o novo shell para consistência. Não declarar migração visual das cinco áreas concluída antes de reconstruir Agenda, Cursos, Caderno e Laboratório.
 
 O item ativo da Agenda é `agenda`, não `courses`. Esta seção prevalece sobre quaisquer exemplos legados deste documento ou de fixtures que ainda exibam quatro destinos.
+
+## Contextos do mesmo registro — nota de arquitetura 13/10/2026
+
+As três partes independentes do registro fotográfico usam links canônicos de fragmento `#exposicao`, `#processamento` e `#resultado`. Mostrar apenas a parte ativa no telefone não deve impedir leitura/edição independente nem desmontar formulário não salvo. Deep link de uma etapa (ex.: `#adicionar-etapa`) seleciona a parte que contém a etapa e expande seu `details`. Back/Forward é nativo; sem JavaScript, a leitura e as âncoras devem funcionar com todas as partes visíveis. Não transformar fragmentos em avanço físico obrigatório de laboratório. Esta decisão não reduz o redesenho às telas do Caderno; vale como modelo de navegação contextual, conforme o caso, dentro da revisão global do produto.
