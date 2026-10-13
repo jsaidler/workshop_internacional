@@ -14,7 +14,7 @@ $material=(string)file_get_contents($root.'/admin/material.php');
 $tests=(string)file_get_contents($root.'/admin/tests.php');
 $preview=(string)file_get_contents($root.'/admin/course-preview.php');
 $studentHome=(string)file_get_contents($root.'/aluno/index.php');
-$studentCourses=(string)file_get_contents($root.'/aluno/cursos.php');
+$studentCourses=(string)file_get_contents($root.'/aluno/cursos.php');$studentCoursesView=(string)file_get_contents($root.'/app/student_courses_view.php');
 $studentNotebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $studentRecord=(string)file_get_contents($root.'/aluno/teste.php');
 $studentBench=(string)file_get_contents($root.'/aluno/ferramentas.php');
@@ -81,7 +81,7 @@ ux_expect(str_contains($studentShell,'student-user-menu')&&str_contains($student
 $studentHomeView=(string)file_get_contents($root.'/app/student_home_view.php');
 ux_expect(str_contains($studentHome,'student_experience_dashboard_state')&&str_contains($studentHome,'course_agenda_student_meetings')&&str_contains($studentHomeView,'student-v2-home')&&str_contains($studentHomeView,'data-home-meeting')&&str_contains($studentHomeView,'student-v2-date-line'),'Início deve apresentar encontro autorizado, conteúdo e tarefa sem impor rota de seleção');
 ux_expect(str_contains($studentCourses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'uma única matrícula não pode exigir página intermediária');
-ux_expect(str_contains($studentCourses,'student-academic-study')&&str_contains($studentCourses,'course_material_page_release_summary')&&str_contains($studentCourses,'Dúvidas e respostas'),'curso deve reunir material, disponibilidade e dúvidas no mesmo contexto acadêmico');
+ux_expect(str_contains($studentCoursesView,'student-v2-course-material')&&str_contains($studentCourses,'course_material_page_release_summary')&&str_contains($studentCoursesView,'Dúvidas e respostas'),'curso deve reunir material, disponibilidade e dúvidas no mesmo contexto acadêmico');
 $newAppCss=(string)file_get_contents($root.'/assets/student-app-shell.css');
 ux_expect(str_contains($newAppCss,'.student-v2-next')&&str_contains($newAppCss,'.student-v2-list')&&str_contains($studentHomeView,'student-v2-course')&&str_contains($studentHomeView,'student-v2-section')&&str_contains($studentHomeView,'data-record-create-open'),'Home precisa de hierarquia de ações, pesquisa, matrículas e Caderno simultâneos');
 ux_expect(str_contains($studentNotebook,'Mais ações')&&str_contains($studentNotebook,'student-record-summary')&&!str_contains($studentNotebook,'student-record-progress'),'Caderno deve priorizar o registro e resumir o que existe sem prescrever uma etapa atual');

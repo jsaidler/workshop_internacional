@@ -76,7 +76,10 @@ for(const [device,width,height] of sizes){
 test('multiple courses preserve explicit scope in direct links and browser Back',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto(url+'?state=multiple',{waitUntil:'networkidle'});
-  await page.locator('[data-courses-selection] a').first().click();
+  await expect(page.locator('[data-courses-selection] a').first()).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-a');
+  // The fixture keeps canonical production links; simulate a scoped navigation
+  // without following that production path into an unauthenticated PHP route.
+  await page.goto(url+'?state=multiple&cohort=cohort-a',{waitUntil:'networkidle'});
   await expect(page).toHaveURL(/cohort=cohort-a/);
   await expect(page.getByRole('heading',{name:'Positivo direto em filme de raio-X'})).toBeVisible();
   await page.goBack();

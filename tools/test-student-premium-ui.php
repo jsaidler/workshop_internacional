@@ -11,7 +11,7 @@ $renderedCss=(string)file_get_contents($root.'/assets/student-rendered-fixes.css
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
 $uiJs=(string)file_get_contents($root.'/assets/ui-core.js');
 $home=(string)file_get_contents($root.'/aluno/index.php');
-$courses=(string)file_get_contents($root.'/aluno/cursos.php');
+$courses=(string)file_get_contents($root.'/aluno/cursos.php');$coursesView=(string)file_get_contents($root.'/app/student_courses_view.php');
 $bench=(string)file_get_contents($root.'/aluno/ferramentas.php');
 $notebook=(string)file_get_contents($root.'/aluno/caderno.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
@@ -49,8 +49,8 @@ must_student_premium_ui(str_contains($shell,"'agenda'=>['label'=>'Agenda','href'
 must_student_premium_ui(str_contains($mobileAppCss,'.student-desktop-nav')&&str_contains($mobileAppCss,'.student-mobile-nav')&&str_contains($homeView,'student-v2-date-line'),'mobile-first shell/sidebar and factual date hierarchy are absent');
 must_student_premium_ui(!str_contains($home,'Escolha o que você veio fazer')&&!str_contains($home,'Abrir laboratório'),'student home regressed to a duplicate navigation catalog');
 must_student_premium_ui(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment still requires a course-selector click');
-must_student_premium_ui(str_contains($courses,'student-academic-material-list')&&str_contains($courses,'Dúvidas e respostas'),'course workspace is not flattened around study tasks');
-must_student_premium_ui(!str_contains($courses,'student-course-dashboard')&&!str_contains($courses,'$releasedCount'),'course workspace regressed to parallel dashboard/progress blocks');
+must_student_premium_ui(str_contains($coursesView,'student-v2-course-pages')&&str_contains($coursesView,'Dúvidas e respostas')&&str_contains($courses,'course_material_page_release_summary'),'course workspace is not flattened around study tasks');
+must_student_premium_ui(!str_contains($coursesView,'student-course-dashboard')&&!str_contains($courses,'$releasedCount'),'course workspace regressed to parallel dashboard/progress blocks');
 must_student_premium_ui(str_contains($bench,'data-exposure-tool')&&str_contains($bench,'data-quick-reciprocity'),'workbench lost inline simple exposure tools');
 must_student_premium_ui(!str_contains($bench,'data-lab-timer')&&str_contains($bench,'/aluno/processamentos.php'),'workbench did not replace the isolated timer with the process library');
 
