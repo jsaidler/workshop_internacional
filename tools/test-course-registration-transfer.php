@@ -105,6 +105,19 @@ cr_transfer_must(transfer_submission($db,101)['cohort_id']===null && transfer_en
 cr_transfer_must(course_enrollment_for_student($db,1,1)===null && course_agenda_student_meetings($db,1)===[],'unassigned student loses course access and meeting links');
 cr_transfer_must(course_agenda_request($db,6,20)['status']==='confirmed','unassignment promotes listener into newly free capacity');
 cr_transfer_must(transfer_enrollment($db,3,30)===null,'unassignment does not reconcile other paid submissions');
+// Payment state changes must free capacity and promptly promote the next listener.
+course_agenda_cancel($db,6,20);
+$db->exec("INSERT INTO cms_form_submissions VALUES(108,1,1,1,20,9,'{}','converted','paid','now','now')");
+transfer_insert_enrollment($db,9,20,108);
+transfer_insert_enrollment($db,10,10,null);
+cr_transfer_must(course_agenda_request($db,10,20)['status']==='waiting','listener queues behind confirmed payer');
+$db->exec("UPDATE cms_form_submissions SET status='new',payment_status='pending',payment_confirmed_at=NULL WHERE id=108");
+$reconciliation=student_enrollment_reconcile_confirmed($db,1,108);
+cr_transfer_must(empty($reconciliation['errors'])&&transfer_enrollment($db,9,20)['status']==='disabled','pending payment disables source-linked admission');
+cr_transfer_must(course_agenda_request($db,10,20)['status']==='confirmed','payment reversal releases seat and promotes waiting listener');
+cr_transfer_must(count(course_agenda_student_meetings($db,9))===0,'unconfirmed payer loses meeting link');
+cr_transfer_must(transfer_enrollment($db,3,30)===null,'pending transition remains submission-scoped');
+
 $admin=file_get_contents(__DIR__.'/../admin/registrations.php');
 cr_transfer_must(str_contains($admin, "!in_array(\$action,['assign_cohort','unassign_cohort'],true)"),'registrations POST must not trigger a second global reconciliation');
 $hook=file_get_contents(__DIR__.'/../app/student_enrollments.php');
