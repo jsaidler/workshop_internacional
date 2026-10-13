@@ -18,8 +18,16 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100],['co
    const closeGeometry=await headerClose.boundingBox();
    expect(closeGeometry.width,'header close must remain a compact contextual action').toBeLessThan(130);
    if(width>=390&&device==='phone'){
-     const head=await dialog.locator('.student-inventory-move-head').boundingBox();
-     expect(head.height,'mobile header must not be crowded by item-card button styles').toBeLessThan(108);
+     // A two-line title is acceptable at 390 px. The regression was a full-width
+     // Fechar control that collided with the heading, not the number of lines.
+     const head=await dialog.locator('.student-inventory-move-head').evaluate(node=>{
+       const a=node.getBoundingClientRect(),title=node.querySelector('h2').getBoundingClientRect();
+       const close=node.querySelector('[data-inventory-move-close]').getBoundingClientRect();
+       return{height:a.height,titleRight:title.right,closeLeft:close.left,closeRight:close.right,headRight:a.right};
+     });
+     expect(head.titleRight,'dialog title collides with Fechar').toBeLessThanOrEqual(head.closeLeft+1);
+     expect(head.closeRight,'close control escapes the dialog header').toBeLessThanOrEqual(head.headRight+1);
+     expect(head.height,'unexpectedly tall dialog header').toBeLessThan(150);
    }
 
    if(device!=='desktop'){

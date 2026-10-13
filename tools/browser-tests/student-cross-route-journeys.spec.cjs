@@ -15,6 +15,9 @@ async function mountOperationalViews(page){
     '/aluno/caderno.php': '/tools/browser-fixture/student-notebook.php?state=mixed',
     '/aluno/ferramentas.php': '/tools/browser-fixture/student-laboratory.php?state=full',
     '/aluno/inventario.php': '/tools/browser-fixture/student-inventory-movement.php?mode=inventory',
+    '/aluno/inventario-item.php': '/tools/browser-fixture/student-inventory-item-direct.php?mode=editor',
+    '/aluno/preparos.php': '/tools/browser-fixture/student-long-editors.php?kind=preparation&mode=list',
+    '/aluno/calibracao.php': '/tools/browser-fixture/student-long-editors.php?kind=calibration&mode=list',
     '/aluno/duvidas.php': '/tools/browser-fixture/student-questions-operational.php',
     '/aluno/teste.php': '/tools/browser-fixture/student-caderno-product-audit.php?screen=record-plan',
   };
@@ -28,6 +31,14 @@ async function mountOperationalViews(page){
     if(!mapped)return route.continue();
     if(request.pathname==='/aluno/duvidas.php'){
       mapped='/tools/browser-fixture/student-questions-operational.php?cohort='+encodeURIComponent(request.searchParams.get('cohort')||'cohort-a')+(request.searchParams.get('id')?'&id='+encodeURIComponent(request.searchParams.get('id')):'');
+    }
+    if(request.pathname==='/aluno/preparos.php'||request.pathname==='/aluno/calibracao.php'){
+      const kind=request.pathname.endsWith('preparos.php')?'preparation':'calibration';
+      const mode=request.searchParams.has('novo')?'new':request.searchParams.has('editar')?'edit':'list';
+      mapped='/tools/browser-fixture/student-long-editors.php?kind='+kind+'&mode='+mode;
+    }
+    if(request.pathname==='/aluno/inventario-item.php'){
+      mapped='/tools/browser-fixture/student-inventory-item-direct.php?mode=editor';
     }
     if(request.pathname==='/aluno/agenda.php'&&request.searchParams.get('view')){
       mapped+='&view='+encodeURIComponent(request.searchParams.get('view'));
@@ -228,6 +239,48 @@ for(const [device,width,height] of sizes){
     await page.goForward();
     await expect(page.getByRole('heading',{name:'Inventário',exact:true})).toBeVisible();
     await page.locator('.student-appbar a.student-back').first().click();
+    await expect(page).toHaveURL(origin+'/aluno/ferramentas.php');
+    await expect(page.locator('[data-student-laboratory]')).toBeVisible();
+    await page.locator('[data-lab-link="inventario"]').click();
+    const item=page.getByRole('link',{name:'Editar item'});
+    await item.click();
+    await expect(page).toHaveURL(origin+'/aluno/inventario-item.php?id=7');
+    await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
+    await globalArea(page,'/aluno/ferramentas.php',device);
+    await expect(page.locator('.student-appbar a.student-back')).toHaveAttribute('href','/aluno/inventario.php');
+    await page.screenshot({path:'student-visual-audit/journeys/lab-inventory-item-'+device+'.png',animations:'disabled'});
+    await page.locator('.student-appbar a.student-back').click();
+    await expect(page).toHaveURL(origin+'/aluno/inventario.php');
+    await expect(page.locator('.student-inventory-item')).toBeVisible();
+  });
+}
+
+for(const [kind,label,route] of [
+  ['preparation','Predefinições de revelação','/aluno/preparos.php'],
+  ['calibration','Referências de calibração','/aluno/calibracao.php']
+]){
+  test('Laboratório → '+label+' → editor contextual e retorno mobile',async({page})=>{
+    await page.setViewportSize({width:390,height:844});
+    await mountOperationalViews(page);
+    await page.goto(origin+'/aluno/ferramentas.php',{waitUntil:'networkidle'});
+    await page.locator('[data-lab-link="'+(kind==='preparation'?'preparos':'calibracao')+'"]').click();
+    await expect(page).toHaveURL(origin+route);
+    await expect(page.getByRole('heading',{name:label,exact:true})).toBeVisible();
+    await globalArea(page,'/aluno/ferramentas.php','phone');
+    await page.getByRole('link',{name:kind==='preparation'?'Nova predefinição':'Nova referência'}).click();
+    await expect(page).toHaveURL(origin+route+'?novo=1');
+    await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
+    await expect(page.locator('.student-appbar a.student-back')).toHaveAttribute('href',route);
+    await globalArea(page,'/aluno/ferramentas.php','phone');
+    await page.screenshot({path:'student-visual-audit/journeys/lab-'+kind+'-editor-phone.png',animations:'disabled'});
+    await page.goBack();
+    await expect(page).toHaveURL(origin+route);
+    await expect(page.getByRole('heading',{name:label,exact:true})).toBeVisible();
+    await page.goForward();
+    await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
+    await page.locator('.student-appbar a.student-back').click();
+    await expect(page).toHaveURL(origin+route);
+    await page.locator('.student-appbar a.student-back').click();
     await expect(page).toHaveURL(origin+'/aluno/ferramentas.php');
     await expect(page.locator('[data-student-laboratory]')).toBeVisible();
   });

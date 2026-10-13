@@ -68,7 +68,7 @@ for(const f of families){
     await expect(page).toHaveURL(new RegExp(f.route.replaceAll('/','\\/')+'\\?novo=1'));
     await expect(page.locator('.student-main > [data-student-editor]')).toBeVisible();
     await expect(page.locator('[data-student-editor-dialog]')).toHaveCount(0);
-    await expect(page.locator('.student-mobile-nav a')).toHaveCount(4);
+    await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
     await expect(page.locator('.student-main [name="label"]')).toBeVisible();
     await page.screenshot({path:`student-visual-audit/long-editors/${f.kind}-phone-dedicated.png`,animations:'disabled'});
     await page.goBack();await expect(page).toHaveURL(new RegExp(f.route.replaceAll('/','\\/')+'$'));
@@ -122,7 +122,7 @@ for(const f of families){
   await page.setViewportSize({width:320,height:720});await mock(page,f);
   await page.goto(base+f.route+'?novo=1',{waitUntil:'networkidle'});
   const save=page.getByRole('button',{name:/Salvar /});await save.scrollIntoViewIfNeeded();
-  await expect(save).toBeInViewport();await expect(page.locator('.student-mobile-nav a')).toHaveCount(4);
+  await expect(save).toBeInViewport();await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
   const geometry=await page.evaluate(()=>{
    const main=document.querySelector('.student-main').getBoundingClientRect();
    const nav=document.querySelector('.student-mobile-nav').getBoundingClientRect();
