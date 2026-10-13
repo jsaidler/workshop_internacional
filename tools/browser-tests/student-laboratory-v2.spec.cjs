@@ -66,7 +66,7 @@ for(const [device,width,height] of viewports)for(const state of states){
       await recipe.locator('summary').click();
       await expect(recipe.locator('[data-solution-tool]')).toBeVisible();
       await expect(recipe.locator('[data-solution-formula]')).toHaveCount(2);
-      await expect(recipe.getByText('Modo de preparo')).toBeVisible();
+      await expect(recipe.getByText('Modo de preparo',{exact:true})).toBeVisible();
       await expect(recipe.getByText('Segurança')).toBeVisible();
       await recipe.locator('summary').click();
     }
