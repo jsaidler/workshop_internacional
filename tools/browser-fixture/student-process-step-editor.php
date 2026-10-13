@@ -2,6 +2,7 @@
 declare(strict_types=1);
 /* Real PHP form renderers; synthetic data and POST simulation, no auth/DB. */
 require_once __DIR__.'/../../app/student_workbench.php';
+require_once __DIR__.'/../../app/student_process_templates.php';
 require_once __DIR__.'/../../app/student_process_lab_navigation.php';
 require_once __DIR__.'/../../app/student_process_template_step_editor.php';
 require_once __DIR__.'/../../app/student_shell.php';

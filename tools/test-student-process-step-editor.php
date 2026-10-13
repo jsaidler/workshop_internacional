@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once dirname(__DIR__).'/app/student_workbench.php';
+require_once dirname(__DIR__).'/app/student_process_templates.php';
 require_once dirname(__DIR__).'/app/student_process_lab_navigation.php';
 require_once dirname(__DIR__).'/app/student_process_template_step_editor.php';
 function h(string $v):string{return htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
