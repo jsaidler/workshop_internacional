@@ -35,7 +35,7 @@ function student_process_render_step_form(array $catalog,array $developers,array
       <div class="student-process-task-time student-span-2 student-form-grid">
         <label class="form-field">Tempo<input name="duration" value="<?=h((string)($step['duration']??''))?>" placeholder="07:00" inputmode="text"></label>
         <label class="form-field">Temperatura<input name="temperature" value="<?=h((string)($payload['temperature']??''))?>" placeholder="26 °C"></label>
-      </div
+      </div>
       <div class="student-span-2 student-form-grid student-process-task-development" data-process-template-development<?=in_array($stageKey,['first_development','second_development'],true)?'':' hidden'?>>
         <label class="form-field">Revelador
           <select name="developer_key" data-process-template-developer><?php foreach($developers as $key=>$developer):?><option value="<?=h($key)?>"<?=$developerKey===(string)$key?' selected':''?>><?=h((string)$developer['label'])?></option><?php endforeach;?></select>

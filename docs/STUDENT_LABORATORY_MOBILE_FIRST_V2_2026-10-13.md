@@ -70,3 +70,7 @@ O `student-process-manager.js` continua sendo a autoridade do estado condicional
 ### Inspeção efetiva do editor de etapas (13/10)
 
 O artefato de `student-visual-audit` no SHA `90883fb5` apresentou hierarquia parcialmente melhor, mas ainda revelou um cabeçalho redundante dentro do formulário (a página já tinha título e o componente repetia Adicionar/Ajustar etapa), campos de tempo depois do detalhe de composição e rótulos em tipo mono/caixa alta com leitura comprometida no telefone. A correção remove o cabeçalho repetido, eleva duração/temperatura antes de composição e aplica tipografia legível e controles com altura mínima 46px ao editor, sem alterar semântica do POST. O Playwright registra agora também a primeira dobra **antes de manipular campos** em 320/390/1440, além das capturas em edição e preenchimento. Não aprovar apenas screenshot depois do scroll.
+
+### Defeito de HTML detectado por Playwright (13/10/2026)
+
+O renderer extraído em `app/student_process_template_step_editor.php` continha um fechamento sem `>` após o grupo de tempo/temperatura. O PHP era sintaticamente válido, mas o parser do navegador absorvia indevidamente o restante do formulário, ocultando agitação, reutilização e ações. A causa foi corrigida no renderer; o smoke PHP passa a recusar fechamentos incompletos e o Playwright passa a exigir a existência **dentro do formulário** dos dois `details`, reutilização do banho, agitação e notas, antes de testar visibilidade, interação ou screenshot. Não mascarar a falha em CSS ou alterar locators para fora do formulário.

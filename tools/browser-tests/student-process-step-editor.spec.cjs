@@ -10,6 +10,10 @@ for(const width of [320,390,1440]){
   expect(response?.status()).toBe(200);
   const form=page.locator('[data-operational-process-editor] form[data-process-template-step-form]');
   await expect(form).toHaveCount(1);
+  await expect(form.locator('details.student-process-task-disclosure')).toHaveCount(2);
+  await expect(form.locator('[name="reuse_source_stage_key"]')).toHaveCount(1);
+  await expect(form.locator('select[name="agitation_mode"]')).toHaveCount(1);
+  await expect(form.locator('[name="notes"]')).toHaveCount(1);
   await expect(form.locator('select[name="stage_key"]')).toBeVisible();
   await expect(form.locator('select[name="developer_key"]')).toBeVisible();
   await expect(form.locator('input[name="duration"]')).toBeVisible();

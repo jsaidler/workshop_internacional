@@ -15,6 +15,7 @@ function show_step(?array $step=null):string{
 }
 $new=show_step();
 verify_step_editor(substr_count($new,'<form')===1,'form must have one POST boundary');
+verify_step_editor(!preg_match('~</(?:div|label|details|form)(?!>)~i',$new),'form HTML contains an unterminated closing element');
 verify_step_editor(str_contains($new,'data-process-template-stage')&&str_contains($new,'data-process-template-development'),'conditional stage model lost');
 verify_step_editor(str_contains($new,'name="_csrf"')&&str_contains($new,'name="template_id"'),'CSRF/template identity lost');
 verify_step_editor(str_contains($new,'name="duration"')&&str_contains($new,'name="developer_amount"')&&str_contains($new,'name="water_amount"'),'time/volume fields lost');
