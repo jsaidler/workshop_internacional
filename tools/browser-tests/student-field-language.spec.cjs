@@ -7,6 +7,7 @@ const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
 const compactMarkup=text=>text.replace(/\s+(?=<)/g,'');
 const studentUiFiles=[
   'aluno/caderno.php',
+  'app/student_notebook_view.php',
   'aluno/calibracao.php',
   'app/student_calibration_editor.php',
   'app/student_preparation_editor.php',
@@ -114,7 +115,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '<span>Predefinições de revelação</span>',
       '<span>Referências de calibração</span>',
     ],
-    'aluno/caderno.php':['>Visibilidade<select name="visibility"'],
+    'app/student_notebook_view.php':['>Visibilidade<select name="visibility"'],
     'aluno/duvidas.php':['>Resposta<textarea name="body"'],
     'app/student_calibration_editor.php':['>Nome da referência<input name="label"','>Preparo ou diluição<input name="preparation"'],
     'app/student_inventory_create_panel.php':['<span>Solução preparada</span>','>Lote ou identificação<input name="lot_code"','>Data de entrada<input type="date" name="acquired_or_prepared_at"'],

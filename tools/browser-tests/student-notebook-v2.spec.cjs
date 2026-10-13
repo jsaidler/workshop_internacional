@@ -15,6 +15,12 @@ for(const [device,width,height] of devices)for(const state of states){
     await expect(notebook).toBeVisible();
     await expect(page.getByRole('heading',{name:'Caderno',exact:true})).toBeVisible();
     await expect(page.locator('[data-record-create-dialog]')).toHaveCount(1);
+    if(state==='error'){
+      await expect(page.locator('[data-record-create-dialog]')).toBeVisible();
+      await expect(page.locator('[data-record-create-dialog] [role="alert"]')).toContainText('Informe um título');
+      await page.locator('[data-record-create-close]').click();
+      await expect(page.locator('[data-record-create-dialog]')).not.toBeVisible();
+    }
     await expect(page.getByRole('button',{name:/Novo registro/})).toBeVisible();
     const nav=page.locator('nav.student-mobile-nav');
     await expect(nav.locator('a')).toHaveCount(5);
