@@ -41,6 +41,7 @@ async function globalArea(page,destination,viewport){
   await expect(choices).toHaveCount(5);
   const canonical=['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php'];
   for(let i=0;i<canonical.length;i++)await expect(choices.nth(i)).toHaveAttribute('href',canonical[i]);
+  await expect(page.locator('a.student-wordmark')).toHaveAttribute('href','/aluno/');
   const active=nav.locator('a[aria-current="page"]');
   await expect(active).toHaveCount(1);
   await expect(active).toHaveAttribute('href',destination);
@@ -82,6 +83,11 @@ for(const [device,width,height] of sizes){
     const materialBar=page.locator('nav.student-mobile-nav');
     await expect(materialBar.locator('a')).toHaveCount(5);
     await expect(materialBar.locator('a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
+    await page.getByTestId('questions').click();
+    await expect(page).toHaveURL(origin+'/aluno/duvidas.php?cohort=cohort-a');
+    await expect(page.locator('nav.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
+    await page.goBack();
+    await expect(page).toHaveURL(origin+'/material/exposicao?cohort=cohort-a');
     await page.getByTestId('back-course').click();
     await expect(page).toHaveURL(origin+'/aluno/cursos.php?cohort=cohort-a');
     await expect(page.locator('[data-course-material]')).toBeVisible();
