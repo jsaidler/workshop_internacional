@@ -250,8 +250,15 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
 .student-process-card-options-content :is(form,.button,.student-danger-action){min-width:0;width:100%;box-sizing:border-box}
 .student-process-card-options-content :is(.button,.student-danger-action){
   display:flex;align-items:center;justify-content:center;
-  min-height:43px;padding:10px;text-align:center;border-radius:9px;
-  font:600 12px/1.3 var(--body,Arial,sans-serif);text-transform:none;letter-spacing:0
+  min-height:44px;padding:10px;text-align:center;border-radius:9px;
+  font:600 13px/1.3 var(--body,Arial,sans-serif);text-transform:none;letter-spacing:0;
+  text-decoration:none
+}
+.student-process-card-options-content .button{
+  background:var(--surface-2);color:var(--text);border:1px solid var(--line)
+}
+.student-process-card-options-content .student-danger-action{
+  background:transparent;color:#d96868;border:1px solid color-mix(in srgb,#a74343 72%,var(--line))
 }
 .student-process-template-main:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:3px}
 .student-process-template-actions>.button,.student-process-template-actions>form .button{min-height:43px;border-radius:10px}
@@ -260,7 +267,11 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
  .student-process-template-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:15px;border-radius:14px}
  .student-process-template-main{grid-template-columns:25px minmax(0,1fr);gap:10px}
  .student-process-template-main h3{font-size:18px}
- .student-process-template-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;justify-content:stretch;align-items:start}
+ .student-process-context{display:block;font:400 13px/1.5 var(--body,Arial,sans-serif)}
+ .student-process-section{margin-top:26px}
+ .student-process-section-heading{grid-template-columns:minmax(0,1fr);gap:8px;padding-bottom:13px}
+ .student-process-section-heading>p{display:block;font-size:12px;line-height:1.5}
+ .student-process-template-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;justify-content:stretch;align-items:start}
  .student-process-template-actions>form,.student-process-template-actions>.button,.student-process-template-actions>.is-disabled{width:100%;min-width:0}
  .student-process-template-actions>form .button,.student-process-template-actions>.button{
    display:flex;min-height:44px;align-items:center;justify-content:center;

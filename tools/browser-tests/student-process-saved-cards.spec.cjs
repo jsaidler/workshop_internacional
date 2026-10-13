@@ -21,6 +21,21 @@ for(const width of [320,390,1440]){
   await expect(first.getByRole('link',{name:'Editar roteiro'})).toHaveAttribute('href','/aluno/processamentos.php?id=14');
   await expect(first.getByRole('button',{name:'Duplicar'})).toBeVisible();
   await expect(first.getByRole('button',{name:'Excluir'})).toBeVisible();
+  const maintenanceStyle=await first.getByRole('link',{name:'Editar roteiro'}).evaluate(node=>{
+   const style=getComputedStyle(node),rect=node.getBoundingClientRect();
+   return{fontPx:parseFloat(style.fontSize),height:rect.height,underline:style.textDecorationLine,border:parseFloat(style.borderTopWidth)};
+  });
+  expect(maintenanceStyle.fontPx,'management links must be legible on phone').toBeGreaterThanOrEqual(12);
+  expect(maintenanceStyle.height,'management actions must be reachable by touch').toBeGreaterThanOrEqual(42);
+  expect(maintenanceStyle.underline,'do not revert to legacy tiny underlined admin links').toBe('none');
+  expect(maintenanceStyle.border).toBeGreaterThanOrEqual(1);
+  if(width<=820){
+   const buttonWidth=await first.getByRole('link',{name:'Abrir no laboratório'}).evaluate(node=>({
+    cta:node.getBoundingClientRect().width,
+    actions:node.closest('.student-process-template-actions').getBoundingClientRect().width
+   }));
+   expect(buttonWidth.cta,'the operational action must occupy its own row').toBeGreaterThanOrEqual(buttonWidth.actions-2);
+  }
   await expect(first.locator('form input[name="_csrf"]')).toHaveCount(2);
   const geometry=await page.evaluate(()=>{
    const main=document.querySelector('.student-main');
