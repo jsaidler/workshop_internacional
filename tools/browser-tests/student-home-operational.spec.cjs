@@ -21,6 +21,12 @@ test('Home retains access during the documented time slot, without asserting att
   await expect(page.getByText('Horário previsto do encontro')).toBeVisible();
   await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
 });
+test('Home surfaces the Caderno task when there is no meeting or feedback',async({page})=>{
+  await page.goto(base+'?state=record');
+  await expect(page.locator('[data-home-record-feature]')).toBeVisible();
+  await expect(page.locator('[data-home-record-feature] a')).toHaveAttribute('href','/aluno/teste.php?id=22&view=process');
+  await expect(page.getByRole('heading',{name:'Meus cursos'})).toBeVisible();
+});
 test('Home never exposes non-http meeting URL and keeps Agenda discoverable',async({page})=>{
   await page.goto(base+'?state=no-link');
   await expect(page.locator('[data-home-meeting]')).toBeVisible();
@@ -113,7 +119,7 @@ test('failed Home creation restores saved draft and sheet focus instead of sendi
   await page.screenshot({path:'student-visual-audit/home/error-phone-drawer.png',animations:'disabled'});
 });
 for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['desktop',1440,1100]]){
-  for(const state of ['active','study','multiple','empty','feedback','no-link','long','restricted','ongoing']){
+  for(const state of ['active','study','multiple','empty','feedback','record','no-link','long','restricted','ongoing']){
     test('Home operational renderer '+state+' '+device,async({page})=>{
       const errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.setViewportSize({width,height});
