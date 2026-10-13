@@ -39,9 +39,8 @@ async function globalArea(page,destination,viewport){
   await expect(nav).toBeVisible();
   const choices=nav.locator('a:not(.student-sidebar-brand)');
   await expect(choices).toHaveCount(5);
-  await expect(choices).toHaveAttribute('href',[
-    '/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php'
-  ]);
+  const canonical=['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php'];
+  for(let i=0;i<canonical.length;i++)await expect(choices.nth(i)).toHaveAttribute('href',canonical[i]);
   const active=nav.locator('a[aria-current="page"]');
   await expect(active).toHaveCount(1);
   await expect(active).toHaveAttribute('href',destination);
