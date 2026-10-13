@@ -29,3 +29,9 @@ A rota de edição de dúvidas, o leitor CMS e os processos permanecem existente
 ## Gates antes do merge
 
 Não integrar até: validação e auditoria visual do SHA final em verde; inspeção de capturas 320/390/1440; navegação entre lista, curso, material e dúvidas; verificação real com aluno de uma matrícula e de várias; manter o PR em draft enquanto Caderno e Laboratório ainda não forem migrados para a v2.
+
+## Auditoria transversal de percurso — 13/10/2026
+
+No PR #243, o teste de navegação entre Início, seleção de turma, material CMS, lista de Dúvidas, conversa individual e retorno foi ampliado em 320, 390 e 1440 px. O primeiro `validate` (`dd6ade4`) detectou um falso percurso: a URL `/aluno/duvidas.php?cohort=...` recebia a fixture de telas secundárias, mas ela exibia Perfil porque escolhia a superfície por `screen` ausente da URL canônica. O teste antigo verificava a URL e a barra, sem garantir que a tarefa acadêmica existia. A fixture agora escolhe lista ou conversa pelo pathname/ID, preserva os links explícitos e a suíte verifica o conteúdo, Back/Forward e links diretos, além de produzir capturas de ambos os estados.
+
+Esta correção melhora a **fidelidade da auditoria de navegação**, mas a fixture de Dúvidas continua sintética e não executa os serviços reais de autorização, postagem nem persistência. O renderer PHP real permanece em `aluno/duvidas.php`; os testes de negócio existentes seguem obrigatórios. A homologação de uma sessão autenticada, com turmas distintas, rascunhos e autorização real, continua pendente. Nenhuma aprovação é presumida antes da verificação dos workflows e das capturas do novo SHA.

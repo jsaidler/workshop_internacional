@@ -81,6 +81,19 @@ const expandQuestionAuditStates=(key,state)=>{
    else link?.setAttribute('href','/aluno/teste.php?id=101');
  }
 };
-const params=new URLSearchParams(location.search);const key=params.get('screen')||'profile';document.getElementById('screen').innerHTML=screens[key]||screens.profile;const active=['course-list','questions-list','question-new','question-thread'].includes(key)?'courses':['calibration-list','calibration-editor','inventory-item'].includes(key)?'laboratory':['delete-record','shared-record','step-editor','recording-start','recording-partial','recording-complete'].includes(key)?'notebook':'';if(active)document.querySelectorAll(`[data-nav="${active}"]`).forEach(a=>a.setAttribute('aria-current','page'));expandQuestionAuditStates(key,params.get('state'));applyQuestionFailureState(key,params.get('state'));
+const params=new URLSearchParams(location.search);const key=params.get('screen')||(location.pathname==='/aluno/duvidas.php'?(params.has('id')?'question-thread':'questions-list'):'profile');document.getElementById('screen').innerHTML=screens[key]||screens.profile;const active=['course-list','questions-list','question-new','question-thread'].includes(key)?'courses':['calibration-list','calibration-editor','inventory-item'].includes(key)?'laboratory':['delete-record','shared-record','step-editor','recording-start','recording-partial','recording-complete'].includes(key)?'notebook':'';if(active)document.querySelectorAll(`[data-nav="${active}"]`).forEach(a=>a.setAttribute('aria-current','page'));expandQuestionAuditStates(key,params.get('state'));applyQuestionFailureState(key,params.get('state'));
+// When the browser fixture is mounted at the canonical URL, preserve its real
+// course-scoped navigation and object links; the content remains synthetic.
+if(location.pathname==='/aluno/duvidas.php'&&['questions-list','question-thread'].includes(key)){
+ const cohort=encodeURIComponent(params.get('cohort')||'cohort-a');
+ const root=document.getElementById('screen');
+ root.querySelector('.student-course-context-back')?.setAttribute('href','/aluno/cursos.php');
+ const links=root.querySelectorAll('.student-course-context-nav a');
+ if(links[0])links[0].href='/aluno/cursos.php?cohort='+cohort;
+ if(links[1])links[1].href='/material/exposicao?cohort='+cohort;
+ if(links[2])links[2].href='/aluno/duvidas.php?cohort='+cohort;
+ if(key==='questions-list')root.querySelectorAll('.student-test-row').forEach((link,i)=>link.setAttribute('href','/aluno/duvidas.php?cohort='+cohort+'&id='+(i+1)));
+ if(key==='question-thread')root.querySelector('.student-back')?.setAttribute('href','/aluno/duvidas.php?cohort='+cohort);
+}
 </script>
 </body></html>

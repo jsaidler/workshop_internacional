@@ -1,4 +1,6 @@
 const {test,expect}=require('@playwright/test');
+const fs=require('node:fs');
+fs.mkdirSync('student-visual-audit/journeys',{recursive:true});
 
 /**
  * Navigates canonical student URLs without an authenticated server.
@@ -23,6 +25,9 @@ async function mountOperationalViews(page){
       mapped='/tools/browser-fixture/student-courses.php?state=multiple'+(cohort?'&cohort='+encodeURIComponent(cohort):'');
     }
     if(!mapped)return route.continue();
+    if(request.pathname==='/aluno/duvidas.php'){
+      mapped='/tools/browser-fixture/student-secondary-screens-audit.html?screen='+(request.searchParams.get('id')?'question-thread':'questions-list');
+    }
     if(request.pathname==='/aluno/agenda.php'&&request.searchParams.get('view')){
       mapped+='&view='+encodeURIComponent(request.searchParams.get('view'));
     }
@@ -85,7 +90,21 @@ for(const [device,width,height] of sizes){
     await expect(materialBar.locator('a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
     await page.getByTestId('questions').click();
     await expect(page).toHaveURL(origin+'/aluno/duvidas.php?cohort=cohort-a');
+    await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
+    await expect(page.locator('.student-course-context-nav a[aria-current="page"]')).toHaveText('Dúvidas');
     await expect(page.locator('nav.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
+    await expect(page.locator('.student-course-context-back')).toHaveAttribute('href','/aluno/cursos.php');
+    await expect(page.locator('.student-course-context-nav a').first()).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-a');
+    await page.screenshot({path:'student-visual-audit/journeys/questions-list-'+device+'.png'});
+    await page.locator('a.student-test-row[href="/aluno/duvidas.php?cohort=cohort-a&id=1"]').click();
+    await expect(page).toHaveURL(origin+'/aluno/duvidas.php?cohort=cohort-a&id=1');
+    await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();
+    await expect(page.locator('[data-student-local-key="question-thread"] form textarea[name="body"]')).toBeVisible();
+    await expect(page.locator('nav.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
+    await expect(page.locator('.student-back')).toHaveAttribute('href','/aluno/duvidas.php?cohort=cohort-a');
+    await page.screenshot({path:'student-visual-audit/journeys/question-thread-'+device+'.png'});
+    await page.goBack();
+    await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
     await page.goBack();
     await expect(page).toHaveURL(origin+'/material/exposicao?cohort=cohort-a');
     await page.getByTestId('back-course').click();
@@ -146,4 +165,17 @@ test('laboratory deep-linked calculators remain contextual after navigating from
   await page.goBack();
   await expect(page).toHaveURL(origin+'/aluno/caderno.php');
   await globalArea(page,'/aluno/caderno.php','narrow');
+});
+
+test('direct link to a question keeps the chosen course and logical return',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await mountOperationalViews(page);
+  await page.goto(origin+'/aluno/duvidas.php?cohort=cohort-b&id=2',{waitUntil:'networkidle'});
+  await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();
+  await globalArea(page,'/aluno/cursos.php','phone');
+  await expect(page.locator('.student-back')).toHaveAttribute('href','/aluno/duvidas.php?cohort=cohort-b');
+  await page.locator('.student-back').click();
+  await expect(page).toHaveURL(origin+'/aluno/duvidas.php?cohort=cohort-b');
+  await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
+  await expect(page.locator('.student-course-context-nav a').first()).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-b');
 });
