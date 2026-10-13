@@ -19,7 +19,7 @@ test('all independent sources are visible together; private links belong only to
   const toolbox=page.locator('[data-student-toolbox]');
   await expect(toolbox).toBeVisible();
   await expect(toolbox.locator('.student-toolbox-links a').first()).toHaveAttribute('href','/aluno/agenda.php');
-  await expect(page.getByRole('link',{name:'Processamentos'})).toHaveAttribute('href','/aluno/processamentos.php');
+  await expect(page.locator('.student-home-quick a[href="/aluno/processamentos.php"]')).toHaveAttribute('href','/aluno/processamentos.php');
   await expect(page.locator('body')).not.toContainText('https://example.org/completed');
 });
 test('Home retains access during the documented time slot, without asserting attendance',async({page})=>{
