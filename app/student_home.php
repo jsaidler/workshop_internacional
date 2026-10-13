@@ -23,6 +23,11 @@ function student_home_next_meeting(array $meetings,?int $now=null): ?array {
         if($ts<$now && !$inWindow)continue;
         return [
             'in_window'=>$inWindow,
+            'date_iso'=>$date,
+            'day'=>(new DateTimeImmutable($date))->setTimezone(new DateTimeZone((string)($meeting['meeting_timezone']??'America/Sao_Paulo')))->format('d'),
+            'month'=>['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][(int)(new DateTimeImmutable($date))->setTimezone(new DateTimeZone((string)($meeting['meeting_timezone']??'America/Sao_Paulo')))->format('n')-1],
+            'weekday'=>['dom','seg','ter','qua','qui','sex','sáb'][(int)(new DateTimeImmutable($date))->setTimezone(new DateTimeZone((string)($meeting['meeting_timezone']??'America/Sao_Paulo')))->format('w')],
+            'hour'=>(new DateTimeImmutable($date))->setTimezone(new DateTimeZone((string)($meeting['meeting_timezone']??'America/Sao_Paulo')))->format('H:i'),
             'lesson'=>(string)($meeting['lesson_title']??'Encontro'),
             'course'=>(string)($meeting['course_title']??''),
             'cohort'=>(string)($meeting['cohort_title']??''),

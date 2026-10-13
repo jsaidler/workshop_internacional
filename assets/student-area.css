@@ -140,3 +140,13 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
 .student-create-dialog>.student-long-editor>.student-tool-workspace{min-width:0;padding:24px}
 .student-create-dialog>.student-long-editor>.student-long-editor-error{margin:16px 24px 0}
 @media(max-width:760px){.student-create-dialog>.student-long-editor>.student-tool-workspace{padding:18px}}
+
+/* Shared navigation primitives also consumed by the authenticated CMS material reader. */
+.student-nav-icon{width:22px;height:22px;display:block;flex:none}
+.student-nav-label{display:block}
+.student-sidebar-brand{display:none}
+@media(max-width:760px){
+  .student-mobile-nav{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .student-mobile-nav a{gap:5px;font-size:10px;min-height:66px}
+  .student-mobile-nav a .student-nav-icon{width:21px;height:21px}
+}
