@@ -23,7 +23,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
   elseif($action==='assign_cohort')course_registration_assign_cohort($db,$id,$courseId,(int)($_POST['cohort_id']??0));
   elseif($action==='unassign_cohort')course_registration_unassign_cohort($db,$id,$courseId);
   elseif($action==='delete_registration')admin_registration_delete($db,$id,$activityId);else throw new RuntimeException('Ação inválida.');
-  student_enrollment_reconcile_confirmed($db,$activityId);$_SESSION['admin_registrations_notice']='Alteração salva.';
+  if(!in_array($action,['assign_cohort','unassign_cohort'],true))student_enrollment_reconcile_confirmed($db,$activityId);$_SESSION['admin_registrations_notice']='Alteração salva.';
  }catch(Throwable $e){$_SESSION['admin_registrations_notice']='Não foi possível concluir: '.$e->getMessage();}
  $redirectCohort=max(0,(int)($_POST['filter_cohort_id']??0));$redirectFilter=(string)($_POST['filter_status']??'');$redirectSearch=trim((string)($_POST['search_q']??''));$redirectPage=max(1,(int)($_POST['list_page']??1));header('Location: '.registration_admin_url($activityId,$courseId,$redirectCohort,$action==='delete_registration'?0:$id,$redirectFilter,$redirectSearch,$redirectPage),true,303);exit;
 }
