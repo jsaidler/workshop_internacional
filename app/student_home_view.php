@@ -8,6 +8,9 @@ $courses=$home['courses']??[];
 $recent=$home['recent']??[];
 $firstMaterial=null;
 foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$item['material'];break;}}
+$hero=$meeting?'meeting':($feedback?'feedback':($focus?'focus':($firstMaterial?'study':'empty')));
+$continueMaterial=$firstMaterial && $hero!=='study';
+$continueFocus=$focus && $hero!=='focus';
 ?>
 <div class="student-v2-home" data-student-home>
   <header class="student-v2-heading">
@@ -45,22 +48,22 @@ foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$
       <button class="student-v2-cta" type="button" data-record-create-open>Novo registro +</button>
     </section>
   <?php endif;?>
-  <?php if($firstMaterial || $focus):?>
+  <?php if($continueMaterial || $continueFocus):?>
     <section class="student-v2-section" aria-labelledby="student-v2-continue-title">
       <h2 id="student-v2-continue-title">Continuar</h2>
       <div class="student-v2-list">
-      <?php if($firstMaterial):?><a class="student-v2-row" href="<?=h((string)$firstMaterial['url'])?>">
+      <?php if($continueMaterial):?><a class="student-v2-row" href="<?=h((string)$firstMaterial['url'])?>">
         <span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('courses')?></span>
         <span class="student-v2-row-text"><small>Material disponível</small><strong><?=h((string)$firstMaterial['title'])?></strong><?php if(count($courses)>1):?><em><?=h((string)($firstMaterial['course']??''))?> · <?=h((string)($firstMaterial['cohort']??''))?></em><?php endif;?></span><span aria-hidden="true">›</span>
       </a><?php endif;?>
-      <?php if($focus):?><a class="student-v2-row" href="<?=h((string)$focus['url'])?>">
+      <?php if($continueFocus):?><a class="student-v2-row" href="<?=h((string)$focus['url'])?>">
         <span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('notebook')?></span>
         <span class="student-v2-row-text"><small>Caderno · <?=h((string)$focus['status'])?></small><strong><?=h((string)$focus['title'])?></strong></span><span aria-hidden="true">›</span>
       </a><?php endif;?>
       </div>
     </section>
   <?php endif;?>
-  <?php if($feedback):?><section class="student-v2-section" aria-labelledby="student-v2-feedback-title" data-home-feedback>
+  <?php if($feedback && $meeting):?><section class="student-v2-section" aria-labelledby="student-v2-feedback-title" data-home-feedback>
     <h2 id="student-v2-feedback-title">Retorno do professor</h2>
     <a class="student-v2-feedback" href="<?=h((string)$feedback['url'])?>"><span><small><?=h((string)$feedback['status'])?></small><strong><?=h((string)$feedback['title'])?></strong></span><span aria-hidden="true">›</span></a>
   </section><?php endif;?>

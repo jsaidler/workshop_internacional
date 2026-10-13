@@ -183,3 +183,16 @@ test('new app shell keeps five named destinations, correct active state and usab
   await expect(page.locator('[data-student-toolbox]')).toBeVisible();
   await page.locator('[data-toolbox-close]').click();
 });
+
+test('secondary continuation never duplicates the prominent Home action',async({page})=>{
+  await page.goto(base+'?state=feedback');
+  await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();
+  await expect(page.locator('[data-home-feedback]')).toHaveCount(0);
+  await expect(page.locator('[data-home-feedback-feature] .student-v2-cta')).toHaveAttribute('href','/aluno/teste.php?id=17&view=review');
+  await page.goto(base+'?state=record');
+  await expect(page.locator('[data-home-record-feature]')).toBeVisible();
+  await expect(page.locator('.student-v2-row[href="/aluno/teste.php?id=22&view=process"]')).toHaveCount(0);
+  await page.goto(base+'?state=study');
+  await expect(page.locator('[data-home-study-feature]')).toBeVisible();
+  await expect(page.locator('.student-v2-row[href*="/material-do-curso"]')).toHaveCount(0);
+});
