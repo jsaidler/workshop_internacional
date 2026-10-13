@@ -17,6 +17,8 @@ for(const width of [320,390,1440]){
   await expect(contact).not.toHaveAttribute('open','');
   await expect(address).not.toHaveAttribute('open','');
   await expect(form.locator('[name="phone"]')).toBeHidden();
+  await page.locator('.student-main').evaluate(n=>{n.scrollTop=0;});
+  await page.screenshot({path:'student-visual-audit/profile/'+label+'-initial.png',animations:'disabled'});
   await form.locator('[name="name"]').fill('Aluno Exemplo · rascunho');
   await contact.locator('summary').focus();await page.keyboard.press('Enter');
   await expect(contact).toHaveAttribute('open','');
@@ -44,7 +46,7 @@ for(const width of [320,390,1440]){
   await page.screenshot({path:'student-visual-audit/profile/'+label+'-expanded.png',animations:'disabled'});
   await contact.locator('summary').click();await address.locator('summary').click();
   await page.locator('.student-main').evaluate(n=>{n.scrollTop=0;});
-  await page.screenshot({path:'student-visual-audit/profile/'+label+'-initial.png',animations:'disabled'});
+  await page.screenshot({path:'student-visual-audit/profile/'+label+'-collapsed-after-edit.png',animations:'disabled'});
   await form.getByRole('button',{name:'Salvar dados'}).scrollIntoViewIfNeeded();
   const controls=await page.evaluate(()=>{
     const form=document.querySelector('[data-student-profile-form]'),button=form.querySelector('button[type="submit"]'),main=document.querySelector('.student-main');
@@ -69,7 +71,7 @@ test('profile failed update keeps original input values and opens details withou
 test('profile dedicated account route keeps security and logout separate from identity fields',async({page})=>{
  await page.goto(url);
  await expect(page.getByRole('link',{name:'Alterar senha'})).toHaveAttribute('href','/aluno/senha.php?next=%2Faluno%2Fperfil.php');
- await expect(page.locator('form[action="/aluno/logout.php"] [name="_csrf"]')).toHaveCount(1);
- await expect(page.locator('form[action="/aluno/logout.php"] button')).toHaveText('Sair da conta');
+ await expect(page.locator('.student-profile-setting form[action="/aluno/logout.php"] [name="_csrf"]')).toHaveCount(1);
+ await expect(page.locator('.student-profile-setting form[action="/aluno/logout.php"] button')).toHaveText('Sair da conta');
  await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
 });
