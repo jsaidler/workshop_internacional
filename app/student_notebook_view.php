@@ -6,7 +6,6 @@
   <div>
     <p class="student-kicker student-v2-eyebrow">Sua pesquisa</p>
     <h1 class="student-title">Caderno</h1>
-    <p class="student-notebook-intro">Cada registro reúne o que você quiser documentar sobre uma fotografia: exposição, processamento e resultado. As partes podem ser preenchidas em qualquer ordem e retomadas depois.</p>
     <p class="student-v2-notebook-lead">Exposição, processamento e resultado — registre no seu ritmo, em qualquer ordem.</p>
   </div>
   <button class="button button-primary student-v2-notebook-create" type="button" data-record-create-open><span aria-hidden="true">+</span> Novo registro</button>
@@ -62,7 +61,7 @@
           </div>
           <div class="student-process-card-state">
             <strong>Abrir registro →</strong>
-            <span><?=h((string)($record['test_date']?:'Sem data'))?></span>
+            <span><?=h(!empty($record['test_date'])?student_process_date((string)$record['test_date']):'Sem data')?></span>
           </div>
         </a>
         <div class="student-process-card-footer">

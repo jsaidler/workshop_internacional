@@ -74,7 +74,7 @@ const compareHeading=document.querySelector('.student-page-heading'),compareList
 if(compareHeading&&compareList&&compareCards.length>=2){
   const newRecord=compareHeading.querySelector('[data-record-create-open]');
   const compare=document.createElement('button');compare.type='button';compare.className='button button-secondary';compare.textContent='Comparar registros';compare.dataset.compareModeOpen='';
-  newRecord?.insertAdjacentElement('beforebegin',compare);
+  newRecord?.insertAdjacentElement('afterend',compare);
   const bar=document.createElement('div');bar.className='student-compare-selection';bar.hidden=true;bar.innerHTML='<span data-compare-count>Selecione 2 registros</span><div><button class="button button-secondary button-compact" type="button" data-compare-cancel>Cancelar</button><button class="button button-primary button-compact" type="button" data-compare-go disabled>Comparar</button></div>';
   compareList.insertAdjacentElement('beforebegin',bar);
   const picks=[];

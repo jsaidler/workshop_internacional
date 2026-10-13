@@ -84,3 +84,17 @@ for(const theme of ['dark','light'])test('notebook v2 '+theme+' theme',async({pa
   await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);
   await page.screenshot({path:'student-visual-audit/notebook/v2-'+theme+'-phone.png',animations:'disabled'});
 });
+test('notebook keyboard and visual action order puts creation before comparison',async({page})=>{
+  await page.setViewportSize({width:320,height:720});
+  await page.goto(base+'?state=mixed',{waitUntil:'networkidle'});
+  const actions=await page.locator('.student-v2-notebook-header > button').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent.trim(),top:n.getBoundingClientRect().top})));
+  expect(actions).toHaveLength(2);
+  expect(actions[0].text).toContain('Novo registro');
+  expect(actions[1].text).toContain('Comparar registros');
+  expect(actions[0].top).toBeLessThan(actions[1].top);
+  await page.getByRole('button',{name:'Comparar registros'}).click();
+  await expect(page.locator('.student-compare-selection')).toBeVisible();
+  await expect(page.locator('.student-compare-pick:not([hidden])')).toHaveCount(3);
+  await page.getByRole('button',{name:'Cancelar'}).click();
+  await expect(page.locator('.student-compare-selection')).not.toBeVisible();
+});
