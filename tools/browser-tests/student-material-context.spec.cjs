@@ -44,11 +44,13 @@ test('material context and notes remain usable on a narrow phone',async({page})=
   await expect(page.getByTestId('notes-panel')).toBeVisible();
   const mobileNav=page.locator('.student-mobile-nav');
   await expect(mobileNav).toBeVisible();
-  await expect(mobileNav.locator('a')).toHaveCount(4);
+  await expect(mobileNav.locator('a')).toHaveCount(5);
   await expect(mobileNav.locator('a').nth(0)).toHaveText('Início');
-  await expect(mobileNav.locator('a').nth(1)).toHaveText('Cursos');
-  await expect(mobileNav.locator('a').nth(2)).toHaveText('Caderno');
-  await expect(mobileNav.locator('a').nth(3)).toHaveText('Laboratório');
+  await expect(mobileNav.locator('a').nth(1)).toHaveText('Agenda');
+  await expect(mobileNav.locator('a').nth(1)).toHaveAttribute('href','/aluno/agenda.php');
+  await expect(mobileNav.locator('a').nth(2)).toHaveText('Cursos');
+  await expect(mobileNav.locator('a').nth(3)).toHaveText('Caderno');
+  await expect(mobileNav.locator('a').nth(4)).toHaveText('Laboratório');
   await expect(mobileNav.getByText('Cursos',{exact:true})).toHaveAttribute('aria-current','page');
   const chrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),body=document.body,r=nav.getBoundingClientRect(),s=getComputedStyle(body);return{position:getComputedStyle(nav).position,bottom:r.bottom,height:r.height,viewport:innerHeight,paddingBottom:parseFloat(s.paddingBottom||'0')};});
   expect(chrome.position).toBe('fixed');
