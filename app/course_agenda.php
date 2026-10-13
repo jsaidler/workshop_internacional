@@ -2,6 +2,27 @@
 declare(strict_types=1);
 
 /** Agenda de encontros; course_lessons é a única identidade pedagógica. */
+function course_agenda_safe_meeting_url(mixed $value): string {
+    $url=trim((string)$value);
+    if($url==='' || !filter_var($url,FILTER_VALIDATE_URL))return '';
+    return strtolower((string)parse_url($url,PHP_URL_SCHEME))==='https'?$url:'';
+}
+/** Uma ocorrência ainda está vigente apenas no período agendado explicitamente.
+ * Não inferir presença, realização ou duração ausente.
+ */
+function course_agenda_partition_meetings(array $meetings,?int $now=null): array {
+    $now??=time();$upcoming=[];$history=[];
+    foreach($meetings as $meeting){
+        $starts=strtotime((string)($meeting['meeting_starts_at']??''));
+        $minutes=max(0,(int)($meeting['meeting_duration_minutes']??0));
+        $inWindow=$starts!==false && $starts<=$now && $minutes>0 && ($starts+$minutes*60)>$now;
+        if(($meeting['meeting_status']??'')==='scheduled' && $starts!==false && ($starts>=$now||$inWindow))$upcoming[]=$meeting;
+        else $history[]=$meeting;
+    }
+    usort($upcoming,static fn(array $a,array $b):int=>strcmp((string)$a['meeting_starts_at'],(string)$b['meeting_starts_at']));
+    usort($history,static fn(array $a,array $b):int=>strcmp((string)$b['meeting_starts_at'],(string)$a['meeting_starts_at']));
+    return ['upcoming'=>$upcoming,'history'=>$history];
+}
 function course_agenda_timezone(string $name): DateTimeZone {
     try {return new DateTimeZone(trim($name));}
     catch(Throwable) {throw new RuntimeException('Escolha um fuso horário válido.');}

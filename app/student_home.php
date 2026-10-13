@@ -7,10 +7,7 @@ declare(strict_types=1);
  * No inferred attendance, unread flags or obligatory notebook steps.
  */
 function student_home_safe_meeting_url(mixed $value): string {
-    $url=trim((string)$value);
-    if($url===''||!filter_var($url,FILTER_VALIDATE_URL))return '';
-    $scheme=strtolower((string)parse_url($url,PHP_URL_SCHEME));
-    return in_array($scheme,['http','https'],true)?$url:'';
+    return course_agenda_safe_meeting_url($value);
 }
 function student_home_next_meeting(array $meetings,?int $now=null): ?array {
     $now??=time();
