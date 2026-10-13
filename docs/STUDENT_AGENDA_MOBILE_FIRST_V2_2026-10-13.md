@@ -15,6 +15,6 @@ A decisão de produto é reconstruir a experiência, substituindo a antiga dispo
 - `student_agenda_date_parts`: somente projeção visual de data e fuso, sem modificar relógio dos encontros no banco.
 
 ### Escopo da tranche
-- A nova view é `app/student_agenda_view.php`, com o item compartilhado `app/student_agenda_meeting_item.php` e CSS isolado `assets/student-agenda-v2.css` carregado apenas na rota.
+- A nova view é `app/student_agenda_view.php`, com o item compartilhado `app/student_agenda_meeting_item.php` e CSS isolado `assets/student-agenda.css` carregado apenas na rota.
 - O protótipo aprovado define a hierarquia e a navegação, mas a interface real não simula solicitação nem cria cenários fictícios. Ela lê sempre os dados autorizados da sessão.
 - Testes Playwright verificam 8 estados, 320/390/1440, claro/escuro, status de vaga, privacidade dos links e transições via URL. A instalação e testes autenticados na hospedagem continuam pendentes.
