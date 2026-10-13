@@ -31,7 +31,7 @@ foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$
     </section>
   <?php elseif($feedback || $focus || $firstMaterial):?>
     <?php $primary=$feedback??$focus; ?>
-    <section class="student-v2-next student-v2-next-simple" aria-labelledby="student-home-feature-title">
+    <section class="student-v2-next student-v2-next-simple" aria-labelledby="student-home-feature-title" <?=$feedback?'data-home-feedback-feature':($focus?'data-home-record-feature':'data-home-study-feature')?>>
       <div class="student-v2-feature-top"><span><?=$primary?'Continuar sua pesquisa':'Material disponível'?></span></div>
       <h2 id="student-home-feature-title"><?=h((string)($primary['title']??$firstMaterial['title']))?></h2>
       <p class="student-v2-next-context"><?=h((string)($primary['status']??'Disponível para estudar'))?></p>
