@@ -13,7 +13,7 @@ $uiJs=(string)file_get_contents($root.'/assets/ui-core.js');
 $home=(string)file_get_contents($root.'/aluno/index.php');
 $courses=(string)file_get_contents($root.'/aluno/cursos.php');$coursesView=(string)file_get_contents($root.'/app/student_courses_view.php');
 $bench=(string)file_get_contents($root.'/aluno/ferramentas.php');
-$notebook=(string)file_get_contents($root.'/aluno/caderno.php');
+$notebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');
 $test=(string)file_get_contents($root.'/aluno/teste.php');
 $routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
 $processManager=(string)file_get_contents($root.'/aluno/processamentos.php');

@@ -23,7 +23,7 @@ $sharedContext=student_enrollment_shared_tests_context($shared,$enrollment);
 if(array_column($sharedContext,'id')!==[11,12])fail_student_tests_context('shared records do not respect cohort/course visibility inside an enrollment context');
 
 $root=dirname(__DIR__);
-$notebook=(string)file_get_contents($root.'/aluno/caderno.php');
+$notebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');
 $legacy=(string)file_get_contents($root.'/aluno/testes.php');
 $dashboard=(string)file_get_contents($root.'/aluno/cursos.php');$dashboardView=(string)file_get_contents($root.'/app/student_courses_view.php');
 $visibility=(string)file_get_contents($root.'/aluno/visibilidade-teste.php');

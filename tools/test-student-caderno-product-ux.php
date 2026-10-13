@@ -3,7 +3,7 @@ declare(strict_types=1);
 function fail_student_caderno_product_ux(string $message): never {fwrite(STDERR,"student-caderno-product-ux: $message\n");exit(1);}
 function must_student_caderno_product_ux(bool $ok,string $message): void {if(!$ok)fail_student_caderno_product_ux($message);}
 $root=dirname(__DIR__);
-$notebook=(string)file_get_contents($root.'/aluno/caderno.php');$record=(string)file_get_contents($root.'/aluno/teste.php');$runner=(string)file_get_contents($root.'/aluno/processar.php');$routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
+$notebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');$record=(string)file_get_contents($root.'/aluno/teste.php');$runner=(string)file_get_contents($root.'/aluno/processar.php');$routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
 $notebookDomain=(string)file_get_contents($root.'/app/student_process_notebook.php');$freeDomain=(string)file_get_contents($root.'/app/student_process_notebook_free.php');$replan=(string)file_get_contents($root.'/app/student_process_replanning.php');$migration=(string)file_get_contents($root.'/migrations/092_student_process_step_timers.php');
 $bootstrap=(string)file_get_contents($root.'/app/bootstrap.php');$shell=(string)file_get_contents($root.'/app/student_shell.php');$css=(string)file_get_contents($root.'/assets/student-caderno.css');$doc=(string)file_get_contents($root.'/docs/STUDENT_CADERNO_PRODUCT_UX_TRANCHE_B_2026-10-01.md');
 
