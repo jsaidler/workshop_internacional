@@ -17,7 +17,7 @@ const screens=[
   ['questions-feedback','student-pedagogical-feedback-audit.html?screen=questions-feedback'],
   ['question-new','student-secondary-screens-audit.html?screen=question-new'],
   ['question-thread','student-secondary-screens-audit.html?screen=question-thread'],
-  ['notebook','student-caderno-product-audit.html?screen=notebook'],
+  ['notebook','student-notebook.php?state=mixed'],
   ['new-record','student-record-create-sheet.php'],
   ['exposure','student-caderno-product-audit.html?screen=record-empty'],
   ['process-choice','student-caderno-product-audit.html?screen=record-empty'],

@@ -48,6 +48,7 @@ foreach($requiredConsumers as $file=>$needles){
     // The notebook creation form has a shared renderer; check the actual
     // included component rather than requiring duplicated markup in the route.
     if($file==='caderno.php'){
+        $source.=(string)file_get_contents($root.'/app/student_notebook_view.php');
         must_global_ui(str_contains($source,'student_record_create_dialog('),'notebook must include the canonical creation form');
         $source.=(string)file_get_contents($root.'/app/student_record_create_dialog.php');
     }
