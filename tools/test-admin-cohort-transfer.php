@@ -87,8 +87,11 @@ expect_transfer_error(fn()=>admin_student_transfer_manual($db,1,$old6,20),'inscr
 must_move(enrollment($db,$old6)['status']==='active'&&enrollment($db,$ownedDestination)['status']==='disabled','registration-owned target untouched');
 
 $admin=(string)file_get_contents(__DIR__.'/../admin/students.php');
+$panel=(string)file_get_contents(__DIR__.'/../app/admin_student_cohort_transfer_panel.php');
 must_move(str_contains($admin,"'move_manual_enrollment'")&&str_contains($admin,'admin_student_transfer_manual('),'admin POST uses the real transfer service');
 must_move(str_contains($admin,"'move_registration'")&&str_contains($admin,'course_registration_assign_cohort('),'registration remains source-authoritative');
-must_move(str_contains($admin,'name="target_cohort_id"')&&str_contains($admin,'csrf_token(\'students-admin\')'),'admin form keeps selection and CSRF');
+must_move(str_contains($admin,'admin_student_cohort_transfer_panel($selected,$cohortOptions')&&str_contains($panel,'name="target_cohort_id"')&&str_contains($panel,'csrf_token(\'students-admin\')'),'operational shared admin panel keeps selection and CSRF');
+must_move(str_contains($panel,'move_manual_enrollment')&&str_contains($panel,'move_registration'),'both provenance types must be represented in the same transfer panel');
+must_move(str_contains($panel,'Não há outra turma ativa')&&str_contains($panel,"'status'"),'unavailable targets must explain the missing action');
 must_move(str_contains($admin,'$redirectCohortId=$targetCohortId'),'success navigates to the destination cohort');
 echo "admin-cohort-transfer: ok\n";
