@@ -14,6 +14,7 @@ async function mountOperationalViews(page){
     '/aluno/agenda.php': '/tools/browser-fixture/student-agenda.php?state=regular',
     '/aluno/caderno.php': '/tools/browser-fixture/student-notebook.php?state=mixed',
     '/aluno/ferramentas.php': '/tools/browser-fixture/student-laboratory.php?state=full',
+    '/aluno/inventario.php': '/tools/browser-fixture/student-inventory-movement.php?mode=inventory',
     '/aluno/duvidas.php': '/tools/browser-fixture/student-questions-operational.php',
     '/aluno/teste.php': '/tools/browser-fixture/student-caderno-product-audit.php?screen=record-plan',
   };
@@ -179,3 +180,28 @@ test('direct link to a question keeps the chosen course and logical return',asyn
   await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
   await expect(page.locator('.student-course-context-nav a').first()).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-b');
 });
+
+for(const [device,width,height] of sizes){
+  test('Laboratório → Inventário → histórico e retorno contextual, Back/Forward '+device,async({page})=>{
+    await page.setViewportSize({width,height});
+    await mountOperationalViews(page);
+    await page.goto(origin+'/aluno/ferramentas.php',{waitUntil:'networkidle'});
+    await expect(page.locator('[data-student-laboratory]')).toBeVisible();
+    await page.locator('[data-lab-link="inventario"]').click();
+    await expect(page).toHaveURL(origin+'/aluno/inventario.php');
+    await expect(page.getByRole('heading',{name:'Inventário',exact:true})).toBeVisible();
+    await expect(page.locator('[data-student-local-key="inventory-stock"] .student-inventory-item')).toHaveCount(1);
+    await expect(page.locator('[data-student-local-key="inventory-history"]')).toBeVisible();
+    await globalArea(page,'/aluno/ferramentas.php',device);
+    await expect(page.locator('.student-appbar a.student-back').first()).toHaveAttribute('href','/aluno/ferramentas.php');
+    await page.screenshot({path:'student-visual-audit/journeys/lab-inventory-'+device+'.png',animations:'disabled'});
+    await page.goBack();
+    await expect(page).toHaveURL(origin+'/aluno/ferramentas.php');
+    await expect(page.locator('[data-student-laboratory]')).toBeVisible();
+    await page.goForward();
+    await expect(page.getByRole('heading',{name:'Inventário',exact:true})).toBeVisible();
+    await page.locator('.student-appbar a.student-back').first().click();
+    await expect(page).toHaveURL(origin+'/aluno/ferramentas.php');
+    await expect(page.locator('[data-student-laboratory]')).toBeVisible();
+  });
+}

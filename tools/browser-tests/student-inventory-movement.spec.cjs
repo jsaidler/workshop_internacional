@@ -23,7 +23,9 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100],['co
    }
 
    if(device!=='desktop'){
-     await expect(bar).toHaveCount(4);
+     await expect(bar).toHaveCount(5);
+     await expect(page.locator('.student-mobile-nav a[href="/aluno/agenda.php"]')).toHaveCount(1);
+     await expect(page.locator('.student-mobile-nav a[href="/aluno/ferramentas.php"]')).toHaveAttribute('aria-current','page');
      const geometry=await dialog.evaluate(node=>{
        const d=node.getBoundingClientRect(),f=node.querySelector('form').getBoundingClientRect();
        return {left:d.left,right:d.right,bottom:d.bottom,viewport:innerHeight,scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,formBottom:f.bottom};

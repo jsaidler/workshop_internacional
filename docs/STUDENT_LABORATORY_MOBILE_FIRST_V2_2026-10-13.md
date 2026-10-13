@@ -25,3 +25,7 @@ Os serviços de roteiros de processamento, estoque, preparos, calibrações e as
 Esta etapa reconstrói a **página principal do Laboratório**, não todas as telas detalhadas de Processamentos, Inventário, Predefinições ou Calibrações. Suas funções e editores permanecem operacionais, mas a aceitação visual transversal deve verificar essas rotas junto com o shell novo.
 
 O PR deve continuar em rascunho e sem merge até aprovação dos três workflows (`validate`, `student-visual-audit` e `deploy`) **no mesmo SHA final**, inspeção das capturas e verificação do percurso autenticado em ambiente de teste. O pacote gerado por `deploy` no PR não altera a hospedagem.
+
+## Auditoria transversal Laboratório → Inventário (13/10/2026, em execução)
+
+A fixture PHP de movimentação reutilizava o renderer real do movimento, mas continha cabeçalho sintético e navegação global antiga de **quatro** destinos. Esse arranjo não pode comprovar a arquitetura de cinco destinos aprovada. A fixture de Inventário passou a usar o próprio `student_shell_start/end`, incluindo sidebar e barra inferior, com valores físicos de teste e simulação explícita de POST. O browser audit percorre Laboratório → Inventário → histórico → Back/Forward → retorno explícito em 320, 390 e 1440 px e produz capturas de navegação. A lógica real de saldo, idempotência e autorização permanece no servidor e seus testes independentes. Este recorte não homologa estoque hospedado nem os editores de item/predefinições/calibração, que ainda devem ser percorridos com o mesmo critério.
