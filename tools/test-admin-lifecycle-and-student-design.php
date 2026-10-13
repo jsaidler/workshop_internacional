@@ -7,7 +7,7 @@ $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
 $activities=(string)file_get_contents($root.'/admin/activities.php');
 $activityRepo=(string)file_get_contents($root.'/app/activity_repository.php');
-$notebook=(string)file_get_contents($root.'/aluno/caderno.php');
+$notebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');
 $deletePage=(string)file_get_contents($root.'/aluno/excluir-teste.php');
 $registrations=(string)file_get_contents($root.'/admin/registrations.php');
 
