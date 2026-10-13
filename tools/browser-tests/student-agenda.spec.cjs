@@ -26,7 +26,7 @@ for(const [device,width,height] of sizes){
       await expect(nav.locator('a[href="/aluno/agenda.php"]')).toHaveAttribute('aria-current','page');
       if(['regular','listener','mixed','two'].includes(state)){
         await expect(page.locator('[data-agenda-upcoming] .agenda-meeting')).toHaveCount(state==='two'?2:1);
-        await expect(page.locator('.student-v2-agenda-meeting-date time')).toHaveAttribute('datetime','2030-10-12T22:00:00Z');
+        await expect(page.locator('.student-v2-agenda-meeting-date time').first()).toHaveAttribute('datetime','2030-10-12T22:00:00Z');
         await expect(page.getByRole('link',{name:'Acessar encontro ↗'}).first()).toHaveAttribute('href','https://example.org/private-meeting');
         await expect(page.locator('[data-agenda-upcoming] .agenda-meeting .student-status').first()).toHaveText(state==='listener'?'Ouvinte':'Matriculado');
         if(state==='two'){
