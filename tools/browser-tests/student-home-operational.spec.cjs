@@ -85,8 +85,12 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
    await page.screenshot({path:'student-visual-audit/home/context-course-'+device+'.png',animations:'disabled'});
    if(width===320){
      const submit=dialog.getByRole('button',{name:'Criar registro'});
-     await submit.scrollIntoViewIfNeeded();
-     await expect(submit).toBeInViewport();
+     // A partially visible submit control does not pass the mobile gate.
+     // Scroll to the real end of the dialog, not only until one pixel enters view.
+     await dialog.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+     await expect(submit).toBeInViewport({ratio:1});
+     const bottomGap=await submit.evaluate(el=>window.innerHeight-el.getBoundingClientRect().bottom);
+     expect(bottomGap).toBeGreaterThanOrEqual(12);
      await page.screenshot({path:'student-visual-audit/home/context-course-narrow-submit.png',animations:'disabled'});
    }
    await dialog.locator('label.choice-option:has(input[value="personal"])').click();

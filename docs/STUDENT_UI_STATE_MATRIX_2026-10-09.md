@@ -265,3 +265,6 @@ A introdução de `/aluno/agenda.php` exige registrar visualmente no telefone e 
 ### H-01 — revisão da janela temporal e captura de estados (12/10/2026)
 
 Um encontro em horário ainda coberto por duração programada permanece acessível na home sem presumir que aconteceu. Após o fim, cede lugar à próxima aula; se não há duração, nenhum período é inventado. A fixture PHP agora representa o estado `ongoing` em 320/390/1440. Fotografias dos rádios Pessoal/Curso são feitas sem transições de cor, e o botão final do formulário em 320 px é verificado com rolagem interna. Requer inspeção do artefato e CI do novo commit antes de conclusão.
+
+
+**Correção da evidência de rolagem H-01 (12/10):** a inspeção da captura `context-course-narrow-submit.png` do SHA `77a27b5` encontrou o botão final no limite inferior, parcialmente cortado, embora `toBeInViewport()` tivesse passado com uma interseção mínima. Esse teste era insuficiente. O gate agora rola a própria gaveta até o fim, exige proporção visível 1 e folga de ao menos 12 px para o botão. O proprietário `student-experience.css` acrescenta `scroll-padding-bottom` no diálogo compartilhado. Apenas nova captura e novo CI poderão validar a correção.
