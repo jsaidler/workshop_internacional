@@ -21,7 +21,12 @@ function course_agenda_local(?string $utc,string $timezone='America/Sao_Paulo'):
 }
 function course_agenda_when(?string $utc,string $timezone='America/Sao_Paulo'): string {
     if(!$utc)return 'Sem data definida';
-    try{return (new DateTimeImmutable($utc))->setTimezone(course_agenda_timezone($timezone))->format('d/m/Y · H:i').' ('.$timezone.')';}
+    try{
+        $local=(new DateTimeImmutable($utc))->setTimezone(course_agenda_timezone($timezone));
+        $segments=explode('/',$timezone);
+        $place=$timezone==='America/Sao_Paulo'?'Brasília':str_replace('_',' ',(string)end($segments));
+        return $local->format('d/m/Y · H:i').' ('.$place.')';
+    }
     catch(Throwable){return 'Data indisponível';}
 }
 function course_agenda_capacity(PDO $db,int $cohortId): array {

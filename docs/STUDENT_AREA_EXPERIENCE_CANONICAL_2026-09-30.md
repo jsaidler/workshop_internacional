@@ -32,6 +32,16 @@ Ela deve permitir entender a área sem aprender sua estrutura previamente. Os tr
 
 A página pode mostrar contexto útil já existente — matrícula disponível, último registro e quantidade de instrumentos — mas não inventa progresso, última atividade ou recomendação que o sistema não possua.
 
+### Início operacional mobile-first — 12/10/2026
+A home não escolhe uma capacidade exclusiva e não deve apresentar somente links genéricos. O encontro futuro agendado e autorizado é a informação temporal prioritária quando existe, mas o retorno do professor, o trabalho em registro, o material disponível, cursos, dúvidas e registros recentes devem permanecer acessíveis sem atravessar um menu genérico. Tarefas autônomas não são escondidas pelo destaque de outra tarefa.
+
+- Somente encontros futuros marcados `scheduled`, derivados da Agenda por matrícula regular ou ouvinte confirmado, aparecem como próximo encontro; status cancelado/realizado e datas passadas são excluídos. Link só com esquema http(s), e link ausente não deve tornar o encontro inacessível na Agenda.
+- Material da matrícula só ganha ação direta se a disponibilidade canônica permitir leitura. Múltiplas matrículas geram múltiplas entradas, cada qual com seu `cohort`; não bloquear a home atrás de escolher curso.
+- Novo registro abre na própria home a gaveta curta compartilhada com o Caderno; POST é tratado na própria home pela função canônica \`student_process_create_record()\`; erro mantém a gaveta e o rascunho na home, sucesso abre o registro. Recursos restritos seguem regra de autorização e não aparecem como se estivessem liberados. A ação que leva à biblioteca de Processamentos é nomeada Processamentos, não Temporizador, já que a URL antiga redireciona à biblioteca.
+- Dados não persistidos de leitura, presença, desempenho, pendência laboratorial ou 'novidade' não podem ser inferidos. Caderno pode mostrar rascunho/revisão, mas nunca obrigatoriedade de sequência física.
+- O renderer da home é uma unidade compartilhada entre produção e a fixture de auditoria. Registrar separadamente evidência visual em 320, 390 e desktop, temas claro e escuro, estados variados, rolagem, drawer e mudanças entre estados.
+- O projeto PWA instalável fica separado da navegação e exige manifesto, ícones, armazenamento seguro e validação; não configurar cache de páginas autenticadas por antecipação.
+
 ## 3. Cursos
 
 `/aluno/cursos.php` concentra seleção e contexto de curso. Ao abrir um curso, o aluno encontra disponibilidade de aulas, material e dúvidas.
