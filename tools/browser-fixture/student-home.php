@@ -7,7 +7,7 @@ require_once __DIR__.'/../../app/student_home.php';
 require_once __DIR__.'/../../app/student_shell.php';
 require_once __DIR__.'/../../app/student_record_create_dialog.php';
 $state=(string)($_GET['state']??'active');
-$scenario=['active','study','multiple','empty','feedback','no-link','long','restricted','record','error'];
+$scenario=['active','study','multiple','empty','feedback','no-link','long','restricted','record','error','ongoing'];
 if(!in_array($state,$scenario,true))$state='active';
 $course=['title'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','url'=>'/aluno/cursos.php?cohort=cohort-a','questions_url'=>'/aluno/duvidas.php?cohort=cohort-a','material'=>['title'=>'Exposição pensando no positivo','url'=>'/material-do-curso?cohort=cohort-a'],'available'=>2];
 $course2=['title'=>'Pesquisa em processos fotográficos','cohort'=>'Turma Novembro 2026','url'=>'/aluno/cursos.php?cohort=cohort-b','questions_url'=>'/aluno/duvidas.php?cohort=cohort-b','material'=>['title'=>'Química de revelação','url'=>'/processos?cohort=cohort-b'],'available'=>1];
@@ -17,12 +17,13 @@ $meetings=[
  ['lesson_title'=>'Revelação para positivo direto','course_title'=>$course['title'],'cohort_title'=>$course['cohort'],'meeting_starts_at'=>'2030-10-22T22:00:00Z','meeting_timezone'=>'America/Sao_Paulo','meeting_status'=>'scheduled','meeting_url'=>'https://example.org/private-meeting','participation'=>'regular'],
 ];
 if($state==='no-link')$meetings[1]['meeting_url']='javascript:alert(1)';
+if($state==='ongoing')$meetings[1]['meeting_duration_minutes']=120;
 if($state==='long'){$meetings[1]['lesson_title']='Investigação de reversão química e tratamento do filme com exposições múltiplas e ajustes de compensação';$meetings[1]['course_title']=$course3['title'];}
 $feedback=['title'=>'Retrato 04 — janela lateral','status'=>'Revisão solicitada','action'=>'Ler retorno e revisar','url'=>'/aluno/teste.php?id=17&view=review'];
 $focus=['title'=>'EI 200 — Primeiro processamento','status'=>'Exposição registrada','action'=>'Registrar processamento','url'=>'/aluno/teste.php?id=22&view=process'];
 $recent=[['title'=>'EI 200 — Primeiro processamento','scope'=>'Curso','date'=>'11/10/2026','url'=>'/aluno/teste.php?id=22'],['title'=>'Papel de contraste variável','scope'=>'Pessoal','date'=>'09/10/2026','url'=>'/aluno/teste.php?id=21']];
 $home=[
- 'meeting'=>in_array($state,['active','multiple','no-link','long'],true)?student_home_next_meeting($meetings,strtotime('2030-10-20T00:00:00Z')):null,
+ 'meeting'=>in_array($state,['active','multiple','no-link','long','ongoing'],true)?student_home_next_meeting($meetings,strtotime($state==='ongoing'?'2030-10-22T22:15:00Z':'2030-10-20T00:00:00Z')):null,
  'feedback'=>in_array($state,['active','feedback','long'],true)?$feedback:null,
  'focus'=>in_array($state,['active','multiple','long','record'],true)?$focus:null,
  'courses'=>match($state){'empty'=>[],'multiple'=>[$course,$course2],'long'=>[$course,$course2,$course3],'restricted'=>[array_replace($course,['material'=>null,'available'=>0])],default=>[$course]},

@@ -21,7 +21,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
   </header>
   <?php if($meeting):?>
   <section class="student-home-feature" aria-labelledby="student-home-feature-title" data-home-meeting>
-    <div class="student-home-feature-top"><p class="student-kicker">Próximo encontro</p><span class="student-home-feature-mark" aria-hidden="true"></span></div>
+    <div class="student-home-feature-top"><p class="student-kicker"><?=!empty($meeting['in_window'])?'Horário previsto do encontro':'Próximo encontro'?></p><span class="student-home-feature-mark" aria-hidden="true"></span></div>
     <h2 id="student-home-feature-title"><?=h((string)$meeting['lesson'])?></h2>
     <p class="student-home-feature-context"><?=h((string)$meeting['course'])?> · <?=h((string)$meeting['cohort'])?></p>
     <p class="student-home-feature-time"><?=h((string)$meeting['when'])?></p>

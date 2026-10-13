@@ -29,6 +29,17 @@ $meetingRows=[['meeting_status'=>'completed','meeting_starts_at'=>'2030-01-05T00
 $meeting=student_home_next_meeting($meetingRows,strtotime('2030-01-04T00:00:00Z'));
 must_student_dashboard_truth(($meeting['lesson']??'')==='Aula 2'&&($meeting['url']??'')==='','Home did not reject a dangerous meeting URL while selecting the first scheduled meeting');
 must_student_dashboard_truth(student_home_next_meeting($meetingRows,strtotime('2030-01-08T00:00:00Z'))===null,'Home displayed past meetings');
+$slotRows=[
+ ['meeting_status'=>'completed','meeting_starts_at'=>'2030-01-06T17:00:00Z','meeting_duration_minutes'=>120,'meeting_url'=>'https://example.org/completed'],
+ ['meeting_status'=>'scheduled','meeting_starts_at'=>'2030-01-06T18:00:00Z','meeting_duration_minutes'=>120,'meeting_timezone'=>'UTC','meeting_url'=>'https://example.org/in-session','lesson_title'=>'Encontro no horário'],
+ ['meeting_status'=>'scheduled','meeting_starts_at'=>'2030-01-08T18:00:00Z','meeting_duration_minutes'=>120,'meeting_timezone'=>'UTC','meeting_url'=>'https://example.org/next','lesson_title'=>'Próximo encontro']
+];
+$inSlot=student_home_next_meeting($slotRows,strtotime('2030-01-06T19:01:00Z'));
+must_student_dashboard_truth(($inSlot['lesson']??'')==='Encontro no horário'&&($inSlot['in_window']??false)===true,'Home hid a scheduled meeting while its published duration is still running');
+$afterSlot=student_home_next_meeting($slotRows,strtotime('2030-01-06T20:01:00Z'));
+must_student_dashboard_truth(($afterSlot['lesson']??'')==='Próximo encontro'&&empty($afterSlot['in_window']),'Home kept a meeting after its published duration');
+$missingDuration=$slotRows;$missingDuration[1]['meeting_duration_minutes']=null;
+must_student_dashboard_truth((student_home_next_meeting($missingDuration,strtotime('2030-01-06T19:01:00Z'))['lesson']??'')==='Próximo encontro','Home inferred an end time when meeting duration is unspecified');
 must_student_dashboard_truth(str_contains(course_agenda_when('2030-01-06T22:00:00Z','America/Sao_Paulo'),'Brasília'),'Agenda exposes raw IANA timezone to students');
 must_student_dashboard_truth(!str_contains($home,'student-home-primary'),'dashboard returned to the old latest-record card');
 echo "student-dashboard-truth: ok\n";

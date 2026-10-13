@@ -18,8 +18,14 @@ function student_home_next_meeting(array $meetings,?int $now=null): ?array {
         if((string)($meeting['meeting_status']??'')!=='scheduled')continue;
         $date=(string)($meeting['meeting_starts_at']??'');
         $ts=strtotime($date);
-        if($ts===false||$ts<$now)continue;
+        if($ts===false)continue;
+        // A scheduled encounter remains reachable during its published duration.
+        // This is a time window, not evidence the encounter actually occurred.
+        $duration=(int)($meeting['meeting_duration_minutes']??0);
+        $inWindow=$ts<$now && $duration>0 && $ts+$duration*60>$now;
+        if($ts<$now && !$inWindow)continue;
         return [
+            'in_window'=>$inWindow,
             'lesson'=>(string)($meeting['lesson_title']??'Encontro'),
             'course'=>(string)($meeting['course_title']??''),
             'cohort'=>(string)($meeting['cohort_title']??''),

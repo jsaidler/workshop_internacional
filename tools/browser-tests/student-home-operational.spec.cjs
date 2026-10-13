@@ -15,6 +15,12 @@ test('all independent sources are visible together; private links belong only to
   await expect(page.getByRole('link',{name:'Processamentos'})).toHaveAttribute('href','/aluno/processamentos.php');
   await expect(page.locator('body')).not.toContainText('https://example.org/completed');
 });
+test('Home retains access during the documented time slot, without asserting attendance',async({page})=>{
+  await page.goto(base+'?state=ongoing');
+  await expect(page.locator('[data-home-meeting]')).toBeVisible();
+  await expect(page.getByText('Horário previsto do encontro')).toBeVisible();
+  await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
+});
 test('Home never exposes non-http meeting URL and keeps Agenda discoverable',async({page})=>{
   await page.goto(base+'?state=no-link');
   await expect(page.locator('[data-home-meeting]')).toBeVisible();
@@ -73,11 +79,17 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
    await expect(courseFields).toBeVisible();
    await expect(courseFields.locator('select')).toHaveAttribute('required','');
    fs.mkdirSync('student-visual-audit/home',{recursive:true});
-   await page.screenshot({path:'student-visual-audit/home/context-course-'+device+'.png'});
+   await page.screenshot({path:'student-visual-audit/home/context-course-'+device+'.png',animations:'disabled'});
+   if(width===320){
+     const submit=dialog.getByRole('button',{name:'Criar registro'});
+     await submit.scrollIntoViewIfNeeded();
+     await expect(submit).toBeInViewport();
+     await page.screenshot({path:'student-visual-audit/home/context-course-narrow-submit.png',animations:'disabled'});
+   }
    await dialog.locator('label.choice-option:has(input[value="personal"])').click();
    await expect(courseFields).toBeHidden();
    await expect(courseFields.locator('select')).not.toHaveAttribute('required','');
-   await page.screenshot({path:'student-visual-audit/home/context-personal-'+device+'.png'});
+   await page.screenshot({path:'student-visual-audit/home/context-personal-'+device+'.png',animations:'disabled'});
  });
 }
 test('failed Home creation restores saved draft and sheet focus instead of sending user to Caderno',async({page})=>{
@@ -91,10 +103,10 @@ test('failed Home creation restores saved draft and sheet focus instead of sendi
   await expect(dialog.locator('select[name="context_cohort_id"]')).toHaveValue('12');
   await expect(dialog.locator('form')).toHaveAttribute('action','/aluno/');
   fs.mkdirSync('student-visual-audit/home',{recursive:true});
-  await page.screenshot({path:'student-visual-audit/home/error-phone-drawer.png'});
+  await page.screenshot({path:'student-visual-audit/home/error-phone-drawer.png',animations:'disabled'});
 });
 for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['desktop',1440,1100]]){
-  for(const state of ['active','study','multiple','empty','feedback','no-link','long','restricted']){
+  for(const state of ['active','study','multiple','empty','feedback','no-link','long','restricted','ongoing']){
     test('Home operational renderer '+state+' '+device,async({page})=>{
       const errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.setViewportSize({width,height});
@@ -132,10 +144,10 @@ for(const theme of ['light','dark']){
     await page.goto(base+'?state=long',{waitUntil:'networkidle'});
     await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);
     fs.mkdirSync('student-visual-audit/home',{recursive:true});
-    await page.screenshot({path:'student-visual-audit/home/long-phone-'+theme+'-start.png'});
+    await page.screenshot({path:'student-visual-audit/home/long-phone-'+theme+'-start.png',animations:'disabled'});
     await page.locator('.student-home-quick [data-record-create-open]').click();
     await expect(page.locator('[data-record-create-dialog]')).toBeVisible();
-    await page.screenshot({path:'student-visual-audit/home/long-phone-'+theme+'-drawer.png'});
+    await page.screenshot({path:'student-visual-audit/home/long-phone-'+theme+'-drawer.png',animations:'disabled'});
     const doc=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     expect(doc.scroll-doc.client).toBeLessThanOrEqual(1);
   });
