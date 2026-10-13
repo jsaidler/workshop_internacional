@@ -27,3 +27,7 @@ O Caderno registra processos fotográficos, não prescreve a ordem do trabalho. 
 A nova composição redesenha **a coleção do Caderno**; os editores de um registro individual continuam com sua lógica e disposição existentes, cobertos por `student-caderno-product-audit`. Isso não significa aprovação integral de UX das telas de detalhe, que continuam sujeitas a revisão na integração completa.
 
 Antes do merge: `validate`, `student-visual-audit`, `deploy` verdes no mesmo SHA; inspeção do Caderno em celular; retorno real pós-criação, comparação, compartilhamento e exclusão autorizada; inspeção do Laboratório, ainda não migrado.
+
+## Percurso Caderno a partir da navegação global (13/10/2026)
+
+A suíte `student-cross-route-journeys.spec.cjs` passa a abrir o Caderno por navegação real a partir de Agenda e usa `app/student_notebook_view.php` e `student_record_create_dialog()` via fixture PHP. O teste preenche título e turma, fecha a gaveta por Escape, verifica retorno do foco, reabre e confere preservação do rascunho e ausência de entradas espúrias no histórico. Em seguida abre um registro, retorna à lista e confere controles reais de comparação, duplicação, visibilidade e exclusão contextual em registro de curso. O teste verifica a disponibilidade e o contexto dessas operações, não substitui o CRUD/DB nem confirma uma gravação na hospedagem. Capturas da gaveta reaberta passam a integrar os artefatos visuais. Nenhum dado factual de processamento é inferido.
