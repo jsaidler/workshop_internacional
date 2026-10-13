@@ -1,7 +1,7 @@
 # Área do aluno — contrato canônico de navegação
 
 Data: 2026-10-07  
-Status: **canônico, obrigatório e prioritário para qualquer trabalho de UI/UX na Área do aluno.**
+Status: **canônico, atualizado em 13/10/2026 para a reconstrução mobile-first v2.**
 
 Este documento prevalece sobre regras de navegação conflitantes em documentos anteriores, inclusive trechos de `STUDENT_MOBILE_EXPERIENCE_2026-09-25.md`, `STUDENT_AREA_EXPERIENCE_CANONICAL_2026-09-30.md` e `STUDENT_PRODUCT_UX_CANONICAL_RULES_2026-10-02.md`.
 
@@ -40,7 +40,7 @@ O desktop é uma adaptação posterior da mesma arquitetura de informação. Nã
 A avaliação de uma nova superfície começa no telefone e responde primeiro:
 
 - a pessoa sabe onde está?;
-- consegue ir para os quatro destinos principais sem procurar menus?;
+- consegue ir para os cinco destinos principais sem procurar menus?;
 - consegue voltar ao contexto anterior sem breadcrumb?;
 - as ações principais estão próximas da tarefa?;
 - os controles são utilizáveis com toque?;
@@ -53,23 +53,25 @@ Somente depois a mesma hierarquia é expandida para desktop.
 
 ## 2. Uma única arquitetura global
 
-A navegação global da Área do aluno possui quatro destinos primários:
+A navegação global da Área do aluno possui cinco destinos primários, adotados após aprovação do protótipo mobile-first v2 em 13/10/2026:
 
 1. **Início**
-2. **Cursos**
-3. **Caderno**
-4. **Laboratório**
+2. **Agenda**
+3. **Cursos**
+4. **Caderno**
+5. **Laboratório**
 
-A ordem, os nomes, os ícones e os destinos desses quatro itens são globais. Uma página não pode inventar uma versão própria.
+A ordem, os nomes, os ícones e os destinos desses cinco itens são globais. Uma página não pode inventar uma versão própria.
 
 URLs canônicas atuais:
 
 - Início → `/aluno/`
+- Agenda → `/aluno/agenda.php`
 - Cursos → `/aluno/cursos.php`
 - Caderno → `/aluno/caderno.php`
 - Laboratório → `/aluno/ferramentas.php` enquanto essa rota permanecer como URL técnica de compatibilidade
 
-`Conta` não concorre com os quatro destinos principais. É configuração pessoal e permanece como ação consistente do cabeçalho/perfil.
+`Conta` não concorre com os cinco destinos principais. É configuração pessoal e permanece como ação consistente do cabeçalho/perfil.
 
 ---
 
@@ -79,7 +81,7 @@ Em viewport mobile, toda rota autenticada normal da Área do aluno deve manter a
 
 A barra inferior:
 
-- contém sempre os quatro destinos globais;
+- contém sempre os cinco destinos globais;
 - mantém a mesma ordem em todas as telas;
 - mantém rótulo visível; não depende apenas de ícone;
 - possui área de toque adequada;
@@ -115,6 +117,7 @@ O item ativo representa o **contexto do produto**, não simplesmente o nome do a
 
 Exemplos:
 
+- encontros, calendário e retorno como ouvinte → **Agenda**;
 - material, aula e dúvidas de um curso → **Cursos**;
 - lista do Caderno, registro, resultado e edição de etapa de um registro → **Caderno**;
 - inventário, preparos, calculadoras, calibração e biblioteca de processamentos → **Laboratório**;
@@ -130,7 +133,7 @@ Desktop não possui uma IA diferente.
 
 Pode usar cabeçalho horizontal, maior largura e navegação global no topo, mas deve preservar:
 
-- os mesmos quatro destinos;
+- os mesmos cinco destinos;
 - os mesmos nomes;
 - a mesma ordem conceitual;
 - o mesmo destino da logo;
@@ -455,7 +458,7 @@ Este arquivo deve ser consultado novamente antes de qualquer nova tranche de UI/
 
 ## 17. Legibilidade verificável da barra global no telefone — 10/10/2026
 
-A barra inferior tem quatro destinos persistentes. As legendas não podem ser reduzidas a texto ornamental ilegível para evitar overflow. O estilo antes da revisão usava fonte monoespaçada de **8,5 px**, observada nos artefatos mobile como muito pequena. A correção global ocorre em `assets/student-area.css`, sem alterações página a página.
+A barra inferior tem cinco destinos persistentes. As legendas não podem ser reduzidas a texto ornamental ilegível para evitar overflow. O estilo antes da revisão usava fonte monoespaçada de **8,5 px**, observada nos artefatos mobile como muito pequena. A correção global ocorre em `assets/student-area.css`, sem alterações página a página.
 
 Critérios mínimos desta tranche: legendas de pelo menos **11 px**, ações com alvo de toque de pelo menos **48 px** de altura, quatro controles separados, sem truncamento ou sobreposição, alcançáveis a **320 px** e **390 px** em shell aluno e leitor de Material. As capturas dessas quatro combinações e os testes da barra global em todas as superfícies de telefone devem ser inspecionados antes da integração. O tamanho nominal não dispensa avaliação de contraste real, zoom de navegador e tecnologias assistivas, que permanecem na matriz de auditoria completa.
 
@@ -465,9 +468,27 @@ Critérios mínimos desta tranche: legendas de pelo menos **11 px**, ações com
 
 ## Decisão de navegação para gavetas transitórias — 10/10/2026
 
-A arquitetura de interação contextual é detalhada em `docs/STUDENT_MOBILE_INTERACTION_ARCHITECTURE_2026-10-10.md`. Gavetas são **diálogos transitórios** acionados por intenção, não destinos da navegação. Elas podem cobrir momentaneamente a barra inferior no top layer nativo enquanto abertas (exceção modal prevista na seção 3); ao fecharem, os quatro destinos, o destaque ativo e a posição de leitura retornam intactos. Escape/Cancel e fechamento explícito não criam entradas de histórico fictícias; Back/Forward deve permanecer canônico fora da gaveta. Nenhuma interface de processamento pode usar fechamento de gaveta como prova de etapa executada.
+A arquitetura de interação contextual é detalhada em `docs/STUDENT_MOBILE_INTERACTION_ARCHITECTURE_2026-10-10.md`. Gavetas são **diálogos transitórios** acionados por intenção, não destinos da navegação. Elas podem cobrir momentaneamente a barra inferior no top layer nativo enquanto abertas (exceção modal prevista na seção 3); ao fecharem, os cinco destinos, o destaque ativo e a posição de leitura retornam intactos. Escape/Cancel e fechamento explícito não criam entradas de histórico fictícias; Back/Forward deve permanecer canônico fora da gaveta. Nenhuma interface de processamento pode usar fechamento de gaveta como prova de etapa executada.
 
 
 ## Agenda como destino contextual de Cursos (12/10/2026)
 
 `/aluno/agenda.php` apresenta os encontros dos cursos do estudante, incluindo participação regular e retorno confirmado como ouvinte. A Agenda **não é quinto destino global**: permanece sob **Cursos** na barra mobile e na navegação desktop, acessível a partir da página de Cursos e com retorno explícito à mesma. Não existe navegação global paralela para as reservas, nem link privado de encontro na lista de espera.
+
+
+## 17. Reconstrução mobile-first v2 — decisão de 13/10/2026
+
+A decisão de produto revisada substitui expressamente a arquitetura antiga de quatro destinos. O protótipo `area-do-aluno-mobile-first-v2.html`, aprovado para desenvolvimento, define o comportamento de cinco áreas; os contratos de integridade acadêmica e segurança continuam vigentes. Não preservar uma estrutura anterior apenas por ser anterior.
+
+- **Início:** encontro efetivamente programado e autorizado quando disponível; continuidade de material, Caderno e retorno do professor sem competição de vários destaques.
+- **Agenda:** destino global independente, separa encontros da oportunidade de retornar como ouvinte.
+- **Cursos:** material e dúvidas de cada turma sem reproduzir Agenda.
+- **Caderno:** registros e etapas da pesquisa, criação curta contextual e edição longa em rotas próprias.
+- **Laboratório:** ferramentas e instrumentos, distintos dos fatos registrados no Caderno.
+- **Telefone:** app bar compacta com marca, contexto e Conta; cinco alvos nomeados, icônicos, táteis e persistentes na base. Main rola independentemente acima da barra.
+- **Desktop:** os mesmos cinco destinos em navegação lateral, sem mudar a arquitetura conceitual.
+- **Back, deep links, autorização e dados:** seguem as invariantes de histórico e de segurança deste contrato; não converter navegação normal em estados JavaScript efêmeros.
+- **Ferramentas rápidas:** não monopolizam a app bar mobile; permanecem alcançáveis pelo menu de conta enquanto o Laboratório é integrado na fase seguinte. Essa é uma decisão transitória explicitada, a ser reavaliada com a tela de Laboratório.
+- **Implementação incremental:** a nova arquitetura é estabelecida no shell e na Home. As demais telas continuam consumindo os dados e serviços vigentes até sua migração, mantendo o novo shell para consistência. Não declarar migração visual das cinco áreas concluída antes de reconstruir Agenda, Cursos, Caderno e Laboratório.
+
+O item ativo da Agenda é `agenda`, não `courses`. Esta seção prevalece sobre quaisquer exemplos legados deste documento ou de fixtures que ainda exibam quatro destinos.

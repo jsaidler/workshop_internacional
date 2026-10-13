@@ -680,3 +680,10 @@ A Agenda deve destacar encontros agendados futuros e aqueles dentro de duração
 
 
 **Reprovação de evidência visual PR #242 (13/10/2026):** capturas `agenda/regular-*-start.png` do SHA `8bf7c319` eram feitas após abrir o cronograma e rolar a página; portanto não demonstravam a primeira dobra real, apesar do workflow verde. A regressão da fixture foi alterada para restaurar ambos os scroll containers antes de fotografar o início, produzir capturas independentes dos detalhes expandidos e verificar tema claro/escuro em estado misto. O gate exige CI do novo SHA e inspeção dessas capturas antes de aprovação.
+
+
+## Reconstrução da Área do aluno — shell e Início mobile-first v2 (13/10/2026; branch isolada)
+
+Decisão explícita do autor: reconstruir a UX sem ficar preso aos contratos visuais anteriores. A arquitetura adotada no protótipo aprovado tem **Início / Agenda / Cursos / Caderno / Laboratório**. Na branch `feat/student-mobile-first-rebuild-2026-10-13`, a primeira tranche modifica o shell PHP global, adiciona ícones e barra inferior em cinco colunas, navegação lateral no desktop e altera a projeção visual de Início com dados reais existentes (reunião autorizada, materiais, registros e retorno). Mantém CSRF e fluxo de criação de registro, autorização de aulas, gravações e edição das outras áreas como estão.
+
+A navegação do leitor CMS autenticado também consome os mesmos cinco links (via `student_shell_nav()`); o contrato agora mapeia `agenda.php` para contexto global próprio. Não inferir que a entrega está pronta somente porque esses links existem: a migração de Agenda/Cursos/Caderno/Laboratório e a inspeção em navegador/instalação são fases subsequentes. CSS novo em `assets/student-app-shell.css` pertence à composição do novo shell e Home; a limpeza do CSS legado das telas filhas deve ocorrer por migração de responsabilidade, não patch cronológico. É proibido merge antes dos gates do SHA final, screenshots de 320/390/desktop, Back/Forward, estados vazio/múltiplo, tema e controle de foco.

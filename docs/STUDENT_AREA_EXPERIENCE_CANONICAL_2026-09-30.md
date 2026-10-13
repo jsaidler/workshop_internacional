@@ -3,7 +3,7 @@
 Data: 2026-09-30
 Status: canônico e posterior ao passe visual do PR #157.
 
-> **Navegação:** as regras de navegação deste documento foram supersedidas em 07/10/2026 por `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md`. Em qualquer conflito sobre barra inferior, logo, voltar, breadcrumbs, estado ativo, mobile-first ou arquitetura global/contextual, o documento de 07/10 prevalece.
+> **Navegação:** as regras de navegação deste documento foram supersedidas por `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md`, atualizado para a arquitetura mobile-first v2 de cinco destinos em 13/10/2026. Em qualquer conflito sobre barra inferior, logo, voltar, breadcrumbs, estado ativo, mobile-first ou arquitetura global/contextual, o documento de 07/10 prevalece.
 
 Este documento prevalece sobre decisões anteriores de navegação e apresentação da Área do aluno quando houver conflito. O domínio e os dados definidos em `STUDENT_AREA_PRODUCT_AND_IMPLEMENTATION_2026-09-30.md` continuam válidos; o que muda aqui é a forma como o aluno encontra e usa essas capacidades.
 
@@ -169,3 +169,8 @@ Esse contexto não deve se transformar em uma segunda barra global nem em um das
 ### Agenda: prioridade temporal e uso no telefone (12/10/2026, PR #242)
 
 No Início, a Agenda deve ser primeiro acesso rápido para alunos matriculados e primeiro link da gaveta Atalhos. Na Agenda, exibir encontros futuros agendados primeiro (incluindo o intervalo de duração registrada) e recolher encontros anteriores/cancelados numa seção consultável. Não usar a ausência de mudança administrativa para afirmar realização do encontro. As próximas turmas e suas vagas permanecem subordinadas às regras canônicas de ouvinte; detalhes de datas podem ser expandidos sem gerar outra fonte. Links de encontro expostos ao aluno exigem URL HTTPS válida e autorização conferida pelo serviço de agenda, sem acesso ativo no histórico.
+
+
+### Reconstrução mobile-first v2 (13/10/2026)
+
+A seção histórica que exige quatro destinos é supersedida: **Início / Agenda / Cursos / Caderno / Laboratório** são cinco áreas globais. A Home deve usar o mesmo dado autorizado que a Agenda, sem duplicar matrículas ou inventar presença. A mudança visual é incremental e não significa que todas as áreas tenham sido migradas. Autoridade de navegação: `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` seção 17.

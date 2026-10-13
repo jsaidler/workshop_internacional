@@ -1,7 +1,7 @@
 # Arquitetura de interação mobile — Área do aluno
 Data: 10/10/2026
 Status: **decisão canônica aprovada para implementação incremental; NÃO significa auditoria concluída**.
-Autoridades superiores: `STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` (navegação e Back/Forward), `STUDENT_PRODUCT_UX_CANONICAL_RULES_2026-10-02.md` (modelagem e inspeção), `STUDENT_UI_STATE_MATRIX_2026-10-09.md` (estados e evidência). Este documento não cria um quinto destino global.
+Autoridades superiores: `STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` (navegação e Back/Forward), `STUDENT_PRODUCT_UX_CANONICAL_RULES_2026-10-02.md` (modelagem e inspeção), `STUDENT_UI_STATE_MATRIX_2026-10-09.md` (estados e evidência). Este documento não cria um destino global por si mesmo. A revisão de produto de 13/10/2026 criou Agenda como quinto destino no contrato de navegação; suas regras de gavetas continuam vigentes.
 
 ## Problema e regra de decisão
 O trabalho anterior validou responsividade de controles sem questionar se o telefone deveria apresentar tantas ações permanentes. O relato de galeria forçada originou dois botões expostos na página, mas esta é uma escolha secundária dentro da intenção única **adicionar imagens**. O produto deve oferecer a intenção, só então pedir o meio.
@@ -114,3 +114,8 @@ Auditoria do PHP: `aluno/preparos.php` e `aluno/calibracao.php` mantêm formulá
 **Validação final:** `validate` run `38304926954`, `student-visual-audit` run `38304926986` e `deploy` run `38304927030` concluíram com **success** no mesmo SHA. O ZIP `student-visual-audit-f36b0b5278eba9ceb7acc39de30188570c57c305` (artefato `11772317065`) foi baixado e extraído. **Imagens efetivamente abertas:** `long-editors/preparation-desktop-modal.png`, `calibration-desktop-modal.png`, `preparation-compact-last-action.png`; prancha de 12 estados operacionais incluindo página mobile, falha, rolagem compacta, modal e erro nas duas famílias; mosaicos de 46 superfícies-base mobile e 46 desktop. Os recuos internos dos modais, o `hidden` de Outro revelador, os botões finais e os quatro destinos móveis foram reexaminados sem os defeitos da primeira inspeção. Os testes Playwright específicos cobrem criação/edição, POST/303 nativo e AJAX, erro mantendo rascunho, Escape, Back/Forward, foco, ausência de overflow e 390×844, 320×720 e 1440×1100.
 
 **Escopo da aprovação:** P-01 em **fixture PHP com renderer operacional e POST simulado**, teste PHP de contratos e suíte de navegador. Não foram demonstrados autenticação e persistência reais na hospedagem; não é uma aprovação de todos os estados das 46 superfícies da Área do aluno. O workflow `deploy` de PR valida o pacote, não comprova publicação da branch `production-dist` após o merge nem instalação no servidor. O estado de integração deve ser conferido no GitHub.
+
+
+### Atualização de arquitetura em 13/10/2026
+
+A referência histórica aos quatro destinos e à posição de Agenda sob Cursos deixa de reger o produto. A reconstrução adota cinco áreas globais. As recomendações de interação (gaveta curta, rotas próprias para editores longos, histórico, foco, preservação de rascunho) continuam obrigatórias.
