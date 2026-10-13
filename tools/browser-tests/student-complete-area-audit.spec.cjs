@@ -403,13 +403,14 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
 for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   test(`real new-question form: disclosure, validation, all visibility scopes and keyboard focus — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-new'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=list'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     // The real student panel controller must be used rather than a fixture-only imitation.
-    await page.addScriptTag({url:'/assets/student-workbench.js'});
     const trigger=page.locator('[data-question-new-toggle]');
     const panel=page.locator('[data-question-new-panel]');
     const form=panel.locator('form');
+    await expect(panel).toBeHidden();
+    await trigger.click();
     await expect(panel).toBeVisible();
     await expect(form.locator('input[name="visibility"]')).toHaveCount(3);
     await expect(form.locator('input[name="visibility"]:checked')).toHaveValue('private');
@@ -453,8 +454,9 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
 for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   test(`question list distinguishes private, cohort and course-shared conversations — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=list'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
+    await expect(page.locator('nav.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
     const items=page.locator('.student-test-row');
     await expect(items).toHaveCount(3);
     for(const [name,title] of [
@@ -473,7 +475,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
 for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   test(`failed question publication retains the complete draft — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-new&state=failed-create'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=failed-create'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     const alert=page.getByRole('alert');
     await expect(alert).toContainText('Não foi possível publicar');
@@ -495,7 +497,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   });
   test(`failed reply stays in its conversation and preserves text — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-thread&state=failed-reply&id=31'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=failed-reply&id=31'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     const alert=page.getByRole('alert');
     await expect(alert).toContainText('Não foi possível enviar a resposta');
@@ -517,9 +519,8 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
 for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   test(`question list empty, with operational new-question composer — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=empty'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=empty'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
-    await page.addScriptTag({url:'/assets/student-workbench.js'});
     await expect(page.getByText('Ainda não há dúvidas nesta turma ou curso.')).toBeVisible();
     const trigger=page.locator('[data-question-new-toggle]'),panel=page.locator('[data-question-new-panel]');
     await expect(panel).toBeHidden();
@@ -532,7 +533,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   });
   test(`question list large, scroll beginning middle and final controls — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=many'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=many'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     const items=page.locator('.student-test-list .student-test-row');
     await expect(items).toHaveCount(31);
@@ -552,7 +553,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   });
   test(`question list includes conditional evaluation discussions — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=evaluations'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=evaluations'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();
     const evaluation=page.locator('.student-evaluation-conversations .student-test-row');
@@ -563,7 +564,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   for(const state of ['linked-shared','linked-private']){
     test(`question linked record is ${state} — ${device}`,async({page})=>{
       await page.setViewportSize({width,height});
-      await page.goto(fixture(`student-secondary-screens-audit.html?screen=question-thread&state=${state}`),{waitUntil:'networkidle'});
+      await page.goto(fixture(`student-questions-operational.php?state=${state}&id=1`),{waitUntil:'networkidle'});
       await ensureCanonicalShellStyles(page);
       const link=page.getByRole('link',{name:'Abrir registro relacionado'});
       if(state==='linked-private')await expect(link).toHaveCount(0);

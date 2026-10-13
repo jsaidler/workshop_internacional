@@ -38,13 +38,13 @@ if($failedQuestionCreate)$error='Não foi possível publicar a dúvida. Revise o
 if($failedQuestionReply)$error='Não foi possível enviar a resposta. O texto foi mantido.';
 $validQuestionTopics=['Exposição','Filme','Química','Revelação','Material','Equipamento','Outro'];
 $sourceAnnotation=null;
-$questionDraftTopic='Revelação';
+$questionDraftTopic=$failedQuestionCreate?'Química':'Revelação';
 $questionDraftVisibility=$failedQuestionCreate?'course':'private';
-$questionDraftTitle=$failedQuestionCreate?'Segunda revelação':'';
-$questionDraftBody=$failedQuestionCreate?'Posso reutilizar o banho da primeira revelação?':'';
-$questionDraftRecord=0;
-$questionReplyDraft=$failedQuestionReply?'Gostaria de confirmar os tempos.':'';
-$records=[];
+$questionDraftTitle=$failedQuestionCreate?'Dúvida sobre o banho':'';
+$questionDraftBody=$failedQuestionCreate?'Meu rascunho sobre diluição e amônia precisa permanecer no formulário.':'';
+$questionDraftRecord=$failedQuestionCreate?23:0;
+$questionReplyDraft=$failedQuestionReply?'Minha resposta sobre segunda revelação continua aqui após a falha.':'';
+$records=[['id'=>23,'title'=>'Registro de exposição do aluno']];
 $evaluationThreads=$state==='evaluations'?[['id'=>17,'title'=>'Registro experimental avaliado','message_count'=>3]]:[];
 $questions=[
  ['id'=>1,'status'=>'open','visibility'=>'cohort','title'=>'Como avaliar as sombras no positivo?','student_name'=>'Aluno','topic'=>'Exposição'],
