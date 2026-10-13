@@ -49,7 +49,7 @@ declare(strict_types=1);
   </header>
   <nav class="student-v2-course-local-nav" aria-label="Dentro deste curso">
     <a href="#student-course-material" aria-current="location"><?=student_shell_nav_icon('courses')?> Material</a>
-    <a href="<?=h($questionsUrl)?>"><?=student_shell_nav_icon('notebook')?> Dúvidas e respostas <span aria-hidden="true">↗</span></a>
+    <a href="<?=h($questionsUrl)?>" aria-label="Dúvidas e respostas"><?=student_shell_nav_icon('notebook')?> Dúvidas <span aria-hidden="true">↗</span></a>
   </nav>
   <?php if(!empty($attention['has_attention'])):?>
     <section class="student-v2-course-attention" aria-labelledby="student-course-attention" data-course-attention>
