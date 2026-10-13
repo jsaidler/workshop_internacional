@@ -668,3 +668,5 @@ A auditoria `H-01` na matriz `docs/STUDENT_UI_STATE_MATRIX_2026-10-09.md` regist
 
 
 **Revisão da transição temporal da Home (12/10/2026, PR #238):** uma auditoria pós-renderização detectou que o filtro `meeting_starts_at >= now` removia um encontro da Home um minuto depois do início mesmo durante a duração registrada. A projeção agora o mantém no intervalo **explicitamente programado** e identifica “Horário previsto do encontro”, sem inferir realização, presença ou duração ausente. Regressões exercitam início, fim, ausência de duração e estado concluído. Capturas da gaveta Pessoal/Curso desabilitam transições CSS para evidência não ambígua; em 320 px o teste alcança o botão final após rolagem interna. A aprovação depende da reinspeção do SHA com CI verde.
+
+**Paridade de contexto de múltiplas matrículas (12/10, PR #238):** atalhos de Material na Home devem identificar curso/turma quando o aluno possui mais de uma matrícula. Títulos iguais não são identificadores exclusivos; o caminho direto mantém `cohort`, e a linha de continuidade exibe o contexto apenas quando há ambiguidade possível. Há regressão Playwright no cenário `multiple`.

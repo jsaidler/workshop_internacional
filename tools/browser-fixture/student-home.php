@@ -9,8 +9,8 @@ require_once __DIR__.'/../../app/student_record_create_dialog.php';
 $state=(string)($_GET['state']??'active');
 $scenario=['active','study','multiple','empty','feedback','no-link','long','restricted','record','error','ongoing'];
 if(!in_array($state,$scenario,true))$state='active';
-$course=['title'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','url'=>'/aluno/cursos.php?cohort=cohort-a','questions_url'=>'/aluno/duvidas.php?cohort=cohort-a','material'=>['title'=>'Exposição pensando no positivo','url'=>'/material-do-curso?cohort=cohort-a'],'available'=>2];
-$course2=['title'=>'Pesquisa em processos fotográficos','cohort'=>'Turma Novembro 2026','url'=>'/aluno/cursos.php?cohort=cohort-b','questions_url'=>'/aluno/duvidas.php?cohort=cohort-b','material'=>['title'=>'Química de revelação','url'=>'/processos?cohort=cohort-b'],'available'=>1];
+$course=['title'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','url'=>'/aluno/cursos.php?cohort=cohort-a','questions_url'=>'/aluno/duvidas.php?cohort=cohort-a','material'=>['title'=>'Exposição pensando no positivo','url'=>'/material-do-curso?cohort=cohort-a','course'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026'],'available'=>2];
+$course2=['title'=>'Pesquisa em processos fotográficos','cohort'=>'Turma Novembro 2026','url'=>'/aluno/cursos.php?cohort=cohort-b','questions_url'=>'/aluno/duvidas.php?cohort=cohort-b','material'=>['title'=>'Química de revelação','url'=>'/processos?cohort=cohort-b','course'=>'Pesquisa em processos fotográficos','cohort'=>'Turma Novembro 2026'],'available'=>1];
 $course3=['title'=>'Experiências de grande formato e arquitetura de câmera artesanal','cohort'=>'Turma Dezembro 2026','url'=>'/aluno/cursos.php?cohort=cohort-c','questions_url'=>'/aluno/duvidas.php?cohort=cohort-c','material'=>null,'available'=>0];
 $meetings=[
  ['lesson_title'=>'Primeiro encontro · exposição e filme de raio-X','course_title'=>$course['title'],'cohort_title'=>$course['cohort'],'meeting_starts_at'=>'2030-10-21T22:00:00Z','meeting_timezone'=>'America/Sao_Paulo','meeting_status'=>'completed','meeting_url'=>'https://example.org/completed'],

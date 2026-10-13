@@ -44,6 +44,9 @@ test('multiple courses expose scoped materials and questions without mandatory c
   await expect(courses.nth(0).getByRole('link',{name:'Abrir material'})).toHaveAttribute('href',/cohort=cohort-a/);
   await expect(courses.nth(1).getByRole('link',{name:'Abrir material'})).toHaveAttribute('href',/cohort=cohort-b/);
   await expect(page.getByText('Escolha o curso')).toHaveCount(0);
+  const continueMaterial=page.locator('.student-home-block').filter({has:page.getByRole('heading',{name:'Continuar'})}).locator('.student-home-row').first();
+  await expect(continueMaterial).toContainText('Positivo direto em filme de raio-X');
+  await expect(continueMaterial).toContainText('Turma Outubro 2026');
 });
 test('New record opens one operational sheet in Home and preserves native POST destination, Escape and focus',async({page})=>{
   await page.setViewportSize({width:390,height:844});

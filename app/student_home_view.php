@@ -48,6 +48,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
   <section class="student-home-feature" aria-labelledby="student-home-feature-title" data-home-study-feature>
     <div class="student-home-feature-top"><p class="student-kicker">Material disponível</p><span class="student-home-feature-mark" aria-hidden="true"></span></div>
     <h2 id="student-home-feature-title"><?=h((string)$firstMaterial['title'])?></h2>
+    <?php if(count($courses)>1):?><p class="student-home-feature-context"><?=h((string)($firstMaterial['course']??''))?> · <?=h((string)($firstMaterial['cohort']??''))?></p><?php endif;?>
     <div class="student-home-feature-actions"><a class="button button-primary" href="<?=h((string)$firstMaterial['url'])?>">Abrir material →</a></div>
   </section>
   <?php else:?>
@@ -75,7 +76,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
   <section class="student-home-block" aria-labelledby="student-home-continue-title">
     <div class="student-home-section-head"><h2 id="student-home-continue-title">Continuar</h2></div>
     <div class="student-home-list">
-      <?php if($firstMaterial && $hero!=='study'):?><a class="student-home-row" href="<?=h((string)$firstMaterial['url'])?>"><span><small>Material</small><strong><?=h((string)$firstMaterial['title'])?></strong></span><span aria-hidden="true">→</span></a><?php endif;?>
+      <?php if($firstMaterial && $hero!=='study'):?><a class="student-home-row" href="<?=h((string)$firstMaterial['url'])?>"><span><small>Material</small><strong><?=h((string)$firstMaterial['title'])?></strong><?php if(count($courses)>1):?><em><?=h((string)($firstMaterial['course']??''))?> · <?=h((string)($firstMaterial['cohort']??''))?></em><?php endif;?></span><span aria-hidden="true">→</span></a><?php endif;?>
       <?php if($focus && $hero!=='focus'):?><a class="student-home-row" href="<?=h((string)$focus['url'])?>"><span><small>Caderno</small><strong><?=h((string)$focus['title'])?></strong><em><?=h((string)$focus['status'])?></em></span><span aria-hidden="true">→</span></a><?php endif;?>
     </div>
   </section>

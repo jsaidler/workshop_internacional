@@ -53,7 +53,7 @@ function student_home_course_items(PDO $db,array $enrollments): array {
             if($first!==null)continue;
             $url=cms_page_url($activity,$page,(string)$page['locale']);
             $url.=(str_contains($url,'?')?'&':'?').'cohort='.rawurlencode($uuid);
-            $first=['title'=>(string)$page['title'],'url'=>$url];
+            $first=['title'=>(string)$page['title'],'url'=>$url,'course'=>(string)$enrollment['course_title'],'cohort'=>(string)$enrollment['cohort_title']];
         }
         $out[]=[
             'title'=>(string)$enrollment['course_title'],
