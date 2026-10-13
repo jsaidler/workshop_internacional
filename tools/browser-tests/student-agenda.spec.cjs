@@ -7,6 +7,7 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
     test('Agenda operational renderer '+state+' '+device,async({page})=>{
       await page.setViewportSize({width,height});
       const response=await page.goto(base+'?state='+state,{waitUntil:'networkidle'});
+      fs.mkdirSync('student-visual-audit/agenda',{recursive:true});
       expect(response?.status()).toBe(200);
       await expect(page.getByRole('heading',{name:'Agenda',exact:true})).toBeVisible();
       await expect(page.getByRole('heading',{name:'Meus encontros'})).toBeVisible();
@@ -30,6 +31,8 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
         await page.locator('[data-agenda-history] summary').click();
         await expect(page.locator('[data-agenda-history] .agenda-meeting')).toBeVisible();
         await expect(page.locator('[data-agenda-history] a[href*="previous-meeting"]')).toHaveCount(0);
+        await page.screenshot({path:'student-visual-audit/agenda/mixed-'+device+'-history-expanded.png',animations:'disabled'});
+        await page.locator('[data-agenda-history] summary').click();
       }
       if(state==='history'){
         await expect(page.getByText('Nenhum próximo encontro agendado')).toBeVisible();
@@ -44,13 +47,17 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
         await page.locator('[data-toolbox-close]').click();
         await page.locator('.student-agenda-offer-schedule summary').click();
         await expect(page.locator('.student-agenda-offer-schedule .student-academic-release-line').first()).toBeVisible();
+        await page.screenshot({path:'student-visual-audit/agenda/regular-'+device+'-schedule-expanded.png',animations:'disabled'});
+        await page.locator('.student-agenda-offer-schedule summary').click();
       }
       if(state==='waiting')await expect(page.getByText('Na lista de espera')).toBeVisible();
       if(state==='full')await expect(page.getByText('Lotada (lista de espera)')).toBeVisible();
       if(state==='empty')await expect(page.getByText('Ainda não há encontros com data definida')).toBeVisible();
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
       expect(overflow).toBeLessThanOrEqual(1);
-      fs.mkdirSync('student-visual-audit/agenda',{recursive:true});
+      // Captura "start" significa topo verdadeiro, não o scroll deixado pelos testes de interação.
+      await page.locator('main.student-main').evaluate(el=>{el.scrollTop=0;});
+      await page.evaluate(()=>window.scrollTo(0,0));
       await page.screenshot({path:'student-visual-audit/agenda/'+state+'-'+device+'-start.png',animations:'disabled'});
       await page.locator('main.student-main').evaluate(el=>{el.scrollTop=el.scrollHeight;});
       await page.screenshot({path:'student-visual-audit/agenda/'+state+'-'+device+'-end.png',animations:'disabled'});
@@ -65,4 +72,19 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
       }
     });
   }
+}
+
+for(const theme of ['light','dark']){
+  test('Agenda real renderer theme '+theme,async({page})=>{
+    await page.setViewportSize({width:390,height:844});
+    await page.goto(base+'?state=mixed',{waitUntil:'networkidle'});
+    await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);
+    fs.mkdirSync('student-visual-audit/agenda',{recursive:true});
+    await page.screenshot({path:'student-visual-audit/agenda/mixed-phone-'+theme+'-start.png',animations:'disabled'});
+    await page.locator('[data-agenda-history] summary').click();
+    await expect(page.locator('[data-agenda-history] .agenda-meeting')).toBeVisible();
+    await page.screenshot({path:'student-visual-audit/agenda/mixed-phone-'+theme+'-history-open.png',animations:'disabled'});
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
 }
