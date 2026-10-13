@@ -24,6 +24,7 @@ $state=(string)($_GET['state']??'list');
 $questionId=(int)($_GET['id']??0);
 if($state==='thread'&&$questionId===0)$questionId=1;
 $_SERVER['REQUEST_URI']='/aluno/duvidas.php?cohort='.rawurlencode($cohort).($questionId>0?'&id='.$questionId:'');
+$db=database();
 $student=['id'=>1,'name'=>'Aluno'];
 $studentId=1;
 $enrollment=['cohort_uuid'=>$cohort,'cohort_id'=>1,'course_title'=>$cohort==='cohort-a'?'Positivo direto em filme de raio-X':'O Fazer Intuitivo','cohort_title'=>$cohort==='cohort-a'?'Turma Outubro 2026':'Turma Setembro 2026','cohort_status'=>'active'];

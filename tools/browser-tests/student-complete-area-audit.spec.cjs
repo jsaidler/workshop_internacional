@@ -80,6 +80,9 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name==='home-feedback'){await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();await expect(page.getByRole('link',{name:/Ler retorno e revisar/})).toBeVisible();}
       if(name==='course-feedback'){await expect(page.getByText('Há algo para retomar',{exact:true})).toBeVisible();await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();}
       if(name==='questions-feedback'){await expect(page.getByText('Conversas de avaliação',{exact:true})).toBeVisible();await expect(page.getByText('Dúvidas da turma',{exact:true})).toBeVisible();}
+      if(name==='questions-list')await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
+      if(name==='question-new'){await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();await expect(page.locator('[data-question-new-panel] form')).toBeVisible();}
+      if(name==='question-thread'){await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();await expect(page.locator('[data-student-local-key="question-thread"] form textarea[name="body"]')).toBeVisible();}
       if(name==='result-waiting')await expect(page.getByText('Enviado para avaliação',{exact:true})).toBeVisible();
       if(name==='result-revision'){await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();await expect(page.getByText('Enviar revisão para avaliação',{exact:true})).toBeVisible();await expect(page.getByText('Professor',{exact:true})).toBeVisible();}
       if(name==='result-reviewed')await expect(page.getByText('Avaliação concluída',{exact:true})).toBeVisible();
