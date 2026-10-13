@@ -11,6 +11,7 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
       await expect(page.getByRole('heading',{name:'Agenda',exact:true})).toBeVisible();
       await expect(page.getByRole('heading',{name:'Meus encontros'})).toBeVisible();
       await expect(page.getByRole('heading',{name:'Próximas turmas'})).toBeVisible();
+      await expect(page.getByRole('link',{name:'Voltar aos cursos'})).toHaveCount(0);
       const nav=page.locator('nav.student-mobile-nav');
       await expect(nav.locator('a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
       await expect(nav.locator('a')).toHaveCount(4);

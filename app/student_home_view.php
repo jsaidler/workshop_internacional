@@ -12,12 +12,11 @@ $firstMaterial=null;
 foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$item['material'];break;}}
 $hero=$meeting?'meeting':($feedback?'feedback':($focus?'focus':($firstMaterial?'study':'empty')));
 $showContinue=($firstMaterial && $hero!=='study') || ($focus && $hero!=='focus');
-$showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_reciprocity']);
+$showQuick=$hero!=='empty'||!empty($courses)||!empty($home['can_timer'])||!empty($home['can_reciprocity']);
 ?>
 <div class="student-home" data-student-home>
   <header class="student-home-heading">
     <div><p class="student-kicker">Área do aluno</p><h1 class="student-title">Início</h1></div>
-    <a class="student-home-heading-agenda" href="/aluno/agenda.php">Agenda <span aria-hidden="true">→</span></a>
   </header>
   <?php if($meeting):?>
   <section class="student-home-feature" aria-labelledby="student-home-feature-title" data-home-meeting>
@@ -67,6 +66,7 @@ $showQuick=$hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_recipr
   <?php if($showQuick):?><section class="student-home-block" aria-labelledby="student-home-quick-title">
     <div class="student-home-section-head"><h2 id="student-home-quick-title">Acesso rápido</h2></div>
     <div class="student-home-quick">
+      <?php if($courses):?><a href="/aluno/agenda.php"><span class="student-home-quick-symbol" aria-hidden="true">▦</span><span>Agenda</span></a><?php endif;?>
       <?php if($hero!=='empty'):?><button type="button" data-record-create-open><span class="student-home-quick-symbol" aria-hidden="true">+</span><span>Novo registro</span></button><?php endif;?>
       <?php if(!empty($home['can_timer'])):?><a href="/aluno/processamentos.php"><span class="student-home-quick-symbol" aria-hidden="true">◷</span><span>Processamentos</span></a><?php endif;?>
       <?php if(!empty($home['can_reciprocity'])):?><a href="/aluno/reciprocidade.php"><span class="student-home-quick-symbol" aria-hidden="true">ƒ</span><span>Reciprocidade</span></a><?php endif;?>

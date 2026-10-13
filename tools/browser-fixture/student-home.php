@@ -5,6 +5,8 @@ function h(mixed $value):string{return htmlspecialchars((string)$value,ENT_QUOTE
 require_once __DIR__.'/../../app/course_agenda.php';
 require_once __DIR__.'/../../app/student_home.php';
 require_once __DIR__.'/../../app/student_shell.php';
+function database(): PDO {static $fixtureDb=null;return $fixtureDb??=new PDO('sqlite::memory:');}
+function student_tools_for_student(PDO $db,int $id): array {return [['tool_key'=>'reciprocity'],['tool_key'=>'lab_timer']];}
 require_once __DIR__.'/../../app/student_record_create_dialog.php';
 $state=(string)($_GET['state']??'active');
 $scenario=['active','study','multiple','empty','feedback','no-link','long','restricted','record','error','ongoing'];
@@ -41,7 +43,7 @@ $home=[
 <body class="student-page" data-testid="operational-home-fixture" data-state="<?=h($state)?>">
 <div class="student-shell">
 <header class="student-topbar"><a class="brand student-wordmark" href="/aluno/">JSaidler Fotografia</a><?php student_shell_nav('home','student-desktop-nav');?><span class="student-topbar-spacer"></span><button class="button button-secondary button-compact student-tools-trigger" type="button" data-toolbox-open>Atalhos</button><details class="student-user-menu"><summary>Conta</summary></details></header>
-<dialog class="student-toolbox" data-student-toolbox aria-labelledby="student-toolbox-title"><div class="student-toolbox-head"><h2 id="student-toolbox-title">Ferramentas</h2><button type="button" class="button button-secondary" data-toolbox-close>Fechar</button></div></dialog>
+<?php student_shell_toolbox(['id'=>1]); ?>
 <main class="student-main">
 <?php require __DIR__.'/../../app/student_home_view.php'; ?>
 <?php student_record_create_dialog($state==='empty'?[]:[['cohort_id'=>12,'course_title'=>$course['title'],'cohort_title'=>$course['cohort']]],'fixture-csrf',$state==='error'?['title'=>'EI 400 — tratamento alterado','context_scope'=>'course','context_cohort_id'=>'12']:[],$state==='error'?'Verifique o título e tente novamente.':'','/aluno/'); ?>
