@@ -52,3 +52,7 @@ A inspeção das capturas aprovadas em `6640e9d` demonstrou insuficiência quali
 - **Rolagem:** os painéis e diálogos mantêm propriedade explícita de scroll, com trilho fino visível e área reservada no desktop onde necessário; não há ocultação oportunista de overflow. Testes de 320/390 px verificam ordem da medição, estados de `details`, valores, largura, margens e screenshots; editor desktop, POST e falhas continuam sob regressão.
 
 Esta revisão tem de ser julgada por capturas reais do novo SHA, inclusive em tema claro; CI verde sozinho não certifica estética. A sessão autenticada da hospedagem continua pendente.
+
+### Correção de comportamento durante a inspeção da primeira apresentação
+
+A primeira execução de screenshot detectou três falhas legítimas: o componente de label com `hidden` ficava visível por uma regra `display:grid` mais específica; o agrupamento visual dos `<option>` em `student-process-ux.js` podia perder o valor previamente escolhido, exibindo `Outro` na nova predefinição; e a auditoria de seleção precisava exigir a opção inicial de Parodinal. O `hidden` voltou a reger a visibilidade dos labels e `groupDeveloperSelect` preserva `select.value` durante a reorganização de optgroups. Os testes operacionais continuam exercitando a ida a Outro e o retorno para Parodinal. Não considerar a versão anterior aprovada.

@@ -187,6 +187,8 @@ for(const width of [320,390]){
   await expect(form).toBeVisible();
   await expect(form.locator('[name="label"]')).toBeVisible();
   await expect(form.locator('[name="developer_key"]')).toBeVisible();
+  await expect(form.locator('[name="developer_key"]')).toHaveValue('parodinal');
+  await expect(form.locator('[data-custom-developer]')).toBeHidden();
   await expect(form.locator('[data-developer-mix] [name="water_amount"]')).toBeVisible();
   await form.locator('[name="developer_key"]').selectOption('other');
   await expect(form.locator('[data-custom-developer]')).toBeVisible();
