@@ -243,14 +243,28 @@ for(const [device,width,height] of sizes){
     await expect(page.locator('[data-student-laboratory]')).toBeVisible();
     await page.locator('[data-lab-link="inventario"]').click();
     const item=page.getByRole('link',{name:'Editar item'});
+    const beforeEditor=await page.evaluate(()=>({url:location.href,length:history.length}));
     await item.click();
-    await expect(page).toHaveURL(origin+'/aluno/inventario-item.php?id=7');
-    await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
-    await globalArea(page,'/aluno/ferramentas.php',device);
-    await expect(page.locator('.student-appbar a.student-back')).toHaveAttribute('href','/aluno/inventario.php');
-    await page.screenshot({path:'student-visual-audit/journeys/lab-inventory-item-'+device+'.png',animations:'disabled'});
-    await page.locator('.student-appbar a.student-back').click();
-    await expect(page).toHaveURL(origin+'/aluno/inventario.php');
+    if(device==='desktop'){
+      const dialog=page.locator('[data-student-editor-dialog]');
+      await expect(dialog).toBeVisible();
+      await expect(dialog.locator('[data-student-editor] form')).toBeVisible();
+      await expect(page).toHaveURL(origin+'/aluno/inventario.php');
+      await globalArea(page,'/aluno/ferramentas.php',device);
+      await page.screenshot({path:'student-visual-audit/journeys/lab-inventory-item-desktop-modal.png',animations:'disabled'});
+      await dialog.locator('.student-create-dialog-head [data-student-editor-close]').click();
+      await expect(dialog).toBeHidden();
+      await expect(item).toBeFocused();
+      expect(await page.evaluate(()=>({url:location.href,length:history.length}))).toEqual(beforeEditor);
+    }else{
+      await expect(page).toHaveURL(origin+'/aluno/inventario-item.php?id=7');
+      await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
+      await globalArea(page,'/aluno/ferramentas.php',device);
+      await expect(page.locator('.student-appbar a.student-back')).toHaveAttribute('href','/aluno/inventario.php');
+      await page.screenshot({path:'student-visual-audit/journeys/lab-inventory-item-'+device+'.png',animations:'disabled'});
+      await page.locator('.student-appbar a.student-back').click();
+      await expect(page).toHaveURL(origin+'/aluno/inventario.php');
+    }
     await expect(page.locator('.student-inventory-item')).toBeVisible();
   });
 }

@@ -37,3 +37,7 @@ O primeiro CI com shell real de Inventário reprovou a asserção de altura `< 1
 ### Diagnóstico de regressão das fixtures de edição (13/10/2026)
 
 O CI do commit `6aebed1` identificou páginas de Predefinições e Calibração vazias, não um problema de estilo: a fixture incluía `app/student_workbench.php` e redeclarava `student_tools_for_student()`, causando falha fatal de execução PHP. A correção remove a função fictícia duplicada e fornece um SQLite mínimo para que o serviço canônico decida ferramentas disponíveis sem inventar permissões de curso. A auditoria geral passa a verificar HTTP 200 em todas as fixtures e existência do formulário real nas duas telas de edição. O percurso de navegação continua usando os renderers e o shell PHP de produção; dados do cenário não equivalem a login na hospedagem. CI e capturas no novo SHA seguem pendentes.
+
+### Continuidade do editor de item em desktop
+
+A fixture de Inventário passou a fornecer o mesmo `data-student-editor-link` e o contêiner `data-student-editor-dialog` da rota operacional. Na largura desktop o runtime real carrega o editor contextual no diálogo, preservando URL/histórico e devolvendo foco ao link ao fechar; no celular é mantida a rota dedicada com retorno explícito ao Inventário. O teste transversal distingue esses comportamentos, em vez de exigir navegação de página inteira no desktop. Novas capturas e CI continuam necessários.
