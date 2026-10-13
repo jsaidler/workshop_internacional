@@ -119,6 +119,7 @@ jobs:
             php tools/test-student-long-editors.php
             php tools/test-student-record-workspace.php
             php tools/test-student-process-step-editor.php
+            php tools/test-student-profile-view.php
             php tools/test-student-long-editors-db.php
             php tools/test-student-toolbox-parity.php
             php tools/test-student-record-create-sheet.php

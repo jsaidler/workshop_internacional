@@ -21,7 +21,7 @@ $processRunner=(string)file_get_contents($root.'/aluno/processar.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 $login=(string)file_get_contents($root.'/aluno/login.php');
 $password=(string)file_get_contents($root.'/aluno/senha.php');
-$profile=(string)file_get_contents($root.'/aluno/perfil.php');
+$profile=(string)file_get_contents($root.'/aluno/perfil.php').(string)file_get_contents($root.'/app/student_profile_view.php');
 
 must_student_premium_ui(!str_contains($shell,'data-theme="light"'),'student shell still hardcodes the light theme');
 must_student_premium_ui(str_contains($shell,'data-theme-value="auto"')&&str_contains($shell,'data-theme-value="dark"'),'student shell does not expose canonical theme choices');

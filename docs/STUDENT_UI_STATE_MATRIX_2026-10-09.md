@@ -272,3 +272,7 @@ Um encontro em horário ainda coberto por duração programada permanece acessí
 ## Revisão transversal de produto — 13/10/2026
 
 A avaliação da aparência e do comportamento continua **aberta em todas as 46 superfícies**, incluindo telas não alteradas pela implementação. Mosaicos extraídos do artefato de screenshots no SHA `bc94bbcc` revelaram heterogeneidade entre interfaces de entrada v2 e detalhes legados (formulários, tipografia, botões, scroll, navbar em fixtures antigas). O problema **não é restrito ao Caderno**. Autoridade da auditoria global: `docs/STUDENT_PRODUCT_WIDE_UX_REVIEW_2026-10-13.md`. A tranche de registro individual preserva o DOM dos formulários em alternância Exposição/Processamento/Resultado para não perder rascunhos; seus testes não equivalem à aprovação de Cursos, Dúvidas, Inventário, Conta, timer ou material.
+
+### Recorte Conta em renderer real — 13/10/2026
+
+O estado `profile` da matriz básica antiga continua sendo uma fixture estática legada, não uma representação fiel da nova conta. A nova superfície operacional é `app/student_profile_view.php`, chamada por `aluno/perfil.php` e pela fixture PHP `student-profile.php` com shell real. A auditoria dedicada fotografa identidade com disclosures fechados, seções opcionais abertas, fim do scroll e recuperação de erro em 320/390/1440 px. **Não marcar Conta como aprovada até inspecionar o artefato final**; tampouco considerar antiga fixture com shell de quatro destinos como evidência de conformidade.
