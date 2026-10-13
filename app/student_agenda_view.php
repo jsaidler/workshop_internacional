@@ -29,14 +29,14 @@ $agendaView=student_agenda_selected_view($_GET['view']??'encontros');
       </div>
     <?php else:?>
       <div class="student-v2-agenda-meetings" data-agenda-upcoming>
-        <?php foreach($upcoming as $meeting):$isHistory=false;require __DIR__.'/student_agenda_meeting_item.php';endforeach;?>
+        <?php foreach($upcoming as $position=>$meeting):$isHistory=false;$isPrimary=$position===0;if($position===1):?><h3 class="student-v2-agenda-later-heading">Depois deste encontro</h3><?php endif;require __DIR__.'/student_agenda_meeting_item.php';endforeach;?>
       </div>
     <?php endif;?>
     <?php if($history):?>
       <details class="student-agenda-history student-v2-agenda-history" data-agenda-history>
         <summary>Encontros anteriores e cancelados <span><?=count($history)?></span></summary>
         <div class="student-v2-agenda-history-items">
-          <?php foreach($history as $meeting):$isHistory=true;require __DIR__.'/student_agenda_meeting_item.php';endforeach;?>
+          <?php foreach($history as $meeting):$isHistory=true;$isPrimary=false;require __DIR__.'/student_agenda_meeting_item.php';endforeach;?>
         </div>
       </details>
     <?php endif;?>

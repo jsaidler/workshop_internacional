@@ -8,9 +8,9 @@ $meetingUrl=!$isHistory && $status==='scheduled'?course_agenda_safe_meeting_url(
 $date=student_agenda_date_parts((string)($meeting['meeting_starts_at']??''),$tz);
 $participation=(string)($meeting['participation']??'regular')==='listener'?'Ouvinte':'Matriculado';
 ?>
-<article class="agenda-meeting student-v2-agenda-meeting <?=$isHistory?'is-history':'is-upcoming'?>" data-meeting-history="<?=$isHistory?'true':'false'?>">
+<article class="agenda-meeting student-v2-agenda-meeting <?=$isHistory?'is-history':($isPrimary?'is-next':'is-later')?>" data-meeting-history="<?=$isHistory?'true':'false'?>">
   <div class="student-v2-agenda-meeting-meta">
-    <span class="student-v2-agenda-status"><?=$isHistory?h($statusText):'Próximo encontro'?></span>
+    <span class="student-v2-agenda-status"><?=$isHistory?h($statusText):($isPrimary?'Próximo encontro':'Agendado')?></span>
     <span class="student-status"><?=h($participation)?></span>
   </div>
   <div class="student-v2-agenda-meeting-main">

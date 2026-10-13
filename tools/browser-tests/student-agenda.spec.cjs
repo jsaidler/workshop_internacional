@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('fs');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-agenda.php';
-const states=['empty','regular','listener','waiting','full','mixed','history','unsafe'];
+const states=['empty','regular','listener','waiting','full','mixed','history','unsafe','two'];
 const sizes=[['phone',390,844],['narrow',320,720],['desktop',1440,1100]];
 const screenshot=async(page,name)=>{
   fs.mkdirSync('student-visual-audit/agenda',{recursive:true});
@@ -24,11 +24,16 @@ for(const [device,width,height] of sizes){
       const nav=page.locator('nav.student-mobile-nav');
       await expect(nav.locator('a')).toHaveCount(5);
       await expect(nav.locator('a[href="/aluno/agenda.php"]')).toHaveAttribute('aria-current','page');
-      if(['regular','listener','mixed'].includes(state)){
-        await expect(page.locator('[data-agenda-upcoming] .agenda-meeting')).toHaveCount(1);
+      if(['regular','listener','mixed','two'].includes(state)){
+        await expect(page.locator('[data-agenda-upcoming] .agenda-meeting')).toHaveCount(state==='two'?2:1);
         await expect(page.locator('.student-v2-agenda-meeting-date time')).toHaveAttribute('datetime','2030-10-12T22:00:00Z');
-        await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
-        await expect(page.locator('[data-agenda-upcoming] .agenda-meeting .student-status')).toHaveText(state==='listener'?'Ouvinte':'Matriculado');
+        await expect(page.getByRole('link',{name:'Acessar encontro ↗'}).first()).toHaveAttribute('href','https://example.org/private-meeting');
+        await expect(page.locator('[data-agenda-upcoming] .agenda-meeting .student-status').first()).toHaveText(state==='listener'?'Ouvinte':'Matriculado');
+        if(state==='two'){
+          await expect(page.locator('.student-v2-agenda-meeting.is-next')).toHaveCount(1);
+          await expect(page.locator('.student-v2-agenda-meeting.is-later')).toHaveCount(1);
+          await expect(page.getByText('Depois deste encontro')).toBeVisible();
+        }
       }else{
         await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveCount(0);
         await expect(page.locator('body')).not.toContainText('https://example.org/private-meeting');

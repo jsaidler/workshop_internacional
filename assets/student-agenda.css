@@ -84,3 +84,12 @@
  .student-v2-agenda-meeting{padding:15px}
  .student-v2-agenda-offer{padding:15px}
 }
+
+/* Subsequent meetings are compact; only the immediate next one is prominent. */
+.student-v2-agenda-later-heading{margin:13px 0 0;font:700 16px/1.25 var(--body,Arial,sans-serif);text-transform:none}
+.student-v2-agenda-meeting.is-later{padding:16px 18px;border-radius:14px;background:transparent}
+.student-v2-agenda-meeting.is-later .student-v2-agenda-meeting-date{margin:12px 0 13px}
+.student-v2-agenda-meeting.is-later .student-v2-agenda-meeting-date time>strong{font-size:36px}
+.student-v2-agenda-meeting.is-later .student-v2-agenda-meeting-hour{font-size:19px}
+.student-v2-agenda-meeting.is-later h3{font-size:18px}
+.student-v2-agenda-meeting.is-later .student-v2-agenda-meeting-join{margin-top:12px}
