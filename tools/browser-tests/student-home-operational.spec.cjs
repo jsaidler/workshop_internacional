@@ -204,7 +204,7 @@ test('Home offers direct record and processing actions before the long course li
     const tile=main.querySelector('.student-v2-shortcuts'),courses=main.querySelector('#student-v2-courses-title'),notebook=main.querySelector('#student-v2-notebook-title');
     return [Boolean(tile),Boolean(courses),Boolean(notebook),tile?.compareDocumentPosition(courses)&Node.DOCUMENT_POSITION_FOLLOWING,tile?.compareDocumentPosition(notebook)&Node.DOCUMENT_POSITION_FOLLOWING];
   });
-  expect(order).toEqual([true,true,true,Node.DOCUMENT_POSITION_FOLLOWING,Node.DOCUMENT_POSITION_FOLLOWING]);
+  expect(order).toEqual([true,true,true,4,4]);
   const tools=page.locator('.student-v2-footer-actions');
   await expect(tools.locator('[data-record-create-open]')).toHaveCount(1);
   await expect(tools.locator('a[href="/aluno/processamentos.php"]')).toHaveCount(1);
