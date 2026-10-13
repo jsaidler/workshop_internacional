@@ -69,3 +69,17 @@ test('deep links keep a logical parent and the correct global context',async({pa
 
   await expect(page.locator('.student-wordmark')).toHaveAttribute('data-canonical-href','/aluno/');
 });
+
+test('Agenda is a first-level destination and browser Back restores previous area',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(url+'?screen=home');
+  const bar=page.locator('nav.student-mobile-nav');
+  await expect(bar.locator('a')).toHaveCount(5);
+  await bar.locator('a[data-area=agenda]').click();
+  await expect(bar.locator('a[data-area=agenda]')).toHaveAttribute('aria-current','page');
+  await expect(page.getByRole('heading',{name:'Agenda'})).toBeVisible();
+  await page.goBack();
+  await expect(bar.locator('a[data-area=home]')).toHaveAttribute('aria-current','page');
+  await page.goForward();
+  await expect(bar.locator('a[data-area=agenda]')).toHaveAttribute('aria-current','page');
+});

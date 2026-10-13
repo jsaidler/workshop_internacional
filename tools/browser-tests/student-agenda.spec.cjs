@@ -14,8 +14,8 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
       await expect(page.getByRole('heading',{name:'Próximas turmas'})).toBeVisible();
       await expect(page.getByRole('link',{name:'Voltar aos cursos'})).toHaveCount(0);
       const nav=page.locator('nav.student-mobile-nav');
-      await expect(nav.locator('a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
-      await expect(nav.locator('a')).toHaveCount(4);
+      await expect(nav.locator('a[href="/aluno/agenda.php"]')).toHaveAttribute('aria-current','page');
+      await expect(nav.locator('a')).toHaveCount(5);
       if(['regular','listener','mixed'].includes(state)){
         await expect(page.locator('[data-agenda-upcoming] .agenda-meeting')).toHaveCount(1);
         await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
@@ -41,10 +41,12 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
       if(state==='unsafe')await expect(page.getByText('Link de acesso ainda não informado.')).toBeVisible();
       if(state==='regular'){
         await expect(page.locator('[data-student-toolbox]')).toBeHidden();
-        await page.locator('[data-toolbox-open]').click();
+        if(width<=820){await page.locator('.student-user-menu summary').click();await page.locator('.student-tools-menu-trigger').click();}
+        else await page.locator('.student-tools-trigger').click();
         await expect(page.locator('[data-student-toolbox]')).toBeVisible();
         await expect(page.locator('[data-student-toolbox] .student-toolbox-links a').first()).toHaveAttribute('href','/aluno/agenda.php');
         await page.locator('[data-toolbox-close]').click();
+        if(width<=820)await page.locator('.student-user-menu summary').click();
         await page.locator('.student-agenda-offer-schedule summary').click();
         await expect(page.locator('.student-agenda-offer-schedule .student-academic-release-line').first()).toBeVisible();
         await page.screenshot({path:'student-visual-audit/agenda/regular-'+device+'-schedule-expanded.png',animations:'disabled'});
