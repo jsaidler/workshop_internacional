@@ -15,7 +15,7 @@ $tests=(string)file_get_contents($root.'/admin/tests.php');
 $preview=(string)file_get_contents($root.'/admin/course-preview.php');
 $studentHome=(string)file_get_contents($root.'/aluno/index.php');
 $studentCourses=(string)file_get_contents($root.'/aluno/cursos.php');$studentCoursesView=(string)file_get_contents($root.'/app/student_courses_view.php');
-$studentNotebook=(string)file_get_contents($root.'/aluno/caderno.php');
+$studentNotebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');
 $studentRecord=(string)file_get_contents($root.'/aluno/teste.php');
 $studentBench=(string)file_get_contents($root.'/aluno/ferramentas.php');
 $processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
