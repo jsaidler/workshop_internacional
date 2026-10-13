@@ -54,6 +54,22 @@ for(const width of [320,390,1440]){
   await page.screenshot({path:'student-visual-audit/record-workspace/'+device+'-result.png',animations:'disabled'});
   await nav.locator('a[href="#exposicao"]').click();
   await expect(panels.exposicao).toBeVisible();
+  if(width<820){
+   await expect.poll(async()=>page.evaluate(()=>{
+     const tab=document.querySelector('[data-record-workspace-nav]').getBoundingClientRect();
+     const kicker=document.querySelector('#exposicao .student-workflow-heading .student-kicker').getBoundingClientRect();
+     return kicker.top-tab.bottom;
+   })).toBeGreaterThanOrEqual(6);
+   const action=await panels.exposicao.locator('.student-record-save-actions').evaluate(node=>getComputedStyle(node).position);
+   expect(action,'save must follow document flow without covering exposure fields').toBe('static');
+   await panels.exposicao.locator('input[name="calculated_time"]').scrollIntoViewIfNeeded();
+   const overlap=await panels.exposicao.evaluate(node=>{
+     const a=node.querySelector('.student-record-save-actions').getBoundingClientRect();
+     const b=node.querySelector('input[name="calculated_time"]').getBoundingClientRect();
+     return Math.min(a.right,b.right)>Math.max(a.left,b.left)&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top);
+   });
+   expect(overlap,'save control cannot invade an input rectangle').toBe(false);
+  }
   await page.screenshot({path:'student-visual-audit/record-workspace/'+device+'-exposure.png',animations:'disabled'});
   await nav.locator('a[href="#processamento"]').click();
   await page.screenshot({path:'student-visual-audit/record-workspace/'+device+'-process.png',animations:'disabled'});
