@@ -16,6 +16,13 @@ for(const width of [320,390,1440]){
    await expect(target).toHaveValue('');
    const options=await target.locator('option').evaluateAll(nodes=>nodes.map(n=>({value:n.value,name:n.textContent.trim()})));
    expect(options).toEqual([{value:'',name:'Selecione uma turma'},{value:'21',name:'Turma de outubro'},{value:'23',name:'Turma de novembro'}]);
+   const controlStyle=await target.evaluate(node=>{
+     const select=node.getBoundingClientRect(),button=node.closest('form').querySelector('button[type="submit"]').getBoundingClientRect();
+     return{selectHeight:select.height,buttonHeight:button.height,selectWidth:select.width,buttonWidth:button.width};
+   });
+   expect(controlStyle.selectHeight,'destination choice must have a 44px touch target').toBeGreaterThanOrEqual(44);
+   expect(controlStyle.buttonHeight,'transfer submit must have a 44px touch target').toBeGreaterThanOrEqual(44);
+   if(width<=800)expect(controlStyle.buttonWidth,'mobile transfer action should be full-width').toBeGreaterThanOrEqual(controlStyle.selectWidth-1);
    await target.selectOption('23');
    const request=await form.evaluate(form=>Object.fromEntries(new FormData(form)));
    expect(request.action).toBe(mode==='manual'?'move_manual_enrollment':'move_registration');
