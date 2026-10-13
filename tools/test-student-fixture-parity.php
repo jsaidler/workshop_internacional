@@ -22,6 +22,7 @@ foreach($files as $key=>$path){
   $source[$key]=@file_get_contents($path);
   if(!is_string($source[$key])){fwrite(STDERR,"fixture-parity: cannot read $path\n");exit(1);}
 }
+$source['notebook_php'].=(string)file_get_contents($root.'/app/student_notebook_view.php');
 $checks=[
   'real note question composer uses secondary button class'=>str_contains($source['notes_php'],'class="button button-secondary"')&&str_contains($source['notes_php'],'data-note-question-publish'),
   'real note question composer uses contextual text'=>str_contains($source['notes_php'],"'Salvar e publicar dúvida'"),
