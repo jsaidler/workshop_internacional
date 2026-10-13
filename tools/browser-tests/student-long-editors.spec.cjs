@@ -88,6 +88,14 @@ for(const f of families){
     expect(layout.left,'modal form requires left inset').toBeGreaterThanOrEqual(16);
     expect(layout.right,'modal form requires right inset').toBeGreaterThanOrEqual(16);
     expect(layout.overflow,'modal has horizontal overflow').toBeLessThanOrEqual(1);
+    const scrollTrack=await modal.evaluate(node=>({
+      gutter:getComputedStyle(node).scrollbarGutter,
+      clearRight:node.getBoundingClientRect().left+node.clientWidth-node.querySelector('form').getBoundingClientRect().right,
+      workspaceTop:getComputedStyle(node.querySelector('.student-task-editor .student-tool-workspace')).borderTopWidth
+    }));
+    expect(scrollTrack.gutter,'desktop modal must reserve a native scroll track').toContain('stable');
+    expect(scrollTrack.clearRight,'scroll track must not invade form fields').toBeGreaterThanOrEqual(12);
+    expect(scrollTrack.workspaceTop,'do not stack divider strokes above the editor').toBe('0px');
     if(f.kind==='preparation'){
       const custom=modal.locator('[data-custom-developer]');
       await expect(custom).toBeHidden();

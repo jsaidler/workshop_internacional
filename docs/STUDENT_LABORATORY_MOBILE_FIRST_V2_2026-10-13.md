@@ -56,3 +56,7 @@ Esta revisão tem de ser julgada por capturas reais do novo SHA, inclusive em te
 ### Correção de comportamento durante a inspeção da primeira apresentação
 
 A primeira execução de screenshot detectou três falhas legítimas: o componente de label com `hidden` ficava visível por uma regra `display:grid` mais específica; o agrupamento visual dos `<option>` em `student-process-ux.js` podia perder o valor previamente escolhido, exibindo `Outro` na nova predefinição; e a auditoria de seleção precisava exigir a opção inicial de Parodinal. O `hidden` voltou a reger a visibilidade dos labels e `groupDeveloperSelect` preserva `select.value` durante a reorganização de optgroups. Os testes operacionais continuam exercitando a ida a Outro e o retorno para Parodinal. Não considerar a versão anterior aprovada.
+
+### Refinamento de acabamento do diálogo
+
+A captura de Calibração revelou separadores duplicados entre cabeçalho e formulário: `student-create-dialog-head` e `student-tool-workspace` desenhavam duas bordas, somando margem supérflua. A origem foi localizada no estilo compartilhado do workspace, corrigida no próprio componente de editor de tarefa sem alterar os demais workspaces. A verificação desktop passa a exigir apenas o divisor correto, `scrollbar-gutter:stable` e distância mínima de 12 px entre formulário e trilho de scroll. Não esconder barras com overflow indiscriminado.
