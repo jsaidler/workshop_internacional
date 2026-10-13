@@ -47,9 +47,9 @@ must_feedback(count(student_feedback_pending_for_student($db,7,null,10))===1,'ne
 $db->exec("INSERT INTO student_test_messages(test_id,student_id,author_role,body,created_at) VALUES(10,7,'student','Entendido.','2026-10-04 12:20:00')");
 must_feedback(student_feedback_pending_for_student($db,7,null,10)===[],'student reply did not acknowledge current feedback');
 
-$home=(string)file_get_contents($root.'/aluno/index.php');$course=(string)file_get_contents($root.'/aluno/cursos.php');$result=(string)file_get_contents($root.'/aluno/teste.php');$questions=(string)file_get_contents($root.'/aluno/duvidas.php');$shell=(string)file_get_contents($root.'/app/student_shell.php');
+$home=(string)file_get_contents($root.'/aluno/index.php');$course=(string)file_get_contents($root.'/aluno/cursos.php');$courseView=(string)file_get_contents($root.'/app/student_courses_view.php');$result=(string)file_get_contents($root.'/aluno/teste.php');$questions=(string)file_get_contents($root.'/aluno/duvidas.php');$shell=(string)file_get_contents($root.'/app/student_shell.php');
 must_feedback(strpos($home,'student_feedback_pending_for_student')<strpos($home,'foreach($records as $candidate)'),'dashboard no longer checks pedagogical return before unfinished notebook work');
-must_feedback(str_contains($course,'student_feedback_course_attention')&&str_contains($course,'student-academic-attention'),'course lost contextual attention');
+must_feedback(str_contains($course,'student_feedback_course_attention')&&str_contains($courseView,'student-v2-course-attention')&&str_contains($courseView,'student_feedback_state'),'course lost contextual attention');
 must_feedback(str_contains($result,'student_feedback_mark_seen')&&str_contains($result,'Enviar revisão para avaliação'),'result no longer owns evaluation/return loop');
 must_feedback(str_contains($questions,'student_feedback_conversations_for_student')&&str_contains($questions,'Conversas de avaliação'),'questions screen no longer routes evaluation conversations back to results');
 must_feedback(str_contains($shell,'student-feedback.css'),'student shell does not load pedagogical feedback styles');
