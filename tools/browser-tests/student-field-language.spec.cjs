@@ -21,6 +21,8 @@ const studentUiFiles=[
   'aluno/inventario-item.php',
   'app/student_inventory_item_editor.php',
   'aluno/perfil.php',
+  'app/student_profile_view.php',
+  'app/student_process_template_step_editor.php',
   'aluno/preparos.php',
   'aluno/processamentos.php',
   'aluno/teste.php',
@@ -101,7 +103,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Tempo com reciprocidade<input data-quick-reciprocity-target',
       '>Tempo inicial<input',
     ],
-    'aluno/processamentos.php':[
+    'app/student_process_template_step_editor.php':[
       '>Predefinição de revelação<select name="saved_preparation_id"',
       '>Outro revelador<input name="developer_name"',
       '>Revelador ou solução estoque (ml)<input',
@@ -122,10 +124,12 @@ test('student fields use one canonical vocabulary at the source',()=>{
     'app/student_calibration_editor.php':['>Nome da referência<input name="label"','>Preparo ou diluição<input name="preparation"'],
     'app/student_inventory_create_panel.php':['<span>Solução preparada</span>','>Lote ou identificação<input name="lot_code"','>Data de entrada<input type="date" name="acquired_or_prepared_at"'],
     'app/student_inventory_item_editor.php':['>Lote ou identificação<input name="lot_code"'],
-    'aluno/perfil.php':['>Telefone para contato<input name="phone"','>Cidade e UF<input name="city_state"'],
+    'app/student_profile_view.php':['>Telefone para contato<input name="phone"','>Cidade e UF<input name="city_state"'],
     'app/student_preparation_editor.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
   };
   expect(read('aluno/inventario.php')).toContain('student_inventory_create_panel($createDraft');
+  expect(read('aluno/processamentos.php')).toContain("require_once __DIR__.'/../app/student_process_template_step_editor.php'");
+  expect(read('aluno/perfil.php')).toContain('student_profile_render($profile,$error,$notice)');
   expect(read('aluno/inventario-item.php')).toContain('student_inventory_item_editor($item');
   for(const [file,needles] of Object.entries(required)){
     const text=compactMarkup(read(file));

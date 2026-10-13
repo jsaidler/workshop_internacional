@@ -24,10 +24,6 @@ function student_process_render_step_form(array $catalog,array $developers,array
       <input type="hidden" name="template_id" value="<?=$templateId?>">
       <input type="hidden" name="test_id" value="<?=$testId?>">
       <?php if($step):?><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><?php endif;?>
-      <div class="student-process-task-head student-span-2">
-        <span class="student-process-task-eyebrow">Etapa do roteiro</span>
-        <h3><?=$step?'Ajustar esta etapa':'Adicionar uma etapa'?></h3>
-      </div>
       <label class="form-field student-span-2">Operação
         <select name="stage_key" data-process-template-stage>
           <?php foreach($catalog as $key=>$stage):?><option value="<?=h((string)$key)?>"<?=$stageKey===(string)$key?' selected':''?>><?=h((string)$stage['label'])?></option><?php endforeach;?>
@@ -36,6 +32,10 @@ function student_process_render_step_form(array $catalog,array $developers,array
       <label class="form-field student-span-2" data-process-template-custom<?=$stageKey==='custom'?'':' hidden'?>>Nome da etapa
         <input name="custom_label" maxlength="120" value="<?=h($customLabel)?>">
       </label>
+      <div class="student-process-task-time student-span-2 student-form-grid">
+        <label class="form-field">Tempo<input name="duration" value="<?=h((string)($step['duration']??''))?>" placeholder="07:00" inputmode="text"></label>
+        <label class="form-field">Temperatura<input name="temperature" value="<?=h((string)($payload['temperature']??''))?>" placeholder="26 °C"></label>
+      </div
       <div class="student-span-2 student-form-grid student-process-task-development" data-process-template-development<?=in_array($stageKey,['first_development','second_development'],true)?'':' hidden'?>>
         <label class="form-field">Revelador
           <select name="developer_key" data-process-template-developer><?php foreach($developers as $key=>$developer):?><option value="<?=h($key)?>"<?=$developerKey===(string)$key?' selected':''?>><?=h((string)$developer['label'])?></option><?php endforeach;?></select>
@@ -56,10 +56,7 @@ function student_process_render_step_form(array $catalog,array $developers,array
         <input type="checkbox" name="reuse_source_stage_key" value="first_development"<?=$reuseSource==='first_development'?' checked':''?>>
         <span><strong>Reutilizar o banho da primeira revelação</strong><small>Use a mesma solução já preparada, sem duplicar o consumo.</small></span>
       </label>
-      <div class="student-process-task-time student-span-2 student-form-grid">
-        <label class="form-field">Tempo<input name="duration" value="<?=h((string)($step['duration']??''))?>" placeholder="07:00" inputmode="text"></label>
-        <label class="form-field">Temperatura<input name="temperature" value="<?=h((string)($payload['temperature']??''))?>" placeholder="26 °C"></label>
-      </div>
+
       <details class="student-process-task-disclosure student-span-2"<?=$extrasOpen?' open':''?>>
         <summary><span><strong>Agitação e observações</strong><small>Temporização, instruções e notas de referência</small></span><span aria-hidden="true">⌄</span></summary>
         <div class="student-form-grid student-process-task-disclosure-body">

@@ -15,7 +15,7 @@ check_profile_view(!str_contains($view,'Teste <script>')&&str_contains($view,'Te
 check_profile_view(str_contains($view,'data-profile-contact')&&str_contains($view,'data-profile-address'),'independent disclosures missing');
 check_profile_view(substr_count($view,'<details')===2,'only secondary contact and address fields should be progressive');
 check_profile_view(str_contains($view,'href="/aluno/senha.php?next=%2Faluno%2Fperfil.php"'),'account password path lost');
-check_profile_view(str_contains($view,'action="/aluno/logout.php"')&&str_contains($view,"csrf_token('student-logout')"),'logout POST/CSRF lost');
+check_profile_view(str_contains($view,'action="/aluno/logout.php"')&&str_contains($view,'value="fixture-csrf-student-logout"'),'logout POST/CSRF lost');
 ob_start();student_profile_render($profile,'Falha de validação');$failed=(string)ob_get_clean();
 check_profile_view(substr_count($failed,'data-profile-')>=2&&substr_count($failed,' open>')===2,'failed form must expose all optional fields');
 check_profile_view(str_contains($failed,'role="alert"')&&str_contains($failed,'Falha de validação'),'error must be visible and contextual');
