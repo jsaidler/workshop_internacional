@@ -88,7 +88,7 @@ html[data-theme="light"] .student-page.student-app{--student-v2-bg:#f5f5f0;--stu
   .student-app .student-brand-full{display:none}
   .student-app .student-brand-compact{display:inline;font:500 25px/1 Georgia,serif;letter-spacing:-.14em}
   .student-app .student-appbar-title{font-size:13px}
-  .student-app .student-main{grid-column:1;grid-row:2;overflow-x:hidden;overflow-y:auto;min-height:0;padding:20px 16px 22px;scrollbar-gutter:auto}
+  .student-app .student-main{grid-column:1;grid-row:2;overflow-x:hidden;overflow-y:auto;min-height:0;padding:20px 16px 22px;scrollbar-gutter:stable}
   .student-app .student-mobile-nav{position:relative;grid-column:1;grid-row:3;left:auto;right:auto;bottom:auto;z-index:70;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;align-items:stretch;margin:0;padding:2px 4px env(safe-area-inset-bottom);border-top:1px solid var(--line);background:var(--bg);height:auto}
   .student-app .student-mobile-nav a{min-width:0;min-height:64px;padding:5px 1px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--muted);font:500 11px/1.2 var(--body,Arial,sans-serif);text-transform:none;letter-spacing:0;text-align:center;text-decoration:none}
   .student-app .student-mobile-nav a .student-nav-icon{width:21px;height:21px;flex:none}

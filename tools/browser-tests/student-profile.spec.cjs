@@ -32,10 +32,12 @@ for(const width of [320,390,1440]){
    const main=document.querySelector('.student-main'),form=document.querySelector('[data-student-profile-form]'),
      mobileNav=document.querySelector('.student-mobile-nav');
    return {overflow:main.scrollWidth-main.clientWidth,
+     gutter:getComputedStyle(main).scrollbarGutter,
      inset:main.getBoundingClientRect().right-form.getBoundingClientRect().right,
      navTop:mobileNav.getBoundingClientRect().top,mainBottom:main.getBoundingClientRect().bottom};
   });
   expect(layout.overflow).toBeLessThanOrEqual(1);
+  expect(layout.gutter).toContain('stable');
   expect(layout.inset).toBeGreaterThanOrEqual(8);
   if(width<821)expect(layout.mainBottom).toBeLessThanOrEqual(layout.navTop+1);
   expect(errors).toEqual([]);

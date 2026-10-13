@@ -46,9 +46,10 @@ for(const width of [320,390,1440]){
    const nav=document.querySelector('[data-record-workspace-nav]');
    const global=document.querySelector('.student-mobile-nav');
    const rMain=main.getBoundingClientRect(),rNav=nav.getBoundingClientRect();
-   return{overflow:main.scrollWidth-main.clientWidth,navRight:rNav.right,mainRight:rMain.right,globalTop:global.getBoundingClientRect().top,mainBottom:rMain.bottom};
+   return{overflow:main.scrollWidth-main.clientWidth,gutter:getComputedStyle(main).scrollbarGutter,navRight:rNav.right,mainRight:rMain.right,globalTop:global.getBoundingClientRect().top,mainBottom:rMain.bottom};
   });
   expect(layout.overflow).toBeLessThanOrEqual(1);
+  expect(layout.gutter).toContain('stable');
   expect(layout.navRight).toBeLessThanOrEqual(layout.mainRight+1);
   if(width<820)expect(layout.mainBottom).toBeLessThanOrEqual(layout.globalTop+1);
   await page.screenshot({path:'student-visual-audit/record-workspace/'+device+'-result.png',animations:'disabled'});

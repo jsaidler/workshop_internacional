@@ -496,3 +496,7 @@ O item ativo da Agenda é `agenda`, não `courses`. Esta seção prevalece sobre
 ## Contextos do mesmo registro — nota de arquitetura 13/10/2026
 
 As três partes independentes do registro fotográfico usam links canônicos de fragmento `#exposicao`, `#processamento` e `#resultado`. Mostrar apenas a parte ativa no telefone não deve impedir leitura/edição independente nem desmontar formulário não salvo. Deep link de uma etapa (ex.: `#adicionar-etapa`) seleciona a parte que contém a etapa e expande seu `details`. Back/Forward é nativo; sem JavaScript, a leitura e as âncoras devem funcionar com todas as partes visíveis. Não transformar fragmentos em avanço físico obrigatório de laboratório. Esta decisão não reduz o redesenho às telas do Caderno; vale como modelo de navegação contextual, conforme o caso, dentro da revisão global do produto.
+
+## Propriedade do trilho rolável em todas as larguras — 13/10/2026
+
+O `student-app-shell.css` é o único proprietário do scroll da região de conteúdo. A revisão confirmou que o desktop tinha `scrollbar-gutter:stable` mas o mobile fazia override para `auto`. O mobile passa a reservar trilho `stable`, mantendo barra de navegação fora da região rolável, padding nativo e scrollbar fina visível. Isso evita que scrollbars não overlay invadam a área de leitura sem recorrer a `overflow:hidden` ou compensação ad hoc. Regressão exigida em rotas filhas (Caderno/Processamentos/Conta) e largura 320/390/1440. A prioridade do produto segue sendo evitar qualquer oclusão, não esconder o indicador de rolagem.

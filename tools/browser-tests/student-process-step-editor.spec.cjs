@@ -21,13 +21,14 @@ for(const width of [320,390,1440]){
   const order=await form.evaluate(form=>{
    const top=s=>form.querySelector(s).getBoundingClientRect().top;
    return {stage:top('[name="stage_key"]'),duration:top('[name="duration"]'),advanced:top('details.student-process-task-disclosure:last-of-type'),pane:document.querySelector('.student-main').getBoundingClientRect().right,formRight:form.getBoundingClientRect().right,
-   overflow:document.querySelector('.student-main').scrollWidth-document.querySelector('.student-main').clientWidth};
+   overflow:document.querySelector('.student-main').scrollWidth-document.querySelector('.student-main').clientWidth,gutter:getComputedStyle(document.querySelector('.student-main')).scrollbarGutter};
   });
   expect(order.stage).toBeLessThan(order.duration);
   expect(order.duration,'time must be ahead of advanced detail groups').toBeLessThan(order.advanced);
   await page.locator('.student-main').evaluate(main=>{main.scrollTop=0;});
   await page.screenshot({path:'student-visual-audit/process-editor/'+device+'-first-fold.png',animations:'disabled'});
   expect(order.overflow).toBeLessThanOrEqual(1);
+  expect(order.gutter,'native scroll track should never invade process controls').toContain('stable');
   expect(order.formRight).toBeLessThanOrEqual(order.pane-10);
   await form.locator('[name="duration"]').fill('09:30');
   await composition.locator('summary').click();
