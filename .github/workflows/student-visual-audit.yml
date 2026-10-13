@@ -64,6 +64,10 @@ on:
       - 'tools/browser-tests/student-process-step-editor.spec.cjs'
       - 'tools/browser-fixture/student-profile.php'
       - 'tools/browser-tests/student-profile.spec.cjs'
+      - 'tools/browser-fixture/student-process-saved-cards.php'
+      - 'tools/browser-tests/student-process-saved-cards.spec.cjs'
+      - 'app/student_process_saved_card.php'
+      - 'tools/test-student-process-saved-card.php'
       - 'tools/test-student-profile-view.php'
       - 'app/student_profile_view.php'
       - 'tools/test-student-process-step-editor.php'
@@ -125,6 +129,7 @@ jobs:
           npx playwright test tools/browser-tests/student-record-workspace.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-process-step-editor.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-profile.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-process-saved-cards.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-agenda.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-home-operational.spec.cjs --workers=1
           npx playwright test tools/browser-tests/admin-course-agenda.spec.cjs --workers=1

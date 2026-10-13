@@ -11,6 +11,7 @@ function student_process_template_href(int $id,int $testId=0,int $stepId=0): str
 }
 
 require_once __DIR__.'/../app/student_process_template_step_editor.php';
+require_once __DIR__.'/../app/student_process_saved_card.php';
 
 $db=database();$student=student_account_current($db);$next='/aluno/processamentos.php';
 if(!$student){header('Location: /aluno/login.php?next='.rawurlencode($next),true,303);exit;}
@@ -98,19 +99,7 @@ student_shell_start('Processamentos',null,$student);
     </div>
   <?php else:?><div class="student-process-library" aria-label="Processamentos salvos">
     <?php foreach($templates as $item):$href=student_process_template_href((int)$item['id'],$testId);$hasSteps=(int)$item['step_count']>0;?>
-      <article class="student-process-template-card">
-        <a class="student-process-template-main" href="<?=h($href)?>">
-          <span class="student-process-step-number"><?=str_pad((string)(int)$item['step_count'],2,'0',STR_PAD_LEFT)?></span>
-          <div><h3><?=h((string)$item['name'])?></h3><p><?=h((string)($item['description']!==''?$item['description']:'Roteiro pessoal.'))?></p><div class="student-process-summary"><span><?=(int)$item['step_count']?> <?=((int)$item['step_count']===1?'etapa':'etapas')?></span><span><?=h(student_process_template_duration_summary($db,(int)$item['id']))?></span></div></div>
-        </a>
-        <div class="student-process-template-actions">
-          <?php if($testId>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="apply_template"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-primary button-compact" type="submit"<?=$hasSteps?'':' disabled'?>>Associar ao registro</button></form>
-          <?php elseif($hasSteps):?><a class="button button-primary button-compact" href="/aluno/processar.php?template=<?=(int)$item['id']?>">Abrir no laboratório</a><?php else:?><span class="button button-primary button-compact is-disabled" aria-disabled="true">Adicione uma etapa</span><?php endif;?>
-          <?php if($testId===0):?><a class="button button-secondary button-compact" href="<?=h($href)?>">Editar</a>
-          <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="duplicate"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-secondary button-compact" type="submit">Duplicar</button></form>
-          <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Os planos já associados ao Caderno não serão apagados.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=(int)$item['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="student-danger-action" type="submit">Excluir</button></form><?php endif;?>
-        </div>
-      </article>
+      <?php student_process_saved_card($item,$href,student_process_template_duration_summary($db,(int)$item['id']),$csrf,$testId);?>
     <?php endforeach;?>
   </div><?php endif;?>
 </section>

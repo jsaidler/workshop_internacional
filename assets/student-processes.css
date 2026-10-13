@@ -3,15 +3,15 @@
 .student-process-section{margin-top:var(--ux-space-7)}
 .student-process-section-heading{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,420px);gap:var(--ux-space-6);align-items:end;padding-bottom:var(--ux-space-4);border-bottom:1px solid var(--line)}
 .student-process-section-heading>p{margin:0;color:var(--muted);font-size:14px;line-height:1.6}
-.student-process-library{display:grid;border-top:1px solid var(--line)}
-.student-process-template-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--ux-space-5);align-items:center;padding:var(--ux-space-5) 0;border-bottom:1px solid var(--line)}
-.student-process-template-main{display:grid;grid-template-columns:42px minmax(0,1fr);gap:var(--ux-space-4);align-items:start;color:inherit;text-decoration:none}
+.student-process-library{display:grid;gap:12px;border:0}
+.student-process-template-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;min-width:0;padding:19px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.student-process-template-main{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:start;min-width:0;color:inherit;text-decoration:none}
 .student-process-template-main:hover h3{text-decoration:underline;text-underline-offset:4px}
-.student-process-template-main h3{margin:0;font-family:var(--title);font-size:clamp(26px,2.7vw,34px);font-weight:500;line-height:1;text-transform:none}
+.student-process-template-main h3{margin:0;font:700 clamp(18px,1.8vw,22px)/1.27 var(--body,Arial,sans-serif);letter-spacing:-.02em;text-transform:none;overflow-wrap:anywhere}
 .student-process-template-main p{margin:9px 0 0;max-width:70ch;color:var(--muted);font-size:13px;line-height:1.55}
 .student-process-step-number{padding-top:4px;color:var(--focus);font:500 10px/1.2 var(--mono)}
 .student-process-summary{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;color:var(--muted);font:500 10px/1.35 var(--mono);text-transform:uppercase;letter-spacing:.025em}
-.student-process-template-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;align-items:center}
+.student-process-template-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;align-items:center;min-width:0}
 .student-process-template-actions form{margin:0}
 .student-process-template-actions .is-disabled{opacity:.45;pointer-events:none}
 .student-danger-action{display:inline-flex;min-height:38px;align-items:center;justify-content:center;padding:0 11px;border:1px solid color-mix(in srgb,#a74343 72%,var(--line));background:transparent;color:#c65a5a;font:600 9px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
@@ -224,4 +224,50 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
   .student-process-task-form .student-process-task-disclosure>summary{padding:13px}
   .student-process-task-form .student-process-task-disclosure-body{padding:13px}
   .student-process-task-form .student-process-task-actions .button-primary{flex:1 1 180px}
+}
+
+
+/* A saved route is a reusable object, not a row of destructive admin actions.
+   The native disclosure stays in document flow and works without scripting. */
+.student-process-card-options{min-width:155px;max-width:260px;border:1px solid var(--line);border-radius:11px;background:var(--bg)}
+.student-process-card-options>summary{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:42px;padding:9px 13px;cursor:pointer;list-style:none;
+  color:var(--text);font:600 12px/1.3 var(--body,Arial,sans-serif)
+}
+.student-process-card-options>summary::-webkit-details-marker{display:none}
+.student-process-card-options>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.student-process-card-chevron{
+  flex:0 0 8px;width:8px;height:8px;border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;transform:rotate(45deg);color:var(--muted)
+}
+.student-process-card-options[open] .student-process-card-chevron{transform:rotate(225deg)}
+.student-process-card-options-content{
+  display:grid;min-width:0;gap:9px;padding:12px;
+  border-top:1px solid var(--line)
+}
+.student-process-card-options-content :is(form,.button,.student-danger-action){min-width:0;width:100%;box-sizing:border-box}
+.student-process-card-options-content :is(.button,.student-danger-action){
+  display:flex;align-items:center;justify-content:center;
+  min-height:43px;padding:10px;text-align:center;border-radius:9px;
+  font:600 12px/1.3 var(--body,Arial,sans-serif);text-transform:none;letter-spacing:0
+}
+.student-process-template-main:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:3px}
+.student-process-template-actions>.button,.student-process-template-actions>form .button{min-height:43px;border-radius:10px}
+@media(max-width:760px){
+ .student-process-library{gap:10px}
+ .student-process-template-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:15px;border-radius:14px}
+ .student-process-template-main{grid-template-columns:25px minmax(0,1fr);gap:10px}
+ .student-process-template-main h3{font-size:18px}
+ .student-process-template-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;justify-content:stretch;align-items:start}
+ .student-process-template-actions>form,.student-process-template-actions>.button,.student-process-template-actions>.is-disabled{width:100%;min-width:0}
+ .student-process-template-actions>form .button,.student-process-template-actions>.button{
+   display:flex;min-height:44px;align-items:center;justify-content:center;
+   width:100%;box-sizing:border-box;padding:10px 7px;
+   white-space:normal;text-align:center;font:600 12px/1.25 var(--body,Arial,sans-serif)
+ }
+ .student-process-card-options{min-width:0;max-width:none;width:100%}
+ .student-process-card-options[open]{grid-column:1/-1}
+ .student-process-card-options-content{grid-template-columns:minmax(0,1fr);gap:8px}
+ .student-process-summary{font:500 11px/1.4 var(--body,Arial,sans-serif);letter-spacing:0;text-transform:none}
 }
