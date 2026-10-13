@@ -130,3 +130,19 @@ html[data-theme="light"] .student-page.student-app{--student-v2-bg:#f5f5f0;--stu
   .student-v2-hour{font-size:22px}
 }
 @media(prefers-reduced-motion:reduce){.student-app *{scroll-behavior:auto}}
+
+/* The content pane and transient dialogs have separate scroll ownership.
+   Reserve actual scrollbar space where present; never hide a scrollbar to
+   manufacture a clean screenshot. */
+.student-app .student-main,
+.student-app .student-create-dialog,
+.student-app .student-inventory-move-dialog{
+  scrollbar-width:thin;
+  scrollbar-color:var(--line-strong) transparent
+}
+@media(min-width:821px){
+ .student-app .student-create-dialog[open],
+ .student-app .student-inventory-move-dialog[open]{
+   scrollbar-gutter:stable;
+ }
+}

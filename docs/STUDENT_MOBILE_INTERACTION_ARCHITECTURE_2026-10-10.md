@@ -119,3 +119,9 @@ Auditoria do PHP: `aluno/preparos.php` e `aluno/calibracao.php` mantêm formulá
 ### Atualização de arquitetura em 13/10/2026
 
 A referência histórica aos quatro destinos e à posição de Agenda sob Cursos deixa de reger o produto. A reconstrução adota cinco áreas globais. As recomendações de interação (gaveta curta, rotas próprias para editores longos, histórico, foco, preservação de rascunho) continuam obrigatórias.
+
+## Refinamento de experiência de Calibração e Predefinições (13/10/2026)
+
+A distinção página dedicada vs diálogo já era correta, mas faltava organizar a tarefa. Calibração passa a abrir na medição do tempo do branco, seguida do nome de consulta; condições experimentais opcionais ficam em disclosure nativo, aberto quando existem valores, edição ou erro, sem perder campos no envio. Predefinições passam a identificar revelador, composição, condições de uso e agitação opcional. A superfície é o formulário PHP operacional único, incluindo AJAX do desktop e POST/303 no telefone. A barra global não vira gaveta. O limite das barras de rolagem é pertencimento visual do shell/diálogo, não um teste exclusivamente de `scrollWidth`.
+
+O termo antigo 'quatro destinos' no histórico deste documento se refere ao projeto anterior, não ao contrato vigente de cinco.

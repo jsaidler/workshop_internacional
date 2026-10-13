@@ -41,3 +41,14 @@ O CI do commit `6aebed1` identificou páginas de Predefinições e Calibração 
 ### Continuidade do editor de item em desktop
 
 A fixture de Inventário passou a fornecer o mesmo `data-student-editor-link` e o contêiner `data-student-editor-dialog` da rota operacional. Na largura desktop o runtime real carrega o editor contextual no diálogo, preservando URL/histórico e devolvendo foco ao link ao fechar; no celular é mantida a rota dedicada com retorno explícito ao Inventário. O teste transversal distingue esses comportamentos, em vez de exigir navegação de página inteira no desktop. Novas capturas e CI continuam necessários.
+
+## Tarefa primeiro, formulário depois — revisão de produto (13/10/2026)
+
+A inspeção das capturas aprovadas em `6640e9d` demonstrou insuficiência qualitativa: Calibração expunha seis campos sequenciais antes do tempo do branco; Predefinições era um cadastro longo, sem hierarquia; tamanho/scroll sem overflow não certificava experiência premium. A revisão não altera contratos, entradas ou cálculos.
+
+- **Calibração:** a medição observada (Tempo do branco) torna-se a primeira ação, com auxílio de contexto. Nome identifica a referência. Filme/revelador/diluição/temperatura/pré-banho agrupados em `details` nativo (aberto para edições, valores previamente presentes e erro de servidor); notas separadas. Todos os mesmos `name` continuam no POST, com CSRF e ownership originais.
+- **Predefinições:** identificação do banho, volumes/ingredientes controlados pelo JS existente, temperatura e tempo, e agitação em disclosure opcional. Os inputs/outputs originais permanecem vinculados ao controlador de diluição e ao armazenamento. Sem wizard fictício e sem converter configuração extensa em gaveta.
+- **Linguagem:** títulos orientados à tarefa, seção principal distinta dos dados secundários, campos compactos com nomes legíveis e controles de foco explícitos. CSS de componentes em `student-lab-stock.css`, não uma pilha de remendos globais.
+- **Rolagem:** os painéis e diálogos mantêm propriedade explícita de scroll, com trilho fino visível e área reservada no desktop onde necessário; não há ocultação oportunista de overflow. Testes de 320/390 px verificam ordem da medição, estados de `details`, valores, largura, margens e screenshots; editor desktop, POST e falhas continuam sob regressão.
+
+Esta revisão tem de ser julgada por capturas reais do novo SHA, inclusive em tema claro; CI verde sozinho não certifica estética. A sessão autenticada da hospedagem continua pendente.

@@ -135,3 +135,95 @@ for(const f of families){
   await page.screenshot({path:`student-visual-audit/long-editors/${f.kind}-compact-last-action.png`,animations:'disabled'});
  });
 }
+
+/* Task-first acceptance: measuring comes before describing; secondary metadata is
+   still sent with the same form and can be edited without a new network contract. */
+for(const width of [320,390]){
+ test('calibration mobile prioritizes observed time, optional conditions and preserved values at '+width+'px',async({page})=>{
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.setViewportSize({width,height:width===320?720:844});
+  const response=await page.goto(fixture+'?kind=calibration&mode=create',{waitUntil:'networkidle'});
+  expect(response?.status()).toBe(200);
+  const editor=page.locator('.student-main>.student-calibration-editor');
+  await expect(editor).toBeVisible();
+  const mainTime=editor.locator('[name="white_time"]');
+  const name=editor.locator('[name="label"]');
+  const conditions=editor.locator('[data-calibration-conditions]');
+  await expect(mainTime).toBeVisible();
+  await expect(conditions).not.toHaveAttribute('open','');
+  const priority=await page.evaluate(()=>{
+   const time=document.querySelector('.student-calibration-editor [name="white_time"]').getBoundingClientRect();
+   const name=document.querySelector('.student-calibration-editor [name="label"]').getBoundingClientRect();
+   const pane=document.querySelector('.student-main').getBoundingClientRect();
+   return{time:time.top,name:name.top,paneRight:pane.right,timeRight:time.right};
+  });
+  expect(priority.time,'central measurement must precede reference metadata').toBeLessThan(priority.name);
+  expect(priority.timeRight,'measurement must stay inside the scroll pane').toBeLessThanOrEqual(priority.paneRight-12);
+  await mainTime.fill('03:20');await name.fill('HR-U · branco');
+  await conditions.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(conditions).toHaveAttribute('open','');
+  await conditions.locator('[name="film"]').fill('Fuji HR-U');
+  await conditions.locator('[name="temperature"]').fill('26 °C');
+  await conditions.locator('summary').click();
+  await expect(conditions).not.toHaveAttribute('open','');
+  await expect(mainTime).toHaveValue('03:20');
+  await conditions.locator('summary').click();
+  await expect(conditions.locator('[name="film"]')).toHaveValue('Fuji HR-U');
+  await page.screenshot({path:'student-visual-audit/long-editors/calibration-'+width+'-task-first.png',animations:'disabled'});
+  const geometry=await page.evaluate(()=>{
+   const main=document.querySelector('.student-main'),form=document.querySelector('.student-task-form');
+   return{overflow:main.scrollWidth-main.clientWidth,rightInset:main.getBoundingClientRect().right-form.getBoundingClientRect().right};
+  });
+  expect(geometry.overflow,'no horizontal overflow at '+width).toBeLessThanOrEqual(1);
+  expect(geometry.rightInset,'leave breathing room beside scroll track').toBeGreaterThanOrEqual(12);
+  expect(errors).toEqual([]);
+ });
+ test('preparation mobile separates composition and use without losing working controls at '+width+'px',async({page})=>{
+  await page.setViewportSize({width,height:width===320?720:844});
+  const response=await page.goto(fixture+'?kind=preparation&mode=create',{waitUntil:'networkidle'});
+  expect(response?.status()).toBe(200);
+  const form=page.locator('.student-main .student-preparation-editor form');
+  await expect(form).toBeVisible();
+  await expect(form.locator('[name="label"]')).toBeVisible();
+  await expect(form.locator('[name="developer_key"]')).toBeVisible();
+  await expect(form.locator('[data-developer-mix] [name="water_amount"]')).toBeVisible();
+  await form.locator('[name="developer_key"]').selectOption('other');
+  await expect(form.locator('[data-custom-developer]')).toBeVisible();
+  await form.locator('[name="developer_key"]').selectOption('parodinal');
+  await expect(form.locator('[data-custom-developer]')).toBeHidden();
+  await expect(form.locator('[name="temperature"]')).toBeVisible();
+  const agitation=form.locator('.student-parameter-disclosure');
+  await expect(agitation).not.toHaveAttribute('open','');
+  await agitation.locator('summary').click();
+  await agitation.locator('[name="agitation"]').fill('Agitação leve');
+  await expect(agitation.locator('[name="agitation"]')).toHaveValue('Agitação leve');
+  await page.screenshot({path:'student-visual-audit/long-editors/preparation-'+width+'-task-first.png',animations:'disabled'});
+  const inset=await form.evaluate(node=>{
+    const pane=document.querySelector('.student-main');
+    return{right:pane.getBoundingClientRect().right-node.getBoundingClientRect().right,overflow:pane.scrollWidth-pane.clientWidth};
+  });
+  expect(inset.right).toBeGreaterThanOrEqual(12);
+  expect(inset.overflow).toBeLessThanOrEqual(1);
+ });
+}
+for(const kind of ['calibration','preparation']){
+ test(kind+' failed POST retains expanded contextual values in the operational PHP renderer',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  const response=await page.goto(fixture+'?kind='+kind+'&mode=error',{waitUntil:'networkidle'});
+  expect(response?.status()).toBe(200);
+  const editor=page.locator('.student-main .student-task-editor');
+  await expect(editor.getByRole('alert')).toBeVisible();
+  await expect(editor.locator('[name="label"]')).toHaveValue('Teste <script>');
+  if(kind==='calibration'){
+   const details=editor.locator('[data-calibration-conditions]');
+   await expect(details).toHaveAttribute('open','');
+   await expect(details.locator('[name="temperature"]')).toHaveValue('30 °C');
+   await expect(editor.locator('[name="white_time"]')).toHaveValue('04:30');
+  }else{
+   await expect(editor.locator('[name="developer_key"]')).toHaveValue('other');
+   await expect(editor.locator('[data-custom-developer]')).toBeVisible();
+   await expect(editor.locator('[name="temperature"]')).toHaveValue('30 °C');
+  }
+ });
+}
