@@ -120,6 +120,7 @@ cr_transfer_must(transfer_enrollment($db,3,30)===null,'pending transition remain
 
 $admin=file_get_contents(__DIR__.'/../admin/registrations.php');
 cr_transfer_must(str_contains($admin, "!in_array(\$action,['assign_cohort','unassign_cohort'],true)"),'registrations POST must not trigger a second global reconciliation');
+cr_transfer_must(str_contains($admin, "\$redirectFilter='assigned'")&&str_contains($admin, "\$redirectCohort=0;\$redirectFilter=''"),'successful registration transfer must redirect into destination cohort and unassignment must clear stale filters');
 $hook=file_get_contents(__DIR__.'/../app/student_enrollments.php');
 cr_transfer_must(str_contains($hook, "in_array((string)(\$_POST['action']??''),['assign_cohort','unassign_cohort'],true)"),'shutdown hook must skip per-registration assignment paths');
 $accounts=file_get_contents(__DIR__.'/../app/student_accounts.php');

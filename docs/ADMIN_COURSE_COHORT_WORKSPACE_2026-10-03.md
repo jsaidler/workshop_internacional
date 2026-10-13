@@ -163,3 +163,7 @@ Regressão `tools/test-admin-cohort-transfer.php`: banco SQLite em memória com 
 ### Auditoria da transferência em tela real — 13/10/2026
 
 O painel `admin_student_cohort_transfer_panel` foi extraído da tela operacional para `app/admin_student_cohort_transfer_panel.php` e é reutilizado pela fixture `tools/browser-fixture/admin-cohort-transfer.php`, sem duplicar suas regras. A auditoria Playwright em 320, 390 e 1440 px testa as duas origens (inscrição e CSV/manual), token CSRF e parâmetros efetivamente submetidos, opções de destino ativas e diferentes da origem, ausência de ação quando não há destino, rolagem e ausência de overflow. O primeiro ciclo ficou verde, mas a inspeção das imagens mostrou select e botão compactados no telefone. Corrigido `assets/admin-operations.css` com layout de tarefa, controles >=46 px, CTA integral no telefone e foco de teclado visível; a regressão passa a medir a caixa renderizada. Essa fixture prova comportamento e geometria do **renderer**, não uma mutação em banco: a mutação verdadeira é coberta separadamente por `tools/test-admin-cohort-transfer.php`, utilizando triggers e projeções da Agenda.
+
+### Retorno após transferência de inscrição — 13/10/2026
+
+Uma atribuição concluída pelo painel de Inscrições retorna à **turma de destino**, com filtro `assigned`; desvinculação retorna ao curso sem filtro de turma. Na recusa, filtros/contexto anteriores são preservados, exibindo o motivo e não simulando sucesso.
