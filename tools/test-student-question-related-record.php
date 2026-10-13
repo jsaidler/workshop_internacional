@@ -36,7 +36,7 @@ $check(999,1,'');
 $db->exec("UPDATE course_enrollments SET status='cancelled' WHERE student_id=2");
 $check(103,2,'');
 
-$template=file_get_contents(dirname(__DIR__).'/aluno/duvidas.php');
+$template=file_get_contents(dirname(__DIR__).'/aluno/duvidas.php')."\n".file_get_contents(dirname(__DIR__).'/app/student_questions_view.php');
 if(!is_string($template)
    || !str_contains($template,'student_question_related_record_href($db,$question,$studentId)')
    || !str_contains($template,'href="<?=h($linkedTestUrl)?>"')

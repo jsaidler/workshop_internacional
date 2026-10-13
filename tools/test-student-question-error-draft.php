@@ -6,6 +6,9 @@ declare(strict_types=1);
  * The browser fixture alone cannot certify server-side POST error handling.
  */
 $source=file_get_contents(dirname(__DIR__).'/aluno/duvidas.php');
+$view=file_get_contents(dirname(__DIR__).'/app/student_questions_view.php');
+if(!is_string($view))throw new RuntimeException('Question view unavailable.');
+$source.="\n".$view;
 if(!is_string($source))throw new RuntimeException('Question page unavailable.');
 $start=strpos($source,'$failedQuestionCreate=');
 $end=$start===false?false:strpos($source,"student_shell_start('Dúvidas'",$start);

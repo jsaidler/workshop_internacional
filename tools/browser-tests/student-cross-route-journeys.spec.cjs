@@ -14,7 +14,7 @@ async function mountOperationalViews(page){
     '/aluno/agenda.php': '/tools/browser-fixture/student-agenda.php?state=regular',
     '/aluno/caderno.php': '/tools/browser-fixture/student-notebook.php?state=mixed',
     '/aluno/ferramentas.php': '/tools/browser-fixture/student-laboratory.php?state=full',
-    '/aluno/duvidas.php': '/tools/browser-fixture/student-secondary-screens-audit.html?screen=questions-list',
+    '/aluno/duvidas.php': '/tools/browser-fixture/student-questions-operational.php',
     '/aluno/teste.php': '/tools/browser-fixture/student-caderno-product-audit.php?screen=record-plan',
   };
   await page.route('**/aluno/**',async route=>{
@@ -26,7 +26,7 @@ async function mountOperationalViews(page){
     }
     if(!mapped)return route.continue();
     if(request.pathname==='/aluno/duvidas.php'){
-      mapped='/tools/browser-fixture/student-secondary-screens-audit.html?screen='+(request.searchParams.get('id')?'question-thread':'questions-list');
+      mapped='/tools/browser-fixture/student-questions-operational.php?cohort='+encodeURIComponent(request.searchParams.get('cohort')||'cohort-a')+(request.searchParams.get('id')?'&id='+encodeURIComponent(request.searchParams.get('id')):'');
     }
     if(request.pathname==='/aluno/agenda.php'&&request.searchParams.get('view')){
       mapped+='&view='+encodeURIComponent(request.searchParams.get('view'));
