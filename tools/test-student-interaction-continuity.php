@@ -11,7 +11,7 @@ $inventory=$read('aluno/inventario.php');
 $inventoryPanel=$read('app/student_inventory_create_panel.php');
 $inventoryMovement=$read('app/student_inventory_move_panel.php');
 $inventoryItem=$read('aluno/inventario-item.php').$read('app/student_inventory_item_editor.php');
-$questions=$read('aluno/duvidas.php');
+$questions=$read('aluno/duvidas.php').$read('app/student_questions_view.php');
 $preparations=$read('aluno/preparos.php');
 $calibration=$read('aluno/calibracao.php');
 
