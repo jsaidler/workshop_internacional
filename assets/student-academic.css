@@ -95,7 +95,7 @@ a.student-academic-material-row:hover .student-academic-material-title,a.student
 .student-home-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
 .student-home-section-head h2{margin:0;font:600 17px/1.3 var(--body);text-transform:none}
 .student-home-section-head a{display:inline-flex;align-items:center;min-height:40px;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;text-decoration:none}
-.student-home-quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:9px}
+.student-home-quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px}
 .student-home-quick>a,.student-home-quick>button{box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;min-height:70px;padding:12px 9px;border:1px solid var(--student-line-soft);background:var(--surface);color:var(--text);font:600 13px/1.25 var(--body);text-align:center;text-decoration:none;cursor:pointer}
 .student-home-quick>a:hover,.student-home-quick>button:hover{border-color:var(--focus)}
 .student-home-quick>a:focus-visible,.student-home-quick>button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -114,6 +114,33 @@ a.student-academic-material-row:hover .student-academic-material-title,a.student
 .student-home-course-actions{display:flex;gap:10px 20px;flex-wrap:wrap;margin-top:11px;align-items:center}
 .student-home-course-actions a{display:inline-flex;min-height:42px;align-items:center;font-size:13px;font-weight:600;color:var(--text);text-decoration:underline;text-underline-offset:3px}
 .student-home-course-actions span{color:var(--muted);font-size:12px}
+.student-agenda-history{border-top:1px solid var(--student-line-soft);margin-top:20px}
+.student-agenda-history>summary,.student-agenda-offer-schedule>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;color:var(--text);font-size:13px;font-weight:600}
+.student-agenda-history>summary::-webkit-details-marker,.student-agenda-offer-schedule>summary::-webkit-details-marker{display:none}
+.student-agenda-history>summary:after,.student-agenda-offer-schedule>summary:after{content:"⌄";font:500 19px/1 var(--body);margin-left:auto}
+.student-agenda-history[open]>summary:after,.student-agenda-offer-schedule[open]>summary:after{transform:rotate(180deg)}
+.student-agenda-history>summary:focus-visible,.student-agenda-offer-schedule>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.student-agenda-history>summary span{color:var(--muted);font-size:12px;font-weight:400}
+.student-agenda-history .agenda-meeting{opacity:.85}
+.student-agenda-offer-schedule{margin-top:12px;border-top:1px solid var(--student-line-soft);border-bottom:1px solid var(--student-line-soft)}
+.agenda-offer .agenda-reservation-form{margin-top:16px}
+@media(max-width:820px){.agenda-offer .agenda-reservation-form .button{width:100%;min-height:48px}}
+.student-agenda-head{gap:6px}
+.student-agenda-head .student-lead{max-width:600px;margin:2px 0 0}
+.agenda-meeting{display:block;padding:20px 0}
+.agenda-meeting .agenda-meeting-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.agenda-meeting .agenda-meeting-date{font-weight:650;color:var(--text);font-size:15px}
+.agenda-meeting .agenda-meeting-status{color:var(--muted);font-size:12px}
+.agenda-meeting h3{margin:14px 0 5px;font:500 clamp(22px,2.4vw,29px)/1.15 var(--title);overflow-wrap:anywhere}
+.agenda-meeting .agenda-meeting-context{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.agenda-meeting .agenda-meeting-notes{margin-top:12px;font-size:13px;line-height:1.5}
+.agenda-meeting .agenda-meeting-actions{margin:14px 0 0}
+.agenda-meeting .agenda-meeting-actions .button{margin:0;min-height:44px}
+@media(max-width:820px){
+ .student-agenda-head .student-title{font-size:34px}
+ .agenda-meeting{padding:16px 0 20px}
+ .agenda-meeting .agenda-meeting-actions .button{display:flex;justify-content:center;width:100%}
+}
 .student-home-muted{margin:0;padding:12px 0 18px;border-top:1px solid var(--student-line-soft);color:var(--muted);font-size:13px;line-height:1.5}
 @media(min-width:821px){
   .student-home{max-width:920px;margin-inline:auto}
@@ -128,13 +155,13 @@ a.student-academic-material-row:hover .student-academic-material-title,a.student
   .student-home-feature-actions .button{flex:1 1 auto;justify-content:center;min-width:0}
   .student-home-feature-more{min-width:88px;justify-content:center}
   .student-home-block{margin-top:21px}
-  .student-home-quick{gap:6px}
-  .student-home-quick>a,.student-home-quick>button{flex-direction:column;gap:5px;min-height:75px;padding:9px 4px;font-size:11px}
+  .student-home-quick{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .student-home-quick>a,.student-home-quick>button{flex-direction:row;gap:9px;min-height:68px;padding:10px 12px;font-size:13px}
   .student-home-quick-symbol{font-size:23px}
   .student-home-section-head h2{font-size:16px}
 }
 @media(max-width:340px){
   .student-home-feature-actions .button{width:100%;flex-basis:100%}
   .student-home-feature-more{min-height:38px}
-  .student-home-quick>a,.student-home-quick>button{font-size:10px}
+  .student-home-quick>a,.student-home-quick>button{gap:6px;padding:10px 7px;font-size:12px}
 }

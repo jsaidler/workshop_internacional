@@ -12,7 +12,14 @@ test('all independent sources are visible together; private links belong only to
   await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
   await expect(page.locator('.student-home-course-actions a[href*="duvidas.php?cohort=cohort-a"]')).toHaveCount(1);
   await expect(page.locator('.student-home-course-actions a[href*="material-do-curso?cohort=cohort-a"]')).toHaveCount(1);
-  await expect(page.getByRole('link',{name:'Processamentos'})).toHaveAttribute('href','/aluno/processamentos.php');
+  await expect(page.locator('.student-home-quick a[href="/aluno/agenda.php"]')).toHaveCount(1);
+  const quickOrder=await page.locator('.student-home-quick > a, .student-home-quick > button').evaluateAll(els=>els.map(el=>el.textContent.trim()));
+  expect(quickOrder.slice(0,3)).toEqual(['▦Agenda','+Novo registro','◷Processamentos']);
+  await page.locator('[data-toolbox-open]').click();
+  const toolbox=page.locator('[data-student-toolbox]');
+  await expect(toolbox).toBeVisible();
+  await expect(toolbox.locator('.student-toolbox-links a').first()).toHaveAttribute('href','/aluno/agenda.php');
+  await expect(page.locator('.student-home-quick a[href="/aluno/processamentos.php"]')).toHaveAttribute('href','/aluno/processamentos.php');
   await expect(page.locator('body')).not.toContainText('https://example.org/completed');
 });
 test('Home retains access during the documented time slot, without asserting attendance',async({page})=>{

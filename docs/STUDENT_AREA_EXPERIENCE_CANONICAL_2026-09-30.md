@@ -164,3 +164,8 @@ A superfície do aluno acrescenta somente contexto acadêmico externo ao conteú
 - Caderno de anotações existente sem alterar a estrutura editorial da página.
 
 Esse contexto não deve se transformar em uma segunda barra global nem em um dashboard dentro do material. No telefone ele permanece no fluxo normal da leitura; não pode cobrir o conteúdo nem depender de blur/transparência persistente.
+
+
+### Agenda: prioridade temporal e uso no telefone (12/10/2026, PR #242)
+
+No Início, a Agenda deve ser primeiro acesso rápido para alunos matriculados e primeiro link da gaveta Atalhos. Na Agenda, exibir encontros futuros agendados primeiro (incluindo o intervalo de duração registrada) e recolher encontros anteriores/cancelados numa seção consultável. Não usar a ausência de mudança administrativa para afirmar realização do encontro. As próximas turmas e suas vagas permanecem subordinadas às regras canônicas de ouvinte; detalhes de datas podem ser expandidos sem gerar outra fonte. Links de encontro expostos ao aluno exigem URL HTTPS válida e autorização conferida pelo serviço de agenda, sem acesso ativo no histórico.

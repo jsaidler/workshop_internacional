@@ -92,4 +92,20 @@ $oldCohort=$db->query('SELECT meeting_starts_at FROM cohort_lesson_releases WHER
 $newCohort=$db->query('SELECT meeting_starts_at FROM cohort_lesson_releases WHERE cohort_id=2 AND lesson_id=101')->fetchColumn();
 must_agenda($oldCohort!==$newCohort && $newCohort==='2030-08-03T23:30:00Z','cohorts reuse lesson identity but maintain separate calendars');
 must_agenda($db->query('SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=1 AND lesson_id=101')->fetchColumn()===null,'new cohort configuration does not release old cohort material');
+// A Agenda precisa preservar a prioridade temporal e o sigilo de links antigos.
+$now=strtotime('2030-05-01T12:00:00Z');
+$examples=[
+ ['meeting_starts_at'=>'2030-04-01T10:00:00Z','meeting_status'=>'completed','meeting_duration_minutes'=>120],
+ ['meeting_starts_at'=>'2030-06-01T10:00:00Z','meeting_status'=>'scheduled','meeting_duration_minutes'=>120],
+ ['meeting_starts_at'=>'2030-03-01T10:00:00Z','meeting_status'=>'scheduled','meeting_duration_minutes'=>120],
+ ['meeting_starts_at'=>'2030-07-01T10:00:00Z','meeting_status'=>'scheduled','meeting_duration_minutes'=>120],
+ ['meeting_starts_at'=>'2030-08-01T10:00:00Z','meeting_status'=>'cancelled','meeting_duration_minutes'=>120],
+];
+$partition=course_agenda_partition_meetings($examples,$now);
+must_agenda(count($partition['upcoming'])===2 && count($partition['history'])===3,'upcoming vs past and cancelled are separate');
+must_agenda($partition['upcoming'][0]['meeting_starts_at']==='2030-06-01T10:00:00Z','nearest scheduled meeting is first');
+must_agenda($partition['history'][0]['meeting_starts_at']==='2030-08-01T10:00:00Z','history is in descending chronological order');
+$ongoing=course_agenda_partition_meetings([['meeting_starts_at'=>'2030-05-01T11:30:00Z','meeting_status'=>'scheduled','meeting_duration_minutes'=>120]],$now);
+must_agenda(count($ongoing['upcoming'])===1,'meeting in its registered duration stays prominent');
+must_agenda(course_agenda_safe_meeting_url('javascript:alert(1)')==='' && course_agenda_safe_meeting_url('https://example.org/ok')!=='','only https meeting URLs are exposed');
 echo "course-agenda: ok\n";
