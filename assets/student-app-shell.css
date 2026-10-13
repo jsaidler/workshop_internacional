@@ -24,7 +24,7 @@ html[data-theme="light"] .student-page.student-app{--student-v2-bg:#f5f5f0;--stu
 .student-app .student-v2-home{max-width:960px;padding:0 0 30px;font-family:var(--body,Arial,sans-serif)}
 .student-v2-heading{margin:0 0 26px}
 .student-v2-eyebrow{margin:0 0 8px;color:var(--focus);text-transform:uppercase;font:700 10px/1.5 var(--body,Arial,sans-serif);letter-spacing:.11em}
-.student-v2-heading h1{margin:0;font:700 clamp(27px,3vw,38px)/1.14 var(--body,Arial,sans-serif);letter-spacing:-.035em}
+.student-v2-heading h1{margin:0;text-transform:none;font:700 clamp(27px,3vw,38px)/1.14 var(--body,Arial,sans-serif);letter-spacing:-.035em}
 .student-v2-heading>p:last-child{margin:10px 0 0;font:400 14px/1.5 var(--body,Arial,sans-serif);color:var(--muted)}
 .student-v2-next{padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--surface);overflow:hidden;position:relative}
 .student-v2-next::before{content:"";position:absolute;width:220px;height:220px;top:-110px;right:-75px;border:1px solid var(--line);border-radius:50%;pointer-events:none}
@@ -36,7 +36,7 @@ html[data-theme="light"] .student-page.student-app{--student-v2-bg:#f5f5f0;--stu
 .student-v2-date-line time strong{font:600 clamp(48px,7vw,70px)/.9 var(--body,Arial,sans-serif);letter-spacing:-.055em}
 .student-v2-date-line time span{font:600 11px/1.35 var(--body,Arial,sans-serif);text-transform:uppercase;color:var(--muted)}
 .student-v2-hour{font:700 25px/1 var(--body,Arial,sans-serif);letter-spacing:-.035em}
-.student-v2-next h2{margin:16px 0 0;max-width:600px;position:relative;font:700 clamp(22px,2.8vw,32px)/1.16 var(--body,Arial,sans-serif);letter-spacing:-.03em;overflow-wrap:anywhere}
+.student-v2-next h2{margin:16px 0 0;text-transform:none;max-width:600px;position:relative;font:700 clamp(22px,2.8vw,32px)/1.16 var(--body,Arial,sans-serif);letter-spacing:-.03em;overflow-wrap:anywhere}
 .student-v2-next-context{margin:8px 0 0;max-width:660px;color:var(--muted);font:400 13px/1.45 var(--body,Arial,sans-serif)}
 .student-v2-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:20px}
 .student-v2-cta{display:inline-flex;align-items:center;justify-content:center;text-align:center;min-height:46px;max-width:100%;padding:12px 22px;border:1px solid transparent;border-radius:12px;background:var(--focus);color:var(--student-v2-ink);font:700 13px/1.25 var(--body,Arial,sans-serif);text-decoration:none;cursor:pointer}
@@ -46,7 +46,7 @@ html[data-theme="light"] .student-page.student-app{--student-v2-bg:#f5f5f0;--stu
 .student-v2-next-simple h2{margin-top:24px}
 .student-v2-next-simple>.student-v2-cta{margin-top:22px}
 .student-v2-section{margin-top:28px}
-.student-v2-section h2{margin:0 0 12px;font:700 17px/1.2 var(--body,Arial,sans-serif);letter-spacing:-.02em}
+.student-v2-section h2{margin:0 0 12px;text-transform:none;font:700 17px/1.2 var(--body,Arial,sans-serif);letter-spacing:-.02em}
 .student-v2-section-heading{display:flex;gap:12px;align-items:center;justify-content:space-between}
 .student-v2-section-heading a,.student-v2-footer-actions>a{min-height:44px;display:inline-flex;align-items:center;font-size:12px;color:var(--muted);text-decoration:none}
 .student-v2-list{border-top:1px solid var(--line)}
@@ -100,6 +100,9 @@ html[data-theme="light"] .student-page.student-app{--student-v2-bg:#f5f5f0;--stu
   .student-v2-heading{margin-bottom:22px}
   .student-v2-heading h1{font-size:26px}
   .student-v2-next{padding:18px;border-radius:19px}
+  .student-v2-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+  .student-v2-actions .student-v2-cta{width:100%}
+  .student-v2-actions .student-v2-secondary-link{justify-content:center}
   .student-v2-date-line{margin-top:20px}
   .student-v2-date-line time strong{font-size:52px}
   .student-v2-next h2{font-size:22px}
