@@ -6,7 +6,7 @@ function must_student_account_experience(bool $condition,string $message): void 
 
 $root=dirname(__DIR__);
 $profile=(string)file_get_contents($root.'/aluno/perfil.php').(string)file_get_contents($root.'/app/student_profile_view.php');
-$password=(string)file_get_contents($root.'/aluno/senha.php');
+$password=(string)file_get_contents($root.'/aluno/senha.php').(string)file_get_contents($root.'/app/student_auth_view.php');
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $logout=(string)file_get_contents($root.'/aluno/logout.php');
 
