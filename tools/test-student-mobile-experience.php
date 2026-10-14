@@ -4,7 +4,7 @@ function fail_student_mobile(string $message): never {fwrite(STDERR,"student-mob
 $root=dirname(__DIR__);
 $renderer=(string)file_get_contents($root.'/app/cms_renderer.php');
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
-$test=(string)file_get_contents($root.'/aluno/teste.php');
+$test=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');
 $css=(string)file_get_contents($root.'/assets/student-area.css');
 $cadernoCss=(string)file_get_contents($root.'/assets/student-caderno.css');
 $processCss=(string)file_get_contents($root.'/assets/student-processes.css');

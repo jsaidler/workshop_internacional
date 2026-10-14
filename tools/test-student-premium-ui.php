@@ -14,7 +14,7 @@ $home=(string)file_get_contents($root.'/aluno/index.php');
 $courses=(string)file_get_contents($root.'/aluno/cursos.php');$coursesView=(string)file_get_contents($root.'/app/student_courses_view.php');
 $bench=(string)file_get_contents($root.'/aluno/ferramentas.php').(string)file_get_contents($root.'/app/student_laboratory_view.php');
 $notebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');
-$test=(string)file_get_contents($root.'/aluno/teste.php');
+$test=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');
 $routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
 $processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
 $processRunner=(string)file_get_contents($root.'/aluno/processar.php');
