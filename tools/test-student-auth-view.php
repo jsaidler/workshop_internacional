@@ -15,4 +15,6 @@ ob_start();student_auth_render_password(false,'','/aluno/perfil.php');$change=ob
 check_auth(str_contains($change,'name="primeiro" value="0"')&&str_contains($change,'Salvar senha')&&!str_contains($change,'name="privacy_ack"'),'change-password does not require activation acknowledgement');
 check_auth(str_contains($change,'href="/aluno/perfil.php"')&&str_contains($change,'name="next" value="/aluno/perfil.php"'),'return and redirect preserved');
 foreach(['login.php','senha.php'] as $route){$s=file_get_contents(__DIR__.'/../aluno/'.$route);check_auth(str_contains($s,'student_auth_render_')&&str_contains($s,'verify_csrf('),'production route retains validation and shared renderer');}
+$fixture=(string)file_get_contents(__DIR__.'/browser-fixture/student-auth-operational.php');
+check_auth(str_contains($fixture,'function student_account_current(PDO $db): ?array')&&str_contains($fixture,"\$mode==='change'"),'change-password fixture must preserve synthetic student context through shell end');
 echo "student-auth-view: ok\n";
