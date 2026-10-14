@@ -26,6 +26,8 @@ $operationalSources=[
  'calibration-list'=>'student-long-editors.php?kind=calibration&mode=list',
  'step-editor'=>'student-record-actions-operational.php?mode=step',
  'delete-record'=>'student-record-actions-operational.php?mode=delete',
+ 'compare-select'=>'student-comparison-operational.php?mode=select',
+ 'compare-records'=>'student-comparison-operational.php?mode=analysis',
 ];
 foreach($operationalSources as $name=>$source){
  must_student_visual_inventory(str_contains($spec,"['".$name."','".$source."']"),$name.' must use its operational PHP renderer');

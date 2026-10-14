@@ -30,8 +30,8 @@ const screens=[
   ['step-editor','student-record-actions-operational.php?mode=step'],
   ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
   ['delete-record','student-record-actions-operational.php?mode=delete'],
-  ['compare-select','student-notebook-compare.html?screen=select'],
-  ['compare-records','student-notebook-compare.html?screen=analysis'],
+  ['compare-select','student-comparison-operational.php?mode=select'],
+  ['compare-records','student-comparison-operational.php?mode=analysis'],
   ['research-derived','student-notebook-compare.html?screen=derived'],
   ['process-library','student-process-saved-cards.php?mode=library'],
   ['process-editor','student-process-product-audit.html?screen=editor'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -130,8 +130,8 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name==='result-waiting')await expect(page.getByText('Enviado para avaliação',{exact:true})).toBeVisible();
       if(name==='result-revision'){await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();await expect(page.getByText('Enviar revisão para avaliação',{exact:true})).toBeVisible();await expect(page.getByText('Professor',{exact:true})).toBeVisible();}
       if(name==='result-reviewed')await expect(page.getByText('Avaliação concluída',{exact:true})).toBeVisible();
-      if(name==='compare-select'){await expect(page.getByText('Escolha o segundo registro',{exact:true})).toBeVisible();await expect(page.getByText('EI 200 — FeCl₃',{exact:true})).toBeVisible();}
-      if(name==='compare-records'){await expect(page.getByText('Diferenças registradas',{exact:true})).toBeVisible();await expect(page.getByText('Resultado observado',{exact:true})).toBeVisible();await expect(page.getByText('Criar próxima variação',{exact:true})).toBeVisible();}
+      if(name==='compare-select'){await expect(page.getByText('Escolha o segundo registro',{exact:true})).toBeVisible();await expect(page.getByText('EI 200 — FeCl₃',{exact:true})).toBeVisible();await expect(page.locator('.student-research-picker-form input[name="id[]"][value="10"]')).toHaveCount(1);await expect(page.locator('.student-research-picker-form select[name="id[]"]')).toHaveCount(1);}
+      if(name==='compare-records'){await expect(page.getByText('Diferenças registradas',{exact:true})).toBeVisible();await expect(page.getByText('Resultado observado',{exact:true})).toBeVisible();await expect(page.getByText('Criar próxima variação',{exact:true})).toBeVisible();await expect(page.locator('.student-research-result-card')).toHaveCount(2);await expect(page.locator('form.student-research-next-form input[name="_csrf"]')).toHaveCount(1);await expect(page.getByText('Etapa 1 · Tempo',{exact:true})).toBeVisible();}
       if(name==='research-derived'){
         await expect(page.getByText('Continuação de',{exact:false})).toBeVisible();await expect(page.getByText('Manter EI 400 e voltar a primeira revelação para 7 minutos.',{exact:false})).toBeVisible();
         const menu=page.locator('.student-record-menu'),compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});await expect(menu).toBeVisible();await expect(compareOrigin).toBeHidden();await menu.locator('summary').click();await expect(compareOrigin).toBeVisible();await menu.locator('summary').click();await expect(compareOrigin).toBeHidden();

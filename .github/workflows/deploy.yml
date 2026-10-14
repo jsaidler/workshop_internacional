@@ -56,6 +56,7 @@ jobs:
           php tools/test-student-process-step-editor.php
           php tools/test-student-auth-view.php
           php tools/test-student-record-auxiliary-views.php
+          php tools/test-student-research-comparison-view.php
           php tools/test-student-profile-view.php
           php tools/test-student-process-saved-card.php
           php tools/test-student-long-editors-db.php

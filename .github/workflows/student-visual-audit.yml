@@ -44,6 +44,10 @@ on:
       - 'tools/browser-fixture/student-secondary-screens-audit.html'
       - 'tools/browser-fixture/student-material-notes.html'
       - 'tools/browser-fixture/student-notebook-compare.html'
+      - 'tools/browser-fixture/student-comparison-operational.php'
+      - 'tools/browser-tests/student-comparison-operational.spec.cjs'
+      - 'app/student_research_comparison_view.php'
+      - 'tools/test-student-research-comparison-view.php'
       - 'tools/browser-fixture/student-pedagogical-feedback-audit.html'
       - 'tools/browser-tests/student-aula3-material-audit.spec.cjs'
       - 'tools/browser-tests/student-visual-audit.spec.cjs'
@@ -137,6 +141,7 @@ jobs:
           npx playwright test tools/browser-tests/student-long-editors.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-record-workspace.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-record-actions-operational.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-comparison-operational.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-process-step-editor.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-profile.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-auth-operational.spec.cjs --workers=1

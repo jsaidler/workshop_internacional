@@ -94,6 +94,7 @@ jobs:
             php tools/test-student-workflow-experience.php
             php tools/test-student-pedagogical-feedback.php
             php tools/test-student-research-continuity.php
+            php tools/test-student-research-comparison-view.php
             php tools/test-student-process-notes-ux.php
             php tools/test-student-notes-runtime.php
             php tools/test-student-fixture-parity.php
