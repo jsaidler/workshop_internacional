@@ -19,12 +19,15 @@ $operationalSources=[
  'questions-feedback'=>'student-questions-operational.php?state=evaluations',
  'process-library'=>'student-process-saved-cards.php?mode=library',
  'profile'=>'student-profile.php?mode=view',
+ 'login'=>'student-auth-operational.php?mode=login',
+ 'activation-password'=>'student-auth-operational.php?mode=activation',
+ 'password-change'=>'student-auth-operational.php?mode=change',
 ];
 foreach($operationalSources as $name=>$source){
  must_student_visual_inventory(str_contains($spec,"['".$name."','".$source."']"),$name.' must use its operational PHP renderer');
  must_student_visual_inventory(!str_contains($spec,"['".$name."','student-secondary-screens-audit.html"),$name.' cannot regress to legacy fixture');
 }
-must_student_visual_inventory(str_contains($spec,'operationalScreens.has(name)')&&str_contains($spec,'contract.links')&&str_contains($spec,'scrollGutter'),'operational screen audit must verify v2 shell without injected styles');
+must_student_visual_inventory(str_contains($spec,'operationalScreens.has(name)')&&str_contains($spec,'anonymousAuthScreens.has(name)')&&str_contains($spec,'contract.links')&&str_contains($spec,'scrollGutter'),'operational screen audit must verify v2 shell without injected styles');
 foreach(['process-intent','recording-start','recording-associated','recording-partial','recording-complete'] as $obsolete)must_student_visual_inventory(!str_contains($spec,"\n  ['$obsolete','"),'complete visual audit still preserves obsolete temporal surface '.$obsolete);
 must_student_visual_inventory(str_contains($spec,"['inventory','student-inventory-movement.php?mode=inventory']")&&str_contains($spec,"['inventory-empty','student-inventory-movement.php?mode=empty']"),'inventory list/empty visual audit must use PHP fixture that includes operational movement renderer');
 must_student_visual_inventory(str_contains($spec,"toBe(46)"),'complete visual audit surface count must match the non-linear product');

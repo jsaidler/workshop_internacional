@@ -68,3 +68,7 @@ Os testes não substituem a inspeção humana: depois da geração, o artefato i
 ### Fidelidade da evidência — 13/10/2026 (#243 em draft)
 
 A matriz de 46 estados tinha 20 fontes PHP e 26 HTML estático. Quatro estados (`course-feedback`, `questions-feedback`, `process-library`, `profile`) passam a usar renderizadores PHP reais e fixtures com estado controlado, resultando em 24 fontes PHP e 22 HTML. O teste de inventário impede retorno desses quatro estados ao HTML legado; o Playwright não injeta CSS sobre eles, exigindo shell de cinco destinos, stylesheet canônico e geometria de rolagem. Os outros estados ainda exigem confronto com renderização operacional; a matriz **não é atestado de homologação integral**.
+
+### Autenticação na auditoria transversal — 13/10/2026 (#243 draft)
+
+Os estados de login, ativação de conta e alteração de senha usam agora a fixture `student-auth-operational.php`, o mesmo renderer de `aluno/login.php` e `aluno/senha.php` e o shell real. Acesso anônimo não possui menu autenticado; alteração de senha logada deve preservar os cinco destinos. Novos testes cobrem erros, validação, campos e responsividade. A matriz mantém 46 superfícies, com **27 fontes PHP e 19 HTML**; as 19 fontes estáticas remanescentes ainda precisam de substituição e inspeção autenticada no ambiente real.

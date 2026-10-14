@@ -2,8 +2,8 @@ const {test,expect}=require('@playwright/test');
 const host='http://127.0.0.1:8099';
 const fixture=p=>host+'/tools/browser-fixture/'+p;
 const screens=[
-  ['login','student-auth-visual-audit.html?screen=login'],
-  ['activation-password','student-auth-visual-audit.html?screen=password'],
+  ['login','student-auth-operational.php?mode=login'],
+  ['activation-password','student-auth-operational.php?mode=activation'],
   ['home','student-home.php?state=active'],
   ['home-feedback','student-home.php?state=feedback'],
   ['home-study','student-home.php?state=study'],
@@ -47,11 +47,12 @@ const screens=[
   ['tools','student-laboratory.php?state=full'],
   ['toolbox','student-toolbox-real-audit.php'],
   ['profile','student-profile.php?mode=view'],
-  ['password-change','student-secondary-screens-audit.html?screen=password-change'],
+  ['password-change','student-auth-operational.php?mode=change'],
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change']);
+const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
   await page.evaluate(async styles=>{
@@ -73,8 +74,19 @@ for(const [device,viewport] of Object.entries(viewports)){
       const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
       await page.setViewportSize(viewport);const response=await page.goto(fixture(path),{waitUntil:'networkidle'});
       expect(response?.status(),`${name}: expected successful PHP fixture rendering`).toBe(200);
-      if(name!=='material'&&!operationalScreens.has(name))await ensureCanonicalShellStyles(page);
+      if(name!=='material'&&!operationalScreens.has(name)&&!anonymousAuthScreens.has(name))await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      if(anonymousAuthScreens.has(name)){
+        const auth=await page.evaluate(()=>({
+          app:document.body.classList.contains('student-app'),
+          shell:!!document.querySelector('.student-shell'),
+          css:[...document.querySelectorAll('link[rel="stylesheet"]')].some(n=>(n.getAttribute('href')||'').split('?')[0]==='/assets/student-app-shell.css'),
+          nav:document.querySelectorAll('.student-mobile-nav a').length
+        }));
+        expect(auth.app&&auth.shell&&auth.css,`${name}: render true anonymous shell`).toBe(true);
+        expect(auth.nav,`${name}: anonymous access cannot expose authenticated nav`).toBe(0);
+        await expect(page.locator('form [name="_csrf"]')).toHaveCount(name==='login'?2:1);
+      }
       if(operationalScreens.has(name)){
         const contract=await page.evaluate(()=>({
           app:document.body.classList.contains('student-app'),
@@ -122,6 +134,9 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='step-editor'){await expect(page.getByText('Nenhuma outra etapa é alterada por isso.',{exact:false})).toBeVisible();await expect(page.getByText('Corrigir a sequência do processo',{exact:false})).toHaveCount(0);await expect(page.getByText('Remover esta etapa',{exact:true})).toBeVisible();}
       if(name==='process-library'){await expect(page.locator('[data-process-saved-card]')).toHaveCount(2);await expect(page.getByRole('link',{name:'Abrir no laboratório'}).first()).toBeVisible();await expect(page.getByRole('button',{name:'Excluir'})).toBeHidden();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
+      if(name==='login'){await expect(page.locator('form input[name="mode"][value="login"]')).toHaveCount(1);await expect(page.locator('form input[name="mode"][value="activate"]')).toHaveCount(1);}
+      if(name==='activation-password'){await expect(page.locator('input[name="privacy_ack"][required]')).toHaveCount(1);await expect(page.getByRole('button',{name:'Ativar conta'})).toBeVisible();}
+      if(name==='password-change'){await expect(page.locator('input[name="primeiro"][value="0"]')).toHaveCount(1);await expect(page.getByRole('button',{name:'Salvar senha'})).toBeVisible();}
       if(name==='profile'){
         await expect(page.locator('[data-student-profile-form]')).toHaveCount(1);
         await expect(page.locator('[data-profile-contact]')).not.toHaveAttribute('open','');
