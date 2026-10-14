@@ -27,6 +27,7 @@ const studentUiFiles=[
   'aluno/preparos.php',
   'aluno/processamentos.php',
   'aluno/teste.php',
+  'app/student_record_workspace_view.php',
   'aluno/teste-compartilhado.php',
   'aluno/teste-etapa.php',
   'app/student_record_auxiliary_views.php',
@@ -64,7 +65,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
   for(const legacy of forbidden)expect(source,`legacy student field label: ${legacy}`).not.toContain(legacy);
 
   const required={
-    'aluno/teste.php':[
+    'app/student_record_workspace_view.php':[
       '>EI<input name="iso_reference"',
       '>Abertura<input name="aperture"',
       '>Tempo sem reciprocidade<input name="calculated_time"',
@@ -129,6 +130,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
     'app/student_profile_view.php':['>Telefone para contato<input name="phone"','>Cidade e UF<input name="city_state"'],
     'app/student_preparation_editor.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
   };
+  expect(read('aluno/teste.php')).toContain('student_record_render_workspace(');
   expect(read('aluno/inventario.php')).toContain('student_inventory_create_panel($createDraft');
   expect(read('aluno/processamentos.php')).toContain("require_once __DIR__.'/../app/student_process_template_step_editor.php'");
   expect(read('aluno/perfil.php')).toContain('student_profile_render($profile,$error,$notice)');
@@ -151,7 +153,8 @@ test('student field controls never rely on an empty visible label',()=>{
    expect(read('app/student_lab_catalog_views.php')).toContain('student_calibration_editor($editing');
   expect(read('app/student_calibration_editor.php')).toContain('aria-label="Anotações da calibração"');
   expect(read('app/student_inventory_create_panel.php')).toContain('aria-label="Anotações do item"');
-  expect(compactMarkup(read('aluno/teste.php'))).toContain('>Anotações<textarea name="notes"');
+  expect(read('aluno/teste.php')).toContain('student_record_render_workspace(');
+  expect(compactMarkup(read('app/student_record_workspace_view.php'))).toContain('>Anotações<textarea name="notes"');
   expect(read('aluno/teste-etapa.php')).toContain('student_record_render_free_step_editor(');
    expect(compactMarkup(read('app/student_record_auxiliary_views.php'))).toContain('>Anotações<textarea name="notes"');
 });
