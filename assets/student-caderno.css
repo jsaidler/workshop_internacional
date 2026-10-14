@@ -304,7 +304,7 @@
   display:none
 }
 .student-app .student-record-section[data-record-workspace-panel]{
-  max-width:860px;min-width:0;margin-top:20px;scroll-margin-top:76px
+  max-width:860px;min-width:0;margin-top:20px;scroll-margin-top:100px
 }
 .student-app .student-record-section[data-record-workspace-panel] .student-workflow-heading{
   display:grid;gap:6px;margin-bottom:17px;padding:0;border:0

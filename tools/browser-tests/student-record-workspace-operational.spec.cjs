@@ -20,6 +20,12 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
    await expect(page.locator('[data-record-workspace-default]')).toHaveAttribute('data-record-workspace-default',chosen);
    await page.locator('[data-record-workspace-nav] a[href="#'+chosen+'"]').click();
    await expect(page.locator('#'+chosen)).toBeVisible();
+   const tabBounds=await page.locator('[data-record-workspace-nav]').boundingBox();
+   const kicker=page.locator('#'+chosen+' .student-workflow-heading .student-kicker').first();
+   await expect(kicker).toBeVisible();
+   const kickerBounds=await kicker.boundingBox();
+   expect(tabBounds&&kickerBounds,'record section navigation geometry must exist').toBeTruthy();
+   expect(kickerBounds.y-(tabBounds.y+tabBounds.height),state+' '+device+' section heading must clear contextual navigation').toBeGreaterThanOrEqual(4);
    if(state==='exposure'){
     await expect(page.locator('#exposicao form input[name="action"][value="save_exposure"]')).toHaveCount(1);
     await expect(page.locator('#exposicao input[name="film"]')).toHaveValue('Fuji Super HR-U');
