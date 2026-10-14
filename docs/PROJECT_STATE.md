@@ -4,6 +4,14 @@ Este é o documento canônico de estado operacional do projeto. Leia antes de al
 
 **Regra global anterior a qualquer trabalho:** ler `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md`. Se existir documentação aplicável à tarefa, ela deve ser descoberta e consultada antes de qualquer decisão ou alteração. Essa obrigação vale para qualquer projeto e não apenas para este repositório.
 
+## Material didático — lista de materiais no encerramento da Aula 1 (13/10/2026)
+
+- Na página CMS `caderno-positivo-direto`, a seção estável `caderno-20-materiais` (“Onde encontrar os materiais”) integra a **Aula 1**, imediatamente antes do divisor da Aula 2.
+- A migração `099_move_handbook_materials_to_aula1.php` desloca o bloco existente sem substituir seu conteúdo editorial e preserva a seção, a página, as aulas seguintes e os atributos de mídia.
+- O vínculo educacional precisa corresponder à Aula 1 nas duas superfícies canônicas: `course_material_sections` e, para instalações legadas, `course_page_sections`; a marcação de liberação da seção no HTML acompanha a mesma aula.
+- `tools/test-handbook-materials-aula1.php` verifica a posição, a preservação dos textos, o vínculo, a separação de rascunho/publicado e a idempotência.
+- O código integrado e seu pacote `production-dist` não alteram a hospedagem sozinhos. Aplicar pelo instalador administrativo e verificar o material na Área do Aluno.
+
 ## Estado em 20/09/2026
 
 - Branch de produção: `wip/form-response-refinement-2026-07-16`.
