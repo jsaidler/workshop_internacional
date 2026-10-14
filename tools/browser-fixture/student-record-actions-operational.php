@@ -21,7 +21,8 @@ if(str_starts_with($mode,'step')){
     $error=$mode==='step-error'?'Não foi possível salvar <dados>.':'';
     $locked=$mode==='step-locked';
     student_shell_start('Editar etapa · Teste EI 400',null,$student);
-    student_record_render_free_step_editor($step,7,1,$locked,$error,'Brewed Caffenol');
+    $draft=$mode==='step-error'?['label'=>'Primeira revelação corrigida','duration'=>'06:20','notes'=>'Rascunho não salvo <teste>']:[];
+    student_record_render_free_step_editor($step,7,1,$locked,$error,'Brewed Caffenol',$draft);
 }else{
     $_SERVER['REQUEST_URI']='/aluno/excluir-teste.php?id=7';
     $record=['id'=>7,'title'=>'Teste EI 400 · FeCl₃'];

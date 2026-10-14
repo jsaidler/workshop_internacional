@@ -14,8 +14,9 @@ record_view_assert(str_contains($editor,'name="action" value="save"')&&str_conta
 record_view_assert(str_contains($editor,'Nenhuma outra etapa é alterada por isso.')&&str_contains($editor,'as movimentações de estoque permanecem'),'free step independence contract lost');
 ob_start();student_record_render_free_step_editor($step,7,1,true,'','Caffenol');$locked=(string)ob_get_clean();
 record_view_assert(!str_contains($locked,'name="action" value="delete"')&&!str_contains($locked,'Salvar alterações')&&str_contains($locked,' disabled'),'reviewed record must be readonly');
-ob_start();student_record_render_free_step_editor($step,7,1,false,'Falha <script>','Caffenol');$error=(string)ob_get_clean();
+ob_start();student_record_render_free_step_editor($step,7,1,false,'Falha <script>','Caffenol',['duration'=>'08:10','notes'=>'Nota não salva <script>']);$error=(string)ob_get_clean();
 record_view_assert(str_contains($error,'role="alert"')&&str_contains($error,'Falha &lt;script&gt;')&&!str_contains($error,'Falha <script>'),'step error must be contextual and escaped');
+record_view_assert(str_contains($error,'value="08:10"')&&str_contains($error,'Nota não salva &lt;script&gt;')&&!str_contains($error,'Nota não salva <script>'),'failed POST must preserve and escape the submitted draft');
 $record=['id'=>7,'title'=>'Teste EI 400 <script>'];
 ob_start();student_record_render_delete_confirmation($record,7,'');$delete=(string)ob_get_clean();
 record_view_assert(str_contains($delete,'Teste EI 400 &lt;script&gt;')&&!str_contains($delete,'Teste EI 400 <script>'),'record title not escaped in destructive confirmation');

@@ -17,6 +17,11 @@ for(const [name,width,height] of [['narrow',320,720],['phone',390,844],['desktop
    if(step){
     await expect(page.locator('.student-step-editor form [name="action"][value="save"]')).toHaveCount(1);
     await expect(page.locator('.student-step-editor form [name="_csrf"]')).toHaveCount(mode==='step-locked'?1:2); 
+    if(mode==='step-error'){
+      await expect(page.locator('.student-step-editor input[name="label"]')).toHaveValue('Primeira revelação corrigida');
+      await expect(page.locator('.student-step-editor input[name="duration"]')).toHaveValue('06:20');
+      await expect(page.locator('.student-step-editor textarea[name="notes"]')).toHaveValue('Rascunho não salvo <teste>');
+    }
     if(mode==='step-locked'){
       await expect(page.locator('input[name="label"]')).toBeDisabled();
       await expect(page.locator('.student-step-danger')).toHaveCount(0);

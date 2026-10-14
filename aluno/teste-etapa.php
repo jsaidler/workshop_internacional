@@ -22,5 +22,5 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
 $step=student_process_step_for_student($db,$testId,$position,$studentId)??$step;$stepName=trim((string)$step['chemical_name'])!==''?(string)$step['chemical_name']:(string)$step['label'];
 require_once __DIR__.'/../app/student_record_auxiliary_views.php';
 student_shell_start('Editar etapa · '.(string)$record['title'],null,$student);
-student_record_render_free_step_editor($step,$testId,$position,$locked,$error,$stepName);
+student_record_render_free_step_editor($step,$testId,$position,$locked,$error,$stepName,$error!==''&&!$locked?$_POST:[]);
 student_shell_end();
