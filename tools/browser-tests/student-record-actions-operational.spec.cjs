@@ -37,8 +37,10 @@ for(const [name,width,height] of [['narrow',320,720],['phone',390,844],['desktop
     await expect(page.getByRole('button',{name:'Excluir registro definitivamente'})).toBeVisible();
     await expect(page.locator('.student-danger-zone form [name="_csrf"]')).toHaveCount(1);
     const destructive=page.locator('.student-danger-zone .button-danger');
+    const themeSurfaces=[];
     for(const theme of ['dark','light']){
       await page.evaluate(next=>document.documentElement.setAttribute('data-theme',next),theme);
+      themeSurfaces.push(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()));
       const colors=await destructive.evaluate(button=>{
         const style=getComputedStyle(button);
         const rgb=value=>{const numbers=(value.match(/[0-9.]+/g)||[]).slice(0,3).map(Number);return value.startsWith('color(srgb')?numbers.map(n=>n*255):numbers;};
@@ -54,6 +56,7 @@ for(const [name,width,height] of [['narrow',320,720],['phone',390,844],['desktop
       expect(sizes.font).toBeGreaterThanOrEqual(12);
       expect(sizes.height).toBeGreaterThanOrEqual(44);
     }
+    expect(new Set(themeSurfaces).size,'the synthetic fixture must actually switch surface tokens for light and dark').toBe(2);
     await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
    }
    if(mode.endsWith('error'))await expect(page.locator('[role="alert"]')).toBeVisible();

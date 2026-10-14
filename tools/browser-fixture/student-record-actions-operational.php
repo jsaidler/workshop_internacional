@@ -10,7 +10,7 @@ function student_account_current(PDO $db): ?array {return ['id'=>1,'name'=>'Alun
 function student_tools_for_student(PDO $db,int $id): array {return [];}
 function cms_design_defaults(): array {return ['colors'=>['bg'=>'#101010']];}
 function cms_design_font_import_css(array $design): string {return '';}
-function cms_design_css(array $design): string {return ':root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#73d2ac;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:"Courier New",monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px}';}
+function cms_design_css(array $design): string {return ':root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#73d2ac;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:"Courier New",monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px}:root[data-theme="light"]{--bg:#f2f2ef;--surface:#fff;--surface-2:#e7e7e2;--text:#0b0c0d;--muted:#5f6264;--line:#bfc1be;--line-strong:#0b0c0d;--focus:#186f4d;--inverse-bg:#0b0c0d;--inverse:#f5f5f1}';}
 $mode=(string)($_GET['mode']??'step');
 $valid=['step','step-error','step-locked','delete','delete-error'];
 if(!in_array($mode,$valid,true)){http_response_code(404);exit;}
