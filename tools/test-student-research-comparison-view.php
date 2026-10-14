@@ -16,7 +16,7 @@ $stepsB=[['label'=>'Primeira revelação','chemical_name'=>'Parodinal','calculat
 $comparison=['a'=>$a,'b'=>$b,'stepsA'=>$stepsA,'stepsB'=>$stepsB,'differences'=>student_research_difference_rows($a,$b,$stepsA,$stepsB),'exposureRows'=>student_research_exposure_rows($a,$b),'resultMediaA'=>[],'resultMediaB'=>[]];
 ob_start();student_research_compare_view($records,$map,[10,11],'',$comparison);$analysis=(string)ob_get_clean();
 check_comparison(str_contains($analysis,'Diferenças registradas')&&str_contains($analysis,'Resultado observado')&&str_contains($analysis,'Conferir exposição e processamento'),'descriptive layers missing');
-check_comparison(str_contains($analysis,'Etapa 1 · Tempo')&&str_contains($analysis,'EI')&&str_contains($analysis,'06:30'),'domain differences not represented');
+check_comparison(str_contains($analysis,'Etapa 1 · Tempo')&&str_contains($analysis,'EI')&&str_contains($analysis,'06:30')&&str_contains($analysis,'student-compare-column-name">Registro A')&&str_contains($analysis,'student-compare-column-name">Registro B'),'domain differences not represented');
 check_comparison(str_contains($analysis,'name="_csrf" value="comparison-synthetic-csrf"')&&str_contains($analysis,'name="action" value="fork"')&&str_contains($analysis,'name="compare_id[]" value="10"'),'continuation POST authority broken');
 check_comparison(str_contains($analysis,'não atribui causa')&&str_contains($analysis,'Processamento e resultado não são copiados como fatos já realizados.'),'comparison falsely implies causal attribution/executed steps');
 ob_start();student_research_compare_view($records,$map,[10,11],'Falha <teste>',$comparison,'Mudar EI <400> & manter tempo',10);$failed=(string)ob_get_clean();

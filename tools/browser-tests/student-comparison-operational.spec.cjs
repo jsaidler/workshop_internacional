@@ -26,6 +26,19 @@ for(const [label,width,height] of [['narrow',320,720],['phone',390,844],['deskto
     await expect(page.getByRole('heading',{name:'Diferenças registradas'})).toBeVisible();
     await expect(page.getByRole('heading',{name:'Leia os resultados lado a lado'})).toBeVisible();
     await expect(page.getByRole('heading',{name:'Conferir exposição e processamento'})).toBeVisible();
+    await expect(page.locator('.student-research-evidence .student-compare-head .student-compare-column-name')).toHaveText(['Registro A','Registro B']);
+    const comparisonLayout=await page.locator('.student-research-evidence .student-compare-head').evaluate(header=>{
+      const columns=getComputedStyle(header).gridTemplateColumns.split(' ').filter(Boolean);
+      const blank=header.querySelector('div');
+      const heading=header.querySelector('h2');
+      return {columns:columns.length,blankHidden:getComputedStyle(blank).display==='none',headingFont:parseFloat(getComputedStyle(heading).fontSize)};
+    });
+    if(width<=560){expect(comparisonLayout.columns).toBe(2);expect(comparisonLayout.blankHidden).toBe(true);}
+    else{expect(comparisonLayout.columns).toBe(3);expect(comparisonLayout.blankHidden).toBe(false);}
+    if(width<=560){
+      const valueFont=await page.locator('.student-research-evidence .student-compare-grid:not(.student-compare-head)>span').first().evaluate(node=>parseFloat(getComputedStyle(node).fontSize));
+      expect(valueFont).toBeGreaterThanOrEqual(12);
+    }
     await expect(page.locator('.student-research-result-card')).toHaveCount(2);
     const next=page.locator('form.student-research-next-form');
     await expect(next.locator('input[name="compare_id[]"]')).toHaveCount(2);
