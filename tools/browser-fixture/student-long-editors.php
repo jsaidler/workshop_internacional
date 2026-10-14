@@ -47,11 +47,11 @@ student_shell_start($title,null,['id'=>1,'name'=>'Aluno']);
 $openEditor=in_array($mode,['create','edit','error'],true);
 $updated=$mode==='updated';
 if($kind==='preparation'){
-    $rows=[['id'=>7,'label'=>$updated?'Registro atualizado':'Registro existente','developer_name'=>'Parodinal','developer_amount'=>10,'water_amount'=>540,'preparation_mode'=>'concentrate','temperature'=>'26 °C','duration'=>'07:00','agitation'=>'leve']];
+    $rows=$mode==='empty'?[]:[['id'=>7,'label'=>$updated?'Registro atualizado':'Registro existente','developer_name'=>'Parodinal','developer_amount'=>10,'water_amount'=>540,'preparation_mode'=>'concentrate','temperature'=>'26 °C','duration'=>'07:00','agitation'=>'leve']];
     $ingredients=$prep?['café'=>'','carbonato'=>'','ascórbico'=>'']:[];
     student_lab_preparations_view($rows,$prep,student_process_developer_catalog(),$ingredients,$error,$openEditor,$updated,$draft);
 }else{
-    $rows=[['id'=>7,'label'=>$updated?'Registro atualizado':'Registro existente','film'=>'Fuji HR-U','developer'=>'Parodinal','preparation'=>'10/550','temperature'=>'26 °C','white_time'=>'03:00']];
+    $rows=$mode==='empty'?[]:[['id'=>7,'label'=>$updated?'Registro atualizado':'Registro existente','film'=>'Fuji HR-U','developer'=>'Parodinal','preparation'=>'10/550','temperature'=>'26 °C','white_time'=>'03:00']];
     student_lab_calibrations_view($rows,$cal,$error,$openEditor,$updated,$draft);
 }
 student_shell_end(); ?>

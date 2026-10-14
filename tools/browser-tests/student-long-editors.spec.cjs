@@ -237,3 +237,33 @@ for(const kind of ['calibration','preparation']){
   }
  });
 }
+
+// Empty library states use the exact same production list renderer, not demo HTML.
+for(const kind of ['preparation','calibration']){
+  for(const width of [320,390,1440]){
+    test(kind+' operational catalog empty state '+width+'px',async({page})=>{
+      await page.setViewportSize({width,height:width===320?720:width===390?844:1000});
+      const response=await page.goto(fixture+'?kind='+kind+'&mode=empty',{waitUntil:'networkidle'});
+      expect(response?.status()).toBe(200);
+      await expect(page.locator('body.student-app .student-shell')).toHaveCount(1);
+      await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
+      if(kind==='preparation'){
+        await expect(page.getByText('Você ainda não salvou nenhuma condição de revelação.')).toBeVisible();
+        await expect(page.getByRole('link',{name:'Criar primeira predefinição'})).toHaveAttribute('href','/aluno/preparos.php?novo=1');
+      }else{
+        await expect(page.getByText('Nenhuma calibração salva.')).toBeVisible();
+        await expect(page.getByRole('link',{name:'Nova referência'})).toHaveAttribute('href','/aluno/calibracao.php?novo=1');
+      }
+      const geometry=await page.evaluate(()=>{
+        const main=document.querySelector('.student-main'),nav=document.querySelector('.student-mobile-nav');
+        return{overflow:main.scrollWidth-main.clientWidth,docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+          gutter:getComputedStyle(main).scrollbarGutter,mainBottom:main.getBoundingClientRect().bottom,navTop:nav.getBoundingClientRect().top};
+      });
+      expect(geometry.overflow).toBeLessThanOrEqual(1);
+      expect(geometry.docOverflow).toBeLessThanOrEqual(1);
+      expect(geometry.gutter).toContain('stable');
+      if(width<821)expect(geometry.mainBottom).toBeLessThanOrEqual(geometry.navTop+1);
+      await page.screenshot({path:'student-visual-audit/lab-catalogs/'+kind+'-empty-'+width+'.png',animations:'disabled'});
+    });
+  }
+}
