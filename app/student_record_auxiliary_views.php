@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /** Only presentation; authentication, ownership, POST/CSRF validation and mutation belong to the original routes. */
-function student_record_render_free_step_editor(array $step, int $testId, int $position, bool $locked, string $error): void {
+function student_record_render_free_step_editor(array $step, int $testId, int $position, bool $locked, string $error, string $stepName): void {
 ?>
 <header class="student-record-header student-step-editor-header"><div class="student-record-context"><a class="student-back" href="/aluno/teste.php?id=<?=$testId?>#processamento">← Processamento</a><span class="student-status">Etapa <?=str_pad((string)$position,2,'0',STR_PAD_LEFT)?></span></div><p class="student-kicker">Caderno</p><h1 class="student-title student-title-record"><?=h($stepName)?></h1><p class="student-lead">Corrija os dados desta etapa. Nenhuma outra etapa é alterada por isso.</p></header>
 <?php if($error!==''):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
