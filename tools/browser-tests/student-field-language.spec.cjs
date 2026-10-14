@@ -10,6 +10,7 @@ const studentUiFiles=[
   'app/student_notebook_view.php',
   'aluno/calibracao.php',
   'app/student_calibration_editor.php',
+  'app/student_lab_catalog_views.php',
   'app/student_preparation_editor.php',
   'aluno/comparar-processos.php',
   'aluno/duvidas.php',
@@ -145,7 +146,8 @@ test('student field controls never rely on an empty visible label',()=>{
       expect(match[1],`${file} has a form control with no visible label and no accessible name`).toMatch(/\baria-label=/);
     }
   }
-  expect(read('aluno/calibracao.php')).toContain('student_calibration_editor($editing');
+  expect(read('aluno/calibracao.php')).toContain('student_lab_calibrations_view(');
+   expect(read('app/student_lab_catalog_views.php')).toContain('student_calibration_editor($editing');
   expect(read('app/student_calibration_editor.php')).toContain('aria-label="Anotações da calibração"');
   expect(read('app/student_inventory_create_panel.php')).toContain('aria-label="Anotações do item"');
   expect(compactMarkup(read('aluno/teste.php'))).toContain('>Anotações<textarea name="notes"');
