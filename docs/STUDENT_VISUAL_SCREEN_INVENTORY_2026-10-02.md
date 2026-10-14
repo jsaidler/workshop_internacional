@@ -64,3 +64,7 @@ A cobertura de anotações do material inclui o estado com **Transformar em dúv
 O pacote de screenshots usado pelo material da Aula 3 deve ser regenerado a partir dessas superfícies sempre que a apresentação canônica do Caderno mudar. Na revisão não linear, o pacote foi atualizado depois de o audit visual passar.
 
 Os testes não substituem a inspeção humana: depois da geração, o artefato inteiro deve ser aberto e observado. Qualquer problema encontrado bloqueia merge até correção e reinspeção.
+
+### Fidelidade da evidência — 13/10/2026 (#243 em draft)
+
+A matriz de 46 estados tinha 20 fontes PHP e 26 HTML estático. Quatro estados (`course-feedback`, `questions-feedback`, `process-library`, `profile`) passam a usar renderizadores PHP reais e fixtures com estado controlado, resultando em 24 fontes PHP e 22 HTML. O teste de inventário impede retorno desses quatro estados ao HTML legado; o Playwright não injeta CSS sobre eles, exigindo shell de cinco destinos, stylesheet canônico e geometria de rolagem. Os outros estados ainda exigem confronto com renderização operacional; a matriz **não é atestado de homologação integral**.

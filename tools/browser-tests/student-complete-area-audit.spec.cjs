@@ -10,11 +10,11 @@ const screens=[
   ['home-multiple','student-home.php?state=multiple'],
   ['course-list','student-courses.php?state=multiple'],
   ['course-detail','student-courses.php?state=detail'],
-  ['course-feedback','student-pedagogical-feedback-audit.html?screen=course-feedback'],
+  ['course-feedback','student-courses.php?state=attention'],
   ['course-empty','student-courses.php?state=no-material'],
   ['material','student-material-context.html'],
   ['questions-list','student-questions-operational.php?state=list'],
-  ['questions-feedback','student-pedagogical-feedback-audit.html?screen=questions-feedback'],
+  ['questions-feedback','student-questions-operational.php?state=evaluations'],
   ['question-new','student-questions-operational.php?state=failed-create'],
   ['question-thread','student-questions-operational.php?state=thread&id=1'],
   ['notebook','student-notebook.php?state=mixed'],
@@ -33,7 +33,7 @@ const screens=[
   ['compare-select','student-notebook-compare.html?screen=select'],
   ['compare-records','student-notebook-compare.html?screen=analysis'],
   ['research-derived','student-notebook-compare.html?screen=derived'],
-  ['process-library','student-process-product-audit.html?screen=library'],
+  ['process-library','student-process-saved-cards.php?mode=library'],
   ['process-editor','student-process-product-audit.html?screen=editor'],
   ['lab-runner','student-process-execution-state-audit.html?state=idle'],
   ['inventory','student-inventory-movement.php?mode=inventory'],
@@ -46,10 +46,12 @@ const screens=[
   ['calibration-editor','student-long-editors.php?kind=calibration&mode=edit'],
   ['tools','student-laboratory.php?state=full'],
   ['toolbox','student-toolbox-real-audit.php'],
-  ['profile','student-secondary-screens-audit.html?screen=profile'],
+  ['profile','student-profile.php?mode=view'],
   ['password-change','student-secondary-screens-audit.html?screen=password-change'],
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
+// Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
   await page.evaluate(async styles=>{
@@ -71,8 +73,20 @@ for(const [device,viewport] of Object.entries(viewports)){
       const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
       await page.setViewportSize(viewport);const response=await page.goto(fixture(path),{waitUntil:'networkidle'});
       expect(response?.status(),`${name}: expected successful PHP fixture rendering`).toBe(200);
-      if(name!=='material')await ensureCanonicalShellStyles(page);
+      if(name!=='material'&&!operationalScreens.has(name))await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      if(operationalScreens.has(name)){
+        const contract=await page.evaluate(()=>({
+          app:document.body.classList.contains('student-app'),
+          shell:!!document.querySelector('.student-shell'),
+          shellCss:[...document.querySelectorAll('link[rel="stylesheet"]')].some(n=>(n.getAttribute('href')||'').split('?')[0]==='/assets/student-app-shell.css'),
+          links:[...document.querySelectorAll('.student-mobile-nav a')].map(a=>a.getAttribute('href')),
+          scrollGutter:document.querySelector('.student-main')?getComputedStyle(document.querySelector('.student-main')).scrollbarGutter:''
+        }));
+        expect(contract.app&&contract.shell&&contract.shellCss,`${name}: must use operational student shell and its stylesheet`).toBe(true);
+        expect(contract.links,`${name}: global navigation destinations`).toEqual(['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php']);
+        expect(contract.scrollGutter,`${name}: real shell reserves scroll track`).toContain('stable');
+      }
       if(name==='inventory-movement'){await page.getByRole('button',{name:'Movimentar estoque'}).click();}
       if(name==='new-record'||name==='toolbox'){
         const selector=name==='new-record'?'.student-create-dialog':'.student-toolbox';
@@ -80,7 +94,7 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='home-feedback'){await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();await expect(page.getByRole('link',{name:/Ler retorno e revisar/})).toBeVisible();}
       if(name==='course-feedback'){await expect(page.getByText('Há algo para retomar',{exact:true})).toBeVisible();await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();}
-      if(name==='questions-feedback'){await expect(page.getByText('Conversas de avaliação',{exact:true})).toBeVisible();await expect(page.getByText('Dúvidas da turma',{exact:true})).toBeVisible();}
+      if(name==='questions-feedback'){await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();await expect(page.getByRole('heading',{name:'Dúvidas da turma e do curso'})).toBeVisible();}
       if(name==='questions-list')await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
       if(name==='question-new'){await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();await expect(page.locator('[data-question-new-panel] form')).toBeVisible();}
       if(name==='question-thread'){await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();await expect(page.locator('[data-student-local-key="question-thread"] form textarea[name="body"]')).toBeVisible();}
@@ -107,7 +121,12 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);await expect(page.getByText('Completar registro',{exact:false})).toHaveCount(0);
       }
       if(name==='step-editor'){await expect(page.getByText('Nenhuma outra etapa é alterada por isso.',{exact:false})).toBeVisible();await expect(page.getByText('Corrigir a sequência do processo',{exact:false})).toHaveCount(0);await expect(page.getByText('Remover esta etapa',{exact:true})).toBeVisible();}
-      if(name==='process-library'){await expect(page.locator('.student-process-standard-card')).toHaveCount(6);await expect(page.getByText('Abrir no laboratório',{exact:true}).first()).toBeVisible();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
+      if(name==='process-library'){await expect(page.locator('[data-process-saved-card]')).toHaveCount(2);await expect(page.getByRole('link',{name:'Abrir no laboratório'}).first()).toBeVisible();await expect(page.getByRole('button',{name:'Excluir'})).toBeHidden();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
+      if(name==='profile'){
+        await expect(page.locator('[data-student-profile-form]')).toHaveCount(1);
+        await expect(page.locator('[data-profile-contact]')).not.toHaveAttribute('open','');
+        await expect(page.locator('[data-profile-address]')).not.toHaveAttribute('open','');
+      }
       if(name==='process-editor'){await expect(page.locator('.student-process-step-card')).toHaveCount(9);await expect(page.getByText('Abrir no laboratório',{exact:true})).toBeVisible();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
       if(name==='lab-runner'){
         await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar como concluída',exact:true})).toBeVisible();await expect(page.getByText('Ir para próxima etapa',{exact:false})).toHaveCount(0);
