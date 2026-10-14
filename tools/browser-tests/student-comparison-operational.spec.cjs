@@ -37,7 +37,7 @@ for(const [label,width,height] of [['narrow',320,720],['phone',390,844],['deskto
       await expect(page.locator('.student-research-difference-row')).toHaveCount(0);
     }else{
       await expect(page.locator('.student-research-difference-row').first()).toBeVisible();
-      await expect(page.locator('.student-research-difference-row')).toContainText(['']);
+      await expect(page.getByText('Etapa 1 · Tempo',{exact:true})).toBeVisible();
     }
     if(mode==='error'){
       await expect(page.locator('[role=alert]')).toContainText('Não foi possível criar variação');
