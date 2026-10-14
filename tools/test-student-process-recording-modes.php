@@ -4,7 +4,7 @@ function fail_process_recording(string $message): never {fwrite(STDERR,"student-
 function must_process_recording(bool $ok,string $message): void {if(!$ok)fail_process_recording($message);}
 $root=dirname(__DIR__);
 $legacyMigration=(string)file_get_contents($root.'/migrations/080_student_process_recording_modes.php');$legacyDomain=(string)file_get_contents($root.'/app/student_process_recording.php');$legacyPage=(string)file_get_contents($root.'/aluno/processamento-realizado.php');
-$record=(string)file_get_contents($root.'/aluno/teste.php');$runner=(string)file_get_contents($root.'/aluno/processar.php');$notebookDomain=(string)file_get_contents($root.'/app/student_process_notebook.php');$doc=(string)file_get_contents($root.'/docs/STUDENT_CADERNO_PRODUCT_UX_TRANCHE_B_2026-10-01.md');
+$record=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');$runner=(string)file_get_contents($root.'/aluno/processar.php');$notebookDomain=(string)file_get_contents($root.'/app/student_process_notebook.php');$doc=(string)file_get_contents($root.'/docs/STUDENT_CADERNO_PRODUCT_UX_TRANCHE_B_2026-10-01.md');
 
 // Migração e serviço antigos permanecem somente para compatibilidade de dados já existentes.
 must_process_recording(str_contains($legacyMigration,'student_process_recording_meta'),'legacy recording metadata migration disappeared');
