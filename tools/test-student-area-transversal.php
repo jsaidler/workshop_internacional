@@ -4,7 +4,7 @@ function fail_student_area_transversal(string $message): never {fwrite(STDERR,"s
 $root=dirname(__DIR__);
 $bootstrap=(string)file_get_contents($root.'/app/bootstrap.php');
 $mobile=(string)file_get_contents($root.'/app/student_test_mobile.php');
-$test=(string)file_get_contents($root.'/aluno/teste.php');
+$test=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');
 $shared=(string)file_get_contents($root.'/aluno/teste-compartilhado.php');
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
 
