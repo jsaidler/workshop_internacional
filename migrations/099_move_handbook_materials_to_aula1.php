@@ -75,7 +75,7 @@ return static function(PDO $db): void {
         $chapterOffset=(int)$chapter[0][1];
 
         // The section immediately precedes Aula 2, and thus closes Aula 1.
-        $updated=substr_replace($remaining,$material."\n\n",$chapterOffset,0);
+        $updated=rtrim(substr($remaining,0,$chapterOffset))."\n\n".$material."\n\n".ltrim(substr($remaining,$chapterOffset));
         if($updated===$html)return null;
         $doc['html']=$updated;
         return json_encode($doc,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
