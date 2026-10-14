@@ -19,8 +19,9 @@ $routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
 $processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
 $processRunner=(string)file_get_contents($root.'/aluno/processar.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
-$login=(string)file_get_contents($root.'/aluno/login.php');
-$password=(string)file_get_contents($root.'/aluno/senha.php');
+$authView=(string)file_get_contents($root.'/app/student_auth_view.php');
+$login=(string)file_get_contents($root.'/aluno/login.php').$authView;
+$password=(string)file_get_contents($root.'/aluno/senha.php').$authView;
 $profile=(string)file_get_contents($root.'/aluno/perfil.php').(string)file_get_contents($root.'/app/student_profile_view.php');
 
 must_student_premium_ui(!str_contains($shell,'data-theme="light"'),'student shell still hardcodes the light theme');
