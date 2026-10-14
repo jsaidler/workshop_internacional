@@ -27,9 +27,9 @@ const screens=[
   ['result-waiting','student-pedagogical-feedback-audit.html?screen=result-waiting'],
   ['result-revision','student-pedagogical-feedback-audit.html?screen=result-revision'],
   ['result-reviewed','student-pedagogical-feedback-audit.html?screen=result-reviewed'],
-  ['step-editor','student-secondary-screens-audit.html?screen=step-editor'],
+  ['step-editor','student-record-actions-operational.php?mode=step'],
   ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
-  ['delete-record','student-secondary-screens-audit.html?screen=delete-record'],
+  ['delete-record','student-record-actions-operational.php?mode=delete'],
   ['compare-select','student-notebook-compare.html?screen=select'],
   ['compare-records','student-notebook-compare.html?screen=analysis'],
   ['research-derived','student-notebook-compare.html?screen=derived'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -145,7 +145,22 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name==='process-partial'){
         await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);await expect(page.getByText('Completar registro',{exact:false})).toHaveCount(0);
       }
-      if(name==='step-editor'){await expect(page.getByText('Nenhuma outra etapa é alterada por isso.',{exact:false})).toBeVisible();await expect(page.getByText('Corrigir a sequência do processo',{exact:false})).toHaveCount(0);await expect(page.getByText('Remover esta etapa',{exact:true})).toBeVisible();}
+      if(name==='step-editor'){
+        await expect(page.getByText('Nenhuma outra etapa é alterada por isso.',{exact:false})).toBeVisible();
+        await expect(page.getByText('Corrigir a sequência do processo',{exact:false})).toHaveCount(0);
+        await expect(page.getByText('Remover esta etapa',{exact:true})).toBeVisible();
+        await expect(page.locator('.student-step-editor form [name="_csrf"]')).toHaveCount(2);
+        await expect(page.locator('.student-step-editor form [name="action"][value="save"]')).toHaveCount(1);
+        await expect(page.locator('.student-step-editor form [name="action"][value="delete"]')).toHaveCount(1);
+        await expect(page.locator('.student-step-editor form [name="registro"][value="7"]')).toHaveCount(2);
+        await expect(page.locator('a.student-back')).toHaveAttribute('href','/aluno/teste.php?id=7#processamento');
+      }
+      if(name==='delete-record'){
+        await expect(page.locator('.student-danger-zone form [name="_csrf"]')).toHaveCount(1);
+        await expect(page.locator('.student-danger-zone form [name="id"][value="7"]')).toHaveCount(1);
+        await expect(page.getByRole('button',{name:'Excluir registro definitivamente'})).toBeVisible();
+        await expect(page.locator('a.student-back')).toHaveAttribute('href','/aluno/teste.php?id=7');
+      }
       if(name==='process-library'){await expect(page.locator('[data-process-saved-card]')).toHaveCount(2);await expect(page.getByRole('link',{name:'Abrir no laboratório'}).first()).toBeVisible();await expect(page.getByRole('button',{name:'Excluir'})).toBeHidden();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
       if(name==='login'){await expect(page.locator('form input[name="mode"][value="login"]')).toHaveCount(1);await expect(page.locator('form input[name="mode"][value="activate"]')).toHaveCount(1);}
       if(name==='activation-password'){await expect(page.locator('input[name="privacy_ack"][required]')).toHaveCount(1);await expect(page.getByRole('button',{name:'Ativar conta'})).toBeVisible();}

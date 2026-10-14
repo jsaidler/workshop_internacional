@@ -1,0 +1,45 @@
+const {test,expect}=require('@playwright/test');
+const base='http://127.0.0.1:8099/tools/browser-fixture/student-record-actions-operational.php';
+const nav=['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php'];
+for(const [name,width,height] of [['narrow',320,720],['phone',390,844],['desktop',1440,1000]]){
+ for(const mode of ['step','delete','step-locked','step-error','delete-error']){
+  test(name+' canonical record action '+mode,async({page})=>{
+   await page.setViewportSize({width,height});
+   const errors=[];page.on('pageerror',error=>errors.push(error.message));
+   const response=await page.goto(base+'?mode='+mode,{waitUntil:'networkidle'});
+   expect(response?.status()).toBe(200);
+   await expect(page.locator('body.student-app .student-shell')).toHaveCount(1);
+   const links=await page.locator('.student-mobile-nav a').evaluateAll(all=>all.map(a=>a.getAttribute('href')));
+   expect(links).toEqual(nav);
+   await expect(page.locator('.student-mobile-nav a[aria-current="page"]')).toHaveAttribute('href','/aluno/caderno.php');
+   const step=mode.startsWith('step');
+   await expect(page.locator('.student-appbar a.student-back, .student-record-context a.student-back')).toHaveAttribute('href',step?'/aluno/teste.php?id=7#processamento':'/aluno/teste.php?id=7');
+   if(step){
+    await expect(page.locator('.student-step-editor form [name="action"][value="save"]')).toHaveCount(1);
+    await expect(page.locator('.student-step-editor form [name="_csrf"]')).toHaveCount(mode==='step-locked'?1:2); 
+    if(mode==='step-locked'){
+      await expect(page.locator('input[name="label"]')).toBeDisabled();
+      await expect(page.locator('.student-step-danger')).toHaveCount(0);
+      await expect(page.getByRole('button',{name:'Salvar alterações'})).toHaveCount(0);
+    }else{
+      await expect(page.getByRole('button',{name:'Salvar alterações'})).toBeVisible();
+      await expect(page.locator('.student-step-danger')).toHaveCount(1);
+      await page.locator('.student-step-danger summary').click();
+      await expect(page.locator('.student-step-danger form [name="action"][value="delete"]')).toHaveCount(1);
+      await expect(page.locator('.student-step-danger button')).toBeVisible();
+    }
+   }else{
+    await expect(page.getByRole('button',{name:'Excluir registro definitivamente'})).toBeVisible();
+    await expect(page.locator('.student-danger-zone form [name="_csrf"]')).toHaveCount(1);
+   }
+   if(mode.endsWith('error'))await expect(page.locator('[role="alert"]')).toBeVisible();
+   const geom=await page.evaluate(()=>{const main=document.querySelector('.student-main'),n=document.querySelector('.student-mobile-nav');return{gutter:getComputedStyle(main).scrollbarGutter,overflow:main.scrollWidth-main.clientWidth,docOverflow:document.documentElement.scrollWidth-innerWidth,mainBottom:main.getBoundingClientRect().bottom,navTop:n.getBoundingClientRect().top};});
+   expect(geom.gutter).toContain('stable');
+   expect(geom.overflow).toBeLessThanOrEqual(1);
+   expect(geom.docOverflow).toBeLessThanOrEqual(1);
+   if(width<821)expect(geom.mainBottom).toBeLessThanOrEqual(geom.navTop+1);
+   await page.screenshot({path:'student-visual-audit/record-actions/'+name+'-'+mode+'.png',animations:'disabled'});
+   expect(errors).toEqual([]);
+  });
+ }
+}
