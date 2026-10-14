@@ -8,7 +8,7 @@ function student_test_message_date(string $date): string{return '14/10/2026';}
 define('STUDENT_TEST_MEDIA_MAX_FILES',6);
 require __DIR__.'/../app/student_record_media_controls.php';
 require __DIR__.'/../app/student_record_workspace_navigation.php';
-require __DIR__.'/../app/student_workbench.php';
+require __DIR__.'/../app/student_process_stage_catalog.php';
 require __DIR__.'/../app/student_experience.php';
 require __DIR__.'/../app/student_record_workspace_view.php';
 $record=['id'=>7,'title'=>'Teste <script>','status'=>'draft','context_scope'=>'personal','public_title'=>'','cohort_title'=>'','test_date'=>'2026-10-11','film'=>'Fuji HR-U','lot'=>'L1','iso_reference'=>'200','aperture'=>'f/64','calculated_time'=>'04 s','reciprocity_time'=>'07 s','light_condition'=>'Luz <teste>','tonal_range'=>'sombras agrupadas','notes'=>'Notas <teste>'];

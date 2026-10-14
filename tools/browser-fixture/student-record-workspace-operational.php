@@ -5,7 +5,7 @@ require_once __DIR__.'/../../app/student_shell.php';
 require_once __DIR__.'/../../app/student_record_media_controls.php';
 require_once __DIR__.'/../../app/student_record_workspace_navigation.php';
 require_once __DIR__.'/../../app/student_record_workspace_view.php';
-require_once __DIR__.'/../../app/student_workbench.php';
+require_once __DIR__.'/../../app/student_process_stage_catalog.php';
 require_once __DIR__.'/../../app/student_experience.php';
 if(!defined('STUDENT_TEST_MEDIA_MAX_FILES'))define('STUDENT_TEST_MEDIA_MAX_FILES',6);
 function h(mixed $v): string {return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
