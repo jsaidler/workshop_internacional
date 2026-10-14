@@ -45,4 +45,6 @@ ob_start();student_record_render_workspace($data);$revision=(string)ob_get_clean
 record_workspace_assert(str_contains($revision,'>Enviar revisão para avaliação</button>'),'revision submit path is missing');
 $route=(string)file_get_contents(__DIR__.'/../aluno/teste.php');
 record_workspace_assert(str_contains($route,'student_record_render_workspace(compact(')&&str_contains($route,'student_test_for_student(')&&str_contains($route,"verify_csrf('student-process-'")&&str_contains($route,"student_process_notebook_set_completed("),'route must own authorization, POST and processing facts');
+$css=(string)file_get_contents(__DIR__.'/../assets/student-caderno.css');
+record_workspace_assert(str_contains($css,'.student-notebook-route-step-actions .button.button-compact')&&str_contains($css,'min-height:44px')&&str_contains($css,'font-size:12px'),'three step actions need readable shared 12px / 44px controls');
 echo "student-record-workspace-view: ok\n";

@@ -47,6 +47,17 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
     await expect(first.getByRole('link',{name:'Editar'})).toHaveAttribute('href','/aluno/teste.php?id=7&edit_plan_step=21#processamento');
     await expect(first.getByRole('link',{name:'Timer'})).toHaveAttribute('href','/aluno/processar.php?test=7&step=21');
     await expect(page.locator('#processamento details.student-notebook-route-add')).not.toHaveAttribute('open','');
+    const controls=await first.locator('.student-notebook-route-step-actions .button').evaluateAll(nodes=>nodes.map(el=>{
+      const css=getComputedStyle(el),box=el.getBoundingClientRect();
+      return{label:el.textContent.trim(),font:parseFloat(css.fontSize),height:box.height,width:box.width,scroll:el.scrollWidth,visible:box.width>0};
+    }));
+    expect(controls).toHaveLength(3);
+    for(const c of controls){
+      expect(c.font,state+' '+device+' '+c.label+' readable action').toBeGreaterThanOrEqual(12);
+      expect(c.height,state+' '+device+' '+c.label+' touch target').toBeGreaterThanOrEqual(44);
+      expect(c.width,state+' '+device+' '+c.label+' usable width').toBeGreaterThanOrEqual(62);
+      expect(c.scroll-c.width,state+' '+device+' '+c.label+' no clipped text').toBeLessThanOrEqual(1);
+    }
     if(state==='process-plan-edit'){
       const editor=page.locator('#processamento .student-notebook-route-editor');
       await expect(editor).toHaveCount(1);
