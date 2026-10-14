@@ -34,5 +34,5 @@ if(count($ids)===2){
 }
 $_SERVER['REQUEST_URI']='/aluno/comparar-processos.php';
 student_shell_start('Comparar experimentações',null,['id'=>1,'name'=>'Aluno de teste']);
-student_research_compare_view($records,$map,$ids,$mode==='error'?'Não foi possível criar variação <teste>.':'',$comparison);
+student_research_compare_view($records,$map,$ids,$mode==='error'?'Não foi possível criar variação <teste>.':'',$comparison,$mode==='error'?'Testar EI <400> sem alterar o tempo.':'',$mode==='error'?10:0);
 student_shell_end();

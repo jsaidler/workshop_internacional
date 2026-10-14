@@ -31,7 +31,15 @@ if(count($allRecords)>=2&&count($ids)===2){
     'resultMediaB'=>student_test_media_by_phase(student_test_media($db,(int)$b['id']),'result'),
   ];
 }
+$intentDraft='';$baseDraft=0;
+if($error!==''&&($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+  if(is_scalar($_POST['research_intent']??null))$intentDraft=(string)$_POST['research_intent'];
+  if(is_scalar($_POST['source_test_id']??null)){
+    $candidate=(int)$_POST['source_test_id'];
+    if(in_array($candidate,$ids,true))$baseDraft=$candidate;
+  }
+}
 require_once __DIR__.'/../app/student_research_comparison_view.php';
 student_shell_start('Comparar experimentações',null,$student);
-student_research_compare_view($allRecords,$recordMap,$ids,$error,$comparison);
+student_research_compare_view($allRecords,$recordMap,$ids,$error,$comparison,$intentDraft,$baseDraft);
 student_shell_end();
