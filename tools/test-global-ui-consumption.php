@@ -57,6 +57,10 @@ foreach($requiredConsumers as $file=>$needles){
         $source.=(string)file_get_contents($root.'/app/student_profile_view.php');
         must_global_ui(str_contains($source,'student_profile_render($profile,$error,$notice)'),'account must share the canonical profile renderer');
     }
+    if($file==='teste.php'){
+        $source.=(string)file_get_contents($root.'/app/student_record_workspace_view.php');
+        must_global_ui(str_contains($source,'student_record_render_workspace(compact('),$file.' must share the canonical 3-part record workspace');
+    }
     if($file==='caderno.php'){
         $source.=(string)file_get_contents($root.'/app/student_notebook_view.php');
         must_global_ui(str_contains($source,'student_record_create_dialog('),'notebook must include the canonical creation form');

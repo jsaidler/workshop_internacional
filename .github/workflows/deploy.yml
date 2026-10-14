@@ -57,6 +57,7 @@ jobs:
           php tools/test-student-auth-view.php
           php tools/test-student-record-auxiliary-views.php
           php tools/test-student-record-workspace-view.php
+          php -d display_errors=stderr tools/browser-fixture/student-record-workspace-operational.php >/dev/null
           php tools/test-student-research-comparison-view.php
           php tools/test-student-profile-view.php
           php tools/test-student-process-saved-card.php
