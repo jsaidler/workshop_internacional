@@ -4,7 +4,7 @@ function fail_student_lab_stock_product_ux(string $message): never {fwrite(STDER
 function must_student_lab_stock_product_ux(bool $ok,string $message): void {if(!$ok)fail_student_lab_stock_product_ux($message);}
 $root=dirname(__DIR__);
 $inventory=(string)file_get_contents($root.'/aluno/inventario.php');
-$preparations=(string)file_get_contents($root.'/aluno/preparos.php');
+$preparations=(string)file_get_contents($root.'/aluno/preparos.php').(string)file_get_contents($root.'/app/student_lab_catalog_views.php');
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $css=(string)file_get_contents($root.'/assets/student-lab-stock.css');
 $doc=(string)file_get_contents($root.'/docs/STUDENT_INVENTORY_PREPARATIONS_PRODUCT_UX_TRANCHE_C_2026-10-01.md');

@@ -42,7 +42,9 @@ ob_start();student_calibration_editor(null,'Falha','token',['label'=>'Calibra√ß√
 check_long_editor(str_contains($newCal,'action="/aluno/calibracao.php?novo=1"')&&str_contains($newCal,'value="05:00"'),'new calibration failed values missing');
 foreach(['aluno/preparos.php','aluno/calibracao.php'] as $p){
  $route=(string)file_get_contents(dirname(__DIR__).'/'.$p);
- check_long_editor(str_contains($route,'if($openEditor)')&&str_contains($route,'student_shell_end()'),'standalone route did not separate editor and list');
+ $routeView=$route.(string)file_get_contents(dirname(__DIR__).'/app/student_lab_catalog_views.php');
+ check_long_editor(str_contains($route,'student_lab_')&&str_contains($route,'student_shell_end()'),'standalone route must delegate its editor and list to operational catalog view');
+ check_long_editor(str_contains($routeView,'if($openEditor)')&&str_contains($routeView,'student_shell_end()'),'standalone route did not separate editor and list');
  check_long_editor(str_contains($route,'data-student-editor-dialog'),'desktop contextual dialog absent');
  check_long_editor(str_contains($route,'student-back'),'contextual parent return missing');
 }
