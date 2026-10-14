@@ -21,8 +21,8 @@ const screens=[
   ['new-record','student-record-create-sheet.php'],
   ['exposure','student-record-workspace-operational.php?state=exposure'],
   ['process-choice','student-record-workspace-operational.php?state=process-choice'],
-  ['process-plan','student-caderno-product-audit.html?screen=record-plan'],
-  ['process-partial','student-caderno-product-audit.html?screen=record-partial'],
+  ['process-plan','student-record-workspace-operational.php?state=process-plan'],
+  ['process-partial','student-record-workspace-operational.php?state=process-partial'],
   ['result','student-record-workspace-operational.php?state=result'],
   ['result-waiting','student-record-workspace-operational.php?state=result-waiting'],
   ['result-revision','student-record-workspace-operational.php?state=result-revision'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -141,9 +141,14 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='process-plan'){
         await expect(page.getByText('0 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.locator('.student-notebook-route-step')).toHaveCount(9);await expect(page.getByText('Abrir roteiro',{exact:true})).toBeVisible();await expect(page.getByText('Trocar roteiro-base',{exact:true})).toBeVisible();await expect(page.getByText('Editar',{exact:true}).first()).toBeVisible();await expect(page.getByText('Timer',{exact:true}).first()).toBeVisible();await expect(page.getByText('Abrir laboratório',{exact:false})).toHaveCount(0);
+        await expect(page.locator('#processamento [name="action"][value="toggle_plan_step"]')).toHaveCount(9);
+        await expect(page.locator('#processamento .student-notebook-route-step-actions a[href^="/aluno/processar.php?test=7"]')).toHaveCount(9);
       }
       if(name==='process-partial'){
         await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);await expect(page.getByText('Completar registro',{exact:false})).toHaveCount(0);
+        await expect(page.locator('#processamento .student-notebook-route-step.is-done')).toHaveCount(5);
+        await expect(page.locator('#processamento .student-notebook-route-step.is-done:nth-child(2)')).toHaveCount(0);
+        await expect(page.locator('#processamento .student-notebook-route-step.is-done:nth-child(3)')).toHaveCount(1);
       }
       if(name==='step-editor'){
         await expect(page.getByText('Nenhuma outra etapa é alterada por isso.',{exact:false})).toBeVisible();
