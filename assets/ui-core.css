@@ -41,8 +41,8 @@
 .check-field .form-field-error{flex-basis:100%}
 
 .button-compact{min-height:40px;padding:0 13px;font-size:9px}
-.button-danger{color:#8b2727;border-color:#8b2727;background:transparent}
-.button-danger:hover{color:var(--inverse);background:#8b2727;border-color:#8b2727}
+.button-danger{color:var(--text);border-color:#bf6363;background:color-mix(in srgb,#8b2727 10%,var(--surface))}
+.button-danger:hover{color:#fff;background:#922c2c;border-color:#922c2c}
 button.button:disabled,.button[aria-disabled=true]{opacity:.48;cursor:not-allowed}
 
 .ui-alert{margin:24px 0 0;padding:15px 18px;background:var(--surface);color:var(--text);font-size:14px;line-height:1.5;border:1px solid var(--line)}

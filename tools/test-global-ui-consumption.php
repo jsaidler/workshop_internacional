@@ -23,6 +23,8 @@ foreach(['.student-step-nav','.student-workflow-panel','.student-home-grid','.st
 foreach(['.form-field','.form-field-error','.choice-field','.choice-option','.check-field','.ui-alert','.button-danger'] as $primitive)must_global_ui(str_contains($uiCss,$primitive),'global stylesheet missing '.$primitive);
 foreach(['workshop-theme','form[data-ui-validate]','dataset.uiMatch','aria-describedby','scrollIntoView'] as $behavior)must_global_ui(str_contains($uiJs,$behavior),'global UI runtime missing '.$behavior);
 
+must_global_ui(str_contains($uiCss,'.button-danger{color:var(--text)')&&str_contains($uiCss,'.button-danger:hover{color:#fff')&&!str_contains($uiCss,'.button-danger{color:#8b2727'),'global destructive button must keep accessible text colors in dark and light themes');
+
 must_global_ui(str_contains($pageJs,"import(`/assets/ui-core.js")&&!str_contains($pageJs,"localStorage.setItem('workshop-theme'"),'template runtime does not delegate theme to ui-core');
 must_global_ui(str_contains($publicJs,"import(`/assets/ui-core.js")&&!str_contains($publicJs,'function applyTheme(')&&!str_contains($publicJs,"localStorage.setItem('workshop-theme'"),'public runtime does not delegate theme to ui-core');
 

@@ -31,6 +31,22 @@ for(const [name,width,height] of [['narrow',320,720],['phone',390,844],['desktop
    }else{
     await expect(page.getByRole('button',{name:'Excluir registro definitivamente'})).toBeVisible();
     await expect(page.locator('.student-danger-zone form [name="_csrf"]')).toHaveCount(1);
+    const destructive=page.locator('.student-danger-zone .button-danger');
+    for(const theme of ['dark','light']){
+      await page.evaluate(next=>document.documentElement.setAttribute('data-theme',next),theme);
+      const colors=await destructive.evaluate(button=>{
+        const style=getComputedStyle(button);
+        const rgb=value=>(value.match(/[\\d.]+/g)||[]).slice(0,3).map(Number);
+        const luminance=value=>{
+          const channels=rgb(value).map(n=>n/255).map(c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4));
+          return .2126*channels[0]+.7152*channels[1]+.0722*channels[2];
+        };
+        const a=luminance(style.color),b=luminance(style.backgroundColor);
+        return{contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),foreground:style.color,background:style.backgroundColor};
+      });
+      expect(colors.contrast,`${name} ${mode} ${theme}: destructive CTA must meet WCAG AA text contrast`).toBeGreaterThanOrEqual(4.5);
+    }
+    await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
    }
    if(mode.endsWith('error'))await expect(page.locator('[role="alert"]')).toBeVisible();
    const geom=await page.evaluate(()=>{const main=document.querySelector('.student-main'),n=document.querySelector('.student-mobile-nav');return{gutter:getComputedStyle(main).scrollbarGutter,overflow:main.scrollWidth-main.clientWidth,docOverflow:document.documentElement.scrollWidth-innerWidth,mainBottom:main.getBoundingClientRect().bottom,navTop:n.getBoundingClientRect().top};});
