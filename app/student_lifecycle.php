@@ -31,7 +31,7 @@ function student_test_delete_owned(PDO $db,int $testId,int $studentId): void {
 
 function admin_registration_delete(PDO $db,int $submissionId,int $activityId): void {
     $work=static function() use($db,$submissionId,$activityId): void {
-        $q=$db->prepare('SELECT s.id,s.student_id,s.cohort_id,f.purpose FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');
+        $q=$db->prepare('SELECT s.*,f.purpose FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');
         $q->execute([$submissionId,$activityId]);$submission=$q->fetch(PDO::FETCH_ASSOC)?:throw new RuntimeException('Inscrição não encontrada.');
         if(cms_form_purpose($submission)!=='enrollment')throw new RuntimeException('Este registro não gera matrícula de curso.');
         $studentId=(int)($submission['student_id']??0);$cohortId=(int)($submission['cohort_id']??0);
