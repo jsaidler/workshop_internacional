@@ -47,6 +47,10 @@ foreach($requiredConsumers as $file=>$needles){
     $source=(string)file_get_contents($root.'/aluno/'.$file);
     // The notebook creation form has a shared renderer; check the actual
     // included component rather than requiring duplicated markup in the route.
+    if(in_array($file,['login.php','senha.php'],true)){
+        $source.=(string)file_get_contents($root.'/app/student_auth_view.php');
+        must_global_ui(str_contains($source,$file==='login.php'?'student_auth_render_login(':'student_auth_render_password('),$file.' must share the canonical authentication renderer');
+    }
     if($file==='perfil.php'){
         $source.=(string)file_get_contents($root.'/app/student_profile_view.php');
         must_global_ui(str_contains($source,'student_profile_render($profile,$error,$notice)'),'account must share the canonical profile renderer');

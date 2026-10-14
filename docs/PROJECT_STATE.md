@@ -762,3 +762,5 @@ Confirmar pagamento, marcar pendente e cancelar inscrição eram escritas imedia
 **Compatibilidade da suíte de autenticação:** `test-student-account-experience.php` e `test-student-login-experience.php` agora verificam conjuntamente a rota PHP e o renderer operacional de formulários, sem exigir que apresentação e autenticação permaneçam no mesmo arquivo. A ordem, acessibilidade, CSRF, retorno a Conta e distinção entre acesso/login não mudaram.
 
 **Paridade da validação global da UI:** `test-student-premium-ui.php` consulta tanto as rotas de login/senha quanto `student_auth_view.php`; mantém a exigência de `data-ui-validate` e botões globais sem impor HTML duplicado na rota. A regra de validação efetiva permanece a mesma.
+
+**Paridade de primitivas globais na autenticação:** `test-global-ui-consumption.php` passa a verificar `form-field`, botões e `data-ui-validate` na composição da rota com o renderer partilhado `student_auth_view.php`, preservando o mesmo contrato usado para perfil/Caderno, em vez de exigir markup duplicado na rota de autenticação.
