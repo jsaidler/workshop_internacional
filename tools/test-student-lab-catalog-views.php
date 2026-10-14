@@ -12,7 +12,7 @@ $prepRow=['id'=>7,'label'=>'Predefinição <script>','developer_name'=>'Parodina
 ob_start();student_lab_preparations_view([$prepRow],null,[],[],'',false);$html=(string)ob_get_clean();
 must_lab_catalog(str_contains($html,'Predefinição &lt;script&gt;')&&!str_contains($html,'Predefinição <script>'),'prepared data is not escaped');
 must_lab_catalog(str_contains($html,'name="action" value="delete"')&&str_contains($html,'name="_csrf" value="catalog-fixture-csrf"'),'canonical preparation delete POST must retain CSRF');
-must_lab_catalog(str_contains($html,'Ao usar esta predefinição, estes parâmetros são copiados')&&str_contains($html,'Abrir inventário'),'preparations must distinguish parameters from physical stock');
+must_lab_catalog(str_contains($html,'O roteiro copia os parâmetros sem movimentar o Inventário.')&&str_contains($html,'Abrir inventário'),'preparations must distinguish parameters from physical stock');
 must_lab_catalog(str_contains($html,'href="/aluno/preparos.php?editar=7"'),'preparation editor deep link missing');
 ob_start();student_lab_preparations_view([],null,[],[],'',false);$empty=(string)ob_get_clean();
 must_lab_catalog(str_contains($empty,'Você ainda não salvou nenhuma condição de revelação.')&&str_contains($empty,'Criar primeira predefinição'),'empty preparation catalog lacks next action');
