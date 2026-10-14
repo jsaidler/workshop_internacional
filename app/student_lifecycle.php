@@ -30,18 +30,18 @@ function student_test_delete_owned(PDO $db,int $testId,int $studentId): void {
 }
 
 function admin_registration_delete(PDO $db,int $submissionId,int $activityId): void {
-    $q=$db->prepare('SELECT s.id,f.purpose FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');
-    $q->execute([$submissionId,$activityId]);
-    $submission=$q->fetch(PDO::FETCH_ASSOC);
-    if(!$submission)throw new RuntimeException('Inscrição não encontrada.');
-    if(cms_form_purpose($submission)!=='enrollment')throw new RuntimeException('Este registro não gera matrícula de curso.');
-
-    $db->beginTransaction();
-    try{
-        // A inscrição é a origem da matrícula. Excluí-la remove somente a matrícula
-        // criada a partir dela. Conta, perfil e histórico de testes são entidades próprias.
+    $work=static function() use($db,$submissionId,$activityId): void {
+        $q=$db->prepare('SELECT s.id,s.student_id,s.cohort_id,f.purpose FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.activity_id=?');
+        $q->execute([$submissionId,$activityId]);$submission=$q->fetch(PDO::FETCH_ASSOC)?:throw new RuntimeException('Inscrição não encontrada.');
+        if(cms_form_purpose($submission)!=='enrollment')throw new RuntimeException('Este registro não gera matrícula de curso.');
+        $studentId=(int)($submission['student_id']??0);$cohortId=(int)($submission['cohort_id']??0);
         $db->prepare('DELETE FROM course_enrollments WHERE source_submission_id=?')->execute([$submissionId]);
         $db->prepare('DELETE FROM cms_form_submissions WHERE id=? AND activity_id=?')->execute([$submissionId,$activityId]);
-        $db->commit();
-    }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+        if($studentId>0&&function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);
+        if($cohortId>0&&function_exists('course_agenda_reconcile_cohort'))course_agenda_reconcile_cohort($db,$cohortId);
+    };
+    if(function_exists('course_agenda_with_lock')){course_agenda_with_lock($db,$work);return;}
+    $owned=!$db->inTransaction();if($owned)$db->beginTransaction();
+    try{$work();if($owned)$db->commit();}
+    catch(Throwable $e){if($owned&&$db->inTransaction())$db->rollBack();throw $e;}
 }

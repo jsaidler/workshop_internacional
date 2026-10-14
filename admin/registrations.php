@@ -18,13 +18,12 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
  if(!verify_csrf('course-registrations',$_POST['_csrf']??null)){http_response_code(403);exit('Invalid request');}$id=(int)($_POST['submission_id']??0);$action=(string)($_POST['action']??'');
  $operationSucceeded=false;
  try{$stmt=$db->prepare("SELECT s.* FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.course_id=? AND f.activity_id=? AND f.purpose='enrollment'");$stmt->execute([$id,$courseId,$activityId]);$row=$stmt->fetch()?:throw new RuntimeException('Inscrição não encontrada neste curso.');$now=utc_now();$paymentNote=array_key_exists('payment_note',$_POST)?trim((string)$_POST['payment_note']):(string)($row['payment_note']??'');
-  if($action==='confirm')$db->prepare("UPDATE cms_form_submissions SET status='converted',payment_status='paid',payment_confirmed_at=?,payment_note=?,updated_at=? WHERE id=?")->execute([$now,$paymentNote,$now,$id]);
-  elseif($action==='pending')$db->prepare("UPDATE cms_form_submissions SET status='new',payment_status='pending',payment_confirmed_at=NULL,payment_note=?,updated_at=? WHERE id=?")->execute([$paymentNote,$now,$id]);
-  elseif($action==='archive')$db->prepare("UPDATE cms_form_submissions SET status='archived',payment_note=?,updated_at=? WHERE id=?")->execute([$paymentNote,$now,$id]);
+  if(in_array($action,['confirm','pending','archive'],true))course_registration_change_payment($db,$id,$courseId,$action,$paymentNote);
   elseif($action==='assign_cohort')course_registration_assign_cohort($db,$id,$courseId,(int)($_POST['cohort_id']??0));
   elseif($action==='unassign_cohort')course_registration_unassign_cohort($db,$id,$courseId);
-  elseif($action==='delete_registration')admin_registration_delete($db,$id,$activityId);else throw new RuntimeException('Ação inválida.');
-  if(!in_array($action,['assign_cohort','unassign_cohort'],true))student_enrollment_reconcile_confirmed($db,$activityId);$_SESSION['admin_registrations_notice']='Alteração salva.';$operationSucceeded=true;
+  elseif($action==='delete_registration')admin_registration_delete($db,$id,$activityId);
+  else throw new RuntimeException('Ação inválida.');
+  $_SESSION['admin_registrations_notice']='Alteração salva.';$operationSucceeded=true;
  }catch(Throwable $e){$_SESSION['admin_registrations_notice']='Não foi possível concluir: '.$e->getMessage();}
  $redirectCohort=max(0,(int)($_POST['filter_cohort_id']??0));$redirectFilter=(string)($_POST['filter_status']??'');
  if(!empty($operationSucceeded)&&$action==='assign_cohort'){$redirectCohort=(int)($_POST['cohort_id']??0);$redirectFilter='assigned';}

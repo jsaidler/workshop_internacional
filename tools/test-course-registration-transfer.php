@@ -118,11 +118,57 @@ cr_transfer_must(course_agenda_request($db,10,20)['status']==='confirmed','payme
 cr_transfer_must(count(course_agenda_student_meetings($db,9))===0,'unconfirmed payer loses meeting link');
 cr_transfer_must(transfer_enrollment($db,3,30)===null,'pending transition remains submission-scoped');
 
+
+// Financial changes must not commit a "paid" status when the corresponding seat is refused.
+require __DIR__.'/../app/student_lifecycle.php';
+$db->exec("ALTER TABLE cms_form_submissions ADD COLUMN payment_note TEXT NOT NULL DEFAULT ''");
+$db->exec("INSERT INTO cms_form_submissions(id,form_id,activity_id,course_id,cohort_id,student_id,payload_json,status,payment_status,updated_at) VALUES(109,1,1,1,20,11,'{}','new','pending','now')");
+transfer_error(fn()=>course_registration_change_payment($db,109,1,'confirm','Pix conferido'),'lotada');
+cr_transfer_must(transfer_submission($db,109)['payment_status']==='pending'&&transfer_submission($db,109)['payment_note']===''&&transfer_enrollment($db,11,20)===null,'full class leaves payment and enrollment untouched');
+$db->exec('UPDATE course_cohorts SET agenda_capacity=3 WHERE id=20');
+course_registration_change_payment($db,109,1,'confirm','Pix conferido');
+cr_transfer_must(transfer_submission($db,109)['payment_status']==='paid'&&transfer_submission($db,109)['payment_note']==='Pix conferido','successful payment is persisted');
+cr_transfer_must(transfer_enrollment($db,11,20)['status']==='active'&&(int)transfer_enrollment($db,11,20)['source_submission_id']===109,'confirmed payment creates its enrollment');
+cr_transfer_must((int)course_agenda_student_meetings($db,11)[0]['cohort_id']===20,'paid learner receives destination meeting');
+$db->exec('UPDATE course_cohorts SET agenda_capacity=5 WHERE id=10');
+transfer_insert_enrollment($db,12,10,null);
+cr_transfer_must(course_agenda_request($db,12,20)['status']==='waiting','potential listener queued while paid seat is occupied');
+course_registration_change_payment($db,109,1,'pending','Conferência em aberto');
+cr_transfer_must(transfer_submission($db,109)['payment_status']==='pending'&&transfer_submission($db,109)['payment_confirmed_at']===null&&transfer_enrollment($db,11,20)['status']==='disabled','pending status disables source enrollment');
+cr_transfer_must(course_agenda_request($db,12,20)['status']==='confirmed','reversed payment promotes next waiting listener');
+cr_transfer_must(course_agenda_student_meetings($db,11)===[],'pending learner loses meeting access');
+$db->exec("INSERT INTO cms_form_submissions(id,form_id,activity_id,course_id,cohort_id,student_id,payload_json,status,payment_status,updated_at) VALUES(110,1,1,1,NULL,11,'{}','new','pending','now')");
+course_registration_change_payment($db,110,1,'confirm','Pagamento sem turma');
+cr_transfer_must(transfer_submission($db,110)['payment_status']==='paid'&&transfer_submission($db,110)['cohort_id']===null,'payment without cohort remains valid');
+cr_transfer_must((int)$db->query("SELECT COUNT(*) FROM course_enrollments WHERE student_id=11 AND status='active'")->fetchColumn()===0,'paid unassigned registration must not auto-enroll');
+$db->exec('UPDATE course_cohorts SET agenda_capacity=4 WHERE id=20');
+course_registration_change_payment($db,109,1,'confirm','Pagamento revalidado');
+cr_transfer_must(transfer_enrollment($db,11,20)['status']==='active','reconfirmation activates original enrollment');
+course_registration_change_payment($db,109,1,'archive','Inscrição cancelada');
+cr_transfer_must(transfer_submission($db,109)['status']==='archived'&&transfer_enrollment($db,11,20)['status']==='disabled','archive disables admission but retains record');
+cr_transfer_must(course_agenda_student_meetings($db,11)===[],'archived learner loses private meeting');
+$db->exec("INSERT INTO cms_form_submissions(id,form_id,activity_id,course_id,cohort_id,student_id,payload_json,status,payment_status,updated_at) VALUES(111,1,1,1,20,2,'{}','new','pending','now')");
+transfer_error(fn()=>course_registration_change_payment($db,111,1,'confirm','Origem alheia'),'outra origem');
+cr_transfer_must(transfer_submission($db,111)['payment_status']==='pending'&&transfer_enrollment($db,2,20)['source_submission_id']===null,'source collision does not overwrite payment or manual provenance');
+cr_transfer_must(transfer_enrollment($db,3,30)===null,'payment mutations do not reconcile unrelated paid submissions');
+
+// Deleting a source-bound registration removes only its enrollment and wakes the queue.
+$db->exec("INSERT INTO cms_form_submissions(id,form_id,activity_id,course_id,cohort_id,student_id,payload_json,status,payment_status,updated_at) VALUES(113,1,1,1,20,5,'{}','converted','paid','now')");
+transfer_insert_enrollment($db,5,20,113);
+$db->exec('UPDATE course_cohorts SET agenda_capacity=6 WHERE id=10');
+transfer_insert_enrollment($db,9,10,null);
+cr_transfer_must(course_agenda_request($db,9,20)['status']==='waiting','waiting listener cannot enter occupied cohort');
+admin_registration_delete($db,113,1);
+cr_transfer_must((int)$db->query('SELECT COUNT(*) FROM cms_form_submissions WHERE id=113')->fetchColumn()===0&&transfer_enrollment($db,5,20)===null,'deletion removes source submission and source enrollment');
+cr_transfer_must(course_agenda_request($db,9,20)['status']==='confirmed','deletion promotes first listener on released seat');
+cr_transfer_must((int)$db->query('SELECT COUNT(*) FROM student_users WHERE id=5')->fetchColumn()===1,'deletion preserves global student identity');
+cr_transfer_must(transfer_submission($db,104)['payment_status']==='pending','deletion does not disturb unrelated registration');
+
 $admin=file_get_contents(__DIR__.'/../admin/registrations.php');
-cr_transfer_must(str_contains($admin, "!in_array(\$action,['assign_cohort','unassign_cohort'],true)"),'registrations POST must not trigger a second global reconciliation');
+cr_transfer_must(str_contains($admin, "course_registration_change_payment(\$db,\$id,\$courseId,\$action,\$paymentNote)"),'registrations POST must call the transactional payment service');
 cr_transfer_must(str_contains($admin, "\$redirectFilter='assigned'")&&str_contains($admin, "\$redirectCohort=0;\$redirectFilter=''"),'successful registration transfer must redirect into destination cohort and unassignment must clear stale filters');
 $hook=file_get_contents(__DIR__.'/../app/student_enrollments.php');
-cr_transfer_must(str_contains($hook, "in_array((string)(\$_POST['action']??''),['assign_cohort','unassign_cohort'],true)"),'shutdown hook must skip per-registration assignment paths');
+cr_transfer_must(str_contains($hook, "if(str_ends_with(\$script,'/admin/registrations.php'))return;"),'shutdown hook must skip all canonical registration actions');
 $accounts=file_get_contents(__DIR__.'/../app/student_accounts.php');
 cr_transfer_must(str_contains($accounts, 'return student_enrollment_reconcile_confirmed($db,$activityId);'),'login and activation must delegate to the explicit-course authority');
 echo "course-registration-transfer: ok\n";

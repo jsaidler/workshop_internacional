@@ -28,9 +28,9 @@ function student_enrollment_reconcile_confirmed(PDO $db,?int $activityId=null,?i
 function student_enrollment_install_reconciliation_hook(): void {
     $script=str_replace('\\','/',(string)($_SERVER['SCRIPT_NAME']??$_SERVER['PHP_SELF']??''));
     if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'||(!str_ends_with($script,'/admin/submissions.php')&&!str_ends_with($script,'/admin/registrations.php')))return;
-    // Assignment/unassignment already reconciles its own submission in a transaction.
-    // The shutdown hook must not silently run a site-wide reconciliation afterward.
-    if(str_ends_with($script,'/admin/registrations.php')&&in_array((string)($_POST['action']??''),['assign_cohort','unassign_cohort'],true))return;
+    // Registration actions reconcile their own submission or delete it atomically.
+    // The shutdown hook must not process unrelated registrations afterward.
+    if(str_ends_with($script,'/admin/registrations.php'))return;
     register_shutdown_function(static function(): void {
         try{student_enrollment_reconcile_confirmed(database());}
         catch(Throwable $e){error_log('Student enrollment reconciliation hook failed: '.$e->getMessage());}
