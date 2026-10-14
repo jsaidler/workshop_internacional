@@ -28,6 +28,12 @@ $operationalSources=[
  'delete-record'=>'student-record-actions-operational.php?mode=delete',
  'compare-select'=>'student-comparison-operational.php?mode=select',
  'compare-records'=>'student-comparison-operational.php?mode=analysis',
+ 'exposure'=>'student-record-workspace-operational.php?state=exposure',
+ 'process-choice'=>'student-record-workspace-operational.php?state=process-choice',
+ 'result'=>'student-record-workspace-operational.php?state=result',
+ 'result-waiting'=>'student-record-workspace-operational.php?state=result-waiting',
+ 'result-revision'=>'student-record-workspace-operational.php?state=result-revision',
+ 'result-reviewed'=>'student-record-workspace-operational.php?state=result-reviewed',
 ];
 foreach($operationalSources as $name=>$source){
  must_student_visual_inventory(str_contains($spec,"['".$name."','".$source."']"),$name.' must use its operational PHP renderer');

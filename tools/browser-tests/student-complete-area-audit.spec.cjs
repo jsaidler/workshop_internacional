@@ -19,14 +19,14 @@ const screens=[
   ['question-thread','student-questions-operational.php?state=thread&id=1'],
   ['notebook','student-notebook.php?state=mixed'],
   ['new-record','student-record-create-sheet.php'],
-  ['exposure','student-caderno-product-audit.html?screen=record-empty'],
-  ['process-choice','student-caderno-product-audit.html?screen=record-empty'],
+  ['exposure','student-record-workspace-operational.php?state=exposure'],
+  ['process-choice','student-record-workspace-operational.php?state=process-choice'],
   ['process-plan','student-caderno-product-audit.html?screen=record-plan'],
   ['process-partial','student-caderno-product-audit.html?screen=record-partial'],
-  ['result','student-caderno-product-audit.html?screen=record-result'],
-  ['result-waiting','student-pedagogical-feedback-audit.html?screen=result-waiting'],
-  ['result-revision','student-pedagogical-feedback-audit.html?screen=result-revision'],
-  ['result-reviewed','student-pedagogical-feedback-audit.html?screen=result-reviewed'],
+  ['result','student-record-workspace-operational.php?state=result'],
+  ['result-waiting','student-record-workspace-operational.php?state=result-waiting'],
+  ['result-revision','student-record-workspace-operational.php?state=result-revision'],
+  ['result-reviewed','student-record-workspace-operational.php?state=result-reviewed'],
   ['step-editor','student-record-actions-operational.php?mode=step'],
   ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
   ['delete-record','student-record-actions-operational.php?mode=delete'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -127,9 +127,9 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
         await expect(page.locator('nav.student-mobile-nav a[href="/aluno/ferramentas.php"]')).toHaveAttribute('aria-current','page');
       }
-      if(name==='result-waiting')await expect(page.getByText('Enviado para avaliação',{exact:true})).toBeVisible();
-      if(name==='result-revision'){await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();await expect(page.getByText('Enviar revisão para avaliação',{exact:true})).toBeVisible();await expect(page.getByText('Professor',{exact:true})).toBeVisible();}
-      if(name==='result-reviewed')await expect(page.getByText('Avaliação concluída',{exact:true})).toBeVisible();
+      if(name==='result-waiting')await expect(page.locator('#resultado .student-review-state strong')).toHaveText('Enviado para avaliação');
+      if(name==='result-revision'){await expect(page.locator('#resultado .student-review-state strong')).toHaveText('Revisão solicitada');await expect(page.getByRole('button',{name:'Enviar revisão para avaliação'})).toBeVisible();await expect(page.locator('#resultado .student-message-list strong')).toHaveText('Professor');}
+      if(name==='result-reviewed'){await expect(page.locator('#resultado .student-review-state strong')).toHaveText('Avaliação concluída');await expect(page.locator('#resultado textarea[name="notes"]')).toBeDisabled();}
       if(name==='compare-select'){await expect(page.getByText('Escolha o segundo registro',{exact:true})).toBeVisible();await expect(page.getByText('EI 200 — FeCl₃',{exact:true})).toBeVisible();await expect(page.locator('.student-research-picker-form input[name="id[]"][value="10"]')).toHaveCount(1);await expect(page.locator('.student-research-picker-form select[name="id[]"]')).toHaveCount(1);}
       if(name==='compare-records'){await expect(page.getByText('Diferenças registradas',{exact:true})).toBeVisible();await expect(page.getByText('Resultado observado',{exact:true})).toBeVisible();await expect(page.getByText('Criar próxima variação',{exact:true})).toBeVisible();await expect(page.locator('.student-research-result-card')).toHaveCount(2);await expect(page.locator('form.student-research-next-form input[name="_csrf"]')).toHaveCount(1);await expect(page.getByText('Etapa 1 · Tempo',{exact:true})).toBeVisible();}
       if(name==='research-derived'){
