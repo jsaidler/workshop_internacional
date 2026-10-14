@@ -44,7 +44,7 @@ $_SERVER['REQUEST_URI']=$path;
 student_shell_start($title,null,['id'=>1,'name'=>'Aluno']);
 ?>
 <?php
-$openEditor=in_array($mode,['create','edit','error'],true);
+$openEditor=in_array($mode,['new','create','edit','error'],true);
 $updated=$mode==='updated';
 if($kind==='preparation'){
     $rows=$mode==='empty'?[]:[['id'=>7,'label'=>$updated?'Registro atualizado':'Registro existente','developer_name'=>'Parodinal','developer_amount'=>10,'water_amount'=>540,'preparation_mode'=>'concentrate','temperature'=>'26 °C','duration'=>'07:00','agitation'=>'leve']];

@@ -267,3 +267,18 @@ for(const kind of ['preparation','calibration']){
     });
   }
 }
+
+// Both historical fixture entry names must show the canonical create form:
+// cross-route journeys map ?novo=1 to mode=new; isolated editor tests use mode=create.
+for(const kind of ['preparation','calibration']){
+ test(kind+' new and create fixture aliases preserve the native form',async({page})=>{
+   await page.setViewportSize({width:390,height:844});
+   for(const mode of ['new','create']){
+     const response=await page.goto(fixture+'?kind='+kind+'&mode='+mode,{waitUntil:'networkidle'});
+     expect(response?.status()).toBe(200);
+     await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
+     await expect(page.locator('input[name="label"]')).toHaveCount(1);
+     await expect(page.locator('.student-appbar a.student-back')).toHaveAttribute('href',kind==='preparation'?'/aluno/preparos.php':'/aluno/calibracao.php');
+   }
+ });
+}
