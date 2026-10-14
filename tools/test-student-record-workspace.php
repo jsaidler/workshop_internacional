@@ -13,7 +13,11 @@ foreach(['exposicao'=>'Exposição','processamento'=>'Processamento','resultado'
 assert_record_workspace(substr_count($nav,'data-record-workspace-link')===3,'navigation must expose exactly three peer contexts');
 assert_record_workspace(str_contains($nav,'data-record-workspace-nav'),'operational navigation is not reusable');
 
-$source=(string)file_get_contents(dirname(__DIR__).'/aluno/teste.php');
+$route=(string)file_get_contents(dirname(__DIR__).'/aluno/teste.php');
+$view=(string)file_get_contents(dirname(__DIR__).'/app/student_record_workspace_view.php');
+$source=$route.$view;
+assert_record_workspace(str_contains($route,'student_record_render_workspace(compact('),'actual route must invoke canonical record renderer');
+
 assert_record_workspace(str_contains($source,'student_record_workspace_navigation()'),'actual route must consume shared navigation');
 assert_record_workspace(substr_count($source,'data-record-workspace-panel')===3,'actual route must expose three sections');
 assert_record_workspace(str_contains($source,'data-record-workspace-default'),'failed POST must select its originating section');
