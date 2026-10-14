@@ -22,6 +22,8 @@ $operationalSources=[
  'login'=>'student-auth-operational.php?mode=login',
  'activation-password'=>'student-auth-operational.php?mode=activation',
  'password-change'=>'student-auth-operational.php?mode=change',
+ 'preparations'=>'student-long-editors.php?kind=preparation&mode=list',
+ 'calibration-list'=>'student-long-editors.php?kind=calibration&mode=list',
 ];
 foreach($operationalSources as $name=>$source){
  must_student_visual_inventory(str_contains($spec,"['".$name."','".$source."']"),$name.' must use its operational PHP renderer');

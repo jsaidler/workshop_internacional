@@ -72,3 +72,7 @@ A matriz de 46 estados tinha 20 fontes PHP e 26 HTML estático. Quatro estados (
 ### Autenticação na auditoria transversal — 13/10/2026 (#243 draft)
 
 Os estados de login, ativação de conta e alteração de senha usam agora a fixture `student-auth-operational.php`, o mesmo renderer de `aluno/login.php` e `aluno/senha.php` e o shell real. Acesso anônimo não possui menu autenticado; alteração de senha logada deve preservar os cinco destinos. Novos testes cobrem erros, validação, campos e responsividade. A matriz mantém 46 superfícies, com **27 fontes PHP e 19 HTML**; as 19 fontes estáticas remanescentes ainda precisam de substituição e inspeção autenticada no ambiente real.
+
+### Listas do Laboratório na auditoria transversal — 14/10/2026 (#243 draft)
+
+`preparations` e `calibration-list` migram do HTML demonstrativo para `student-long-editors.php?kind=preparation&mode=list` e `?kind=calibration&mode=list`, consumindo o mesmo componente de listas, detalhes, botões e mensagens das rotas reais por `app/student_lab_catalog_views.php`. A fixture projeta dados de teste e usa o shell canônico, sem inventar uma implementação paralela da biblioteca. O inventário de 46 estados passa a 29 fontes PHP/17 HTML, condicionadas ao resultado do CI e à inspeção das capturas atuais. As 17 telas HTML restantes ainda não são prova do produto autenticado.

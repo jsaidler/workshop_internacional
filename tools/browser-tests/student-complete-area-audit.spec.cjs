@@ -40,9 +40,9 @@ const screens=[
   ['inventory-empty','student-inventory-movement.php?mode=empty'],
   ['inventory-movement','student-inventory-movement.php'],
   ['inventory-item-editor','student-inventory-item-direct.php?mode=editor'],
-  ['preparations','student-lab-stock-product-audit.html?screen=preparations'],
+  ['preparations','student-long-editors.php?kind=preparation&mode=list'],
   ['preparation-editor','student-long-editors.php?kind=preparation&mode=edit'],
-  ['calibration-list','student-secondary-screens-audit.html?screen=calibration-list'],
+  ['calibration-list','student-long-editors.php?kind=calibration&mode=list'],
   ['calibration-editor','student-long-editors.php?kind=calibration&mode=edit'],
   ['tools','student-laboratory.php?state=full'],
   ['toolbox','student-toolbox-real-audit.php'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -110,6 +110,19 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name==='questions-list')await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
       if(name==='question-new'){await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();await expect(page.locator('[data-question-new-panel] form')).toBeVisible();}
       if(name==='question-thread'){await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();await expect(page.locator('[data-student-local-key="question-thread"] form textarea[name="body"]')).toBeVisible();}
+      if(name==='preparations'){
+        await expect(page.getByRole('heading',{name:'Predefinições de revelação'})).toBeVisible();
+        await expect(page.locator('.student-preparation-card')).toHaveCount(1);
+        await expect(page.locator('.student-preparation-card form [name="action"][value="delete"]')).toHaveCount(1);
+        await expect(page.locator('.student-preparation-card form [name="_csrf"]')).toHaveCount(1);
+        await expect(page.getByRole('link',{name:'Abrir inventário'})).toHaveAttribute('href','/aluno/inventario.php');
+        await expect(page.locator('.student-preparation-card .student-preparation-note')).toContainText('Nenhuma quantidade');
+      }
+      if(name==='calibration-list'){
+        await expect(page.getByRole('heading',{name:'Referências de calibração'})).toBeVisible();
+        await expect(page.locator('[data-student-local-key="calibrations-list"] .student-simple-row')).toHaveCount(1);
+        await expect(page.locator('[data-student-local-key="calibrations-list"] .student-simple-row-actions strong')).toContainText('03:00');
+      }
       if(name==='preparation-editor'||name==='calibration-editor'){
         await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
         await expect(page.locator('nav.student-mobile-nav a[href="/aluno/ferramentas.php"]')).toHaveAttribute('aria-current','page');
