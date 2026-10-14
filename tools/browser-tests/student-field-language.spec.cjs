@@ -29,6 +29,7 @@ const studentUiFiles=[
   'aluno/teste.php',
   'aluno/teste-compartilhado.php',
   'aluno/teste-etapa.php',
+  'app/student_record_auxiliary_views.php',
   'app/student_shell.php',
 ];
 
@@ -91,7 +92,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
       "'reciprocity_time'=>'Tempo com reciprocidade'",
       "'tonal_range'=>'Faixa tonal e intenção'",
     ],
-    'aluno/teste-etapa.php':[
+    'app/student_record_auxiliary_views.php':[
       '>Nome da etapa<input name="label"',
       '>Químico ou solução<input name="chemical_name"',
       '>Tempo<input name="duration"',
@@ -151,7 +152,8 @@ test('student field controls never rely on an empty visible label',()=>{
   expect(read('app/student_calibration_editor.php')).toContain('aria-label="Anotações da calibração"');
   expect(read('app/student_inventory_create_panel.php')).toContain('aria-label="Anotações do item"');
   expect(compactMarkup(read('aluno/teste.php'))).toContain('>Anotações<textarea name="notes"');
-  expect(compactMarkup(read('aluno/teste-etapa.php'))).toContain('>Anotações<textarea name="notes"');
+  expect(read('aluno/teste-etapa.php')).toContain('student_record_render_free_step_editor(');
+   expect(compactMarkup(read('app/student_record_auxiliary_views.php'))).toContain('>Anotações<textarea name="notes"');
 });
 
 test('static student labels are server-rendered; JavaScript only relabels state-dependent fields',()=>{
