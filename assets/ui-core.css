@@ -41,7 +41,7 @@
 .check-field .form-field-error{flex-basis:100%}
 
 .button-compact{min-height:40px;padding:0 13px;font-size:9px}
-.button-danger{color:var(--text);border-color:#bf6363;background:color-mix(in srgb,#8b2727 10%,var(--surface))}
+.button-danger{color:var(--text);border-color:#bf6363;background:color-mix(in srgb,#8b2727 10%,var(--surface));font-size:12px;min-height:44px}
 .button-danger:hover{color:#fff;background:#922c2c;border-color:#922c2c}
 button.button:disabled,.button[aria-disabled=true]{opacity:.48;cursor:not-allowed}
 
