@@ -18,10 +18,11 @@ must_student_lab_stock_product_ux(str_contains($inventory,'Ver predefinições')
 
 must_student_lab_stock_product_ux(str_contains($preparations,'não representa estoque físico'),'preparations do not distinguish parameters from stock');
 must_student_lab_stock_product_ux(str_contains($preparations,'Abrir inventário'),'preparations do not link physical stock');
-must_student_lab_stock_product_ux(str_contains($preparations,'Ao usar esta predefinição, estes parâmetros são copiados'),'preparation cards do not explain reuse semantics');
-must_student_lab_stock_product_ux(str_contains($preparations,'Nenhuma quantidade do Inventário é alterada só por escolher a predefinição.'),'preparation cards imply inventory consumption');
+must_student_lab_stock_product_ux(str_contains($preparations,'O roteiro copia os parâmetros'),'preparation cards do not explain reuse semantics');
+must_student_lab_stock_product_ux(str_contains($preparations,'sem movimentar o Inventário.'),'preparation cards imply inventory consumption');
 must_student_lab_stock_product_ux(str_contains($preparations,'Editar')&&str_contains($preparations,'Excluir'),'preparation CRUD is not visible');
 must_student_lab_stock_product_ux(str_contains($preparations,'Você ainda não salvou nenhuma condição de revelação.'),'preparation empty state is not pedagogical');
+must_student_lab_stock_product_ux(!str_contains($preparations,'Predefinição e estoque são coisas diferentes: uma guarda parâmetros; a outra guarda quantidade física disponível.'),'catalog repeats the same inventory distinction instead of keeping guidance short');
 
 must_student_lab_stock_product_ux(str_contains($shell,"\$stockFeature")&&str_contains($shell,'/assets/student-lab-stock.css'),'shell does not load stock UX layer');
 foreach(['.student-stock-summary','.student-inventory-item-actions','.student-preparation-card','.student-lab-crosslink'] as $selector)must_student_lab_stock_product_ux(str_contains($css,$selector),'stock UX stylesheet missing '.$selector);
