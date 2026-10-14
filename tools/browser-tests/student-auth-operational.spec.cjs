@@ -9,7 +9,7 @@ for(const [width,height,label] of [[320,720,'narrow'],[390,844,'phone'],[1440,90
    expect(response?.status()).toBe(200);
    await expect(page.locator('body.student-app .student-shell')).toHaveCount(1);
    await expect(page.locator('link[href^="/assets/student-app-shell.css"]')).toHaveCount(1);
-   await expect(page.locator('form [name="_csrf"]')).toHaveCount(mode==='login'?2:1);
+   await expect(page.locator(mode==='login'?'.student-auth-grid form [name="_csrf"]':'.student-login-card form [name="_csrf"]')).toHaveCount(mode==='login'?2:1);
    await expect(page.locator('.student-mobile-nav a')).toHaveCount(privileged?5:0);
    if(mode==='login')await expect(page.locator('form [name="mode"][value="activate"]')).toHaveCount(1);
    if(mode==='activation')await expect(page.locator('[name="privacy_ack"][required]')).toHaveCount(1);
