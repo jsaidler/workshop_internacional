@@ -682,6 +682,12 @@ A Agenda deve destacar encontros agendados futuros e aqueles dentro de duração
 **Reprovação de evidência visual PR #242 (13/10/2026):** capturas `agenda/regular-*-start.png` do SHA `8bf7c319` eram feitas após abrir o cronograma e rolar a página; portanto não demonstravam a primeira dobra real, apesar do workflow verde. A regressão da fixture foi alterada para restaurar ambos os scroll containers antes de fotografar o início, produzir capturas independentes dos detalhes expandidos e verificar tema claro/escuro em estado misto. O gate exige CI do novo SHA e inspeção dessas capturas antes de aprovação.
 
 
+## Retificação vinculante do redesign mobile-first — 15/10/2026
+
+O autor esclareceu o escopo após a publicação do PR #243: **reorganizar UI/UX por ações e atividades não autoriza alterar a identidade visual já definida**. A reconstrução deve preservar tipografia editorial (tokens `--title`, `--body`, `--mono`), paleta/tema e controles de Design do CMS, primitives `ui-core.css`, e os proprietários CSS existentes. Novo CSS somente para geometria/comportamento específico das novas composições, sem duplicar botões, cards, tipografia, paletas ou componentes compartilhados. O registro histórico de 13/10 abaixo não constitui autorização para substituir o design system. Este escopo substitui especificamente a frase histórica sobre não ficar preso aos contratos visuais anteriores; a navegação e a organização orientada às tarefas permanecem aprovadas.
+
+Correção em branch isolada `fix/student-ui-respect-design-system-2026-10-15`; não publicar em `production-dist` antes de CI, avaliação visual e integração autorizada. A publicação anterior de `557b7b3e` foi confirmada no canal de atualização, **não** comprova instalação na hospedagem.
+
 ## Reconstrução da Área do aluno — shell e Início mobile-first v2 (13/10/2026; branch isolada)
 
 Decisão explícita do autor: reconstruir a UX sem ficar preso aos contratos visuais anteriores. A arquitetura adotada no protótipo aprovado tem **Início / Agenda / Cursos / Caderno / Laboratório**. Na branch `feat/student-mobile-first-rebuild-2026-10-13`, a primeira tranche modifica o shell PHP global, adiciona ícones e barra inferior em cinco colunas, navegação lateral no desktop e altera a projeção visual de Início com dados reais existentes (reunião autorizada, materiais, registros e retorno). Mantém CSRF e fluxo de criação de registro, autorização de aulas, gravações e edição das outras áreas como estão.
