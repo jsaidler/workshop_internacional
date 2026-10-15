@@ -136,3 +136,6 @@ O bloco completo e idêntico de `.student-review-grid`/`.student-review-media` a
 ### Editor de Processamentos — alvos e cascata móvel (15/10/2026, PR #243 draft)
 
 A auditoria 320/390 verificou que `student-quality-pass.css` redefinia os botões de cada etapa para **30 px de altura e 8 px de fonte**, prevalecendo sobre `student-processes.css` pela ordem de carregamento. A regra foi removida da folha corretiva posterior. O proprietário `student-processes.css` agora controla os alvos de `Editar`, `Subir`, `Descer` e `Remover` com altura mínima **44 px**, corpo mínimo **11 px**, largura variável e quebra controlada na linha; a cor do ato destrutivo foi consolidada na mesma folha. A suíte `student-process-template-editor.spec.cjs` mede esses valores no DOM renderizado em 320, 390 e 1440 px e rejeita overflow. Não introduzir `!important` nem restabelecer 8/30 em folhas globais posteriores.
+
+
+**Cor destrutiva temática:** o texto de `Remover` não pode usar apenas `#d96868` em todos os fundos: é insuficiente sobre superfícies claras. O proprietário do componente agora usa `color-mix(in srgb,var(--text) 35%,#d96868)`, mantendo identidade destrutiva e adaptando a luminosidade ao tema. O teste do Editor calcula contraste efetivo do texto sobre as cores claras/escuras de referência e exige WCAG AA (4,5:1) em 320, 390 e 1440 px, sem adicionar CSS em fixture.
