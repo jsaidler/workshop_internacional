@@ -169,3 +169,9 @@ O JavaScript legado do timer pode continuar existindo temporariamente enquanto h
 - a integração futura de inventário deve respeitar `reuse_source_stage_key` para impedir dupla baixa do mesmo banho.
 
 Esses limites não alteram a arquitetura. Evoluções devem preservar a separação **template → snapshot do registro → execução real**.
+
+## Visualização operacional do editor de roteiros completos — 15/10/2026 (#243 em draft)
+
+A view compartilhada `student_process_render_template_editor` representa somente um roteiro **do aluno já autorizado**. Sua entrada é a projeção de modelo, etapas, catálogos administráveis, predefinições autorizadas, token CSRF e contexto opcional do registro; não consulta alunos nem escreve no banco. `aluno/processamentos.php` permanece o único controlador das operações reais `create/copy_standard/save/duplicate/add_step/update_step/delete_step/move_step/delete/apply_template`, com autorização por aluno, validação/CSRF, POST/303 e serviços existentes. A duração vem de `student_process_template_duration_summary` e a view a apresenta sem segunda consulta.
+
+A fixture `tools/browser-fixture/student-process-editor.php` usa o mesmo renderer para nove etapas fictícias, edição, somente leitura, roteiro vazio, associação e operação personalizada; nega qualquer POST. A migração substitui o HTML da entrada `process-editor` no inventário de 46 telas, sem mexer na fonte da biblioteca nem converter abertura de laboratório em fato realizado. As capturas e checks devem ser reinspecionados no SHA final, incluindo início/meio/fim em 320/390/1440. Os modelos de processo e as invariantes de inventário/timer não foram alterados.
