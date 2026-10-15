@@ -73,14 +73,16 @@ $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 must_global_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route no longer redirects to the global notebook');
 
 // Task-first presentation must consume the existing Design, never impose a new skin.
-$taskCssFiles=['student-app-shell.css','student-agenda.css','student-courses.css','student-laboratory.css','student-profile.css'];
+$taskCssFiles=['student-agenda.css','student-courses.css','student-laboratory.css','student-profile.css'];
 foreach($taskCssFiles as $name){
     $css=(string)file_get_contents($root.'/assets/'.$name);
     must_global_ui(!str_contains($css,'Georgia'),'task stylesheet imports an independent serif font: '.$name);
     must_global_ui(!str_contains($css,'var(--body,Arial'),'task stylesheet overrides the saved body font fallback: '.$name);
     must_global_ui(!preg_match('/--student-v2-(?:bg|surface|subtle|text|muted|line|accent|ink)\\b/',$css),'task stylesheet reintroduces a parallel palette: '.$name);
 }
-$taskShell=(string)file_get_contents($root.'/assets/student-app-shell.css');
+$taskShell=$studentCss;
+must_global_ui(!is_file($root.'/assets/student-app-shell.css'),'mobile shell remains a second global CSS authority');
+must_global_ui(!str_contains($taskShell,'Georgia'),'student shell brings back an independent brand font');
 must_global_ui(!preg_match('/\\.student-app \\.student-shell\\{[^}]*--(?:bg|surface|surface-2|text|muted|line|line-strong|focus)\\s*:/',$taskShell),'task shell overwrites the CMS color tokens');
 must_global_ui(!str_contains($taskShell,'.student-v2-cta{'),'task Home recreates the canonical button primitive');
 $taskHome=(string)file_get_contents($root.'/app/student_home_view.php');
