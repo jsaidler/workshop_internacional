@@ -498,29 +498,7 @@ body.student-page{font-size:16px;line-height:1.5}
 
 .student-media-card figcaption .student-link{min-height:34px}
 
-.student-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ux-space-4);margin-top:var(--ux-space-5)}
-
-.student-review-grid>article{padding:var(--ux-space-5) 0;border-top:1px solid var(--line);background:transparent}
-
-.student-review-grid>article>span,.student-review-media>div>span{display:block;margin-bottom:16px;color:var(--focus);font:500 10px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.07em}
-
-.student-review-grid dl{margin:0}
-
-.student-review-grid dl>div{display:grid;grid-template-columns:1fr auto;gap:16px;padding:11px 0;border-top:1px solid var(--student-line-soft)}
-
-.student-review-grid dt{color:var(--muted);font-size:13px}
-
-.student-review-grid dd{margin:0;font:500 12px var(--mono);text-align:right}
-
-.student-review-grid article>a{display:inline-block;margin-top:18px;text-underline-offset:4px}
-
-.student-review-media{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ux-space-4);margin-top:12px}
-
-.student-review-media>div{min-width:0;padding:16px 0;border-top:1px solid var(--line);background:transparent}
-
-.student-review-media img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
-
-.student-review-media p{color:var(--muted);font-size:14px}
+/* Review summary and media layout are owned by student-area.css, including the mobile single-column contract. */
 
 .student-submit-review{display:flex;align-items:center;gap:18px;margin-top:24px;padding-top:24px;border-top:1px solid var(--student-line-soft)}
 

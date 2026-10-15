@@ -127,3 +127,7 @@ A regressão funcional em navegador executou 75 testes e todos passaram. Sintaxe
 Antes de criar ou alterar CSS: **localizar proprietário → reutilizar a primitiva existente → ampliar o proprietário se a lacuna for sistêmica → criar CSS de feature apenas quando a responsabilidade for realmente específica**.
 
 É proibido resolver uma regressão criando `*-v2.css`, `*-v3.css`, `*-fix.css`, `*-hotfix.css`, `*-refinement.css`, `*-override.css` ou equivalente como nova camada de cascata.
+
+### Registro/revisão: correção de propriedade duplicada (14/10/2026, PR #243)
+
+O bloco completo e idêntico de `.student-review-grid`/`.student-review-media` aparecia tanto em `student-area.css` quanto em `student-experience.css`. Como `student-experience.css` era carregado depois do `@media(max-width:820px)` de `student-area.css`, a definição tardia de duas colunas apagava a decisão de uma coluna no telefone. O contrato permanece: **`student-area.css` é o único proprietário de base e responsividade dessas grades**. O bloco redundante de `student-experience.css` é removido; não há regra corretiva por tela, outra folha ou `!important`. Gate visual deve medir as colunas reais em ambos os contêineres, não apenas overflow.

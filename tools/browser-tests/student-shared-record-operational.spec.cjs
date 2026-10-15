@@ -17,6 +17,11 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
       await expect(page.getByRole('heading',{name:'Avaliação e conversa'})).toBeVisible();
       await expect(page.locator('.student-main .student-review-grid article')).toHaveCount(2);
       await expect(page.locator('.student-main .student-review-media > div')).toHaveCount(2);
+      const reviewColumns=await page.evaluate(()=>{
+        const summary=document.querySelector('.student-review-grid'),media=document.querySelector('.student-review-media');
+        return[summary,media].map(node=>getComputedStyle(node).gridTemplateColumns.split(' ').filter(Boolean).length);
+      });
+      expect(reviewColumns,width<=820?'phone reviews must stack':'desktop reviews stay side by side').toEqual(width<=820?[1,1]:[2,2]);
       await expect(page.locator('.student-main form')).toHaveCount(0);
       await expect(page.locator('.student-main button')).toHaveCount(0);
       await expect(page.locator('.student-main a[href*="excluir"]')).toHaveCount(0);
