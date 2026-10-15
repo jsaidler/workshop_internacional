@@ -216,7 +216,7 @@
 .student-v2-notebook-section .student-notebook-section-heading h2{margin:0}
 .student-v2-notebook-section .student-notebook-section-heading>p{max-width:340px;font:400 12px/1.45 var(--body);color:var(--muted)}
 .student-v2-notebook .student-v2-notebook-list{display:grid;gap:0;margin:0;padding:0;border:0;border-top:1px solid var(--line)}
-.student-v2-notebook-card{min-width:0;border:0;border-bottom:1px solid var(--line);background:transparent;overflow:visible}
+.student-v2-notebook .student-v2-notebook-card{min-width:0;border:0;border-bottom:1px solid var(--line);background:transparent;overflow:visible}
 .student-v2-notebook-card .student-process-card-main{display:flex;align-items:stretch;justify-content:space-between;gap:14px;min-width:0;padding:19px 20px;color:var(--text);text-decoration:none}
 .student-v2-notebook-card .student-process-card-main:hover{background:var(--surface)}
 .student-v2-notebook-card .student-notebook-card-copy{min-width:0;flex:1}
