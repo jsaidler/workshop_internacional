@@ -178,13 +178,13 @@ test('static student labels are server-rendered; JavaScript only relabels state-
 });
 
 test('form labels and choice legends share the same visual hierarchy',async({page})=>{
-  await page.setContent(`<!doctype html><html><head><base href="http://127.0.0.1:8099/"><link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css"><link rel="stylesheet" href="/assets/student-field-language.css"></head><body class="student-page"><label class="form-field">Título<input></label><fieldset class="choice-field"><legend>Contexto</legend><div class="choice-row"><label class="choice-option"><input type="radio"><span>Pessoal</span></label></div></fieldset></body></html>`,{waitUntil:'load'});
+  await page.setContent(`<!doctype html><html><head><base href="http://127.0.0.1:8099/"><link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css"></head><body class="student-page"><label class="form-field">Título<input></label><fieldset class="choice-field"><legend>Contexto</legend><div class="choice-row"><label class="choice-option"><input type="radio"><span>Pessoal</span></label></div></fieldset></body></html>`,{waitUntil:'load'});
   await expect(page.locator('.form-field')).toBeVisible();
   const styles=await page.evaluate(()=>{
     const pick=selector=>{const style=getComputedStyle(document.querySelector(selector));return {fontSize:style.fontSize,lineHeight:style.lineHeight,fontFamily:style.fontFamily,fontWeight:style.fontWeight,textTransform:style.textTransform,letterSpacing:style.letterSpacing};};
     return {label:pick('.form-field'),legend:pick('.choice-field>legend')};
   });
-  expect(styles.label.fontSize).toBe('13px');
+  expect(styles.label.fontSize).toBe('10px'); // Canonical ui-core.css field label, not a student-specific override.
   expect(styles.legend.fontSize).toBe(styles.label.fontSize);
   expect(styles.legend.lineHeight).toBe(styles.label.lineHeight);
   expect(styles.legend.fontFamily).toBe(styles.label.fontFamily);
