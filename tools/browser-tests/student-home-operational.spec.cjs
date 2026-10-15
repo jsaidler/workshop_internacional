@@ -2,6 +2,38 @@ const {test,expect}=require('@playwright/test');
 const fs=require('fs');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-home.php';
 
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+ test('task-first Home consumes persisted Design font, color and action tokens '+device,async({page})=>{
+  await page.setViewportSize({width,height});
+  await page.goto(base+'?state=active',{waitUntil:'networkidle'});
+  const computed=await page.evaluate(()=>{
+   const root=document.documentElement;
+   for(const [key,value] of Object.entries({
+    '--title':'"Courier New",monospace','--body':'"Arial",sans-serif',
+    '--mono':'"Consolas",monospace','--bg':'#121f2e',
+    '--surface':'#223344','--inverse-bg':'#0b0a09'
+   }))root.style.setProperty(key,value);
+   const font=sel=>getComputedStyle(document.querySelector(sel)).fontFamily;
+   const bg=sel=>getComputedStyle(document.querySelector(sel)).backgroundColor;
+   return {
+    title:font('.student-v2-heading h1'),
+    subtitle:font('.student-v2-next h2'),
+    body:font('.student-v2-heading>p:last-child'),
+    label:font('.student-v2-eyebrow'),
+    shellBg:bg('.student-shell'),cardBg:bg('.student-v2-next'),
+    primaryBg:bg('.student-v2-next .button-primary')
+   };
+  });
+  expect(computed.title).toContain('Courier New');
+  expect(computed.subtitle).toContain('Courier New');
+  expect(computed.body).toContain('Arial');
+  expect(computed.label).toContain('Consolas');
+  expect(computed.shellBg).toBe('rgb(18, 31, 46)');
+  expect(computed.cardBg).toBe('rgb(34, 51, 68)');
+  expect(computed.primaryBg).toBe('rgb(11, 10, 9)');
+ });
+}
+
 test('all independent sources are visible together; private links belong only to authorized scheduled future meeting',async({page})=>{
   await page.goto(base+'?state=active');
   await expect(page.locator('[data-home-meeting]')).toBeVisible();
