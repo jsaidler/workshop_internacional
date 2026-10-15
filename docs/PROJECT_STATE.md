@@ -4,6 +4,12 @@ Este é o documento canônico de estado operacional do projeto. Leia antes de al
 
 **Regra global anterior a qualquer trabalho:** ler `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md`. Se existir documentação aplicável à tarefa, ela deve ser descoberta e consultada antes de qualquer decisão ou alteração. Essa obrigação vale para qualquer projeto e não apenas para este repositório.
 
+## Correção transacional de perfil durante matrícula — 15/10/2026 (em branch)
+
+Bug na atribuição de aluno existente a turma: a reconciliação de inscrição, sob `course_agenda_with_lock()` / SQLite `BEGIN IMMEDIATE`, invoca `student_account_update_profile()`, que abria um segundo `PDO::beginTransaction()`, causando `SQLSTATE[HY000]: cannot start a transaction within a transaction`.
+
+A correção na branch `fix/student-profile-nested-transaction-2026-10-15` substitui a transação própria do perfil por `SAVEPOINT` com `ROLLBACK TO` / `RELEASE`, sem alterar o controle externo de commit/rollback da inscrição, da matrícula e das filas da Agenda. A regressão em `tools/test-student-accounts.php` cobre aluno preexistente sob `BEGIN IMMEDIATE`, rollback da transação externa, falha no meio da gravação do perfil e uso autônomo da função. Alteração ainda não equivale a atualização da hospedagem; validar pelo CI, integrar à branch de produção e instalar a atualização via painel administrativo.
+
 ## Estado em 20/09/2026
 
 - Branch de produção: `wip/form-response-refinement-2026-07-16`.

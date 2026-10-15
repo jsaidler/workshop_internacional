@@ -64,9 +64,36 @@ function student_account_profile(PDO $db,int $studentId): array {
 }
 function student_account_profile_values(PDO $db,int $studentId): array {$p=student_account_profile($db,$studentId);return ['name'=>(string)$p['name'],'email'=>(string)$p['email'],'cpf'=>(string)$p['cpf'],'phone'=>(string)($p['phone']??''),'instagram'=>(string)($p['instagram']??''),'address'=>(string)($p['address']??''),'city_state'=>(string)($p['city_state']??''),'postal_code'=>(string)($p['postal_code']??'')];}
 function student_account_update_profile(PDO $db,int $studentId,array $input): void {
-    $name=trim((string)($input['name']??''));$email=student_normalize_email((string)($input['email']??''));$cpf=student_account_normalize_cpf((string)($input['cpf']??''));if($name===''||!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($cpf)!==11)throw new RuntimeException('Revise nome, e-mail e CPF.');$hash=student_account_cpf_lookup_hash($cpf);$now=utc_now();
-    $emailCheck=$db->prepare('SELECT id FROM student_users WHERE email=? AND id!=?');$emailCheck->execute([$email,$studentId]);if($emailCheck->fetchColumn())throw new RuntimeException('Este e-mail já pertence a outra conta.');$cpfCheck=$db->prepare('SELECT student_id FROM student_profiles WHERE cpf_lookup_hash=? AND student_id!=?');$cpfCheck->execute([$hash,$studentId]);if($cpfCheck->fetchColumn())throw new RuntimeException('Este CPF já pertence a outra conta.');
-    $db->beginTransaction();try{$db->prepare('UPDATE student_users SET name=?,email=?,updated_at=? WHERE id=?')->execute([$name,$email,$now,$studentId]);$db->prepare('INSERT INTO student_profiles(student_id,cpf_lookup_hash,cpf_ciphertext,cpf_last4,phone,instagram,address,city_state,postal_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(student_id) DO UPDATE SET cpf_lookup_hash=excluded.cpf_lookup_hash,cpf_ciphertext=excluded.cpf_ciphertext,cpf_last4=excluded.cpf_last4,phone=excluded.phone,instagram=excluded.instagram,address=excluded.address,city_state=excluded.city_state,postal_code=excluded.postal_code,updated_at=excluded.updated_at')->execute([$studentId,$hash,student_account_encrypt_cpf($cpf),substr($cpf,-4),trim((string)($input['phone']??'')),trim((string)($input['instagram']??'')),trim((string)($input['address']??'')),trim((string)($input['city_state']??'')),trim((string)($input['postal_code']??'')),$now,$now]);$db->commit();if(isset($_SESSION['student'])&&(int)($_SESSION['student']['id']??0)===$studentId){$_SESSION['student']['name']=$name;$_SESSION['student']['email']=$email;}}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+    $name=trim((string)($input['name']??''));
+    $email=student_normalize_email((string)($input['email']??''));
+    $cpf=student_account_normalize_cpf((string)($input['cpf']??''));
+    if($name===''||!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($cpf)!==11)throw new RuntimeException('Revise nome, e-mail e CPF.');
+    $hash=student_account_cpf_lookup_hash($cpf);
+    $now=utc_now();
+    $emailCheck=$db->prepare('SELECT id FROM student_users WHERE email=? AND id!=?');
+    $emailCheck->execute([$email,$studentId]);
+    if($emailCheck->fetchColumn())throw new RuntimeException('Este e-mail já pertence a outra conta.');
+    $cpfCheck=$db->prepare('SELECT student_id FROM student_profiles WHERE cpf_lookup_hash=? AND student_id!=?');
+    $cpfCheck->execute([$hash,$studentId]);
+    if($cpfCheck->fetchColumn())throw new RuntimeException('Este CPF já pertence a outra conta.');
+
+    // Profile reconciliation may run inside an enrollment's BEGIN IMMEDIATE.
+    // SQLite SAVEPOINT works in that transaction and when called on its own;
+    // PDO::inTransaction() is not a reliable guard for raw BEGIN IMMEDIATE.
+    $db->exec('SAVEPOINT student_account_profile_update');
+    try{
+        $db->prepare('UPDATE student_users SET name=?,email=?,updated_at=? WHERE id=?')->execute([$name,$email,$now,$studentId]);
+        $db->prepare('INSERT INTO student_profiles(student_id,cpf_lookup_hash,cpf_ciphertext,cpf_last4,phone,instagram,address,city_state,postal_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(student_id) DO UPDATE SET cpf_lookup_hash=excluded.cpf_lookup_hash,cpf_ciphertext=excluded.cpf_ciphertext,cpf_last4=excluded.cpf_last4,phone=excluded.phone,instagram=excluded.instagram,address=excluded.address,city_state=excluded.city_state,postal_code=excluded.postal_code,updated_at=excluded.updated_at')->execute([$studentId,$hash,student_account_encrypt_cpf($cpf),substr($cpf,-4),trim((string)($input['phone']??'')),trim((string)($input['instagram']??'')),trim((string)($input['address']??'')),trim((string)($input['city_state']??'')),trim((string)($input['postal_code']??'')),$now,$now]);
+        $db->exec('RELEASE SAVEPOINT student_account_profile_update');
+    }catch(Throwable $e){
+        $db->exec('ROLLBACK TO SAVEPOINT student_account_profile_update');
+        $db->exec('RELEASE SAVEPOINT student_account_profile_update');
+        throw $e;
+    }
+    if(isset($_SESSION['student'])&&(int)($_SESSION['student']['id']??0)===$studentId){
+        $_SESSION['student']['name']=$name;
+        $_SESSION['student']['email']=$email;
+    }
 }
 function student_account_merge_profile_from_payload(PDO $db,int $studentId,array $payload): void {
     $existing=student_account_profile($db,$studentId);$input=[];foreach(['name','email','cpf','phone','instagram','address','city_state','postal_code'] as $key)$input[$key]=trim((string)($payload[$key]??($existing[$key]??'')));if(student_account_normalize_cpf((string)$input['cpf'])==='')$input['cpf']=student_account_decrypt_cpf((string)($existing['cpf_ciphertext']??''));student_account_update_profile($db,$studentId,$input);
