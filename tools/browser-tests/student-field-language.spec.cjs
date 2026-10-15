@@ -29,12 +29,14 @@ const studentUiFiles=[
   'aluno/teste.php',
   'app/student_record_workspace_view.php',
   'aluno/teste-compartilhado.php',
+  'app/student_shared_record_view.php',
   'aluno/teste-etapa.php',
   'app/student_record_auxiliary_views.php',
   'app/student_shell.php',
 ];
 
 test('student fields use one canonical vocabulary at the source',()=>{
+  expect(read('aluno/teste-compartilhado.php')).toContain('student_shared_record_view(');
   const source=studentUiFiles.map(read).join('\n');
   const forbidden=[
     'EI / ISO',
@@ -80,7 +82,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Agitação<input name="agitation"',
       '>Anotações<textarea name="notes"',
     ],
-    'aluno/teste-compartilhado.php':[
+    'app/student_shared_record_view.php':[
       '<dt>EI</dt>',
       '<dt>Abertura</dt>',
       '<dt>Tempo sem reciprocidade</dt>',
