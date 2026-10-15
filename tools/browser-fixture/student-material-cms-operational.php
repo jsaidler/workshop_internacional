@@ -105,4 +105,4 @@ $context=student_enrollment_material_context($db,$student,$page,$cohort);
 $document=cms_page_doc($page,true);
 $document['html']=cms_access_filter_html($db,$activity,(string)$document['html'],$student,false,null,$context);
 $document=student_material_render_notebook($db,$student,$page,$document);
-cms_render_public_page($activity,$page,$document,false);
+cms_render_public_page($activity,$page,$document,false,true);
