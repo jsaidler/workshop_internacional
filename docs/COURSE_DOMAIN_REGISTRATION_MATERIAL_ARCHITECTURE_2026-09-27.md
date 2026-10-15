@@ -173,6 +173,14 @@ A reconciliação acionada pelo login/ativação delega à autoridade canônica 
 
 Quando o pagamento/estado administrativo deixa de autorizar matrícula, a reconciliação desativa a participação vinculada à inscrição e reprocessa a capacidade da turma desocupada, inclusive sua fila cronológica de ouvintes; reconciliação de outras inscrições não faz parte desse evento pontual.
 
+### Transação compartilhada de matrícula e identidade — 15/10/2026
+
+Durante a atribuição, transferência ou confirmação de inscrição paga, `course_agenda_with_lock()` é o proprietário do `BEGIN IMMEDIATE` do SQLite. A reconciliação pode atualizar a conta de um aluno já existente (`student_account_upsert_from_submission()` → `student_account_merge_profile_from_payload()` → `student_account_update_profile()`). Essa atualização de perfil **não pode executar outro `BEGIN TRANSACTION` nem confirmar a transação de matrícula por conta própria**.
+
+A atualização de perfil usa `SAVEPOINT student_account_profile_update`: sem transação externa, o `RELEASE` conclui a atualização; dentro de `BEGIN IMMEDIATE`, participa da transação existente. Falhas fazem `ROLLBACK TO SAVEPOINT` para não deixar nome e perfil parcialmente alterados, e a rotina externa mantém a responsabilidade pelo `COMMIT` ou `ROLLBACK` da matrícula completa. Não usar somente `PDO::inTransaction()` para detectar `BEGIN IMMEDIATE` executado por SQL bruto: a detecção varia entre versões de PDO SQLite.
+
+Regressão em `tools/test-student-accounts.php`: aluno existente sob `BEGIN IMMEDIATE`, rollback da operação externa, erro de escrita durante a atualização de perfil e atualização independente fora de transação externa.
+
 ### Confirmação financeira e exclusão — revisão de 13/10/2026 (#243)
 
 `confirm`, `pending` e `archive` no painel Inscrições passam a operar somente a submissão selecionada, com pagamento e eventual matrícula na mesma transação de escrita SQLite e sob a trava da Agenda. Uma inscrição paga sem turma continua válida. Uma inscrição paga **com** turma só pode ser confirmada se a matrícula correspondente ficar ativa; falta de vagas, conflito de proveniência ou erro de reconciliação desfazem o estado financeiro e a matrícula, com erro informado no painel. Desativar ou arquivar inscrição reavalia a fila de ouvintes da turma. O hook de shutdown não executa reconciliação em lote após essas ações. Exclusão definitiva remove somente a inscrição e sua matrícula de origem, preserva identidade e registros independentes, e reavalia a fila no mesmo commit. `released_at` não muda. Esta decisão substitui a menção histórica à reconciliação financeira global de `PROJECT_STATE.md`.
