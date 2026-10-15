@@ -131,3 +131,8 @@ Antes de criar ou alterar CSS: **localizar proprietário → reutilizar a primit
 ### Registro/revisão: correção de propriedade duplicada (14/10/2026, PR #243)
 
 O bloco completo e idêntico de `.student-review-grid`/`.student-review-media` aparecia tanto em `student-area.css` quanto em `student-experience.css`. Como `student-experience.css` era carregado depois do `@media(max-width:820px)` de `student-area.css`, a definição tardia de duas colunas apagava a decisão de uma coluna no telefone. O contrato permanece: **`student-area.css` é o único proprietário de base e responsividade dessas grades**. O bloco redundante de `student-experience.css` é removido; não há regra corretiva por tela, outra folha ou `!important`. Gate visual deve medir as colunas reais em ambos os contêineres, não apenas overflow.
+
+
+### Editor de Processamentos — alvos e cascata móvel (15/10/2026, PR #243 draft)
+
+A auditoria 320/390 verificou que `student-quality-pass.css` redefinia os botões de cada etapa para **30 px de altura e 8 px de fonte**, prevalecendo sobre `student-processes.css` pela ordem de carregamento. A regra foi removida da folha corretiva posterior. O proprietário `student-processes.css` agora controla os alvos de `Editar`, `Subir`, `Descer` e `Remover` com altura mínima **44 px**, corpo mínimo **11 px**, largura variável e quebra controlada na linha; a cor do ato destrutivo foi consolidada na mesma folha. A suíte `student-process-template-editor.spec.cjs` mede esses valores no DOM renderizado em 320, 390 e 1440 px e rejeita overflow. Não introduzir `!important` nem restabelecer 8/30 em folhas globais posteriores.
