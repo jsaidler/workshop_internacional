@@ -35,7 +35,7 @@ const screens=[
   ['research-derived','student-notebook.php?state=derived'],
   ['process-library','student-process-saved-cards.php?mode=library'],
   ['process-editor','student-process-editor.php?mode=edit'],
-  ['lab-runner','student-process-execution-state-audit.html?state=idle'],
+  ['lab-runner','student-process-runner-operational.php?state=idle'],
   ['inventory','student-inventory-movement.php?mode=inventory'],
   ['inventory-empty','student-inventory-movement.php?mode=empty'],
   ['inventory-movement','student-inventory-movement.php'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','process-editor','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','process-editor','lab-runner','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -186,6 +186,8 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='process-editor'){await expect(page.locator('[data-operational-template-editor]')).toHaveCount(1);await expect(page.locator('.student-process-step-card')).toHaveCount(9);await expect(page.getByText('Abrir no laboratório',{exact:true})).toBeVisible();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
       if(name==='lab-runner'){
+        await expect(page.locator('[data-operational-runner-view]')).toHaveCount(1);
+        await expect(page.locator('[data-runner-endpoint="/aluno/processar.php?test=7"]')).toHaveCount(1);
         await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar como concluída',exact:true})).toBeVisible();await expect(page.getByText('Ir para próxima etapa',{exact:false})).toHaveCount(0);
       }
       if(device==='phone'&&name!=='login'&&name!=='activation-password'){
