@@ -60,7 +60,11 @@
 .student-process-step-body>p{margin:7px 0 0;color:var(--muted);font:500 10px/1.55 var(--mono)}
 .student-process-step-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;align-items:center}
 .student-process-step-actions form{margin:0}
-.student-process-step-actions .student-link{min-height:36px;padding:0 10px}
+.student-process-step-actions .button.button-compact,
+.student-process-step-actions .student-link,
+.student-process-step-actions .student-danger-action{min-height:44px;padding:0 12px;font-size:11px;line-height:1.15}
+.student-process-step-actions .student-link{border:1px solid var(--line)}
+.student-process-step-actions .student-danger-action{border-color:color-mix(in srgb,#bf6363 70%,var(--line))}
 .student-process-reuse-note{display:grid;gap:3px;margin-top:12px;padding:11px 12px;border-left:3px solid var(--focus);background:color-mix(in srgb,var(--surface) 76%,transparent)}
 .student-process-reuse-note strong{font-size:12px}
 .student-process-reuse-note span{color:var(--muted);font-size:12px;line-height:1.45}
