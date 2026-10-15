@@ -34,14 +34,16 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
  });
 }
 
-test('all independent sources are visible together; private links belong only to authorized scheduled future meeting',async({page})=>{
+test('pending feedback takes precedence over a distant meeting; the upcoming encounter remains discoverable',async({page})=>{
   await page.goto(base+'?state=active');
-  await expect(page.locator('[data-home-meeting]')).toBeVisible();
-  await expect(page.locator('[data-home-feedback]')).toBeVisible();
+  await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();
+  await expect(page.locator('[data-home-upcoming-meeting]')).toBeVisible();
+  await expect(page.locator('[data-home-meeting]')).toHaveCount(0);
   await expect(page.getByRole('heading',{name:'Continuar'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Meus cursos'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Caderno recente'})).toBeVisible();
-  await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
+  await expect(page.locator('[data-home-feedback-feature] .student-v2-cta')).toHaveAttribute('href','/aluno/teste.php?id=17&view=review');
+  await expect(page.locator('[data-home-upcoming-meeting]')).toHaveAttribute('href','/aluno/agenda.php');
   await expect(page.locator('.student-home-course-actions a[href*="duvidas.php?cohort=cohort-a"]')).toHaveCount(1);
   await expect(page.locator('.student-home-course-actions a[href*="material-do-curso?cohort=cohort-a"]')).toHaveCount(1);
   await expect(page.locator('nav.student-mobile-nav a[href="/aluno/agenda.php"]')).toHaveCount(1);
@@ -64,12 +66,12 @@ test('Home surfaces the Caderno task when there is no meeting or feedback',async
   await expect(page.locator('[data-home-record-feature] a')).toHaveAttribute('href','/aluno/teste.php?id=22&view=process');
   await expect(page.getByRole('heading',{name:'Meus cursos'})).toBeVisible();
 });
-test('Home never exposes non-http meeting URL and keeps Agenda discoverable',async({page})=>{
+test('Home keeps distant meeting available through Agenda without exposing unsafe URLs',async({page})=>{
   await page.goto(base+'?state=no-link');
-  await expect(page.locator('[data-home-meeting]')).toBeVisible();
-  await expect(page.getByText('Link ainda não informado')).toBeVisible();
+  await expect(page.locator('[data-home-upcoming-meeting]')).toBeVisible();
+  await expect(page.locator('[data-home-meeting]')).toHaveCount(0);
   await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveCount(0);
-  await expect(page.locator('[data-home-meeting] a[href="/aluno/agenda.php"]')).toBeVisible();
+  await expect(page.locator('[data-home-upcoming-meeting]')).toHaveAttribute('href','/aluno/agenda.php');
 });
 test('no enrollment and restricted tools stay functional without fabricated metrics',async({page})=>{
   await page.goto(base+'?state=empty');
