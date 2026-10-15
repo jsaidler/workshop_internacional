@@ -15,6 +15,9 @@ $publicJs=(string)file_get_contents($root.'/assets/public.js');
 must_global_ui(is_file($root.'/assets/ui-core.css')&&is_file($root.'/assets/ui-core.js'),'global UI authority files are missing');
 must_global_ui(!is_file($root.'/assets/student-area.js'),'student area still owns a local JavaScript UI runtime');
 must_global_ui(!is_file($root.'/assets/student-field-language.css')&&!str_contains($shell,'student-field-language.css'),'student field-label correction layer duplicates ui-core.css');
+foreach(['student-complete-area-audit.spec.cjs','student-visual-audit.spec.cjs','student-field-language.spec.cjs'] as $testFile){
+    must_global_ui(!str_contains((string)file_get_contents($root.'/tools/browser-tests/'.$testFile),'student-field-language.css'),'browser test injects removed field-label correction layer: '.$testFile);
+}
 must_global_ui(str_contains($shell,'/assets/ui-core.css')&&str_contains($shell,'/assets/ui-core.js'),'student shell does not consume global UI assets');
 
 $forbiddenCss=['.student-field','.student-choice-','.student-check-field','.student-button','.student-error','.student-notice','.student-danger-button','--student-control-height'];
