@@ -72,4 +72,25 @@ foreach($requiredConsumers as $file=>$needles){
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 must_global_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route no longer redirects to the global notebook');
 
+// Task-first presentation must consume the existing Design, never impose a new skin.
+$taskCssFiles=['student-app-shell.css','student-agenda.css','student-courses.css','student-laboratory.css','student-profile.css'];
+foreach($taskCssFiles as $name){
+    $css=(string)file_get_contents($root.'/assets/'.$name);
+    must_global_ui(!str_contains($css,'Georgia'),'task stylesheet imports an independent serif font: '.$name);
+    must_global_ui(!str_contains($css,'var(--body,Arial'),'task stylesheet overrides the saved body font fallback: '.$name);
+    must_global_ui(!preg_match('/--student-v2-(?:bg|surface|subtle|text|muted|line|accent|ink)\\b/',$css),'task stylesheet reintroduces a parallel palette: '.$name);
+}
+$taskShell=(string)file_get_contents($root.'/assets/student-app-shell.css');
+must_global_ui(!preg_match('/\\.student-app \\.student-shell\\{[^}]*--(?:bg|surface|surface-2|text|muted|line|line-strong|focus)\\s*:/',$taskShell),'task shell overwrites the CMS color tokens');
+must_global_ui(!str_contains($taskShell,'.student-v2-cta{'),'task Home recreates the canonical button primitive');
+$taskHome=(string)file_get_contents($root.'/app/student_home_view.php');
+must_global_ui(str_contains($taskHome,'class="student-title"')&&str_contains($taskHome,'class="student-subtitle"'),'task Home is not using canonical display headings');
+must_global_ui(str_contains($taskHome,'class="button button-primary student-v2-cta"')&&str_contains($taskHome,'class="button button-secondary student-v2-secondary-link"'),'task Home bypasses canonical button actions');
+foreach(['student_agenda_view.php','student_courses_view.php','student_laboratory_view.php'] as $renderer){
+    $src=(string)file_get_contents($root.'/app/'.$renderer);
+    must_global_ui(str_contains($src,'class="student-title"'),'task heading bypasses the existing student-title primitive: '.$renderer);
+}
+$profileCss=(string)file_get_contents($root.'/assets/student-profile.css');
+must_global_ui(!preg_match('/\\.student-profile-header \\.student-title-record\\{[^}]*font\\s*:/',$profileCss),'profile overrides its inherited canonical display heading');
+
 echo "global-ui-consumption: ok\n";
