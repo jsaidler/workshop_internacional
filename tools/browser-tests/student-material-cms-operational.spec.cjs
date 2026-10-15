@@ -30,6 +30,11 @@ for(const device of viewports){
     await expect(article.locator('[data-cms-section="branqueamento"]')).toHaveCount(1);
     await expect(article.locator('[data-cms-section="aula-nao-liberada"]')).toHaveCount(0);
     await expect(article).not.toContainText('Esta seção não pode ser enviada ao aluno.');
+    const notes=page.locator('[data-student-notes-panel]');
+    await expect(notes).toHaveCount(1);
+    await expect(notes.locator('[data-annotation-item]')).toHaveCount(2);
+    await expect(notes.locator('form[action="/aluno/material-anotacao.php"] input[name="_csrf"]').first()).toHaveValue('fixture-cms-csrf-no-write');
+    await expect(notes.locator('summary').first()).toContainText('Anotações');
     await expect(page.locator('header[data-cms-public-header] a.brand')).toHaveAttribute('href','/aluno/');
     await expect(page.locator('.student-desktop-nav a')).toHaveCount(5);
     await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
@@ -54,6 +59,10 @@ for(const device of viewports){
       await root.evaluate((el,point)=>{el.scrollTop=point==='start'?0:point==='middle'?(el.scrollHeight-el.clientHeight)/2:el.scrollHeight;},part);
       await page.screenshot({path:'student-visual-audit/material-cms/'+device.name+'-'+part+'.png',animations:'disabled'});
     }
+    await notes.locator('summary').first().click();
+    await expect(notes).toHaveAttribute('open','');
+    await expect(notes).toContainText('Comparar EI 200 e EI 400');
+    await page.screenshot({path:'student-visual-audit/material-cms/'+device.name+'-annotations.png',animations:'disabled'});
     expect(errors).toEqual([]);
   });
 }
