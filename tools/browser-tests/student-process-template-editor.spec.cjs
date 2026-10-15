@@ -45,26 +45,35 @@ for(const dim of dimensions){
       return {label:el.textContent.trim(),height:box.height,fontSize:parseFloat(style.fontSize),left:box.left,right:box.right};
     }));
     const dangerContrast=await page.evaluate(()=>{
-      const dangerous=document.querySelector('.student-process-step-actions .student-danger-action'),root=document.documentElement;
-      const hadText=root.style.getPropertyValue('--text'),hadBackground=root.style.getPropertyValue('--bg');
-      const ctx=document.createElement('canvas').getContext('2d');
-      const rgb=(css)=>{
-        ctx.canvas.width=1;ctx.canvas.height=1;ctx.clearRect(0,0,1,1);ctx.fillStyle=css;ctx.fillRect(0,0,1,1);
+      const dangerous=document.querySelector('.student-process-step-actions .student-danger-action');
+      const root=document.documentElement,shell=document.querySelector('.student-shell');
+      const previousTheme=root.getAttribute('data-theme');
+      const ctx=document.createElement('canvas').getContext('2d',{willReadFrequently:true});
+      const rgb=css=>{
+        ctx.canvas.width=1;ctx.canvas.height=1;
+        ctx.clearRect(0,0,1,1);ctx.fillStyle=css;ctx.fillRect(0,0,1,1);
         return [...ctx.getImageData(0,0,1,1).data].slice(0,3);
       };
-      const lum=values=>values.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+      const luminance=values=>values.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
       const out={};
-      for(const [mode,text,bg] of [['light','#181818','#f2f2ef'],['dark','#f3f1ec','#101010']]){
-        root.style.setProperty('--text',text);root.style.setProperty('--bg',bg);
-        const foreground=lum(rgb(getComputedStyle(dangerous).color)),background=lum(rgb(bg));
-        out[mode]=(Math.max(foreground,background)+.05)/(Math.min(foreground,background)+.05);
+      try{
+        for(const mode of ['light','dark']){
+          // Theme tokens live in .student-page.student-app and are remapped by .student-shell;
+          // setting --text on :root does not override that real scoped ownership.
+          root.setAttribute('data-theme',mode);
+          const textColor=getComputedStyle(dangerous).color;
+          const background=getComputedStyle(shell).backgroundColor;
+          const a=luminance(rgb(textColor)),b=luminance(rgb(background));
+          out[mode]={ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),textColor,background};
+        }
+      }finally{
+        if(previousTheme===null)root.removeAttribute('data-theme');
+        else root.setAttribute('data-theme',previousTheme);
       }
-      if(hadText)root.style.setProperty('--text',hadText);else root.style.removeProperty('--text');
-      if(hadBackground)root.style.setProperty('--bg',hadBackground);else root.style.removeProperty('--bg');
       return out;
     });
-    expect(dangerContrast.light,'destructive step action must meet AA on light theme').toBeGreaterThanOrEqual(4.5);
-    expect(dangerContrast.dark,'destructive step action must meet AA on dark theme').toBeGreaterThanOrEqual(4.5);
+    expect(dangerContrast.light.ratio,JSON.stringify(dangerContrast.light)+' — destructive action light theme AA').toBeGreaterThanOrEqual(4.5);
+    expect(dangerContrast.dark.ratio,JSON.stringify(dangerContrast.dark)+' — destructive action dark theme AA').toBeGreaterThanOrEqual(4.5);
     for(const target of targets){
       expect(target.height,'step action '+target.label+' must be a full touch target').toBeGreaterThanOrEqual(44);
       expect(target.fontSize,'step action '+target.label+' must be legible').toBeGreaterThanOrEqual(11);
