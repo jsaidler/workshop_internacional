@@ -33,6 +33,11 @@ for(const device of viewports){
     const notes=page.locator('[data-student-notes-panel]');
     await expect(notes).toHaveCount(1);
     await expect(notes.locator('[data-annotation-item]')).toHaveCount(2);
+    const notesData=notes.locator('script[type="application/json"][data-student-annotation-data]');
+    await expect(notesData).toHaveCount(1);
+    const annotations=await notesData.evaluate(el=>JSON.parse(el.textContent||'[]'));
+    expect(annotations).toHaveLength(2);
+    expect(annotations.map(x=>x.anchorType)).toEqual(['page','page']);
     await expect(notes.locator('form[action="/aluno/material-anotacao.php"] input[name="_csrf"]').first()).toHaveValue('fixture-cms-csrf-no-write');
     await expect(notes.locator('summary').first()).toContainText('Anotações');
     await expect(page.locator('header[data-cms-public-header] a.brand')).toHaveAttribute('href','/aluno/');
