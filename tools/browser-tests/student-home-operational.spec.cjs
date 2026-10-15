@@ -274,7 +274,7 @@ for(const [label,relativeUrl] of productionDesignFixtures){
    };
    root.setAttribute('data-theme','light');const light=tokens();
    root.setAttribute('data-theme','dark');const dark=tokens();
-   const headingSelector=relativeUrl.includes('student-long-editors.php')
+   const headingSelector=window.location.pathname.includes('student-long-editors.php')
     ? '.student-task-editor .student-create-dialog-head h2' : 'h1.student-title';
    const heading=document.querySelector(headingSelector);
    return {light,dark,headingFont:heading?getComputedStyle(heading).fontFamily:null};
