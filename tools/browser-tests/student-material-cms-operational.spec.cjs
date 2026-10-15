@@ -68,6 +68,12 @@ for(const device of viewports){
     await expect(notes).toHaveAttribute('open','');
     await expect(notes).toContainText('Comparar EI 200 e EI 400');
     await page.screenshot({path:'student-visual-audit/material-cms/'+device.name+'-annotations.png',animations:'disabled'});
+    await notes.locator('[data-annotation-edit="1"]').click();
+    const editing=notes.locator('[data-annotation-item="1"]');
+    await expect(editing.locator('textarea[name="body"]')).toBeVisible();
+    await expect(editing.locator('textarea[name="body"]')).toHaveValue(/Comparar EI 200 e EI 400/);
+    await expect(editing.locator('button[name="annotation_action"][value="update"]')).toBeVisible();
+    await page.screenshot({path:'student-visual-audit/material-cms/'+device.name+'-note-edit.png',animations:'disabled'});
     expect(errors).toEqual([]);
   });
 }
