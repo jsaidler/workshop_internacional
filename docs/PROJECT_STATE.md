@@ -874,3 +874,11 @@ Confirmar pagamento, marcar pendente e cancelar inscrição eram escritas imedia
 
 
 **15/10/2026 — contraste do ato destrutivo:** etiqueta `Remover` do Editor deixou cor vermelha absoluta inadequada ao tema claro; o CSS canônico usa mistura com `--text` para adaptação de contraste, com regressão calculada nos dois temas (limiar AA 4,5:1). Aferição do Playwright do SHA final ainda necessária.
+
+### 15/10/2026 — Continuação da auditoria de identidade e cascata no PR #245
+
+O diagnóstico constatou que a limpeza anterior preservara sobrescritas genéricas em `student-experience.css` e `student-rendered-fixes.css`, ambas posteriores a `ui-core.css` na ordem do shell. Foram removidas redefinições de `.button`/`.form-field`/`.choice-field` dessas folhas, e `student-profile.css` passou a herdar os campos canônicos, preservando o disclosure de informações opcionais. São ajustes de propriedade visual, sem alteração de regras de negócio, navegação task-first, POST, autenticação ou persistência.
+
+Nove fixtures operacionais restantes com `cms_design_*` simuladas (tipografia Arial/Courier New e cores estáticas) passaram a carregar funções reais de `app/cms_settings.php`. Dados de teste continuam sintéticos. `tools/test-global-ui-consumption.php` cobre agora 19 fixtures e impede reintrodução de funções CSS editoriais fictícias, primitivas globais concorrentes e campos paralelos no Perfil. A interpretação anterior de que as dez fixtures principais cobriam todo o audit visual estava incompleta.
+
+Esta tranche **não certifica** identidade visual em todos os estados reais, nem homologação com dados e autenticação da hospedagem: folhas tardias continuam com responsabilidades de composição a consolidar e há fixtures históricas fora da amostra ainda sintéticas. Exigir `validate`, `student-visual-audit` e build no mesmo SHA após as alterações e inspeção qualitativa de 320/390/1440, claro/escuro e editores antes de qualquer integração. **PR draft, sem merge, sem atualização de `production-dist` e sem instalação.**
