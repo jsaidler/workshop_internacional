@@ -41,7 +41,8 @@ for(const device of viewports){
     await expect(notes.locator('form[action="/aluno/material-anotacao.php"] input[name="_csrf"]').first()).toHaveValue('fixture-cms-csrf-no-write');
     await expect(notes.locator('summary').first()).toContainText('Anotações');
     await expect(page.locator('header[data-cms-public-header] a.brand')).toHaveAttribute('href','/aluno/');
-    await expect(page.locator('.student-desktop-nav a')).toHaveCount(5);
+    await expect(page.locator('.student-desktop-nav a.student-sidebar-brand')).toHaveCount(1);
+    await expect(page.locator('.student-desktop-nav a:not(.student-sidebar-brand)')).toHaveCount(5);
     await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
     await expect(page.locator('.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
     await expect(page.locator('[data-cms-page-slug="processo-quimico-completo"]')).toHaveCount(1);
