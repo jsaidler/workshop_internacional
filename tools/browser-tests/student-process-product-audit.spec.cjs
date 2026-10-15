@@ -24,7 +24,7 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('Mesmo banho da 1ª revelação')).toBeVisible();
         await expect(page.getByRole('button',{name:'Salvar etapa'})).toBeVisible();
         await expect(page.locator('.student-process-step-card')).toHaveCount(9);
-        await expect(page.locator('.student-process-step-card[data-stage="03"]')).toContainText('cloreto férrico');
+        await expect(page.locator('.student-process-step-card[data-stage="03"]')).toContainText('Cloreto férrico');
         await expect(page.locator('.student-process-step-card[data-stage="05"]')).toContainText('amônia');
         await expect(page.locator('[data-process-template-step-form] [name="_csrf"]')).toHaveCount(2);
         await expect(page.getByText('Abrir no laboratório',{exact:true})).toBeVisible();
