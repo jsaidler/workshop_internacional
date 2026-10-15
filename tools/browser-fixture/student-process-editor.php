@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/../../app/cms_settings.php';
 /* Visual-only projection of the same template editor as /aluno/processamentos.php.
    Values and identities are synthetic. No authenticated write or persistence occurs here. */
 require_once __DIR__.'/../../app/student_workbench.php';
@@ -21,9 +22,6 @@ function database(): PDO {
 }
 function student_account_current(PDO $db): ?array {return ['id'=>1,'name'=>'Aluno de teste'];}
 function csrf_token(string $scope): string {return 'fixture-csrf-no-write';}
-function cms_design_defaults(): array {return ['colors'=>['bg'=>'#101010']];}
-function cms_design_font_import_css(array $design): string {return '';}
-function cms_design_css(array $design): string {return ':root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#73d2ac;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:"Courier New",monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px;--ux-space-8:64px}';}
 function student_process_template_href(int $id,int $testId=0,int $stepId=0):string {
     return '/aluno/processamentos.php?id='.$id.($testId>0?'&test='.$testId:'').($stepId>0?'&step='.$stepId:'');
 }

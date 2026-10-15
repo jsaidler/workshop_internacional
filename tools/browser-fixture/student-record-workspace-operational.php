@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/../../app/cms_settings.php';
 /** Complete canonical record workspace with synthetic data; no storage, request mutations or authorization emulation. */
 require_once __DIR__.'/../../app/student_shell.php';
 require_once __DIR__.'/../../app/student_record_media_controls.php';
@@ -14,9 +15,6 @@ function csrf_token(string $scope): string {return 'controlled-workspace-csrf';}
 function database(): PDO {static $db=null;return $db??=new PDO('sqlite::memory:');}
 function student_account_current(PDO $db): ?array {return ['id'=>2,'name'=>'Aluno de teste'];}
 function student_tools_for_student(PDO $db,int $id): array {return [];}
-function cms_design_defaults(): array {return ['colors'=>['bg'=>'#101010']];}
-function cms_design_font_import_css(array $design): string {return '';}
-function cms_design_css(array $design): string {return ':root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#73d2ac;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:"Courier New",monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px}';}
 function student_test_status_label(string $status): string {return ['draft'=>'Rascunho','submitted'=>'Enviado para avaliação','needs_revision'=>'Revisão solicitada','reviewed'=>'Avaliação concluída'][$status]??'Rascunho';}
 function student_test_message_date(string $date): string {return '14/10/2026';}
 $state=(string)($_GET['state']??'exposure');
