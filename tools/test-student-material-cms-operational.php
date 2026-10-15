@@ -15,6 +15,7 @@ must_material_cms(str_contains($html,'Exposição pensando no positivo')&&str_co
 must_material_cms(!str_contains($html,'Conteúdo não liberado')&&!str_contains($html,'Esta seção não pode ser enviada ao aluno'),'blocked section leaked');
 must_material_cms(str_contains($html,'data-cms-section="primeiro-desenvolvimento"')&&str_contains($html,'data-cms-section="branqueamento"'),'released sections missing');
 must_material_cms(str_contains($html,'href="/aluno/cursos.php?cohort=cohort-a"')&&str_contains($html,'href="/aluno/duvidas.php?cohort=cohort-a"'),'cohort-scoped routes missing');
+must_material_cms(str_contains($html,'student-notes-panel')&&str_contains($html,'data-student-notes-panel')&&str_contains($html,'data-annotation-item="1"')&&str_contains($html,'data-annotation-item="2"'),'material must project canonical notebook panel, not a fictional notes widget');
 must_material_cms(str_contains($html,'class="student-mobile-nav"')&&str_contains($html,'aria-current="page"'),'global student nav missing');
 $db=database();$activity=['id'=>1,'is_root'=>1,'slug'=>'workshop'];
 $current=cms_page_by_id($db,101);$blocked=cms_page_by_id($db,103);
@@ -34,7 +35,7 @@ must_material_cms(!str_contains($visible,'data-cms-section="aula-nao-liberada"')
 $entry=(string)file_get_contents(dirname(__DIR__).'/index.php');
 must_material_cms(str_contains($entry,'cms_access_page_allowed($db,$activity,$page,$student)')&&str_contains($entry,'!$materialContext'),'production CMS entry must block foreign student before section rendering');
 $source=(string)file_get_contents(dirname(__DIR__).'/tools/browser-fixture/student-material-cms-operational.php');
-must_material_cms(str_contains($source,"require_once __DIR__.'/../../app/cms_renderer.php'")&&str_contains($source,'cms_render_public_page($activity,$page,cms_page_doc($page,true),false)'),'fixture must use public CMS production renderer and document');
-must_material_cms(str_contains($source,"require_once __DIR__.'/../../app/student_enrollments.php'")&&str_contains($source,"require_once __DIR__.'/../../app/cms_access.php'"),'release and enrollment must use real services');
+must_material_cms(str_contains($source,"require_once __DIR__.'/../../app/cms_renderer.php'")&&str_contains($source,'student_material_render_notebook($db,$student,$page,$document)')&&str_contains($source,'cms_render_public_page($activity,$page,$document,false)'),'fixture must use public CMS production renderer and document');
+must_material_cms(str_contains($source,"require_once __DIR__.'/../../app/student_enrollments.php'")&&str_contains($source,"require_once __DIR__.'/../../app/cms_access.php'")&&str_contains($source,"require_once __DIR__.'/../../app/student_notes_experience.php'"),'release and enrollment must use real services');
 must_material_cms(str_contains($source,'http_response_code(403)')&&str_contains($source,'REQUEST_METHOD'),'fixture must protect synthetic personal access and deny writes');
 echo "student-material-cms-operational: ok\n";
