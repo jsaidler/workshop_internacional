@@ -38,7 +38,7 @@ for(const [viewport,width,height] of [['phone',390,844],['desktop',1440,1100]]){
         expect(layout.secondaryBorders[1]).toBe(0);
       }
       if(sample.name==='Caderno'){
-        expect(layout.cardBorders).toEqual([1,0,0,0]);
+        expect(layout.cardBorders).toEqual([0,0,1,0]);
         expect(layout.secondaryBorders).toEqual([0,0,0,0]);
       }
       if(sample.name==='Processamentos'){
