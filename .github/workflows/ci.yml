@@ -123,6 +123,7 @@ jobs:
             php tools/test-student-lab-catalog-views.php
             php tools/test-student-record-workspace.php
             php tools/test-student-process-step-editor.php
+            php tools/test-student-process-template-editor.php
             php tools/test-student-auth-view.php
             php tools/test-student-record-auxiliary-views.php
             php tools/test-student-record-workspace-view.php
