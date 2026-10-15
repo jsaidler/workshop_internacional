@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/../../app/cms_settings.php';
 // Test-only stock values, REAL shared PHP movement renderer. POST responses here
 // are simulations; SQLite operational rules are tested in the PHP runtime test.
 require_once __DIR__.'/../../app/student_inventory_move_panel.php';
@@ -11,9 +12,6 @@ function database(): PDO {static $db=null;return $db??=new PDO('sqlite::memory:'
 function student_account_current(PDO $db): ?array {return ['id'=>1,'name'=>'Aluno'];}
 function student_tools_for_student(PDO $db,int $studentId): array {return [];}
 function csrf_token(string $scope): string {return 'fixture-only-token';}
-function cms_design_defaults(): array {return ['colors'=>['bg'=>'#101010']];}
-function cms_design_font_import_css(array $design): string {return '';}
-function cms_design_css(array $design): string {return ':root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#73d2ac;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:"Courier New",monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px;--ux-space-8:64px}';}
 
 $isPost=($_SERVER['REQUEST_METHOD']??'GET')==='POST';
 $mode=(string)($_GET['mode']??'normal');
