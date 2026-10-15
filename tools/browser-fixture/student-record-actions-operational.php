@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/../../app/cms_settings.php';
 /** Render actual student record action views in the canonical shell. All identities/data are synthetic; no writes. */
 require_once __DIR__.'/../../app/student_shell.php';
 require_once __DIR__.'/../../app/student_record_auxiliary_views.php';
@@ -8,9 +9,6 @@ function csrf_token(string $scope): string {return 'synthetic-action-csrf';}
 function database(): PDO {static $db=null;return $db??=new PDO('sqlite::memory:');}
 function student_account_current(PDO $db): ?array {return ['id'=>1,'name'=>'Aluno de teste'];}
 function student_tools_for_student(PDO $db,int $id): array {return [];}
-function cms_design_defaults(): array {return ['colors'=>['bg'=>'#101010']];}
-function cms_design_font_import_css(array $design): string {return '';}
-function cms_design_css(array $design): string {return ':root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#73d2ac;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:"Courier New",monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px}:root[data-theme="light"]{--bg:#f2f2ef;--surface:#fff;--surface-2:#e7e7e2;--text:#0b0c0d;--muted:#5f6264;--line:#bfc1be;--line-strong:#0b0c0d;--focus:#186f4d;--inverse-bg:#0b0c0d;--inverse:#f5f5f1}';}
 $mode=(string)($_GET['mode']??'step');
 $valid=['step','step-error','step-locked','delete','delete-error'];
 if(!in_array($mode,$valid,true)){http_response_code(404);exit;}
