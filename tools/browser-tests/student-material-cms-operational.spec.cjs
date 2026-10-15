@@ -75,6 +75,25 @@ test('CMS route rejects absent enrollment, wrong student and wrong cohort before
    await expect(page.getByText('Primeiro desenvolvimento')).toHaveCount(0);
  }
 });
+test('CMS skip link is keyboard-accessible without being a persistent pointer control',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(base+'?page=current&cohort=cohort-a',{waitUntil:'networkidle'});
+  const skip=page.locator('a.skip-link[href="#main"]');
+  await expect(skip).toHaveCount(1);
+  await page.keyboard.press('Tab');
+  await expect(skip).toBeFocused();
+  const reach=await skip.evaluate(el=>{
+    const b=el.getBoundingClientRect(),style=getComputedStyle(el);
+    return{left:b.left,top:b.top,right:b.right,bottom:b.bottom,visibility:style.visibility};
+  });
+  expect(reach.left).toBeGreaterThanOrEqual(0);
+  expect(reach.top).toBeGreaterThanOrEqual(0);
+  expect(reach.right).toBeLessThanOrEqual(390);
+  expect(reach.bottom).toBeLessThanOrEqual(844);
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#main$/);
+});
+
 test('material last released page does not list blocked next material',async({page})=>{
  const res=await page.goto(base+'?page=next&cohort=cohort-a',{waitUntil:'networkidle'});
  expect(res?.status()).toBe(200);
