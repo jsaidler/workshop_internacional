@@ -37,6 +37,7 @@ $operationalSources=[
  'process-plan'=>'student-record-workspace-operational.php?state=process-plan',
  'process-partial'=>'student-record-workspace-operational.php?state=process-partial',
  'shared-record'=>'student-shared-record-operational.php?mode=filled',
+ 'research-derived'=>'student-notebook.php?state=derived',
 ];
 foreach($operationalSources as $name=>$source){
  must_student_visual_inventory(str_contains($spec,"['".$name."','".$source."']"),$name.' must use its operational PHP renderer');

@@ -13,7 +13,11 @@ function student_process_plan_for_test(PDO $db,int $id,int $studentId):?array{re
 function student_process_plan_steps(PDO $db,int $id):array{return [['status'=>'completed'],['status'=>'pending']];}
 function student_test_media(PDO $db,int $id):array{return [];}
 function student_test_media_by_phase(array $rows,string $phase):array{return [];}
-function student_research_source(PDO $db,array $record,int $studentId):?array{return (int)$record['id']===14?['id'=>12,'title'=>'Primeiro teste com RX']:null;}
+function student_research_source(PDO $db,array $record,int $studentId):?array{
+    $state=(string)($_GET['state']??'mixed');
+    if($state==='derived-no-source')return null;
+    return (int)$record['id']===14?['id'=>12,'title'=>str_starts_with($state,'derived')?'EI 400 — FeCl₃':'Primeiro teste com RX']:null;
+}
 function student_process_date(string $date):string{return '10/10/2026';}
 function student_notebook_has_exposure(array $r,array $media):bool{return !empty($r['exposure_recorded']);}
 function student_notebook_has_result(array $r,array $media):bool{return !empty($r['result_recorded']);}
@@ -22,7 +26,7 @@ function student_notebook_process_summary(array $steps,?array $plan,array $planS
 }
 function student_test_visibility_label(string $v):string{return match($v){'cohort'=>'Turma','course'=>'Curso',default=>'Privado'};}
 $state=(string)($_GET['state']??'mixed');
-if(!in_array($state,['empty','personal','mixed','shared','many','error'],true)){http_response_code(404);exit;}
+if(!in_array($state,['empty','personal','mixed','shared','many','error','derived','derived-no-source','derived-no-intent'],true)){http_response_code(404);exit;}
 $studentId=1;$db=database();$notice=$state==='error'?'':'';
 $error=$state==='error'?'Informe um título para continuar.':'';$failedCreate=$state==='error';
 $enrollments=[['cohort_id'=>101,'course_title'=>'Positivo direto em filme de raio-X','cohort_title'=>'Turma Outubro 2026']];
@@ -32,9 +36,18 @@ $sample=[
     ['id'=>13,'title'=>'Exposição em luz natural','context_scope'=>'personal','visibility'=>'private','updated_at'=>'2026-10-09T11:00:00Z','test_date'=>'2026-10-09','exposure_recorded'=>true,'result_recorded'=>true,'research_intent'=>''],
     ['id'=>14,'title'=>'Comparação do branqueamento','context_scope'=>'course','context_course_title'=>'Positivo direto em filme de raio-X','context_cohort_title'=>'Turma Outubro 2026','visibility'=>'private','updated_at'=>'2026-10-08T12:00:00Z','test_date'=>'2026-10-08','exposure_recorded'=>false,'result_recorded'=>true,'research_intent'=>'Verificar a densidade']
 ];
+if(str_starts_with($state,'derived')){
+    // The notebook index renderer is the same PHP used in production.
+    // Synthetic lineage follows the canonical research-source service contract.
+    $sample[0]['title']='EI 400 — FeCl₃';
+    $sample[2]['title']='Variação de EI 400 — FeCl₃';
+    $sample[2]['research_intent']=$state==='derived-no-intent'?'':'Manter EI 400 e voltar a primeira revelação para 7 minutos.';
+    $sample[2]['result_recorded']=false;
+}
 $records=match($state){
   'empty'=>[],
   'personal'=>[$sample[1]],
+  'derived','derived-no-source','derived-no-intent'=>[$sample[2],$sample[0]],
   'many'=>array_merge($sample,$sample,$sample,$sample),
   default=>$sample
 };

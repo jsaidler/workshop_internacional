@@ -32,7 +32,7 @@ const screens=[
   ['delete-record','student-record-actions-operational.php?mode=delete'],
   ['compare-select','student-comparison-operational.php?mode=select'],
   ['compare-records','student-comparison-operational.php?mode=analysis'],
-  ['research-derived','student-notebook-compare.html?screen=derived'],
+  ['research-derived','student-notebook.php?state=derived'],
   ['process-library','student-process-saved-cards.php?mode=library'],
   ['process-editor','student-process-product-audit.html?screen=editor'],
   ['lab-runner','student-process-execution-state-audit.html?state=idle'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -134,7 +134,7 @@ for(const [device,viewport] of Object.entries(viewports)){
       if(name==='compare-records'){await expect(page.getByText('Diferenças registradas',{exact:true})).toBeVisible();await expect(page.getByText('Resultado observado',{exact:true})).toBeVisible();await expect(page.getByText('Criar próxima variação',{exact:true})).toBeVisible();await expect(page.locator('.student-research-result-card')).toHaveCount(2);await expect(page.locator('form.student-research-next-form input[name="_csrf"]')).toHaveCount(1);await expect(page.getByText('Etapa 1 · Tempo',{exact:true})).toBeVisible();}
       if(name==='research-derived'){
         await expect(page.getByText('Continuação de',{exact:false})).toBeVisible();await expect(page.getByText('Manter EI 400 e voltar a primeira revelação para 7 minutos.',{exact:false})).toBeVisible();
-        const menu=page.locator('.student-record-menu'),compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});await expect(menu).toBeVisible();await expect(compareOrigin).toBeHidden();await menu.locator('summary').click();await expect(compareOrigin).toBeVisible();await menu.locator('summary').click();await expect(compareOrigin).toBeHidden();
+        const card=page.locator('[data-record-id="14"]'),menu=card.locator('.student-record-menu'),compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});await expect(menu).toBeVisible();await expect(compareOrigin).toBeHidden();await menu.locator('summary').click();await expect(compareOrigin).toHaveAttribute('href','/aluno/comparar-processos.php?id%5B%5D=12&id%5B%5D=14');await expect(compareOrigin).toBeVisible();await menu.locator('summary').click();await expect(compareOrigin).toBeHidden();
       }
       if(name==='process-choice'){
         await expect(page.getByText('Associar roteiro',{exact:true})).toBeVisible();await expect(page.getByText('Adicionar etapa',{exact:true}).first()).toBeVisible();await expect(page.getByText('Movimentar estoque',{exact:true})).toBeVisible();await expect(page.getByText('O processamento já aconteceu?',{exact:false})).toHaveCount(0);
