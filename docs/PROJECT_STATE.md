@@ -863,3 +863,6 @@ Confirmar pagamento, marcar pendente e cancelar inscrição eram escritas imedia
 
 
 **15/10/2026 — CSS canônico do Editor:** problema visual confirmado por Playwright: folha posterior `student-quality-pass.css` sobrepunha o componente com 8 px/30 px. Eliminada a regra na origem e consolidados controles 11 px/44 px em `student-processes.css` com inspeção responsiva obrigatória no SHA final. Não há CSS de fixture ou `!important`.
+
+
+**15/10/2026 — contraste do ato destrutivo:** etiqueta `Remover` do Editor deixou cor vermelha absoluta inadequada ao tema claro; o CSS canônico usa mistura com `--text` para adaptação de contraste, com regressão calculada nos dois temas (limiar AA 4,5:1). Aferição do Playwright do SHA final ainda necessária.
