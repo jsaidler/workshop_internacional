@@ -12,7 +12,7 @@ const screens=[
   ['course-detail','student-courses.php?state=detail'],
   ['course-feedback','student-courses.php?state=attention'],
   ['course-empty','student-courses.php?state=no-material'],
-  ['material','student-material-context.html'],
+  ['material','student-material-cms-operational.php?page=current&cohort=cohort-a'],
   ['questions-list','student-questions-operational.php?state=list'],
   ['questions-feedback','student-questions-operational.php?state=evaluations'],
   ['question-new','student-questions-operational.php?state=failed-create'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','process-editor','lab-runner','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
+const operationalScreens=new Set(['material','course-feedback','questions-feedback','process-library','process-editor','lab-runner','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
