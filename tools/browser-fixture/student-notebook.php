@@ -56,8 +56,8 @@ $records=match($state){
 };
 $shared=$state==='shared'?[['id'=>44,'title'=>'Positivo de placa 13×18','visibility'=>'cohort','student_name'=>'Colega','cohort_title'=>'Turma Outubro 2026']]:[];
 ?><!doctype html><html lang="pt-BR" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style data-cms-design-fonts><?=cms_design_font_import_css($fixtureDesign)?></style><style data-cms-design-tokens><?=cms_design_css($fixtureDesign)?></style>
-<link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-workbench.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-academic.css"><link rel="stylesheet" href="/assets/student-caderno.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css"><link rel="stylesheet" href="/assets/student-quality-pass.css"><link rel="stylesheet" href="/assets/student-app-shell.css">
+<style data-cms-design-fonts><?=cms_design_font_import_css($fixtureDesign)?></style>
+<link rel="stylesheet" href="/template/page.css"><style data-cms-design-tokens><?=cms_design_css($fixtureDesign)?></style><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-workbench.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-academic.css"><link rel="stylesheet" href="/assets/student-caderno.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css"><link rel="stylesheet" href="/assets/student-quality-pass.css">
 <title>Caderno · teste de renderização</title></head>
 <body class="student-page student-app" data-notebook-state="<?=h($state)?>"><div class="student-shell">
 <?php student_shell_nav('notebook','student-desktop-nav');?>

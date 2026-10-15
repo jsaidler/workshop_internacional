@@ -104,4 +104,12 @@ must_global_ui(!preg_match('/\\.student-process-task-form \\.form-field\\{[^}]*f
 $profileCss=(string)file_get_contents($root.'/assets/student-profile.css');
 must_global_ui(!preg_match('/\\.student-profile-header \\.student-title-record\\{[^}]*font\\s*:/',$profileCss),'profile overrides its inherited canonical display heading');
 
+// PHP screenshot fixtures must exercise the real CMS Design contract, not Arial/Georgia mock tokens.
+foreach(['student-home.php','student-notebook.php','student-agenda.php','student-courses.php','student-laboratory.php','student-process-editor.php','student-long-editors.php','student-profile.php','student-process-runner-operational.php','student-record-workspace-operational.php'] as $fixture){
+    $source=(string)file_get_contents($root.'/tools/browser-fixture/'.$fixture);
+    must_global_ui(str_contains($source,"require_once __DIR__.'/../../app/cms_settings.php'"),'fixture bypasses CMS Design implementation: '.$fixture);
+    must_global_ui(!str_contains($source,'--title:Georgia')&&!str_contains($source,'--title:Arial'),'fixture hardcodes a competing display font: '.$fixture);
+    must_global_ui(!str_contains($source,'student-app-shell.css'),'fixture still requests removed CSS asset: '.$fixture);
+}
+
 echo "global-ui-consumption: ok\n";

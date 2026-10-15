@@ -241,3 +241,47 @@ test('Home offers direct record and processing actions before the long course li
   await expect(tools.locator('[data-record-create-open]')).toHaveCount(1);
   await expect(tools.locator('a[href="/aluno/processamentos.php"]')).toHaveCount(1);
 });
+
+
+const productionDesignFixtures=[
+ ['Home','student-home.php?state=active'],
+ ['Caderno','student-notebook.php?state=personal'],
+ ['Agenda','student-agenda.php?state=regular&view=encontros'],
+ ['Cursos','student-courses.php?state=single'],
+ ['Laboratorio','student-laboratory.php?state=full'],
+ ['Roteiros','student-process-editor.php'],
+ ['Editor de laboratorio','student-long-editors.php?kind=preparation&mode=edit'],
+ ['Conta','student-profile.php?mode=view'],
+ ['Execucao de roteiro','student-process-runner-operational.php?state=idle'],
+ ['Registro','student-record-workspace-operational.php?state=exposure']
+];
+for(const [label,relativeUrl] of productionDesignFixtures){
+ test('operational fixture consumes native CMS Design defaults '+label,async({page})=>{
+  const response=await page.goto('http://127.0.0.1:8099/tools/browser-fixture/'+relativeUrl,{waitUntil:'networkidle'});
+  expect(response?.status()).toBe(200);
+  await expect(page.locator('style[data-cms-design-fonts]')).toHaveCount(1);
+  await expect(page.locator('style[data-cms-design-tokens]')).toHaveCount(1);
+  const design=await page.evaluate(()=>{
+   const root=document.documentElement;
+   const tokens=()=>{
+    const c=getComputedStyle(root);
+    return {
+     title:c.getPropertyValue('--title').trim(),
+     body:c.getPropertyValue('--body').trim(),
+     mono:c.getPropertyValue('--mono').trim(),
+     bg:c.getPropertyValue('--bg').trim()
+    };
+   };
+   root.setAttribute('data-theme','light');const light=tokens();
+   root.setAttribute('data-theme','dark');const dark=tokens();
+   return {light,dark};
+  });
+  for(const theme of [design.light,design.dark]){
+   expect(theme.title).toContain('Saira Extra Condensed');
+   expect(theme.body).toContain('IBM Plex Sans');
+   expect(theme.mono).toContain('IBM Plex Mono');
+  }
+  expect(design.light.bg).toBe('#f2f2ef');
+  expect(design.dark.bg).toBe('#0c0d0e');
+ });
+}
