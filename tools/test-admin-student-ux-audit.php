@@ -19,6 +19,7 @@ $studentNotebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)f
 $studentRecord=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');
 $studentBench=(string)file_get_contents($root.'/aluno/ferramentas.php').(string)file_get_contents($root.'/app/student_laboratory_view.php');
 $processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
+$processManagerView=(string)file_get_contents($root.'/app/student_process_template_editor_view.php');
 $processRunner=(string)file_get_contents($root.'/aluno/processar.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 $uiCss=(string)file_get_contents($root.'/assets/ui-core.css');
@@ -93,7 +94,7 @@ ux_expect(str_contains($studentRecord,'student-process-path-choice')&&str_contai
 ux_expect(str_contains($studentRecord,'Marcar ✓')&&str_contains($studentRecord,'edit_plan_step=')&&str_contains($studentRecord,"?'Timer':'Abrir etapa'")&&str_contains($studentRecord,'Adicionar etapa ao roteiro')&&!str_contains($studentRecord,'Desfazer última etapa'),'processamento deve expor check reversível, edição e timer diretamente no Caderno');
 ux_expect(str_contains($studentBench,'data-exposure-tool')&&str_contains($studentBench,'data-quick-reciprocity'),'ferramentas pequenas de exposição devem continuar inline');
 ux_expect(!str_contains($studentBench,'data-lab-timer')&&str_contains($studentBench,'/aluno/processamentos.php'),'processamento multietapas não pode permanecer reduzido a um temporizador inline');
-ux_expect(str_contains($processManager,'student-process-step-list')&&str_contains($processRunner,'data-process-runner'),'processamento multietapas deve ter gerenciador e superfície operacional próprias');
+ux_expect(str_contains($processManager,"require_once __DIR__.'/../app/student_process_template_editor_view.php'")&&str_contains($processManager,'student_process_render_template_editor(')&&str_contains($processManagerView,'student-process-step-list')&&str_contains($processManagerView,'student_process_render_step_form(')&&str_contains($processRunner,'data-process-runner'),'processamento multietapas deve ter gerenciador e superfície operacional próprias');
 ux_expect(str_contains($studentBench,'Modo de preparo')&&str_contains($studentBench,'student_experience_recipe_notes'),'receitas devem reunir cálculo e modo de preparo');
 foreach(['Continue de onde faz sentido','Ferramentas pequenas ficam aqui','sem entrar e sair de várias páginas','O histórico fica abaixo','Aqui o foco é somente a etapa atual'] as $internalCopy)ux_expect(!str_contains($studentHome.$studentBench.$studentRecord,$internalCopy),'texto interno vazou para a interface do aluno: '.$internalCopy);
 ux_expect(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'rota legada de testes deve convergir para o Caderno global');
