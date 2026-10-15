@@ -173,17 +173,9 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
 .student-process-task-form .student-process-task-time{
   min-width:0;gap:14px
 }
-.student-process-task-form .form-field{
-  min-width:0;display:grid;gap:7px;
-  color:var(--text);font:600 13px/1.32 var(--body,Arial,sans-serif);
-  letter-spacing:0;text-transform:none
-}
+.student-process-task-form .form-field{min-width:0;display:grid;gap:7px;margin-top:0}
 .student-process-task-form .form-field[hidden]{display:none}
-.student-process-task-form .form-field :is(input,select,textarea){
-  min-width:0;width:100%;min-height:46px;box-sizing:border-box;
-  padding:11px 13px;border-radius:10px;
-  font:500 16px/1.3 var(--body,Arial,sans-serif)
-}
+.student-process-task-form .form-field :is(input,select,textarea){min-width:0;max-width:100%;box-sizing:border-box}
 .student-process-task-form .form-field textarea{min-height:100px}
 .student-process-task-form .form-field :is(input,select,textarea):focus-visible,
 .student-process-task-form .student-process-task-disclosure>summary:focus-visible{
@@ -191,7 +183,7 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
 }
 .student-process-task-form .student-process-task-disclosure{
   min-width:0;margin:0;border:1px solid var(--line);
-  border-radius:12px;overflow:clip;background:var(--surface)
+  overflow:clip;background:var(--surface)
 }
 .student-process-task-form .student-process-task-disclosure>summary{
   display:flex;justify-content:space-between;align-items:center;gap:16px;
@@ -202,10 +194,10 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
   min-width:0;display:grid;gap:5px
 }
 .student-process-task-form .student-process-task-disclosure strong{
-  color:var(--text);font:700 14px/1.25 var(--body,Arial,sans-serif)
+  color:var(--text);font:700 14px/1.25 var(--body)
 }
 .student-process-task-form .student-process-task-disclosure small{
-  color:var(--muted);font:400 12px/1.45 var(--body,Arial,sans-serif)
+  color:var(--muted);font:400 12px/1.45 var(--body)
 }
 .student-process-task-form .student-process-task-disclosure>summary>span:last-child{
   flex:0 0 auto;color:var(--muted);font-size:19px
@@ -219,9 +211,7 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
 .student-process-task-form .student-process-task-actions{
   padding-top:15px;margin-top:2px;border-top:1px solid var(--line);gap:9px
 }
-.student-process-task-form .student-process-task-actions .button{
-  min-height:46px;border-radius:10px
-}
+.student-process-task-form .student-process-task-actions .button{min-height:46px}
 @media(max-width:760px){
   .student-process-task-form{gap:13px}
   .student-process-task-form .student-process-task-development,
@@ -234,11 +224,11 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
 
 /* A saved route is a reusable object, not a row of destructive admin actions.
    The native disclosure stays in document flow and works without scripting. */
-.student-process-card-options{min-width:155px;max-width:260px;border:1px solid var(--line);border-radius:11px;background:var(--bg)}
+.student-process-card-options{min-width:155px;max-width:260px;border:1px solid var(--line);background:var(--bg)}
 .student-process-card-options>summary{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   min-height:42px;padding:9px 13px;cursor:pointer;list-style:none;
-  color:var(--text);font:600 12px/1.3 var(--body,Arial,sans-serif)
+  color:var(--text);font:600 12px/1.3 var(--body)
 }
 .student-process-card-options>summary::-webkit-details-marker{display:none}
 .student-process-card-options>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -252,26 +242,18 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
   border-top:1px solid var(--line)
 }
 .student-process-card-options-content :is(form,.button,.student-danger-action){min-width:0;width:100%;box-sizing:border-box}
-.student-process-card-options-content :is(.button,.student-danger-action){
-  display:flex;align-items:center;justify-content:center;
-  min-height:44px;padding:10px;text-align:center;border-radius:9px;
-  font:600 13px/1.3 var(--body,Arial,sans-serif);text-transform:none;letter-spacing:0;
-  text-decoration:none
-}
-.student-process-card-options-content .button{
-  background:var(--surface-2);color:var(--text);border:1px solid var(--line)
-}
+.student-process-card-options-content :is(.button,.student-danger-action){display:flex;align-items:center;justify-content:center;min-height:44px;text-align:center;text-decoration:none}
 .student-process-card-options-content .student-danger-action{
   background:transparent;color:#d96868;border:1px solid color-mix(in srgb,#a74343 72%,var(--line))
 }
-.student-process-template-main:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:3px}
-.student-process-template-actions>.button,.student-process-template-actions>form .button{min-height:43px;border-radius:10px}
+.student-process-template-main:focus-visible{outline:2px solid var(--focus);outline-offset:3px;}
+.student-process-template-actions>.button,.student-process-template-actions>form .button{min-height:43px}
 @media(max-width:760px){
  .student-process-library{gap:10px}
- .student-process-template-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:15px;border-radius:14px}
+ .student-process-template-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:15px;}
  .student-process-template-main{grid-template-columns:25px minmax(0,1fr);gap:10px}
  .student-process-template-main h3{font-size:18px}
- .student-process-context{display:block;font:400 13px/1.5 var(--body,Arial,sans-serif)}
+ .student-process-context{display:block;font:400 13px/1.5 var(--body)}
  .student-process-section{margin-top:26px}
  .student-process-section-heading{grid-template-columns:minmax(0,1fr);gap:8px;padding-bottom:13px}
  .student-process-section-heading>p{display:block;font-size:12px;line-height:1.5}
@@ -280,10 +262,10 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
  .student-process-template-actions>form .button,.student-process-template-actions>.button{
    display:flex;min-height:44px;align-items:center;justify-content:center;
    width:100%;box-sizing:border-box;padding:10px 7px;
-   white-space:normal;text-align:center;font:600 12px/1.25 var(--body,Arial,sans-serif)
+   white-space:normal;text-align:center;font:600 12px/1.25 var(--body)
  }
  .student-process-card-options{min-width:0;max-width:none;width:100%}
  .student-process-card-options[open]{grid-column:1/-1}
  .student-process-card-options-content{grid-template-columns:minmax(0,1fr);gap:8px}
- .student-process-summary{font:500 11px/1.4 var(--body,Arial,sans-serif);letter-spacing:0;text-transform:none}
+ .student-process-summary{font:500 11px/1.4 var(--body);letter-spacing:0;text-transform:none}
 }
