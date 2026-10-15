@@ -45,7 +45,8 @@ must_student_premium_ui(str_contains($uiJs,"form[data-ui-validate]")&&str_contai
 $homeView=(string)file_get_contents($root.'/app/student_home_view.php');
 must_student_premium_ui(str_contains($home,'student_experience_dashboard_state')&&str_contains($homeView,'student-v2-home')&&str_contains($homeView,'data-home-meeting'),'student Home must consume operational state and feature the next authorized meeting');
 must_student_premium_ui(str_contains($homeView,'student-v2-next')&&str_contains($homeView,'student-v2-section')&&str_contains($homeView,'student-v2-course')&&str_contains($homeView,'data-record-create-open')&&str_contains($homeView,'/aluno/agenda.php'),'student Home must preserve contextual work, courses, record creation and direct Agenda access');
-$mobileAppCss=(string)file_get_contents($root.'/assets/student-app-shell.css');
+$mobileAppCss=$css; // Navigation geometry is now owned by canonical student-area.css.
+must_student_premium_ui(!is_file($root.'/assets/student-app-shell.css'),'parallel shell stylesheet was reintroduced');
 must_student_premium_ui(str_contains($shell,"'agenda'=>['label'=>'Agenda','href'=>'/aluno/agenda.php']")&&str_contains($mobileAppCss,'grid-template-columns:repeat(5,minmax(0,1fr))'),'approved five-destination shell is not integrated');
 must_student_premium_ui(str_contains($mobileAppCss,'.student-desktop-nav')&&str_contains($mobileAppCss,'.student-mobile-nav')&&str_contains($homeView,'student-v2-date-line'),'mobile-first shell/sidebar and factual date hierarchy are absent');
 must_student_premium_ui(!str_contains($home,'Escolha o que você veio fazer')&&!str_contains($home,'Abrir laboratório'),'student home regressed to a duplicate navigation catalog');
