@@ -25,13 +25,6 @@ body.student-page{font-size:16px;line-height:1.55}
 .student-tools-trigger{min-height:40px;margin-left:auto}
 .student-user-menu>summary{min-height:40px;padding-inline:14px}
 
-.form-field,.choice-field{font-size:13px;line-height:1.35}
-.form-field>input,.form-field>select,.form-field>textarea,.choice-field select{min-height:50px;padding-inline:14px;background:color-mix(in srgb,var(--surface) 84%,transparent);border-color:var(--student-border);font-size:15px}
-.form-field>textarea{padding-block:13px;line-height:1.55}
-.choice-row{gap:10px}
-.choice-option{min-height:42px}
-.button{min-height:46px;padding-inline:18px;font-size:10px;letter-spacing:.04em}
-.button.button-compact{min-height:38px;padding-inline:13px}
 
 .student-home-primary{margin-top:30px;padding:28px 30px;background:var(--student-panel);border-left:3px solid var(--focus)}
 .student-home-primary-head{align-items:flex-start;gap:28px}
