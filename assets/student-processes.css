@@ -243,6 +243,7 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
 }
 .student-process-card-options-content :is(form,.button,.student-danger-action){min-width:0;width:100%;box-sizing:border-box}
 .student-process-card-options-content :is(.button,.student-danger-action){display:flex;align-items:center;justify-content:center;min-height:44px;text-align:center;text-decoration:none}
+.student-process-card-options-content .button{font-size:12px}
 .student-process-template-main:focus-visible{outline:2px solid var(--focus);outline-offset:3px;}
 .student-process-template-actions>.button,.student-process-template-actions>form .button{min-height:43px}
 @media(max-width:760px){
