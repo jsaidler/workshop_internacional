@@ -64,6 +64,12 @@ Essas folhas são importadas dentro de `@layer cms-system`. O CSS adicional do u
 
 `cms-editor.css`, `cms-pro-editor.css`, `cms-ux-v2.css`, `cms-ux-v3.css` e `task-centric.css` deixam de existir como sequência de substituição histórica.
 
+## Reorganização de UX sem redesenhar identidade visual (retificação 15/10/2026)
+
+A arquitetura de navegação, rotas, prioridade de tarefas e apresentação progressiva de formulários pode e deve evoluir sem substituir a identidade visual aprovada. O design system existente — fontes persistidas em `Design → Tipografia`, tokens `--title`/`--body`/`--mono`, paleta/temas e CSS compartilhado — continua como fonte de verdade. Títulos da Área do aluno consomem `.student-title` e `.student-subtitle` quando semanticamente equivalentes; ações primárias e secundárias consomem `.button.button-primary` e `.button.button-secondary`. Informação técnica continua consumindo `--mono`.
+
+O shell mobile-first controla **geometria de navegação e região rolável**, nunca uma segunda paleta local que reatribui `--bg`, `--text`, `--focus` e similares nem fontes independentes como `Georgia`. Folhas de Agenda, Cursos, Laboratório e Conta podem conter apenas seus arranjos e interações exclusivos; não substituem a tipografia e os componentes canônicos. O contrato atual foi reafirmado expressamente pelo autor em 15/10/2026, prevalecendo sobre o registro transitório da reconstrução v2 que mencionava liberdade perante contratos visuais anteriores.
+
 ## `!important`
 
 O levantamento inicial encontrou `!important` em todas as grandes superfícies: template público, CMS, administração, mídia, área do aluno e editor. Havia casos em que a mesma propriedade era declarada com `!important` em uma camada e novamente com `!important` em outra posterior.
