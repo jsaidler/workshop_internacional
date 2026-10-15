@@ -293,7 +293,7 @@ test('Lab editor inherits saved Design headings, shared field labels and button 
   root.style.setProperty('--inverse-bg','#132435');
   const style=s=>getComputedStyle(document.querySelector(s));
   return {heading:style('.student-task-editor .student-create-dialog-head h2').fontFamily,
-   section:style('.student-task-editor .student-task-focus h3').fontFamily,
+   section:style('.student-task-editor .student-task-section-head h3').fontFamily,
    field:style('.student-task-editor .student-task-form .form-field').fontFamily,
    inputRadius:style('.student-task-editor .student-task-form .form-field input').borderTopLeftRadius,
    action:style('.student-task-editor .student-task-actions .button-primary').backgroundColor};
