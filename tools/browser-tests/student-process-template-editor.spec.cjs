@@ -40,6 +40,16 @@ for(const dim of dimensions){
     expect(operations.filter(x=>x.action==='delete_step')).toHaveLength(9);
     expect(operations.filter(x=>x.action==='move_step')).toHaveLength(16);
     expect(operations.every(x=>x.csrf==='fixture-csrf-no-write'&&x.method==='post')).toBe(true);
+    const targets=await view.locator('.student-process-step-actions a, .student-process-step-actions button').evaluateAll(nodes=>nodes.map(el=>{
+      const box=el.getBoundingClientRect(),style=getComputedStyle(el);
+      return {label:el.textContent.trim(),height:box.height,fontSize:parseFloat(style.fontSize),left:box.left,right:box.right};
+    }));
+    for(const target of targets){
+      expect(target.height,'step action '+target.label+' must be a full touch target').toBeGreaterThanOrEqual(44);
+      expect(target.fontSize,'step action '+target.label+' must be legible').toBeGreaterThanOrEqual(11);
+      expect(target.left).toBeGreaterThanOrEqual(0);
+      expect(target.right).toBeLessThanOrEqual(dim.width+1);
+    }
     const metrics=await page.evaluate(()=>{
       const reading=document.querySelector('.student-main'),nav=document.querySelector('.student-mobile-nav');
       const content=document.querySelector('[data-operational-template-editor]');
