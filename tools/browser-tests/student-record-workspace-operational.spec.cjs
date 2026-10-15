@@ -9,7 +9,7 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
    const response=await page.goto(base+'?state='+state,{waitUntil:'networkidle'});
    expect(response?.status()).toBe(200);
    await expect(page.locator('body.student-app .student-shell')).toHaveCount(1);
-   await expect(page.locator('link[href^="/assets/student-app-shell.css"]')).toHaveCount(1);
+   await expect(page.locator('link[href^="/assets/student-area.css"]')).toHaveCount(1);
    await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
    const urls=await page.locator('.student-mobile-nav a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
    expect(urls).toEqual(['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php']);
