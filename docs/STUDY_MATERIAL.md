@@ -194,3 +194,7 @@ A validação deve medir layout renderizado em Chromium. Testar apenas presença
 ## Histórico de QA
 
 O histórico detalhado das correções de ritmo continua em `STUDY_MATERIAL_VERTICAL_RHYTHM_QA_2026-09-24.md`. O escrutínio que consolidou a passagem de “interface de caixas” para longform editorial está em `STUDY_MATERIAL_EDITORIAL_SCRUTINY_2026-09-24.md`.
+
+## Projeção de auditoria do material autenticado — 15/10/2026 (PR #243 draft)
+
+Material pertence ao renderer **público CMS** `cms_render_public_page`, não ao `aluno/material.php` nem a uma view editorial separada. A rota `index.php` faz controle de acesso a página e matrícula; `cms_access_filter_html` remove no servidor as seções não liberadas; `student_material_render_notebook` injeta as anotações sem editar o documento publicado. A fixture de leitura `student-material-cms-operational.php` usa exatamente esses serviços com SQLite local e dados fictícios, não o conteúdo real do CMS. O contrato de navegação autenticada corresponde a `cms-student-material`, `.cms-student-reading`, contexto do curso e cinco destinos globais; `student-shell` não pode ser exigido nesta rota. Regressões de acesso, seção bloqueada, paginação, quadro de anotações e foco do skip-link acompanham a implementação. Capturas 320/390/1440 e rolagem topo/meio/fim precisam de inspeção manual. Não alterar a fonte editorial nem suas liberação reais para satisfazer um teste de renderização.
