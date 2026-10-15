@@ -62,16 +62,14 @@ HTML,2],
  return $db;
 }
 function course_cohort_by_id(PDO $db,int $id):?array{$q=$db->prepare('SELECT * FROM course_cohorts WHERE id=?');$q->execute([$id]);return $q->fetch(PDO::FETCH_ASSOC)?:null;}
-function cms_site_settings(PDO $db,int $id,string $locale):array{return ['wordmark'=>'JSaidler Fotografia','seo'=>['defaultTitle'=>'Material','defaultDescription'=>'','socialImage'=>'','favicon'=>''],'header'=>['sticky'=>false],'footer'=>['line1'=>'','line2'=>'','links'=>[]]];}
+function cms_site_settings(PDO $db,int $id,string $locale):array{return ['wordmark'=>'JSaidler Fotografia','seo'=>['defaultTitle'=>'Material','defaultDescription'=>'','socialImage'=>'','favicon'=>''],'header'=>['sticky'=>false],'navigation'=>['items'=>[['type'=>'custom','label'=>'Início','url'=>'/aluno/']]],'footer'=>['line1'=>'','line2'=>'','links'=>[]]];}
 function cms_design_settings(PDO $db,int $id,string $locale):array{return [];}
 function cms_page_seo(PDO $db,int $pageId):array{return ['title'=>'','description'=>'','socialTitle'=>'','socialDescription'=>'','socialImage'=>'','canonicalUrl'=>'','robots'=>'noindex,nofollow'];}
-function cms_navigation_entries(PDO $db,array $activity,string $locale,array $site):array{return [];}
-function cms_language_switch_url(PDO $db,array $activity,array $page,string $locale):string{return '';}
 function cms_absolute_url(string $url):string{return $url;}
+function cms_page_translation_counterpart(PDO $db,array $page,string $targetLocale):?array{return null;}
 function cms_design_font_import_css(array $design):string{return '';}
 function cms_design_system_css(array $design):string{return ':root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--gutter:24px;--body:Arial,sans-serif;--title:Georgia,serif;--mono:monospace;--reading-width:840px}';}
 function cms_design_custom_css(array $design):string{return '';}
-function cms_expand_forms(string $html,PDO $db,array $activity,array $page,string $locale,bool $editor):string{return $html;}
 function media_resolve_cms_html(PDO $db,string $html):string{return $html;}
 function media_resolve_cms_video_html(PDO $db,string $html):string{return $html;}
 function student_account_current(PDO $db):?array{
