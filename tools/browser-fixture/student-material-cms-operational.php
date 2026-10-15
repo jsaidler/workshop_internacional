@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 const PUBLIC_LOCALE_PT_BR='pt-BR';
 const PUBLIC_LOCALE_EN='en';
+function public_locale_query(string $locale):string{return $locale==='pt-BR'?'pt-BR':'en';}
 function h(string $value):string{return htmlspecialchars($value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function utc_now():string{return gmdate('c');}
 function database():PDO {
