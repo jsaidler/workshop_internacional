@@ -1,7 +1,7 @@
 /* Student course workspace, owned by the authenticated course route. */
 .student-v2-courses{max-width:920px;padding:0 0 45px;color:var(--text);font-family:var(--body)}
 .student-v2-courses *{box-sizing:border-box}
-.student-v2-courses :is(h1,h2,h3){text-transform:none;letter-spacing:-.025em}
+.student-v2-courses :is(h1,h2,h3){text-transform:none}
 .student-v2-courses-heading{margin:0 0 24px}
 .student-v2-courses-heading h1,.student-v2-course-detail-heading h1{margin:0;max-width:780px;overflow-wrap:anywhere}
 .student-v2-courses-heading>p:last-child{margin:10px 0 0;font:400 14px/1.5 var(--body);color:var(--muted)}
