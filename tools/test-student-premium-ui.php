@@ -17,7 +17,7 @@ $notebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get
 $test=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');
 $routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
 $processManager=(string)file_get_contents($root.'/aluno/processamentos.php');
-$processRunner=(string)file_get_contents($root.'/aluno/processar.php');
+$processRunner=(string)file_get_contents($root.'/aluno/processar.php');$processRunnerView=(string)file_get_contents($root.'/app/student_process_runner_view.php');
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 $authView=(string)file_get_contents($root.'/app/student_auth_view.php');
 $login=(string)file_get_contents($root.'/aluno/login.php').$authView;
@@ -57,7 +57,7 @@ must_student_premium_ui(!str_contains($bench,'data-lab-timer')&&str_contains($be
 
 // Process library remains reusable, but the Caderno does not declare a live/retroactive mode.
 must_student_premium_ui(str_contains($processManager,'Associar ao registro'),'process library lost neutral record association');
-must_student_premium_ui(str_contains($processRunner,'data-process-runner')&&str_contains($processRunner,'Marcar como concluída')&&str_contains($processRunner,'Desmarcar etapa'),'route tool must allow independent reversible step checks');
+must_student_premium_ui(str_contains($processRunner,'student_process_render_runner_view(')&&str_contains($processRunnerView,'data-process-runner')&&str_contains($processRunnerView,'Marcar como concluída')&&str_contains($processRunnerView,'Desmarcar etapa'),'route tool must allow independent reversible step checks');
 must_student_premium_ui(str_contains($processRunner,'Editar dados da etapa')&&str_contains($processRunner,'Movimentar estoque'),'route tool must expose editing and stock as independent notebook tools');
 foreach(['Estou nesta etapa','Ir para próxima etapa','Concluir processamento','Interromper a etapa atual','Concluir esta etapa','Registrar o processamento realizado'] as $forbidden)must_student_premium_ui(!str_contains($processRunner,$forbidden),'route tool reintroduced workflow language: '.$forbidden);
 must_student_premium_ui(str_contains($bench,'id="receitas" data-lab-calculator')&&str_contains($bench,'Modo de preparo'),'recipes no longer keep quantities and preparation together');
