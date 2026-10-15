@@ -9,7 +9,7 @@ function h(mixed $x):string{return htmlspecialchars((string)$x,ENT_QUOTES|ENT_SU
 function csrf_token(string $context):string{return 'fixture-csrf';}
 function student_experience_count(int $number,string $singular,string $plural):string{return $number.' '.($number===1?$singular:$plural);}
 function student_process_steps(PDO $db,int $id):array{return $id===12?[['id'=>3],['id'=>4],['id'=>5]]:[];}
-function student_process_plan_for_test(PDO $db,int $id,int $studentId):?array{return $id===14?['id'=>3,'source_name'=>'Revelação reversível']:null;}
+function student_process_plan_for_test(PDO $db,int $id,int $studentId):?array{if(str_starts_with((string)($_GET['state']??''),'derived'))return null;return $id===14?['id'=>3,'source_name'=>'Revelação reversível']:null;}
 function student_process_plan_steps(PDO $db,int $id):array{return [['status'=>'completed'],['status'=>'pending']];}
 function student_test_media(PDO $db,int $id):array{return [];}
 function student_test_media_by_phase(array $rows,string $phase):array{return [];}
@@ -42,6 +42,7 @@ if(str_starts_with($state,'derived')){
     $sample[0]['title']='EI 400 — FeCl₃';
     $sample[2]['title']='Variação de EI 400 — FeCl₃';
     $sample[2]['research_intent']=$state==='derived-no-intent'?'':'Manter EI 400 e voltar a primeira revelação para 7 minutos.';
+    $sample[2]['exposure_recorded']=true; // Fork inherits an exposure baseline, not physical processing facts.
     $sample[2]['result_recorded']=false;
 }
 $records=match($state){
