@@ -860,3 +860,6 @@ Confirmar pagamento, marcar pendente e cancelar inscrição eram escritas imedia
 
 
 **15/10/2026 — correção CMS descoberta na auditoria (PR #243 draft):** a segunda chamada a `cms_page_document` em `cms_render_public_page` descartava o JSON de anotações gerado por `student_material_render_notebook`. Parâmetro opcional `preparedDocument` preserva esse payload somente quando o HTML foi previamente sanitizado e instrumentado pelo `index.php`; a sanitização continua padrão para documentos crus/edição. Verificação PHP + Playwright requer script JSON final e duas notas sintéticas, sem alterações em dados da instalação.
+
+
+**15/10/2026 — CSS canônico do Editor:** problema visual confirmado por Playwright: folha posterior `student-quality-pass.css` sobrepunha o componente com 8 px/30 px. Eliminada a regra na origem e consolidados controles 11 px/44 px em `student-processes.css` com inspeção responsiva obrigatória no SHA final. Não há CSS de fixture ou `!important`.
