@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const host='http://127.0.0.1:8099/tools/browser-fixture/';
 const samples=[
-  {name:'Início',url:'student-home.php?state=active',root:'[data-student-home]',title:'.student-v2-heading h1',body:'.student-v2-row-text strong',card:'.student-v2-next',secondary:'.student-v2-secondary-link'},
+  {name:'Início',url:'student-home.php?state=ongoing',root:'[data-student-home]',title:'.student-v2-heading h1',body:'.student-v2-row-text strong',card:'.student-v2-next',secondary:'.student-v2-secondary-link'},
   {name:'Cursos',url:'student-courses.php?state=detail',root:'[data-student-courses]',title:'.student-v2-course-detail-heading h1',body:'.student-academic-material-title',card:'.student-v2-course-page.is-next',secondary:'.student-v2-course-local-nav'},
   {name:'Caderno',url:'student-notebook.php?state=mixed',root:'[data-student-notebook]',title:'.student-v2-notebook-header h1',body:'.student-v2-notebook-card .student-record-summary span',card:'.student-v2-notebook-card',secondary:'.student-v2-notebook-card .student-record-menu>summary'},
   {name:'Processamentos',url:'student-process-saved-cards.php?mode=library',root:'[data-process-saved-card]',title:'.student-process-template-main h3',body:'.student-process-template-main p',card:'.student-process-template-card',secondary:'.student-process-card-options>summary'}
