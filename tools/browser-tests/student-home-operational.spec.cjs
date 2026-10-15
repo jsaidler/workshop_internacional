@@ -274,13 +274,17 @@ for(const [label,relativeUrl] of productionDesignFixtures){
    };
    root.setAttribute('data-theme','light');const light=tokens();
    root.setAttribute('data-theme','dark');const dark=tokens();
-   return {light,dark};
+   const headingSelector=relativeUrl.includes('student-long-editors.php')
+    ? '.student-task-editor .student-create-dialog-head h2' : 'h1.student-title';
+   const heading=document.querySelector(headingSelector);
+   return {light,dark,headingFont:heading?getComputedStyle(heading).fontFamily:null};
   });
   for(const theme of [design.light,design.dark]){
    expect(theme.title).toContain('Saira Extra Condensed');
    expect(theme.body).toContain('IBM Plex Sans');
    expect(theme.mono).toContain('IBM Plex Mono');
   }
+  expect(design.headingFont,'heading must use CMS display family: '+label).toContain('Saira Extra Condensed');
   expect(design.light.bg).toBe('#f2f2ef');
   expect(design.dark.bg).toBe('#0c0d0e');
  });

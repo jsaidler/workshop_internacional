@@ -260,7 +260,7 @@ body.student-page:has(.student-process-runner) .student-main{padding-bottom:0}
  .student-process-template-actions>form .button,.student-process-template-actions>.button{
    display:flex;min-height:44px;align-items:center;justify-content:center;
    width:100%;box-sizing:border-box;padding:10px 7px;
-   white-space:normal;text-align:center;font:600 12px/1.25 var(--body)
+   white-space:normal;text-align:center;font-size:12px;line-height:1.25
  }
  .student-process-card-options{min-width:0;max-width:none;width:100%}
  .student-process-card-options[open]{grid-column:1/-1}
