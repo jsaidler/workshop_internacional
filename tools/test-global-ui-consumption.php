@@ -73,7 +73,7 @@ $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 must_global_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route no longer redirects to the global notebook');
 
 // Task-first presentation must consume the existing Design, never impose a new skin.
-$taskCssFiles=['student-agenda.css','student-courses.css','student-laboratory.css','student-profile.css'];
+$taskCssFiles=['student-agenda.css','student-courses.css','student-laboratory.css','student-profile.css','student-caderno.css','student-lab-stock.css','student-processes.css'];
 foreach($taskCssFiles as $name){
     $css=(string)file_get_contents($root.'/assets/'.$name);
     must_global_ui(!str_contains($css,'Georgia'),'task stylesheet imports an independent serif font: '.$name);
@@ -92,6 +92,15 @@ foreach(['student_agenda_view.php','student_courses_view.php','student_laborator
     $src=(string)file_get_contents($root.'/app/'.$renderer);
     must_global_ui(str_contains($src,'class="student-title"'),'task heading bypasses the existing student-title primitive: '.$renderer);
 }
+$notebookCss=(string)file_get_contents($root.'/assets/student-caderno.css');
+must_global_ui(!preg_match('/\\.student-v2-notebook-header h1\\.student-title\\{[^}]*font\\s*:/',$notebookCss),'Caderno heading bypasses inherited Design display font');
+must_global_ui(!preg_match('/\\.student-app \\.student-record-header \\.student-title-record\\{[^}]*font\\s*:/',$notebookCss),'record heading overrides canonical display typography');
+$stockCss=(string)file_get_contents($root.'/assets/student-lab-stock.css');
+must_global_ui(!preg_match('/\\.student-task-editor \\.student-task-actions \\.button-primary\\{[^}]*?(?:background|color|font|border-radius)\\s*:/',$stockCss),'laboratory task action recreates canonical button visuals');
+must_global_ui(!str_contains($stockCss,'--task-radius'),'laboratory task editor introduced independent component shape token');
+$processCss=(string)file_get_contents($root.'/assets/student-processes.css');
+must_global_ui(!preg_match('/\\.student-process-task-form \\.form-field\\{[^}]*font\\s*:/',$processCss),'process editor overrides canonical field labels');
+
 $profileCss=(string)file_get_contents($root.'/assets/student-profile.css');
 must_global_ui(!preg_match('/\\.student-profile-header \\.student-title-record\\{[^}]*font\\s*:/',$profileCss),'profile overrides its inherited canonical display heading');
 
