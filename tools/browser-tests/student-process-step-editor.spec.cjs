@@ -95,3 +95,20 @@ test('custom operation bypasses irrelevant developer settings without hiding val
  await expect(form.locator('details').filter({hasText:'Agitação e observações'})).toHaveAttribute('open','');
  await expect(form.locator('[name="notes"]')).toHaveValue('Ambiente ventilado');
 });
+
+test('Process step form consumes canonical input geometry, label font and actions',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto(base+'?mode=create',{waitUntil:'networkidle'});
+ const actual=await page.evaluate(()=>{
+  const root=document.documentElement;
+  root.style.setProperty('--mono','"Consolas",monospace');
+  root.style.setProperty('--inverse-bg','#132435');
+  const style=s=>getComputedStyle(document.querySelector(s));
+  return {field:style('.student-process-task-form .form-field').fontFamily,
+   inputRadius:style('.student-process-task-form .form-field input').borderTopLeftRadius,
+   action:style('.student-process-task-form .button-primary').backgroundColor};
+ });
+ expect(actual.field).toContain('Consolas');
+ expect(actual.inputRadius).toBe('0px');
+ expect(actual.action).toBe('rgb(19, 36, 53)');
+});
