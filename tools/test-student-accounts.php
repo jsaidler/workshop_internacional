@@ -31,6 +31,55 @@ $result=student_account_reconcile_confirmed_registrations($db,1);if(($result['pr
 
 $activation=student_account_begin_activation($db,'aluno@example.com','12345678900');if($activation!=='ok')fail('first access identity proof failed');student_account_complete_activation($db,'uma-senha-segura-123',true);$activated=$db->query('SELECT * FROM student_users')->fetch();if(empty($activated['activated_at'])||!password_verify('uma-senha-segura-123',(string)$activated['password_hash']))fail('activation did not create personal password');if(password_verify('12345678900',(string)$activated['password_hash']))fail('CPF still authenticates as password');
 
+// Regression: assigning a previously known student runs profile reconciliation
+// inside the same SQLite BEGIN IMMEDIATE used to transfer the registration.
+$updatePayload=$payload;
+$updatePayload['name']='Aluno Atualizado';
+$updatePayload['phone']='24888888888';
+$updateSubmission=['payload_json'=>json_encode($updatePayload,JSON_THROW_ON_ERROR)];
+$studentId=(int)$user['id'];
+$db->exec('CREATE TABLE profile_tx_probe(id INTEGER PRIMARY KEY,note TEXT NOT NULL)');
+$db->exec('BEGIN IMMEDIATE');
+try{
+    $db->exec("INSERT INTO profile_tx_probe VALUES(1,'outer transaction')");
+    if(student_account_upsert_from_submission($db,$updateSubmission)!==$studentId)fail('existing student identity not reused inside BEGIN IMMEDIATE');
+    if((string)student_account_profile($db,$studentId)['phone']!=='24888888888')fail('profile was not updated inside BEGIN IMMEDIATE');
+    $db->exec('ROLLBACK');
+}catch(Throwable $e){
+    try{$db->exec('ROLLBACK');}catch(Throwable){}
+    fail('profile reconciliation started a nested transaction: '.$e->getMessage());
+}
+if((int)$db->query('SELECT COUNT(*) FROM profile_tx_probe')->fetchColumn()!==0)fail('profile update committed the caller transaction');
+if((string)student_account_profile($db,$studentId)['phone']!=='24999999999')fail('caller rollback did not restore the profile');
+if((string)$db->query('SELECT name FROM student_users WHERE id='.$studentId)->fetchColumn()!=='Aluno Teste')fail('caller rollback did not restore the student identity');
+
+// On a profile write failure, only the profile savepoint rolls back.
+// The caller must retain control over the outer transaction and its own writes.
+$db->exec("CREATE TRIGGER profile_tx_fail BEFORE UPDATE ON student_profiles WHEN NEW.phone='force_profile_error' BEGIN SELECT RAISE(ABORT,'forced_profile_failure'); END");
+$invalidPayload=$updatePayload;
+$invalidPayload['phone']='force_profile_error';
+$db->exec('BEGIN IMMEDIATE');
+try{
+    $db->exec("INSERT INTO profile_tx_probe VALUES(2,'survives profile rollback')");
+    $failed=false;
+    try{student_account_upsert_from_submission($db,['payload_json'=>json_encode($invalidPayload,JSON_THROW_ON_ERROR)]);}
+    catch(Throwable $e){if(!str_contains($e->getMessage(),'forced_profile_failure'))throw $e;$failed=true;}
+    if(!$failed)fail('profile failure trigger did not fire');
+    if((string)$db->query('SELECT name FROM student_users WHERE id='.$studentId)->fetchColumn()!=='Aluno Teste')fail('profile savepoint did not roll back student name');
+    if((string)student_account_profile($db,$studentId)['phone']!=='24999999999')fail('profile savepoint did not roll back profile data');
+    $db->exec('COMMIT');
+}catch(Throwable $e){
+    try{$db->exec('ROLLBACK');}catch(Throwable){}
+    fail('profile savepoint escaped the caller transaction: '.$e->getMessage());
+}
+$db->exec('DROP TRIGGER profile_tx_fail');
+if((int)$db->query('SELECT COUNT(*) FROM profile_tx_probe WHERE id=2')->fetchColumn()!==1)fail('profile failure rolled back unrelated outer changes');
+
+// The same helper must also commit when it is called without an outer transaction.
+if(student_account_upsert_from_submission($db,$updateSubmission)!==$studentId)fail('standalone profile reconciliation changed identity');
+if((string)student_account_profile($db,$studentId)['phone']!=='24888888888')fail('standalone profile update not committed');
+student_account_upsert_from_submission($db,['payload_json'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
+
 $document=['version'=>2,'theme'=>'auto','meta'=>['title'=>'Material','description'=>''],'html'=>'<section data-cms-section="intro" data-cms-section-name="Introdução"><p>ABERTO</p></section><section data-cms-section="conteudo-aula-1"><p>AULA1</p></section><section data-cms-section="conteudo-aula-2"><p>AULA2</p></section>'];$json=json_encode($document,JSON_THROW_ON_ERROR);$db->prepare('INSERT INTO cms_pages(page_uuid,activity_id,locale,slug,title,nav_title,status,is_home,show_in_nav,sort_order,draft_document_json,published_document_json,draft_updated_at,published_at,created_at,updated_at,access_level) VALUES(?,?,?,?,?,?,"active",0,0,1,?,?,?,?,?,?,"enrolled")')->execute(['page1',1,'pt-BR','material','Material','Material',$json,$json,$now,$now,$now,$now]);$pageId=(int)$db->lastInsertId();$lessons=course_lessons($db,1);if(count($lessons)<2)fail('default lessons missing');student_page_set_section_lesson($db,$pageId,'conteudo-aula-1',(int)$lessons[0]['id']);student_page_set_section_lesson($db,$pageId,'conteudo-aula-2',(int)$lessons[1]['id']);$enrollment=student_account_enrollment_for_activity($db,(int)$user['id'],1);if(!$enrollment)fail('page access enrollment missing');course_set_lesson_release($db,(int)$enrollment['cohort_id'],(int)$lessons[0]['id'],true);$page=cms_page_by_id($db,$pageId);$filtered=student_page_filter_document($db,$page,$document,$enrollment);if(!str_contains($filtered['html'],'ABERTO')||!str_contains($filtered['html'],'AULA1')||str_contains($filtered['html'],'AULA2'))fail('server-side lesson filtering failed');
 
 $uuid=str_repeat('c',32);student_private_media_mkdir();$relative=$uuid.'.jpg';file_put_contents(student_private_media_root().'/'.$relative,'fake');$db->prepare('INSERT INTO student_private_media(asset_uuid,activity_id,page_id,title,original_name,mime_type,byte_size,storage_path,checksum,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute([$uuid,1,$pageId,'Imagem','imagem.jpg','image/jpeg',4,$relative,hash('sha256','fake'),$now,$now]);$expires=time()+60;$sig=student_private_media_sig((int)$user['id'],$uuid,$pageId,(int)$enrollment['cohort_id'],$expires);if(!student_private_media_authorize($db,$user,$uuid,$pageId,(int)$enrollment['cohort_id'],$expires,$sig))fail('signed private media authorization failed');if(student_private_media_authorize($db,$user,$uuid,$pageId,(int)$enrollment['cohort_id'],$expires,str_repeat('0',64)))fail('invalid private media signature accepted');@unlink(student_private_media_root().'/'.$relative);
