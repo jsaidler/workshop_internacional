@@ -8,17 +8,21 @@ $courses=$home['courses']??[];
 $recent=$home['recent']??[];
 $firstMaterial=null;
 foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$item['material'];break;}}
-$hero=$meeting?'meeting':($feedback?'feedback':($focus?'focus':($firstMaterial?'study':'empty')));
+// A distant meeting is not more actionable than a requested revision or an unfinished record.
+$startsAt=$meeting?strtotime((string)($meeting['date_iso']??'')):false;
+$meetingSoon=$meeting && (!empty($meeting['in_window']) || ($startsAt!==false && $startsAt>=time() && ($startsAt-time())<=48*3600));
+$hero=($meeting && ($meetingSoon || (!$feedback && !$focus && !$firstMaterial)))?'meeting':($feedback?'feedback':($focus?'focus':($firstMaterial?'study':'empty')));
 $continueMaterial=$firstMaterial && $hero!=='study';
 $continueFocus=$focus && $hero!=='focus';
+$continueMeeting=$meeting && $hero!=='meeting';
 ?>
 <div class="student-v2-home" data-student-home>
   <header class="student-v2-heading">
     <p class="student-v2-eyebrow">Área do aluno</p>
-    <h1 class="student-title">Bom ter você aqui.</h1>
-    <p>Seu próximo passo, sem precisar procurar.</p>
+    <h1 class="student-title">Sua próxima atividade</h1>
+    <p>Retome o que precisa de atenção ou continue sua pesquisa.</p>
   </header>
-  <?php if($meeting):?>
+  <?php if($hero==='meeting'):?>
     <section class="student-v2-next" aria-labelledby="student-home-feature-title" data-home-meeting>
       <div class="student-v2-feature-top"><span><?=!empty($meeting['in_window'])?'Horário previsto do encontro':'Próximo encontro'?></span><span class="student-v2-feature-state">Agendado</span></div>
       <div class="student-v2-date-line">
@@ -48,7 +52,7 @@ $continueFocus=$focus && $hero!=='focus';
       <button class="button button-primary student-v2-cta" type="button" data-record-create-open>Novo registro +</button>
     </section>
   <?php endif;?>
-  <?php if($continueMaterial || $continueFocus):?>
+  <?php if($continueMaterial || $continueFocus || $continueMeeting):?>
     <section class="student-v2-section" aria-labelledby="student-v2-continue-title">
       <h2 class="student-subtitle" id="student-v2-continue-title">Continuar</h2>
       <div class="student-v2-list">
@@ -60,10 +64,14 @@ $continueFocus=$focus && $hero!=='focus';
         <span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('notebook')?></span>
         <span class="student-v2-row-text"><small>Caderno · <?=h((string)$focus['status'])?></small><strong><?=h((string)$focus['title'])?></strong></span><span aria-hidden="true">›</span>
       </a><?php endif;?>
+      <?php if($continueMeeting):?><a class="student-v2-row" href="/aluno/agenda.php" data-home-upcoming-meeting>
+        <span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('agenda')?></span>
+        <span class="student-v2-row-text"><small>Próximo encontro · <?=h((string)$meeting['day'])?> <?=h((string)$meeting['month'])?> · <?=h((string)$meeting['hour'])?></small><strong><?=h((string)$meeting['lesson'])?></strong></span><span aria-hidden="true">›</span>
+      </a><?php endif;?>
       </div>
     </section>
   <?php endif;?>
-  <?php if($feedback && $meeting):?><section class="student-v2-section" aria-labelledby="student-v2-feedback-title" data-home-feedback>
+  <?php if($feedback && $hero==='meeting'):?><section class="student-v2-section" aria-labelledby="student-v2-feedback-title" data-home-feedback>
     <h2 class="student-subtitle" id="student-v2-feedback-title">Retorno do professor</h2>
     <a class="student-v2-feedback" href="<?=h((string)$feedback['url'])?>"><span><small><?=h((string)$feedback['status'])?></small><strong><?=h((string)$feedback['title'])?></strong></span><span aria-hidden="true">›</span></a>
   </section><?php endif;?>
