@@ -20,6 +20,7 @@ function database():PDO {
  CREATE TABLE course_material_pages(course_id INTEGER,page_id INTEGER,sort_order INTEGER,PRIMARY KEY(course_id,page_id));
  CREATE TABLE course_lessons(id INTEGER PRIMARY KEY,course_id INTEGER,activity_id INTEGER,title TEXT,lesson_key TEXT,sort_order INTEGER);
  CREATE TABLE course_material_sections(course_id INTEGER,page_id INTEGER,section_key TEXT,lesson_id INTEGER);
+ CREATE TABLE student_material_annotations(id INTEGER PRIMARY KEY,student_id INTEGER,page_id INTEGER,anchor_type TEXT,section_key TEXT,block_key TEXT,quote_exact TEXT,quote_prefix TEXT,quote_suffix TEXT,start_offset INTEGER,end_offset INTEGER,source_block_hash TEXT,body TEXT,created_at TEXT);
  CREATE TABLE cohort_lesson_releases(cohort_id INTEGER,lesson_id INTEGER,released_at TEXT,created_at TEXT,updated_at TEXT,meeting_starts_at TEXT,meeting_timezone TEXT,meeting_duration_minutes INTEGER,meeting_url TEXT,meeting_notes TEXT,meeting_status TEXT,PRIMARY KEY(cohort_id,lesson_id));
  SQL);
  $db->exec("INSERT INTO courses VALUES(12,1,'Positivo direto em filme de raio-X',NULL,'active');
@@ -34,6 +35,7 @@ function database():PDO {
  (7,2,'2026-10-01T00:00:00Z','now','now'),
  (7,3,'2026-10-02T00:00:00Z','now','now'),
  (7,4,NULL,'now','now')");
+ $db->exec("INSERT INTO student_material_annotations VALUES(1,99,101,'page','pagina','','','','',NULL,NULL,'','Comparar EI 200 e EI 400 mantendo os parâmetros da revelação','2026-10-01T00:00:00Z'),(2,99,101,'page','pagina','','','','',NULL,NULL,'','Conferir lavagem depois do branqueamento','2026-10-02T00:00:00Z')");
  $pages=[
   [100,'exposicao','Exposição pensando no positivo','<section class="study-unit" data-cms-section="exposure"><h2>Exposição pensando no positivo</h2><p>Exposição é uma decisão independente dos processos de revelação.</p></section>',1],
   [101,'processo-quimico-completo','Processo químico completo',<<<'HTML'
@@ -72,6 +74,10 @@ function cms_design_system_css(array $design):string{return ':root{--bg:#f2f2ef;
 function cms_design_custom_css(array $design):string{return '';}
 function media_resolve_cms_html(PDO $db,string $html):string{return $html;}
 function media_resolve_cms_video_html(PDO $db,string $html):string{return $html;}
+function csrf_token(string $scope):string{return 'fixture-cms-csrf-no-write';}
+function student_workspace_text(mixed $value,int $max=120):string{return substr(trim((string)$value),0,$max);}
+function activity_slug(string $raw):string{return trim((string)preg_replace('/[^a-z0-9-]+/','-',strtolower($raw)),'-');}
+function student_material_notes_for_page(PDO $db,int $studentId,int $pageId):array{return [];}
 function student_account_current(PDO $db):?array{
  return match((string)($_GET['actor']??'member')){'none'=>null,'other'=>['id'=>98],default=>['id'=>99]};
 }
@@ -79,6 +85,7 @@ require_once __DIR__.'/../../app/cms_pages.php';
 require_once __DIR__.'/../../app/courses.php';
 require_once __DIR__.'/../../app/student_enrollments.php';
 require_once __DIR__.'/../../app/cms_access.php';
+require_once __DIR__.'/../../app/student_notes_experience.php';
 require_once __DIR__.'/../../app/student_shell.php';
 require_once __DIR__.'/../../app/cms_renderer.php';
 $db=database();
@@ -93,4 +100,8 @@ if(!$page||!$student||!cms_access_page_allowed($db,$activity,$page,$student)
  http_response_code(403);header('Content-Type: text/plain; charset=UTF-8');exit('Acesso não autorizado à página do curso.');
 }
 if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'){http_response_code(405);exit('Fixture: somente leitura');}
-cms_render_public_page($activity,$page,cms_page_doc($page,true),false);
+$context=student_enrollment_material_context($db,$student,$page,$cohort);
+$document=cms_page_doc($page,true);
+$document['html']=cms_access_filter_html($db,$activity,(string)$document['html'],$student,false,null,$context);
+$document=student_material_render_notebook($db,$student,$page,$document);
+cms_render_public_page($activity,$page,$document,false);
