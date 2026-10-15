@@ -1,40 +1,30 @@
 const {test,expect}=require('@playwright/test');
-
-const url='http://127.0.0.1:8099/tools/browser-fixture/student-course-context.html';
-
-test('multiple enrollments require an explicit reversible course choice',async({page})=>{
-  await page.goto(url);
-  await expect(page.locator('h1')).toHaveText('Escolha a matrícula');
-  await expect(page.locator('[data-testid^="course-"]')).toHaveCount(2);
-  await page.getByTestId('course-b').click();
-  await expect(page).toHaveURL(/cohort=cohort-b/);
-  await expect(page.locator('h1')).toHaveText('O Fazer Intuitivo');
-  await expect(page.getByTestId('empty-material')).toBeVisible();
-  await expect(page.locator('.student-desktop-nav').getByText('Cursos',{exact:true})).toHaveAttribute('aria-current','page');
-  await page.getByTestId('all-courses').click();
-  await expect(page.locator('h1')).toHaveText('Escolha a matrícula');
+const url='http://127.0.0.1:8099/tools/browser-fixture/student-courses.php';
+test('multiple enrollments select a course explicitly and keep a reversible path',async({page})=>{
+  await page.goto(url+'?state=multiple');
+  const selector=page.locator('[data-courses-selection]');
+  await expect(selector.locator('a')).toHaveCount(2);
+  await expect(selector.locator('a').first()).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-a');
+  await expect(page.locator('[data-course-material]')).toHaveCount(0);
 });
-
-test('course organizes material by editorial page and keeps lesson releases secondary',async({page})=>{
-  await page.goto(url+'?cohort=cohort-a');
-  await expect(page.getByTestId('material-list').locator('.student-academic-material-row')).toHaveCount(3);
-  await expect(page.locator('[data-state="available"]')).toHaveText('Disponível');
-  await expect(page.locator('[data-state="partial"]')).toHaveText('Parcial');
-  await expect(page.locator('[data-state="scheduled"]')).toHaveText('Agendado');
-  await expect(page.locator('.student-academic-release-summary')).toContainText('Próximas liberações');
+test('course material uses CMS page order and keeps scheduled release information secondary',async({page})=>{
+  await page.goto(url+'?state=detail');
+  const rows=page.locator('.student-v2-course-page');
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(0).locator('[data-state]')).toHaveAttribute('data-state','available');
+  await expect(rows.nth(1).locator('[data-state]')).toHaveAttribute('data-state','partial');
+  await expect(rows.nth(2).locator('[data-state]')).toHaveAttribute('data-state','scheduled');
+  await expect(page.locator('.student-v2-course-releases')).toHaveCount(1);
   await expect(page.locator('.student-course-dashboard')).toHaveCount(0);
 });
-
-test('selected course remains readable on a phone viewport without horizontal overflow',async({page})=>{
+test('selected course and global navigation fit on a narrow mobile viewport',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto(url+'?cohort=cohort-a');
-  await expect(page.getByTestId('material-list')).toBeVisible();
-  const mobileNav=page.locator('.student-mobile-nav');
-  await expect(mobileNav).toBeVisible();
-  await expect(mobileNav.locator('a')).toHaveCount(4);
-  expect(await mobileNav.locator('a').allTextContents()).toEqual(['Início','Cursos','Caderno','Laboratório']);
-  await expect(mobileNav.getByText('Cursos',{exact:true})).toHaveAttribute('aria-current','page');
-  await expect(page.locator('.student-wordmark')).toHaveAttribute('href','/aluno/');
+  await page.goto(url+'?state=detail');
+  await expect(page.locator('[data-course-material]')).toBeVisible();
+  const bar=page.locator('.student-mobile-nav');
+  await expect(bar.locator('a')).toHaveCount(5);
+  await expect(bar.locator('a .student-nav-label')).toHaveText(['Início','Agenda','Cursos','Caderno','Laboratório']);
+  await expect(bar.locator('a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });

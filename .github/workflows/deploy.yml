@@ -51,8 +51,21 @@ jobs:
           php tools/test-student-process-notebook-runtime.php
           php tools/test-student-inventory-movement.php
           php tools/test-student-long-editors.php
+          php tools/test-student-lab-catalog-views.php
+          php tools/test-student-record-workspace.php
+          php tools/test-student-process-step-editor.php
+          php tools/test-student-auth-view.php
+          php tools/test-student-record-auxiliary-views.php
+          php tools/test-student-record-workspace-view.php
+          php tools/test-student-shared-record-view.php
+          php -d display_errors=stderr tools/browser-fixture/student-record-workspace-operational.php >/dev/null
+          php -d display_errors=stderr tools/browser-fixture/student-shared-record-operational.php >/dev/null
+          php tools/test-student-research-comparison-view.php
+          php tools/test-student-profile-view.php
+          php tools/test-student-process-saved-card.php
           php tools/test-student-long-editors-db.php
           php tools/test-course-agenda.php
+          php tools/test-admin-cohort-transfer.php
           php tools/test-aula3-student-area-material.php
           php tools/test-cms-v3.php
           php tools/test-media-image-policy.php

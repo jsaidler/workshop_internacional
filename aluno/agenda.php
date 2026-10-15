@@ -20,7 +20,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $_SESSION['student_agenda_notice']='Solicitação de ouvinte cancelada.';
         }else throw new RuntimeException('Ação inválida.');
     }catch(Throwable $e){$_SESSION['student_agenda_error']=$e->getMessage();}
-    header('Location: /aluno/agenda.php',true,303);exit;
+    header('Location: /aluno/agenda.php?view=ouvintes',true,303);exit;
 }
 $offers=course_agenda_student_offers($db,$studentId);
 foreach($offers as $offer)course_agenda_reconcile_cohort($db,(int)$offer['cohort_id']);

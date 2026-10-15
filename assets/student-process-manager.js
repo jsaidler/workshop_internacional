@@ -16,15 +16,25 @@ function init(root=document){
     const reuse=qs('[data-process-template-reuse]',form);
     const agitationMode=qs('[data-process-agitation-mode]',form);
     const agitationPeriodic=qs('[data-process-agitation-periodic]',form);
+    const developer=qs('[data-process-template-developer]',form);
+    const otherDeveloper=qs('[data-process-template-other-developer]',form);
     if(!stage)return;
     const update=()=>{
       const key=stage.value;
       setGroupState(development,developmentKeys.has(key));
+      setGroupState(otherDeveloper,developmentKeys.has(key)&&developer?.value==='other');
+      if(developer?.value==='other'&&developmentKeys.has(key)){
+        const disclosure=otherDeveloper?.closest('details');
+        if(disclosure)disclosure.open=true;
+      }
       setGroupState(custom,key==='custom');
       setGroupState(reuse,key==='second_development');
       setGroupState(agitationPeriodic,agitationMode?.value==='periodic');
     };
-    stage.addEventListener('change',update);agitationMode?.addEventListener('change',update);update();
+    stage.addEventListener('change',update);
+    developer?.addEventListener('change',update);
+    agitationMode?.addEventListener('change',update);
+    update();
   });
 }
 init();

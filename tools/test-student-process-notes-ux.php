@@ -8,10 +8,10 @@ $domain=(string)file_get_contents($root.'/app/student_process_ux.php');
 $auxiliary=(string)file_get_contents($root.'/app/student_auxiliary_ux.php');
 $experience=(string)file_get_contents($root.'/app/student_experience.php');
 $free=(string)file_get_contents($root.'/app/student_process_notebook_free.php');
-$editor=(string)file_get_contents($root.'/aluno/teste-etapa.php');
-$record=(string)file_get_contents($root.'/aluno/teste.php');
+$editor=(string)file_get_contents($root.'/aluno/teste-etapa.php').(string)file_get_contents($root.'/app/student_record_auxiliary_views.php');
+$record=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');
 $inventoryEditor=(string)file_get_contents($root.'/aluno/inventario-item.php').(string)file_get_contents($root.'/app/student_inventory_item_editor.php');
-$calibration=(string)file_get_contents($root.'/aluno/calibracao.php');
+$calibration=(string)file_get_contents($root.'/aluno/calibracao.php').(string)file_get_contents($root.'/app/student_lab_catalog_views.php');
 $calibrationEditor=(string)file_get_contents($root.'/app/student_calibration_editor.php');
 $index=(string)file_get_contents($root.'/index.php');
 $noteEndpoint=(string)file_get_contents($root.'/aluno/material-anotacao.php');
@@ -19,7 +19,7 @@ $notes=(string)file_get_contents($root.'/app/student_notes_experience.php');
 $notesCss=(string)file_get_contents($root.'/assets/cms-student-notes.css');
 $notesJs=(string)file_get_contents($root.'/assets/student-inline-annotations.js');
 $notesMigration=(string)file_get_contents($root.'/migrations/077_student_inline_annotations.php');
-$presets=(string)file_get_contents($root.'/aluno/preparos.php');
+$presets=(string)file_get_contents($root.'/aluno/preparos.php').(string)file_get_contents($root.'/app/student_lab_catalog_views.php');
 
 must_process_notes(str_contains($bootstrap,"'student_process_ux'")&&str_contains($bootstrap,"'student_auxiliary_ux'")&&str_contains($bootstrap,"'student_process_notebook_free'")&&str_contains($bootstrap,"'student_notes_experience'"),'student UX/notebook services are not bootstrapped');
 // Compatibilidade antiga pode continuar editável, mas o Caderno ativo não depende de correção destrutiva por cauda.

@@ -14,6 +14,36 @@ must_student_visual_inventory($actual===$classified,'every aluno/*.php file must
 $spec=(string)file_get_contents($root.'/tools/browser-tests/student-complete-area-audit.spec.cjs');
 $requiredVisualNames=['login','home','home-feedback','course-list','course-detail','course-feedback','material','questions-list','questions-feedback','question-new','question-thread','notebook','new-record','exposure','process-choice','process-plan','process-partial','result','result-waiting','result-revision','result-reviewed','step-editor','shared-record','delete-record','compare-select','compare-records','research-derived','process-library','process-editor','lab-runner','inventory','inventory-empty','inventory-movement','inventory-item-editor','preparations','preparation-editor','calibration-list','calibration-editor','tools','toolbox','profile','password-change'];
 foreach($requiredVisualNames as $name)must_student_visual_inventory(str_contains($spec,"['$name'"),'complete visual audit is missing '.$name);
+$operationalSources=[
+ 'course-feedback'=>'student-courses.php?state=attention',
+ 'questions-feedback'=>'student-questions-operational.php?state=evaluations',
+ 'process-library'=>'student-process-saved-cards.php?mode=library',
+ 'profile'=>'student-profile.php?mode=view',
+ 'login'=>'student-auth-operational.php?mode=login',
+ 'activation-password'=>'student-auth-operational.php?mode=activation',
+ 'password-change'=>'student-auth-operational.php?mode=change',
+ 'preparations'=>'student-long-editors.php?kind=preparation&mode=list',
+ 'calibration-list'=>'student-long-editors.php?kind=calibration&mode=list',
+ 'step-editor'=>'student-record-actions-operational.php?mode=step',
+ 'delete-record'=>'student-record-actions-operational.php?mode=delete',
+ 'compare-select'=>'student-comparison-operational.php?mode=select',
+ 'compare-records'=>'student-comparison-operational.php?mode=analysis',
+ 'exposure'=>'student-record-workspace-operational.php?state=exposure',
+ 'process-choice'=>'student-record-workspace-operational.php?state=process-choice',
+ 'result'=>'student-record-workspace-operational.php?state=result',
+ 'result-waiting'=>'student-record-workspace-operational.php?state=result-waiting',
+ 'result-revision'=>'student-record-workspace-operational.php?state=result-revision',
+ 'result-reviewed'=>'student-record-workspace-operational.php?state=result-reviewed',
+ 'process-plan'=>'student-record-workspace-operational.php?state=process-plan',
+ 'process-partial'=>'student-record-workspace-operational.php?state=process-partial',
+ 'shared-record'=>'student-shared-record-operational.php?mode=filled',
+ 'research-derived'=>'student-notebook.php?state=derived',
+];
+foreach($operationalSources as $name=>$source){
+ must_student_visual_inventory(str_contains($spec,"['".$name."','".$source."']"),$name.' must use its operational PHP renderer');
+ must_student_visual_inventory(!str_contains($spec,"['".$name."','student-secondary-screens-audit.html"),$name.' cannot regress to legacy fixture');
+}
+must_student_visual_inventory(str_contains($spec,'operationalScreens.has(name)')&&str_contains($spec,'anonymousAuthScreens.has(name)')&&str_contains($spec,'contract.links')&&str_contains($spec,'scrollGutter'),'operational screen audit must verify v2 shell without injected styles');
 foreach(['process-intent','recording-start','recording-associated','recording-partial','recording-complete'] as $obsolete)must_student_visual_inventory(!str_contains($spec,"\n  ['$obsolete','"),'complete visual audit still preserves obsolete temporal surface '.$obsolete);
 must_student_visual_inventory(str_contains($spec,"['inventory','student-inventory-movement.php?mode=inventory']")&&str_contains($spec,"['inventory-empty','student-inventory-movement.php?mode=empty']"),'inventory list/empty visual audit must use PHP fixture that includes operational movement renderer');
 must_student_visual_inventory(str_contains($spec,"toBe(46)"),'complete visual audit surface count must match the non-linear product');

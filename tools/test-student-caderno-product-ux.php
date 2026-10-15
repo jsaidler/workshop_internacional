@@ -3,14 +3,14 @@ declare(strict_types=1);
 function fail_student_caderno_product_ux(string $message): never {fwrite(STDERR,"student-caderno-product-ux: $message\n");exit(1);}
 function must_student_caderno_product_ux(bool $ok,string $message): void {if(!$ok)fail_student_caderno_product_ux($message);}
 $root=dirname(__DIR__);
-$notebook=(string)file_get_contents($root.'/aluno/caderno.php');$record=(string)file_get_contents($root.'/aluno/teste.php');$runner=(string)file_get_contents($root.'/aluno/processar.php');$routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
+$notebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');$record=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');$runner=(string)file_get_contents($root.'/aluno/processar.php');$runnerView=(string)file_get_contents($root.'/app/student_process_runner_view.php');$runnerMarkup=$runner.$runnerView;$routePicker=(string)file_get_contents($root.'/aluno/registro-roteiro.php');
 $notebookDomain=(string)file_get_contents($root.'/app/student_process_notebook.php');$freeDomain=(string)file_get_contents($root.'/app/student_process_notebook_free.php');$replan=(string)file_get_contents($root.'/app/student_process_replanning.php');$migration=(string)file_get_contents($root.'/migrations/092_student_process_step_timers.php');
 $bootstrap=(string)file_get_contents($root.'/app/bootstrap.php');$shell=(string)file_get_contents($root.'/app/student_shell.php');$css=(string)file_get_contents($root.'/assets/student-caderno.css');$doc=(string)file_get_contents($root.'/docs/STUDENT_CADERNO_PRODUCT_UX_TRANCHE_B_2026-10-01.md');
 
 must_student_caderno_product_ux(!str_contains($notebook,'student-record-progress')&&!str_contains($notebook,'is-current')&&!str_contains($notebook,'is-pending'),'Caderno list still exposes wizard progression');
 must_student_caderno_product_ux(str_contains($notebook,'Abrir registro →'),'record itself must remain the primary Caderno action');
 foreach(['id="exposicao"','id="processamento"','id="resultado"'] as $anchor)must_student_caderno_product_ux(str_contains($record,$anchor),'record page lost '.$anchor);
-must_student_caderno_product_ux(str_contains($record,'podem ser preenchidos, corrigidos ou deixados em aberto independentemente'),'record purpose no longer states the notebook model');
+must_student_caderno_product_ux(str_contains($record,'Três partes independentes do mesmo registro.')&&str_contains($record,'Comece por qualquer uma delas.'),'record purpose no longer states the notebook model');
 must_student_caderno_product_ux(str_contains($record,'Salvar exposição')&&!str_contains($record,'Salvar exposição e continuar'),'exposure still forces progression');
 must_student_caderno_product_ux(str_contains($record,'Ele não depende de nenhuma etapa anterior.'),'result is not explicitly independent');
 foreach(['O processamento já aconteceu?','Vou revelar agora','Já revelei','Registrar manualmente','Continuar laboratório','Próxima etapa','intent=live'] as $obsolete)must_student_caderno_product_ux(!str_contains($record,$obsolete),'record reintroduced obsolete workflow language: '.$obsolete);
@@ -29,9 +29,9 @@ must_student_caderno_product_ux(str_contains($migration,'student_process_step_ti
 must_student_caderno_product_ux(str_contains($notebookDomain,"student_process_notebook_set_completed(\$db,(int)\$row['plan_id']")&&str_contains($notebookDomain,"true,'timer'"),'elapsed timer does not auto-check its own step');
 must_student_caderno_product_ux(str_contains($freeDomain,'student_process_notebook_delete_free_step')&&!str_contains($freeDomain,'student_inventory_move'),'free-step removal still couples notebook data to inventory');
 
-foreach(['Estou nesta etapa','Ir para próxima etapa','Concluir processamento','Registrar o processamento realizado','intent'] as $obsolete)must_student_caderno_product_ux(!str_contains($runner,$obsolete),'route tool still governs process progression: '.$obsolete);
-must_student_caderno_product_ux(str_contains($runner,'Etapa não marcada')&&str_contains($runner,'Marcar como concluída')&&str_contains($runner,'Desmarcar etapa'),'route tool does not treat completion as reversible data');
-must_student_caderno_product_ux(str_contains($runner,'Editar dados da etapa')&&str_contains($runner,'Movimentar estoque'),'route tool lost edit or explicit stock actions');
+foreach(['Estou nesta etapa','Ir para próxima etapa','Concluir processamento','Registrar o processamento realizado','intent'] as $obsolete)must_student_caderno_product_ux(!str_contains($runnerMarkup,$obsolete),'route tool still governs process progression: '.$obsolete);
+must_student_caderno_product_ux(str_contains($runner,'student_process_render_runner_view(')&&str_contains($runnerView,'Etapa não marcada')&&str_contains($runnerView,'Marcar como concluída')&&str_contains($runnerView,'Desmarcar etapa'),'route tool does not treat completion as reversible data');
+must_student_caderno_product_ux(str_contains($runnerView,'Editar dados da etapa')&&str_contains($runnerView,'Movimentar estoque'),'route tool lost edit or explicit stock actions');
 
 must_student_caderno_product_ux(str_contains($routePicker,'não inicia processamento, não impõe ordem e não movimenta estoque'),'route association semantics are not explicit');
 must_student_caderno_product_ux(!str_contains($routePicker,'Usar daqui em diante')&&!str_contains($routePicker,'próximas etapas'),'route picker still carries temporal workflow semantics');

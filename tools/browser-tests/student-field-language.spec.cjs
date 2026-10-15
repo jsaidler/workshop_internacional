@@ -7,26 +7,36 @@ const read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
 const compactMarkup=text=>text.replace(/\s+(?=<)/g,'');
 const studentUiFiles=[
   'aluno/caderno.php',
+  'app/student_notebook_view.php',
   'aluno/calibracao.php',
   'app/student_calibration_editor.php',
+  'app/student_lab_catalog_views.php',
   'app/student_preparation_editor.php',
   'aluno/comparar-processos.php',
   'aluno/duvidas.php',
+  'app/student_questions_view.php',
   'aluno/ferramentas.php',
+  'app/student_laboratory_view.php',
   'aluno/inventario.php',
   'app/student_inventory_create_panel.php',
   'aluno/inventario-item.php',
   'app/student_inventory_item_editor.php',
   'aluno/perfil.php',
+  'app/student_profile_view.php',
+  'app/student_process_template_step_editor.php',
   'aluno/preparos.php',
   'aluno/processamentos.php',
   'aluno/teste.php',
+  'app/student_record_workspace_view.php',
   'aluno/teste-compartilhado.php',
+  'app/student_shared_record_view.php',
   'aluno/teste-etapa.php',
+  'app/student_record_auxiliary_views.php',
   'app/student_shell.php',
 ];
 
 test('student fields use one canonical vocabulary at the source',()=>{
+  expect(read('aluno/teste-compartilhado.php')).toContain('student_shared_record_view(');
   const source=studentUiFiles.map(read).join('\n');
   const forbidden=[
     'EI / ISO',
@@ -57,7 +67,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
   for(const legacy of forbidden)expect(source,`legacy student field label: ${legacy}`).not.toContain(legacy);
 
   const required={
-    'aluno/teste.php':[
+    'app/student_record_workspace_view.php':[
       '>EI<input name="iso_reference"',
       '>Abertura<input name="aperture"',
       '>Tempo sem reciprocidade<input name="calculated_time"',
@@ -72,7 +82,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Agitação<input name="agitation"',
       '>Anotações<textarea name="notes"',
     ],
-    'aluno/teste-compartilhado.php':[
+    'app/student_shared_record_view.php':[
       '<dt>EI</dt>',
       '<dt>Abertura</dt>',
       '<dt>Tempo sem reciprocidade</dt>',
@@ -85,7 +95,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
       "'reciprocity_time'=>'Tempo com reciprocidade'",
       "'tonal_range'=>'Faixa tonal e intenção'",
     ],
-    'aluno/teste-etapa.php':[
+    'app/student_record_auxiliary_views.php':[
       '>Nome da etapa<input name="label"',
       '>Químico ou solução<input name="chemical_name"',
       '>Tempo<input name="duration"',
@@ -93,12 +103,12 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '>Agitação<input name="agitation"',
       '>Anotações<textarea name="notes"',
     ],
-    'aluno/ferramentas.php':[
+    'app/student_laboratory_view.php':[
       '>Tempo sem reciprocidade<input data-quick-reciprocity-source',
       '>Tempo com reciprocidade<input data-quick-reciprocity-target',
       '>Tempo inicial<input',
     ],
-    'aluno/processamentos.php':[
+    'app/student_process_template_step_editor.php':[
       '>Predefinição de revelação<select name="saved_preparation_id"',
       '>Outro revelador<input name="developer_name"',
       '>Revelador ou solução estoque (ml)<input',
@@ -114,15 +124,18 @@ test('student fields use one canonical vocabulary at the source',()=>{
       '<span>Predefinições de revelação</span>',
       '<span>Referências de calibração</span>',
     ],
-    'aluno/caderno.php':['>Visibilidade<select name="visibility"'],
-    'aluno/duvidas.php':['>Resposta<textarea name="body"'],
+    'app/student_notebook_view.php':['>Visibilidade<select name="visibility"'],
+    'app/student_questions_view.php':['>Resposta<textarea name="body"'],
     'app/student_calibration_editor.php':['>Nome da referência<input name="label"','>Preparo ou diluição<input name="preparation"'],
     'app/student_inventory_create_panel.php':['<span>Solução preparada</span>','>Lote ou identificação<input name="lot_code"','>Data de entrada<input type="date" name="acquired_or_prepared_at"'],
     'app/student_inventory_item_editor.php':['>Lote ou identificação<input name="lot_code"'],
-    'aluno/perfil.php':['>Telefone para contato<input name="phone"','>Cidade e UF<input name="city_state"'],
+    'app/student_profile_view.php':['>Telefone para contato<input name="phone"','>Cidade e UF<input name="city_state"'],
     'app/student_preparation_editor.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
   };
+  expect(read('aluno/teste.php')).toContain('student_record_render_workspace(');
   expect(read('aluno/inventario.php')).toContain('student_inventory_create_panel($createDraft');
+  expect(read('aluno/processamentos.php')).toContain("require_once __DIR__.'/../app/student_process_template_step_editor.php'");
+  expect(read('aluno/perfil.php')).toContain('student_profile_render($profile,$error,$notice)');
   expect(read('aluno/inventario-item.php')).toContain('student_inventory_item_editor($item');
   for(const [file,needles] of Object.entries(required)){
     const text=compactMarkup(read(file));
@@ -138,11 +151,14 @@ test('student field controls never rely on an empty visible label',()=>{
       expect(match[1],`${file} has a form control with no visible label and no accessible name`).toMatch(/\baria-label=/);
     }
   }
-  expect(read('aluno/calibracao.php')).toContain('student_calibration_editor($editing');
+  expect(read('aluno/calibracao.php')).toContain('student_lab_calibrations_view(');
+   expect(read('app/student_lab_catalog_views.php')).toContain('student_calibration_editor($editing');
   expect(read('app/student_calibration_editor.php')).toContain('aria-label="Anotações da calibração"');
   expect(read('app/student_inventory_create_panel.php')).toContain('aria-label="Anotações do item"');
-  expect(compactMarkup(read('aluno/teste.php'))).toContain('>Anotações<textarea name="notes"');
-  expect(compactMarkup(read('aluno/teste-etapa.php'))).toContain('>Anotações<textarea name="notes"');
+  expect(read('aluno/teste.php')).toContain('student_record_render_workspace(');
+  expect(compactMarkup(read('app/student_record_workspace_view.php'))).toContain('>Anotações<textarea name="notes"');
+  expect(read('aluno/teste-etapa.php')).toContain('student_record_render_free_step_editor(');
+   expect(compactMarkup(read('app/student_record_auxiliary_views.php'))).toContain('>Anotações<textarea name="notes"');
 });
 
 test('static student labels are server-rendered; JavaScript only relabels state-dependent fields',()=>{

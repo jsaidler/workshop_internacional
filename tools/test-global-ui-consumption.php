@@ -23,6 +23,8 @@ foreach(['.student-step-nav','.student-workflow-panel','.student-home-grid','.st
 foreach(['.form-field','.form-field-error','.choice-field','.choice-option','.check-field','.ui-alert','.button-danger'] as $primitive)must_global_ui(str_contains($uiCss,$primitive),'global stylesheet missing '.$primitive);
 foreach(['workshop-theme','form[data-ui-validate]','dataset.uiMatch','aria-describedby','scrollIntoView'] as $behavior)must_global_ui(str_contains($uiJs,$behavior),'global UI runtime missing '.$behavior);
 
+must_global_ui(str_contains($uiCss,'.button.button-danger{color:var(--text)')&&str_contains($uiCss,'.button.button-danger:hover{color:#fff')&&!str_contains($uiCss,'.button-danger{color:#8b2727'),'global destructive button must keep accessible text colors in dark and light themes');
+
 must_global_ui(str_contains($pageJs,"import(`/assets/ui-core.js")&&!str_contains($pageJs,"localStorage.setItem('workshop-theme'"),'template runtime does not delegate theme to ui-core');
 must_global_ui(str_contains($publicJs,"import(`/assets/ui-core.js")&&!str_contains($publicJs,'function applyTheme(')&&!str_contains($publicJs,"localStorage.setItem('workshop-theme'"),'public runtime does not delegate theme to ui-core');
 
@@ -47,7 +49,20 @@ foreach($requiredConsumers as $file=>$needles){
     $source=(string)file_get_contents($root.'/aluno/'.$file);
     // The notebook creation form has a shared renderer; check the actual
     // included component rather than requiring duplicated markup in the route.
+    if(in_array($file,['login.php','senha.php'],true)){
+        $source.=(string)file_get_contents($root.'/app/student_auth_view.php');
+        must_global_ui(str_contains($source,$file==='login.php'?'student_auth_render_login(':'student_auth_render_password('),$file.' must share the canonical authentication renderer');
+    }
+    if($file==='perfil.php'){
+        $source.=(string)file_get_contents($root.'/app/student_profile_view.php');
+        must_global_ui(str_contains($source,'student_profile_render($profile,$error,$notice)'),'account must share the canonical profile renderer');
+    }
+    if($file==='teste.php'){
+        $source.=(string)file_get_contents($root.'/app/student_record_workspace_view.php');
+        must_global_ui(str_contains($source,'student_record_render_workspace(compact('),$file.' must share the canonical 3-part record workspace');
+    }
     if($file==='caderno.php'){
+        $source.=(string)file_get_contents($root.'/app/student_notebook_view.php');
         must_global_ui(str_contains($source,'student_record_create_dialog('),'notebook must include the canonical creation form');
         $source.=(string)file_get_contents($root.'/app/student_record_create_dialog.php');
     }

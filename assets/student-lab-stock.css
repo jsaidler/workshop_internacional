@@ -44,3 +44,140 @@
  .student-inventory-item-actions>form{grid-column:1/-1}
 }
 @media(prefers-reduced-motion:reduce){.student-inventory-move-dialog{scroll-behavior:auto}}
+
+/* Task-first editors for laboratory references.
+   Owns hierarchy/spacing of operational PHP views, not the legacy forms. */
+.student-task-editor{--task-radius:14px;max-width:720px}
+.student-task-editor .student-create-dialog-head{align-items:center;gap:16px}
+.student-task-editor .student-create-dialog-head h2{
+  font:700 clamp(25px,2.7vw,34px)/1.12 var(--body,Arial,sans-serif);
+  letter-spacing:-.035em;text-transform:none;text-wrap:balance
+}
+.student-task-editor .student-create-dialog-head .student-kicker{
+  margin:0 0 8px;font:700 10px/1.25 var(--body,Arial,sans-serif);
+  letter-spacing:.09em;text-transform:uppercase
+}
+.student-task-editor .student-tool-workspace{min-width:0;margin-top:0;border:0}
+.student-task-editor .student-task-form{gap:16px;align-items:start;min-width:0}
+.student-task-editor .student-task-form .form-field{
+  min-width:0;display:grid;gap:8px;
+  color:var(--text);font:600 13px/1.35 var(--body,Arial,sans-serif);
+  text-transform:none;letter-spacing:0
+}
+.student-task-editor .student-task-form .form-field[hidden]{display:none}
+.student-task-editor .student-task-form .form-field>input,
+.student-task-editor .student-task-form .form-field>select,
+.student-task-editor .student-task-form .form-field>textarea{
+  width:100%;min-width:0;min-height:48px;box-sizing:border-box;
+  padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface);color:var(--text);font:500 16px/1.35 var(--body,Arial,sans-serif)
+}
+.student-task-editor .student-task-form .form-field>textarea{min-height:94px;resize:vertical}
+.student-task-editor .student-task-form :is(input,select,textarea):focus-visible,
+.student-task-editor .student-parameter-disclosure>summary:focus-visible{
+  outline:2px solid var(--focus);outline-offset:2px
+}
+.student-task-editor .student-task-eyebrow{
+  display:block;color:var(--focus);
+  font:700 10px/1.35 var(--body,Arial,sans-serif);letter-spacing:.085em;text-transform:uppercase
+}
+.student-task-editor .student-task-focus{
+  display:grid;gap:12px;padding:22px;border:1px solid var(--line);
+  border-radius:var(--task-radius);background:var(--surface-2)
+}
+.student-task-editor .student-task-focus h3{
+  max-width:550px;margin:0;color:var(--text);
+  font:700 clamp(20px,2.4vw,26px)/1.25 var(--body,Arial,sans-serif);
+  letter-spacing:-.025em;text-transform:none
+}
+.student-task-editor .student-task-focus .student-task-time{margin-top:3px}
+.student-task-editor .student-task-focus .student-task-time input{
+  min-height:60px;background:var(--bg);border-color:var(--line-strong);
+  font:650 28px/1.1 var(--body,Arial,sans-serif);letter-spacing:-.035em
+}
+.student-task-editor .student-task-focus p{
+  margin:0;font:400 12px/1.45 var(--body,Arial,sans-serif);color:var(--muted)
+}
+.student-task-editor .student-task-section-head{display:grid;gap:6px;margin:0}
+.student-task-editor .student-task-section-head h3{
+  max-width:620px;margin:0;color:var(--text);
+  font:700 clamp(20px,2.2vw,24px)/1.2 var(--body,Arial,sans-serif);
+  letter-spacing:-.025em;text-transform:none
+}
+.student-task-editor .student-task-section-divider{
+  margin-top:8px;padding-top:22px;border-top:1px solid var(--line)
+}
+.student-task-editor .student-task-mixture{
+  min-width:0;margin-top:4px;padding:18px;
+  border:1px solid var(--line);border-radius:var(--task-radius);
+  background:color-mix(in srgb,var(--surface) 60%,transparent)
+}
+.student-task-editor .student-task-mixture-label{display:grid;gap:3px;margin:0 0 15px}
+.student-task-editor .student-task-mixture-label span{
+  font:700 14px/1.25 var(--body,Arial,sans-serif)
+}
+.student-task-editor .student-task-mixture-label small{
+  color:var(--muted);font:400 12px/1.4 var(--body,Arial,sans-serif)
+}
+.student-task-editor .student-parameter-disclosure{
+  min-width:0;margin:0;border:1px solid var(--line);border-radius:var(--task-radius);
+  background:var(--surface);overflow:clip
+}
+.student-task-editor .student-parameter-disclosure>summary{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;min-height:65px;padding:13px 18px;
+  cursor:pointer;list-style:none;color:var(--text)
+}
+.student-task-editor .student-parameter-disclosure>summary::-webkit-details-marker{display:none}
+.student-task-editor .student-parameter-disclosure>summary>span:first-child{min-width:0;display:grid;gap:5px}
+.student-task-editor .student-parameter-disclosure>summary strong{
+  font:700 14px/1.25 var(--body,Arial,sans-serif)
+}
+.student-task-editor .student-parameter-disclosure>summary small{
+  font:400 12px/1.4 var(--body,Arial,sans-serif);color:var(--muted)
+}
+.student-task-editor .student-disclosure-icon{
+  width:9px;height:9px;flex:0 0 9px;margin-right:5px;
+  border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  transform:rotate(45deg);transition:transform .16s ease
+}
+.student-task-editor .student-parameter-disclosure[open] .student-disclosure-icon{transform:rotate(225deg)}
+.student-task-editor .student-parameter-fields{
+  min-width:0;margin:0;padding:17px 18px 19px;border-top:1px solid var(--line)
+}
+.student-task-editor .student-parameter-fields.student-form-grid{gap:14px}
+.student-task-editor .student-task-actions{
+  gap:10px;margin-top:6px;padding-top:20px;border-top:1px solid var(--line)
+}
+.student-task-editor .student-task-actions .button-primary{
+  min-height:48px;padding:12px 22px;border-radius:11px;
+  background:var(--focus);color:var(--student-v2-ink,#162118);
+  font:700 13px/1.25 var(--body,Arial,sans-serif)
+}
+.student-task-editor .student-task-actions .button-secondary{
+  min-height:48px;border-radius:11px;font:600 13px/1.25 var(--body,Arial,sans-serif)
+}
+.student-task-editor .student-editor-explainer{
+  max-width:62ch;border:0;color:var(--muted);
+  font:400 12px/1.5 var(--body,Arial,sans-serif)
+}
+.student-task-editor .student-editor-explainer strong{color:var(--text)}
+@media(max-width:760px){
+  .student-app .student-main>.student-task-editor .student-create-dialog-head{
+    padding:0 0 12px;border:0
+  }
+  .student-app .student-main>.student-task-editor .student-tool-workspace{padding:12px 0 24px}
+  .student-task-editor .student-task-form{gap:14px}
+  .student-task-editor .student-task-focus{padding:18px;gap:10px}
+  .student-task-editor .student-task-focus h3{font-size:22px}
+  .student-task-editor .student-task-section-head h3{font-size:21px}
+  .student-task-editor .student-task-mixture{padding:15px}
+  .student-task-editor .student-task-mixture .student-form-grid{gap:12px}
+  .student-task-editor .student-parameter-disclosure>summary{padding:13px 15px}
+  .student-task-editor .student-parameter-fields{padding:15px}
+  .student-task-editor .student-task-actions .button-primary{flex:1 1 160px}
+  .student-task-editor .student-task-actions .button-secondary{flex:0 0 auto}
+  .student-main>.student-appbar:has(+ .student-task-editor){
+    margin:0 0 12px;padding:0;border:0
+  }
+}

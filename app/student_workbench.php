@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/student_process_stage_catalog.php';
 
 function student_workbench_float(mixed $value): ?float {
     if($value===null||$value==='')return null;
@@ -137,27 +138,6 @@ function student_process_duplicate(PDO $db,int $testId,int $studentId): array {
     return student_test_for_student($db,$copyId,$studentId)??$copy;
 }
 
-function student_process_stage_catalog(): array {
-    return [
-        'first_development'=>['label'=>'Primeira revelação','type'=>'development'],
-        'wash_after_first'=>['label'=>'Lavagem com água','type'=>'wash'],
-        'stop_after_first'=>['label'=>'Banho interruptor','type'=>'chemical'],
-        'fixer'=>['label'=>'Fixação / hipossulfito','type'=>'chemical'],
-        'peracetic'=>['label'=>'Solução peroxiacética','type'=>'chemical'],
-        'ferric'=>['label'=>'Cloreto férrico','type'=>'chemical'],
-        'dichromate'=>['label'=>'Dicromato','type'=>'chemical'],
-        'permanganate'=>['label'=>'Permanganato','type'=>'chemical'],
-        'wash_after_bleach'=>['label'=>'Lavagem','type'=>'wash'],
-        'ammonia'=>['label'=>'Banho de amônia','type'=>'chemical'],
-        'wash_after_ammonia'=>['label'=>'Lavagem','type'=>'wash'],
-        'clearing'=>['label'=>'Banho de limpeza','type'=>'chemical'],
-        'wash_after_clearing'=>['label'=>'Lavagem','type'=>'wash'],
-        'second_development'=>['label'=>'Segunda revelação','type'=>'development'],
-        'final_wash'=>['label'=>'Lavagem final','type'=>'wash'],
-        'dry'=>['label'=>'Secagem','type'=>'dry'],
-        'custom'=>['label'=>'Outra etapa','type'=>'custom'],
-    ];
-}
 function student_process_steps(PDO $db,int $testId): array {$q=$db->prepare('SELECT * FROM student_process_steps WHERE test_id=? ORDER BY position,id');$q->execute([$testId]);return $q->fetchAll(PDO::FETCH_ASSOC);}
 function student_process_last_bleach(array $steps): string {
     $branch='';foreach($steps as $step)if(in_array((string)$step['stage_key'],['fixer','peracetic','ferric','dichromate','permanganate'],true))$branch=(string)$step['stage_key'];return $branch;

@@ -23,9 +23,9 @@ $sharedContext=student_enrollment_shared_tests_context($shared,$enrollment);
 if(array_column($sharedContext,'id')!==[11,12])fail_student_tests_context('shared records do not respect cohort/course visibility inside an enrollment context');
 
 $root=dirname(__DIR__);
-$notebook=(string)file_get_contents($root.'/aluno/caderno.php');
+$notebook=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');
 $legacy=(string)file_get_contents($root.'/aluno/testes.php');
-$dashboard=(string)file_get_contents($root.'/aluno/cursos.php');
+$dashboard=(string)file_get_contents($root.'/aluno/cursos.php');$dashboardView=(string)file_get_contents($root.'/app/student_courses_view.php');
 $visibility=(string)file_get_contents($root.'/aluno/visibilidade-teste.php');
 $workbench=(string)file_get_contents($root.'/app/student_workbench.php');
 
@@ -38,7 +38,7 @@ if(!str_contains($recordForm,'value="personal"')||!str_contains($recordForm,'val
 if(!str_contains($workbench,"context_scope")||!str_contains($workbench,'context_cohort_id'))fail_student_tests_context('process domain does not persist optional record context');
 if(!str_contains($legacy,"header('Location: /aluno/caderno.php'"))fail_student_tests_context('legacy tests route does not converge to global notebook');
 if(str_contains($dashboard,'/aluno/testes.php?cohort='))fail_student_tests_context('course overview still opens obsolete course-local tests');
-if(!str_contains($dashboard,'/aluno/duvidas.php?cohort='))fail_student_tests_context('course overview lost its course/turma contextual action');
+if(!str_contains($dashboardView,'/aluno/duvidas.php?cohort='))fail_student_tests_context('course overview lost its course/turma contextual action');
 if(!str_contains($visibility,'student_enrollment_dashboard_context($enrollments,$cohortUuid)'))fail_student_tests_context('legacy visibility update no longer validates contextual return scope');
 
 echo "student-tests-context: ok\n";

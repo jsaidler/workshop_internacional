@@ -10,12 +10,12 @@ must_student_course_context(student_enrollment_dashboard_context([$courseA,$cour
 must_student_course_context(student_enrollment_dashboard_context([$courseA,$courseB],'missing')===null,'unknown cohort UUID selected an unrelated enrollment');
 must_student_course_context(student_enrollment_cohort_status_label('active')==='Turma ativa','active cohort label is incorrect');
 must_student_course_context(student_enrollment_cohort_status_label('closed')==='Turma encerrada','closed cohort label is incorrect');
-$courses=(string)file_get_contents($root.'/aluno/cursos.php');$home=(string)file_get_contents($root.'/aluno/index.php');
+$courses=(string)file_get_contents($root.'/aluno/cursos.php');$coursesView=(string)file_get_contents($root.'/app/student_courses_view.php');$home=(string)file_get_contents($root.'/aluno/index.php');
 must_student_course_context(str_contains($courses,'student_enrollment_dashboard_context'),'courses surface bypasses canonical explicit selector for multiple enrollments');
 must_student_course_context(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment does not open its course directly');
-must_student_course_context(str_contains($courses,'Trocar curso')&&str_contains($courses,'count($enrollments)>1'),'course switch is not limited to students with multiple enrollments');
-must_student_course_context(str_contains($courses,'As aulas aparecerão conforme forem cadastradas.'),'empty lesson state is misleading');
-must_student_course_context(str_contains($courses,"student_shell_start('Curso',\$selectedActivity,\$student)"),'selected course design context is not passed to student shell');
-must_student_course_context(str_contains($courses,'student-academic-choice-list')&&str_contains($courses,'student-academic-material-list'),'course surface still uses dashboard-style card composition');
+must_student_course_context(str_contains($coursesView,'Todos os cursos')&&str_contains($coursesView,'count($enrollments)>1'),'course switch is not limited to students with multiple enrollments');
+must_student_course_context(str_contains($coursesView,'As aulas aparecerão conforme forem cadastradas.'),'empty lesson state is misleading');
+must_student_course_context(str_contains($courses,"student_shell_start('Cursos',\$selectedActivity,\$student)"),'selected course design context is not passed to student shell');
+must_student_course_context(str_contains($coursesView,'student-v2-course-selector')&&str_contains($coursesView,'student-v2-course-pages')&&str_contains($courses,'student_enrollment_pages_for_enrollment'),'course surface still uses dashboard-style card composition');
 must_student_course_context(str_contains($home,'student_experience_dashboard_state')&&!str_contains($home,'student_course_context_header'),'student home must remain a next-action surface, not the course workspace');
 echo "student-course-context: ok\n";

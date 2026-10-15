@@ -30,7 +30,7 @@ $failed=false;
 try{student_test_add_media_batch_phase($db,42,1,$batch,'result');}catch(RuntimeException $e){$failed=str_contains($e->getMessage(),'apenas 1');}
 gallery_must($failed,'two images were accepted with only one remaining slot');
 gallery_must((int)$db->query('SELECT COUNT(*) FROM student_test_media')->fetchColumn()===5,'capacity failure modified the stored records');
-$source=(string)file_get_contents(__DIR__.'/../aluno/teste.php');
+$source=(string)file_get_contents(__DIR__.'/../aluno/teste.php').(string)file_get_contents(__DIR__.'/../app/student_record_workspace_view.php');
 $component=(string)file_get_contents(__DIR__.'/../app/student_record_media_controls.php');
 gallery_must(substr_count($source,"student_record_media_controls('scene'")===1,'scene missing shared chooser');
 gallery_must(substr_count($source,"student_record_media_controls('result'")===1,'result missing shared chooser');

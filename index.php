@@ -34,7 +34,7 @@ try{
             $document=student_material_render_notebook($db,$student,$page,$document);
         }
         try{analytics_record_pageview($db,$activity,$page,$locale);}catch(Throwable $analyticsError){error_log('Analytics pageview failed: '.$analyticsError->getMessage());}
-        cms_render_public_page($activity,$page,$document,false);exit;
+        cms_render_public_page($activity,$page,$document,false,true);exit;
     }
     if($pageSlug!=='')cms_render_not_found($activity,$locale);
     if((int)($activity['is_root']??0)!==1){cms_render_not_found($activity,$locale);exit;}

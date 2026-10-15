@@ -68,7 +68,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
    if(device==='phone'){
      await expect(page).toHaveURL(/aluno\/inventario-item.php/);
      await expect(page.getByRole('heading',{name:'Editar item'})).toBeVisible();
-     await expect(page.locator('.student-mobile-nav a')).toHaveCount(4);
+     await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
      await page.screenshot({path:'student-visual-audit/inventory-item/phone-dedicated-page.png',animations:'disabled'});
      await page.getByRole('link',{name:'← Inventário'}).first().click();
      await expect(page).toHaveURL(/aluno\/inventario.php/);

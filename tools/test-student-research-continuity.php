@@ -39,7 +39,7 @@ must_research(in_array('EI',$labels,true),'exposure change was not detected');
 must_research(in_array('Etapa 1 · Tempo',$labels,true),'process duration change was not detected');
 must_research(!in_array('Filme',$labels,true)&&!in_array('Condição de luz',$labels,true),'cosmetic whitespace/case created false differences');
 
-$caderno=(string)file_get_contents($root.'/aluno/caderno.php');$compare=(string)file_get_contents($root.'/aluno/comparar-processos.php');$shell=(string)file_get_contents($root.'/app/student_shell.php');$bootstrap=(string)file_get_contents($root.'/app/bootstrap.php');
+$caderno=(string)file_get_contents($root.'/aluno/caderno.php').(string)file_get_contents($root.'/app/student_notebook_view.php');$compare=(string)file_get_contents($root.'/aluno/comparar-processos.php').(string)file_get_contents($root.'/app/student_research_comparison_view.php');$shell=(string)file_get_contents($root.'/app/student_shell.php');$bootstrap=(string)file_get_contents($root.'/app/bootstrap.php');
 must_research(str_contains($caderno,'Comparar com outro registro')&&str_contains($caderno,'Comparar com origem'),'notebook lost contextual comparison entry');
 must_research(str_contains($caderno,'student_research_source')&&str_contains($caderno,'student-research-card-lineage'),'derived notebook records do not surface lineage');
 must_research(!str_contains($caderno,'student-process-compare'),'permanent comparison controls returned to notebook');

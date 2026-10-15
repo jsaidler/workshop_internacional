@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 function fail_student_login_experience(string $message): never {fwrite(STDERR,"student-login-experience: $message\n");exit(1);}
-$root=dirname(__DIR__);$login=(string)file_get_contents($root.'/aluno/login.php');
+$root=dirname(__DIR__);$login=(string)file_get_contents($root.'/aluno/login.php').(string)file_get_contents($root.'/app/student_auth_view.php');
 if(str_contains($login,'student-grid')||str_contains($login,'grid-template-columns'))fail_student_login_experience('login and activation returned to a competing two-column layout');
 $loginPos=strpos($login,'id="student-login-title"');$activationPos=strpos($login,'id="student-activation-title"');
 if($loginPos===false||$activationPos===false||$loginPos>=$activationPos)fail_student_login_experience('activated-account login is not the primary flow');

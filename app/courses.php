@@ -75,33 +75,93 @@ function course_material_page_release_summary(PDO $db,int $courseId,int $cohortI
 function course_material_set_section_lesson(PDO $db,int $courseId,int $pageId,string $sectionKey,?int $lessonId): void {$sectionKey=trim($sectionKey);if($sectionKey==='')throw new RuntimeException('Seção inválida.');if(!course_material_page_is_associated($db,$courseId,$pageId))throw new RuntimeException('A página não está associada a este curso.');if($lessonId===null||$lessonId<1){$db->prepare('DELETE FROM course_material_sections WHERE course_id=? AND page_id=? AND section_key=?')->execute([$courseId,$pageId,$sectionKey]);return;}$q=$db->prepare('SELECT 1 FROM course_lessons WHERE id=? AND course_id=?');$q->execute([$lessonId,$courseId]);if(!$q->fetchColumn())throw new RuntimeException('A aula não pertence a este curso.');$sections=course_material_sections_from_page($db,$pageId);if(!isset($sections[$sectionKey]))throw new RuntimeException('A seção não existe mais na página.');$now=utc_now();$db->prepare('INSERT INTO course_material_sections(course_id,page_id,section_key,lesson_id,created_at,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(course_id,page_id,section_key) DO UPDATE SET lesson_id=excluded.lesson_id,updated_at=excluded.updated_at')->execute([$courseId,$pageId,$sectionKey,$lessonId,$now,$now]);}
 
 function course_registration_assign_cohort(PDO $db,int $submissionId,int $courseId,int $cohortId): void {
-    $course=course_by_id($db,$courseId)??throw new RuntimeException('Curso não encontrado.');
-    $cohort=course_cohort_by_id($db,$cohortId);
-    if(!$cohort||(int)($cohort['course_id']??0)!==$courseId||(string)$cohort['status']==='archived')throw new RuntimeException('Turma não pertence a este curso.');
-    $q=$db->prepare("SELECT s.* FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.course_id=? AND f.purpose='enrollment'");
-    $q->execute([$submissionId,$courseId]);
-    $row=$q->fetch()?:throw new RuntimeException('Inscrição não pertence a este curso.');
-    $old=(int)($row['cohort_id']??0);$studentId=(int)($row['student_id']??0);
-    $owned=!$db->inTransaction();
-    if($owned)$db->beginTransaction();
-    try {
-        $db->prepare('UPDATE cms_form_submissions SET cohort_id=?,updated_at=? WHERE id=?')->execute([$cohortId,utc_now(),$submissionId]);
-        if($old>0&&$old!==$cohortId&&$studentId>0)$db->prepare("UPDATE course_enrollments SET status='disabled',updated_at=? WHERE student_id=? AND cohort_id=? AND source_submission_id=?")->execute([utc_now(),$studentId,$old,$submissionId]);
+    $work=static function() use($db,$submissionId,$courseId,$cohortId): void {
+        $course=course_by_id($db,$courseId)??throw new RuntimeException('Curso não encontrado.');
+        $cohort=course_cohort_by_id($db,$cohortId);
+        if(!$cohort||(int)($cohort['course_id']??0)!==$courseId)throw new RuntimeException('Turma não pertence a este curso.');
+        if((string)$cohort['status']!=='active')throw new RuntimeException('A turma de destino não está ativa.');
+        $q=$db->prepare("SELECT s.* FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.course_id=? AND f.purpose='enrollment'");
+        $q->execute([$submissionId,$courseId]);
+        $row=$q->fetch()?:throw new RuntimeException('Inscrição não pertence a este curso.');
+        $old=(int)($row['cohort_id']??0);$studentId=(int)($row['student_id']??0);
+        // Never adopt an enrollment owned by a different submission (or created manually).
+        if($studentId>0){
+            $existing=$db->prepare('SELECT source_submission_id FROM course_enrollments WHERE student_id=? AND cohort_id=?');
+            $existing->execute([$studentId,$cohortId]);$source=$existing->fetchColumn();
+            if($source!==false&&(int)$source!==$submissionId)throw new RuntimeException('Já existe uma matrícula de outra origem nesta turma. Resolva o vínculo antes de transferir.');
+        }
+        $now=utc_now();
+        $db->prepare('UPDATE cms_form_submissions SET cohort_id=?,updated_at=? WHERE id=?')->execute([$cohortId,$now,$submissionId]);
+        if($old>0&&$old!==$cohortId&&$studentId>0)$db->prepare("UPDATE course_enrollments SET status='disabled',updated_at=? WHERE student_id=? AND cohort_id=? AND source_submission_id=?")->execute([$now,$studentId,$old,$submissionId]);
         if(function_exists('student_enrollment_reconcile_confirmed')){
-            $result=student_enrollment_reconcile_confirmed($db,(int)$course['activity_id']);
+            $result=student_enrollment_reconcile_confirmed($db,(int)$course['activity_id'],$submissionId);
             foreach($result['errors']??[] as $error){
-                if((int)($error['submission_id']??0)!==$submissionId)continue;
                 if(str_contains((string)($error['error']??''),'cohort_capacity_full'))throw new RuntimeException('Esta turma já atingiu o limite de participantes.');
-                throw new RuntimeException('Não foi possível concluir a atribuição da matrícula.');
+                if(str_contains((string)($error['error']??''),'enrollment_source_conflict'))throw new RuntimeException('Já existe uma matrícula de outra origem nesta turma. Resolva o vínculo antes de transferir.');
+                throw new RuntimeException('Não foi possível concluir a atribuição da matrícula: '.(string)($error['error']??'erro desconhecido'));
+            }
+            $q=$db->prepare('SELECT student_id FROM cms_form_submissions WHERE id=?');$q->execute([$submissionId]);$studentId=(int)$q->fetchColumn();
+            if(student_account_submission_confirmed($row)){
+                $check=$db->prepare("SELECT 1 FROM course_enrollments WHERE student_id=? AND cohort_id=? AND source_submission_id=? AND status='active'");
+                $check->execute([$studentId,$cohortId,$submissionId]);
+                if($studentId<1||!$check->fetchColumn())throw new RuntimeException('A inscrição foi atribuída, mas a matrícula não foi confirmada.');
             }
         }
         if($studentId>0&&function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);
-        if($old>0&&$old!==$cohortId&&function_exists('course_agenda_reconcile_cohort')&&$db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='course_listener_reservations'")->fetchColumn())course_agenda_reconcile_cohort($db,$old);
-        if($owned)$db->commit();
-    }catch(Throwable $e){
-        if($owned&&$db->inTransaction())$db->rollBack();
-        throw $e;
-    }
+        if($old>0&&$old!==$cohortId&&function_exists('course_agenda_reconcile_cohort'))course_agenda_reconcile_cohort($db,$old);
+        if(function_exists('course_agenda_reconcile_cohort'))course_agenda_reconcile_cohort($db,$cohortId);
+    };
+    // BEGIN IMMEDIATE also serializes admission with listener-queue reconciliation.
+    if(function_exists('course_agenda_with_lock')){course_agenda_with_lock($db,$work);return;}
+    $owned=!$db->inTransaction();if($owned)$db->beginTransaction();
+    try{$work();if($owned)$db->commit();}
+    catch(Throwable $e){if($owned&&$db->inTransaction())$db->rollBack();throw $e;}
 }
-function course_registration_unassign_cohort(PDO $db,int $submissionId,int $courseId): void {$q=$db->prepare('SELECT student_id,cohort_id FROM cms_form_submissions WHERE id=? AND course_id=?');$q->execute([$submissionId,$courseId]);$row=$q->fetch()?:throw new RuntimeException('Inscrição não encontrada.');$studentId=(int)($row['student_id']??0);$cohortId=(int)($row['cohort_id']??0);$db->prepare('UPDATE cms_form_submissions SET cohort_id=NULL,updated_at=? WHERE id=?')->execute([utc_now(),$submissionId]);if($studentId>0&&$cohortId>0)$db->prepare("UPDATE course_enrollments SET status='disabled',updated_at=? WHERE student_id=? AND cohort_id=? AND source_submission_id=?")->execute([utc_now(),$studentId,$cohortId,$submissionId]);if($studentId>0&&function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);if($cohortId>0&&function_exists('course_agenda_reconcile_cohort')&&$db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='course_listener_reservations'")->fetchColumn())course_agenda_reconcile_cohort($db,$cohortId);}
+function course_registration_unassign_cohort(PDO $db,int $submissionId,int $courseId): void {
+    $work=static function() use($db,$submissionId,$courseId): void {
+        $q=$db->prepare("SELECT s.student_id,s.cohort_id FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.course_id=? AND f.purpose='enrollment'");
+        $q->execute([$submissionId,$courseId]);$row=$q->fetch()?:throw new RuntimeException('Inscrição não encontrada neste curso.');
+        $studentId=(int)($row['student_id']??0);$cohortId=(int)($row['cohort_id']??0);$now=utc_now();
+        $db->prepare('UPDATE cms_form_submissions SET cohort_id=NULL,updated_at=? WHERE id=?')->execute([$now,$submissionId]);
+        if($studentId>0&&$cohortId>0)$db->prepare("UPDATE course_enrollments SET status='disabled',updated_at=? WHERE student_id=? AND cohort_id=? AND source_submission_id=?")->execute([$now,$studentId,$cohortId,$submissionId]);
+        if($studentId>0&&function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);
+        if($cohortId>0&&function_exists('course_agenda_reconcile_cohort'))course_agenda_reconcile_cohort($db,$cohortId);
+    };
+    if(function_exists('course_agenda_with_lock')){course_agenda_with_lock($db,$work);return;}
+    $owned=!$db->inTransaction();if($owned)$db->beginTransaction();
+    try{$work();if($owned)$db->commit();}
+    catch(Throwable $e){if($owned&&$db->inTransaction())$db->rollBack();throw $e;}
+}
+
+/** Atomic payment decision: confirmed assigned registration must have a live enrollment. */
+function course_registration_change_payment(PDO $db,int $submissionId,int $courseId,string $decision,string $paymentNote): void {
+    if(!in_array($decision,['confirm','pending','archive'],true))throw new RuntimeException('Decisão de pagamento inválida.');
+    $work=static function() use($db,$submissionId,$courseId,$decision,$paymentNote): void {
+        $q=$db->prepare("SELECT s.* FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE s.id=? AND s.course_id=? AND f.purpose='enrollment'");
+        $q->execute([$submissionId,$courseId]);$row=$q->fetch(PDO::FETCH_ASSOC)?:throw new RuntimeException('Inscrição não encontrada neste curso.');
+        if(!course_by_id($db,$courseId))throw new RuntimeException('Curso não encontrado.');
+        $now=utc_now();
+        if($decision==='confirm')$db->prepare("UPDATE cms_form_submissions SET status='converted',payment_status='paid',payment_confirmed_at=?,payment_note=?,updated_at=? WHERE id=?")->execute([$now,$paymentNote,$now,$submissionId]);
+        elseif($decision==='pending')$db->prepare("UPDATE cms_form_submissions SET status='new',payment_status='pending',payment_confirmed_at=NULL,payment_note=?,updated_at=? WHERE id=?")->execute([$paymentNote,$now,$submissionId]);
+        else $db->prepare("UPDATE cms_form_submissions SET status='archived',payment_note=?,updated_at=? WHERE id=?")->execute([$paymentNote,$now,$submissionId]);
+        if(!function_exists('student_enrollment_reconcile_confirmed'))throw new RuntimeException('Serviço de matrícula indisponível.');
+        $result=student_enrollment_reconcile_confirmed($db,(int)$row['activity_id'],$submissionId);
+        foreach($result['errors']??[] as $error){
+            $reason=(string)($error['error']??'');
+            if(str_contains($reason,'cohort_capacity_full'))throw new RuntimeException('A turma está lotada. O pagamento não foi confirmado e nenhuma matrícula foi alterada.');
+            if(str_contains($reason,'enrollment_source_conflict'))throw new RuntimeException('Já existe uma matrícula de outra origem nesta turma. Resolva o vínculo antes de confirmar.');
+            throw new RuntimeException('Não foi possível reconciliar a matrícula: '.$reason);
+        }
+        if($decision==='confirm'&&(int)($row['cohort_id']??0)>0){
+            $check=$db->prepare("SELECT 1 FROM cms_form_submissions s JOIN course_enrollments e ON e.student_id=s.student_id AND e.cohort_id=s.cohort_id WHERE s.id=? AND e.source_submission_id=s.id AND e.status='active'");
+            $check->execute([$submissionId]);
+            if(!$check->fetchColumn())throw new RuntimeException('O pagamento não foi confirmado porque a matrícula não pôde ser ativada.');
+        }
+    };
+    if(function_exists('course_agenda_with_lock')){course_agenda_with_lock($db,$work);return;}
+    $owned=!$db->inTransaction();if($owned)$db->beginTransaction();
+    try{$work();if($owned)$db->commit();}
+    catch(Throwable $e){if($owned&&$db->inTransaction())$db->rollBack();throw $e;}
+}
+
 function course_enrollment_for_student(PDO $db,int $studentId,int $courseId,string $cohortUuid=''): ?array {$sql="SELECT e.*,c.title cohort_title,c.cohort_uuid,c.activity_id,c.course_id,c.workshop_page_id,c.status cohort_status,cr.title course_title,cr.public_page_id FROM course_enrollments e JOIN course_cohorts c ON c.id=e.cohort_id JOIN courses cr ON cr.id=c.course_id WHERE e.student_id=? AND c.course_id=? AND e.status='active' AND c.status!='archived'";$args=[$studentId,$courseId];if($cohortUuid!==''){$sql.=' AND c.cohort_uuid=?';$args[]=$cohortUuid;}$sql.=' ORDER BY e.confirmed_at DESC,e.id DESC LIMIT 1';$q=$db->prepare($sql);$q->execute($args);return $q->fetch()?:null;}

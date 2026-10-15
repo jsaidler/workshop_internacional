@@ -12,14 +12,12 @@ test('all independent sources are visible together; private links belong only to
   await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
   await expect(page.locator('.student-home-course-actions a[href*="duvidas.php?cohort=cohort-a"]')).toHaveCount(1);
   await expect(page.locator('.student-home-course-actions a[href*="material-do-curso?cohort=cohort-a"]')).toHaveCount(1);
-  await expect(page.locator('.student-home-quick a[href="/aluno/agenda.php"]')).toHaveCount(1);
-  const quickOrder=await page.locator('.student-home-quick > a, .student-home-quick > button').evaluateAll(els=>els.map(el=>el.textContent.trim()));
-  expect(quickOrder.slice(0,3)).toEqual(['▦Agenda','+Novo registro','◷Processamentos']);
-  await page.locator('[data-toolbox-open]').click();
+  await expect(page.locator('nav.student-mobile-nav a[href="/aluno/agenda.php"]')).toHaveCount(1);
+  await page.locator('.student-tools-trigger').click();
   const toolbox=page.locator('[data-student-toolbox]');
   await expect(toolbox).toBeVisible();
   await expect(toolbox.locator('.student-toolbox-links a').first()).toHaveAttribute('href','/aluno/agenda.php');
-  await expect(page.locator('.student-home-quick a[href="/aluno/processamentos.php"]')).toHaveAttribute('href','/aluno/processamentos.php');
+  await expect(page.locator('.student-v2-footer-actions a[href="/aluno/processamentos.php"]')).toHaveAttribute('href','/aluno/processamentos.php');
   await expect(page.locator('body')).not.toContainText('https://example.org/completed');
 });
 test('Home retains access during the documented time slot, without asserting attendance',async({page})=>{
@@ -52,19 +50,19 @@ test('no enrollment and restricted tools stay functional without fabricated metr
 });
 test('multiple courses expose scoped materials and questions without mandatory course selection',async({page})=>{
   await page.goto(base+'?state=multiple');
-  const courses=page.locator('.student-home-course');
+  const courses=page.locator('.student-v2-course');
   await expect(courses).toHaveCount(2);
   await expect(courses.nth(0).getByRole('link',{name:'Abrir material'})).toHaveAttribute('href',/cohort=cohort-a/);
   await expect(courses.nth(1).getByRole('link',{name:'Abrir material'})).toHaveAttribute('href',/cohort=cohort-b/);
   await expect(page.getByText('Escolha o curso')).toHaveCount(0);
-  const continueMaterial=page.locator('.student-home-block').filter({has:page.getByRole('heading',{name:'Continuar'})}).locator('.student-home-row').first();
+  const continueMaterial=page.locator('.student-v2-section').filter({has:page.getByRole('heading',{name:'Continuar'})}).locator('.student-v2-row').first();
   await expect(continueMaterial).toContainText('Positivo direto em filme de raio-X');
   await expect(continueMaterial).toContainText('Turma Outubro 2026');
 });
 test('New record opens one operational sheet in Home and preserves native POST destination, Escape and focus',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.goto(base+'?state=active');
-  const opener=page.locator('.student-home-quick [data-record-create-open]');
+  const opener=page.locator('.student-v2-footer-actions [data-record-create-open]');
   await opener.click();
   const dialog=page.locator('[data-record-create-dialog]');
   await expect(dialog).toBeVisible();
@@ -85,7 +83,7 @@ for(const [device,width,height] of [['phone',390,844],['narrow',320,720],['deskt
  test('shared creation drawer toggles personal/course fields '+device,async({page})=>{
    await page.setViewportSize({width,height});
    await page.goto(base+'?state=active');
-   await page.locator('.student-home-quick [data-record-create-open]').click();
+   await page.locator('.student-v2-footer-actions [data-record-create-open]').click();
    const dialog=page.locator('[data-record-create-dialog]');
    const courseFields=dialog.locator('[data-process-course-context]');
    await expect(dialog.locator('input[name="context_scope"][value="personal"]')).toBeChecked();
@@ -133,7 +131,7 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
       const response=await page.goto(base+'?state='+state,{waitUntil:'networkidle'});
       expect(response?.status()).toBe(200);
       await expect(page.locator('[data-student-home]')).toBeVisible();
-      await expect(page.locator('nav.student-mobile-nav a')).toHaveCount(4);
+      await expect(page.locator('nav.student-mobile-nav a')).toHaveCount(5);
       await expect(page.locator('nav.student-mobile-nav a[href="/aluno/"]')).toHaveAttribute('aria-current','page');
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(1);
@@ -145,11 +143,9 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
       fs.mkdirSync('student-visual-audit/home',{recursive:true});
       await page.screenshot({path:'student-visual-audit/home/'+state+'-'+device+'-start.png',animations:'disabled'});
       const main=page.locator('main.student-main');
-      if(width<=760)await main.evaluate(el=>{el.scrollTop=Math.round((el.scrollHeight-el.clientHeight)/2);});
-      else await page.evaluate(()=>scrollTo(0,Math.round((document.documentElement.scrollHeight-innerHeight)/2)));
+      await main.evaluate(el=>{el.scrollTop=Math.round((el.scrollHeight-el.clientHeight)/2);});
       await page.screenshot({path:'student-visual-audit/home/'+state+'-'+device+'-middle.png',animations:'disabled'});
-      if(width<=760)await main.evaluate(el=>{el.scrollTop=el.scrollHeight;});
-      else await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));
+      await main.evaluate(el=>{el.scrollTop=el.scrollHeight;});
       await page.screenshot({path:'student-visual-audit/home/'+state+'-'+device+'-end.png',animations:'disabled'});
       if(state==='active'){
         const theme=await page.evaluate(()=>getComputedStyle(document.body).backgroundColor);
@@ -165,10 +161,51 @@ for(const theme of ['light','dark']){
     await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);
     fs.mkdirSync('student-visual-audit/home',{recursive:true});
     await page.screenshot({path:'student-visual-audit/home/long-phone-'+theme+'-start.png',animations:'disabled'});
-    await page.locator('.student-home-quick [data-record-create-open]').click();
+    await page.locator('.student-v2-footer-actions [data-record-create-open]').click();
     await expect(page.locator('[data-record-create-dialog]')).toBeVisible();
     await page.screenshot({path:'student-visual-audit/home/long-phone-'+theme+'-drawer.png',animations:'disabled'});
     const doc=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     expect(doc.scroll-doc.client).toBeLessThanOrEqual(1);
   });
 }
+
+test('new app shell keeps five named destinations, correct active state and usable mobile account actions',async({page})=>{
+  await page.setViewportSize({width:320,height:720});
+  await page.goto(base+'?state=active',{waitUntil:'networkidle'});
+  const nav=page.locator('nav.student-mobile-nav');
+  await expect(nav.locator('a')).toHaveCount(5);
+  expect(await nav.locator('a .student-nav-label').allTextContents()).toEqual(['Início','Agenda','Cursos','Caderno','Laboratório']);
+  const boxes=await nav.locator('a').evaluateAll(nodes=>nodes.map(n=>({width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height})));
+  expect(boxes.every(b=>b.width>=44&&b.height>=44)).toBeTruthy();
+  await page.locator('.student-user-menu summary').click();
+  await expect(page.locator('.student-tools-menu-trigger')).toBeVisible();
+  await page.locator('.student-tools-menu-trigger').click();
+  await expect(page.locator('[data-student-toolbox]')).toBeVisible();
+  await page.locator('[data-toolbox-close]').click();
+});
+
+test('secondary continuation never duplicates the prominent Home action',async({page})=>{
+  await page.goto(base+'?state=feedback');
+  await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();
+  await expect(page.locator('[data-home-feedback]')).toHaveCount(0);
+  await expect(page.locator('[data-home-feedback-feature] .student-v2-cta')).toHaveAttribute('href','/aluno/teste.php?id=17&view=review');
+  await page.goto(base+'?state=record');
+  await expect(page.locator('[data-home-record-feature]')).toBeVisible();
+  await expect(page.locator('.student-v2-row[href="/aluno/teste.php?id=22&view=process"]')).toHaveCount(0);
+  await page.goto(base+'?state=study');
+  await expect(page.locator('[data-home-study-feature]')).toBeVisible();
+  await expect(page.locator('.student-v2-row[href*="/material-do-curso"]')).toHaveCount(0);
+});
+
+test('Home offers direct record and processing actions before the long course lists',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(base+'?state=active',{waitUntil:'networkidle'});
+  const order=await page.locator('main.student-main').evaluate(main=>{
+    const tile=main.querySelector('.student-v2-shortcuts'),courses=main.querySelector('#student-v2-courses-title'),notebook=main.querySelector('#student-v2-notebook-title');
+    return [Boolean(tile),Boolean(courses),Boolean(notebook),tile?.compareDocumentPosition(courses)&Node.DOCUMENT_POSITION_FOLLOWING,tile?.compareDocumentPosition(notebook)&Node.DOCUMENT_POSITION_FOLLOWING];
+  });
+  expect(order).toEqual([true,true,true,4,4]);
+  const tools=page.locator('.student-v2-footer-actions');
+  await expect(tools.locator('[data-record-create-open]')).toHaveCount(1);
+  await expect(tools.locator('a[href="/aluno/processamentos.php"]')).toHaveCount(1);
+});

@@ -8,9 +8,9 @@ $processJs=(string)file_get_contents($root.'/assets/student-process-ux.js');
 $experienceJs=(string)file_get_contents($root.'/assets/student-experience.js');
 $notes=(string)file_get_contents($root.'/app/student_notes_experience.php');
 $tools=(string)file_get_contents($root.'/aluno/ferramentas.php');
-$processPage=(string)file_get_contents($root.'/aluno/teste.php');
-$processEdit=(string)file_get_contents($root.'/aluno/teste-etapa.php');
-$preparations=(string)file_get_contents($root.'/aluno/preparos.php');
+$processPage=(string)file_get_contents($root.'/aluno/teste.php').(string)file_get_contents($root.'/app/student_record_workspace_view.php');
+$processEdit=(string)file_get_contents($root.'/aluno/teste-etapa.php').(string)file_get_contents($root.'/app/student_record_auxiliary_views.php');
+$preparations=(string)file_get_contents($root.'/aluno/preparos.php').(string)file_get_contents($root.'/app/student_lab_catalog_views.php');
 $preparationEditor=(string)file_get_contents($root.'/app/student_preparation_editor.php');
 $audit=(string)file_get_contents($root.'/docs/STUDENT_AREA_MECHANICS_FULL_AUDIT_2026-10-01.md');
 

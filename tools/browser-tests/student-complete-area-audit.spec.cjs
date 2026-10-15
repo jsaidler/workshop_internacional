@@ -2,54 +2,57 @@ const {test,expect}=require('@playwright/test');
 const host='http://127.0.0.1:8099';
 const fixture=p=>host+'/tools/browser-fixture/'+p;
 const screens=[
-  ['login','student-auth-visual-audit.html?screen=login'],
-  ['activation-password','student-auth-visual-audit.html?screen=password'],
+  ['login','student-auth-operational.php?mode=login'],
+  ['activation-password','student-auth-operational.php?mode=activation'],
   ['home','student-home.php?state=active'],
   ['home-feedback','student-home.php?state=feedback'],
   ['home-study','student-home.php?state=study'],
   ['home-multiple','student-home.php?state=multiple'],
-  ['course-list','student-course-context.html'],
-  ['course-detail','student-course-context.html?cohort=cohort-a'],
-  ['course-feedback','student-pedagogical-feedback-audit.html?screen=course-feedback'],
-  ['course-empty','student-course-context.html?cohort=cohort-b&state=empty'],
-  ['material','student-material-context.html'],
-  ['questions-list','student-secondary-screens-audit.html?screen=questions-list'],
-  ['questions-feedback','student-pedagogical-feedback-audit.html?screen=questions-feedback'],
-  ['question-new','student-secondary-screens-audit.html?screen=question-new'],
-  ['question-thread','student-secondary-screens-audit.html?screen=question-thread'],
-  ['notebook','student-caderno-product-audit.html?screen=notebook'],
+  ['course-list','student-courses.php?state=multiple'],
+  ['course-detail','student-courses.php?state=detail'],
+  ['course-feedback','student-courses.php?state=attention'],
+  ['course-empty','student-courses.php?state=no-material'],
+  ['material','student-material-cms-operational.php?page=current&cohort=cohort-a'],
+  ['questions-list','student-questions-operational.php?state=list'],
+  ['questions-feedback','student-questions-operational.php?state=evaluations'],
+  ['question-new','student-questions-operational.php?state=failed-create'],
+  ['question-thread','student-questions-operational.php?state=thread&id=1'],
+  ['notebook','student-notebook.php?state=mixed'],
   ['new-record','student-record-create-sheet.php'],
-  ['exposure','student-caderno-product-audit.html?screen=record-empty'],
-  ['process-choice','student-caderno-product-audit.html?screen=record-empty'],
-  ['process-plan','student-caderno-product-audit.html?screen=record-plan'],
-  ['process-partial','student-caderno-product-audit.html?screen=record-partial'],
-  ['result','student-caderno-product-audit.html?screen=record-result'],
-  ['result-waiting','student-pedagogical-feedback-audit.html?screen=result-waiting'],
-  ['result-revision','student-pedagogical-feedback-audit.html?screen=result-revision'],
-  ['result-reviewed','student-pedagogical-feedback-audit.html?screen=result-reviewed'],
-  ['step-editor','student-secondary-screens-audit.html?screen=step-editor'],
-  ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
-  ['delete-record','student-secondary-screens-audit.html?screen=delete-record'],
-  ['compare-select','student-notebook-compare.html?screen=select'],
-  ['compare-records','student-notebook-compare.html?screen=analysis'],
-  ['research-derived','student-notebook-compare.html?screen=derived'],
-  ['process-library','student-process-product-audit.html?screen=library'],
-  ['process-editor','student-process-product-audit.html?screen=editor'],
-  ['lab-runner','student-process-execution-state-audit.html?state=idle'],
+  ['exposure','student-record-workspace-operational.php?state=exposure'],
+  ['process-choice','student-record-workspace-operational.php?state=process-choice'],
+  ['process-plan','student-record-workspace-operational.php?state=process-plan'],
+  ['process-partial','student-record-workspace-operational.php?state=process-partial'],
+  ['result','student-record-workspace-operational.php?state=result'],
+  ['result-waiting','student-record-workspace-operational.php?state=result-waiting'],
+  ['result-revision','student-record-workspace-operational.php?state=result-revision'],
+  ['result-reviewed','student-record-workspace-operational.php?state=result-reviewed'],
+  ['step-editor','student-record-actions-operational.php?mode=step'],
+  ['shared-record','student-shared-record-operational.php?mode=filled'],
+  ['delete-record','student-record-actions-operational.php?mode=delete'],
+  ['compare-select','student-comparison-operational.php?mode=select'],
+  ['compare-records','student-comparison-operational.php?mode=analysis'],
+  ['research-derived','student-notebook.php?state=derived'],
+  ['process-library','student-process-saved-cards.php?mode=library'],
+  ['process-editor','student-process-editor.php?mode=edit'],
+  ['lab-runner','student-process-runner-operational.php?state=idle'],
   ['inventory','student-inventory-movement.php?mode=inventory'],
   ['inventory-empty','student-inventory-movement.php?mode=empty'],
   ['inventory-movement','student-inventory-movement.php'],
   ['inventory-item-editor','student-inventory-item-direct.php?mode=editor'],
-  ['preparations','student-lab-stock-product-audit.html?screen=preparations'],
+  ['preparations','student-long-editors.php?kind=preparation&mode=list'],
   ['preparation-editor','student-long-editors.php?kind=preparation&mode=edit'],
-  ['calibration-list','student-secondary-screens-audit.html?screen=calibration-list'],
+  ['calibration-list','student-long-editors.php?kind=calibration&mode=list'],
   ['calibration-editor','student-long-editors.php?kind=calibration&mode=edit'],
-  ['tools','student-visual-audit.html?screen=tools'],
+  ['tools','student-laboratory.php?state=full'],
   ['toolbox','student-toolbox-real-audit.php'],
-  ['profile','student-secondary-screens-audit.html?screen=profile'],
-  ['password-change','student-secondary-screens-audit.html?screen=password-change'],
+  ['profile','student-profile.php?mode=view'],
+  ['password-change','student-auth-operational.php?mode=change'],
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
+// Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','process-editor','lab-runner','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
+const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
   await page.evaluate(async styles=>{
@@ -69,9 +72,47 @@ for(const [device,viewport] of Object.entries(viewports)){
   for(const [name,path] of screens){
     test(`complete student area visual audit ${device} ${name}`,async({page})=>{
       const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
-      await page.setViewportSize(viewport);await page.goto(fixture(path),{waitUntil:'networkidle'});
-      if(name!=='material')await ensureCanonicalShellStyles(page);
+      await page.setViewportSize(viewport);const response=await page.goto(fixture(path),{waitUntil:'networkidle'});
+      expect(response?.status(),`${name}: expected successful PHP fixture rendering`).toBe(200);
+      if(name!=='material'&&!operationalScreens.has(name)&&!anonymousAuthScreens.has(name))await ensureCanonicalShellStyles(page);
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+      if(anonymousAuthScreens.has(name)){
+        const auth=await page.evaluate(()=>({
+          app:document.body.classList.contains('student-app'),
+          shell:!!document.querySelector('.student-shell'),
+          css:[...document.querySelectorAll('link[rel="stylesheet"]')].some(n=>(n.getAttribute('href')||'').split('?')[0]==='/assets/student-app-shell.css'),
+          nav:document.querySelectorAll('.student-mobile-nav a').length
+        }));
+        expect(auth.app&&auth.shell&&auth.css,`${name}: render true anonymous shell`).toBe(true);
+        expect(auth.nav,`${name}: anonymous access cannot expose authenticated nav`).toBe(0);
+        await expect(page.locator('form [name="_csrf"]')).toHaveCount(name==='login'?2:1);
+      }
+      if(operationalScreens.has(name)){
+        const contract=await page.evaluate(()=>({
+          app:document.body.classList.contains('student-app'),
+          shell:!!document.querySelector('.student-shell'),
+          shellCss:[...document.querySelectorAll('link[rel="stylesheet"]')].some(n=>(n.getAttribute('href')||'').split('?')[0]==='/assets/student-app-shell.css'),
+          links:[...document.querySelectorAll('.student-mobile-nav a')].map(a=>a.getAttribute('href')),
+          scrollGutter:document.querySelector('.student-main')?getComputedStyle(document.querySelector('.student-main')).scrollbarGutter:''
+        }));
+        expect(contract.app&&contract.shell&&contract.shellCss,`${name}: must use operational student shell and its stylesheet`).toBe(true);
+        expect(contract.links,`${name}: global navigation destinations`).toEqual(['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php']);
+        expect(contract.scrollGutter,`${name}: real shell reserves scroll track`).toContain('stable');
+      }
+      if(name==='material'){
+        const cms=await page.evaluate(()=>({
+          page:document.body.classList.contains('cms-student-material'),
+          root:!!document.querySelector('.cms-student-reading[data-student-scroll-root]'),
+          main:!!document.querySelector('main[data-cms-page-main]'),
+          nav:[...document.querySelectorAll('.student-mobile-nav a')].map(a=>a.getAttribute('href')),
+          context:!!document.querySelector('.cms-student-study-context'),
+          notes:!!document.querySelector('[data-student-notes-panel]'),
+          hasBlocked:!!document.querySelector('[data-cms-section="aula-nao-liberada"]')
+        }));
+        expect(cms.page&&cms.root&&cms.main&&cms.context&&cms.notes, 'material must use enrolled canonical CMS reading shell').toBe(true);
+        expect(cms.hasBlocked, 'material cannot render an unreleased section').toBe(false);
+        expect(cms.nav, 'material must retain global five-destination navigation').toEqual(['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php']);
+      }
       if(name==='inventory-movement'){await page.getByRole('button',{name:'Movimentar estoque'}).click();}
       if(name==='new-record'||name==='toolbox'){
         const selector=name==='new-record'?'.student-create-dialog':'.student-toolbox';
@@ -79,35 +120,105 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='home-feedback'){await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();await expect(page.getByRole('link',{name:/Ler retorno e revisar/})).toBeVisible();}
       if(name==='course-feedback'){await expect(page.getByText('Há algo para retomar',{exact:true})).toBeVisible();await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();}
-      if(name==='questions-feedback'){await expect(page.getByText('Conversas de avaliação',{exact:true})).toBeVisible();await expect(page.getByText('Dúvidas da turma',{exact:true})).toBeVisible();}
-      if(name==='result-waiting')await expect(page.getByText('Enviado para avaliação',{exact:true})).toBeVisible();
-      if(name==='result-revision'){await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();await expect(page.getByText('Enviar revisão para avaliação',{exact:true})).toBeVisible();await expect(page.getByText('Professor',{exact:true})).toBeVisible();}
-      if(name==='result-reviewed')await expect(page.getByText('Avaliação concluída',{exact:true})).toBeVisible();
-      if(name==='compare-select'){await expect(page.getByText('Escolha o segundo registro',{exact:true})).toBeVisible();await expect(page.getByText('EI 200 — FeCl₃',{exact:true})).toBeVisible();}
-      if(name==='compare-records'){await expect(page.getByText('Diferenças registradas',{exact:true})).toBeVisible();await expect(page.getByText('Resultado observado',{exact:true})).toBeVisible();await expect(page.getByText('Criar próxima variação',{exact:true})).toBeVisible();}
+      if(name==='questions-feedback'){await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();await expect(page.getByRole('heading',{name:'Dúvidas da turma e do curso'})).toBeVisible();}
+      if(name==='questions-list')await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
+      if(name==='question-new'){await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();await expect(page.locator('[data-question-new-panel] form')).toBeVisible();}
+      if(name==='question-thread'){await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();await expect(page.locator('[data-student-local-key="question-thread"] form textarea[name="body"]')).toBeVisible();}
+      if(name==='preparations'){
+        await expect(page.getByRole('heading',{name:'Predefinições de revelação'})).toBeVisible();
+        await expect(page.locator('.student-preparation-card')).toHaveCount(1);
+        await expect(page.locator('.student-preparation-card form [name="action"][value="delete"]')).toHaveCount(1);
+        await expect(page.locator('.student-preparation-card form [name="_csrf"]')).toHaveCount(1);
+        await expect(page.getByRole('link',{name:'Abrir inventário'})).toHaveAttribute('href','/aluno/inventario.php');
+        await expect(page.locator('.student-preparation-card .student-preparation-note')).toContainText('sem movimentar o Inventário');
+      }
+      if(name==='calibration-list'){
+        await expect(page.getByRole('heading',{name:'Referências de calibração'})).toBeVisible();
+        await expect(page.locator('[data-student-local-key="calibrations-list"] .student-simple-row')).toHaveCount(1);
+        await expect(page.locator('[data-student-local-key="calibrations-list"] .student-simple-row-actions strong')).toContainText('03:00');
+      }
+      if(name==='preparation-editor'||name==='calibration-editor'){
+        await expect(page.locator('.student-main > [data-student-editor] form')).toBeVisible();
+        await expect(page.locator('nav.student-mobile-nav a[href="/aluno/ferramentas.php"]')).toHaveAttribute('aria-current','page');
+      }
+      if(name==='result-waiting')await expect(page.locator('#resultado .student-review-state strong')).toHaveText('Enviado para avaliação');
+      if(name==='result-revision'){await expect(page.locator('#resultado .student-review-state strong')).toHaveText('Revisão solicitada');await expect(page.getByRole('button',{name:'Enviar revisão para avaliação'})).toBeVisible();await expect(page.locator('#resultado .student-message-list strong')).toHaveText('Professor');}
+      if(name==='result-reviewed'){await expect(page.locator('#resultado .student-review-state strong')).toHaveText('Avaliação concluída');await expect(page.locator('#resultado textarea[name="notes"]')).toBeDisabled();}
+      if(name==='compare-select'){await expect(page.getByText('Escolha o segundo registro',{exact:true})).toBeVisible();await expect(page.getByText('EI 200 — FeCl₃',{exact:true})).toBeVisible();await expect(page.locator('.student-research-picker-form input[name="id[]"][value="10"]')).toHaveCount(1);await expect(page.locator('.student-research-picker-form select[name="id[]"]')).toHaveCount(1);}
+      if(name==='compare-records'){await expect(page.getByText('Diferenças registradas',{exact:true})).toBeVisible();await expect(page.getByText('Resultado observado',{exact:true})).toBeVisible();await expect(page.getByText('Criar próxima variação',{exact:true})).toBeVisible();await expect(page.locator('.student-research-result-card')).toHaveCount(2);await expect(page.locator('form.student-research-next-form input[name="_csrf"]')).toHaveCount(1);await expect(page.getByText('Etapa 1 · Tempo',{exact:true})).toBeVisible();}
       if(name==='research-derived'){
         await expect(page.getByText('Continuação de',{exact:false})).toBeVisible();await expect(page.getByText('Manter EI 400 e voltar a primeira revelação para 7 minutos.',{exact:false})).toBeVisible();
-        const menu=page.locator('.student-record-menu'),compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});await expect(menu).toBeVisible();await expect(compareOrigin).toBeHidden();await menu.locator('summary').click();await expect(compareOrigin).toBeVisible();await menu.locator('summary').click();await expect(compareOrigin).toBeHidden();
+        const card=page.locator('[data-record-id="14"]'),menu=card.locator('.student-record-menu'),compareOrigin=menu.getByRole('link',{name:'Comparar com origem'});await expect(menu).toBeVisible();await expect(compareOrigin).toBeHidden();await menu.locator('summary').click();await expect(compareOrigin).toHaveAttribute('href','/aluno/comparar-processos.php?id%5B%5D=12&id%5B%5D=14');await expect(compareOrigin).toBeVisible();await menu.locator('summary').click();await expect(compareOrigin).toBeHidden();
       }
       if(name==='process-choice'){
         await expect(page.getByText('Associar roteiro',{exact:true})).toBeVisible();await expect(page.getByText('Adicionar etapa',{exact:true}).first()).toBeVisible();await expect(page.getByText('Movimentar estoque',{exact:true})).toBeVisible();await expect(page.getByText('O processamento já aconteceu?',{exact:false})).toHaveCount(0);
       }
       if(name==='process-plan'){
         await expect(page.getByText('0 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.locator('.student-notebook-route-step')).toHaveCount(9);await expect(page.getByText('Abrir roteiro',{exact:true})).toBeVisible();await expect(page.getByText('Trocar roteiro-base',{exact:true})).toBeVisible();await expect(page.getByText('Editar',{exact:true}).first()).toBeVisible();await expect(page.getByText('Timer',{exact:true}).first()).toBeVisible();await expect(page.getByText('Abrir laboratório',{exact:false})).toHaveCount(0);
+        await expect(page.locator('#processamento [name="action"][value="toggle_plan_step"]')).toHaveCount(9);
+        await expect(page.locator('#processamento .student-notebook-route-step-actions a[href^="/aluno/processar.php?test=7"]')).toHaveCount(9);
       }
       if(name==='process-partial'){
         await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);await expect(page.getByText('Completar registro',{exact:false})).toHaveCount(0);
+        await expect(page.locator('#processamento .student-notebook-route-step.is-done')).toHaveCount(5);
+        await expect(page.locator('#processamento .student-notebook-route-step.is-done:nth-child(2)')).toHaveCount(0);
+        await expect(page.locator('#processamento .student-notebook-route-step.is-done:nth-child(3)')).toHaveCount(1);
       }
-      if(name==='step-editor'){await expect(page.getByText('Nenhuma outra etapa é alterada por isso.',{exact:false})).toBeVisible();await expect(page.getByText('Corrigir a sequência do processo',{exact:false})).toHaveCount(0);await expect(page.getByText('Remover esta etapa',{exact:true})).toBeVisible();}
-      if(name==='process-library'){await expect(page.locator('.student-process-standard-card')).toHaveCount(6);await expect(page.getByText('Abrir no laboratório',{exact:true}).first()).toBeVisible();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
-      if(name==='process-editor'){await expect(page.locator('.student-process-step-card')).toHaveCount(9);await expect(page.getByText('Abrir no laboratório',{exact:true})).toBeVisible();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
+      if(name==='step-editor'){
+        await expect(page.getByText('Nenhuma outra etapa é alterada por isso.',{exact:false})).toBeVisible();
+        await expect(page.getByText('Corrigir a sequência do processo',{exact:false})).toHaveCount(0);
+        await expect(page.getByText('Remover esta etapa',{exact:true})).toBeVisible();
+        await expect(page.locator('.student-step-editor form [name="_csrf"]')).toHaveCount(2);
+        await expect(page.locator('.student-step-editor form [name="action"][value="save"]')).toHaveCount(1);
+        await expect(page.locator('.student-step-editor form [name="action"][value="delete"]')).toHaveCount(1);
+        await expect(page.locator('.student-step-editor form [name="registro"][value="7"]')).toHaveCount(2);
+        await expect(page.locator('a.student-back')).toHaveAttribute('href','/aluno/teste.php?id=7#processamento');
+      }
+      if(name==='shared-record'){
+        await expect(page.getByRole('heading',{name:'Avaliação e conversa'})).toBeVisible();
+        await expect(page.locator('.student-main .student-review-grid article')).toHaveCount(2);
+        await expect(page.locator('.student-main .student-process-summary li')).toHaveCount(3);
+        await expect(page.locator('.student-main .student-thread article')).toHaveCount(2);
+        await expect(page.locator('.student-main form')).toHaveCount(0);
+        await expect(page.locator('.student-main button')).toHaveCount(0);
+        await expect(page.locator('.student-main a.student-back')).toHaveAttribute('href','/aluno/caderno.php');
+      }
+      if(name==='delete-record'){
+        await expect(page.locator('.student-danger-zone form [name="_csrf"]')).toHaveCount(1);
+        await expect(page.locator('.student-danger-zone form [name="id"][value="7"]')).toHaveCount(1);
+        await expect(page.getByRole('button',{name:'Excluir registro definitivamente'})).toBeVisible();
+        await expect(page.locator('a.student-back')).toHaveAttribute('href','/aluno/teste.php?id=7');
+      }
+      if(name==='process-library'){await expect(page.locator('[data-process-saved-card]')).toHaveCount(2);await expect(page.getByRole('link',{name:'Abrir no laboratório'}).first()).toBeVisible();await expect(page.getByRole('button',{name:'Excluir'})).toBeHidden();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
+      if(name==='login'){await expect(page.locator('form input[name="mode"][value="login"]')).toHaveCount(1);await expect(page.locator('form input[name="mode"][value="activate"]')).toHaveCount(1);}
+      if(name==='activation-password'){await expect(page.locator('input[name="privacy_ack"][required]')).toHaveCount(1);await expect(page.getByRole('button',{name:'Ativar conta'})).toBeVisible();}
+      if(name==='password-change'){await expect(page.locator('input[name="primeiro"][value="0"]')).toHaveCount(1);await expect(page.getByRole('button',{name:'Salvar senha'})).toBeVisible();}
+      if(name==='profile'){
+        await expect(page.locator('[data-student-profile-form]')).toHaveCount(1);
+        await expect(page.locator('[data-profile-contact]')).not.toHaveAttribute('open','');
+        await expect(page.locator('[data-profile-address]')).not.toHaveAttribute('open','');
+      }
+      if(name==='process-editor'){await expect(page.locator('[data-operational-template-editor]')).toHaveCount(1);await expect(page.locator('.student-process-step-card')).toHaveCount(9);await expect(page.getByText('Abrir no laboratório',{exact:true})).toBeVisible();await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);}
       if(name==='lab-runner'){
+        await expect(page.locator('[data-operational-runner-view]')).toHaveCount(1);
+        await expect(page.locator('[data-runner-endpoint="/aluno/processar.php?test=7"]')).toHaveCount(1);
         await expect(page.locator('.student-lab-stage-nav a')).toHaveCount(9);await expect(page.getByRole('button',{name:'Marcar como concluída',exact:true})).toBeVisible();await expect(page.getByText('Ir para próxima etapa',{exact:false})).toHaveCount(0);
       }
       if(device==='phone'&&name!=='login'&&name!=='activation-password'){
-        const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar,.cms-topbar'),reserve=document.querySelector('.student-shell')||document.body;if(!nav||!top||!reserve)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),rs=getComputedStyle(reserve),nr=nav.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navBottom:nr.bottom,navHeight:nr.height,viewportHeight:innerHeight,reservedBottom:parseFloat(rs.paddingBottom||'0'),scrollPaddingBottom:parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom||'0')};});
+        const mobileChrome=await page.evaluate(()=>{const nav=document.querySelector('.student-mobile-nav'),top=document.querySelector('.student-topbar,.cms-topbar'),reserve=document.querySelector('.student-shell')||document.body,reading=document.querySelector('.student-main');if(!nav||!top||!reserve)return null;const ns=getComputedStyle(nav),ts=getComputedStyle(top),rs=getComputedStyle(reserve),nr=nav.getBoundingClientRect(),mr=reading?.getBoundingClientRect();return {navDisplay:ns.display,topDisplay:ts.display,navPosition:ns.position,navTop:nr.top,navBottom:nr.bottom,mainBottom:mr?.bottom??null,navHeight:nr.height,viewportHeight:innerHeight,reservedBottom:parseFloat(rs.paddingBottom||'0'),scrollPaddingBottom:parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom||'0')};});
         expect(mobileChrome,`${name}: authenticated mobile surface must expose global chrome`).not.toBeNull();
-        expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');expect(mobileChrome.navPosition,`${name}: mobile nav must stay anchored to viewport`).toBe('fixed');expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: mobile nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);expect(mobileChrome.reservedBottom,`${name}: surface must reserve the mobile nav footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);expect(mobileChrome.scrollPaddingBottom,`${name}: scrolling must account for the fixed mobile navigation`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+        expect(mobileChrome.navDisplay,`${name}: mobile navigation unexpectedly hidden`).not.toBe('none');
+        expect(mobileChrome.topDisplay,`${name}: topbar unexpectedly hidden`).not.toBe('none');
+        expect(Math.abs(mobileChrome.navBottom-mobileChrome.viewportHeight),`${name}: nav must touch bottom viewport edge`).toBeLessThanOrEqual(1);
+        if(mobileChrome.navPosition==='fixed'){
+          expect(mobileChrome.reservedBottom,`${name}: fixed navigation must reserve its footprint`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+          expect(mobileChrome.scrollPaddingBottom,`${name}: fixed navigation must reserve scroll padding`).toBeGreaterThanOrEqual(mobileChrome.navHeight);
+        }else{
+          // The mobile-first shell uses a real grid row for the nav. The scroll
+          // region must physically terminate above it; no fake padding is needed.
+          expect(mobileChrome.mainBottom,`${name}: grid scroll region missing`).not.toBeNull();
+          expect(mobileChrome.mainBottom,`${name}: content overlaps in-flow navigation`).toBeLessThanOrEqual(mobileChrome.navTop+1);
+        }
       }
       if(path.startsWith('student-secondary-screens-audit.html')){
         expect(pageErrors,`${name}: JS failure inside real-layout fixture`).toEqual([]);
@@ -261,7 +372,10 @@ for(const [device,viewport] of Object.entries(viewports)){
           if(style.pointerEvents==='none')return{skip:true};
           return {skip:false,tag:el.tagName,label:(el.getAttribute('aria-label')||el.textContent||'').trim().slice(0,80)};
         });
-        if(item.skip)continue;
+        // The CMS skip-link is intentionally offscreen until keyboard focus.
+        // Pointer hit-testing it as a permanently visible button is invalid;
+        // focus accessibility is verified independently below.
+        if(item.skip||(name==='material'&&await locator.evaluate(el=>el.matches('a.skip-link')&&!el.matches(':focus'))))continue;
         await locator.scrollIntoViewIfNeeded({timeout:3000});
         const measure=()=>locator.evaluate(el=>{
           const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
@@ -389,13 +503,14 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
 for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   test(`real new-question form: disclosure, validation, all visibility scopes and keyboard focus — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-new'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=list'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     // The real student panel controller must be used rather than a fixture-only imitation.
-    await page.addScriptTag({url:'/assets/student-workbench.js'});
     const trigger=page.locator('[data-question-new-toggle]');
     const panel=page.locator('[data-question-new-panel]');
     const form=panel.locator('form');
+    await expect(panel).toBeHidden();
+    await trigger.click();
     await expect(panel).toBeVisible();
     await expect(form.locator('input[name="visibility"]')).toHaveCount(3);
     await expect(form.locator('input[name="visibility"]:checked')).toHaveValue('private');
@@ -439,8 +554,9 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
 for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   test(`question list distinguishes private, cohort and course-shared conversations — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=list'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
+    await expect(page.locator('nav.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
     const items=page.locator('.student-test-row');
     await expect(items).toHaveCount(3);
     for(const [name,title] of [
@@ -459,7 +575,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
 for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   test(`failed question publication retains the complete draft — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-new&state=failed-create'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=failed-create'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     const alert=page.getByRole('alert');
     await expect(alert).toContainText('Não foi possível publicar');
@@ -481,7 +597,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   });
   test(`failed reply stays in its conversation and preserves text — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=question-thread&state=failed-reply&id=31'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=failed-reply&id=31'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     const alert=page.getByRole('alert');
     await expect(alert).toContainText('Não foi possível enviar a resposta');
@@ -503,9 +619,8 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
 for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   test(`question list empty, with operational new-question composer — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=empty'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=empty'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
-    await page.addScriptTag({url:'/assets/student-workbench.js'});
     await expect(page.getByText('Ainda não há dúvidas nesta turma ou curso.')).toBeVisible();
     const trigger=page.locator('[data-question-new-toggle]'),panel=page.locator('[data-question-new-panel]');
     await expect(panel).toBeHidden();
@@ -518,7 +633,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   });
   test(`question list large, scroll beginning middle and final controls — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=many'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=many'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     const items=page.locator('.student-test-list .student-test-row');
     await expect(items).toHaveCount(31);
@@ -538,7 +653,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   });
   test(`question list includes conditional evaluation discussions — ${device}`,async({page})=>{
     await page.setViewportSize({width,height});
-    await page.goto(fixture('student-secondary-screens-audit.html?screen=questions-list&state=evaluations'),{waitUntil:'networkidle'});
+    await page.goto(fixture('student-questions-operational.php?state=evaluations'),{waitUntil:'networkidle'});
     await ensureCanonicalShellStyles(page);
     await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();
     const evaluation=page.locator('.student-evaluation-conversations .student-test-row');
@@ -549,7 +664,7 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   for(const state of ['linked-shared','linked-private']){
     test(`question linked record is ${state} — ${device}`,async({page})=>{
       await page.setViewportSize({width,height});
-      await page.goto(fixture(`student-secondary-screens-audit.html?screen=question-thread&state=${state}`),{waitUntil:'networkidle'});
+      await page.goto(fixture(`student-questions-operational.php?state=${state}&id=1`),{waitUntil:'networkidle'});
       await ensureCanonicalShellStyles(page);
       const link=page.getByRole('link',{name:'Abrir registro relacionado'});
       if(state==='linked-private')await expect(link).toHaveCount(0);
@@ -571,7 +686,7 @@ for(const width of [320,390]){
       if(surface==='student-shell')await ensureCanonicalShellStyles(page);
       const nav=page.locator('.student-mobile-nav'),links=nav.locator('a');
       await expect(nav).toBeVisible();
-      await expect(links).toHaveCount(4);
+      await expect(links).toHaveCount(5);
       const items=await links.evaluateAll(nodes=>nodes.map(node=>{
         const box=node.getBoundingClientRect(),style=getComputedStyle(node),x=box.left+box.width/2,y=box.top+box.height/2;
         return {label:node.textContent.trim(),fontSize:parseFloat(style.fontSize),width:box.width,height:box.height,left:box.left,right:box.right,bottom:box.bottom,contentWidth:node.clientWidth,scrollWidth:node.scrollWidth,hittable:node===document.elementFromPoint(x,y)||node.contains(document.elementFromPoint(x,y))};

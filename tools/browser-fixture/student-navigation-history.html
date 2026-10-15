@@ -11,6 +11,7 @@
   <a class="brand student-wordmark" href="?screen=home" data-canonical-href="/aluno/">JSaidler Fotografia</a>
   <nav class="student-desktop-nav" aria-label="Área do aluno" data-global-nav>
     <a href="?screen=home" data-area="home">Início</a>
+    <a href="?screen=agenda" data-area="agenda">Agenda</a>
     <a href="?screen=courses" data-area="courses">Cursos</a>
     <a href="?screen=notebook" data-area="notebook">Caderno</a>
     <a href="?screen=laboratory" data-area="laboratory">Laboratório</a>
@@ -20,6 +21,7 @@
 <main class="student-main" id="app"></main>
 <nav class="student-mobile-nav" aria-label="Área do aluno" data-global-nav>
   <a href="?screen=home" data-area="home">Início</a>
+  <a href="?screen=agenda" data-area="agenda">Agenda</a>
   <a href="?screen=courses" data-area="courses">Cursos</a>
   <a href="?screen=notebook" data-area="notebook">Caderno</a>
   <a href="?screen=laboratory" data-area="laboratory">Laboratório</a>
@@ -32,10 +34,11 @@ const screen=params.get('screen')||'home';
 const cohort=params.get('cohort')||'cohort-a';
 const record=params.get('id')||'42';
 const item=params.get('item')||'9';
-const active=screen==='home'?'home':['courses','course','material','question'].includes(screen)?'courses':['notebook','record','step'].includes(screen)?'notebook':['laboratory','inventory','item'].includes(screen)?'laboratory':'';
+const active=screen==='home'?'home':screen==='agenda'?'agenda':['courses','course','material','question'].includes(screen)?'courses':['notebook','record','step'].includes(screen)?'notebook':['laboratory','inventory','item'].includes(screen)?'laboratory':'';
 document.querySelectorAll('[data-global-nav] [data-area]').forEach(link=>{if(link.dataset.area===active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
 const h=(title,body='')=>`<p class="student-kicker">Navegação</p><h1 class="student-title">${title}</h1>${body}`;
 if(screen==='home')app.innerHTML=h('Início','<p class="student-lead">Entrada da Área do aluno.</p>');
+if(screen==='agenda')app.innerHTML=h('Agenda','<p>Meus encontros e novas turmas.</p>');
 if(screen==='courses')app.innerHTML=h('Cursos',`<div class="student-test-list"><a class="student-test-row" data-testid="course-a" href="?screen=course&cohort=${cohort}"><div><h3>Curso A</h3><p>Turma A</p></div><strong>Abrir →</strong></a></div>`);
 if(screen==='course')app.innerHTML=h('Curso A',`<div class="student-actions"><a class="button button-primary" data-testid="open-material" href="?screen=material&cohort=${cohort}">Abrir material</a></div>`);
 if(screen==='material')app.innerHTML=h('Material 2',`<div class="student-appbar"><a class="student-back" href="?screen=course&cohort=${cohort}">← Curso A</a></div><div class="student-actions"><a class="button button-primary" data-testid="open-question" href="?screen=question&cohort=${cohort}">Abrir dúvida</a></div><details data-testid="microstate"><summary>Dados opcionais</summary><p>Estado local.</p></details>`);

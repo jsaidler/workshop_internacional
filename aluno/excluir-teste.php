@@ -18,14 +18,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         }catch(Throwable $e){$error=$e->getMessage();}
     }
 }
-student_shell_start('Excluir registro',null,$student);?>
-<div class="student-appbar"><a class="student-back" href="/aluno/teste.php?id=<?=$id?>">← Voltar ao registro</a></div>
-<p class="student-kicker">Ação permanente</p>
-<h1 class="student-title student-title-record">Excluir registro</h1>
-<p class="student-lead student-lead-compact">Você está prestes a excluir <strong><?=h((string)$record['title'])?></strong>. Esta ação apaga o registro, todas as fotografias anexadas e toda a conversa associada.</p>
-<?php if($error):?><p class="ui-alert ui-alert-error" role="alert"><?=h($error)?></p><?php endif;?>
-<section class="student-danger-zone">
-  <p>Essa exclusão não pode ser desfeita.</p>
-  <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-delete-test-'.$id))?>"><input type="hidden" name="id" value="<?=$id?>"><button class="button button-danger" type="submit">Excluir registro definitivamente</button></form>
-</section>
-<?php student_shell_end();
+require_once __DIR__.'/../app/student_record_auxiliary_views.php';
+student_shell_start('Excluir registro',null,$student);
+student_record_render_delete_confirmation($record,$id,$error);
+student_shell_end();

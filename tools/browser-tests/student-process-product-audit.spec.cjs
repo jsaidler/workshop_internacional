@@ -1,12 +1,12 @@
 const {test,expect}=require('@playwright/test');
-const base='http://127.0.0.1:8099/tools/browser-fixture/student-process-product-audit.html';
+const base='http://127.0.0.1:8099/tools/browser-fixture/';
 const screens=['library','editor'];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 for(const [device,viewport] of Object.entries(viewports)){
   for(const screen of screens){
     test(`process product visual audit ${device} ${screen}`,async({page})=>{
       await page.setViewportSize(viewport);
-      await page.goto(`${base}?screen=${screen}`,{waitUntil:'networkidle'});
+      await page.goto(base+(screen==='editor'?'student-process-editor.php?mode=edit':'student-process-product-audit.html?screen=library'),{waitUntil:'networkidle'});
       await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`${screen} horizontal overflow on ${device}`).toBeLessThanOrEqual(1);
@@ -20,11 +20,13 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);
       }
       if(screen==='editor'){
+        await expect(page.locator('[data-operational-template-editor]')).toHaveCount(1);
         await expect(page.getByText('Mesmo banho da 1ª revelação')).toBeVisible();
         await expect(page.getByRole('button',{name:'Salvar etapa'})).toBeVisible();
         await expect(page.locator('.student-process-step-card')).toHaveCount(9);
-        await expect(page.locator('.student-process-step-card[data-stage="03"]')).toContainText('cloreto férrico');
+        await expect(page.locator('.student-process-step-card[data-stage="03"]')).toContainText('Cloreto férrico');
         await expect(page.locator('.student-process-step-card[data-stage="05"]')).toContainText('amônia');
+        await expect(page.locator('[data-process-template-step-form] [name="_csrf"]')).toHaveCount(2);
         await expect(page.getByText('Abrir no laboratório',{exact:true})).toBeVisible();
         await expect(page.getByText('Iniciar no laboratório',{exact:true})).toHaveCount(0);
       }

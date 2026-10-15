@@ -67,6 +67,19 @@ createDialog?.addEventListener('close',()=>{
 });
 if(createDialog&&(createDialog.hasAttribute('data-record-create-error')
   ||new URLSearchParams(window.location.search).get('novo')==='1'))openCreate();
+// Deep links from legacy utility routes must reveal their calculator disclosure.
+const revealLaboratoryFragment=()=>{
+  if(!document.querySelector('[data-student-laboratory]'))return;
+  const id=decodeURIComponent(location.hash.slice(1));
+  if(!['reciprocidade','exposicao','receitas'].includes(id))return;
+  const disclosure=document.getElementById(id);
+  if(disclosure instanceof HTMLDetailsElement){
+    disclosure.open=true;
+    disclosure.scrollIntoView({block:'start'});
+  }
+};
+window.addEventListener('hashchange',revealLaboratoryFragment);
+revealLaboratoryFragment();
 document.querySelectorAll('[data-quick-reciprocity]').forEach(root=>{const source=root.querySelector('[data-quick-reciprocity-source]'),target=root.querySelector('[data-quick-reciprocity-target]');if(!source||!target)return;const update=()=>{const raw=source.value.trim();target.value=raw&&window.StudentReciprocity?(window.StudentReciprocity.calculate(raw)||''):'';};source.addEventListener('input',update);source.addEventListener('change',update);update();});
 
 /* Comparison is a temporary mode in the notebook, not permanent checkbox clutter. */
@@ -74,7 +87,7 @@ const compareHeading=document.querySelector('.student-page-heading'),compareList
 if(compareHeading&&compareList&&compareCards.length>=2){
   const newRecord=compareHeading.querySelector('[data-record-create-open]');
   const compare=document.createElement('button');compare.type='button';compare.className='button button-secondary';compare.textContent='Comparar registros';compare.dataset.compareModeOpen='';
-  newRecord?.insertAdjacentElement('beforebegin',compare);
+  newRecord?.insertAdjacentElement('afterend',compare);
   const bar=document.createElement('div');bar.className='student-compare-selection';bar.hidden=true;bar.innerHTML='<span data-compare-count>Selecione 2 registros</span><div><button class="button button-secondary button-compact" type="button" data-compare-cancel>Cancelar</button><button class="button button-primary button-compact" type="button" data-compare-go disabled>Comparar</button></div>';
   compareList.insertAdjacentElement('beforebegin',bar);
   const picks=[];
