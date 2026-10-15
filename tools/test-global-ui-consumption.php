@@ -103,12 +103,19 @@ must_global_ui(!preg_match('/\\.student-process-task-form \\.form-field\\{[^}]*f
 
 $profileCss=(string)file_get_contents($root.'/assets/student-profile.css');
 must_global_ui(!preg_match('/\\.student-profile-header \\.student-title-record\\{[^}]*font\\s*:/',$profileCss),'profile overrides its inherited canonical display heading');
+must_global_ui(!preg_match('/\\.student-profile-form \\.form-field\\s*>\\s*input\\s*\\{/',$profileCss),'profile reimplements shared field input');
+must_global_ui(!preg_match('/\\.student-profile-form \\.form-field\\s*\\{[^}]*?(?:font|background|color|text-transform|letter-spacing)\\s*:/',$profileCss),'profile reimplements shared field labels');
+foreach(['student-experience.css','student-rendered-fixes.css'] as $legacyCss){
+    $css=(string)file_get_contents($root.'/assets/'.$legacyCss);
+    must_global_ui(!preg_match('/(?:^|\\n)\\s*\\.(?:form-field|choice-field|choice-row|choice-option|button)(?:[\\s\\.,>{:]|$)/m',$css),'global student stylesheet duplicates reusable field/button primitive: '.$legacyCss);
+}
+
 
 // PHP screenshot fixtures must exercise the real CMS Design contract, not Arial/Georgia mock tokens.
-foreach(['student-home.php','student-notebook.php','student-agenda.php','student-courses.php','student-laboratory.php','student-process-editor.php','student-long-editors.php','student-profile.php','student-process-runner-operational.php','student-record-workspace-operational.php'] as $fixture){
+foreach(['student-home.php','student-notebook.php','student-agenda.php','student-courses.php','student-laboratory.php','student-process-editor.php','student-long-editors.php','student-profile.php','student-process-runner-operational.php','student-record-workspace-operational.php','student-auth-operational.php','student-comparison-operational.php','student-inventory-item-direct.php','student-inventory-movement.php','student-process-saved-cards.php','student-process-step-editor.php','student-questions-operational.php','student-record-actions-operational.php','student-shared-record-operational.php'] as $fixture){
     $source=(string)file_get_contents($root.'/tools/browser-fixture/'.$fixture);
     must_global_ui(str_contains($source,"require_once __DIR__.'/../../app/cms_settings.php'"),'fixture bypasses CMS Design implementation: '.$fixture);
-    must_global_ui(!str_contains($source,'--title:Georgia')&&!str_contains($source,'--title:Arial'),'fixture hardcodes a competing display font: '.$fixture);
+    must_global_ui(!str_contains($source,'--title:Georgia')&&!str_contains($source,'--title:Arial')&&!preg_match('/function\\s+cms_design_(?:defaults|font_import_css|css)\\s*\\(/',$source),'fixture hardcodes a competing design implementation: '.$fixture);
     must_global_ui(!str_contains($source,'student-app-shell.css'),'fixture still requests removed CSS asset: '.$fixture);
 }
 
