@@ -6,7 +6,7 @@ declare(strict_types=1);
 <?php if(!$enrollments):?>
   <header class="student-v2-courses-heading">
     <p class="student-v2-eyebrow">Área de estudo</p>
-    <h1>Seus cursos</h1>
+    <h1 class="student-title">Seus cursos</h1>
     <p>Os materiais, as aulas e as conversas de cada turma ficam aqui.</p>
   </header>
   <section class="student-v2-course-empty" data-courses-empty>
@@ -17,7 +17,7 @@ declare(strict_types=1);
 <?php elseif(!$selectedEnrollment):?>
   <header class="student-v2-courses-heading">
     <p class="student-v2-eyebrow">Área de estudo</p>
-    <h1>Seus cursos</h1>
+    <h1 class="student-title">Seus cursos</h1>
     <p>Selecione a turma que deseja consultar.</p>
   </header>
   <nav class="student-v2-course-selector student-academic-choice-list" aria-label="Matrículas disponíveis" data-courses-selection>
@@ -41,7 +41,7 @@ declare(strict_types=1);
   <header class="student-v2-course-detail-heading">
     <?php if(count($enrollments)>1):?><a class="student-v2-course-back" href="/aluno/cursos.php">← Todos os cursos</a><?php endif;?>
     <p class="student-v2-eyebrow">Seu curso</p>
-    <h1><?=h($courseName)?></h1>
+    <h1 class="student-title"><?=h($courseName)?></h1>
     <div class="student-v2-course-identity">
       <span><?=h($cohortName)?></span>
       <span class="student-v2-course-state"><?=h(student_enrollment_cohort_status_label((string)$enrollment['cohort_status']))?></span>
