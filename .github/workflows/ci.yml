@@ -72,6 +72,7 @@ jobs:
             php tools/test-student-course-context.php
             php tools/test-student-account-experience.php
             php tools/test-student-material-context.php
+            php tools/test-student-material-cms-operational.php
             php tools/test-student-login-experience.php
             php tools/test-student-premium-ui.php
             php tools/test-global-ui-consumption.php
