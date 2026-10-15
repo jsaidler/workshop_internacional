@@ -2,6 +2,10 @@
 
 **Escopo real: todo o produto autenticado.** PR #243 continua em rascunho, branch `feat/student-mobile-first-rebuild-2026-10-13`, sem merge e sem publicação da hospedagem.
 
+## Esclarecimento vinculante de identidade visual — 15/10/2026
+
+Redesenhar fluxos, priorizar ações, modificar a navegação e organizar atividades é diferente de alterar o sistema visual. O contrato vigente preserva a tipografia configurada no CMS (Saira Extra Condensed para títulos, IBM Plex Sans para corpo e IBM Plex Mono para conteúdo técnico por padrão, sem sobrescrever preferências editoriais salvas), a paleta, os temas e as primitivas CSS já existentes. O protótipo v2 não é autorização para impor fontes próprias, paleta `--student-v2-*` ou componentes de botão concorrentes. Auditar visualmente as novas composições pela aderência ao Design existente, sem sacrificar os avanços de usabilidade. Esta decisão posterior prevalece sobre qualquer formulação de 13/10 que permita desconexão com os contratos visuais.
+
 ## Correção de diagnóstico
 
 A crítica do usuário é ao **sistema inteiro**, não ao Caderno. A arquitetura das cinco áreas globais não basta para produzir uma experiência mobile-first se cada superfície filha mantiver densidade, formulários, navegação e hierarquia de painel administrativo. Uma revisão localizada em Calibração, Predefinições ou Caderno é apenas parte da correção sistêmica, nunca certificado do produto.
