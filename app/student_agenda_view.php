@@ -9,7 +9,7 @@ $agendaView=student_agenda_selected_view($_GET['view']??'encontros');
 <div class="student-v2-agenda" data-student-agenda data-agenda-view="<?=h($agendaView)?>">
   <header class="student-v2-agenda-heading">
     <p class="student-v2-eyebrow">Seus compromissos</p>
-    <h1>Agenda</h1>
+    <h1 class="student-title">Agenda</h1>
     <p>Encontros da sua turma e oportunidades de retorno como ouvinte.</p>
   </header>
   <?php if($notice!==''):?><p class="student-v2-agenda-message" role="status"><?=h($notice)?></p><?php endif;?>
