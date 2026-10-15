@@ -62,6 +62,7 @@ if($mode==='custom'&&$steps){
 $template=['id'=>14,'name'=>'Positivo direto — Parodinal EI 200 — FeCl₃ + amônia',
     'description'=>'Parodinal 10 ml + água até 550 ml. Mesmo banho reutilizado na segunda revelação.'];
 $testId=$mode==='association'?7:0;
+if($testId>0)$_GET['test']=$testId;
 $editStep=in_array($mode,['edit','custom'],true)?$steps[7]:null;
 $preparations=[['id'=>9,'label'=>'Parodinal · 10/550']];
 $csrf=csrf_token('student-process-templates');
