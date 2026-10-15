@@ -54,7 +54,7 @@ const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','process-editor','lab-runner','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 // The mobile-first geometry lives in student-area.css; feature assets remain downstream.
-const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
+const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css'];
 async function ensureCanonicalShellStyles(page){
   await page.evaluate(async styles=>{
     const featurePattern=/\/assets\/student-(?:auth|caderno|processes|lab-stock|process-recording)\.css(?:\?|$)/;
