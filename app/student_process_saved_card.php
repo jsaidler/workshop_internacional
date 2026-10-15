@@ -35,7 +35,7 @@ function student_process_saved_card(array $item,string $href,string $duration,st
         <div class="student-process-card-options-content">
           <a class="button button-secondary button-compact" href="<?=h($href)?>">Editar roteiro</a>
           <form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="duplicate"><input type="hidden" name="template_id" value="<?=$id?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-secondary button-compact" type="submit">Duplicar</button></form>
-          <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Os planos já associados ao Caderno não serão apagados.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=$id?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="student-danger-action" type="submit">Excluir</button></form>
+          <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Os planos já associados ao Caderno não serão apagados.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=$id?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="button button-danger" type="submit">Excluir</button></form>
         </div>
       </details>
     <?php endif;?>
