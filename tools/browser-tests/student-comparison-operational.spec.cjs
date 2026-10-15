@@ -9,7 +9,7 @@ for(const [label,width,height] of [['narrow',320,720],['phone',390,844],['deskto
    const response=await page.goto(fixture+'?mode='+mode,{waitUntil:'networkidle'});
    expect(response?.status()).toBe(200);
    await expect(page.locator('body.student-app .student-shell')).toHaveCount(1);
-   await expect(page.locator('link[href^="/assets/student-app-shell.css"]')).toHaveCount(1);
+   await expect(page.locator('link[href^="/assets/student-area.css"]')).toHaveCount(1);
    const links=await page.locator('.student-mobile-nav a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
    expect(links).toEqual(canonical);
    await expect(page.locator('.student-mobile-nav a[aria-current=page]')).toHaveAttribute('href','/aluno/caderno.php');
