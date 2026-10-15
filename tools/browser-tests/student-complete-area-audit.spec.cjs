@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['material','course-feedback','questions-feedback','process-library','process-editor','lab-runner','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','process-editor','lab-runner','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -98,6 +98,20 @@ for(const [device,viewport] of Object.entries(viewports)){
         expect(contract.app&&contract.shell&&contract.shellCss,`${name}: must use operational student shell and its stylesheet`).toBe(true);
         expect(contract.links,`${name}: global navigation destinations`).toEqual(['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php']);
         expect(contract.scrollGutter,`${name}: real shell reserves scroll track`).toContain('stable');
+      }
+      if(name==='material'){
+        const cms=await page.evaluate(()=>({
+          page:document.body.classList.contains('cms-student-material'),
+          root:!!document.querySelector('.cms-student-reading[data-student-scroll-root]'),
+          main:!!document.querySelector('main[data-cms-page-main]'),
+          nav:[...document.querySelectorAll('.student-mobile-nav a')].map(a=>a.getAttribute('href')),
+          context:!!document.querySelector('.cms-student-study-context'),
+          notes:!!document.querySelector('[data-student-notes-panel]'),
+          hasBlocked:!!document.querySelector('[data-cms-section="aula-nao-liberada"]')
+        }));
+        expect(cms.page&&cms.root&&cms.main&&cms.context&&cms.notes, 'material must use enrolled canonical CMS reading shell').toBe(true);
+        expect(cms.hasBlocked, 'material cannot render an unreleased section').toBe(false);
+        expect(cms.nav, 'material must retain global five-destination navigation').toEqual(['/aluno/','/aluno/agenda.php','/aluno/cursos.php','/aluno/caderno.php','/aluno/ferramentas.php']);
       }
       if(name==='inventory-movement'){await page.getByRole('button',{name:'Movimentar estoque'}).click();}
       if(name==='new-record'||name==='toolbox'){
@@ -358,7 +372,10 @@ for(const [device,viewport] of Object.entries(viewports)){
           if(style.pointerEvents==='none')return{skip:true};
           return {skip:false,tag:el.tagName,label:(el.getAttribute('aria-label')||el.textContent||'').trim().slice(0,80)};
         });
-        if(item.skip)continue;
+        // The CMS skip-link is intentionally offscreen until keyboard focus.
+        // Pointer hit-testing it as a permanently visible button is invalid;
+        // focus accessibility is verified independently below.
+        if(item.skip||(name==='material'&&await locator.evaluate(el=>el.matches('a.skip-link')&&!el.matches(':focus'))))continue;
         await locator.scrollIntoViewIfNeeded({timeout:3000});
         const measure=()=>locator.evaluate(el=>{
           const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
