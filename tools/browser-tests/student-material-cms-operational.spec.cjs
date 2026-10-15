@@ -113,3 +113,32 @@ test('material last released page does not list blocked next material',async({pa
  await expect(page.locator('.cms-student-study-context a[rel="next"]')).toHaveCount(0);
  await expect(page.locator('body')).not.toContainText('Somente depois da liberação');
 });
+
+for(const [state,expected] of [
+  ['default',{display:'Saira Extra Condensed',body:'IBM Plex Sans',mono:'IBM Plex Mono'}],
+  ['custom',{display:'Oswald',body:'Inter',mono:'JetBrains Mono'}]
+]){
+  test('reader respects persisted CMS Design typography — '+state,async({page})=>{
+    const res=await page.goto(base+'?page=current&cohort=cohort-a'+(state==='custom'?'&design=custom':''),{waitUntil:'networkidle'});
+    expect(res?.status()).toBe(200);
+    const actual=await page.evaluate(()=>{
+      const font=selector=>getComputedStyle(document.querySelector(selector)).fontFamily;
+      return {
+        display:font('.study-cover h1'),
+        body:font('.study-cover .study-subtitle'),
+        mono:font('.study-cover .section-label'),
+        rootDisplay:getComputedStyle(document.documentElement).getPropertyValue('--title'),
+        rootBody:getComputedStyle(document.documentElement).getPropertyValue('--body'),
+        rootMono:getComputedStyle(document.documentElement).getPropertyValue('--mono')
+      };
+    });
+    for(const [role,family] of Object.entries(expected)){
+      expect(actual[role],role+' effective font').toContain(family);
+    }
+    expect(actual.rootDisplay).toContain(expected.display);
+    expect(actual.rootBody).toContain(expected.body);
+    expect(actual.rootMono).toContain(expected.mono);
+    expect(actual.display).not.toContain('Georgia');
+    expect(actual.body).not.toContain('Times New Roman');
+  });
+}
