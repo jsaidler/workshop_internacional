@@ -28,7 +28,7 @@ const screens=[
   ['result-revision','student-record-workspace-operational.php?state=result-revision'],
   ['result-reviewed','student-record-workspace-operational.php?state=result-reviewed'],
   ['step-editor','student-record-actions-operational.php?mode=step'],
-  ['shared-record','student-secondary-screens-audit.html?screen=shared-record'],
+  ['shared-record','student-shared-record-operational.php?mode=filled'],
   ['delete-record','student-record-actions-operational.php?mode=delete'],
   ['compare-select','student-comparison-operational.php?mode=select'],
   ['compare-records','student-comparison-operational.php?mode=analysis'],
@@ -51,7 +51,7 @@ const screens=[
 ];
 const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
-const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial']);
+const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
 const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
 async function ensureCanonicalShellStyles(page){
@@ -159,6 +159,15 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.locator('.student-step-editor form [name="action"][value="delete"]')).toHaveCount(1);
         await expect(page.locator('.student-step-editor form [name="registro"][value="7"]')).toHaveCount(2);
         await expect(page.locator('a.student-back')).toHaveAttribute('href','/aluno/teste.php?id=7#processamento');
+      }
+      if(name==='shared-record'){
+        await expect(page.getByRole('heading',{name:'Avaliação e conversa'})).toBeVisible();
+        await expect(page.locator('.student-main .student-review-grid article')).toHaveCount(2);
+        await expect(page.locator('.student-main .student-process-summary li')).toHaveCount(3);
+        await expect(page.locator('.student-main .student-thread article')).toHaveCount(2);
+        await expect(page.locator('.student-main form')).toHaveCount(0);
+        await expect(page.locator('.student-main button')).toHaveCount(0);
+        await expect(page.locator('.student-main a.student-back')).toHaveAttribute('href','/aluno/caderno.php');
       }
       if(name==='delete-record'){
         await expect(page.locator('.student-danger-zone form [name="_csrf"]')).toHaveCount(1);
