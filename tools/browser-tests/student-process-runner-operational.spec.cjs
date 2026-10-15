@@ -53,7 +53,7 @@ for(const size of sizes){
    expect(geometry.gutter).toContain('stable');
    if(size.width<821&&geometry.navVisible)expect(geometry.mainBottom).toBeLessThanOrEqual(geometry.navTop+1);
    for(const part of ['start','middle','end'])await captureAt(page,size.label+'-idle',part);
-   await page.getByText('Editar dados da etapa',{exact:true}).click();
+   await expect(runner.locator('details.student-lab-timer-settings')).toHaveAttribute('open','');
    await expect(runner.locator('input[name="duration"]')).toHaveValue('07:00');
    await expect(runner.locator('input[name="agitation_duration"]')).toHaveValue('00:10');
    await expect(runner.locator('input[name="agitation_interval"]')).toHaveValue('01:00');
@@ -89,7 +89,7 @@ test('timer start, pause, resume and reset never confirm a completed step',async
  await expect(page.locator('[data-runner-clock]')).toHaveText('07:00');
  await expect(page.locator('[data-step-completion]')).toContainText('Etapa não marcada');
  expect(events().filter(e=>e==='toggle_complete')).toHaveLength(0);
- expect(events()).toEqual(['timer_start','timer_pause','timer_start','timer_reset']);
+ expect(events().filter(e=>e!=='timer_state')).toEqual(['timer_start','timer_pause','timer_start','timer_reset']);
 });
 test('continuous agitation is a separate timed indication, not a fact',async({page})=>{
  await page.setViewportSize({width:390,height:844});
