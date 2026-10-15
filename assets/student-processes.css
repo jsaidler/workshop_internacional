@@ -14,7 +14,7 @@
 .student-process-template-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;align-items:center;min-width:0}
 .student-process-template-actions form{margin:0}
 .student-process-template-actions .is-disabled{opacity:.45;pointer-events:none}
-.student-danger-action{display:inline-flex;min-height:38px;align-items:center;justify-content:center;padding:0 11px;border:1px solid color-mix(in srgb,#a74343 72%,var(--line));background:transparent;color:#d96868;font:600 9px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
+.student-danger-action{display:inline-flex;min-height:38px;align-items:center;justify-content:center;padding:0 11px;border:1px solid color-mix(in srgb,#a74343 72%,var(--line));background:transparent;color:color-mix(in srgb,var(--text) 35%,#d96868);font:600 9px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
 .student-danger-action:hover{background:#8b2727;border-color:#8b2727;color:#fff}
 .student-process-empty{display:grid;justify-items:start;gap:8px;padding:var(--ux-space-5) 0;border-bottom:1px solid var(--line)}
 .student-process-empty strong{font-family:var(--title);font-size:28px;font-weight:500;line-height:1.05}
