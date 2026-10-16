@@ -47,7 +47,34 @@ for(const [device,width,height] of viewports)for(const state of states){
       await expect(page.locator('[data-lab-link="calibracao"]')).toHaveAttribute('href','/aluno/calibracao.php');
     }
     await expect(page.locator('[data-lab-timer]')).toHaveCount(0);
+    await expect(page.locator('.student-v2-lab-heading > p')).toHaveCount(0);
+    await expect(page.locator('.student-v2-lab-section-title .student-v2-eyebrow')).toHaveCount(0);
     for(const el of await calculators.all())await expect(el).not.toHaveAttribute('open','');
+    if(state==='full'){
+      await expect(page.locator('#student-lab-operacoes')).toHaveText('Ferramentas');
+      const hierarchy=await page.evaluate(()=>{
+        const entries=[...document.querySelectorAll('[data-lab-link]')];
+        const firstCalculation=document.querySelector('[data-lab-calculator] summary');
+        const nav=document.querySelector('.student-mobile-nav');
+        return{
+          rows:entries.map(el=>{
+            const r=el.getBoundingClientRect(),css=getComputedStyle(el),label=getComputedStyle(el.querySelector('strong'));
+            return{height:r.height,rightBorder:parseFloat(css.borderRightWidth),font:parseFloat(label.fontSize),scroll:el.scrollWidth-el.clientWidth};
+          }),
+          calculatorBottom:firstCalculation.getBoundingClientRect().bottom,
+          navTop:nav.getBoundingClientRect().top
+        };
+      });
+      expect(hierarchy.rows).toHaveLength(4);
+      for(const item of hierarchy.rows){
+        expect(item.height,'Laboratório: row must remain tappable').toBeGreaterThanOrEqual(54);
+        expect(item.height,'Laboratório: do not restore tall dashboard cards').toBeLessThanOrEqual(80);
+        expect(item.rightBorder,'Laboratório: no boxed navigation cards').toBe(0);
+        expect(item.font,'Laboratório: link name must be legible').toBeGreaterThanOrEqual(14);
+        expect(item.scroll,'Laboratório: no truncated navigation labels').toBeLessThanOrEqual(1);
+      }
+      if(width<=820)expect(hierarchy.calculatorBottom,'Laboratório: first calculator must be visible before bottom navigation').toBeLessThanOrEqual(hierarchy.navTop-5);
+    }
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
     if(width<=820){
