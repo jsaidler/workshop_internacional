@@ -218,3 +218,14 @@ Na captura operacional `profile/phone-initial.png` (390 × 844, pacote do commit
 **Não mudou:** payload do POST, CSRF, sanitização/escape, validação, status de feedback, valores editados em falha, abertura de disclosures no erro, formulário de senha, logout nem os cinco destinos globais. A fixture `student-profile.php` reaproveita o mesmo renderer da rota `aluno/perfil.php`. Playwright cobre 320/390/1440, campos e retorno, tamanho disponível para tarefa, inexistência de molduras aninhadas, dados preservados e estado de erro, além de capturas reais início/expandido/fim. **Aprovação e publicação dependem de CI no HEAD, abertura e avaliação qualitativa das capturas; uso autenticado real continua pendente.**
 
 **Estado da entrega anterior:** PR #245 integrada em `ea9692fe`, com `production-dist` validada pelo workflow `38918749154`. O canal oferece o pacote para instalação, mas isso não comprova que a HostGator já tenha instalado a atualização pelo painel administrativo.
+
+
+## Novo recorte — ações progressivas nas etapas do Caderno (16/10/2026)
+
+**Diagnóstico por captura operacional:** no artefato `student-visual-audit` do HEAD `8ca6ce65` (PR #249), `record-operational/phone-process-plan-start.png` mostra um roteiro de 9 etapas com `Marcar`, `Editar` e `Timer` simultaneamente visíveis em cada etapa: 27 comandos disputando a leitura da sequência no telefone. Essa captura usa o renderer `app/student_record_workspace_view.php`, não uma reprodução manual da ficha.
+
+**Decisão de UX:** cada etapa é inicialmente uma linha acionável de leitura (número, nome, duração, estado marcado/desmarcado). `details/summary` nativo revela os três comandos somente sob demanda; uma etapa solicitada por `edit_plan_step` já chega expandida para não esconder o editor nem prejudicar o deep link. Continuam explícitas a quantidade de etapas marcadas e a distinção entre marcação factual, abertura do temporizador e edição do snapshot. Nenhuma conclusão é inferida por expandir/fechar uma etapa.
+
+**Contrato preservado:** os mesmos formulários POST, CSRF, payload, URLs e permissões; nenhuma alteração em timer, agitação, estoque, roteiro-base ou regras de domínio. `student-caderno.css` é o proprietário de composição; as primitivas de botão, tipografia, temas e tokens do CMS Design não são redefinidos. Não adicionar CSS de override.
+
+**Regressão e aceite pendentes:** `student-record-workspace-operational.spec.cjs` verifica nove disclosures, edição contextual expandida, estado parcial não sequencial, retorno dos três comandos, alvos de no mínimo 44 px, ausência de recortes em 320/390/1440 e gera capturas específicas recolhidas e expandidas. Exigir no mesmo HEAD `validate`, `student-visual-audit`, build `deploy`, inspeção efetiva dessas imagens e verificação de `production-dist` após merge. A fixture PHP não substitui sessão autenticada na HostGator.
