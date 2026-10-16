@@ -52,4 +52,10 @@ must_question_annotation((int)$again['id']===(int)$created['id'],'same annotatio
 $courseShared=student_question_create_from_annotation($db,7,3,7,['question_title'=>'Pergunta para todas as turmas','question_visibility'=>'course']);
 must_question_annotation((string)($courseShared['visibility']??'')==='course','annotation did not persist visibility for all cohorts in the course');
 must_question_annotation((int)($courseShared['source_annotation_id']??0)===7,'course-shared question lost its source annotation');
+$questionsRoute=(string)file_get_contents(dirname(__DIR__).'/aluno/duvidas.php');
+must_question_annotation(str_contains($questionsRoute,'student_question_source_page(')
+    &&str_contains($questionsRoute,'student_enrollment_material_context(')
+    &&str_contains($questionsRoute,'cms_access_page_allowed(')
+    &&str_contains($questionsRoute,"['cohort_uuid']"),
+    'material origin deep link must preserve the selected enrollment and CMS authorization');
 echo "student-question-annotation: ok\n";
