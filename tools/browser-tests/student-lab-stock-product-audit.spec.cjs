@@ -14,7 +14,12 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.getByText('existem fisicamente',{exact:false})).toBeVisible();
         await expect(page.getByText('180',{exact:true})).toBeVisible();
         await expect(page.getByRole('button',{name:'Movimentar estoque'})).toBeVisible();
-        await expect(page.getByRole('button',{name:'Arquivar'}).first()).toBeVisible();
+        const item=page.locator('.student-inventory-item').first();
+        await expect(item.locator('.student-inventory-options')).toHaveCount(1);
+        await expect(item.getByRole('button',{name:'Arquivar'})).toBeHidden();
+        await item.locator('.student-inventory-options > summary').click();
+        await expect(item.getByRole('link',{name:'Editar item'})).toBeVisible();
+        await expect(item.getByRole('button',{name:'Arquivar'})).toBeVisible();
       }
       if(screen==='empty')await expect(page.getByText('Seu inventário ainda está vazio.')).toBeVisible();
       if(screen==='movement'){
