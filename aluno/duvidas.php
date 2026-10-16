@@ -5,6 +5,18 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&$enrollment){if(!verify_csrf('s
 $sourceAnnotation=$enrollment&&$requestedAnnotationId>0?student_question_annotation_source($db,$studentId,(int)$enrollment['cohort_id'],$requestedAnnotationId):null;if($requestedAnnotationId>0&&$enrollment&&!$sourceAnnotation&&$error==='')$error='Essa anotação não está disponível nesta turma.';
 if($sourceAnnotation){$existingQuestion=student_question_from_annotation($db,$studentId,(int)$sourceAnnotation['id']);if($existingQuestion&&($_SERVER['REQUEST_METHOD']??'GET')==='GET'){header('Location: /aluno/duvidas.php?cohort='.rawurlencode((string)$enrollment['cohort_uuid']).'&id='.(int)$existingQuestion['id'],true,303);exit;}}
 $activity=$enrollment?activity_by_id($db,(int)$enrollment['activity_id']):null;$questionId=(int)($_GET['id']??$_POST['question_id']??0);$question=$questionId>0?student_question_for_enrolled_student($db,$studentId,$questionId):null;if($question&&$enrollment&&!student_question_in_cohort_context($db,$question,(int)$enrollment['cohort_id']))$question=null;$questionSource=$question&&$enrollment&&(int)$question['cohort_id']===(int)$enrollment['cohort_id']?student_question_source_context($db,$question):null;$messages=$question?student_question_messages($db,$questionId):[];$questions=$enrollment?student_questions_for_cohort($db,$studentId,(int)$enrollment['cohort_id']):[];$records=$enrollment?array_values(array_filter(student_process_records_for_student($db,$studentId),static fn(array $r): bool=>(int)($r['context_cohort_id']??0)===(int)$enrollment['cohort_id'])):[];$evaluationThreads=$enrollment?student_feedback_conversations_for_student($db,$studentId,(int)$enrollment['cohort_id'],20):[];
+/* The source annotation belongs to a specific material page, not necessarily
+ * the first page of this course. The URL is offered only when the selected
+ * cohort contains the page and current CMS access still permits reading it. */
+$sourceMaterialUrl='';
+$materialSource=$questionSource??$sourceAnnotation;
+if($materialSource!==null&&$enrollment&&$activity){
+    $sourcePage=student_question_source_page($materialSource,student_enrollment_pages_for_enrollment($db,$enrollment));
+    if($sourcePage&&cms_access_page_allowed($db,$activity,$sourcePage,$student)){
+        $sourceMaterialUrl=cms_page_url($activity,$sourcePage,(string)$sourcePage['locale']);
+        $sourceMaterialUrl.=(str_contains($sourceMaterialUrl,'?')?'&':'?').'cohort='.rawurlencode((string)$enrollment['cohort_uuid']);
+    }
+}
 $failedQuestionCreate=$error!==''&&($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&(string)($_POST['action']??'create')==='create';
 $failedQuestionReply=$error!==''&&($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&(string)($_POST['action']??'')==='reply';
 $validQuestionTopics=['Exposição','Filme','Química','Revelação','Material','Equipamento','Outro'];
