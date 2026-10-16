@@ -18,6 +18,7 @@ const studentUiFiles=[
   'aluno/ferramentas.php',
   'app/student_laboratory_view.php',
   'aluno/inventario.php',
+  'app/student_inventory_view.php',
   'app/student_inventory_create_panel.php',
   'aluno/inventario-item.php',
   'app/student_inventory_item_editor.php',
@@ -133,7 +134,8 @@ test('student fields use one canonical vocabulary at the source',()=>{
     'app/student_preparation_editor.php':['>Outro revelador<input name="developer_name"','>Revelador ou solução estoque (ml)<input'],
   };
   expect(read('aluno/teste.php')).toContain('student_record_render_workspace(');
-  expect(read('aluno/inventario.php')).toContain('student_inventory_create_panel($createDraft');
+  expect(read('aluno/inventario.php')).toContain("require __DIR__.'/../app/student_inventory_view.php'");
+  expect(read('app/student_inventory_view.php')).toContain('student_inventory_create_panel($createDraft');
   expect(read('aluno/processamentos.php')).toContain("require_once __DIR__.'/../app/student_process_template_step_editor.php'");
   expect(read('aluno/perfil.php')).toContain('student_profile_render($profile,$error,$notice)');
   expect(read('aluno/inventario-item.php')).toContain('student_inventory_item_editor($item');
