@@ -86,7 +86,9 @@ async function materialPosition(page,fraction){
   const nested=/^(auto|scroll|overlay)$/.test(overflow)&&root.scrollHeight>root.clientHeight+1;
   const extent=nested?root.scrollHeight-root.clientHeight:document.documentElement.scrollHeight-innerHeight;
   const target=Math.round(extent*fraction);
-  if(nested)root.scrollTop=target;else window.scrollTo(0,target);
+  // Assign scrollTop synchronously; CSS html scroll-behavior:smooth would
+  // turn window.scrollTo into an animation and make History state race.
+  if(nested)root.scrollTop=target;else document.scrollingElement.scrollTop=target;
   return {y:nested?root.scrollTop:window.scrollY,extent,owner:nested?'reader':'window'};
  },fraction);
 }
