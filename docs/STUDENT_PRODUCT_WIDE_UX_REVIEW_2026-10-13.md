@@ -196,3 +196,12 @@ Material **não é** `.student-shell`: é `body.cms-student-material` com `.cms-
 ### Defeito identificado durante auditoria de Material: payload das anotações removido pela segunda sanitização
 
 A rota pública já prepara o documento com `cms_page_doc` antes das injeções privadas. Identificada sanitização redundante em `cms_render_public_page` que removia o `script[type=application/json][data-student-annotation-data]` gerado por `student_material_render_notebook`. Corrigido com parâmetro explícito `preparedDocument` usado exclusivamente na rota confiável e na fixture, mantendo sanitização padrão para todos os demais chamadores. Testes agora exigem duas anotações no JSON efetivamente renderizado. Essa correção é funcional na camada CMS real, não um ajuste para screenshot. Confirmar pela validação de CI do HEAD final e posteriormente pela sessão autenticada na hospedagem.
+
+
+## Terceiro recorte — editor de roteiros salvos (16/10/2026, PR #245)
+
+Inspeção do artefato `student-visual-audit` em `5a1b0df7`, nas capturas `process-template-editor/phone-edit-{start,middle,end}.png` e `complete/phone/process-editor-*.png`: nove etapas repetiam conjuntos de até quatro controles (Editar, Subir, Descer, Remover) em cada item, prejudicando a leitura da sequência e competindo com a edição dos parâmetros. A tela terminava com exclusão permanente aberta como se fosse tarefa corrente.
+
+**Decisão de interface:** manter **Editar etapa** explícito; agrupar Subir/Descer/Remover em `details` nativo **Mais opções** por etapa; recolher a seção de exclusão permanente do roteiro em `details` nomeado. Preservar forms POST, CSRF, ids, confirmação de exclusão e regras de ordenação. Não transformar o formulário longo de etapas em gaveta. Os dados de duração e condições das etapas usam tipografia de corpo pelo token `--body`, não rótulo monoespaçado de 10 px; títulos, paleta, estados e componentes existentes continuam pertencendo ao Design/CMS.
+
+O contrato de regressão mede os nove grupos e as 25 operações originais (16 mudanças de ordem e 9 remoções), o recolhimento inicial, abertura e fechamento, alvos de pelo menos 44 px, ausência de transbordo em 320/390/1440 e capturas adicionais com opções e exclusão expandidas, além de todos os testes de domínio anteriores. **Esta intervenção é localizada e exige CI e inspeção das capturas do novo HEAD antes do aceite**. Predefinições, Calibração, Conta, Processamentos em execução e fluxos autenticados seguem em revisão; teste sintético não constitui implantação nem aceite global.
