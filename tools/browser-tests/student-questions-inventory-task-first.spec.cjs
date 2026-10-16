@@ -46,6 +46,9 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
     const rect=s=>document.querySelector(s).getBoundingClientRect();
     return {item:rect('.student-inventory-item').top,metrics:rect('[data-inventory-metrics]').top,
       over:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+      metricsTopBorder:getComputedStyle(document.querySelector('[data-inventory-metrics]')).borderTopWidth,
+      itemKindBorder:getComputedStyle(document.querySelector('.student-inventory-kind')).borderTopWidth,
+      unitFontSize:parseFloat(getComputedStyle(document.querySelector('.student-inventory-balance span')).fontSize),
       edges:[...document.querySelectorAll('.student-inventory-item')].map(el=>{
        const css=getComputedStyle(el);
        return [css.borderTopWidth,css.borderRightWidth,css.borderBottomWidth,css.borderLeftWidth]
@@ -54,6 +57,9 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
   expect(g.item).toBeLessThan(g.metrics);
   expect(g.over).toBeLessThanOrEqual(1);
   expect(g.edges[0].slice(0,3)).toEqual(['0px','0px','1px']);
+  expect(g.metricsTopBorder,'adjacent item and metrics cannot draw two dividers').toBe('0px');
+  expect(g.itemKindBorder,'stock category is metadata, not a nested badge').toBe('0px');
+  expect(g.unitFontSize,'mobile quantity units must be legible').toBeGreaterThanOrEqual(12);
   await item.locator('.student-inventory-options > summary').click();
   await expect(item.getByRole('link',{name:'Editar item'})).toHaveAttribute('href',/inventario-item.php\?id=/);
   await expect(item.getByRole('button',{name:'Arquivar'})).toBeVisible();
