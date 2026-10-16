@@ -88,7 +88,7 @@ for(const [device,width,height] of sizes){
         await expect(offer.locator('form [name="_csrf"]')).toHaveValue('fixture-csrf');
         await expect(offer.locator('form [name="cohort_id"]')).toHaveValue('3');
         if(['waiting','confirmed'].includes(state)){
-          await expect(offer.getByText(state==='waiting'?'Na lista de espera':'Ouvinte confirmado')).toBeVisible();
+          await expect(offer.locator('.student-v2-agenda-reservation-state')).toHaveText(state==='waiting'?'Na lista de espera':'Ouvinte confirmado');
           await expect(offer.getByRole('button',{name:'Cancelar solicitação'})).toBeVisible();
         }else{
           await expect(offer.getByRole('button',{name:/Solicitar vaga|Entrar na lista de espera/})).toBeVisible();
