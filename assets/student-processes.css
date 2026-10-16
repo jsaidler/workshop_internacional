@@ -65,6 +65,21 @@
 .student-process-step-actions .student-danger-action{min-height:44px;padding:0 12px;font-size:11px;line-height:1.15}
 .student-process-step-actions .student-link{border:1px solid var(--line)}
 .student-process-step-actions .student-danger-action{border-color:color-mix(in srgb,#bf6363 70%,var(--line))}
+
+/* In the route editor, sequence reading and editing precede reordering/removal. */
+.student-process-step-body>p{font:400 12px/1.5 var(--body);letter-spacing:0}
+.student-process-step-options{min-width:0;border:0;background:transparent}
+.student-process-step-options>summary{display:flex;min-height:44px;align-items:center;justify-content:space-between;gap:10px;padding:0 6px;cursor:pointer;list-style:none;color:var(--text);font:500 12px/1.3 var(--body)}
+.student-process-step-options>summary::-webkit-details-marker{display:none}
+.student-process-step-options>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.student-process-step-options-content{display:grid;gap:8px;width:180px;max-width:100%;padding:10px 0 4px}
+.student-process-step-options-content form{min-width:0;width:100%}
+.student-process-step-options-content :is(.student-link,.student-danger-action){display:flex;box-sizing:border-box;align-items:center;justify-content:center;width:100%;min-height:44px;padding:8px 11px;font-size:12px;line-height:1.3}
+.student-process-step-options-content .student-link{font-family:var(--body);text-transform:none;letter-spacing:0}
+.student-process-retire{margin-top:var(--ux-space-7);padding-top:var(--ux-space-4);border-top:1px solid var(--line)}
+.student-process-retire>summary{min-height:44px;cursor:pointer;color:var(--muted);font:500 12px/1.4 var(--body)}
+.student-process-retire>summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.student-process-retire .student-process-danger-zone{margin-top:0;padding-top:8px}
 .student-process-reuse-note{display:grid;gap:3px;margin-top:12px;padding:11px 12px;border-left:3px solid var(--focus);background:color-mix(in srgb,var(--surface) 76%,transparent)}
 .student-process-reuse-note strong{font-size:12px}
 .student-process-reuse-note span{color:var(--muted);font-size:12px;line-height:1.45}
