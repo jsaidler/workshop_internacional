@@ -67,9 +67,9 @@ const savedReadingPosition=()=>{
   const record=history.state?.cmsStudentReading;
   return record?.key===readingHistoryKey&&Number.isFinite(record.y)?record.y:null;
 };
-let readingHistoryFrame=0;
+let readingHistoryTimer=0;
 const saveReadingPosition=()=>{
-  if(readingHistoryFrame){cancelAnimationFrame(readingHistoryFrame);readingHistoryFrame=0;}
+  if(readingHistoryTimer){clearTimeout(readingHistoryTimer);readingHistoryTimer=0;}
   const reading=readingScrollRoot();if(!reading)return;
   const state=history.state;
   if(state!==null&&(typeof state!=='object'||Array.isArray(state)))return;
@@ -80,7 +80,8 @@ const saveReadingPosition=()=>{
 const readingHistoryRoot=readingScrollRoot();
 if(readingHistoryRoot){
   readingHistoryRoot.addEventListener('scroll',()=>{
-    if(!readingHistoryFrame)readingHistoryFrame=requestAnimationFrame(saveReadingPosition);
+    // Throttle writes to avoid saturating History API quotas while scrolling.
+    if(!readingHistoryTimer)readingHistoryTimer=setTimeout(saveReadingPosition,180);
   },{passive:true});
   window.addEventListener('pagehide',saveReadingPosition);
   window.addEventListener('pageshow',event=>{
