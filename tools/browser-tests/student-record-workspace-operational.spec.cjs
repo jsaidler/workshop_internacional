@@ -40,16 +40,38 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
     await expect(page.getByText('Em andamento',{exact:true})).toHaveCount(0);
     if(state==='process-partial'){
       await expect(page.getByText('5 de 9 marcadas',{exact:true})).toBeVisible();
-      await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(5);
-      await expect(page.getByRole('button',{name:'Marcar ✓'})).toHaveCount(4);
+      await expect(page.locator('#processamento .student-notebook-route-step button').filter({hasText:'Desmarcar'})).toHaveCount(5);
+      await expect(page.locator('#processamento .student-notebook-route-step button').filter({hasText:'Marcar ✓'})).toHaveCount(4);
       await expect(page.locator('#processamento .student-notebook-route-step.is-done:nth-child(2)')).toHaveCount(0);
       await expect(page.locator('#processamento .student-notebook-route-step.is-done:nth-child(3)')).toHaveCount(1);
     }else{
       await expect(page.getByText('0 de 9 marcadas',{exact:true})).toBeVisible();
-      await expect(page.getByRole('button',{name:'Desmarcar'})).toHaveCount(0);
+      await expect(page.locator('#processamento .student-notebook-route-step button').filter({hasText:'Desmarcar'})).toHaveCount(0);
     }
-    const first=page.locator('#processamento .student-notebook-route-step').first();
+    const steps=page.locator('#processamento .student-notebook-route-step');
+    const details=steps.locator('details.student-notebook-route-detail');
+    await expect(details).toHaveCount(9);
+    const openDetails=details.locator('xpath=self::*[@open]');
+    await expect(openDetails).toHaveCount(state==='process-plan-edit'?1:0);
+    if(state==='process-plan-edit')await expect(details.nth(3)).toHaveAttribute('open','');
+    const summaries=await details.locator('summary').evaluateAll(nodes=>nodes.map(el=>{
+      const box=el.getBoundingClientRect(),css=getComputedStyle(el);
+      return{height:box.height,font:parseFloat(getComputedStyle(el.querySelector('strong')).fontSize),overflow:el.scrollWidth-el.clientWidth};
+    }));
+    for(const summary of summaries){
+      expect(summary.height,state+' '+device+' summary touch target').toBeGreaterThanOrEqual(44);
+      expect(summary.font,state+' '+device+' summary legibility').toBeGreaterThanOrEqual(14);
+      expect(summary.overflow,state+' '+device+' no summary overflow').toBeLessThanOrEqual(1);
+    }
+    await page.screenshot({path:'student-visual-audit/record-operational/'+device+'-'+state+'-collapsed.png',animations:'disabled'});
+    const first=steps.first();
     await expect(first.locator('input[name="action"][value="toggle_plan_step"]')).toHaveCount(1);
+    await expect(first.locator('details.student-notebook-route-detail')).not.toHaveAttribute('open','');
+    await expect(first.getByRole('link',{name:'Timer'})).not.toBeVisible();
+    await first.locator('summary.student-notebook-route-step-main').click();
+    await expect(first.locator('details.student-notebook-route-detail')).toHaveAttribute('open','');
+    await expect(first.getByRole('button',{name:'Marcar ✓'})).toBeVisible();
+    await page.screenshot({path:'student-visual-audit/record-operational/'+device+'-'+state+'-actions-open.png',animations:'disabled');
     await expect(first.getByRole('link',{name:'Editar'})).toHaveAttribute('href','/aluno/teste.php?id=7&edit_plan_step=21#processamento');
     await expect(first.getByRole('link',{name:'Timer'})).toHaveAttribute('href','/aluno/processar.php?test=7&step=21');
     await expect(page.locator('#processamento details.student-notebook-route-add')).not.toHaveAttribute('open','');
@@ -64,6 +86,9 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
       expect(c.width,state+' '+device+' '+c.label+' usable width').toBeGreaterThanOrEqual(62);
       expect(c.scroll-c.width,state+' '+device+' '+c.label+' no clipped text').toBeLessThanOrEqual(1);
     }
+    await first.locator('summary.student-notebook-route-step-main').click();
+    await expect(first.locator('details.student-notebook-route-detail')).not.toHaveAttribute('open','');
+    await expect(first.getByRole('link',{name:'Editar'})).not.toBeVisible();
     if(state==='process-plan-edit'){
       const editor=page.locator('#processamento .student-notebook-route-editor');
       await expect(editor).toHaveCount(1);
