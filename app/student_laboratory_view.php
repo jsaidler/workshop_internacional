@@ -7,9 +7,7 @@ declare(strict_types=1);
 ?>
 <div class="student-v2-laboratory" data-student-laboratory>
   <header class="student-v2-lab-heading">
-    <p class="student-v2-eyebrow">Área de trabalho</p>
     <h1 class="student-title">Laboratório</h1>
-    <p>Seus roteiros, materiais e ferramentas de cálculo, em um só lugar.</p>
   </header>
   <?php if(!$tools):?>
     <section class="student-v2-lab-empty" data-lab-empty>
@@ -19,8 +17,7 @@ declare(strict_types=1);
   <?php else:?>
     <section class="student-v2-lab-section" aria-labelledby="student-lab-operacoes" data-lab-operations>
       <div class="student-v2-lab-section-title">
-        <p class="student-v2-eyebrow">Organizar e executar</p>
-        <h2 id="student-lab-operacoes">Suas ferramentas</h2>
+        <h2 id="student-lab-operacoes">Ferramentas</h2>
       </div>
       <div class="student-v2-lab-links" data-lab-links>
         <?php if(isset($byKey['lab_timer'])):?>
@@ -54,7 +51,6 @@ declare(strict_types=1);
     <?php if(isset($byKey['reciprocity'])||isset($byKey['exposure'])||isset($byKey['solution_prep'])):?>
     <section class="student-v2-lab-section" aria-labelledby="student-lab-calculos" data-lab-calculations>
       <div class="student-v2-lab-section-title">
-        <p class="student-v2-eyebrow">Calcular e preparar</p>
         <h2 id="student-lab-calculos">Cálculos e receitas</h2>
       </div>
       <div class="student-v2-lab-calculators">
