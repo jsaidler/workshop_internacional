@@ -242,6 +242,7 @@ for(const [device,width,height] of sizes){
     await expect(page).toHaveURL(origin+'/aluno/ferramentas.php');
     await expect(page.locator('[data-student-laboratory]')).toBeVisible();
     await page.locator('[data-lab-link="inventario"]').click();
+    await page.locator('.student-inventory-item .student-inventory-options > summary').first().click();
     const item=page.getByRole('link',{name:'Editar item'});
     const beforeEditor=await page.evaluate(()=>({url:location.href,length:history.length}));
     await item.click();
