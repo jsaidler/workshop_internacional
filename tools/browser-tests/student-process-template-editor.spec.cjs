@@ -117,6 +117,14 @@ for(const dim of dimensions){
     const openedMetrics=await stageOptions.nth(6).locator('summary, button').evaluateAll(nodes=>nodes.map(el=>{
       const r=el.getBoundingClientRect();return {label:el.textContent.trim(),height:r.height,left:r.left,right:r.right};
     }));
+    if(dim.width<=760){
+      const expandedAlignment=await stageOptions.nth(6).evaluate(details=>{
+        const summary=details.querySelector('summary').getBoundingClientRect();
+        const edit=details.parentElement.querySelector(':scope > a').getBoundingClientRect();
+        return {summaryLeft:summary.left,editLeft:edit.left};
+      });
+      expect(Math.abs(expandedAlignment.summaryLeft-expandedAlignment.editLeft),'mobile expanded options must align with the step action').toBeLessThanOrEqual(12);
+    }
     for(const m of openedMetrics){
       expect(m.height,m.label+' expanded target height').toBeGreaterThanOrEqual(44);
       expect(m.left,m.label+' expanded left boundary').toBeGreaterThanOrEqual(0);
@@ -127,6 +135,7 @@ for(const dim of dimensions){
     await expect(stageOptions.nth(6).getByRole('button',{name:'Remover'})).toBeHidden();
     await retire.locator('summary').click();
     await expect(retire.getByRole('button',{name:'Excluir processamento'})).toBeVisible();
+    await retire.getByRole('button',{name:'Excluir processamento'}).scrollIntoViewIfNeeded();
     await page.screenshot({path:'student-visual-audit/process-template-editor/'+dim.label+'-retire-expanded.png',animations:'disabled'});
     await retire.locator('summary').click();
     await form.locator('[name="stage_key"]').selectOption('second_development');
