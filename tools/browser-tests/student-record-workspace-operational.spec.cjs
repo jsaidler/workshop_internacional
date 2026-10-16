@@ -70,7 +70,7 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
     await expect(first.getByRole('link',{name:'Timer'})).not.toBeVisible();
     await first.locator('summary.student-notebook-route-step-main').click();
     await expect(first.locator('details.student-notebook-route-detail')).toHaveAttribute('open','');
-    await expect(first.getByRole('button',{name:'Marcar ✓'})).toBeVisible();
+    await expect(first.getByRole('button',{name:state==='process-partial'?'Desmarcar':'Marcar ✓'})).toBeVisible();
     await page.screenshot({path:'student-visual-audit/record-operational/'+device+'-'+state+'-actions-open.png',animations:'disabled');
     await expect(first.getByRole('link',{name:'Editar'})).toHaveAttribute('href','/aluno/teste.php?id=7&edit_plan_step=21#processamento');
     await expect(first.getByRole('link',{name:'Timer'})).toHaveAttribute('href','/aluno/processar.php?test=7&step=21');
