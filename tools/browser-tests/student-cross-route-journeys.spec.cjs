@@ -102,10 +102,10 @@ for(const [device,width,height] of sizes){
     await expect(materialBar.locator('a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
     await page.getByTestId('questions').click();
     await expect(page).toHaveURL(origin+'/aluno/duvidas.php?cohort=cohort-a');
-    await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Dúvidas',exact:true,level:1})).toBeVisible();
     await expect(page.locator('.student-course-context-nav a[aria-current="page"]')).toHaveText('Dúvidas');
     await expect(page.locator('nav.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
-    await expect(page.locator('.student-course-context-back')).toHaveAttribute('href','/aluno/cursos.php');
+    await expect(page.locator('.student-course-context-back')).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-a');
     await expect(page.locator('.student-course-context-nav a').first()).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-a');
     await page.screenshot({path:'student-visual-audit/journeys/questions-list-'+device+'.png'});
     await page.locator('a.student-test-row[href="/aluno/duvidas.php?cohort=cohort-a&id=1"]').click();
@@ -116,7 +116,7 @@ for(const [device,width,height] of sizes){
     await expect(page.locator('.student-back')).toHaveAttribute('href','/aluno/duvidas.php?cohort=cohort-a');
     await page.screenshot({path:'student-visual-audit/journeys/question-thread-'+device+'.png'});
     await page.goBack();
-    await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Dúvidas',exact:true,level:1})).toBeVisible();
     await page.goBack();
     await expect(page).toHaveURL(origin+'/material/exposicao?cohort=cohort-a');
     await page.getByTestId('back-course').click();
@@ -215,7 +215,7 @@ test('direct link to a question keeps the chosen course and logical return',asyn
   await expect(page.locator('.student-back')).toHaveAttribute('href','/aluno/duvidas.php?cohort=cohort-b');
   await page.locator('.student-back').click();
   await expect(page).toHaveURL(origin+'/aluno/duvidas.php?cohort=cohort-b');
-  await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Dúvidas',exact:true,level:1})).toBeVisible();
   await expect(page.locator('.student-course-context-nav a').first()).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-b');
 });
 
