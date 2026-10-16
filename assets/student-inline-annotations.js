@@ -58,6 +58,42 @@ const adjustReadingScroll=delta=>{const root=readingScrollRoot();if(root)root.sc
 const restoreReadingScroll=value=>{const root=readingScrollRoot();if(root)root.scrollTop=value;else window.scrollTo(0,value);};
 const captureReadingOrigin=blockKey=>{const block=readingBlock(blockKey);return{blockKey:blockKey||'',top:block?.getBoundingClientRect().top??null,y:currentReadingScroll()};};
 const restoreReadingOrigin=origin=>requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!origin)return;const block=readingBlock(origin.blockKey);if(block&&Number.isFinite(origin.top)){const delta=block.getBoundingClientRect().top-origin.top;if(Math.abs(delta)>.5)adjustReadingScroll(delta);}else restoreReadingScroll(origin.y||0);}));
+// Material uses its own scroll region. Native history does not consistently
+// restore nested scrollTop after full-page navigation. Keep the position on the
+// existing history entry (never create an entry for scrolling), scoped by URL
+// including the selected cohort. Other history.state consumers remain intact.
+const readingHistoryKey=location.pathname+location.search;
+const savedReadingPosition=()=>{
+  const record=history.state?.cmsStudentReading;
+  return record?.key===readingHistoryKey&&Number.isFinite(record.y)?record.y:null;
+};
+let readingHistoryFrame=0;
+const saveReadingPosition=()=>{
+  if(readingHistoryFrame){cancelAnimationFrame(readingHistoryFrame);readingHistoryFrame=0;}
+  const reading=readingScrollRoot();if(!reading)return;
+  const state=history.state;
+  if(state!==null&&(typeof state!=='object'||Array.isArray(state)))return;
+  const y=Math.max(0,Math.round(reading.scrollTop));
+  if(state?.cmsStudentReading?.key===readingHistoryKey&&state.cmsStudentReading.y===y)return;
+  try{history.replaceState({...state,cmsStudentReading:{key:readingHistoryKey,y}},'');}catch(_){}
+};
+const readingHistoryRoot=readingScrollRoot();
+if(readingHistoryRoot){
+  readingHistoryRoot.addEventListener('scroll',()=>{
+    if(!readingHistoryFrame)readingHistoryFrame=requestAnimationFrame(saveReadingPosition);
+  },{passive:true});
+  window.addEventListener('pagehide',saveReadingPosition);
+  window.addEventListener('pageshow',event=>{
+    // BFCache already keeps the live scroll region and any unfinished note.
+    // A fragment is an explicit reader destination and takes precedence.
+    if(event.persisted||location.hash)return;
+    const y=savedReadingPosition();if(y===null)return;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const root=readingScrollRoot();if(!root)return;
+      root.scrollTop=Math.min(Math.max(0,y),Math.max(0,root.scrollHeight-root.clientHeight));
+    }));
+  });
+}
 const captureSelection=()=>{const selection=window.getSelection();if(!selection||selection.rangeCount<1||selection.isCollapsed)return null;const range=selection.getRangeAt(0),startBlock=closestBlock(range.startContainer),endBlock=closestBlock(range.endContainer);if(!startBlock||startBlock!==endBlock||!root.contains(startBlock))return null;const start=offsetWithin(startBlock,range.startContainer,range.startOffset),end=offsetWithin(startBlock,range.endContainer,range.endOffset);if(start<0||end<=start)return null;const text=startBlock.textContent||'',exact=text.slice(start,end);if(!exact.trim()||exact.length>3000)return null;const section=startBlock.closest('[data-student-note-context]')?.getAttribute('data-student-note-context')||'';if(!section)return null;return{sectionKey:section,blockKey:startBlock.getAttribute('data-student-anchor-block')||'',start,end,exact,prefix:text.slice(Math.max(0,start-120),start),suffix:text.slice(end,end+120),sourceBlockHash:fingerprint(text)};};
 const setSelectionActive=value=>document.documentElement.classList.toggle('student-selection-active',!!value);
 const positionAction=anchor=>{if(!anchor){if(Date.now()-lastValidSelectionAt>1800){action.hidden=true;setSelectionActive(false);}return;}action.textContent=reanchorId?'Reassociar seleção':'Anotar seleção';action.hidden=false;setSelectionActive(true);if(coarsePointer){action.classList.add('is-touch-selection');action.style.left='';action.style.top='';return;}action.classList.remove('is-touch-selection');const selection=window.getSelection();if(!selection?.rangeCount)return;const range=selection.getRangeAt(0),rects=[...range.getClientRects()].filter(r=>r.width||r.height),rect=rects.at(-1)||range.getBoundingClientRect();const width=action.offsetWidth||104,height=action.offsetHeight||42;let left=Math.max(8,Math.min(window.innerWidth-width-8,rect.left+rect.width/2-width/2)),top=rect.top-height-8;if(top<8)top=rect.bottom+8;action.style.left=`${Math.round(left)}px`;action.style.top=`${Math.round(Math.max(8,Math.min(window.innerHeight-height-8,top)))}px`;};
