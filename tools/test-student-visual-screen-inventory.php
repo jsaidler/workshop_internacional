@@ -46,6 +46,9 @@ foreach($operationalSources as $name=>$source){
 must_student_visual_inventory(str_contains($spec,'operationalScreens.has(name)')&&str_contains($spec,'anonymousAuthScreens.has(name)')&&str_contains($spec,'contract.links')&&str_contains($spec,'scrollGutter'),'operational screen audit must verify v2 shell without injected styles');
 foreach(['process-intent','recording-start','recording-associated','recording-partial','recording-complete'] as $obsolete)must_student_visual_inventory(!str_contains($spec,"\n  ['$obsolete','"),'complete visual audit still preserves obsolete temporal surface '.$obsolete);
 must_student_visual_inventory(str_contains($spec,"['inventory','student-inventory-movement.php?mode=inventory']")&&str_contains($spec,"['inventory-empty','student-inventory-movement.php?mode=empty']"),'inventory list/empty visual audit must use PHP fixture that includes operational movement renderer');
+$inventoryRoute=(string)file_get_contents($root.'/aluno/inventario.php');
+$inventoryFixture=(string)file_get_contents($root.'/tools/browser-fixture/student-inventory-movement.php');
+must_student_visual_inventory(str_contains($inventoryRoute,"require __DIR__.'/../app/student_inventory_view.php'")&&str_contains($inventoryFixture,"require __DIR__.'/../../app/student_inventory_view.php'"),'inventory visual fixture must render exactly the production PHP projection');
 must_student_visual_inventory(str_contains($spec,"toBe(46)"),'complete visual audit surface count must match the non-linear product');
 $cadernoSpec=(string)file_get_contents($root.'/tools/browser-tests/student-caderno-product-audit.spec.cjs');
 must_student_visual_inventory(str_contains($cadernoSpec,"'route-picker'")&&str_contains($cadernoSpec,"'record-empty'")&&str_contains($cadernoSpec,"'record-partial'"),'non-linear Caderno audit must cover route selection and incomplete records');
