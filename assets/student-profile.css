@@ -2,6 +2,7 @@
    never removed from POST. This stylesheet is loaded only for /aluno/perfil.php. */
 .student-profile-page{max-width:850px;min-width:0}
 .student-profile-header{display:grid;gap:8px;margin:0 0 18px}
+.student-profile-page>.ui-alert{margin-bottom:var(--ux-space-4)}
 .student-profile-header .student-back{justify-self:start;margin-bottom:8px}
 .student-profile-header .student-title-record{margin:0;color:var(--text);text-transform:none}
 .student-profile-identity{min-width:0;padding:0;border:0;background:transparent}
