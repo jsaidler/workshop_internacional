@@ -33,7 +33,7 @@ body.student-page:has(.student-process-runner) .student-main{max-width:980px}
 .student-lab-select-form{display:grid;justify-items:start;gap:8px;margin:18px 0 0}
 .student-lab-select-form p{max-width:620px;margin:0;color:var(--muted);font-size:11px;line-height:1.45}
 .student-lab-timer-settings{margin:18px 0 0;border-top:1px solid var(--student-line-soft);border-bottom:1px solid var(--student-line-soft)}
-.student-lab-timer-settings>summary{padding:11px 0;cursor:pointer;color:var(--muted);font:600 10px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.05em}
+.student-lab-timer-settings>summary{display:flex;align-items:center;min-height:44px;padding:11px 0;cursor:pointer;color:var(--text);font:600 12px/1.35 var(--body);text-transform:none;letter-spacing:0}
 .student-lab-timer-settings[open]>summary{margin-bottom:12px}
 .student-lab-timer-settings form{padding:0 0 16px}
 .student-lab-route-list{margin-top:30px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
