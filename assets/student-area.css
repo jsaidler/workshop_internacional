@@ -88,6 +88,14 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
 .student-questions-screen .student-test-row .student-status{display:inline;min-height:0;padding:0;border:0;background:transparent;color:var(--muted);font:500 11px/1.35 var(--body);letter-spacing:0;text-transform:none}
 .student-questions-screen .student-test-row .student-status+.student-status::before{content:" · ";color:var(--muted)}
 .student-questions-screen .student-question-detail{padding-top:12px;border-top:0}
+/* Return to a source material page must be readable and tappable; the generic
+   utility .student-link uses 9px mono and is inappropriate for this task. */
+.student-questions-screen .student-question-source .student-question-material-source{
+ display:inline-flex;align-items:center;justify-content:flex-start;
+ max-width:100%;min-height:44px;margin-top:12px;padding:9px 12px;
+ font:600 13px/1.4 var(--body);letter-spacing:0;text-transform:none;
+ text-align:left;white-space:normal;overflow-wrap:anywhere
+}
 @media(max-width:820px){
  .student-course-context-compact{margin-bottom:16px}
  .student-course-context-compact .student-course-context-head{display:block}
