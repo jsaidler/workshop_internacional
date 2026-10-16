@@ -3,7 +3,9 @@ declare(strict_types=1);
 function fail_student_lab_stock_product_ux(string $message): never {fwrite(STDERR,"student-lab-stock-product-ux: $message\n");exit(1);}
 function must_student_lab_stock_product_ux(bool $ok,string $message): void {if(!$ok)fail_student_lab_stock_product_ux($message);}
 $root=dirname(__DIR__);
-$inventory=(string)file_get_contents($root.'/aluno/inventario.php');
+$inventoryController=(string)file_get_contents($root.'/aluno/inventario.php');
+$inventory=$inventoryController.(string)file_get_contents($root.'/app/student_inventory_view.php');
+must_student_lab_stock_product_ux(str_contains($inventoryController,"require __DIR__.'/../app/student_inventory_view.php'"),'authenticated inventory does not consume the canonical projection');
 $preparations=(string)file_get_contents($root.'/aluno/preparos.php').(string)file_get_contents($root.'/app/student_lab_catalog_views.php');
 $shell=(string)file_get_contents($root.'/app/student_shell.php');
 $css=(string)file_get_contents($root.'/assets/student-lab-stock.css');
