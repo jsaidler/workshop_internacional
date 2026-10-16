@@ -20,10 +20,12 @@ must_student_lab_stock_product_ux(str_contains((string)file_get_contents($root.'
 must_student_lab_stock_product_ux(str_contains($inventory,'Seu inventário ainda está vazio.')&&str_contains($inventory,'Adicionar primeiro item'),'inventory empty state does not teach first action');
 must_student_lab_stock_product_ux(str_contains($inventory,'Ver predefinições'),'inventory does not distinguish/link reusable parameters');
 
-must_student_lab_stock_product_ux(str_contains($preparations,'não representa estoque físico'),'preparations do not distinguish parameters from stock');
+must_student_lab_stock_product_ux(str_contains($preparations,'Não representam soluções em estoque'),'preparations do not distinguish parameters from stock');
 must_student_lab_stock_product_ux(str_contains($preparations,'Abrir inventário'),'preparations do not link physical stock');
-must_student_lab_stock_product_ux(str_contains($preparations,'O roteiro copia os parâmetros'),'preparation cards do not explain reuse semantics');
-must_student_lab_stock_product_ux(str_contains($preparations,'sem movimentar o Inventário.'),'preparation cards imply inventory consumption');
+must_student_lab_stock_product_ux(str_contains($preparations,'Predefinições guardam parâmetros de revelação reutilizáveis'),'preparation guidance does not explain reuse semantics');
+must_student_lab_stock_product_ux(str_contains($preparations,'não movimentam o Inventário.'),'preparation guidance implies inventory consumption');
+must_student_lab_stock_product_ux(strpos($preparations,'student-preparation-card')<strpos($preparations,'student-preparation-guidance'),'inventory explanation must follow the saved preparations');
+must_student_lab_stock_product_ux(!str_contains($preparations,'student-preparation-note'),'do not repeat the same stock message on each card');
 must_student_lab_stock_product_ux(str_contains($preparations,'Editar')&&str_contains($preparations,'Excluir'),'preparation CRUD is not visible');
 must_student_lab_stock_product_ux(str_contains($preparations,'Você ainda não salvou nenhuma condição de revelação.'),'preparation empty state is not pedagogical');
 must_student_lab_stock_product_ux(!str_contains($preparations,'Predefinição e estoque são coisas diferentes: uma guarda parâmetros; a outra guarda quantidade física disponível.'),'catalog repeats the same inventory distinction instead of keeping guidance short');

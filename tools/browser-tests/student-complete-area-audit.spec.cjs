@@ -131,7 +131,8 @@ for(const [device,viewport] of Object.entries(viewports)){
         await expect(page.locator('.student-preparation-card form [name="action"][value="delete"]')).toHaveCount(1);
         await expect(page.locator('.student-preparation-card form [name="_csrf"]')).toHaveCount(1);
         await expect(page.getByRole('link',{name:'Abrir inventário'})).toHaveAttribute('href','/aluno/inventario.php');
-        await expect(page.locator('.student-preparation-card .student-preparation-note')).toContainText('sem movimentar o Inventário');
+        await expect(page.locator('.student-preparation-card .student-preparation-note')).toHaveCount(0);
+        await expect(page.locator('.student-preparation-guidance')).toContainText('Não representam soluções em estoque');
       }
       if(name==='calibration-list'){
         await expect(page.getByRole('heading',{name:'Referências de calibração'})).toBeVisible();
