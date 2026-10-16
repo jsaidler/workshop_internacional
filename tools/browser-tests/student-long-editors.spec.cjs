@@ -62,7 +62,7 @@ for(const f of families){
   test(f.kind+' parent list opens native phone page or desktop modal '+device,async({page})=>{
    await page.setViewportSize({width,height});const posts=await mock(page,f);
    await page.goto(base+f.route,{waitUntil:'networkidle'});
-   const create=page.locator(f.kind==='preparation'?'.student-preparation-library-heading [data-student-editor-link]':'.student-page-heading [data-student-editor-link]');
+   const create=page.locator(f.kind==='preparation'?'.student-preparation-library-heading [data-student-editor-link]':'.student-calibration-library-heading [data-student-editor-link]');
    await create.click();
    if(device==='phone'){
     await expect(page).toHaveURL(new RegExp(f.route.replaceAll('/','\\/')+'\\?novo=1'));
@@ -291,6 +291,68 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
  });
 }
 
+// Saved calibration references should be consulted before any new registration.
+for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['desktop',1440,1100]]){
+ test('calibration saved measurement first '+device,async({page})=>{
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.setViewportSize({width,height});
+  const response=await page.goto(fixture+'?kind=calibration&mode=list',{waitUntil:'networkidle'});
+  expect(response?.status()).toBe(200);
+  const main=page.locator('.student-main');
+  const library=main.locator('[data-student-local-key="calibrations-list"]');
+  const first=library.locator('.student-calibration-row').first();
+  const newLink=library.getByRole('link',{name:'Nova referência'});
+  await expect(first).toBeVisible();
+  await expect(newLink).toHaveAttribute('href','/aluno/calibracao.php?novo=1');
+  await expect(first.locator('.student-calibration-row-actions span')).toHaveText('Branco');
+  await expect(first.locator('.student-calibration-row-actions strong')).toHaveText('03:00');
+  await expect(first.locator('.student-calibration-record p')).toContainText('Fuji HR-U');
+  await expect(first.locator('.student-calibration-record p')).toContainText('26 °C');
+  await expect(first.getByRole('link',{name:'Editar'})).toHaveAttribute('href','/aluno/calibracao.php?editar=7');
+  await expect(main.locator('.student-calibration-guidance')).toContainText('referência medida em teste');
+  await expect(main.locator('.student-lead,.student-section-heading')).toHaveCount(0);
+  const geometry=await page.evaluate(()=>{
+   const main=document.querySelector('.student-main');
+   const h=document.querySelector('.student-calibration-page-heading').getBoundingClientRect();
+   const library=document.querySelector('.student-calibration-library').getBoundingClientRect();
+   const row=document.querySelector('.student-calibration-row').getBoundingClientRect();
+   const label=document.querySelector('.student-calibration-row-actions span').getBoundingClientRect();
+   const time=document.querySelector('.student-calibration-row-actions strong').getBoundingClientRect();
+   const edit=document.querySelector('.student-calibration-row-actions a').getBoundingClientRect();
+   const recordTitle=document.querySelector('.student-calibration-record h3').getBoundingClientRect();
+   const layout=getComputedStyle(document.querySelector('.student-calibration-row-actions'));
+   const action=document.querySelector('.student-calibration-library-heading [data-student-editor-link]').getBoundingClientRect();
+   const note=document.querySelector('.student-calibration-guidance').getBoundingClientRect();
+   const nav=document.querySelector('.student-mobile-nav').getBoundingClientRect();
+   return {headingEnd:h.bottom,libraryTop:library.top,rowTop:row.top,timeRight:time.right,timeHeight:time.height,labelBottom:label.bottom,timeTop:time.top,timeBottom:time.bottom,
+    editTop:edit.top,recordTitleWidth:recordTitle.width,recordTitleHeight:recordTitle.height,actionLayout:layout.display,
+    actionHeight:action.height,actionRight:action.right,noteTop:note.top,navTop:nav.top,mainRight:main.getBoundingClientRect().right,
+    overflow:main.scrollWidth-main.clientWidth,docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+  });
+  expect(geometry.libraryTop,'the saved reference follows title').toBeLessThanOrEqual(geometry.headingEnd+32);
+  expect(geometry.rowTop,'the reference precedes contextual explanation').toBeLessThan(geometry.noteTop);
+  if(width<=820)expect(geometry.rowTop,'the measured reference starts in first viewport').toBeLessThan(geometry.navTop-15);
+  expect(geometry.actionHeight).toBeGreaterThanOrEqual(44);
+  expect(geometry.actionRight).toBeLessThanOrEqual(geometry.mainRight+1);
+  expect(geometry.timeHeight,'white time must remain large enough to scan').toBeGreaterThanOrEqual(22);
+  expect(geometry.actionLayout,'measurement and edit controls must use the vertical grid').toBe('grid');
+  expect(geometry.labelBottom,'measurement label must precede time vertically').toBeLessThanOrEqual(geometry.timeTop+1);
+  expect(geometry.timeBottom,'edit action must follow time, not occupy its horizontal line').toBeLessThanOrEqual(geometry.editTop+1);
+  if(width<=390){
+   expect(geometry.recordTitleWidth,'reference name must retain readable column width').toBeGreaterThanOrEqual(120);
+   expect(geometry.recordTitleHeight,'short sample reference should not be forced into two lines').toBeLessThanOrEqual(32);
+  }
+  expect(geometry.timeRight).toBeLessThanOrEqual(geometry.mainRight+1);
+  expect(geometry.overflow).toBeLessThanOrEqual(1);
+  expect(geometry.docOverflow).toBeLessThanOrEqual(1);
+  await main.evaluate(node=>{node.scrollTop=0;});
+  await page.screenshot({path:'student-visual-audit/calibration-library/'+device+'-list-start.png',animations:'disabled'});
+  await main.evaluate(node=>{node.scrollTop=node.scrollHeight;});
+  await page.screenshot({path:'student-visual-audit/calibration-library/'+device+'-list-end.png',animations:'disabled'});
+  expect(errors).toEqual([]);
+ });
+}
+
 // Empty library states use the exact same production list renderer, not demo HTML.
 for(const kind of ['preparation','calibration']){
   for(const width of [320,390,1440]){
@@ -305,7 +367,8 @@ for(const kind of ['preparation','calibration']){
         await expect(page.getByRole('link',{name:'Criar primeira predefinição'})).toHaveAttribute('href','/aluno/preparos.php?novo=1');
       }else{
         await expect(page.getByText('Nenhuma calibração salva.')).toBeVisible();
-        await expect(page.getByRole('link',{name:'Nova referência'})).toHaveAttribute('href','/aluno/calibracao.php?novo=1');
+        await expect(page.getByRole('link',{name:'Registrar primeira referência'})).toHaveAttribute('href','/aluno/calibracao.php?novo=1');
+        await expect(page.locator('.student-calibration-library-heading [data-student-editor-link]')).toHaveCount(0);
       }
       const geometry=await page.evaluate(()=>{
         const main=document.querySelector('.student-main'),nav=document.querySelector('.student-mobile-nav');

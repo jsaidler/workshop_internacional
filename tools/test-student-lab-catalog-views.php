@@ -23,8 +23,12 @@ $calRow=['id'=>5,'label'=>'Referência <script>','film'=>'Fuji HR-U','developer'
 ob_start();student_lab_calibrations_view([$calRow],null,'',false);$cal=(string)ob_get_clean();
 must_lab_catalog(str_contains($cal,'Referência &lt;script&gt;')&&!str_contains($cal,'Referência <script>'),'calibration data not escaped');
 must_lab_catalog(str_contains($cal,'03:00')&&str_contains($cal,'href="/aluno/calibracao.php?editar=5"'),'calibration timing or editor navigation missing');
+must_lab_catalog(strpos($cal,'student-calibration-row')<strpos($cal,'student-calibration-guidance'),'calibration guidance must not hide saved measurements');
+must_lab_catalog(str_contains($cal,'Branco')&&str_contains($cal,'referência medida em teste'),'measured white time must be explicit, not an automated calculation');
+must_lab_catalog(str_contains($cal,'href="/aluno/calibracao.php?novo=1"')&&str_contains($cal,'Nova referência'),'registration must stay accessible with saved measurements');
 ob_start();student_lab_calibrations_view([],null,'',false);$emptyCal=(string)ob_get_clean();
-must_lab_catalog(str_contains($emptyCal,'Nenhuma calibração salva.')&&str_contains($emptyCal,'Nova referência'),'calibration empty state missing');
+must_lab_catalog(str_contains($emptyCal,'Nenhuma calibração salva.')&&str_contains($emptyCal,'Registrar primeira referência'),'calibration empty state missing');
+must_lab_catalog(substr_count($emptyCal,'href="/aluno/calibracao.php?novo=1"')===1,'calibration empty state must contain one creation action');
 foreach(['preparos.php'=>'student_lab_preparations_view','calibracao.php'=>'student_lab_calibrations_view'] as $route=>$render){
  $source=(string)file_get_contents(__DIR__.'/../aluno/'.$route);
  must_lab_catalog(str_contains($source,$render.'(')&&str_contains($source,'verify_csrf('),'production route must use shared view and preserve CSRF');

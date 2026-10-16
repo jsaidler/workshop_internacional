@@ -249,3 +249,15 @@ O recorte posterior à PR #250 localiza a densidade da página `aluno/ferramenta
 
 
 **Inspeção da primeira captura operacional (16/10):** as imagens `preparation-library/{narrow,phone,desktop}-list-start.png` e `lab-catalogs/preparation-empty-320.png` do artefato de uma execução anterior foram abertas. A consulta realmente entrou na primeira dobra e o estado vazio preservou `Criar primeira predefinição`. Entretanto, o CSS herdado forçava o formulário `Excluir` a ocupar a linha inteira abaixo de `Editar` no telefone, tornando a operação destrutiva desproporcionalmente dominante; a borda inferior do último cartão e a nova borda superior da orientação criavam duas divisórias consecutivas. O grid proprietário mantém agora as duas ações em uma linha, com áreas de toque preservadas, e a orientação aproveita o divisor já existente. A regressão mede mesma linha, larguras próximas, alvo >=44 px e ausência do segundo traço. Exigir nova captura no HEAD resultante; a imagem anterior não aprova essa correção.
+
+
+## Referências de calibração — consultar o tempo medido antes de cadastrar (16/10/2026)
+
+**Diagnóstico no artefato operacional da PR #252:** a captura de telefone da lista mostrou título auxiliar, botão primário de cadastro e texto introdutório antes da referência salva. A tarefa habitual é recuperar o tempo do branco de um teste realizado.
+
+**Correção delimitada:** o renderer `student_lab_calibrations_view()` apresenta título, contagem e referências medidas primeiro. Cada registro identifica o tempo como **Branco** e mantém filme, revelador, preparo, temperatura e edição. Com dados, `Nova referência` permanece na linha da biblioteca como ação secundária. Sem dados, um único `Registrar primeira referência` é ação principal, com orientação sobre medição em teste real. A explicação de que o tempo não é cálculo automático aparece só depois da lista preenchida.
+
+**Contrato:** CSS proprietário de calibração em `student-lab-stock.css`; não alterar lógica de cálculos, persistência, controle de acesso, editor, POST/303 ou cinco destinos globais. Exigir `test-student-lab-catalog-views.php`, `student-long-editors.spec.cjs` e `student-complete-area-audit.spec.cjs` em 320/390/1440, incluindo estado vazio, criação/edição/erro, retorno de foco e capturas. Inspecionar o mesmo HEAD que será integrado; confirmar `production-dist` depois do merge. Fixture PHP com dados controlados não prova sessão autenticada ou instalação na HostGator.
+
+
+**Inspeção visual após primeira CI, SHA `eeade03f`:** três workflows passaram, mas as capturas de 320 e 390 px revelaram que rótulo `Branco`, tempo `03:00` e `Editar` ficaram alinhados horizontalmente, reduzindo a largura do nome da calibração. Isso não é aceite visual apesar do CI verde. A correção usa seletor proprietário de maior especificidade e uma coluna explícita na grade da área de resultado, empilhando rótulo, tempo e edição. O teste agora exige `display:grid`, ordem vertical no eixo Y e largura mínima do nome de 120 px na tela estreita; uma captura nova do HEAD atualizado será inspecionada. O estado vazio da primeira captura está correto.
