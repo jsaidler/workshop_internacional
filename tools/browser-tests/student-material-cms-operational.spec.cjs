@@ -105,6 +105,7 @@ for(const device of viewports){
    expect((await page.goto(start,{waitUntil:'networkidle'}))?.status()).toBe(200);
    const reading=page.locator('.cms-student-reading');
    const before=await materialPosition(page,.53);
+   expect(before.owner,'reader on phones, window on desktop').toBe(device.width<821?'reader':'window');
    expect(before.extent,'fixture must have enough reading text to scroll').toBeGreaterThan(250);
    expect(before.y).toBeGreaterThan(100);
    await expect.poll(async()=>page.evaluate(()=>history.state?.cmsStudentReading?.y??-1)).toBe(before.y);
