@@ -264,7 +264,10 @@
   text-transform:none;overflow-wrap:anywhere
 }
 .student-calibration-row p{margin:7px 0 0;color:var(--muted);font:400 12px/1.55 var(--body);overflow-wrap:anywhere}
-.student-calibration-row-actions{display:grid;justify-items:end;align-content:center;gap:5px;min-width:84px}
+.student-calibration-list .student-calibration-row .student-calibration-row-actions{
+ display:grid;grid-template-columns:minmax(0,1fr);grid-auto-flow:row;
+ justify-items:end;align-content:center;gap:5px;min-width:84px
+}
 .student-calibration-row-actions>span{
   color:var(--muted);font:600 10px/1.25 var(--mono);text-transform:uppercase;letter-spacing:.04em
 }
