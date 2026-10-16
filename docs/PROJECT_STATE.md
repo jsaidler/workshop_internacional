@@ -932,3 +932,12 @@ O HEAD `f22b86e` teve `student-visual-audit: success` e `validate: failure` em *
 A observação **em 390 px nativos**, não somente em contact sheet reduzida, encontrou duas divisórias consecutivas: a linha inferior do item e `border-top` adicional em `.student-stock-metrics`. A segunda divisória e a margem redundante foram removidas diretamente da regra proprietária, sem override genérico. O tipo `Insumo/Solução preparada` não precisa ser um badge de estado; recebeu `student-inventory-kind` como metadado sem moldura, mantendo a semântica. A unidade junto ao saldo passou de mono 10 px em caixa-alta a texto CMS 12 px, com legibilidade explicitamente testada.
 
 `student-questions-inventory-task-first.spec.cjs` verifica agora borda superior nula do resumo, ausência de badge contornado e dimensão mínima de unidade em 320, 390 e 1440 px. O recorte mantém prioridade de movimentação, opções administrativas progressivas, retorno e direitos de acesso. Necessita CI e novo artefato de screenshots no **SHA final**; nenhuma aprovação estética integral da Área do Aluno, merge ou publicação está autorizada.
+
+
+## Modo laboratório: edição secundária, temporizador prioritário — 16/10/2026
+
+Auditoria das capturas operacionais `process-runner/phone-idle-start|middle|end.png` identificou que `app/student_process_runner_view.php` renderizava o formulário longo `Editar dados da etapa` **sempre aberto**, deslocando ações finais, criando uma página administrativa de campos sob o temporizador mesmo sem intenção de editar.
+
+No produto, o roteiro e o timer são apoios à pesquisa fotográfica; a tela de edição é tarefa deliberada, não uma etapa obrigatória nem fato de laboratório. A view passa a iniciar o `details.student-lab-timer-settings` recolhido e a abri-lo no retorno com erro, preservando os parâmetros e o contexto. O menu continua nativo, acessível por teclado/touch, com resumo legível de 12 px por `--body` e alvo de 44 px. Nenhuma mudança nos serviços de tempo, payload das etapas, agitação, confirmações, POST/CSRF, propriedade, marcação factual ou inventário.
+
+O teste operacional percorre 320/390/1440 no estado inicial e com editor aberto, verifica todos os campos e alternância de `details`, assegura que erro de salvamento mantém o formulário visível e timer/etapa sem mutação, e produz capturas início/meio/fim. Uma fixture sintética não verifica sessão real ou persistência de hospedagem. Exigir os três workflows no HEAD e inspeção das capturas antes da publicação; pacotes liberados exigem instalação humana em `Admin → Sistema e atualizações`.
