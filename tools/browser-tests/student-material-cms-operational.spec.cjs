@@ -133,7 +133,9 @@ for(const device of viewports){
    const before=await reading.evaluate(el=>{el.scrollTop=Math.round((el.scrollHeight-el.clientHeight)*.62);return el.scrollTop;});
    await expect.poll(async()=>page.evaluate(()=>history.state?.cmsStudentReading?.y??-1)).toBe(before);
    const panel=page.locator('[data-student-notes-panel]');
-   await panel.locator('summary').first().click();
+   // Open the existing disclosure without Playwright's auto-scroll to its
+   // footer trigger: the reading position is deliberately held as the invariant.
+   await panel.locator('summary').first().evaluate(el=>el.click());
    await panel.locator('[data-annotation-edit="1"]').click();
    const edit=panel.locator('[data-annotation-item="1"]');
    const changed='Comparar duas sensibilidades mantendo os demais parâmetros.';
