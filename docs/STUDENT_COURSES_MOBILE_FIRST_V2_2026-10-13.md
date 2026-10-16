@@ -45,3 +45,14 @@ O runner visual com fixtures **não autentica alunos nem testa permissões e ope
 ### Continuidade interna de Dúvidas: formas e estados adicionais
 
 Os testes Playwright de Dúvidas anteriormente capturavam o HTML duplicado de `student-secondary-screens-audit.html` para os estados de criação, erro, resposta, listagem longa e registro relacionado. A matriz foi migrada para o renderer PHP compartilhado `student_questions_view.php` via `student-questions-operational.php`, com controles, contexto e shell reais. Dados de cenário continuam sintéticos: a auditoria não executa POST autenticado, nem autorizações efetivas, que permanecem sob os testes de domínio. O gate passa a exigir foco, validação, conteúdo de rascunho, estados de visibilidade, rolagem no fim da lista, registro vinculado e ausência de overflow visual nas capturas, sem aprovar etapas não examinadas.
+
+
+### Percurso Material → Anotação → Dúvida → Material (16/10/2026)
+
+A leitura de uma dúvida originada em anotação preservava o trecho citado, mas a navegação contextual de Material apontava à **primeira página do curso**, mesmo quando a origem estava em página posterior. Isso não satisfaz o contrato de retorno explícito ao objeto de origem nem garante um destino lógico em deep link.
+
+**Decisão:** junto da origem citada, apresentar um link específico para a página de material de onde veio a anotação; na criação da dúvida a partir da anotação, oferecer retorno equivalente. Para anotação de página inteira sem citação exata, mostrar a página de origem sem inventar um trecho. O retorno inclui `cohort=<cohort_uuid>`; a navegação geral da turma e a barra global de cinco destinos permanecem intactas.
+
+**Autoridade e acesso:** `student_question_source_page()` associa a página registrada na anotação **somente** às páginas do material da matrícula selecionada. O controlador `aluno/duvidas.php` exige `student_enrollment_material_context()` com o mesmo `cohort_uuid` selecionado e `cms_access_page_allowed()` para o aluno atual antes de fornecer a URL `cms_page_url()`. Origem de outro curso, página retirada/não publicada ou acesso perdido não produzem link. Não divulgar IDs da anotação de outro participante, nem prometer navegação até um trecho privado por hash. Preservar mensagens, POST/PRG, visibilidade da conversa e CSRF.
+
+**Aceite:** teste PHP de origem legítima/inválida, fixture com o renderer operacional e exemplos de trecho, nota integral, formulário de criação e origem incompatível, captures mobile 320/390 e desktop 1440, visibilidade/navegação global e regressões de Dúvidas, Material e Cursos. CI e inspeção no SHA final; a fixture não comprova acesso à página do CMS na hospedagem.

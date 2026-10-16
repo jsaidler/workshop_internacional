@@ -61,6 +61,18 @@ function student_question_source_context(PDO $db,array $question): ?array {
     return $q->fetch(PDO::FETCH_ASSOC)?:null;
 }
 
+/** Match a material question's source only against pages belonging to the selected cohort.
+ * The caller must still enforce CMS release/access rights before publishing the URL.
+ */
+function student_question_source_page(?array $source,array $allowedPages): ?array {
+    $pageId=(int)($source['page_id']??0);
+    if($pageId<1)return null;
+    foreach($allowedPages as $page){
+        if((int)($page['id']??0)===$pageId)return $page;
+    }
+    return null;
+}
+
 /** Show a related record only when this student can open it. */
 function student_question_related_record_href(PDO $db,array $question,int $viewerId): string {
     $testId=(int)($question['test_id']??0);

@@ -74,3 +74,64 @@ test('Dúvida individual conserva retorno da turma e título único',async({page
  await expect(page.locator('.student-back')).toHaveAttribute('href','/aluno/duvidas.php?cohort=cohort-a');
  await expect(page.locator('nav.student-mobile-nav a')).toHaveCount(5);
 });
+
+
+// Material -> annotation -> question must retain the source page, not return to
+// the first page of the course. The PHP fixture consumes the production view.
+for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['desktop',1440,1100]]){
+ for(const [state,questionId,expectedLabel] of [
+   ['source-thread','&id=1','Abrir página de origem no material'],
+   ['source-draft','','Voltar à página da anotação'],
+   ['page-note','&id=1','Abrir página de origem no material']
+ ]){
+  test('Material source context '+state+' '+device,async({page})=>{
+   const errors=[];page.on('pageerror',e=>errors.push(e.message));
+   await page.setViewportSize({width,height});
+   const response=await page.goto(host+'student-questions-operational.php?state='+state+'&cohort=cohort-a'+questionId,{waitUntil:'networkidle'});
+   expect(response?.status()).toBe(200);
+   await expect(page.locator('nav.student-mobile-nav a')).toHaveCount(5);
+   const source=page.locator('.student-question-source');
+   await expect(source).toBeVisible();
+   const link=source.getByRole('link',{name:new RegExp(expectedLabel)});
+   await expect(link).toHaveAttribute('href','/material/processo-quimico?cohort=cohort-a');
+   const linkMetrics=await link.evaluate(node=>{
+    const box=node.getBoundingClientRect(),style=getComputedStyle(node);
+    return {height:box.height,fontSize:parseFloat(style.fontSize),width:box.width,scrollWidth:node.scrollWidth,clientWidth:node.clientWidth};
+   });
+   expect(linkMetrics.height,'material source return must be touch-sized').toBeGreaterThanOrEqual(44);
+   expect(linkMetrics.fontSize,'material source return must use legible body typography').toBeGreaterThanOrEqual(13);
+   expect(linkMetrics.scrollWidth-linkMetrics.clientWidth,'material source return must not clip the label').toBeLessThanOrEqual(1);
+   await expect(page.locator('.student-course-context-compact .student-course-context-back')).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-a');
+   await expect(page.locator('.student-course-context-compact a[href="/material/exposicao?cohort=cohort-a"]')).toHaveCount(1);
+   if(state==='page-note')await expect(source).toContainText('Página do material');
+   if(state==='source-draft'){
+    const form=page.locator('[data-question-new-panel] form');
+    await expect(form).toBeVisible();
+    await expect(form.locator('textarea[name="body"]')).toHaveValue('Por que o banho pode ser reutilizado?');
+    await expect(form.locator('input[name="cohort"]')).toHaveValue('cohort-a');
+    await expect(form.locator('input[name="source_annotation_id"]')).toHaveValue('5');
+   }
+   const geometry=await page.evaluate(()=>{
+    const main=document.querySelector('.student-main');
+    const nav=document.querySelector('.student-mobile-nav');
+    return {overflow:main.scrollWidth-main.clientWidth,docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+     navCount:nav?.querySelectorAll('a').length,mainBottom:main.getBoundingClientRect().bottom,navTop:nav.getBoundingClientRect().top};
+   });
+   expect(geometry.overflow).toBeLessThanOrEqual(1);
+   expect(geometry.docOverflow).toBeLessThanOrEqual(1);
+   expect(geometry.navCount).toBe(5);
+   if(width<=820)expect(geometry.mainBottom).toBeLessThanOrEqual(geometry.navTop+1);
+   await link.scrollIntoViewIfNeeded();
+   await page.screenshot({path:'student-visual-audit/questions-material-source/'+state+'-'+device+'.png',animations:'disabled'});
+   expect(errors).toEqual([]);
+  });
+ }
+}
+for(const [state,cohort] of [['foreign-source','cohort-a'],['source-thread','cohort-b']]){
+ test('Material source outside cohort is not linked '+state+' '+cohort,async({page})=>{
+  const response=await page.goto(host+'student-questions-operational.php?state='+state+'&id=1&cohort='+cohort,{waitUntil:'networkidle'});
+  expect(response?.status()).toBe(200);
+  await expect(page.locator('.student-question-material-source')).toHaveCount(0);
+  await expect(page.locator('nav.student-mobile-nav a')).toHaveCount(5);
+ });
+}

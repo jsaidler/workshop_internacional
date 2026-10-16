@@ -27,6 +27,12 @@ $db->exec("INSERT INTO student_questions(id,student_id,cohort_id,source_annotati
 
 $source=student_question_annotation_source($db,7,3,5);
 must_question_annotation(is_array($source)&&(int)$source['id']===5,'owned annotation is not accepted for its course');
+$originPage=student_question_source_page($source,[['id'=>9,'locale'=>'pt-BR'],['id'=>11,'locale'=>'pt-BR']]);
+must_question_annotation(is_array($originPage)&&(int)$originPage['id']===11,'linked annotation did not select its real source page');
+must_question_annotation(student_question_source_page($source,[['id'=>9,'locale'=>'pt-BR']])===null,'linked annotation exposed a page outside the selected course');
+must_question_annotation(student_question_source_page(['page_id'=>901],[['id'=>11]])===null,'foreign material page was accepted');
+must_question_annotation(student_question_source_page(null,[['id'=>11]])===null,'missing material source generated a page');
+
 must_question_annotation(student_question_annotation_source($db,7,4,5)===null,'annotation leaked into an unrelated course');
 student_question_attach_annotation($db,8,7,3,5);
 $q=$db->query('SELECT source_annotation_id FROM student_questions WHERE id=8');
@@ -46,4 +52,10 @@ must_question_annotation((int)$again['id']===(int)$created['id'],'same annotatio
 $courseShared=student_question_create_from_annotation($db,7,3,7,['question_title'=>'Pergunta para todas as turmas','question_visibility'=>'course']);
 must_question_annotation((string)($courseShared['visibility']??'')==='course','annotation did not persist visibility for all cohorts in the course');
 must_question_annotation((int)($courseShared['source_annotation_id']??0)===7,'course-shared question lost its source annotation');
+$questionsRoute=(string)file_get_contents(dirname(__DIR__).'/aluno/duvidas.php');
+must_question_annotation(str_contains($questionsRoute,'student_question_source_page(')
+    &&str_contains($questionsRoute,'student_enrollment_material_context(')
+    &&str_contains($questionsRoute,'cms_access_page_allowed(')
+    &&str_contains($questionsRoute,"['cohort_uuid']"),
+    'material origin deep link must preserve the selected enrollment and CMS authorization');
 echo "student-question-annotation: ok\n";
