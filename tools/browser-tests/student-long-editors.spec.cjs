@@ -62,7 +62,7 @@ for(const f of families){
   test(f.kind+' parent list opens native phone page or desktop modal '+device,async({page})=>{
    await page.setViewportSize({width,height});const posts=await mock(page,f);
    await page.goto(base+f.route,{waitUntil:'networkidle'});
-   const create=page.locator('.student-page-heading [data-student-editor-link]');
+   const create=page.locator(f.kind==='preparation'?'.student-preparation-library-heading [data-student-editor-link]':'.student-page-heading [data-student-editor-link]');
    await create.click();
    if(device==='phone'){
     await expect(page).toHaveURL(new RegExp(f.route.replaceAll('/','\\/')+'\\?novo=1'));
@@ -235,6 +235,52 @@ for(const kind of ['calibration','preparation']){
    await expect(editor.locator('[data-custom-developer]')).toBeVisible();
    await expect(editor.locator('[name="temperature"]')).toHaveValue('30 °C');
   }
+ });
+}
+
+// The catalog and its parameters precede inventory explanation and navigation.
+for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['desktop',1440,1100]]){
+ test('preparation catalog task-first '+device,async({page})=>{
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.setViewportSize({width,height});
+  const response=await page.goto(fixture+'?kind=preparation&mode=list',{waitUntil:'networkidle'});
+  expect(response?.status()).toBe(200);
+  const main=page.locator('.student-main'),library=main.locator('[data-student-local-key="preparations-list"]');
+  const first=library.locator('.student-preparation-card').first(),guidance=main.locator('.student-preparation-guidance');
+  const newLink=library.getByRole('link',{name:'Nova predefinição'});
+  await expect(first).toBeVisible();
+  await expect(newLink).toHaveAttribute('href','/aluno/preparos.php?novo=1');
+  await expect(first.locator('.student-preparation-parameters')).toContainText('26 °C');
+  await expect(first.locator('.student-preparation-parameters')).toContainText('07:00');
+  await expect(first.getByRole('link',{name:'Editar'})).toHaveAttribute('href','/aluno/preparos.php?editar=7');
+  await expect(first.locator('form input[name="action"][value="delete"]')).toHaveCount(1);
+  await expect(first.locator('form input[name="_csrf"]')).toHaveCount(1);
+  await expect(guidance).toContainText('Não representam soluções em estoque');
+  await expect(guidance.getByRole('link',{name:'Abrir inventário'})).toHaveAttribute('href','/aluno/inventario.php');
+  await expect(main.locator('.student-lab-crosslink,.student-lab-stock-intro,.student-preparation-note')).toHaveCount(0);
+  const geometry=await page.evaluate(()=>{
+    const main=document.querySelector('.student-main');
+    const heading=document.querySelector('.student-preparation-page-heading');
+    const library=document.querySelector('.student-preparation-library');
+    const first=document.querySelector('.student-preparation-card');
+    const aside=document.querySelector('.student-preparation-guidance');
+    const nav=document.querySelector('.student-mobile-nav');
+    const action=document.querySelector('.student-preparation-library-heading [data-student-editor-link]');
+    const A=heading.getBoundingClientRect(),B=library.getBoundingClientRect(),C=first.getBoundingClientRect(),D=aside.getBoundingClientRect(),N=nav.getBoundingClientRect(),L=action.getBoundingClientRect();
+    return {headingEnd:A.bottom,libraryTop:B.top,firstTop:C.top,guidanceTop:D.top,navTop:N.top,actionHeight:L.height,actionRight:L.right,mainRight:main.getBoundingClientRect().right,overflow:main.scrollWidth-main.clientWidth,docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+  });
+  expect(geometry.libraryTop,'catalog immediately follows heading').toBeLessThanOrEqual(geometry.headingEnd+32);
+  expect(geometry.firstTop,'saved reference must precede explanation').toBeLessThan(geometry.guidanceTop);
+  if(width<=820)expect(geometry.firstTop,'saved reference should begin within first viewport').toBeLessThan(geometry.navTop-15);
+  expect(geometry.actionHeight,'new reference must be tappable').toBeGreaterThanOrEqual(44);
+  expect(geometry.actionRight,'action must be inside pane').toBeLessThanOrEqual(geometry.mainRight+1);
+  expect(geometry.overflow).toBeLessThanOrEqual(1);
+  expect(geometry.docOverflow).toBeLessThanOrEqual(1);
+  await main.evaluate(node=>{node.scrollTop=0;});
+  await page.screenshot({path:'student-visual-audit/preparation-library/'+device+'-list-start.png',animations:'disabled'});
+  await main.evaluate(node=>{node.scrollTop=node.scrollHeight;});
+  await page.screenshot({path:'student-visual-audit/preparation-library/'+device+'-list-end.png',animations:'disabled'});
+  expect(errors).toEqual([]);
  });
 }
 
