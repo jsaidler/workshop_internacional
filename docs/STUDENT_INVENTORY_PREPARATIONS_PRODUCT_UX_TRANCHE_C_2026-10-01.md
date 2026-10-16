@@ -1,5 +1,13 @@
 # Inventário e predefinições — Tranche C do redesign da área do aluno — 01/10/2026
 
+## Retificação de produto — 15/10/2026 (PR #245 draft)
+
+A auditoria integral de 13/10 e a crítica visual de 15/10 revelaram que a formulação anterior mantinha uma tela de controle administrativo: três painéis numéricos antes dos materiais físicos, botão de cadastro dominante mesmo com estoque existente e arquivamento ao lado de movimentação. **Esta decisão posterior prevalece especificamente sobre os três requisitos contraditórios do contrato de interface de 01/10** (Novo item sempre primário, métricas sempre acima da lista, Editar/Arquivar permanentemente expostos).
+
+A tarefa habitual na lista com itens é **consultar o que existe, verificar quantidade/localização e registrar entrada/saída**. Por isso a lista física precede o resumo de contagens; os três indicadores continuam disponíveis num `details` nativo “Resumo do estoque”, depois dos itens, sem desaparecer ou alterar cálculos. “Movimentar estoque” permanece visível como ação principal em cada item. “Novo item” continua acessível no cabeçalho e é a ação principal no estado vazio. “Editar item” e “Arquivar” ficam num `details` nomeado “Mais opções” de cada item; acesso por toque/teclado, foco e POST/CSRF originais são preservados. A operação destrutiva não compete com a movimentação cotidiana.
+
+O contrato físico continua inalterado: nenhum consumo é inferido do uso de um roteiro, o saldo só muda em movimentação válida, e arquivamento preserva o histórico. O inventário não é o catálogo de predefinições. Deve haver testes e inspeção da composição mobile/desktop, estados de erro/modal/edição e navegação antes do aceite. **PR draft, sem merge nem instalação.**
+
 ## Objetivo
 
 Inventário e Predefinições de revelação deixam de parecer dois cadastros desconectados. A interface deve ensinar claramente a diferença entre **o que existe fisicamente no laboratório** e **uma combinação de parâmetros que o aluno quer reutilizar**.
