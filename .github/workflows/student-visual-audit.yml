@@ -121,6 +121,8 @@ on:
       - 'tools/browser-tests/student-toolbox-real-audit.spec.cjs'
       - 'tools/test-student-toolbox-parity.php'
       - 'tools/browser-tests/student-gallery-upload.spec.cjs'
+      - 'tools/browser-tests/student-laboratory-v2.spec.cjs'
+      - 'tools/browser-fixture/student-laboratory.php'
       - 'tools/browser-tests/student-record-create-sheet.spec.cjs'
       - 'tools/browser-fixture/student-record-create-sheet.php'
       - 'app/student_record_create_dialog.php'
@@ -174,6 +176,7 @@ jobs:
           npx playwright test tools/browser-tests/student-agenda.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-home-operational.spec.cjs --workers=1
           npx playwright test tools/browser-tests/admin-course-agenda.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-laboratory-v2.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-toolbox-real-audit.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-record-create-sheet.spec.cjs --workers=1
       - name: Upload rendered screens
