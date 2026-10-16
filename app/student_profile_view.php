@@ -8,16 +8,13 @@ function student_profile_render(array $profile,string $error='',string $notice='
 <div class="student-profile-page">
   <header class="student-profile-header">
     <a class="student-back" href="/aluno/">← Início</a>
-    <p class="student-kicker">Configurações pessoais</p>
     <h1 class="student-title student-title-record">Conta</h1>
-    <p class="student-profile-intro">Dados para identificação e inscrições. Alterações não afetam seus registros fotográficos.</p>
   </header>
   <?php if($error!==''):?><p class="ui-alert ui-alert-error" role="alert" tabindex="-1" data-profile-error><?=h($error)?></p><?php endif;?>
   <?php if($notice!==''):?><p class="ui-alert ui-alert-notice" role="status"><?=h($notice)?></p><?php endif;?>
   <section class="student-profile-identity" aria-labelledby="student-profile-heading">
     <div class="student-profile-section-header">
-      <div><p class="student-kicker">Identificação</p><h2 id="student-profile-heading">Dados da conta</h2></div>
-      <p>Utilizados para preencher novas inscrições. Você pode revisá-los antes de enviar.</p>
+      <h2 id="student-profile-heading">Dados pessoais</h2>
     </div>
     <form method="post" class="student-form-grid student-profile-form" data-ui-validate data-student-profile-form>
       <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-profile'))?>">
