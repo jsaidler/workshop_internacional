@@ -152,7 +152,7 @@
 
 /* Secondary inventory information is available on demand; the physical stock
    and its operational action precede reporting and destructive maintenance. */
-.student-stock-metrics{margin-top:20px;padding:0;border:0;border-top:1px solid var(--line)}
+.student-stock-metrics{margin-top:0;padding:0;border:0}
 .student-stock-metrics>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;list-style:none;color:var(--muted);font:600 13px/1.4 var(--body)}
 .student-stock-metrics>summary::-webkit-details-marker{display:none}
 .student-stock-metrics>summary span{font:500 12px/1.4 var(--body)}
