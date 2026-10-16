@@ -51,9 +51,10 @@ $questions=[
 if($state==='empty')$questions=[];
 if($state==='many')for($i=0;$i<28;$i++)$questions[]=['id'=>4+$i,'status'=>'open','visibility'=>'cohort','title'=>'Dúvida experimental longa '.str_pad((string)($i+1),2,'0',STR_PAD_LEFT),'student_name'=>'Aluno','topic'=>'Exposição'];
 $question=$questionId>0?['id'=>$questionId,'student_id'=>1,'cohort_id'=>1,'status'=>'open','topic'=>'Revelação','title'=>'Segunda revelação','body'=>'Posso reutilizar o banho da primeira revelação?']:null;
-$questionSource=in_array($state,['source-thread','foreign-source'],true)?['page_id'=>$state==='foreign-source'?901:102,'quote_exact'=>'Trecho marcado da segunda revelação.']:null;
+$questionSource=in_array($state,['source-thread','foreign-source','page-note'],true)?['page_id'=>$state==='foreign-source'?901:102,'quote_exact'=>$state==='page-note'?'':'Trecho marcado da segunda revelação.']:null;
 $sourceMaterialUrl='';
-$fixtureMaterialPage=student_question_source_page($questionSource??$sourceAnnotation,[['id'=>101,'locale'=>'pt-BR'],['id'=>102,'locale'=>'pt-BR']]);
+$fixturePages=$cohort==='cohort-a'?[['id'=>101,'locale'=>'pt-BR'],['id'=>102,'locale'=>'pt-BR']]:[['id'=>201,'locale'=>'pt-BR']];
+$fixtureMaterialPage=student_question_source_page($questionSource??$sourceAnnotation,$fixturePages);
 if($fixtureMaterialPage!==null)$sourceMaterialUrl=cms_page_url($activity,$fixtureMaterialPage,'pt-BR').'?cohort='.rawurlencode($cohort);
 $messages=$question?[['author_role'=>'admin','student_name'=>'Professor','body'=>'Sim. Neste processo, a segunda revelação reutiliza o mesmo banho preparado para a primeira.','created_at'=>'2026-10-01T00:00:00Z']]:[];
 $linkedTestUrl=$state==='linked-private'?'':($state==='linked-shared'?'/aluno/teste-compartilhado.php?id=103':'/aluno/teste.php?id=101');
