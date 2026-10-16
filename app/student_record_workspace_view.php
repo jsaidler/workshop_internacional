@@ -61,7 +61,8 @@ function student_record_render_workspace(array $data): void {
     <div class="student-notebook-route-steps">
     <?php foreach($planSteps as $i=>$planStep):$done=(string)$planStep['status']==='completed';$seconds=student_process_time_seconds((string)$planStep['duration']);$routePayload=student_process_json_array((string)$planStep['payload_json']);$routeMode=(string)($routePayload['agitation_mode']??'none');if(!in_array($routeMode,['none','periodic','continuous'],true))$routeMode='none';$editing=$editPlanStep&&(int)$editPlanStep['id']===(int)$planStep['id'];?>
       <article class="student-notebook-route-step<?=$done?' is-done':''?><?=$editing?' is-editing':''?>">
-        <div class="student-notebook-route-step-main"><span class="student-process-step-number"><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></span><strong><?=h((string)$planStep['label'])?></strong><?php if($seconds!==null):?><small><?=h(student_process_seconds_label($seconds))?></small><?php endif;?></div>
+        <details class="student-notebook-route-detail"<?=$editing?' open':''?>>
+          <summary class="student-notebook-route-step-main"><span class="student-process-step-number"><?=str_pad((string)($i+1),2,'0',STR_PAD_LEFT)?></span><strong><?=h((string)$planStep['label'])?></strong><?php if($seconds!==null):?><small><?=h(student_process_seconds_label($seconds))?></small><?php endif;?><span class="student-notebook-route-chevron" aria-hidden="true"></span></summary>
         <div class="student-actions student-notebook-route-step-actions">
           <?php if(!$locked):?><form method="post" action="/aluno/teste.php?id=<?=$id?>#processamento"><input type="hidden" name="id" value="<?=$id?>"><input type="hidden" name="_csrf" value="<?=h(csrf_token('student-process-'.$id))?>"><input type="hidden" name="action" value="toggle_plan_step"><input type="hidden" name="plan_step_id" value="<?=(int)$planStep['id']?>"><input type="hidden" name="completed" value="<?=$done?'0':'1'?>"><button class="button button-secondary button-compact" type="submit"><?=$done?'Desmarcar':'Marcar ✓'?></button></form><a class="button button-secondary button-compact" href="/aluno/teste.php?id=<?=$id?>&amp;edit_plan_step=<?=(int)$planStep['id']?>#processamento">Editar</a><?php endif;?>
           <a class="button button-secondary button-compact" href="/aluno/processar.php?test=<?=$id?>&amp;step=<?=(int)$planStep['id']?>"><?=$seconds!==null?'Timer':'Abrir etapa'?></a>
@@ -92,6 +93,7 @@ function student_record_render_workspace(array $data): void {
           </div>
         </div>
         <?php endif;?>
+        </details>
       </article>
     <?php endforeach;?>
     </div>
