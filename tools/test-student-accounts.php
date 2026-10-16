@@ -16,6 +16,7 @@ const PUBLIC_LOCALE_PT_BR='pt-BR';const PUBLIC_LOCALE_EN='en';
 $_SERVER['REMOTE_ADDR']='127.0.0.1';$_SERVER['REQUEST_METHOD']='GET';$_SESSION=[];
 require __DIR__.'/../app/student_auth.php';
 require __DIR__.'/../app/student_accounts.php';
+require __DIR__.'/../app/student_enrollments.php';
 
 $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);$db->exec('PRAGMA foreign_keys=ON');
 $db->exec("CREATE TABLE activities(id INTEGER PRIMARY KEY AUTOINCREMENT,admin_name TEXT NOT NULL,public_title TEXT NOT NULL,slug TEXT NOT NULL UNIQUE,status TEXT NOT NULL DEFAULT 'active',is_root INTEGER NOT NULL DEFAULT 0);INSERT INTO activities(admin_name,public_title,slug,status,is_root) VALUES('Curso','Curso','curso','active',1);");
@@ -38,6 +39,8 @@ $updatePayload['name']='Aluno Atualizado';
 $updatePayload['phone']='24888888888';
 $updateSubmission=['payload_json'=>json_encode($updatePayload,JSON_THROW_ON_ERROR)];
 $studentId=(int)$user['id'];
+// The original nested-transaction regression concerns profiles not activated yet.
+$db->prepare('UPDATE student_users SET activated_at=NULL WHERE id=?')->execute([$studentId]);
 $db->exec('CREATE TABLE profile_tx_probe(id INTEGER PRIMARY KEY,note TEXT NOT NULL)');
 $db->exec('BEGIN IMMEDIATE');
 try{
@@ -79,6 +82,23 @@ if((int)$db->query('SELECT COUNT(*) FROM profile_tx_probe WHERE id=2')->fetchCol
 if(student_account_upsert_from_submission($db,$updateSubmission)!==$studentId)fail('standalone profile reconciliation changed identity');
 if((string)student_account_profile($db,$studentId)['phone']!=='24888888888')fail('standalone profile update not committed');
 student_account_upsert_from_submission($db,['payload_json'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
+$db->prepare('UPDATE student_users SET activated_at=? WHERE id=?')->execute([$activated['activated_at'],$studentId]);
+
+// Once activated, the account is authoritative: paid submission data is historical.
+$owned=$payload;
+$owned['name']='Nome escolhido na conta';
+$owned['email']='novo-email@example.com';
+$owned['phone']='24887776666';
+student_account_update_profile($db,$studentId,$owned);
+$protectedBefore=student_account_profile($db,$studentId);
+student_account_reconcile_confirmed_registrations($db,1);
+$protectedAfter=student_account_profile($db,$studentId);
+if($protectedAfter['name']!==$owned['name']||$protectedAfter['email']!==$owned['email']||$protectedAfter['phone']!==$owned['phone'])fail('reconciliation reverted activated account changes');
+if($protectedAfter['cpf_ciphertext']!==$protectedBefore['cpf_ciphertext'])fail('reconciliation re-encrypted an activated account without authorization');
+$linked=student_enrollment_student_from_submission($db,['student_id'=>$studentId,'payload_json'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
+if($linked!==$studentId||student_account_profile($db,$studentId)['email']!==$owned['email'])fail('bound submission overwrote activated account email');
+if(!student_account_login($db,$owned['email'],'uma-senha-segura-123'))fail('updated email cannot sign in with its existing password');
+if(student_account_profile($db,$studentId)['email']!==$owned['email'])fail('sign-in reverted profile email from old submission');
 
 $document=['version'=>2,'theme'=>'auto','meta'=>['title'=>'Material','description'=>''],'html'=>'<section data-cms-section="intro" data-cms-section-name="Introdução"><p>ABERTO</p></section><section data-cms-section="conteudo-aula-1"><p>AULA1</p></section><section data-cms-section="conteudo-aula-2"><p>AULA2</p></section>'];$json=json_encode($document,JSON_THROW_ON_ERROR);$db->prepare('INSERT INTO cms_pages(page_uuid,activity_id,locale,slug,title,nav_title,status,is_home,show_in_nav,sort_order,draft_document_json,published_document_json,draft_updated_at,published_at,created_at,updated_at,access_level) VALUES(?,?,?,?,?,?,"active",0,0,1,?,?,?,?,?,?,"enrolled")')->execute(['page1',1,'pt-BR','material','Material','Material',$json,$json,$now,$now,$now,$now]);$pageId=(int)$db->lastInsertId();$lessons=course_lessons($db,1);if(count($lessons)<2)fail('default lessons missing');student_page_set_section_lesson($db,$pageId,'conteudo-aula-1',(int)$lessons[0]['id']);student_page_set_section_lesson($db,$pageId,'conteudo-aula-2',(int)$lessons[1]['id']);$enrollment=student_account_enrollment_for_activity($db,(int)$user['id'],1);if(!$enrollment)fail('page access enrollment missing');course_set_lesson_release($db,(int)$enrollment['cohort_id'],(int)$lessons[0]['id'],true);$page=cms_page_by_id($db,$pageId);$filtered=student_page_filter_document($db,$page,$document,$enrollment);if(!str_contains($filtered['html'],'ABERTO')||!str_contains($filtered['html'],'AULA1')||str_contains($filtered['html'],'AULA2'))fail('server-side lesson filtering failed');
 
