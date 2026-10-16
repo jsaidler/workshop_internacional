@@ -78,18 +78,33 @@ for(const device of viewports){
     expect(errors).toEqual([]);
   });
 }
-// Material has a nested scroll region; Back/Forward must restore reading,
- // not just the window's zero-valued scroll position.
+// The reader owns vertical scrolling on phones; on desktop the window owns it.
+async function materialPosition(page,fraction){
+ return page.evaluate(fraction=>{
+  const root=document.querySelector('.cms-student-reading');
+  const overflow=getComputedStyle(root).overflowY;
+  const nested=/^(auto|scroll|overlay)$/.test(overflow)&&root.scrollHeight>root.clientHeight+1;
+  const extent=nested?root.scrollHeight-root.clientHeight:document.documentElement.scrollHeight-innerHeight;
+  const target=Math.round(extent*fraction);
+  if(nested)root.scrollTop=target;else window.scrollTo(0,target);
+  return {y:nested?root.scrollTop:window.scrollY,extent,owner:nested?'reader':'window'};
+ },fraction);
+}
+async function materialDelta(page,y){
+ return page.evaluate(y=>{
+  const root=document.querySelector('.cms-student-reading');
+  const nested=/^(auto|scroll|overlay)$/.test(getComputedStyle(root).overflowY)&&root.scrollHeight>root.clientHeight+1;
+  return Math.abs((nested?root.scrollTop:window.scrollY)-y);
+ },y);
+}
+// Back/Forward must restore the actual scroll owner, not just window.scrollY.
 for(const device of viewports){
  test('Material preserves nested reading position across Back/Forward — '+device.name,async({page})=>{
    await page.setViewportSize({width:device.width,height:device.height});
    const start=base+'?page=current&cohort=cohort-a&long=1';
    expect((await page.goto(start,{waitUntil:'networkidle'}))?.status()).toBe(200);
    const reading=page.locator('.cms-student-reading');
-   const before=await reading.evaluate(el=>{
-     el.scrollTop=Math.round((el.scrollHeight-el.clientHeight)*.53);
-     return {y:el.scrollTop,extent:el.scrollHeight-el.clientHeight};
-   });
+   const before=await materialPosition(page,.53);
    expect(before.extent,'fixture must have enough reading text to scroll').toBeGreaterThan(250);
    expect(before.y).toBeGreaterThan(100);
    await expect.poll(async()=>page.evaluate(()=>history.state?.cmsStudentReading?.y??-1)).toBe(before.y);
@@ -103,14 +118,14 @@ for(const device of viewports){
    await expect(page.locator('[data-cms-page-main]')).toContainText('Segunda revelação e acabamento');
    await page.goBack({waitUntil:'networkidle'});
    await expect(page.locator('body[data-cms-page-id="101"]')).toHaveCount(1);
-   await expect.poll(async()=>reading.evaluate(el=>Math.abs(el.scrollTop-before.y))).toBeLessThanOrEqual(3);
+   await expect.poll(()=>materialDelta(page,before.y)).toBeLessThanOrEqual(3);
    await expect(page.locator('.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
    await expect(page.locator('.cms-student-study-context a[href="/aluno/cursos.php?cohort=cohort-a"]')).toHaveCount(1);
    await page.screenshot({path:'student-visual-audit/material-continuity/'+device.name+'-read-after-back.png',animations:'disabled'});
    await page.goForward({waitUntil:'networkidle'});
    await expect(page.locator('body[data-cms-page-id="102"]')).toHaveCount(1);
    await page.goBack({waitUntil:'networkidle'});
-   await expect.poll(async()=>reading.evaluate(el=>Math.abs(el.scrollTop-before.y))).toBeLessThanOrEqual(3);
+   await expect.poll(()=>materialDelta(page,before.y)).toBeLessThanOrEqual(3);
    expect(await page.evaluate(()=>history.length)).toBe(entry.length+1);
    const metrics=await reading.evaluate(el=>({horizontal:el.scrollWidth-el.clientWidth,bottom:el.getBoundingClientRect().bottom}));
    expect(metrics.horizontal).toBeLessThanOrEqual(1);
@@ -130,7 +145,7 @@ for(const device of viewports){
    });
    await page.goto(base+'?page=current&cohort=cohort-a&long=1',{waitUntil:'networkidle'});
    const reading=page.locator('.cms-student-reading');
-   const before=await reading.evaluate(el=>{el.scrollTop=Math.round((el.scrollHeight-el.clientHeight)*.62);return el.scrollTop;});
+   const before=(await materialPosition(page,.62)).y;
    await expect.poll(async()=>page.evaluate(()=>history.state?.cmsStudentReading?.y??-1)).toBe(before);
    const panel=page.locator('[data-student-notes-panel]');
    // Open the existing disclosure without Playwright's auto-scroll to its
@@ -146,7 +161,7 @@ for(const device of viewports){
    await expect(edit.locator('.student-note-body-preview')).toHaveText(changed);
    await panel.locator('summary').first().click();
    await expect(panel).not.toHaveAttribute('open','');
-   await expect.poll(async()=>reading.evaluate(el=>Math.abs(el.scrollTop-before))).toBeLessThanOrEqual(3);
+   await expect.poll(()=>materialDelta(page,before)).toBeLessThanOrEqual(3);
    expect(await page.evaluate(()=>location.pathname+location.search)).toBe('/tools/browser-fixture/student-material-cms-operational.php?page=current&cohort=cohort-a&long=1');
    await page.screenshot({path:'student-visual-audit/material-continuity/'+device.name+'-after-note-save.png',animations:'disabled'});
  });
