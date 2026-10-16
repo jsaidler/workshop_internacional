@@ -173,6 +173,12 @@ A reconciliação acionada pelo login/ativação delega à autoridade canônica 
 
 Quando o pagamento/estado administrativo deixa de autorizar matrícula, a reconciliação desativa a participação vinculada à inscrição e reprocessa a capacidade da turma desocupada, inclusive sua fila cronológica de ouvintes; reconciliação de outras inscrições não faz parte desse evento pontual.
 
+### Identidade de conta ativada versus dados históricos — 15/10/2026
+
+Os dados de uma inscrição confirmada são uma fonte válida para **criar e completar** o perfil de uma conta ainda não ativada. Uma vez ativada a conta (`student_users.activated_at` presente), nome, e-mail, CPF e demais dados passam a ter como autoridade o cadastro do aluno, inclusive quando outras inscrições suas forem reconciliadas. `student_account_upsert_from_submission()` e `student_enrollment_student_from_submission()` devem preservar o perfil ativado e continuar conciliando a identidade global e a matrícula sem duplicar contas. Dados históricos de inscrição não são mecanismos de redefinição de e-mail ou de senha.
+
+A operação de autenticação ainda apresenta um risco arquitetural independente: chamadas gerais de `student_account_reconcile_confirmed_registrations()` no login e na ativação percorrem inscrições sem relação com a tentativa atual. A correção desse efeito colateral deverá separar a reconciliação por eventos administrativos da verificação de credenciais, sem reintroduzir criação implícita de turma ou matrícula. A proteção dos perfis ativados não equivale, por si só, à remoção dessas reconciliações globais.
+
 ### Transação compartilhada de matrícula e identidade — 15/10/2026
 
 Durante a atribuição, transferência ou confirmação de inscrição paga, `course_agenda_with_lock()` é o proprietário do `BEGIN IMMEDIATE` do SQLite. A reconciliação pode atualizar a conta de um aluno já existente (`student_account_upsert_from_submission()` → `student_account_merge_profile_from_payload()` → `student_account_update_profile()`). Essa atualização de perfil **não pode executar outro `BEGIN TRANSACTION` nem confirmar a transação de matrícula por conta própria**.
