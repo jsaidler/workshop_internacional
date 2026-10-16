@@ -56,6 +56,11 @@ HTML,2],
  ];
  $insert=$db->prepare('INSERT INTO cms_pages(id,activity_id,locale,title,slug,is_home,status,sort_order,draft_document_json,published_document_json) VALUES(?,1,?,?,?,?,?,?,?,?)');
  foreach($pages as [$id,$slug,$title,$html,$lesson]){
+   // Reproducible long-form reading position for nested-scroll History tests.
+   if($id===101&&($_GET['long']??'')==='1'){
+     $longText=str_repeat('<p>Continue a leitura deste material. A exposição e a revelação são registradas separadamente, mantendo os dados de cada experiência acessíveis para consulta posterior.</p>',22);
+     $html=str_replace('</article>',$longText.'</article>',$html);
+   }
    $document=json_encode(['version'=>2,'theme'=>'auto','meta'=>['title'=>$title],'html'=>$html],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
    $insert->execute([$id,'pt-BR',$title,$slug,0,'active',$id,$document,$document]);
    $db->prepare('INSERT INTO course_material_pages VALUES(12,?,?)')->execute([$id,$id]);
