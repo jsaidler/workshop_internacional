@@ -172,3 +172,21 @@
  .student-inventory-main h3{font-size:27px}
  .student-inventory-balance strong{font-size:28px}
 }
+
+
+/* Inventário task header: do not spend a whole mobile row on a secondary
+   registration control or repeat the global Laboratory context. */
+.student-page-heading.student-inventory-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.student-inventory-heading>div{min-width:0;flex:1}
+.student-inventory-heading .student-title{font-size:clamp(34px,4.5vw,50px);line-height:1.02}
+.student-inventory-heading .student-lab-stock-intro{margin:9px 0 0;max-width:610px;font-size:13px;line-height:1.5}
+.student-inventory-heading [data-inventory-new-toggle]{align-self:start;flex:0 0 auto;width:auto;min-height:44px;padding-inline:14px}
+.student-inventory-stock-heading{padding-bottom:12px;border:0}
+.student-inventory-stock-heading .student-subtitle{font-size:clamp(26px,3vw,34px)}
+@media(max-width:760px){
+ .student-page-heading.student-inventory-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+ .student-inventory-heading .student-title{font-size:34px}
+ .student-inventory-heading .student-lab-stock-intro{font-size:12px;line-height:1.5}
+ .student-inventory-heading [data-inventory-new-toggle]{width:auto;min-height:44px;padding-inline:11px}
+ .student-inventory-stock-heading{padding-bottom:10px}
+}
