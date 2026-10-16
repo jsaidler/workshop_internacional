@@ -266,12 +266,19 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
     const aside=document.querySelector('.student-preparation-guidance');
     const nav=document.querySelector('.student-mobile-nav');
     const action=document.querySelector('.student-preparation-library-heading [data-student-editor-link]');
+    const edit=first.querySelector('.student-preparation-card-actions > a').getBoundingClientRect(),remove=first.querySelector('.student-preparation-card-actions form button').getBoundingClientRect();
     const A=heading.getBoundingClientRect(),B=library.getBoundingClientRect(),C=first.getBoundingClientRect(),D=aside.getBoundingClientRect(),N=nav.getBoundingClientRect(),L=action.getBoundingClientRect();
-    return {headingEnd:A.bottom,libraryTop:B.top,firstTop:C.top,guidanceTop:D.top,navTop:N.top,actionHeight:L.height,actionRight:L.right,mainRight:main.getBoundingClientRect().right,overflow:main.scrollWidth-main.clientWidth,docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+    return {headingEnd:A.bottom,libraryTop:B.top,firstTop:C.top,guidanceTop:D.top,navTop:N.top,actionHeight:L.height,actionRight:L.right,editWidth:edit.width,removeWidth:remove.width,editY:edit.y,removeY:remove.y,removeHeight:remove.height,guidanceBorder:getComputedStyle(aside).borderTopWidth,mainRight:main.getBoundingClientRect().right,overflow:main.scrollWidth-main.clientWidth,docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
   });
   expect(geometry.libraryTop,'catalog immediately follows heading').toBeLessThanOrEqual(geometry.headingEnd+32);
   expect(geometry.firstTop,'saved reference must precede explanation').toBeLessThan(geometry.guidanceTop);
   if(width<=820)expect(geometry.firstTop,'saved reference should begin within first viewport').toBeLessThan(geometry.navTop-15);
+  if(width<=820){
+   expect(Math.abs(geometry.editY-geometry.removeY),'edit/delete must share a compact action row').toBeLessThanOrEqual(2);
+   expect(Math.abs(geometry.editWidth-geometry.removeWidth),'destructive action must not occupy its own full row').toBeLessThanOrEqual(4);
+   expect(geometry.removeHeight,'delete remains a usable touch target').toBeGreaterThanOrEqual(44);
+  }
+  expect(geometry.guidanceBorder,'avoid a second separator after last item').toBe('0px');
   expect(geometry.actionHeight,'new reference must be tappable').toBeGreaterThanOrEqual(44);
   expect(geometry.actionRight,'action must be inside pane').toBeLessThanOrEqual(geometry.mainRight+1);
   expect(geometry.overflow).toBeLessThanOrEqual(1);
