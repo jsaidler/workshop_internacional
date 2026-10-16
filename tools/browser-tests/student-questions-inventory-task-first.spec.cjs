@@ -94,6 +94,13 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
    await expect(source).toBeVisible();
    const link=source.getByRole('link',{name:new RegExp(expectedLabel)});
    await expect(link).toHaveAttribute('href','/material/processo-quimico?cohort=cohort-a');
+   const linkMetrics=await link.evaluate(node=>{
+    const box=node.getBoundingClientRect(),style=getComputedStyle(node);
+    return {height:box.height,fontSize:parseFloat(style.fontSize),width:box.width,scrollWidth:node.scrollWidth,clientWidth:node.clientWidth};
+   });
+   expect(linkMetrics.height,'material source return must be touch-sized').toBeGreaterThanOrEqual(44);
+   expect(linkMetrics.fontSize,'material source return must use legible body typography').toBeGreaterThanOrEqual(13);
+   expect(linkMetrics.scrollWidth-linkMetrics.clientWidth,'material source return must not clip the label').toBeLessThanOrEqual(1);
    await expect(page.locator('.student-course-context-compact .student-course-context-back')).toHaveAttribute('href','/aluno/cursos.php?cohort=cohort-a');
    await expect(page.locator('.student-course-context-compact a[href="/material/exposicao?cohort=cohort-a"]')).toHaveCount(1);
    if(state==='page-note')await expect(source).toContainText('Página do material');
