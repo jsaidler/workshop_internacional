@@ -58,7 +58,7 @@ function student_process_render_runner_view(array $view): void {
 <div class="student-lab-stage-state" data-step-completion><strong><?=$currentCompleted?'Etapa marcada como concluída':'Etapa não marcada'?></strong><span>O check é apenas um registro. Não altera nem bloqueia as outras etapas.</span></div>
 <form method="post" class="student-actions student-notebook-step-check"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="toggle_complete"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="plan_step_id" value="<?=(int)$current['id']?>"><input type="hidden" name="completed" value="<?=$currentCompleted?'0':'1'?>"><button class="button <?=$currentCompleted?'button-secondary':'button-primary'?>" type="submit"><?=$currentCompleted?'Desmarcar etapa':'Marcar como concluída'?></button></form>
 
-<details class="student-lab-timer-settings" open>
+<details class="student-lab-timer-settings"<?=$error!==''?' open':''?>>
 <summary>Editar dados da etapa</summary>
 <form method="post" class="student-form-grid" data-agitation-settings><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="save_step"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="plan_step_id" value="<?=(int)$current['id']?>">
 <label class="form-field student-span-2">Nome da etapa<input name="label" value="<?=h((string)$current['label'])?>"></label>

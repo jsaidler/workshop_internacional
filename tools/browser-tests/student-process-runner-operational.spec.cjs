@@ -52,12 +52,27 @@ for(const size of sizes){
    expect(geometry.overflow,'laboratory must not horizontally overflow').toBeLessThanOrEqual(1);
    expect(geometry.gutter).toContain('stable');
    if(size.width<821&&geometry.navVisible)expect(geometry.mainBottom).toBeLessThanOrEqual(geometry.navTop+1);
+   const settings=runner.locator('details.student-lab-timer-settings');
+   await expect(settings).not.toHaveAttribute('open','');
+   await expect(settings.locator('input[name="duration"]')).toBeHidden();
+   await expect(runner.locator('form input[name="action"][value="save_step"]')).toHaveCount(1);
+   const disclosure=await settings.locator('summary').evaluate(el=>{
+     const rect=el.getBoundingClientRect(),style=getComputedStyle(el);
+     return {height:rect.height,fontSize:parseFloat(style.fontSize)};
+   });
+   expect(disclosure.height).toBeGreaterThanOrEqual(44);
+   expect(disclosure.fontSize).toBeGreaterThanOrEqual(12);
    for(const part of ['start','middle','end'])await captureAt(page,size.label+'-idle',part);
-   await expect(runner.locator('details.student-lab-timer-settings')).toHaveAttribute('open','');
+   await settings.locator('summary').click();
+   await expect(settings).toHaveAttribute('open','');
    await expect(runner.locator('input[name="duration"]')).toHaveValue('07:00');
    await expect(runner.locator('input[name="agitation_duration"]')).toHaveValue('00:10');
    await expect(runner.locator('input[name="agitation_interval"]')).toHaveValue('01:00');
+   await expect(settings.locator('input[name="duration"]')).toBeVisible();
    await captureAt(page,size.label+'-settings','end');
+   await settings.locator('summary').click();
+   await expect(settings).not.toHaveAttribute('open','');
+   await expect(runner.locator('[data-runner-state-status]')).toHaveText('Pronto para iniciar');
    expect(errors).toEqual([]);
  });
  for(const state of ['running','paused','elapsed']){
@@ -74,6 +89,18 @@ for(const size of sizes){
   });
  }
 }
+test('failed laboratory update opens the real step form without changing timer facts',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await syntheticServer(page);
+ await page.goto(base+'?state=paused&error=Confira%20os%20dados%20da%20etapa',{waitUntil:'networkidle'});
+ const details=page.locator('details.student-lab-timer-settings');
+ await expect(page.getByRole('alert')).toContainText('Confira os dados da etapa');
+ await expect(details).toHaveAttribute('open','');
+ await expect(details.locator('input[name="duration"]')).toHaveValue('07:00');
+ await expect(page.locator('[data-runner-state-status]')).toHaveText('Cronômetro pausado');
+ await expect(page.locator('[data-step-completion]')).toContainText('Etapa não marcada');
+ await captureAt(page,'phone-settings-error','middle');
+});
 test('timer start, pause, resume and reset never confirm a completed step',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  const events=await syntheticServer(page);
