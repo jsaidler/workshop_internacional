@@ -121,9 +121,9 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='home-feedback'){await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();await expect(page.getByRole('link',{name:/Ler retorno e revisar/})).toBeVisible();}
       if(name==='course-feedback'){await expect(page.getByText('Há algo para retomar',{exact:true})).toBeVisible();await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();}
-      if(name==='questions-feedback'){await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();await expect(page.getByRole('heading',{name:'Dúvidas da turma e do curso'})).toBeVisible();}
-      if(name==='questions-list')await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
-      if(name==='question-new'){await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();await expect(page.locator('[data-question-new-panel] form')).toBeVisible();}
+      if(name==='questions-feedback'){await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();await expect(page.getByRole('heading',{name:'Conversas',exact:true})).toBeVisible();}
+      if(name==='questions-list')await expect(page.getByRole('heading',{name:'Dúvidas',exact:true,level:1})).toBeVisible();
+      if(name==='question-new'){await expect(page.getByRole('heading',{name:'Dúvidas',exact:true,level:1})).toBeVisible();await expect(page.locator('[data-question-new-panel] form')).toBeVisible();}
       if(name==='question-thread'){await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();await expect(page.locator('[data-student-local-key="question-thread"] form textarea[name="body"]')).toBeVisible();}
       if(name==='preparations'){
         await expect(page.getByRole('heading',{name:'Predefinições de revelação'})).toBeVisible();
