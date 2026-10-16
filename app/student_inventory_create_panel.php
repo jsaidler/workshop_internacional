@@ -16,7 +16,7 @@ function student_inventory_create_panel(array $draft,string $error,string $csrf)
 <section class="student-section" id="student-inventory-new" data-inventory-new-panel<?=$failed?'':' hidden'?>>
   <div class="student-stock-section-heading"><div><p class="student-kicker">Entrada</p><h2 class="student-subtitle">Novo item</h2></div><p>Escolha <strong>Insumo</strong> para um produto armazenado. Use <strong>Solução preparada</strong> somente quando o banho já existir fisicamente.</p></div>
   <?php if($failed):?><p class="ui-alert ui-alert-error student-inventory-create-error" role="alert" tabindex="-1" data-inventory-error-focus><?=h($error)?></p><?php endif;?>
-  <form method="post" class="student-form-grid" data-ui-validate data-student-local-form data-local-refresh="inventory-stock inventory-history" data-local-success="reset">
+  <form method="post" class="student-form-grid" data-ui-validate data-student-local-form data-local-refresh="inventory-stock inventory-history inventory-metrics" data-local-success="reset">
     <input type="hidden" name="_csrf" value="<?=h($csrf)?>">
     <input type="hidden" name="action" value="create">
     <fieldset class="choice-field student-span-2"><legend>O que está entrando no estoque?</legend><div class="choice-row">
