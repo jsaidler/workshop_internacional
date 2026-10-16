@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('fs');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-agenda.php';
-const states=['empty','regular','listener','waiting','full','mixed','history','unsafe','two'];
+const states=['empty','regular','listener','waiting','confirmed','full','mixed','history','unsafe','two'];
 const sizes=[['phone',390,844],['narrow',320,720],['desktop',1440,1100]];
 const screenshot=async(page,name)=>{
   fs.mkdirSync('student-visual-audit/agenda',{recursive:true});
@@ -17,18 +17,18 @@ for(const [device,width,height] of sizes){
       const agenda=page.locator('[data-student-agenda]');
       await expect(agenda).toHaveAttribute('data-agenda-view','encontros');
       await expect(page.getByRole('heading',{name:'Agenda',exact:true})).toBeVisible();
-      await expect(page.getByRole('heading',{name:'Meus encontros'})).toBeVisible();
+      await expect(page.getByRole('heading',{name:'Meus encontros'})).toHaveCount(1);
       await expect(page.getByRole('heading',{name:'Próximas turmas'})).toHaveCount(0);
       await expect(page.locator('[data-agenda-view-link="encontros"]')).toHaveAttribute('aria-current','page');
       await expect(page.locator('[data-agenda-view-link="ouvintes"]')).toHaveAttribute('href','?view=ouvintes');
       const nav=page.locator('nav.student-mobile-nav');
       await expect(nav.locator('a')).toHaveCount(5);
       await expect(nav.locator('a[href="/aluno/agenda.php"]')).toHaveAttribute('aria-current','page');
-      if(['regular','listener','mixed','two'].includes(state)){
+      if(['regular','listener','mixed','two','confirmed'].includes(state)){
         await expect(page.locator('[data-agenda-upcoming] .agenda-meeting')).toHaveCount(state==='two'?2:1);
-        await expect(page.locator('.student-v2-agenda-meeting-date time').first()).toHaveAttribute('datetime','2030-10-12T22:00:00Z');
+        await expect(page.locator('.student-v2-agenda-meeting-date time').first()).toHaveAttribute('datetime',state==='confirmed'?'2031-11-18T22:00:00Z':'2030-10-12T22:00:00Z');
         await expect(page.getByRole('link',{name:'Acessar encontro ↗'}).first()).toHaveAttribute('href','https://example.org/private-meeting');
-        await expect(page.locator('[data-agenda-upcoming] .agenda-meeting .student-status').first()).toHaveText(state==='listener'?'Ouvinte':'Matriculado');
+        await expect(page.locator('[data-agenda-upcoming] .agenda-meeting .student-status').first()).toHaveText(['listener','confirmed'].includes(state)?'Ouvinte':'Matriculado');
         if(state==='two'){
           await expect(page.locator('.student-v2-agenda-meeting.is-next')).toHaveCount(1);
           await expect(page.locator('.student-v2-agenda-meeting.is-later')).toHaveCount(1);
@@ -87,8 +87,8 @@ for(const [device,width,height] of sizes){
         await expect(offer.locator('form')).toHaveAttribute('action','?view=ouvintes');
         await expect(offer.locator('form [name="_csrf"]')).toHaveValue('fixture-csrf');
         await expect(offer.locator('form [name="cohort_id"]')).toHaveValue('3');
-        if(state==='waiting'){
-          await expect(offer.getByText('Na lista de espera')).toBeVisible();
+        if(['waiting','confirmed'].includes(state)){
+          await expect(offer.getByText(state==='waiting'?'Na lista de espera':'Ouvinte confirmado')).toBeVisible();
           await expect(offer.getByRole('button',{name:'Cancelar solicitação'})).toBeVisible();
         }else{
           await expect(offer.getByRole('button',{name:/Solicitar vaga|Entrar na lista de espera/})).toBeVisible();
@@ -141,4 +141,53 @@ for(const theme of ['light','dark']){
     await screenshot(page,'v2-waiting-'+theme+'-listeners');
     await expect(page.locator('.student-v2-agenda-reservation-state')).toContainText('Na lista de espera');
   });
+}
+
+
+for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['desktop',1440,1100]]){
+ test('Agenda primary meeting in first fold '+device,async({page})=>{
+  await page.setViewportSize({width,height});
+  const res=await page.goto(base+'?state=regular&view=encontros',{waitUntil:'networkidle'});
+  expect(res?.status()).toBe(200);
+  await expect(page.locator('.student-v2-agenda-heading .student-v2-eyebrow')).toHaveCount(0);
+  await expect(page.locator('.student-v2-agenda-heading > p')).toHaveCount(0);
+  const geometry=await page.evaluate(()=>{
+   const main=document.querySelector('.student-main');
+   const tab=document.querySelector('.student-v2-agenda-views').getBoundingClientRect();
+   const event=document.querySelector('.student-v2-agenda-meeting.is-next').getBoundingClientRect();
+   const join=document.querySelector('.student-v2-agenda-meeting.is-next .student-v2-agenda-meeting-join').getBoundingClientRect();
+   const nav=document.querySelector('.student-mobile-nav').getBoundingClientRect();
+   const heading=document.querySelector('#agenda-meetings');
+   return {tabBottom:tab.bottom,eventTop:event.top,joinBottom:join.bottom,navTop:nav.top,
+    a11yHeading:getComputedStyle(heading).position,
+    overflow:main.scrollWidth-main.clientWidth,documentOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+  });
+  expect(geometry.a11yHeading,'keep semantic section heading in DOM').toBe('absolute');
+  expect(geometry.eventTop,'meeting immediately follows view tabs').toBeLessThanOrEqual(geometry.tabBottom+35);
+  if(width<=820)expect(geometry.joinBottom,'meeting access must be visible without scrolling first fold').toBeLessThanOrEqual(geometry.navTop-8);
+  expect(geometry.overflow).toBeLessThanOrEqual(1);
+  expect(geometry.documentOverflow).toBeLessThanOrEqual(1);
+  await page.screenshot({path:'student-visual-audit/agenda/task-first-'+device+'-encounters.png',animations:'disabled'});
+ });
+}
+for(const [name,state,headline,help,button] of [
+ ['before-confirmation','regular','Confirmações não abertas','Você pode entrar na lista de espera agora.','Entrar na lista de espera'],
+ ['already-waiting','waiting','Na lista de espera','Você está na lista de espera.','Cancelar solicitação'],
+ ['confirmed','confirmed','Ouvinte confirmado','Vaga de ouvinte confirmada.','Cancelar solicitação'],
+ ['full','full','Confirmações abertas','Esta turma está lotada.','Entrar na lista de espera']
+]){
+ test('Agenda listener clarity '+name,async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  const res=await page.goto(base+'?state='+state+'&view=ouvintes',{waitUntil:'networkidle'});
+  expect(res?.status()).toBe(200);
+  const offer=page.locator('.agenda-offer');
+  await expect(offer.locator('.student-v2-agenda-reservation-state')).toHaveText(headline);
+  await expect(offer.locator('.student-v2-agenda-eligibility')).toContainText(help);
+  await expect(offer.getByRole('button',{name:button})).toBeVisible();
+  await expect(offer.locator('input[name="_csrf"]')).toHaveValue('fixture-csrf');
+  if(state==='regular')await expect(offer.getByText('Vagas potenciais')).toBeVisible();
+  if(state==='confirmed')await expect(offer.locator('.student-v2-agenda-eligibility')).not.toContainText('não garante vaga');
+  await offer.locator('.student-v2-agenda-eligibility').scrollIntoViewIfNeeded();
+  await page.screenshot({path:'student-visual-audit/agenda/clarity-'+name+'-phone.png',animations:'disabled'});
+ });
 }
