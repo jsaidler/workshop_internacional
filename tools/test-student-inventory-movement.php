@@ -55,7 +55,9 @@ check_movement(str_contains($html,'85 ml')&&str_contains($html,'adjust_down" sel
 check_movement(str_contains($html,'3.500')&&str_contains($html,'Recontagem &lt;b&gt;'),'draft not preserved/escaped');
 check_movement(str_contains($html,'Químico &lt;script&gt;')&&!str_contains($html,'Químico <script>'),'item name not escaped');
 check_movement(!str_contains($html,'data-student-local-form'),'stock changes must use native POST/redirect');
-$source=(string)file_get_contents(dirname(__DIR__).'/aluno/inventario.php');
+$controller=(string)file_get_contents(dirname(__DIR__).'/aluno/inventario.php');
+$source=$controller.(string)file_get_contents(dirname(__DIR__).'/app/student_inventory_view.php');
+check_movement(str_contains($controller,"require __DIR__.'/../app/student_inventory_view.php'"),'inventory route does not delegate to the canonical renderer');
 check_movement(str_contains($source,'student_inventory_move_panel(')&&str_contains($source,'student-inventory-movement.js'),'authenticated route must reuse renderer');
 check_movement(str_contains($source,"'move'?'move':'1'"),'native PRG status not present');
 echo "inventory-movement: ok\n";
