@@ -59,8 +59,8 @@ const readingScrollRoot=()=>{
   return /^(auto|scroll|overlay)$/.test(overflow)&&reader.scrollHeight>reader.clientHeight+1?reader:null;
 };
 const currentReadingScroll=()=>readingScrollRoot()?.scrollTop??window.scrollY;
-const adjustReadingScroll=delta=>{const root=readingScrollRoot();if(root)root.scrollTop+=delta;else window.scrollBy(0,delta);};
-const restoreReadingScroll=value=>{const root=readingScrollRoot();if(root)root.scrollTop=value;else window.scrollTo(0,value);};
+const adjustReadingScroll=delta=>{const root=readingScrollRoot()||document.scrollingElement;if(root)root.scrollTop+=delta;};
+const restoreReadingScroll=value=>{const root=readingScrollRoot()||document.scrollingElement;if(root)root.scrollTop=value;};
 const captureReadingOrigin=blockKey=>{const block=readingBlock(blockKey);return{blockKey:blockKey||'',top:block?.getBoundingClientRect().top??null,y:currentReadingScroll()};};
 const restoreReadingOrigin=origin=>requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!origin)return;const block=readingBlock(origin.blockKey);if(block&&Number.isFinite(origin.top)){const delta=block.getBoundingClientRect().top-origin.top;if(Math.abs(delta)>.5)adjustReadingScroll(delta);}else restoreReadingScroll(origin.y||0);}));
 // Material uses its own scroll region. Native history does not consistently
@@ -98,7 +98,7 @@ if(readerForHistory){
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       const root=readingScrollRoot();
       if(root)root.scrollTop=Math.min(Math.max(0,y),Math.max(0,root.scrollHeight-root.clientHeight));
-      else window.scrollTo(0,Math.min(Math.max(0,y),Math.max(0,document.documentElement.scrollHeight-window.innerHeight)));
+      else if(document.scrollingElement)document.scrollingElement.scrollTop=Math.min(Math.max(0,y),Math.max(0,document.scrollingElement.scrollHeight-window.innerHeight));
     }));
   });
 }
