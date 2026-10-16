@@ -192,3 +192,43 @@
  .student-inventory-heading [data-inventory-new-toggle]{width:auto;min-height:44px;padding-inline:11px}
  .student-inventory-stock-heading{padding-bottom:10px}
 }
+
+
+/* Preparation catalog: reusable conditions are the task; inventory guidance is
+   one secondary destination after the catalog, not repeated inside every item. */
+.student-main>.student-page-heading.student-preparation-page-heading{
+  display:block;margin:0 0 8px;padding:0;border:0
+}
+.student-preparation-page-heading .student-title{
+  margin:0;font-size:clamp(34px,4.5vw,50px);line-height:1.05
+}
+.student-section.student-preparation-library{margin:12px 0 0}
+.student-preparation-library-heading{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:10px;padding:0 0 12px
+}
+.student-preparation-library-heading .student-subtitle{
+  margin:0;font-size:clamp(23px,2.6vw,30px);line-height:1.15
+}
+.student-preparation-library-heading [data-student-editor-link]{
+  width:auto;min-height:44px;padding:0 14px;font-size:13px
+}
+.student-preparation-guidance{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin:18px 0 0;padding:16px 0 0;border-top:1px solid var(--line)
+}
+.student-preparation-guidance p{
+  max-width:63ch;margin:0;color:var(--muted);font:400 13px/1.55 var(--body)
+}
+.student-preparation-guidance strong{color:var(--text);font-weight:600}
+.student-preparation-guidance .button{flex:0 0 auto;min-height:44px}
+@media(max-width:760px){
+  .student-main>.student-page-heading.student-preparation-page-heading{display:block;margin:0 0 6px}
+  .student-preparation-page-heading .student-title{font-size:34px}
+  .student-section.student-preparation-library{margin-top:8px}
+  .student-preparation-library-heading{gap:8px;padding-bottom:10px}
+  .student-preparation-library-heading .student-subtitle{font-size:22px}
+  .student-preparation-library-heading [data-student-editor-link]{min-height:44px;width:auto;padding:0 10px;font-size:12px}
+  .student-preparation-guidance{align-items:stretch;flex-direction:column;gap:12px}
+  .student-preparation-guidance .button{align-self:flex-start}
+}
