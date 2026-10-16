@@ -12,7 +12,10 @@ $sourceMaterialUrl='';
 $materialSource=$questionSource??$sourceAnnotation;
 if($materialSource!==null&&$enrollment&&$activity){
     $sourcePage=student_question_source_page($materialSource,student_enrollment_pages_for_enrollment($db,$enrollment));
-    if($sourcePage&&cms_access_page_allowed($db,$activity,$sourcePage,$student)){
+    $sourceContext=$sourcePage?student_enrollment_material_context($db,$student,$sourcePage,(string)$enrollment['cohort_uuid']):null;
+    if($sourcePage&&$sourceContext
+        &&(string)($sourceContext['cohort_uuid']??'')===(string)$enrollment['cohort_uuid']
+        &&cms_access_page_allowed($db,$activity,$sourcePage,$student)){
         $sourceMaterialUrl=cms_page_url($activity,$sourcePage,(string)$sourcePage['locale']);
         $sourceMaterialUrl.=(str_contains($sourceMaterialUrl,'?')?'&':'?').'cohort='.rawurlencode((string)$enrollment['cohort_uuid']);
     }
