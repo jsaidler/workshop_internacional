@@ -117,14 +117,13 @@ for(const dim of dimensions){
     const openedMetrics=await stageOptions.nth(6).locator('summary, button').evaluateAll(nodes=>nodes.map(el=>{
       const r=el.getBoundingClientRect();return {label:el.textContent.trim(),height:r.height,left:r.left,right:r.right};
     }));
-    if(dim.width<=760){
-      const expandedAlignment=await stageOptions.nth(6).evaluate(details=>{
-        const summary=details.querySelector('summary').getBoundingClientRect();
-        const edit=details.parentElement.querySelector(':scope > a').getBoundingClientRect();
-        return {summaryLeft:summary.left,editLeft:edit.left};
-      });
-      expect(Math.abs(expandedAlignment.summaryLeft-expandedAlignment.editLeft),'mobile expanded options must align with the step action').toBeLessThanOrEqual(12);
-    }
+    const expandedAlignment=await stageOptions.nth(6).evaluate(details=>{
+      const summary=details.querySelector('summary').getBoundingClientRect();
+      const edit=details.parentElement.querySelector(':scope > a').getBoundingClientRect();
+      return {summaryLeft:summary.left,editLeft:edit.left,summaryTop:summary.top,editBottom:edit.bottom};
+    });
+    expect(Math.abs(expandedAlignment.summaryLeft-expandedAlignment.editLeft),'expanded options must align with the step action').toBeLessThanOrEqual(12);
+    expect(expandedAlignment.summaryTop,'options should follow the edit action rather than float alongside it').toBeGreaterThanOrEqual(expandedAlignment.editBottom-1);
     for(const m of openedMetrics){
       expect(m.height,m.label+' expanded target height').toBeGreaterThanOrEqual(44);
       expect(m.left,m.label+' expanded left boundary').toBeGreaterThanOrEqual(0);
