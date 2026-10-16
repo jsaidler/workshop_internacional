@@ -35,10 +35,10 @@ if($failedQuestionCreate)$error='Não foi possível publicar a dúvida. Revise o
 if($failedQuestionReply)$error='Não foi possível enviar a resposta. O texto foi mantido.';
 $validQuestionTopics=['Exposição','Filme','Química','Revelação','Material','Equipamento','Outro'];
 $sourceAnnotation=$state==='source-draft'?['id'=>5,'page_id'=>102,'quote_exact'=>'Trecho marcado da segunda revelação.','body'=>'Por que o banho pode ser reutilizado?']:null;
-$questionDraftTopic=$failedQuestionCreate?'Química':'Revelação';
+$questionDraftTopic=$failedQuestionCreate?'Química':($sourceAnnotation?'Material':'Revelação');
 $questionDraftVisibility=$failedQuestionCreate?'course':'private';
 $questionDraftTitle=$failedQuestionCreate?'Dúvida sobre o banho':'';
-$questionDraftBody=$failedQuestionCreate?'Meu rascunho sobre diluição e amônia precisa permanecer no formulário.':'';
+$questionDraftBody=$failedQuestionCreate?'Meu rascunho sobre diluição e amônia precisa permanecer no formulário.':($sourceAnnotation?(string)$sourceAnnotation['body']:'');
 $questionDraftRecord=$failedQuestionCreate?23:0;
 $questionReplyDraft=$failedQuestionReply?'Minha resposta sobre segunda revelação continua aqui após a falha.':'';
 $records=[['id'=>23,'title'=>'Registro de exposição do aluno']];
