@@ -52,7 +52,12 @@ const offsetWithin=(block,node,offset)=>{const range=document.createRange();rang
 const fingerprint=text=>{let hash=2166136261;for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}return(hash>>>0).toString(16).padStart(8,'0');};
 const nodeInsideRoot=node=>{const target=node?.nodeType===Node.ELEMENT_NODE?node:node?.parentNode;return!!target&&root.contains(target);};
 const readingBlock=blockKey=>blockKey?root.querySelector(`[data-student-anchor-block="${CSS.escape(blockKey)}"]`):null;
-const readingScrollRoot=()=>document.querySelector('.cms-student-reading');
+const readingScrollRoot=()=>{
+  const reader=document.querySelector('.cms-student-reading');
+  if(!reader)return null;
+  const overflow=getComputedStyle(reader).overflowY;
+  return /^(auto|scroll|overlay)$/.test(overflow)&&reader.scrollHeight>reader.clientHeight+1?reader:null;
+};
 const currentReadingScroll=()=>readingScrollRoot()?.scrollTop??window.scrollY;
 const adjustReadingScroll=delta=>{const root=readingScrollRoot();if(root)root.scrollTop+=delta;else window.scrollBy(0,delta);};
 const restoreReadingScroll=value=>{const root=readingScrollRoot();if(root)root.scrollTop=value;else window.scrollTo(0,value);};
@@ -70,19 +75,20 @@ const savedReadingPosition=()=>{
 let readingHistoryTimer=0;
 const saveReadingPosition=()=>{
   if(readingHistoryTimer){clearTimeout(readingHistoryTimer);readingHistoryTimer=0;}
-  const reading=readingScrollRoot();if(!reading)return;
   const state=history.state;
   if(state!==null&&(typeof state!=='object'||Array.isArray(state)))return;
-  const y=Math.max(0,Math.round(reading.scrollTop));
+  const y=Math.max(0,Math.round(currentReadingScroll()));
   if(state?.cmsStudentReading?.key===readingHistoryKey&&state.cmsStudentReading.y===y)return;
   try{history.replaceState({...state,cmsStudentReading:{key:readingHistoryKey,y}},'');}catch(_){}
 };
-const readingHistoryRoot=readingScrollRoot();
-if(readingHistoryRoot){
-  readingHistoryRoot.addEventListener('scroll',()=>{
-    // Throttle writes to avoid saturating History API quotas while scrolling.
+const readerForHistory=document.querySelector('.cms-student-reading');
+if(readerForHistory){
+  const scheduleHistorySave=()=>{
+    // Listen to both: mobile scrolls the reader; desktop scrolls the window.
     if(!readingHistoryTimer)readingHistoryTimer=setTimeout(saveReadingPosition,180);
-  },{passive:true});
+  };
+  readerForHistory.addEventListener('scroll',scheduleHistorySave,{passive:true});
+  window.addEventListener('scroll',scheduleHistorySave,{passive:true});
   window.addEventListener('pagehide',saveReadingPosition);
   window.addEventListener('pageshow',event=>{
     // BFCache already keeps the live scroll region and any unfinished note.
@@ -90,8 +96,9 @@ if(readingHistoryRoot){
     if(event.persisted||location.hash)return;
     const y=savedReadingPosition();if(y===null)return;
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      const root=readingScrollRoot();if(!root)return;
-      root.scrollTop=Math.min(Math.max(0,y),Math.max(0,root.scrollHeight-root.clientHeight));
+      const root=readingScrollRoot();
+      if(root)root.scrollTop=Math.min(Math.max(0,y),Math.max(0,root.scrollHeight-root.clientHeight));
+      else window.scrollTo(0,Math.min(Math.max(0,y),Math.max(0,document.documentElement.scrollHeight-window.innerHeight)));
     }));
   });
 }
