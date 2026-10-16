@@ -51,7 +51,7 @@ for(const [device,width,height] of [['narrow',320,720],['phone',390,844],['deskt
     const steps=page.locator('#processamento .student-notebook-route-step');
     const details=steps.locator('details.student-notebook-route-detail');
     await expect(details).toHaveCount(9);
-    const openDetails=details.locator('xpath=self::*[@open]');
+    const openDetails=page.locator('#processamento .student-notebook-route-step details.student-notebook-route-detail[open]');
     await expect(openDetails).toHaveCount(state==='process-plan-edit'?1:0);
     if(state==='process-plan-edit')await expect(details.nth(3)).toHaveAttribute('open','');
     const summaries=await details.locator('summary').evaluateAll(nodes=>nodes.map(el=>{
