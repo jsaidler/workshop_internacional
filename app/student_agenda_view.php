@@ -8,9 +8,7 @@ $agendaView=student_agenda_selected_view($_GET['view']??'encontros');
 ?>
 <div class="student-v2-agenda" data-student-agenda data-agenda-view="<?=h($agendaView)?>">
   <header class="student-v2-agenda-heading">
-    <p class="student-v2-eyebrow">Seus compromissos</p>
     <h1 class="student-title">Agenda</h1>
-    <p>Encontros da sua turma e oportunidades de retorno como ouvinte.</p>
   </header>
   <?php if($notice!==''):?><p class="student-v2-agenda-message" role="status"><?=h($notice)?></p><?php endif;?>
   <?php if($error!==''):?><p class="student-v2-agenda-message is-error" role="alert"><?=h($error)?></p><?php endif;?>
@@ -20,7 +18,7 @@ $agendaView=student_agenda_selected_view($_GET['view']??'encontros');
   </nav>
   <?php if($agendaView==='encontros'):?>
   <section class="student-v2-agenda-section" aria-labelledby="agenda-meetings">
-    <h2 class="student-v2-agenda-section-title" id="agenda-meetings">Meus encontros</h2>
+    <h2 class="student-v2-agenda-section-title student-v2-agenda-visually-hidden" id="agenda-meetings">Meus encontros</h2>
     <?php if(!$upcoming):?>
       <div class="student-v2-agenda-empty" data-agenda-empty>
         <span class="student-v2-agenda-empty-icon" aria-hidden="true"><?=student_shell_nav_icon('agenda')?></span>
@@ -67,7 +65,7 @@ $agendaView=student_agenda_selected_view($_GET['view']??'encontros');
               <span>Retorno ao curso</span>
               <?php if($confirmed):?><strong class="student-v2-agenda-reservation-state">Ouvinte confirmado</strong>
               <?php elseif($waiting):?><strong class="student-v2-agenda-reservation-state">Na lista de espera</strong>
-              <?php else:?><span class="student-v2-agenda-reservation-state"><?=$open?'Reservas abertas':'Aguardando abertura'?></span><?php endif;?>
+              <?php else:?><span class="student-v2-agenda-reservation-state"><?=$open?'Confirmações abertas':'Confirmações não abertas'?></span><?php endif;?>
             </div>
             <h3><?=h((string)$offer['course_title'])?></h3>
             <p class="student-v2-agenda-offer-cohort"><?=h((string)$offer['cohort_title'])?></p>
@@ -102,7 +100,7 @@ $agendaView=student_agenda_selected_view($_GET['view']??'encontros');
                 <button type="submit" name="action" value="request" class="button button-primary student-v2-agenda-primary-button"><?=h($open&&(int)$capacity['remaining']>0?'Solicitar vaga':'Entrar na lista de espera')?></button>
               <?php endif;?>
             </form>
-            <p class="student-v2-agenda-eligibility">A solicitação não garante vaga. Sua matrícula original e o acesso aos materiais permanecem inalterados.</p>
+            <p class="student-v2-agenda-eligibility"><?php if($confirmed):?>Vaga de ouvinte confirmada. Sua matrícula original e o acesso aos materiais permanecem inalterados.<?php elseif($waiting):?>Você está na lista de espera. A confirmação depende da abertura das confirmações e de vagas disponíveis. Sua matrícula original permanece inalterada.<?php elseif(!$open):?>Você pode entrar na lista de espera agora. A confirmação depende da abertura das confirmações e das vagas disponíveis. Sua matrícula original permanece inalterada.<?php elseif((int)$capacity['remaining']===0):?>Esta turma está lotada. Você pode entrar na lista de espera e aguardar a liberação de vagas. Sua matrícula original permanece inalterada.<?php else:?>Solicitar não garante confirmação: as vagas são verificadas ao registrar a solicitação. Sua matrícula original permanece inalterada.<?php endif;?></p>
           </article>
         <?php endforeach;?>
       </div>

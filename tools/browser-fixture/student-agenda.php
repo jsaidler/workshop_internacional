@@ -10,19 +10,20 @@ function database(): PDO {static $fixtureDb=null;return $fixtureDb??=new PDO('sq
 function student_tools_for_student(PDO $db,int $id): array {return [['tool_key'=>'reciprocity'],['tool_key'=>'lab_timer']];}
 function h(mixed $value): string {return htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function csrf_token(string $scope): string {return 'fixture-csrf';}
-$state=(string)($_GET['state']??'regular');if(!in_array($state,['empty','regular','listener','waiting','full','mixed','history','unsafe','two'],true)){http_response_code(404);exit;}
+$state=(string)($_GET['state']??'regular');if(!in_array($state,['empty','regular','listener','waiting','confirmed','full','mixed','history','unsafe','two'],true)){http_response_code(404);exit;}
 $future='2030-10-12T22:00:00Z';$tz='America/Sao_Paulo';
 $meeting=['cohort_id'=>2,'cohort_title'=>'Turma de outubro','course_title'=>'Positivo Direto em Filme de Raios X','lesson_id'=>101,'lesson_title'=>'Características do filme e exposição','meeting_starts_at'=>$future,'meeting_timezone'=>$tz,'meeting_duration_minutes'=>120,'meeting_url'=>'https://example.org/private-meeting','meeting_notes'=>'Acesse pelo link informado alguns minutos antes.','meeting_status'=>'scheduled','participation'=>$state==='listener'?'listener':'regular'];
 if($state==='unsafe')$meeting['meeting_url']='javascript:alert(1)';
 $past=array_replace($meeting,['meeting_starts_at'=>'2025-01-12T22:00:00Z','meeting_status'=>'completed','lesson_title'=>'Encontro anterior · exposição','meeting_url'=>'https://example.org/previous-meeting']);
-$meetings=match($state){'regular','listener','unsafe'=>[$meeting],'mixed'=>[$past,$meeting],'history'=>[$past],'two'=>[$meeting,array_replace($meeting,['lesson_title'=>'Revisão de resultados','meeting_starts_at'=>'2030-10-19T22:00:00Z'])],default=>[]};
-$offer=['cohort_id'=>3,'cohort_title'=>'Turma de novembro','course_title'=>'Positivo Direto em Filme de Raios X','agenda_enrollment_closes_at'=>'2025-09-10T20:00:00Z','agenda_listeners_open_at'=>'2031-09-10T20:00:00Z','next_meeting'=>'2031-11-18T22:00:00Z','future_meetings'=>3,'reservation_status'=>$state==='waiting'?'waiting':($state==='full'?'':'') ,'capacity'=>['limit'=>10,'occupied'=>$state==='full'?10:3,'remaining'=>$state==='full'?0:7,'regular'=>3,'excess'=>0]];
+$confirmedMeeting=array_replace($meeting,['cohort_id'=>3,'cohort_title'=>'Turma de novembro','meeting_starts_at'=>'2031-11-18T22:00:00Z','lesson_title'=>'Filme de raio X e exposição','participation'=>'listener']);
+$meetings=match($state){'regular','listener','unsafe'=>[$meeting],'mixed'=>[$past,$meeting],'history'=>[$past],'confirmed'=>[$confirmedMeeting],'two'=>[$meeting,array_replace($meeting,['lesson_title'=>'Revisão de resultados','meeting_starts_at'=>'2030-10-19T22:00:00Z'])],default=>[]};
+$offer=['cohort_id'=>3,'cohort_title'=>'Turma de novembro','course_title'=>'Positivo Direto em Filme de Raios X','agenda_enrollment_closes_at'=>'2025-09-10T20:00:00Z','agenda_listeners_open_at'=>'2031-09-10T20:00:00Z','next_meeting'=>'2031-11-18T22:00:00Z','future_meetings'=>3,'reservation_status'=>$state==='waiting'?'waiting':($state==='confirmed'?'confirmed':'') ,'capacity'=>['limit'=>10,'occupied'=>$state==='full'?10:3,'remaining'=>$state==='full'?0:7,'regular'=>3,'excess'=>0]];
 $offer['schedule']=[
  ['lesson_title'=>'Filme de raio X e exposição','meeting_starts_at'=>'2031-11-18T22:00:00Z','meeting_timezone'=>$tz,'meeting_duration_minutes'=>120],
  ['lesson_title'=>'Produção dos positivos','meeting_starts_at'=>'2031-11-19T22:00:00Z','meeting_timezone'=>$tz,'meeting_duration_minutes'=>120],
  ['lesson_title'=>'Revisão dos resultados','meeting_starts_at'=>'2031-11-20T22:00:00Z','meeting_timezone'=>$tz,'meeting_duration_minutes'=>120],
 ];
-if($state==='full')$offer['agenda_listeners_open_at']='2025-09-10T20:00:00Z';
+if(in_array($state,['full','confirmed'],true))$offer['agenda_listeners_open_at']='2025-09-10T20:00:00Z';
 $offers=$state==='empty'?[]:[$offer];$notice='';$error='';
 ?><!doctype html><html lang="pt-BR" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style data-cms-design-fonts><?=cms_design_font_import_css($fixtureDesign)?></style>
