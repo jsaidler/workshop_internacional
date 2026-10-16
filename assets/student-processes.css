@@ -58,7 +58,7 @@
 .student-process-step-index{padding-top:4px;color:var(--focus);font:500 10px/1.2 var(--mono)}
 .student-process-step-body h3{margin:0;font-size:18px;font-weight:600}
 .student-process-step-body>p{margin:7px 0 0;color:var(--muted);font:400 12px/1.5 var(--body);letter-spacing:0}
-.student-process-step-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;align-items:center}
+.student-process-step-actions{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px;align-items:center}
 .student-process-step-actions form{margin:0}
 .student-process-step-actions .button.button-compact,
 .student-process-step-actions .student-link,
