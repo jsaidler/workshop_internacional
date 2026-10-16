@@ -4,6 +4,14 @@ Este é o documento canônico de estado operacional do projeto. Leia antes de al
 
 **Regra global anterior a qualquer trabalho:** ler `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md`. Se existir documentação aplicável à tarefa, ela deve ser descoberta e consultada antes de qualquer decisão ou alteração. Essa obrigação vale para qualquer projeto e não apenas para este repositório.
 
+## Contas ativadas e dados históricos de inscrição — 15/10/2026 (em branch)
+
+Relatos de dificuldade para ativar contas e/ou entrar motivaram auditoria do fluxo `aluno/login.php`, `aluno/senha.php`, `student_accounts.php` e `student_enrollments.php`. A regra de acesso continua exigindo matrícula ativa, não apenas pagamento ou inscrição sem turma, e contas já ativadas exigem a senha escolhida (sem recuperação por e-mail implementada até aqui). Essas condições dependem da situação de cada aluno e ainda exigem conferência dos casos relatados.
+
+Defeito reproduzível de identidade: reconciliações de submissões antigas podem substituir nome, e-mail e informações de contato editadas após a ativação, inclusive durante tentativas de login. Na branch `fix/student-account-activation-login-consistency-2026-10-15`, a sincronização do perfil é restrita a contas não ativadas nos dois caminhos de matrícula; contas ativadas preservam seus próprios dados. A regressão `tools/test-student-accounts.php` verifica reconciliação de submissão vinculada e não vinculada, CPF cifrado preservado e autenticação com e-mail atualizado.
+
+Pendente: a autenticação ainda dispara uma reconciliação global de inscrições, que pode causar escrita desnecessária/latência. Essa questão exige separação segura do ciclo de reconciliação por evento, sem remover o provisionamento legítimo de matrículas pendentes de migração. Não declarar os relatos individuais resolvidos antes de verificar o estado real das contas e as mensagens recebidas.
+
 ## Correção transacional de perfil durante matrícula — 15/10/2026 (em branch)
 
 Bug na atribuição de aluno existente a turma: a reconciliação de inscrição, sob `course_agenda_with_lock()` / SQLite `BEGIN IMMEDIATE`, invoca `student_account_update_profile()`, que abria um segundo `PDO::beginTransaction()`, causando `SQLSTATE[HY000]: cannot start a transaction within a transaction`.
