@@ -9,6 +9,29 @@ for(const width of [320,390,1440]){
   expect(response?.status()).toBe(200);
   const form=page.locator('[data-student-profile-form]');
   await expect(form).toHaveCount(1);
+  await expect(page.locator('.student-profile-page h1')).toHaveText('Conta');
+  await expect(page.locator('#student-profile-heading')).toHaveText('Dados pessoais');
+  await expect(page.locator('.student-profile-header .student-kicker, .student-profile-intro, .student-profile-section-header .student-kicker')).toHaveCount(0);
+  const hierarchy=await page.evaluate(()=>{
+    const root=document.querySelector('.student-profile-identity');
+    const options=[...document.querySelectorAll('.student-profile-disclosure')];
+    const settings=[...document.querySelectorAll('.student-profile-setting')];
+    const first=document.querySelector('.student-profile-essential [name="name"]');
+    return {
+      identityBorder:parseFloat(getComputedStyle(root).borderLeftWidth),
+      identityBackground:getComputedStyle(root).backgroundColor,
+      secondaryBorders:options.map(el=>parseFloat(getComputedStyle(el).borderLeftWidth)),
+      settingBorders:settings.map(el=>parseFloat(getComputedStyle(el).borderLeftWidth)),
+      nameY:first.getBoundingClientRect().top,
+      headingY:document.querySelector('#student-profile-heading').getBoundingClientRect().top
+    };
+  });
+  expect(hierarchy.identityBorder).toBe(0);
+  expect(hierarchy.identityBackground).toBe('rgba(0, 0, 0, 0)');
+  expect(hierarchy.secondaryBorders).toEqual([0,0]);
+  expect(hierarchy.settingBorders).toEqual([0,0]);
+  if(width<821)expect(hierarchy.nameY,'essential profile field should begin in first screen').toBeLessThanOrEqual(375);
+  expect(hierarchy.nameY).toBeGreaterThan(hierarchy.headingY);
   await expect(form.locator('[name="name"]')).toBeVisible();
   await expect(form.locator('[name="email"]')).toBeVisible();
   await expect(form.locator('[name="cpf"]')).toBeVisible();
