@@ -27,6 +27,12 @@ $db->exec("INSERT INTO student_questions(id,student_id,cohort_id,source_annotati
 
 $source=student_question_annotation_source($db,7,3,5);
 must_question_annotation(is_array($source)&&(int)$source['id']===5,'owned annotation is not accepted for its course');
+$originPage=student_question_source_page($source,[['id'=>9,'locale'=>'pt-BR'],['id'=>11,'locale'=>'pt-BR']]);
+must_question_annotation(is_array($originPage)&&(int)$originPage['id']===11,'linked annotation did not select its real source page');
+must_question_annotation(student_question_source_page($source,[['id'=>9,'locale'=>'pt-BR']])===null,'linked annotation exposed a page outside the selected course');
+must_question_annotation(student_question_source_page(['page_id'=>901],[['id'=>11]])===null,'foreign material page was accepted');
+must_question_annotation(student_question_source_page(null,[['id'=>11]])===null,'missing material source generated a page');
+
 must_question_annotation(student_question_annotation_source($db,7,4,5)===null,'annotation leaked into an unrelated course');
 student_question_attach_annotation($db,8,7,3,5);
 $q=$db->query('SELECT source_annotation_id FROM student_questions WHERE id=8');
