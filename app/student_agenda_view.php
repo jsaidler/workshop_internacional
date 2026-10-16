@@ -9,7 +9,7 @@ $agendaView=student_agenda_selected_view($_GET['view']??'encontros');
 <div class="student-v2-agenda" data-student-agenda data-agenda-view="<?=h($agendaView)?>">
   <header class="student-v2-agenda-heading">
     <p class="student-v2-eyebrow">Seus compromissos</p>
-    <h1>Agenda</h1>
+    <h1 class="student-title">Agenda</h1>
     <p>Encontros da sua turma e oportunidades de retorno como ouvinte.</p>
   </header>
   <?php if($notice!==''):?><p class="student-v2-agenda-message" role="status"><?=h($notice)?></p><?php endif;?>
@@ -97,9 +97,9 @@ $agendaView=student_agenda_selected_view($_GET['view']??'encontros');
               <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-agenda'))?>">
               <input type="hidden" name="cohort_id" value="<?=(int)$offer['cohort_id']?>">
               <?php if($confirmed || $waiting):?>
-                <button type="submit" name="action" value="cancel" class="student-v2-agenda-secondary-button" data-confirm="Cancelar sua participação como ouvinte nesta turma?">Cancelar solicitação</button>
+                <button type="submit" name="action" value="cancel" class="button button-secondary student-v2-agenda-secondary-button" data-confirm="Cancelar sua participação como ouvinte nesta turma?">Cancelar solicitação</button>
               <?php else:?>
-                <button type="submit" name="action" value="request" class="student-v2-agenda-primary-button"><?=h($open&&(int)$capacity['remaining']>0?'Solicitar vaga':'Entrar na lista de espera')?></button>
+                <button type="submit" name="action" value="request" class="button button-primary student-v2-agenda-primary-button"><?=h($open&&(int)$capacity['remaining']>0?'Solicitar vaga':'Entrar na lista de espera')?></button>
               <?php endif;?>
             </form>
             <p class="student-v2-agenda-eligibility">A solicitação não garante vaga. Sua matrícula original e o acesso aos materiais permanecem inalterados.</p>

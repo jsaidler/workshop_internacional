@@ -2,6 +2,30 @@
 
 **Escopo real: todo o produto autenticado.** PR #243 continua em rascunho, branch `feat/student-mobile-first-rebuild-2026-10-13`, sem merge e sem publicação da hospedagem.
 
+## Esclarecimento vinculante de identidade visual — 15/10/2026
+
+Redesenhar fluxos, priorizar ações, modificar a navegação e organizar atividades é diferente de alterar o sistema visual. O contrato vigente preserva a tipografia configurada no CMS (Saira Extra Condensed para títulos, IBM Plex Sans para corpo e IBM Plex Mono para conteúdo técnico por padrão, sem sobrescrever preferências editoriais salvas), a paleta, os temas e as primitivas CSS já existentes. O protótipo v2 não é autorização para impor fontes próprias, paleta `--student-v2-*` ou componentes de botão concorrentes. Auditar visualmente as novas composições pela aderência ao Design existente, sem sacrificar os avanços de usabilidade. Esta decisão posterior prevalece sobre qualquer formulação de 13/10 que permita desconexão com os contratos visuais.
+
+## Revisão de aceite visual — 15/10/2026, PR #245 (posterior às aprovações anteriores)
+
+O autor rejeitou explicitamente a interpretação de CI verde como aceite de UX/UI: tipografia divergente, bordas duplas e a aparência de interface administrativa permaneciam. A conclusão anterior de que capturas amostradas estariam visualmente satisfatórias **fica revogada**. O estado corrente é **revisão visual em andamento, não homologada**.
+
+**Critério de produto:** a primeira dobra apresenta a ação pertinente ao estado do aluno, não uma saudação ou inventário de seções. Um encontro muito distante não substitui uma revisão solicitada ou uma atividade de pesquisa em curso; encontro em andamento ou próximo (janela de 48 h) ganha prioridade. A Home mantém as demais atividades acessíveis sem converter sua distância no tempo em urgência inventada. No Caderno, a sequência física do procedimento não é usada como sequência obrigatória de navegação ou como progresso presumido.
+
+**Correções iniciais propostas nesta branch:** Início troca saudação por tarefa, prioriza retorno e apresenta encontro distante em Continuar/Agenda; Cursos evidencia a primeira página liberada, sem promover material bloqueado; Caderno apresenta informações de exposição/processamento/resultado em texto legível com indicadores sem caixas redundantes; Processamentos elimina moldura dupla, raio ornamental e ações destrutivas simultâneas. Cada alteração preserva tokens de Design e contratos de domínio, mas ainda exige inspeção no novo artefato e em todas as telas, não só nessas quatro superfícies. Bordas não são proibidas: são reservadas à separação de regiões ou ações quando acrescentam hierarquia.
+
+**Erro identificado na própria evidência:** `tools/browser-fixture/student-material-cms-operational.php` substituía as funções oficiais de Design por fontes fixas `Georgia`/`Arial`. Portanto as capturas de Material não certificavam sua aparência real. A fixture foi reconectada a `app/cms_settings.php` (defaults e opções persistidas em SQLite temporário), e `student-material-cms-operational.spec.cjs` agora verifica as famílias efetivas padrão e personalizadas. Capturas antigas são inválidas como prova de identidade visual.
+
+**Critério para futuro aceite:** CI de todas as suítes no mesmo SHA + observação crítica de início/meio/fim, ambos os temas, 320/390/1440, editores e estados expandidos + fechamento integral da matriz de superfícies e QA autenticada. Mesmo CI totalmente verde não basta; PR #245 continua em draft, sem merge, sem `production-dist` e sem instalação em hospedagem. Os fluxos não contemplados no primeiro recorte (Agenda, Dúvidas, Material/anotações, editores e timers, Inventário, Conta e demais) permanecem explicitamente sob revisão, não são “aprovados por herança”.
+
+## Segundo recorte de correção transversal — Dúvidas e Inventário (15/10/2026, PR #245)
+
+**Dúvidas (Cursos):** o primeiro viewport não pode repetir cabeçalho extenso de curso, título de seção e categoria antes da primeira conversa. `student_course_context_header` recebe apresentação compacta *opcional* apenas quando invocada pela rota de Dúvidas; mantém turma, nome do curso, links contextuais e retorno canônico à turma com `cohort`. O nome do curso deixa de ser o `h1` nesta tela, passando a metadado; `h1` designa “Dúvidas” na lista ou a pergunta no detalhe. Criar e abrir conversas são as ações principais. Visibilidade da turma/curso/privada, avaliação, respostas, fontes, POST e acesso permanecem iguais. CSS da composição fica no proprietário `student-area.css`.
+
+**Inventário (Laboratório):** disponibilidade real e sua movimentação aparecem antes das contagens; cadastro é secundário com itens presentes e continua central no vazio. As três métricas não somem: passam a `details` “Resumo do estoque” após os itens. Em cada item, “Movimentar estoque” é a ação visível primária; editar e arquivar passam a disclosure nomeado “Mais opções” sem remover seus forms nem proteções. As bordas e os raios da biblioteca devem servir à separação das linhas, e não produzir caixas administrativas dentro de caixas. O requisito antigo de Novo item e três métricas permanentemente dominantes foi **expressamente retificado** no documento da Tranche C (`STUDENT_INVENTORY_PREPARATIONS_PRODUCT_UX_TRANCHE_C_2026-10-01.md`).
+
+Novos testes verificam contextos e títulos únicos, ação principal disponível, cinco destinos globais, 320/390/1440, hierarquia das listas, ausência de caixa com quatro bordas e disclosure acessível. O resultado do CI e as novas capturas do HEAD ainda são condicionantes, e a revisão visual permanece aberta nas demais telas. Nenhum código da aplicação é implantado pelo workflow de build fora da branch de produção.
+
 ## Correção de diagnóstico
 
 A crítica do usuário é ao **sistema inteiro**, não ao Caderno. A arquitetura das cinco áreas globais não basta para produzir uma experiência mobile-first se cada superfície filha mantiver densidade, formulários, navegação e hierarquia de painel administrativo. Uma revisão localizada em Calibração, Predefinições ou Caderno é apenas parte da correção sistêmica, nunca certificado do produto.
@@ -172,3 +196,12 @@ Material **não é** `.student-shell`: é `body.cms-student-material` com `.cms-
 ### Defeito identificado durante auditoria de Material: payload das anotações removido pela segunda sanitização
 
 A rota pública já prepara o documento com `cms_page_doc` antes das injeções privadas. Identificada sanitização redundante em `cms_render_public_page` que removia o `script[type=application/json][data-student-annotation-data]` gerado por `student_material_render_notebook`. Corrigido com parâmetro explícito `preparedDocument` usado exclusivamente na rota confiável e na fixture, mantendo sanitização padrão para todos os demais chamadores. Testes agora exigem duas anotações no JSON efetivamente renderizado. Essa correção é funcional na camada CMS real, não um ajuste para screenshot. Confirmar pela validação de CI do HEAD final e posteriormente pela sessão autenticada na hospedagem.
+
+
+## Terceiro recorte — editor de roteiros salvos (16/10/2026, PR #245)
+
+Inspeção do artefato `student-visual-audit` em `5a1b0df7`, nas capturas `process-template-editor/phone-edit-{start,middle,end}.png` e `complete/phone/process-editor-*.png`: nove etapas repetiam conjuntos de até quatro controles (Editar, Subir, Descer, Remover) em cada item, prejudicando a leitura da sequência e competindo com a edição dos parâmetros. A tela terminava com exclusão permanente aberta como se fosse tarefa corrente.
+
+**Decisão de interface:** manter **Editar etapa** explícito; agrupar Subir/Descer/Remover em `details` nativo **Mais opções** por etapa; recolher a seção de exclusão permanente do roteiro em `details` nomeado. Preservar forms POST, CSRF, ids, confirmação de exclusão e regras de ordenação. Não transformar o formulário longo de etapas em gaveta. Os dados de duração e condições das etapas usam tipografia de corpo pelo token `--body`, não rótulo monoespaçado de 10 px; títulos, paleta, estados e componentes existentes continuam pertencendo ao Design/CMS.
+
+O contrato de regressão mede os nove grupos e as 25 operações originais (16 mudanças de ordem e 9 remoções), o recolhimento inicial, abertura e fechamento, alvos de pelo menos 44 px, ausência de transbordo em 320/390/1440 e capturas adicionais com opções e exclusão expandidas, além de todos os testes de domínio anteriores. **Esta intervenção é localizada e exige CI e inspeção das capturas do novo HEAD antes do aceite**. Predefinições, Calibração, Conta, Processamentos em execução e fluxos autenticados seguem em revisão; teste sintético não constitui implantação nem aceite global.

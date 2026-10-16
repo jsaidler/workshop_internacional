@@ -104,3 +104,23 @@ test('notebook keyboard and visual action order puts creation before comparison'
   await page.getByRole('button',{name:'Cancelar'}).click();
   await expect(page.locator('.student-compare-selection')).not.toBeVisible();
 });
+
+test('Caderno preserves saved Design typography and shared action appearance',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto(base+'?state=mixed',{waitUntil:'networkidle'});
+ const actual=await page.evaluate(()=>{
+  const root=document.documentElement;
+  root.style.setProperty('--title','"Courier New",monospace');
+  root.style.setProperty('--mono','"Consolas",monospace');
+  root.style.setProperty('--inverse-bg','#132435');
+  const style=s=>getComputedStyle(document.querySelector(s));
+  return {title:style('.student-v2-notebook-header h1').fontFamily,
+   card:style('.student-v2-notebook-card h3').fontFamily,
+   eyebrow:style('.student-v2-notebook-section .student-kicker').fontFamily,
+   action:style('.student-v2-notebook-create').backgroundColor};
+ });
+ expect(actual.title).toContain('Courier New');
+ expect(actual.card).toContain('Courier New');
+ expect(actual.eyebrow).toContain('Consolas');
+ expect(actual.action).toBe('rgb(19, 36, 53)');
+});

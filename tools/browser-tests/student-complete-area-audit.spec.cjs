@@ -53,7 +53,8 @@ const viewports={desktop:{width:1440,height:1100},phone:{width:390,height:844}};
 // Four screens share the operational PHP view and v2 shell; never patch their CSS in the browser.
 const operationalScreens=new Set(['course-feedback','questions-feedback','process-library','process-editor','lab-runner','profile','password-change','preparations','calibration-list','step-editor','delete-record','compare-select','compare-records','exposure','process-choice','result','result-waiting','result-revision','result-reviewed','process-plan','process-partial','shared-record','research-derived']);
 const anonymousAuthScreens=new Set(['login','activation-password']);
-const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css','/assets/student-field-language.css'];
+// The mobile-first geometry lives in student-area.css; feature assets remain downstream.
+const shellStyles=['/assets/student-workbench.css','/assets/student-experience.css','/assets/student-academic.css','/assets/student-feedback.css','/assets/student-rendered-fixes.css','/assets/student-auth.css'];
 async function ensureCanonicalShellStyles(page){
   await page.evaluate(async styles=>{
     const featurePattern=/\/assets\/student-(?:auth|caderno|processes|lab-stock|process-recording)\.css(?:\?|$)/;
@@ -80,7 +81,7 @@ for(const [device,viewport] of Object.entries(viewports)){
         const auth=await page.evaluate(()=>({
           app:document.body.classList.contains('student-app'),
           shell:!!document.querySelector('.student-shell'),
-          css:[...document.querySelectorAll('link[rel="stylesheet"]')].some(n=>(n.getAttribute('href')||'').split('?')[0]==='/assets/student-app-shell.css'),
+          css:[...document.querySelectorAll('link[rel="stylesheet"]')].some(n=>(n.getAttribute('href')||'').split('?')[0]==='/assets/student-area.css'),
           nav:document.querySelectorAll('.student-mobile-nav a').length
         }));
         expect(auth.app&&auth.shell&&auth.css,`${name}: render true anonymous shell`).toBe(true);
@@ -91,7 +92,7 @@ for(const [device,viewport] of Object.entries(viewports)){
         const contract=await page.evaluate(()=>({
           app:document.body.classList.contains('student-app'),
           shell:!!document.querySelector('.student-shell'),
-          shellCss:[...document.querySelectorAll('link[rel="stylesheet"]')].some(n=>(n.getAttribute('href')||'').split('?')[0]==='/assets/student-app-shell.css'),
+          shellCss:[...document.querySelectorAll('link[rel="stylesheet"]')].some(n=>(n.getAttribute('href')||'').split('?')[0]==='/assets/student-area.css'),
           links:[...document.querySelectorAll('.student-mobile-nav a')].map(a=>a.getAttribute('href')),
           scrollGutter:document.querySelector('.student-main')?getComputedStyle(document.querySelector('.student-main')).scrollbarGutter:''
         }));
@@ -120,9 +121,9 @@ for(const [device,viewport] of Object.entries(viewports)){
       }
       if(name==='home-feedback'){await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();await expect(page.getByRole('link',{name:/Ler retorno e revisar/})).toBeVisible();}
       if(name==='course-feedback'){await expect(page.getByText('Há algo para retomar',{exact:true})).toBeVisible();await expect(page.getByText('Revisão solicitada',{exact:true})).toBeVisible();}
-      if(name==='questions-feedback'){await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();await expect(page.getByRole('heading',{name:'Dúvidas da turma e do curso'})).toBeVisible();}
-      if(name==='questions-list')await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();
-      if(name==='question-new'){await expect(page.getByRole('heading',{name:'Dúvidas e respostas'})).toBeVisible();await expect(page.locator('[data-question-new-panel] form')).toBeVisible();}
+      if(name==='questions-feedback'){await expect(page.getByRole('heading',{name:'Conversas de avaliação'})).toBeVisible();await expect(page.getByRole('heading',{name:'Conversas',exact:true})).toBeVisible();}
+      if(name==='questions-list')await expect(page.getByRole('heading',{name:'Dúvidas',exact:true,level:1})).toBeVisible();
+      if(name==='question-new'){await expect(page.getByRole('heading',{name:'Dúvidas',exact:true,level:1})).toBeVisible();await expect(page.locator('[data-question-new-panel] form')).toBeVisible();}
       if(name==='question-thread'){await expect(page.getByRole('heading',{name:'Segunda revelação'})).toBeVisible();await expect(page.locator('[data-student-local-key="question-thread"] form textarea[name="body"]')).toBeVisible();}
       if(name==='preparations'){
         await expect(page.getByRole('heading',{name:'Predefinições de revelação'})).toBeVisible();

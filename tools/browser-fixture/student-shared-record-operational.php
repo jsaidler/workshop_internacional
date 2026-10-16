@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/../../app/cms_settings.php';
 /** Read-only shared notebook record using the production renderer and controlled synthetic input; no permissions simulated or writes. */
 require_once __DIR__.'/../../app/student_shell.php';
 require_once __DIR__.'/../../app/student_shared_record_view.php';
@@ -8,9 +9,6 @@ function csrf_token(string $scope): string {return 'synthetic-sharing-csrf';}
 function database(): PDO {static $db=null;return $db??=new PDO('sqlite::memory:');}
 function student_account_current(PDO $db): ?array {return ['id'=>2,'name'=>'Visitante de teste'];}
 function student_tools_for_student(PDO $db,int $id): array {return [];}
-function cms_design_defaults(): array {return ['colors'=>['bg'=>'#101010']];}
-function cms_design_font_import_css(array $design): string {return '';}
-function cms_design_css(array $design): string {return ':root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#73d2ac;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Arial,sans-serif;--mono:"Courier New",monospace;--ux-space-1:4px;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px}';}
 function student_test_visibility_label(string $v): string {return $v==='cohort'?'Compartilhado com a turma':'Privado';}
 function student_review_value(mixed $v): string {$text=trim((string)$v);return h($text===''?'—':$text);}
 function student_process_path_label(array $steps): string {return implode(' → ',array_map(static fn(array $step): string => (string)($step['chemical_name']??$step['label']),$steps));}

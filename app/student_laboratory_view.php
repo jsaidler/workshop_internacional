@@ -8,7 +8,7 @@ declare(strict_types=1);
 <div class="student-v2-laboratory" data-student-laboratory>
   <header class="student-v2-lab-heading">
     <p class="student-v2-eyebrow">Área de trabalho</p>
-    <h1>Laboratório</h1>
+    <h1 class="student-title">Laboratório</h1>
     <p>Seus roteiros, materiais e ferramentas de cálculo, em um só lugar.</p>
   </header>
   <?php if(!$tools):?>

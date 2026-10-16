@@ -40,10 +40,27 @@ for(const dim of dimensions){
     expect(operations.filter(x=>x.action==='delete_step')).toHaveLength(9);
     expect(operations.filter(x=>x.action==='move_step')).toHaveLength(16);
     expect(operations.every(x=>x.csrf==='fixture-csrf-no-write'&&x.method==='post')).toBe(true);
-    const targets=await view.locator('.student-process-step-actions a, .student-process-step-actions button').evaluateAll(nodes=>nodes.map(el=>{
+    // Editing is discoverable; destructive/reordering commands are not repeated in every row.
+    const stageOptions=view.locator('.student-process-step-options');
+    await expect(stageOptions).toHaveCount(9);
+    await expect(view.locator('.student-process-step-actions > a')).toHaveCount(9);
+    await expect(stageOptions.filter({has:page.locator('[open]')})).toHaveCount(0);
+    await expect(stageOptions.first().getByRole('button',{name:'Descer'})).toBeHidden();
+    await expect(stageOptions.first().getByRole('button',{name:'Remover'})).toBeHidden();
+    const targets=await view.locator('.student-process-step-actions a, .student-process-step-actions button, .student-process-step-options > summary').evaluateAll(nodes=>nodes.filter(el=>el.getClientRects().length>0).map(el=>{
       const box=el.getBoundingClientRect(),style=getComputedStyle(el);
       return {label:el.textContent.trim(),height:box.height,fontSize:parseFloat(style.fontSize),left:box.left,right:box.right};
     }));
+    const metadataTypography=await view.locator('.student-process-step-body > p').first().evaluate(el=>{
+      const style=getComputedStyle(el);
+      return {size:parseFloat(style.fontSize),family:style.fontFamily,body:getComputedStyle(document.querySelector('.student-shell')).getPropertyValue('--body').trim()};
+    });
+    expect(metadataTypography.size).toBeGreaterThanOrEqual(12);
+    expect(metadataTypography.family).toContain(metadataTypography.body.split(',')[0].replaceAll('"','').replaceAll("'","").trim());
+    const retire=view.locator('.student-process-retire');
+    await expect(retire).toHaveCount(1);
+    await expect(retire).not.toHaveAttribute('open','');
+    await expect(retire.getByRole('button',{name:'Excluir processamento'})).toBeHidden();
     const dangerContrast=await page.evaluate(()=>{
       const dangerous=document.querySelector('.student-process-step-actions .student-danger-action');
       const root=document.documentElement,shell=document.querySelector('.student-shell');
@@ -92,6 +109,34 @@ for(const dim of dimensions){
     await screenshotAt(page,dim.label+'-edit','start');
     await screenshotAt(page,dim.label+'-edit','middle');
     await screenshotAt(page,dim.label+'-edit','end');
+    await stageOptions.nth(6).locator('summary').click();
+    await expect(stageOptions.nth(6)).toHaveAttribute('open','');
+    await expect(stageOptions.nth(6).getByRole('button',{name:'Subir'})).toBeVisible();
+    await expect(stageOptions.nth(6).getByRole('button',{name:'Descer'})).toBeVisible();
+    await expect(stageOptions.nth(6).getByRole('button',{name:'Remover'})).toBeVisible();
+    const openedMetrics=await stageOptions.nth(6).locator('summary, button').evaluateAll(nodes=>nodes.map(el=>{
+      const r=el.getBoundingClientRect();return {label:el.textContent.trim(),height:r.height,left:r.left,right:r.right};
+    }));
+    const expandedAlignment=await stageOptions.nth(6).evaluate(details=>{
+      const summary=details.querySelector('summary').getBoundingClientRect();
+      const edit=details.parentElement.querySelector(':scope > a').getBoundingClientRect();
+      return {summaryLeft:summary.left,editLeft:edit.left,summaryTop:summary.top,editBottom:edit.bottom};
+    });
+    expect(Math.abs(expandedAlignment.summaryLeft-expandedAlignment.editLeft),'expanded options must align with the step action').toBeLessThanOrEqual(12);
+    expect(expandedAlignment.summaryTop,'options should follow the edit action rather than float alongside it').toBeGreaterThanOrEqual(expandedAlignment.editBottom-1);
+    for(const m of openedMetrics){
+      expect(m.height,m.label+' expanded target height').toBeGreaterThanOrEqual(44);
+      expect(m.left,m.label+' expanded left boundary').toBeGreaterThanOrEqual(0);
+      expect(m.right,m.label+' expanded right boundary').toBeLessThanOrEqual(dim.width+1);
+    }
+    await page.screenshot({path:'student-visual-audit/process-template-editor/'+dim.label+'-options-expanded.png',animations:'disabled'});
+    await stageOptions.nth(6).locator('summary').click();
+    await expect(stageOptions.nth(6).getByRole('button',{name:'Remover'})).toBeHidden();
+    await retire.locator('summary').click();
+    await expect(retire.getByRole('button',{name:'Excluir processamento'})).toBeVisible();
+    await retire.getByRole('button',{name:'Excluir processamento'}).scrollIntoViewIfNeeded();
+    await page.screenshot({path:'student-visual-audit/process-template-editor/'+dim.label+'-retire-expanded.png',animations:'disabled'});
+    await retire.locator('summary').click();
     await form.locator('[name="stage_key"]').selectOption('second_development');
     await expect(form.locator('[data-process-template-development]')).toBeVisible();
     await expect(form.locator('[data-process-template-reuse]')).toBeVisible();

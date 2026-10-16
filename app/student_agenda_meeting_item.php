@@ -25,7 +25,7 @@ $participation=(string)($meeting['participation']??'regular')==='listener'?'Ouvi
     <p class="student-v2-agenda-meeting-details"><?=h($date['full'])?><?php if(!empty($meeting['meeting_duration_minutes'])):?> · <?=(int)$meeting['meeting_duration_minutes']?> min<?php endif;?></p>
   </div>
   <?php if($meetingUrl!==''):?>
-    <a class="student-v2-agenda-meeting-join" href="<?=h($meetingUrl)?>" target="_blank" rel="noopener noreferrer">Acessar encontro ↗</a>
+    <a class="button button-primary student-v2-agenda-meeting-join" href="<?=h($meetingUrl)?>" target="_blank" rel="noopener noreferrer">Acessar encontro ↗</a>
   <?php elseif(!$isHistory && !$cancelled):?>
     <p class="agenda-meeting-notes student-v2-agenda-meeting-no-link">Link de acesso ainda não informado.</p>
   <?php endif;?>

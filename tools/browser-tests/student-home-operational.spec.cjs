@@ -2,14 +2,48 @@ const {test,expect}=require('@playwright/test');
 const fs=require('fs');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-home.php';
 
-test('all independent sources are visible together; private links belong only to authorized scheduled future meeting',async({page})=>{
+for(const [device,width,height] of [['phone',390,844],['desktop',1440,1100]]){
+ test('task-first Home consumes persisted Design font, color and action tokens '+device,async({page})=>{
+  await page.setViewportSize({width,height});
+  await page.goto(base+'?state=active',{waitUntil:'networkidle'});
+  const computed=await page.evaluate(()=>{
+   const root=document.documentElement;
+   for(const [key,value] of Object.entries({
+    '--title':'"Courier New",monospace','--body':'"Arial",sans-serif',
+    '--mono':'"Consolas",monospace','--bg':'#121f2e',
+    '--surface':'#223344','--inverse-bg':'#0b0a09'
+   }))root.style.setProperty(key,value);
+   const font=sel=>getComputedStyle(document.querySelector(sel)).fontFamily;
+   const bg=sel=>getComputedStyle(document.querySelector(sel)).backgroundColor;
+   return {
+    title:font('.student-v2-heading h1'),
+    subtitle:font('.student-v2-next h2'),
+    body:font('.student-v2-heading>p:last-child'),
+    label:font('.student-v2-eyebrow'),
+    shellBg:bg('.student-shell'),cardBg:bg('.student-v2-next'),
+    primaryBg:bg('.student-v2-next .button-primary')
+   };
+  });
+  expect(computed.title).toContain('Courier New');
+  expect(computed.subtitle).toContain('Courier New');
+  expect(computed.body).toContain('Arial');
+  expect(computed.label).toContain('Consolas');
+  expect(computed.shellBg).toBe('rgb(18, 31, 46)');
+  expect(computed.cardBg).toBe('rgb(34, 51, 68)');
+  expect(computed.primaryBg).toBe('rgb(11, 10, 9)');
+ });
+}
+
+test('pending feedback takes precedence over a distant meeting; the upcoming encounter remains discoverable',async({page})=>{
   await page.goto(base+'?state=active');
-  await expect(page.locator('[data-home-meeting]')).toBeVisible();
-  await expect(page.locator('[data-home-feedback]')).toBeVisible();
+  await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();
+  await expect(page.locator('[data-home-upcoming-meeting]')).toBeVisible();
+  await expect(page.locator('[data-home-meeting]')).toHaveCount(0);
   await expect(page.getByRole('heading',{name:'Continuar'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Meus cursos'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Caderno recente'})).toBeVisible();
-  await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveAttribute('href','https://example.org/private-meeting');
+  await expect(page.locator('[data-home-feedback-feature] .student-v2-cta')).toHaveAttribute('href','/aluno/teste.php?id=17&view=review');
+  await expect(page.locator('[data-home-upcoming-meeting]')).toHaveAttribute('href','/aluno/agenda.php');
   await expect(page.locator('.student-home-course-actions a[href*="duvidas.php?cohort=cohort-a"]')).toHaveCount(1);
   await expect(page.locator('.student-home-course-actions a[href*="material-do-curso?cohort=cohort-a"]')).toHaveCount(1);
   await expect(page.locator('nav.student-mobile-nav a[href="/aluno/agenda.php"]')).toHaveCount(1);
@@ -32,12 +66,12 @@ test('Home surfaces the Caderno task when there is no meeting or feedback',async
   await expect(page.locator('[data-home-record-feature] a')).toHaveAttribute('href','/aluno/teste.php?id=22&view=process');
   await expect(page.getByRole('heading',{name:'Meus cursos'})).toBeVisible();
 });
-test('Home never exposes non-http meeting URL and keeps Agenda discoverable',async({page})=>{
+test('Home keeps distant meeting available through Agenda without exposing unsafe URLs',async({page})=>{
   await page.goto(base+'?state=no-link');
-  await expect(page.locator('[data-home-meeting]')).toBeVisible();
-  await expect(page.getByText('Link ainda não informado')).toBeVisible();
+  await expect(page.locator('[data-home-upcoming-meeting]')).toBeVisible();
+  await expect(page.locator('[data-home-meeting]')).toHaveCount(0);
   await expect(page.getByRole('link',{name:'Acessar encontro ↗'})).toHaveCount(0);
-  await expect(page.locator('[data-home-meeting] a[href="/aluno/agenda.php"]')).toBeVisible();
+  await expect(page.locator('[data-home-upcoming-meeting]')).toHaveAttribute('href','/aluno/agenda.php');
 });
 test('no enrollment and restricted tools stay functional without fabricated metrics',async({page})=>{
   await page.goto(base+'?state=empty');
@@ -209,3 +243,51 @@ test('Home offers direct record and processing actions before the long course li
   await expect(tools.locator('[data-record-create-open]')).toHaveCount(1);
   await expect(tools.locator('a[href="/aluno/processamentos.php"]')).toHaveCount(1);
 });
+
+
+const productionDesignFixtures=[
+ ['Home','student-home.php?state=active'],
+ ['Caderno','student-notebook.php?state=personal'],
+ ['Agenda','student-agenda.php?state=regular&view=encontros'],
+ ['Cursos','student-courses.php?state=single'],
+ ['Laboratorio','student-laboratory.php?state=full'],
+ ['Roteiros','student-process-editor.php'],
+ ['Editor de laboratorio','student-long-editors.php?kind=preparation&mode=edit'],
+ ['Conta','student-profile.php?mode=view'],
+ ['Execucao de roteiro','student-process-runner-operational.php?state=idle'],
+ ['Registro','student-record-workspace-operational.php?state=exposure']
+];
+for(const [label,relativeUrl] of productionDesignFixtures){
+ test('operational fixture consumes native CMS Design defaults '+label,async({page})=>{
+  const response=await page.goto('http://127.0.0.1:8099/tools/browser-fixture/'+relativeUrl,{waitUntil:'networkidle'});
+  expect(response?.status()).toBe(200);
+  await expect(page.locator('style[data-cms-design-fonts]')).toHaveCount(1);
+  await expect(page.locator('style[data-cms-design-tokens]')).toHaveCount(1);
+  const design=await page.evaluate(()=>{
+   const root=document.documentElement;
+   const tokens=()=>{
+    const c=getComputedStyle(root);
+    return {
+     title:c.getPropertyValue('--title').trim(),
+     body:c.getPropertyValue('--body').trim(),
+     mono:c.getPropertyValue('--mono').trim(),
+     bg:c.getPropertyValue('--bg').trim()
+    };
+   };
+   root.setAttribute('data-theme','light');const light=tokens();
+   root.setAttribute('data-theme','dark');const dark=tokens();
+   const headingSelector=window.location.pathname.includes('student-long-editors.php')
+    ? '.student-task-editor .student-create-dialog-head h2' : 'h1.student-title';
+   const heading=document.querySelector(headingSelector);
+   return {light,dark,headingFont:heading?getComputedStyle(heading).fontFamily:null};
+  });
+  for(const theme of [design.light,design.dark]){
+   expect(theme.title).toContain('Saira Extra Condensed');
+   expect(theme.body).toContain('IBM Plex Sans');
+   expect(theme.mono).toContain('IBM Plex Mono');
+  }
+  expect(design.headingFont,'heading must use CMS display family: '+label).toContain('Saira Extra Condensed');
+  expect(design.light.bg).toBe('#f2f2ef');
+  expect(design.dark.bg).toBe('#0c0d0e');
+ });
+}

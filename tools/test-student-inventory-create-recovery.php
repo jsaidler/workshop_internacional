@@ -24,7 +24,9 @@ stock_must(str_contains($html,'Texto &lt;b&gt;pessoal&lt;/b&gt;'),'notes were no
 ob_start();student_inventory_create_panel([],'','csrf-example');$normal=(string)ob_get_clean();
 stock_must(str_contains($normal,'data-inventory-new-panel hidden'),'default form must stay collapsed');
 stock_must(str_contains($normal,'value="raw" checked')&&str_contains($normal,'<option value="ml" selected>ml</option>'),'default classification/unit changed');
-$route=(string)file_get_contents(__DIR__.'/../aluno/inventario.php');
+$controller=(string)file_get_contents(__DIR__.'/../aluno/inventario.php');
+$route=$controller.(string)file_get_contents(__DIR__.'/../app/student_inventory_view.php');
+stock_must(str_contains($controller,"require __DIR__.'/../app/student_inventory_view.php'"),'inventory controller fails to include canonical view');
 stock_must(str_contains($route,'$failedCreate=$error')&&str_contains($route,'student_inventory_create_panel($createDraft'),'failed inventory route does not reopen the real form');
 stock_must(str_contains($route,'$error&&!$failedCreate'),'create errors must not be duplicated at page top');
 echo "student-inventory-create-recovery: ok\n";

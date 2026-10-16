@@ -16,7 +16,7 @@ function student_inventory_move_panel(array $item,string $csrf,array $draft=[],s
     $uuid=preg_match('/^[a-zA-Z0-9-]{16,80}$/D',$submittedUuid)?$submittedUuid:student_uuid();
     $titleId='inventory-move-title-'.$id;
     ?>
-<button class="button button-secondary button-compact" type="button" data-inventory-move-open data-inventory-item-id="<?=$id?>" aria-haspopup="dialog" aria-controls="inventory-move-<?=$id?>">Movimentar estoque</button>
+<button class="button button-primary button-compact" type="button" data-inventory-move-open data-inventory-item-id="<?=$id?>" aria-haspopup="dialog" aria-controls="inventory-move-<?=$id?>">Movimentar estoque</button>
 <dialog class="student-create-dialog student-inventory-move-dialog" id="inventory-move-<?=$id?>" data-inventory-move-dialog data-inventory-item-id="<?=$id?>" aria-labelledby="<?=$titleId?>"<?=$failed?' data-inventory-move-reopen':''?>>
   <div class="student-create-dialog-head student-inventory-move-head">
     <div><p class="student-kicker">Laboratório · Inventário</p><h2 id="<?=$titleId?>">Movimentar estoque</h2></div>

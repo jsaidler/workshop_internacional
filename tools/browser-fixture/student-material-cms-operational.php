@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 const PUBLIC_LOCALE_PT_BR='pt-BR';
 const PUBLIC_LOCALE_EN='en';
+require_once __DIR__.'/../../app/cms_settings.php';
 function public_locale_query(string $locale):string{return $locale==='pt-BR'?'pt-BR':'en';}
 function h(string $value):string{return htmlspecialchars($value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function utc_now():string{return gmdate('c');}
@@ -16,6 +17,8 @@ function database():PDO {
  $db->exec(<<<'SQL'
  CREATE TABLE courses(id INTEGER PRIMARY KEY,activity_id INTEGER,title TEXT,public_page_id INTEGER,status TEXT);
  CREATE TABLE course_cohorts(id INTEGER PRIMARY KEY,course_id INTEGER,activity_id INTEGER,workshop_page_id INTEGER,title TEXT,cohort_uuid TEXT,status TEXT);
+ CREATE TABLE cms_site_settings(activity_id INTEGER,locale TEXT,settings_json TEXT,updated_at TEXT,PRIMARY KEY(activity_id,locale));
+ CREATE TABLE cms_design_settings(activity_id INTEGER,locale TEXT,settings_json TEXT,updated_at TEXT,PRIMARY KEY(activity_id,locale));
  CREATE TABLE course_enrollments(id INTEGER PRIMARY KEY,student_id INTEGER,cohort_id INTEGER,status TEXT,confirmed_at TEXT);
  CREATE TABLE cms_pages(id INTEGER PRIMARY KEY,activity_id INTEGER,locale TEXT,title TEXT,slug TEXT,is_home INTEGER,status TEXT,sort_order INTEGER,draft_document_json TEXT,published_document_json TEXT);
  CREATE TABLE course_material_pages(course_id INTEGER,page_id INTEGER,sort_order INTEGER,PRIMARY KEY(course_id,page_id));
@@ -62,17 +65,18 @@ HTML,2],
     $db->exec("INSERT INTO course_material_sections VALUES(12,101,'aula-nao-liberada',4)");
    }
  }
+ $site=['wordmark'=>'JSaidler Fotografia','header'=>['sticky'=>false,'showLanguageSwitch'=>false,'showThemeSwitch'=>false], 'navigation'=>['items'=>[['type'=>'custom','label'=>'Início','url'=>'/aluno/']]],'footer'=>['line1'=>'','line2'=>'','links'=>[]]];
+ $db->prepare('INSERT INTO cms_site_settings(activity_id,locale,settings_json,updated_at) VALUES(1,?,?,?)')->execute(['pt-BR',json_encode($site,JSON_UNESCAPED_UNICODE),'2026-10-01']);
+ if((string)($_GET['design']??'')==='custom'){
+   $design=['type'=>['displayFont'=>'Oswald','bodyFont'=>'Inter','monoFont'=>'JetBrains Mono'],'colors'=>['accent'=>'#345678']];
+   $db->prepare('INSERT INTO cms_design_settings(activity_id,locale,settings_json,updated_at) VALUES(1,?,?,?)')->execute(['pt-BR',json_encode($design,JSON_UNESCAPED_UNICODE),'2026-10-01']);
+ }
  return $db;
 }
 function course_cohort_by_id(PDO $db,int $id):?array{$q=$db->prepare('SELECT * FROM course_cohorts WHERE id=?');$q->execute([$id]);return $q->fetch(PDO::FETCH_ASSOC)?:null;}
-function cms_site_settings(PDO $db,int $id,string $locale):array{return ['wordmark'=>'JSaidler Fotografia','seo'=>['defaultTitle'=>'Material','defaultDescription'=>'','socialImage'=>'','favicon'=>''],'header'=>['sticky'=>false],'navigation'=>['items'=>[['type'=>'custom','label'=>'Início','url'=>'/aluno/']]],'footer'=>['line1'=>'','line2'=>'','links'=>[]]];}
-function cms_design_settings(PDO $db,int $id,string $locale):array{return [];}
 function cms_page_seo(PDO $db,int $pageId):array{return ['title'=>'','description'=>'','socialTitle'=>'','socialDescription'=>'','socialImage'=>'','canonicalUrl'=>'','robots'=>'noindex,nofollow'];}
 function cms_absolute_url(string $url):string{return $url;}
 function cms_page_translation_counterpart(PDO $db,array $page,string $targetLocale):?array{return null;}
-function cms_design_font_import_css(array $design):string{return '';}
-function cms_design_system_css(array $design):string{return ':root{--bg:#f2f2ef;--surface:#fff;--surface-2:#e9e9e5;--text:#181818;--muted:#666;--line:#c9c9c4;--line-strong:#222;--focus:#6e4933;--inverse-bg:#181818;--inverse:#fff;--gutter:24px;--body:Arial,sans-serif;--title:Georgia,serif;--mono:monospace;--reading-width:840px}';}
-function cms_design_custom_css(array $design):string{return '';}
 function media_resolve_cms_html(PDO $db,string $html):string{return $html;}
 function media_resolve_cms_video_html(PDO $db,string $html):string{return $html;}
 function csrf_token(string $scope):string{return 'fixture-cms-csrf-no-write';}

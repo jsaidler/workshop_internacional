@@ -7,7 +7,7 @@ for(const [device,viewport] of Object.entries(viewports)){
     test(`visual audit ${device} ${screen}`,async({page})=>{
       await page.setViewportSize(viewport);
       await page.goto(screen==='toolbox'?'http://127.0.0.1:8099/tools/browser-fixture/student-toolbox-real-audit.php':`${base}?screen=${encodeURIComponent(screen)}`,{waitUntil:'networkidle'});
-      if(screen!=='toolbox'){await page.addStyleTag({url:'/assets/student-rendered-fixes.css'});await page.addStyleTag({url:'/assets/student-field-language.css'});}
+      if(screen!=='toolbox'){await page.addStyleTag({url:'/assets/student-rendered-fixes.css'});}
       await page.evaluate(screenName=>{
         document.documentElement.setAttribute('data-theme','dark');
         if(screenName==='toolbox'){document.querySelector('[data-toolbox-open]')?.click();return;}

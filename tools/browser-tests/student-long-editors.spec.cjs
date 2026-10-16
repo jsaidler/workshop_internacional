@@ -282,3 +282,25 @@ for(const kind of ['preparation','calibration']){
    }
  });
 }
+
+test('Lab editor inherits saved Design headings, shared field labels and button tokens',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto(fixture+'?kind=preparation&mode=edit',{waitUntil:'networkidle'});
+ const actual=await page.evaluate(()=>{
+  const root=document.documentElement;
+  root.style.setProperty('--title','"Courier New",monospace');
+  root.style.setProperty('--mono','"Consolas",monospace');
+  root.style.setProperty('--inverse-bg','#132435');
+  const style=s=>getComputedStyle(document.querySelector(s));
+  return {heading:style('.student-task-editor .student-create-dialog-head h2').fontFamily,
+   section:style('.student-task-editor .student-task-section-head h3').fontFamily,
+   field:style('.student-task-editor .student-task-form .form-field').fontFamily,
+   inputRadius:style('.student-task-editor .student-task-form .form-field input').borderTopLeftRadius,
+   action:style('.student-task-editor .student-task-actions .button-primary').backgroundColor};
+ });
+ expect(actual.heading).toContain('Courier New');
+ expect(actual.section).toContain('Courier New');
+ expect(actual.field).toContain('Consolas');
+ expect(actual.inputRadius).toBe('0px');
+ expect(actual.action).toBe('rgb(19, 36, 53)');
+});

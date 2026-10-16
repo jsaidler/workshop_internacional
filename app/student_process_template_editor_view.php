@@ -32,10 +32,15 @@ function student_process_render_template_editor(array $template,array $steps,?ar
           <?php if((string)($payload['notes']??'')!==''&&$reuse!=='first_development'):?><small class="student-process-step-note"><?=h((string)$payload['notes'])?></small><?php endif;?>
         </div>
         <div class="student-process-step-actions">
-          <a class="button button-secondary button-compact" href="<?=h(student_process_template_href((int)$template['id'],$testId,(int)$step['id']))?>#editar-etapa">Editar</a>
+          <a class="button button-secondary button-compact" href="<?=h(student_process_template_href((int)$template['id'],$testId,(int)$step['id']))?>#editar-etapa">Editar etapa</a>
+          <details class="student-process-step-options">
+            <summary><span>Mais opções</span><span class="student-process-card-chevron" aria-hidden="true"></span></summary>
+            <div class="student-process-step-options-content">
           <?php if($index>0):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="move_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><input type="hidden" name="direction" value="-1"><button class="student-link" type="submit">Subir</button></form><?php endif;?>
           <?php if($index<count($steps)-1):?><form method="post"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="move_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><input type="hidden" name="direction" value="1"><button class="student-link" type="submit">Descer</button></form><?php endif;?>
           <form method="post" onsubmit="return confirm('Remover esta etapa do roteiro?')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete_step"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><input type="hidden" name="step_id" value="<?=(int)$step['id']?>"><button class="student-danger-action" type="submit">Remover</button></form>
+            </div>
+          </details>
         </div>
         <?php if($isEditing):?><div class="student-process-step-editor" id="editar-etapa"><div class="student-process-inline-help"><strong>Editar etapa</strong><span>Altere somente o que muda neste ponto do roteiro. A ordem continua preservada.</span></div><?php student_process_render_step_form($catalog,$developers,$preparations,$csrf,(int)$template['id'],$testId,$step);?></div><?php endif;?>
       </li>
@@ -47,11 +52,14 @@ function student_process_render_template_editor(array $template,array $steps,?ar
     <?php student_process_render_step_form($catalog,$developers,$preparations,$csrf,(int)$template['id'],$testId);?>
   </details>
 
-  <section class="student-danger-zone student-process-danger-zone">
-    <h2>Excluir processamento</h2>
+  <details class="student-process-retire">
+    <summary>Excluir este roteiro</summary>
+    <section class="student-danger-zone student-process-danger-zone">
+    <h2>Exclusão permanente</h2>
     <p>Exclui este roteiro da sua biblioteca. Registros do Caderno que já receberam uma cópia do plano não serão alterados.</p>
     <form method="post" onsubmit="return confirm('Excluir este processamento salvo? Esta ação não pode ser desfeita.')"><input type="hidden" name="_csrf" value="<?=h($csrf)?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="<?=(int)$template['id']?>"><input type="hidden" name="test_id" value="<?=$testId?>"><button class="student-danger-action" type="submit">Excluir processamento</button></form>
-  </section>
+    </section>
+  </details>
 </section>
 <?php
 }

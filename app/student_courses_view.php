@@ -6,7 +6,7 @@ declare(strict_types=1);
 <?php if(!$enrollments):?>
   <header class="student-v2-courses-heading">
     <p class="student-v2-eyebrow">Área de estudo</p>
-    <h1>Seus cursos</h1>
+    <h1 class="student-title">Seus cursos</h1>
     <p>Os materiais, as aulas e as conversas de cada turma ficam aqui.</p>
   </header>
   <section class="student-v2-course-empty" data-courses-empty>
@@ -17,7 +17,7 @@ declare(strict_types=1);
 <?php elseif(!$selectedEnrollment):?>
   <header class="student-v2-courses-heading">
     <p class="student-v2-eyebrow">Área de estudo</p>
-    <h1>Seus cursos</h1>
+    <h1 class="student-title">Seus cursos</h1>
     <p>Selecione a turma que deseja consultar.</p>
   </header>
   <nav class="student-v2-course-selector student-academic-choice-list" aria-label="Matrículas disponíveis" data-courses-selection>
@@ -37,11 +37,19 @@ declare(strict_types=1);
   $cohortUuid=(string)$enrollment['cohort_uuid'];
   $questionsUrl='/aluno/duvidas.php?cohort='.rawurlencode($cohortUuid);
   $latestFeedback=$attention['feedback'][0]??null;
+  // Identify the first page the student can act on. Never promote scheduled or blocked material.
+  $nextReadIndex=null;
+  foreach($materialItems as $readIndex=>$readItem){
+    if(in_array((string)($readItem['summary']['state']??''),['available','partial'],true)){
+      $nextReadIndex=$readIndex;
+      break;
+    }
+  }
 ?>
   <header class="student-v2-course-detail-heading">
     <?php if(count($enrollments)>1):?><a class="student-v2-course-back" href="/aluno/cursos.php">← Todos os cursos</a><?php endif;?>
     <p class="student-v2-eyebrow">Seu curso</p>
-    <h1><?=h($courseName)?></h1>
+    <h1 class="student-title"><?=h($courseName)?></h1>
     <div class="student-v2-course-identity">
       <span><?=h($cohortName)?></span>
       <span class="student-v2-course-state"><?=h(student_enrollment_cohort_status_label((string)$enrollment['cohort_status']))?></span>
@@ -78,6 +86,7 @@ declare(strict_types=1);
       <div class="student-v2-course-pages student-academic-material-list">
         <?php foreach($materialItems as $index=>$item):
           $page=$item['page'];$summary=$item['summary'];$state=(string)$summary['state'];
+          $isNext=$nextReadIndex!==null && $index===$nextReadIndex;
           $detail=match($state){
             'partial'=>'Parte desta página já está disponível.',
             'scheduled'=>'O conteúdo desta página está vinculado a uma aula agendada.',
@@ -85,12 +94,13 @@ declare(strict_types=1);
             default=>'',
           };
         ?>
-          <a class="student-v2-course-page student-academic-material-row <?=$state==='scheduled'||$state==='blocked'?'is-waiting':''?>" href="<?=h((string)$item['url'])?>">
+          <a class="student-v2-course-page student-academic-material-row <?=$state==='scheduled'||$state==='blocked'?'is-waiting':''?><?=$isNext?' is-next':''?>" href="<?=h((string)$item['url'])?>">
             <span class="student-v2-course-page-number" aria-hidden="true"><?=str_pad((string)($index+1),2,'0',STR_PAD_LEFT)?></span>
             <span class="student-v2-course-page-copy">
               <strong class="student-academic-material-title"><?=h((string)$page['title'])?></strong>
               <?php if($detail!==''):?><small class="student-academic-material-detail"><?=h($detail)?></small><?php endif;?>
               <span class="student-academic-material-state" data-state="<?=h($state)?>"><?=h((string)$summary['label'])?></span>
+              <?php if($isNext):?><small class="student-v2-course-page-action">Abrir material →</small><?php endif;?>
             </span>
             <span class="student-v2-course-page-arrow" aria-hidden="true">›</span>
           </a>

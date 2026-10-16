@@ -7,7 +7,7 @@ $read=static fn(string $path): string=>(string)file_get_contents($root.'/'.$path
 $shell=$read('app/student_shell.php');
 $local=$read('assets/student-local-actions.js');
 $annotations=$read('assets/student-inline-annotations.js');
-$inventory=$read('aluno/inventario.php');
+$inventory=$read('aluno/inventario.php').$read('app/student_inventory_view.php');
 $inventoryPanel=$read('app/student_inventory_create_panel.php');
 $inventoryMovement=$read('app/student_inventory_move_panel.php');
 $inventoryItem=$read('aluno/inventario-item.php').$read('app/student_inventory_item_editor.php');

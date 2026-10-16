@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/../../app/cms_settings.php';
+$fixtureDesign=cms_design_defaults();
 /* Same presentation component as /aluno/cursos.php; controlled projection data only. */
 require_once __DIR__.'/../../app/student_shell.php';
 function database():PDO {static $db=null;return $db??=new PDO('sqlite::memory:');}
@@ -42,8 +44,8 @@ if($selectedEnrollment){
   }
 }
 ?><!doctype html><html lang="pt-BR" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>:root{--bg:#101010;--surface:#171717;--surface-2:#202020;--text:#f3f1ec;--muted:#aaa49a;--line:#383633;--line-strong:#d5d0c7;--focus:#d5e6b6;--inverse-bg:#f3f1ec;--inverse:#101010;--body:Arial,sans-serif;--title:Georgia,serif;--mono:monospace;--ux-space-2:8px;--ux-space-3:12px;--ux-space-4:16px;--ux-space-5:24px;--ux-space-6:32px;--ux-space-7:48px}</style>
-<link rel="stylesheet" href="/template/page.css"><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-workbench.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-academic.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css"><link rel="stylesheet" href="/assets/student-quality-pass.css"><link rel="stylesheet" href="/assets/student-app-shell.css"><link rel="stylesheet" href="/assets/student-courses.css">
+<style data-cms-design-fonts><?=cms_design_font_import_css($fixtureDesign)?></style>
+<link rel="stylesheet" href="/template/page.css"><style data-cms-design-tokens><?=cms_design_css($fixtureDesign)?></style><link rel="stylesheet" href="/assets/ui-core.css"><link rel="stylesheet" href="/assets/student-area.css"><link rel="stylesheet" href="/assets/student-workbench.css"><link rel="stylesheet" href="/assets/student-experience.css"><link rel="stylesheet" href="/assets/student-academic.css"><link rel="stylesheet" href="/assets/student-rendered-fixes.css"><link rel="stylesheet" href="/assets/student-quality-pass.css"><link rel="stylesheet" href="/assets/student-courses.css">
 <title>Cursos · teste de renderização</title></head>
 <body class="student-page student-app" data-course-state="<?=h($state)?>"><div class="student-shell">
 <?php student_shell_nav('courses','student-desktop-nav');?>

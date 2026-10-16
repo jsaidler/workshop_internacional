@@ -64,6 +64,12 @@ Essas folhas são importadas dentro de `@layer cms-system`. O CSS adicional do u
 
 `cms-editor.css`, `cms-pro-editor.css`, `cms-ux-v2.css`, `cms-ux-v3.css` e `task-centric.css` deixam de existir como sequência de substituição histórica.
 
+## Reorganização de UX sem redesenhar identidade visual (retificação 15/10/2026)
+
+A arquitetura de navegação, rotas, prioridade de tarefas e apresentação progressiva de formulários pode e deve evoluir sem substituir a identidade visual aprovada. O design system existente — fontes persistidas em `Design → Tipografia`, tokens `--title`/`--body`/`--mono`, paleta/temas e CSS compartilhado — continua como fonte de verdade. Títulos da Área do aluno consomem `.student-title` e `.student-subtitle` quando semanticamente equivalentes; ações primárias e secundárias consomem `.button.button-primary` e `.button.button-secondary`. Informação técnica continua consumindo `--mono`.
+
+O shell mobile-first controla **geometria de navegação e região rolável**, nunca uma segunda paleta local que reatribui `--bg`, `--text`, `--focus` e similares nem fontes independentes como `Georgia`. Folhas de Agenda, Cursos, Laboratório e Conta podem conter apenas seus arranjos e interações exclusivos; não substituem a tipografia e os componentes canônicos. O contrato atual foi reafirmado expressamente pelo autor em 15/10/2026, prevalecendo sobre o registro transitório da reconstrução v2 que mencionava liberdade perante contratos visuais anteriores.
+
 ## `!important`
 
 O levantamento inicial encontrou `!important` em todas as grandes superfícies: template público, CMS, administração, mídia, área do aluno e editor. Havia casos em que a mesma propriedade era declarada com `!important` em uma camada e novamente com `!important` em outra posterior.
@@ -139,3 +145,15 @@ A auditoria 320/390 verificou que `student-quality-pass.css` redefinia os botõe
 
 
 **Cor destrutiva temática:** o texto de `Remover` não pode usar apenas `#d96868` em todos os fundos: é insuficiente sobre superfícies claras. O proprietário do componente agora usa `color-mix(in srgb,var(--text) 35%,#d96868)`, mantendo identidade destrutiva e adaptando a luminosidade ao tema. O teste do Editor calcula contraste efetivo do texto sobre as cores claras/escuras de referência e exige WCAG AA (4,5:1) em 320, 390 e 1440 px, sem adicionar CSS em fixture.
+
+### Auditoria complementar de primitivas e fidelidade de fixtures (15/10/2026, PR #245 draft)
+
+A inspeção do `student_shell_start` confirmou a cascata `template/page.css` → tokens editoriais de `cms_design_css` → `ui-core.css` → `student-area.css` → folhas de aplicação e features. Mesmo após a primeira revisão do #245, `student-experience.css` e `student-rendered-fixes.css`, carregados depois, ainda redefiniam globalmente `.button`, `.form-field`, `.choice-field` e seus controles (dimensões, tipografia, fundos, bordas e espaçamento). Foram removidas essas declarações concorrentes, preservando a geometria e os comportamentos específicos; `student-profile.css` deixa de redefinir a aparência dos inputs e labels compartilhados e retém apenas arranjo e foco do disclosure. Os proprietários de primitivas permanecem `template/page.css` e `ui-core.css`. Nenhuma folha adicional, `!important` ou alteração de contrato funcional foi introduzida.
+
+Nove fixtures PHP operacionais complementares — autenticação, comparação, item e movimentação do inventário, cartões e etapas de processamentos, dúvidas, ações e partilha de registros — deixaram de fornecer funções `cms_design_*` fictícias com Arial/Courier New e paleta local. Agora importam `app/cms_settings.php` como o shell de produção e mantêm os dados/cenários sintéticos. `tools/test-global-ui-consumption.php` passou a barrar essas funções concorrentes, estilos genéricos globais de botões/campos nas folhas tardias e a duplicação de campos no Perfil.
+
+**Limites:** isso saneia os conflitos identificados, mas não encerra a consolidação de todas as folhas cronológicas ainda carregadas. Elas continuam contendo regras de composição que requerem rastreio de propriedade e impacto na cascata antes de qualquer migração maior. Algumas fixtures históricas fora desse recorte ainda empregam design sintético e não devem ser consideradas provas da aparência efetiva do CMS. Regiões autenticadas na hospedagem, preferências editoriais concretas e todos os estados de 320/390/1440 px exigem validação separada. Gates e inspeção devem corresponder ao HEAD final.
+
+**Regressão real do CI da mesma tranche:** no HEAD `f11fd18f`, `validate` registrou 1 falha em 1.063 testes de navegador: `student-field-language.spec.cjs` esperava 13 px em `.form-field`, valor dependente de sobrescrita global eliminada. Verificado também que `assets/student-field-language.css` impunha 13 px a `.choice-field>legend` depois de `ui-core.css`. A folha corretiva foi retirada do shell e removida; rótulo e legenda herdam agora a mesma tipografia canônica de `ui-core.css` (10 px nos defaults). O teste passou a exigir esse contrato e a arquitetura proíbe o retorno da folha. Não se reintroduziu CSS de remendo nem se removeu a comparação de família, peso, altura de linha, caixa ou tracking; a nova execução do CI é obrigatória.
+
+**Auditoria visual após retirar a folha:** o run `38801307575` do HEAD `057df3d4` falhou porque duas suítes Playwright ainda tentavam importar explicitamente o CSS removido, gerando 150 erros de carregamento em cascata e 189 aprovações. Nenhum desses 150 casos isolou um defeito visual diferente. Removidas as referências de `student-complete-area-audit.spec.cjs` e `student-visual-audit.spec.cjs`; teste estrutural proíbe todas as três suítes de reintroduzir a referência. A regressão deve ser reexecutada integralmente no SHA resultante.

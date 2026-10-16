@@ -14,6 +14,10 @@ $publicJs=(string)file_get_contents($root.'/assets/public.js');
 
 must_global_ui(is_file($root.'/assets/ui-core.css')&&is_file($root.'/assets/ui-core.js'),'global UI authority files are missing');
 must_global_ui(!is_file($root.'/assets/student-area.js'),'student area still owns a local JavaScript UI runtime');
+must_global_ui(!is_file($root.'/assets/student-field-language.css')&&!str_contains($shell,'student-field-language.css'),'student field-label correction layer duplicates ui-core.css');
+foreach(['student-complete-area-audit.spec.cjs','student-visual-audit.spec.cjs','student-field-language.spec.cjs'] as $testFile){
+    must_global_ui(!str_contains((string)file_get_contents($root.'/tools/browser-tests/'.$testFile),'student-field-language.css'),'browser test injects removed field-label correction layer: '.$testFile);
+}
 must_global_ui(str_contains($shell,'/assets/ui-core.css')&&str_contains($shell,'/assets/ui-core.js'),'student shell does not consume global UI assets');
 
 $forbiddenCss=['.student-field','.student-choice-','.student-check-field','.student-button','.student-error','.student-notice','.student-danger-button','--student-control-height'];
@@ -71,5 +75,52 @@ foreach($requiredConsumers as $file=>$needles){
 
 $legacyTests=(string)file_get_contents($root.'/aluno/testes.php');
 must_global_ui(str_contains($legacyTests,"header('Location: /aluno/caderno.php'"),'legacy tests route no longer redirects to the global notebook');
+
+// Task-first presentation must consume the existing Design, never impose a new skin.
+$taskCssFiles=['student-agenda.css','student-courses.css','student-laboratory.css','student-profile.css','student-caderno.css','student-lab-stock.css','student-processes.css'];
+foreach($taskCssFiles as $name){
+    $css=(string)file_get_contents($root.'/assets/'.$name);
+    must_global_ui(!str_contains($css,'Georgia'),'task stylesheet imports an independent serif font: '.$name);
+    must_global_ui(!str_contains($css,'var(--body,Arial'),'task stylesheet overrides the saved body font fallback: '.$name);
+    must_global_ui(!preg_match('/--student-v2-(?:bg|surface|subtle|text|muted|line|accent|ink)\\b/',$css),'task stylesheet reintroduces a parallel palette: '.$name);
+}
+$taskShell=$studentCss;
+must_global_ui(!is_file($root.'/assets/student-app-shell.css'),'mobile shell remains a second global CSS authority');
+must_global_ui(!str_contains($taskShell,'Georgia'),'student shell brings back an independent brand font');
+must_global_ui(!preg_match('/\\.student-app \\.student-shell\\{[^}]*--(?:bg|surface|surface-2|text|muted|line|line-strong|focus)\\s*:/',$taskShell),'task shell overwrites the CMS color tokens');
+must_global_ui(!str_contains($taskShell,'.student-v2-cta{'),'task Home recreates the canonical button primitive');
+$taskHome=(string)file_get_contents($root.'/app/student_home_view.php');
+must_global_ui(str_contains($taskHome,'class="student-title"')&&str_contains($taskHome,'class="student-subtitle"'),'task Home is not using canonical display headings');
+must_global_ui(str_contains($taskHome,'class="button button-primary student-v2-cta"')&&str_contains($taskHome,'class="button button-secondary student-v2-secondary-link"'),'task Home bypasses canonical button actions');
+foreach(['student_agenda_view.php','student_courses_view.php','student_laboratory_view.php'] as $renderer){
+    $src=(string)file_get_contents($root.'/app/'.$renderer);
+    must_global_ui(str_contains($src,'class="student-title"'),'task heading bypasses the existing student-title primitive: '.$renderer);
+}
+$notebookCss=(string)file_get_contents($root.'/assets/student-caderno.css');
+must_global_ui(!preg_match('/\\.student-v2-notebook-header h1\\.student-title\\{[^}]*font\\s*:/',$notebookCss),'Caderno heading bypasses inherited Design display font');
+must_global_ui(!preg_match('/\\.student-app \\.student-record-header \\.student-title-record\\{[^}]*font\\s*:/',$notebookCss),'record heading overrides canonical display typography');
+$stockCss=(string)file_get_contents($root.'/assets/student-lab-stock.css');
+must_global_ui(!preg_match('/\\.student-task-editor \\.student-task-actions \\.button-primary\\{[^}]*?(?:background|color|font|border-radius)\\s*:/',$stockCss),'laboratory task action recreates canonical button visuals');
+must_global_ui(!str_contains($stockCss,'--task-radius'),'laboratory task editor introduced independent component shape token');
+$processCss=(string)file_get_contents($root.'/assets/student-processes.css');
+must_global_ui(!preg_match('/\\.student-process-task-form \\.form-field\\{[^}]*font\\s*:/',$processCss),'process editor overrides canonical field labels');
+
+$profileCss=(string)file_get_contents($root.'/assets/student-profile.css');
+must_global_ui(!preg_match('/\\.student-profile-header \\.student-title-record\\{[^}]*font\\s*:/',$profileCss),'profile overrides its inherited canonical display heading');
+must_global_ui(!preg_match('/\\.student-profile-form \\.form-field\\s*>\\s*input\\s*\\{/',$profileCss),'profile reimplements shared field input');
+must_global_ui(!preg_match('/\\.student-profile-form \\.form-field\\s*\\{[^}]*?(?:font|background|color|text-transform|letter-spacing)\\s*:/',$profileCss),'profile reimplements shared field labels');
+foreach(['student-experience.css','student-rendered-fixes.css'] as $legacyCss){
+    $css=(string)file_get_contents($root.'/assets/'.$legacyCss);
+    must_global_ui(!preg_match('/(?:^|\\n)\\s*\\.(?:form-field|choice-field|choice-row|choice-option|button)(?:[\\s\\.,>{:]|$)/m',$css),'global student stylesheet duplicates reusable field/button primitive: '.$legacyCss);
+}
+
+
+// PHP screenshot fixtures must exercise the real CMS Design contract, not Arial/Georgia mock tokens.
+foreach(['student-home.php','student-notebook.php','student-agenda.php','student-courses.php','student-laboratory.php','student-process-editor.php','student-long-editors.php','student-profile.php','student-process-runner-operational.php','student-record-workspace-operational.php','student-auth-operational.php','student-comparison-operational.php','student-inventory-item-direct.php','student-inventory-movement.php','student-process-saved-cards.php','student-process-step-editor.php','student-questions-operational.php','student-record-actions-operational.php','student-shared-record-operational.php'] as $fixture){
+    $source=(string)file_get_contents($root.'/tools/browser-fixture/'.$fixture);
+    must_global_ui(str_contains($source,"require_once __DIR__.'/../../app/cms_settings.php'"),'fixture bypasses CMS Design implementation: '.$fixture);
+    must_global_ui(!str_contains($source,'--title:Georgia')&&!str_contains($source,'--title:Arial')&&!preg_match('/function\\s+cms_design_(?:defaults|font_import_css|css)\\s*\\(/',$source),'fixture hardcodes a competing design implementation: '.$fixture);
+    must_global_ui(!str_contains($source,'student-app-shell.css'),'fixture still requests removed CSS asset: '.$fixture);
+}
 
 echo "global-ui-consumption: ok\n";
