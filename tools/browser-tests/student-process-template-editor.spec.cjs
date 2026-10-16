@@ -51,6 +51,12 @@ for(const dim of dimensions){
       const box=el.getBoundingClientRect(),style=getComputedStyle(el);
       return {label:el.textContent.trim(),height:box.height,fontSize:parseFloat(style.fontSize),left:box.left,right:box.right};
     }));
+    const metadataTypography=await view.locator('.student-process-step-body > p').first().evaluate(el=>{
+      const style=getComputedStyle(el);
+      return {size:parseFloat(style.fontSize),family:style.fontFamily,body:getComputedStyle(document.querySelector('.student-shell')).getPropertyValue('--body').trim()};
+    });
+    expect(metadataTypography.size).toBeGreaterThanOrEqual(12);
+    expect(metadataTypography.family).toContain(metadataTypography.body.split(',')[0].replaceAll('"','').replaceAll("'","").trim());
     const retire=view.locator('.student-process-retire');
     await expect(retire).toHaveCount(1);
     await expect(retire).not.toHaveAttribute('open','');
