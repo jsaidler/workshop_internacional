@@ -56,3 +56,18 @@ A leitura de uma dúvida originada em anotação preservava o trecho citado, mas
 **Autoridade e acesso:** `student_question_source_page()` associa a página registrada na anotação **somente** às páginas do material da matrícula selecionada. O controlador `aluno/duvidas.php` exige `student_enrollment_material_context()` com o mesmo `cohort_uuid` selecionado e `cms_access_page_allowed()` para o aluno atual antes de fornecer a URL `cms_page_url()`. Origem de outro curso, página retirada/não publicada ou acesso perdido não produzem link. Não divulgar IDs da anotação de outro participante, nem prometer navegação até um trecho privado por hash. Preservar mensagens, POST/PRG, visibilidade da conversa e CSRF.
 
 **Aceite:** teste PHP de origem legítima/inválida, fixture com o renderer operacional e exemplos de trecho, nota integral, formulário de criação e origem incompatível, captures mobile 320/390 e desktop 1440, visibilidade/navegação global e regressões de Dúvidas, Material e Cursos. CI e inspeção no SHA final; a fixture não comprova acesso à página do CMS na hospedagem.
+
+### Anotação pessoal ↔ dúvida de turma em materiais compartilhados (17/10/2026)
+
+O aluno pode estudar a mesma página CMS em matrículas diferentes; suas anotações continuam pessoais à página, sem migração nem duplicação por turma. Uma dúvida originada nessa anotação é um objeto independente, ligado a uma **turma de origem** e à visibilidade `private`, `cohort` ou `course`. A associação é singular: a mesma anotação não cria outra dúvida ao mudar de turma.
+
+Ao exibir **Ver dúvida**, responder a uma publicação AJAX ou redirecionar de `duvidas.php?annotation=...`, resolver o destino pelo mesmo contrato do domínio das conversas:
+- a turma indicada na página de Material prevalece **apenas se** a pergunta puder realmente ser aberta naquele contexto;
+- caso contrário, utilizar a turma de origem quando ainda existir matrícula ativa e acesso;
+- uma dúvida `course` pode usar outra matrícula ativa do **mesmo curso**, nunca de curso diferente;
+- `private` e `cohort` não ganham visibilidade em outra turma apenas por compartilharem a página CMS;
+- quando nenhuma matrícula ativa autorizar a navegação, não criar URL quebrada ou redirecionamento silencioso. O vínculo permanece no banco e não oferece segunda publicação.
+
+A URL canônica da dúvida com `cohort` e `id` é responsabilidade única de `student_question_annotation_url()`, que consulta as matrículas ativas e aplica `student_question_in_cohort_context()`. O JavaScript do Material consome o destino autorizado fornecido pelo servidor; não o reconstrói com a turma corrente para uma dúvida já existente. Permanecem intocados o renderer editorial CMS, a política de acesso às seções, o conteúdo privado da anotação, a identidade do aluno, POST/CSRF e o modelo de visibilidade.
+
+**Aceite:** regressão SQLite de turmas e cursos compartilhados, desativação/arquivamento e ausência de link indevido; testes do HTML e da resposta AJAX; mesmo fluxo em 320/390/1440, captura visual do link e estado sem acesso, três workflows no SHA final e inspeção crítica. Fixture e CI não demonstram sessão autenticada na HostGator.
