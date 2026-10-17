@@ -174,6 +174,20 @@ for(const device of viewports){
   await expect(error).toHaveText('Não foi possível salvar esta anotação.');
   await expect(error).toBeVisible();
   await expect(error).toBeFocused();
+  // Check the actual rendered contrast; a focusable warning with pale text
+  // on a pale CMS surface is still unusable.
+  const contrast=await error.evaluate(el=>{
+    const rgb=value=>(value.match(/[\\d.]+/g)||[]).slice(0,3).map(Number);
+    const luminance=value=>{
+      const channels=rgb(value).map(c=>{
+        const v=c/255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;
+      });
+      return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;
+    };
+    const style=getComputedStyle(el),a=luminance(style.color),b=luminance(style.backgroundColor);
+    return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+  });
+  expect(contrast,'message must remain readable in CMS themes').toBeGreaterThanOrEqual(4.5);
   await expect(textarea).toHaveValue(draft);
   await expect(article.locator('button[name="annotation_action"][value="update"]')).toBeEnabled();
   await expect.poll(async()=>Math.abs((await readReadingPosition(page,before.owner))-before.top)).toBeLessThanOrEqual(2);
