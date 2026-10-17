@@ -609,6 +609,22 @@ test.describe('authenticated Material → annotation → question → Material, 
         await expect(composer).toBeHidden();
       };
       await saveSelection('exposição e revelação','Nota A: exposição e relação com revelação.');
+      // Browser-generated selection is not the same as a synthetic Range.
+      // A real drag inside the highlighted note must not open its editor.
+      const highlightedWord=block.locator('strong > mark.student-inline-note-mark').first();
+      const rectangle=await highlightedWord.boundingBox();
+      expect(rectangle).not.toBeNull();
+      expect(rectangle.width).toBeGreaterThan(40);
+      const pointerY=rectangle.y+rectangle.height/2;
+      await page.mouse.move(rectangle.x+12,pointerY);
+      await page.mouse.down();
+      await page.mouse.move(rectangle.x+rectangle.width-12,pointerY,{steps:18});
+      await page.mouse.up();
+      const highlightedSelection=await page.evaluate(()=>window.getSelection()?.toString()||'');
+      expect(highlightedSelection.length).toBeGreaterThan(1);
+      await expect(page.locator('[data-student-notes-panel]')).not.toHaveAttribute('open','');
+      await expect(page.locator('.student-selection-note-action')).toBeVisible();
+
       await saveSelection('e revelação e evidência','Nota B: evidência e procedimento.');
       const notes=snapshot().notes;
       expect(notes).toHaveLength(2);
