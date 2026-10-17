@@ -27,9 +27,12 @@ if($mode==='revoke'){
 }
 if($mode!=='seed'){fwrite(STDERR,"Unknown mode.\n");exit(1);}
 $now=utc_now();
-$db->prepare("INSERT INTO activities(admin_name,public_title,slug,status,is_root,created_at,updated_at) VALUES(?,?,?,'active',1,?,?)")
-    ->execute(['Isolated QA','Isolated QA','qa-student',''.$now,$now]);
-$activityId=(int)$db->lastInsertId();
+// A fresh full migration already seeds the unique root activity. Reuse it;
+// creating another root would make index.php resolve the wrong CMS course.
+$activityId=(int)$db->query("SELECT id FROM activities WHERE is_root=1 ORDER BY id LIMIT 1")->fetchColumn();
+if($activityId<1)throw new RuntimeException('No root activity after migrations.');
+$db->prepare("UPDATE activities SET admin_name=?,public_title=?,updated_at=? WHERE id=?")
+    ->execute(['Isolated QA','Isolated QA',$now,$activityId]);
 
 $page=cms_page_create($db,$activityId,'pt-BR','Material para regressão autenticada','material');
 $document=['version'=>2,'theme'=>'auto','meta'=>['title'=>'Material para regressão autenticada'],
