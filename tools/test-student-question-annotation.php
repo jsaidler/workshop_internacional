@@ -47,6 +47,12 @@ must_question_annotation(student_question_source_page(['page_id'=>901],[['id'=>1
 must_question_annotation(student_question_source_page(null,[['id'=>11]])===null,'missing material source generated a page');
 
 must_question_annotation(student_question_annotation_source($db,7,4,5)===null,'annotation leaked into an unrelated course');
+try{
+    student_question_create_from_annotation($db,7,4,5,['question_title'=>'Reutilização fora do curso']);
+    fail_question_annotation('an already linked annotation was reused outside its course without source authorization');
+}catch(RuntimeException $e){
+    must_question_annotation(str_contains($e->getMessage(),'Anotação de origem inválida'),'unrelated-course rejection lost the domain error');
+}
 student_question_attach_annotation($db,8,7,3,5);
 $q=$db->query('SELECT source_annotation_id FROM student_questions WHERE id=8');
 must_question_annotation((int)$q->fetchColumn()===5,'question did not retain its source annotation');
