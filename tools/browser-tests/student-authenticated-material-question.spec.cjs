@@ -65,7 +65,7 @@ test.describe('authenticated Material → annotation → question → Material, 
       serverLog=fs.openSync(path.join(sandbox,'php-server.log'),'w');
       server=spawn('php',['-S','127.0.0.1:'+port,'-t',sandbox],{cwd:sandbox,stdio:['ignore',serverLog,serverLog]});
       await awaitServer(origin+'/aluno/login.php');
-      fs.mkdirSync('test-results/authenticated-material-question',{recursive:true});
+      fs.mkdirSync('student-visual-audit/authenticated-material-question',{recursive:true});
     }catch(error){
       if(sandbox&&fs.existsSync(path.join(sandbox,'php-server.log'))){
         error.message+='\n'+fs.readFileSync(path.join(sandbox,'php-server.log'),'utf8').slice(-3000);
@@ -96,6 +96,20 @@ test.describe('authenticated Material → annotation → question → Material, 
       const general=panel.locator('[data-student-note-new]');
       await general.locator(':scope > summary').click();
       const form=general.locator('form');
+      // Invalid question title must roll back the new annotation as well.
+      const invalid=await form.evaluate(async element=>{
+        const data=new FormData(element);
+        data.set('annotation_action','create_page');
+        data.set('body','Rascunho que não pode ficar parcialmente salvo');
+        data.set('create_question','1');
+        data.set('question_title','');
+        const response=await fetch(element.action,{method:'POST',body:data,credentials:'same-origin',headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}});
+        return {status:response.status,payload:await response.json()};
+      });
+      expect(invalid.status).toBe(400);
+      expect(invalid.payload.ok).toBe(false);
+      expect(snapshot().notes).toHaveLength(0);
+      expect(snapshot().questions).toHaveLength(0);
       await form.locator('textarea[name="body"]').fill('Qual o efeito da exposição no positivo?');
       await form.locator('[data-note-question] > summary').click();
       await form.locator('input[name="question_title"]').fill('Relação entre exposição e positivo');
@@ -123,7 +137,7 @@ test.describe('authenticated Material → annotation → question → Material, 
       await backToPage.click();
       await expect(page.locator('[data-annotation-item]')).toHaveCount(1);
       await expect(page.locator('[data-annotation-item]')).toContainText('Qual o efeito da exposição no positivo?');
-      await page.screenshot({path:'test-results/authenticated-material-question/phone-return.png',animations:'disabled'});
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-return.png',animations:'disabled'});
 
       // The note is personal to a CMS page; its private question belongs to B.
       await page.goto(materialUrl('journey-a'),{waitUntil:'networkidle'});
@@ -141,6 +155,17 @@ test.describe('authenticated Material → annotation → question → Material, 
         await expect(peer.locator('[data-annotation-item]')).toHaveCount(0);
         await peer.goto(origin+'/aluno/duvidas.php?cohort=journey-a&id='+questionId);
         await expect(peer.getByRole('heading',{name:'Relação entre exposição e positivo'})).toHaveCount(0);
+        // An authenticated student cannot mutate someone else's annotation
+        // by guessing a numeric annotation ID and using a valid own CSRF token.
+        const token=await peer.locator('[data-student-notes-panel] input[name="_csrf"]').first().inputValue();
+        const forged=await peer.evaluate(async payload=>{
+          const data=new FormData();
+          for(const [key,value] of Object.entries(payload))data.set(key,String(value));
+          const response=await fetch('/aluno/material-anotacao.php',{method:'POST',body:data,credentials:'same-origin',headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}});
+          return {status:response.status,payload:await response.json()};
+        },{_csrf:token,page_id:seedData.pageId,cohort:'journey-a',annotation_id:persisted.notes[0].id,annotation_action:'update',body:'Tentativa indevida'});
+        expect(forged.status).toBe(400);
+        expect(forged.payload.ok).toBe(false);
       }finally{await peerContext.close();}
 
       // Revoke B in the on-disk database without logging the owner out.
@@ -151,11 +176,11 @@ test.describe('authenticated Material → annotation → question → Material, 
       await expect(link).toHaveCount(0);
       await expect(note.locator('.student-note-linked-unavailable')).toContainText('acesso indisponível');
       await expect(note.locator('[data-note-question]')).toHaveCount(0);
-      await page.screenshot({path:'test-results/authenticated-material-question/phone-revoked.png',animations:'disabled'});
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-revoked.png',animations:'disabled'});
       for(const width of [320,1440]){
         await page.setViewportSize({width,height:width===320?720:900});
         await expect(note.locator('.student-note-linked-unavailable')).toBeVisible();
-        await page.screenshot({path:'test-results/authenticated-material-question/'+width+'-revoked.png',animations:'disabled'});
+        await page.screenshot({path:'student-visual-audit/authenticated-material-question/'+width+'-revoked.png',animations:'disabled'});
       }
       persisted=snapshot();
       expect(persisted.questions).toHaveLength(1);
