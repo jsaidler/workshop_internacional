@@ -177,7 +177,7 @@ for(const device of viewports){
   // Check the actual rendered contrast; a focusable warning with pale text
   // on a pale CMS surface is still unusable.
   const contrast=await error.evaluate(el=>{
-    const rgb=value=>(value.match(/[\\d.]+/g)||[]).slice(0,3).map(Number);
+    const rgb=value=>(value.match(/[0-9.]+/g)||[]).slice(0,3).map(Number);
     const luminance=value=>{
       const channels=rgb(value).map(c=>{
         const v=c/255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;
