@@ -43,7 +43,7 @@ if($mode==='revise-formatted'){
         'title'=>(string)$page['title'],'slug'=>(string)$page['slug'],'show_in_nav'=>true
     ]);
     $page=cms_page_publish($db,(int)$page['id']);
-    echo json_encode(['revision'=>$page['published_revision'],'mode'=>$mode],JSON_THROW_ON_ERROR)."\\n";
+    echo json_encode(['revision'=>$page['published_revision'],'mode'=>$mode],JSON_THROW_ON_ERROR)."\n";
     exit;
 }
 if($mode==='revise'){
