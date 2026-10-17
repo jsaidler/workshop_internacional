@@ -303,4 +303,121 @@ test.describe('authenticated Material → annotation → question → Material, 
     }finally{await context.close();}
   });
 
+
+  test('CMS publication changes an excerpt; reassociation updates visible title, quote and persisted question source',async({browser})=>{
+    const context=await browser.newContext({viewport:{width:390,height:844}});
+    const page=await context.newPage();
+    try{
+      await signIn(page,'journey-owner@example.invalid');
+      await page.goto(materialUrl('journey-b'),{waitUntil:'networkidle'});
+      const panel=page.locator('[data-student-notes-panel]');
+      const token=await panel.locator('[data-inline-note-compose] input[name="_csrf"]').inputValue();
+      const section=page.locator('[data-student-note-context="investigacao"]');
+      const block=section.locator('p[data-student-anchor-block]');
+      const originalBlock=await block.getAttribute('data-student-anchor-block');
+      const pageRevision=await panel.getAttribute('data-student-page-revision');
+      const created=await page.evaluate(async data=>{
+        const form=new FormData();
+        for(const [key,value] of Object.entries(data))form.set(key,String(value));
+        const response=await fetch('/aluno/material-anotacao.php',{method:'POST',credentials:'same-origin',
+          body:form,headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}});
+        return {status:response.status,payload:await response.json()};
+      },{
+        _csrf:token,page_id:seedData.pageId,
+        return_to:'/?page=material&lang=pt-br&cohort=journey-b',cohort:'journey-b',
+        annotation_action:'create_selection',section_key:'investigacao',
+        block_key:originalBlock,quote_exact:'Exposição',
+        quote_prefix:'',quote_suffix:' e revelação',start_offset:0,end_offset:9,
+        source_block_hash:'',source_page_revision:pageRevision||'',body:'Anotação de pesquisa preservada.',
+        create_question:1,question_title:'Pergunta da primeira exposição',question_visibility:'private'
+      });
+      expect(created.status).toBe(200);
+      expect(created.payload.ok).toBe(true);
+      const id=created.payload.annotation.id,questionId=created.payload.question.id;
+      expect(snapshot().notes[0].quote_exact).toBe('Exposição');
+      expect(snapshot().questions).toHaveLength(1);
+
+      // Publish a real second CMS revision, not an artificial DOM mutation.
+      const revised=JSON.parse(execFileSync('php',[seedScript,sandbox,'revise'],{encoding:'utf8',timeout:45000}));
+      expect(Number(revised.published_revision)).toBeGreaterThan(1);
+      await page.goto(materialUrl('journey-b'),{waitUntil:'networkidle'});
+      await expect(page.locator('[data-annotation-status="'+id+'"]')).toContainText('Trecho alterado');
+      expect(snapshot().notes[0].quote_exact).toBe('Exposição');
+      await panel.locator(':scope > summary').click();
+      const note=panel.locator('[data-annotation-item="'+id+'"]');
+      await note.locator('[data-annotation-edit]').click();
+      await expect(note.locator('.student-note-title')).toHaveText('Exposição');
+      await expect(note.getByRole('link',{name:'Ver dúvida'})).toHaveAttribute(
+        'href','/aluno/duvidas.php?cohort=journey-b&id='+questionId
+      );
+      await note.getByRole('button',{name:'Reassociar'}).click();
+      await expect(page.locator('.student-reanchor-hint')).toBeVisible();
+
+      const updatedBlock=page.locator('[data-student-note-context="investigacao"] p[data-student-anchor-block]');
+      await updatedBlock.evaluate(element=>{
+        const needle='revelação continua decisiva';
+        const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
+        let chosen=null,index=-1;
+        while(walker.nextNode()){
+          const current=walker.currentNode;
+          const at=(current.nodeValue||'').indexOf(needle);
+          if(at>=0){chosen=current;index=at;break;}
+        }
+        if(!chosen)throw new Error('Revised passage not present in CMS');
+        const range=document.createRange();
+        range.setStart(chosen,index);range.setEnd(chosen,index+needle.length);
+        const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
+        element.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,clientX:100,clientY:100}));
+        document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
+      });
+      const selectionAction=page.locator('.student-selection-note-action');
+      await expect(selectionAction).toBeVisible();
+      await expect(selectionAction).toHaveText('Reassociar seleção');
+      await selectionAction.click();
+      const compose=panel.locator('[data-inline-note-compose]');
+      await expect(compose).toBeVisible();
+      await expect(compose.locator('[data-anchor-preview]')).toHaveText('revelação continua decisiva');
+      await expect(compose.locator('[data-annotation-action]')).toHaveValue('reanchor');
+      const readerBefore=await page.evaluate(()=>({
+        pathname:location.pathname,search:location.search,
+        historyLength:history.length,scroll:document.querySelector('.cms-student-reading')?.scrollTop||0
+      }));
+      await compose.getByRole('button',{name:'Confirmar reassociação'}).click();
+      await expect(compose).toBeHidden();
+      await expect(page.locator('.student-reanchor-hint')).toBeHidden();
+      expect(snapshot().notes[0].quote_exact).toBe('revelação continua decisiva');
+      expect(snapshot().notes[0].body).toBe('Anotação de pesquisa preservada.');
+      expect(snapshot().questions).toHaveLength(1);
+      expect(snapshot().notes[0].question_id).toBe(questionId);
+      const readerAfter=await page.evaluate(()=>({
+        pathname:location.pathname,search:location.search,
+        historyLength:history.length,scroll:document.querySelector('.cms-student-reading')?.scrollTop||0
+      }));
+      expect(readerAfter.pathname+readerAfter.search).toBe(readerBefore.pathname+readerBefore.search);
+      expect(readerAfter.historyLength).toBe(readerBefore.historyLength);
+      expect(Math.abs(readerAfter.scroll-readerBefore.scroll)).toBeLessThan(5);
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]')).toContainText('revelação continua decisiva');
+
+      await panel.locator(':scope > summary').click();
+      await note.locator('[data-annotation-edit]').click();
+      await expect(note.locator('.student-note-quote')).toHaveText('revelação continua decisiva');
+      await expect(note.locator('.student-note-title')).toHaveText('revelação continua decisiva');
+      await expect(note.locator('textarea[name="body"]')).toHaveValue('Anotação de pesquisa preservada.');
+      await expect(note.getByRole('link',{name:'Ver dúvida'})).toHaveAttribute(
+        'href','/aluno/duvidas.php?cohort=journey-b&id='+questionId
+      );
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-reanchored-after-cms-revision.png',animations:'disabled'});
+
+      await page.reload({waitUntil:'networkidle'});
+      await panel.locator(':scope > summary').click();
+      await note.locator('[data-annotation-edit]').click();
+      await expect(note.locator('.student-note-title')).toHaveText('revelação continua decisiva');
+      await expect(note.locator('.student-note-quote')).toHaveText('revelação continua decisiva');
+      await expect(note.locator('[data-note-question]')).toHaveCount(0);
+      await expect(note.getByRole('link',{name:'Ver dúvida'})).toBeVisible();
+      await page.setViewportSize({width:1440,height:900});
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/desktop-reanchored-after-cms-revision.png',animations:'disabled'});
+    }finally{await context.close();}
+  });
+
 });
