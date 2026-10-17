@@ -50,7 +50,7 @@ test.describe('authenticated Material → annotation → question → Material, 
     try{
       // The real bootstrap resolves SQLite and config relative to its own
       // app directory; this is an isolated installation, not a mocked DB.
-      for(const name of ['app','aluno','assets','migrations','template','index.php']){
+      for(const name of ['app','aluno','assets','data','migrations','template','index.php']){
         const from=path.join(sourceRoot,name);
         if(fs.existsSync(from))fs.cpSync(from,path.join(sandbox,name),{recursive:true});
       }
