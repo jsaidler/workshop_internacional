@@ -159,9 +159,11 @@ for(const device of viewports){
    body:JSON.stringify({ok:false,error:'Não foi possível salvar esta anotação.'})
   }));
   await page.goto(base+'?page=current&cohort=cohort-a',{waitUntil:'networkidle'});
-  const before=await setReadingPosition(page,.48);
   const panel=page.locator('[data-student-notes-panel]');
   await panel.locator(':scope > summary').click();
+  // Opening the independent sheet can change the viewport scroll owner.
+  // Measure the reading position only after the sheet reaches its open state.
+  const before=await setReadingPosition(page,.48);
   const article=panel.locator('[data-annotation-item="1"]');
   await article.locator('[data-annotation-edit]').click();
   const textarea=article.locator('textarea[name="body"]');
