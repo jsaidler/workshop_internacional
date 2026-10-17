@@ -38,7 +38,7 @@ if($mode==='revise'){
     echo json_encode(['published_revision'=>$page['published_revision']],JSON_THROW_ON_ERROR)."\n";
     exit;
 }
-if(in_array($mode,['revise-duplicates','revise-ambiguous'],true)){
+if(in_array($mode,['revise-duplicates','revise-ambiguous','revise-ambiguous-preferred'],true)){
     // Real CMS publish, not a DOM patch. Ordinal p:1 keeps the short quote
     // but changes its surrounding paragraph; the original full paragraph
     // reappears later. Ambiguous additionally repeats that original exactly.
@@ -50,7 +50,7 @@ if(in_array($mode,['revise-duplicates','revise-ambiguous'],true)){
     $changed='<p>Exposição e revelação foram reorganizadas na aula.</p>';
     $html='<article class="study-material"><section data-cms-section="investigacao">'
         .'<h1>Material para regressão autenticada</h1>'
-        .$changed.$old.($mode==='revise-ambiguous'?$old:'')
+        .($mode==='revise-ambiguous-preferred'?$old:$changed).$old.($mode==='revise-ambiguous'?$old:'')
         .'</section></article>';
     $document['html']=$html;
     $page=cms_page_save($db,(int)$page['id'],$document,(int)$page['draft_revision'],[
