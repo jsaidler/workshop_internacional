@@ -49,6 +49,9 @@ function database():PDO {
  if(isset($_GET['linked'])){
     $db->exec("INSERT INTO course_cohorts VALUES(8,12,1,NULL,'Turma Novembro 2026','cohort-b','active')");
     $db->exec("INSERT INTO course_enrollments VALUES(2,99,8,'active','2026-11-01T00:00:00Z')");
+    // The CMS filters unreleased sections before injecting notes. Release the
+    // section holding this notebook fixture, not the entire course.
+    $db->exec("INSERT INTO cohort_lesson_releases(cohort_id,lesson_id,released_at,created_at,updated_at) VALUES(8,2,'2026-10-02T00:00:00Z','now','now')");
  }
  $linked=(string)($_GET['linked']??'');
  if(in_array($linked,['private','course'],true)){
