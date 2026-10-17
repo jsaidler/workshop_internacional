@@ -84,6 +84,14 @@
 .cms-public .student-note-item header small[data-anchor-state=linked]{display:none}
 .cms-public .student-notes-panel.is-editing .student-note-item.is-active header .student-note-title{display:none}
 .cms-public .student-note-body-preview{margin:12px 0 4px;color:var(--text);font:400 13px/1.55 var(--body);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cms-public .student-note-overlap-chooser{display:grid;gap:12px;padding:18px 0;border-top:1px solid var(--line)}
+.cms-public .student-note-overlap-chooser[hidden]{display:none}
+.cms-public .student-note-overlap-chooser h3{margin:0;font:600 16px/1.35 var(--title)}
+.cms-public .student-note-overlap-chooser p{margin:0;color:var(--muted);font:400 13px/1.5 var(--body)}
+.cms-public .student-note-overlap-chooser [data-note-overlap-options]{display:grid;gap:8px}
+.cms-public .student-note-overlap-option{min-height:48px;width:100%;padding:12px;text-align:left;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer;font:500 13px/1.45 var(--body);overflow-wrap:anywhere}
+.cms-public .student-note-overlap-option:hover,.cms-public .student-note-overlap-option:focus-visible{border-color:var(--focus);outline:2px solid var(--focus);outline-offset:2px}
+.cms-public .student-notes-panel.is-overlap-choosing .student-notes-list,.cms-public .student-notes-panel.is-overlap-choosing .student-note-new,.cms-public .student-notes-panel.is-overlap-choosing .student-notes-empty{display:none}
 .cms-public .student-note-edit-trigger{min-height:42px;margin-top:6px;padding:0;border:0;background:none;color:var(--text);cursor:pointer;font:600 11px/1.2 var(--mono);text-decoration:underline;text-underline-offset:4px;text-transform:uppercase}
 .cms-public .student-notes-panel:not(.is-editing) .student-note-item form,.cms-public .student-notes-panel:not(.is-editing) .student-note-item .student-note-quote{display:none}
 .cms-public .student-notes-panel.is-editing .student-notes-head,.cms-public .student-notes-panel.is-editing .student-inline-note-compose,.cms-public .student-notes-panel.is-editing .student-note-new,.cms-public .student-notes-panel.is-editing .student-notes-empty,.cms-public .student-notes-panel.is-editing .student-note-item:not(.is-active){display:none}
