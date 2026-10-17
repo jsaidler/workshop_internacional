@@ -65,7 +65,8 @@ try{
         $cohortId=(int)($context['cohort_id']??0);if($cohortId<1)throw new RuntimeException('Não foi possível identificar a turma desta dúvida.');
         $created=student_question_create_from_annotation($db,$studentId,$cohortId,$annotationId,$_POST);
         $questionPayload=['id'=>(int)($created['id']??0),'title'=>(string)($created['title']??($_POST['question_title']??'')),'status'=>(string)($created['status']??'open')];
-        $params=[];if($cohortUuid!=='')$params['cohort']=$cohortUuid;$params['id']=(int)$questionPayload['id'];$questionUrl='/aluno/duvidas.php?'.http_build_query($params);
+        $questionUrl=student_question_annotation_url($db,$studentId,$created,$cohortUuid);
+        if($questionUrl==='')throw new RuntimeException('A dúvida vinculada não está disponível nas suas matrículas atuais.');
     };
     if($action!==''){
         $annotationId=(int)($_POST['annotation_id']??0);$note=null;$transactional=$createQuestion&&in_array($action,['create_page','create_selection','question'],true);$started=$transactional&&!$db->inTransaction();if($started)$db->beginTransaction();
