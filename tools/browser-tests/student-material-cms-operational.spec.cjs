@@ -5,6 +5,21 @@ const viewports=[
   {name:'phone',width:390,height:844},
   {name:'desktop',width:1440,height:1100},
 ];
+
+/* On mobile the CMS reading pane scrolls; on desktop the window owns scroll.
+   Observe the actual owner instead of assuming it from the existence of the pane. */
+const setReadingPosition=(page,fraction)=>page.evaluate(fraction=>{
+ const reader=document.querySelector('.cms-student-reading[data-student-scroll-root]');
+ const innerExtent=Math.max(0,reader.scrollHeight-reader.clientHeight);
+ const owner=innerExtent>30?'reader':'window';
+ const extent=owner==='reader'?innerExtent:Math.max(0,document.documentElement.scrollHeight-innerHeight);
+ const target=Math.round(extent*fraction);
+ if(owner==='reader')reader.scrollTop=target;else window.scrollTo(0,target);
+ return {owner,extent,top:owner==='reader'?reader.scrollTop:window.scrollY};
+},fraction);
+const readReadingPosition=(page,owner)=>page.evaluate(owner=>
+ owner==='reader'?document.querySelector('.cms-student-reading[data-student-scroll-root]').scrollTop:window.scrollY,owner);
+
 for(const device of viewports){
   test('real CMS renderer, enrolled course and released sections — '+device.name,async({page})=>{
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
@@ -78,8 +93,7 @@ for(const device of viewports){
     expect(errors).toEqual([]);
   });
 }
-// The authenticated CMS reader scrolls in .cms-student-reading, not window.
-// Editing a saved note cannot move reading position or abandon keyboard focus.
+// The reading owner differs by viewport; editing cannot move either owner or abandon focus.
 for(const device of viewports){
  test('CMS notes retain reader scroll and restore list focus — '+device.name,async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
@@ -96,28 +110,25 @@ for(const device of viewports){
   const panel=page.locator('[data-student-notes-panel]');
   await panel.locator(':scope > summary').click();
   await expect(panel).toHaveAttribute('open','');
-  const position=await root.evaluate(el=>{
-    el.scrollTop=Math.round(Math.max(0,el.scrollHeight-el.clientHeight)*.48);
-    return {top:el.scrollTop,extent:el.scrollHeight-el.clientHeight};
-  });
-  expect(position.extent,'reader must have independent scroll').toBeGreaterThan(30);
+  const position=await setReadingPosition(page,.48);
+  expect(position.extent,'material must have a scrollable reading region').toBeGreaterThan(30);
   const entry=panel.locator('[data-annotation-item="1"]');
   await entry.locator('[data-annotation-edit]').click();
   const textarea=entry.locator('textarea[name="body"]');
   await expect(textarea).toBeVisible();
   await expect(textarea).toBeFocused();
-  await expect.poll(()=>root.evaluate(el=>el.scrollTop)).toBe(position.top);
+  await expect.poll(()=>readReadingPosition(page,position.owner)).toBe(position.top);
   await textarea.fill('Comparar resultados mantendo as condições constantes.');
   await entry.locator('button[name="annotation_action"][value="update"]').click();
   await expect(entry.locator('[data-note-save-status]')).toHaveText('Salvo.');
   await expect(textarea).toHaveValue('Comparar resultados mantendo as condições constantes.');
-  await expect.poll(()=>root.evaluate(el=>el.scrollTop)).toBe(position.top);
+  await expect.poll(()=>readReadingPosition(page,position.owner)).toBe(position.top);
   await page.screenshot({path:'student-visual-audit/material-reading-continuity/'+device.name+'-editing.png',animations:'disabled'});
   await panel.locator('[data-student-notes-back-button]').click();
   const trigger=entry.locator('[data-annotation-edit]');
   await expect(trigger).toBeFocused();
   await expect(entry.locator('form')).toBeHidden();
-  await expect.poll(()=>root.evaluate(el=>el.scrollTop)).toBe(position.top);
+  await expect.poll(()=>readReadingPosition(page,position.owner)).toBe(position.top);
   await page.screenshot({path:'student-visual-audit/material-reading-continuity/'+device.name+'-returned-to-list.png',animations:'disabled'});
   const geometry=await page.evaluate(()=>{
    const reader=document.querySelector('.cms-student-reading');
@@ -137,8 +148,7 @@ for(const device of viewports){
  });
 }
 
-// Browser history is the real navigation between material pages. Returning
-// must recover the independent reader viewport, not merely window.scrollY.
+// Browser history must restore the active reading scroll owner after navigation.
 for(const device of viewports){
  test('CMS material Back/Forward retains previous reading position — '+device.name,async({page})=>{
   await page.setViewportSize({width:device.width,height:device.height});
@@ -147,22 +157,18 @@ for(const device of viewports){
   const open=await page.goto(first,{waitUntil:'networkidle'});
   expect(open?.status()).toBe(200);
   const root=page.locator('.cms-student-reading[data-student-scroll-root]');
-  const before=await root.evaluate(el=>{
-   const extent=el.scrollHeight-el.clientHeight;
-   el.scrollTop=Math.round(extent*.65);
-   return{top:el.scrollTop,extent};
-  });
-  expect(before.extent,'long material needs independent scrolling').toBeGreaterThan(30);
+  const before=await setReadingPosition(page,.65);
+  expect(before.extent,'long material needs meaningful scrolling').toBeGreaterThan(30);
   await page.goto(next,{waitUntil:'networkidle'});
   await expect(page.locator('body.cms-student-material[data-cms-page-id="102"]')).toHaveCount(1);
   await page.goBack({waitUntil:'domcontentloaded'});
   await expect(page.locator('body.cms-student-material[data-cms-page-id="101"]')).toHaveCount(1);
-  await expect.poll(()=>root.evaluate(el=>Math.abs(el.scrollTop-before.top)),{timeout:7000}).toBeLessThanOrEqual(5);
+  await expect.poll(async()=>Math.abs((await readReadingPosition(page,before.owner))-before.top),{timeout:7000}).toBeLessThanOrEqual(5);
   await page.screenshot({path:'student-visual-audit/material-reading-continuity/'+device.name+'-after-browser-back.png',animations:'disabled'});
   await page.goForward({waitUntil:'domcontentloaded'});
   await expect(page.locator('body.cms-student-material[data-cms-page-id="102"]')).toHaveCount(1);
   await page.goBack({waitUntil:'domcontentloaded'});
-  await expect.poll(()=>root.evaluate(el=>Math.abs(el.scrollTop-before.top)),{timeout:7000}).toBeLessThanOrEqual(5);
+  await expect.poll(async()=>Math.abs((await readReadingPosition(page,before.owner))-before.top),{timeout:7000}).toBeLessThanOrEqual(5);
   await expect(page.locator('.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
  });
 }
