@@ -45,7 +45,7 @@ function materialUrl(cohort){
 test.describe('authenticated Material → annotation → question → Material, real SQLite and routes',()=>{
   test.describe.configure({mode:'serial'});
   test.setTimeout(120000);
-  test.beforeAll(async()=>{
+  test.beforeEach(async()=>{
     sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'student-material-journey-'));
     try{
       // The real bootstrap resolves SQLite and config relative to its own
@@ -73,7 +73,7 @@ test.describe('authenticated Material → annotation → question → Material, 
       throw error;
     }
   });
-  test.afterAll(async()=>{
+  test.afterEach(async()=>{
     server?.kill('SIGTERM');
     if(serverLog!==undefined)fs.closeSync(serverLog);
     if(sandbox)fs.rmSync(sandbox,{recursive:true,force:true,maxRetries:8,retryDelay:100});
@@ -190,4 +190,117 @@ test.describe('authenticated Material → annotation → question → Material, 
       expect(persisted.notes).toHaveLength(1);
     }finally{await context.close();}
   });
+
+  test('turning a linked selected note into a general note preserves question access or unavailability immediately',async({browser})=>{
+    const context=await browser.newContext({viewport:{width:390,height:844}});
+    const page=await context.newPage();
+    try{
+      await signIn(page,'journey-owner@example.invalid');
+      await page.goto(materialUrl('journey-b'),{waitUntil:'networkidle'});
+      const panel=page.locator('[data-student-notes-panel]');
+      const token=await panel.locator('[data-inline-note-compose] input[name="_csrf"]').inputValue();
+      const blockKey=await page.locator('[data-student-note-context="investigacao"] p[data-student-anchor-block]').getAttribute('data-student-anchor-block');
+      expect(blockKey).toBeTruthy();
+      const pageRevision=await panel.getAttribute('data-student-page-revision');
+
+      // Create through the real authenticated endpoint, with genuine anchor
+      // data and two questions originating in cohort B. The next interaction
+      // is performed through the unmodified Material editor.
+      const createSelected=async(suffix)=>{
+        const created=await page.evaluate(async data=>{
+          const body=new FormData();
+          for(const [key,value] of Object.entries(data))body.set(key,String(value));
+          const response=await fetch('/aluno/material-anotacao.php',{
+            method:'POST',credentials:'same-origin',body,
+            headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}
+          });
+          return {status:response.status,payload:await response.json()};
+        },{
+          _csrf:token,page_id:seedData.pageId,return_to:'/?page=material&lang=pt-br&cohort=journey-b',
+          cohort:'journey-b',annotation_action:'create_selection',
+          section_key:'investigacao',block_key:blockKey,
+          quote_exact:'Exposição',quote_prefix:'',quote_suffix:' e revelação',
+          start_offset:0,end_offset:9,source_block_hash:'',source_page_revision:pageRevision||'',
+          body:'Nota vinculada '+suffix,create_question:1,
+          question_title:'Dúvida vinculada '+suffix,question_visibility:'private'
+        });
+        expect(created.status).toBe(200);
+        expect(created.payload.ok).toBe(true);
+        expect(created.payload.annotation.anchorType).toBe('selection');
+        expect(created.payload.question_url).toMatch(/^\/aluno\/duvidas.php\?cohort=journey-b&id=\d+$/);
+        return {id:created.payload.annotation.id,questionId:created.payload.question.id};
+      };
+      const first=await createSelected('acessível');
+      const second=await createSelected('revogada');
+      expect(snapshot().notes).toHaveLength(2);
+      expect(snapshot().questions).toHaveLength(2);
+
+      // The same CMS page is available through A, while both questions
+      // originated in B. Detaching must not manufacture a second question.
+      await page.goto(materialUrl('journey-a'),{waitUntil:'networkidle'});
+      await panel.locator(':scope > summary').click();
+      const firstNote=panel.locator('[data-annotation-item="'+first.id+'"]');
+      await firstNote.locator('[data-annotation-edit]').click();
+      await expect(firstNote.getByRole('link',{name:'Ver dúvida'})).toHaveAttribute(
+        'href','/aluno/duvidas.php?cohort=journey-b&id='+first.questionId
+      );
+      const firstResponse=page.waitForResponse(response=>
+        response.url().includes('/aluno/material-anotacao.php')
+        &&(response.request().postData()||'').includes('name="annotation_action"')
+        &&(response.request().postData()||'').includes('detach')
+      );
+      await firstNote.getByRole('button',{name:'Tornar geral'}).click();
+      const firstJson=await (await firstResponse).json();
+      expect(firstJson.annotation.anchorType).toBe('page');
+      expect(firstJson.question.id).toBe(first.questionId);
+      expect(firstJson.question_url).toBe('/aluno/duvidas.php?cohort=journey-b&id='+first.questionId);
+      await expect(firstNote).toHaveClass(/is-page/);
+      await expect(firstNote.getByRole('link',{name:'Ver dúvida'})).toHaveAttribute('href',firstJson.question_url);
+      await expect(firstNote.locator('[data-note-question]')).toHaveCount(0);
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-detached-linked.png',animations:'disabled'});
+      await page.reload({waitUntil:'networkidle'});
+      await panel.locator(':scope > summary').click();
+      await firstNote.locator('[data-annotation-edit]').click();
+      await expect(firstNote.getByRole('link',{name:'Ver dúvida'})).toHaveAttribute('href',firstJson.question_url);
+
+      // With B revoked, the second note is still ours and the CMS remains
+      // accessible through A, but its linked conversation is not.
+      execFileSync('php',[seedScript,sandbox,'revoke'],{encoding:'utf8',timeout:45000});
+      await page.goto(materialUrl('journey-a'),{waitUntil:'networkidle'});
+      await panel.locator(':scope > summary').click();
+      const secondNote=panel.locator('[data-annotation-item="'+second.id+'"]');
+      await secondNote.locator('[data-annotation-edit]').click();
+      await expect(secondNote.locator('.student-note-linked-unavailable')).toHaveCount(1);
+      const secondResponse=page.waitForResponse(response=>
+        response.url().includes('/aluno/material-anotacao.php')
+        &&(response.request().postData()||'').includes('detach')
+      );
+      await secondNote.getByRole('button',{name:'Tornar geral'}).click();
+      const secondJson=await (await secondResponse).json();
+      expect(secondJson.annotation.anchorType).toBe('page');
+      expect(secondJson.question.id).toBe(second.questionId);
+      expect(secondJson.question_url).toBe('');
+      await expect(secondNote).toHaveClass(/is-page/);
+      await expect(secondNote.locator('.student-note-linked-unavailable')).toContainText('acesso indisponível');
+      await expect(secondNote.locator('[data-note-question]')).toHaveCount(0);
+      await expect(secondNote.getByRole('link',{name:'Ver dúvida'})).toHaveCount(0);
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-detached-revoked.png',animations:'disabled'});
+      await page.setViewportSize({width:1440,height:900});
+      await expect(secondNote.locator('.student-note-linked-unavailable')).toBeVisible();
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/desktop-detached-revoked.png',animations:'disabled'});
+      const persisted=snapshot();
+      expect(persisted.notes).toHaveLength(2);
+      expect(persisted.questions).toHaveLength(2);
+      for(const note of persisted.notes){
+        expect(note.anchor_type).toBe('page');
+        expect(note.question_id).toBeTruthy();
+      }
+      await page.reload({waitUntil:'networkidle'});
+      await panel.locator(':scope > summary').click();
+      await secondNote.locator('[data-annotation-edit]').click();
+      await expect(secondNote.locator('.student-note-linked-unavailable')).toHaveCount(1);
+      await expect(secondNote.locator('[data-note-question]')).toHaveCount(0);
+    }finally{await context.close();}
+  });
+
 });

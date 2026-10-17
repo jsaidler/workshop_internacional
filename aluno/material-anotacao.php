@@ -102,6 +102,21 @@ try{
             if(!$note)throw new RuntimeException('Anotação não encontrada para criar a dúvida.');
             $publishQuestion($annotationId,$note);
         }
+        // Detaching a selected passage changes the anchor, never the existing
+        // question relation. Any annotation mutation that returns a refreshed
+        // note must return its linked conversation as well; the browser cannot
+        // infer this relation, and an unavailable question must stay linked.
+        if($note&&$questionPayload===null){
+            $linkedQuestion=student_question_from_annotation($db,$studentId,$annotationId);
+            if($linkedQuestion){
+                $questionPayload=[
+                    'id'=>(int)$linkedQuestion['id'],
+                    'title'=>(string)$linkedQuestion['title'],
+                    'status'=>(string)$linkedQuestion['status'],
+                ];
+                $questionUrl=student_question_annotation_url($db,$studentId,$linkedQuestion,$cohortUuid);
+            }
+        }
         if($started)$db->commit();
         }catch(Throwable $e){if($started&&$db->inTransaction())$db->rollBack();throw $e;}
         if($wantsJson)$jsonExit(['ok'=>true,'action'=>$action,'annotation_id'=>$annotationId,'annotation'=>$annotationPayload($note),'question'=>$questionPayload,'question_url'=>$questionUrl]);
