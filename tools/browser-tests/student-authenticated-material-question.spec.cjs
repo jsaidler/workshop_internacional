@@ -552,4 +552,149 @@ test.describe('authenticated Material → annotation → question → Material, 
     }finally{await context.close();}
   });
 
+
+  test('overlapping selections across strong, em and link preserve CMS elements and allow choosing either note',async({browser})=>{
+    const context=await browser.newContext({viewport:{width:390,height:844}});
+    const page=await context.newPage();
+    try{
+      const revision=JSON.parse(execFileSync('php',[seedScript,sandbox,'revise-formatted'],{encoding:'utf8',timeout:45000}));
+      expect(revision.mode).toBe('revise-formatted');
+      await signIn(page,'journey-owner@example.invalid');
+      await page.goto(materialUrl('journey-b'),{waitUntil:'networkidle'});
+      const block=page.locator('[data-student-note-context="investigacao"] p[data-student-anchor-block]').first();
+      const original=await block.evaluate(element=>{
+        window.__qaOriginalLink=element.querySelector('a[href="#destino-link"]');
+        window.__qaOriginalStrong=element.querySelector('strong');
+        window.__qaOriginalEm=element.querySelector('em');
+        return element.textContent;
+      });
+      expect(original).toContain('Antes exposição e revelação e evidência depois final.');
+      await expect(block.locator('strong em')).toHaveText('e');
+      await expect(block.locator('a[href="#destino-link"]')).toHaveCount(1);
+
+      const selectByText=async exact=>{
+        await block.evaluate((element,needle)=>{
+          const text=element.textContent||'';
+          const start=text.indexOf(needle);
+          if(start<0)throw new Error('Missing selected source '+needle);
+          const end=start+needle.length;
+          const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);
+          const nodes=[];
+          while(walker.nextNode())nodes.push(walker.currentNode);
+          let cursor=0,startNode=null,endNode=null,startOffset=0,endOffset=0;
+          for(const node of nodes){
+            const next=cursor+(node.nodeValue||'').length;
+            if(!startNode&&start>=cursor&&start<next){startNode=node;startOffset=start-cursor;}
+            if(!endNode&&end>cursor&&end<=next){endNode=node;endOffset=end-cursor;}
+            cursor=next;
+          }
+          if(!startNode||!endNode)throw new Error('Cannot build selection across formatted nodes');
+          const range=document.createRange();
+          range.setStart(startNode,startOffset);range.setEnd(endNode,endOffset);
+          const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+          element.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,clientX:200,clientY:260}));
+          document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
+        },exact);
+        const action=page.locator('.student-selection-note-action');
+        await expect(action).toBeVisible({timeout:4000});
+        await action.click();
+        await expect(page.locator('[data-inline-note-compose]')).toBeVisible();
+      };
+      const saveSelection=async(quote,body)=>{
+        await selectByText(quote);
+        const composer=page.locator('[data-inline-note-compose]');
+        await expect(composer.locator('[data-anchor-exact]')).toHaveValue(quote);
+        await composer.locator('textarea[name="body"]').fill(body);
+        await composer.locator('[data-inline-note-submit]').click();
+        await expect(composer).toBeHidden();
+      };
+      await saveSelection('exposição e revelação','Nota A: exposição e relação com revelação.');
+      await saveSelection('e revelação e evidência','Nota B: evidência e procedimento.');
+      const notes=snapshot().notes;
+      expect(notes).toHaveLength(2);
+      expect(notes.map(n=>n.quote_exact)).toEqual(['exposição e revelação','e revelação e evidência']);
+      const ids=notes.map(n=>Number(n.id)).sort((a,b)=>a-b);
+      const shared=ids.join(',');
+      const sourceCheck=async()=>{
+        const actual=await block.evaluate(element=>({
+          text:element.textContent,
+          elementsIntact:element.querySelector('a[href="#destino-link"]')===window.__qaOriginalLink
+            &&element.querySelector('strong')===window.__qaOriginalStrong
+            &&element.querySelector('em')===window.__qaOriginalEm,
+          links:element.querySelectorAll('a[href="#destino-link"]').length,
+          nested:element.querySelectorAll('mark.student-inline-note-mark mark.student-inline-note-mark').length,
+          overlaps:element.querySelectorAll('mark[data-annotation-ids="'+window.__qaOverlapIds+'"]').length
+        }));
+        expect(actual.text).toBe(original);
+        expect(actual.elementsIntact).toBe(true);
+        expect(actual.links).toBe(1);
+        expect(actual.nested).toBe(0);
+      };
+      await page.evaluate(ids=>{window.__qaOverlapIds=ids;},shared);
+      await sourceCheck();
+      await expect(block.locator('strong mark.student-inline-note-mark')).not.toHaveCount(0);
+      await expect(block.locator('em mark.student-inline-note-mark')).toHaveCount(1);
+      await expect(block.locator('a[href="#destino-link"] mark.student-inline-note-mark')).not.toHaveCount(0);
+      const common=block.locator('a[href="#destino-link"] mark[data-annotation-ids="'+shared+'"]').first();
+      await expect(common).toBeVisible();
+      const beforeUrl=page.url();
+      await common.click();
+      await expect(page).toHaveURL(beforeUrl);
+      const panel=page.locator('[data-student-notes-panel]');
+      await expect(panel).toHaveClass(/is-overlap-choosing/);
+      const chooser=panel.locator('.student-note-overlap-chooser');
+      await expect(chooser).toBeVisible();
+      const options=chooser.locator('[data-note-overlap-choice]');
+      await expect(options).toHaveCount(2);
+      await expect(options.first()).toContainText('Nota A');
+      await expect(options.last()).toContainText('Nota B');
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/overlap-chooser-390.png',animations:'disabled'});
+
+      await options.last().click();
+      const second=panel.locator('[data-annotation-item="'+ids[1]+'"]');
+      await expect(second).toHaveClass(/is-active/);
+      await expect(second.locator('textarea[name="body"]')).toHaveValue('Nota B: evidência e procedimento.');
+      await expect(chooser).toBeHidden();
+      await panel.locator('[data-student-notes-back-button]').click();
+      await expect(panel).not.toHaveClass(/is-overlap-choosing/);
+      // Clicking a part used only by A takes the student directly to A.
+      await panel.locator(':scope > summary').click();
+      const onlyA=block.locator('strong mark[data-annotation-ids="'+ids[0]+'"]').first();
+      await expect(onlyA).toBeVisible();
+      await onlyA.click();
+      const first=panel.locator('[data-annotation-item="'+ids[0]+'"]');
+      await expect(first).toHaveClass(/is-active/);
+      await expect(first.locator('textarea[name="body"]')).toHaveValue('Nota A: exposição e relação com revelação.');
+
+      // Detaching one note redraws the others without nested marks or CMS
+      // structural changes, and persists through a real page reload.
+      await panel.locator('[data-student-notes-back-button]').click();
+      await panel.locator('[data-annotation-item="'+ids[1]+'"] [data-annotation-edit]').click();
+      await second.getByRole('button',{name:'Tornar geral'}).click();
+      await expect(second).toHaveClass(/is-page/);
+      await sourceCheck();
+      await expect(block.locator('mark[data-annotation-ids="'+ids[0]+'"]')).not.toHaveCount(0);
+      expect(snapshot().notes.filter(n=>n.anchor_type==='selection')).toHaveLength(1);
+      await panel.locator(':scope > summary').click();
+      await page.reload({waitUntil:'networkidle'});
+      await expect(block.locator('mark.student-inline-note-mark mark.student-inline-note-mark')).toHaveCount(0);
+      await expect(block).toContainText(original);
+      await expect(block.locator('strong')).toHaveCount(1);
+      await expect(block.locator('em')).toHaveCount(1);
+      await expect(block.locator('a[href="#destino-link"]')).toHaveCount(1);
+      await expect(block.locator('mark[data-annotation-ids="'+ids[0]+'"]')).not.toHaveCount(0);
+      await expect(block.locator('mark[data-annotation-ids="'+ids[1]+'"]')).toHaveCount(0);
+
+      for(const [width,height,name] of [[320,720,'320'],[1440,900,'1440']]){
+        await page.setViewportSize({width,height});
+        await panel.locator(':scope > summary').click();
+        await panel.locator('[data-annotation-item="'+ids[0]+'"] [data-annotation-edit]').click();
+        await page.screenshot({path:'student-visual-audit/authenticated-material-question/formatted-selection-'+name+'.png',animations:'disabled'});
+        await panel.locator(':scope > summary').click();
+      }
+      await block.locator('a[href="#destino-normal"]').click();
+      await expect(page).toHaveURL(/#destino-normal$/);
+    }finally{await context.close();}
+  });
+
 });
