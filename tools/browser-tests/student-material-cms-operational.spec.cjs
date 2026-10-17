@@ -14,7 +14,7 @@ const setReadingPosition=(page,fraction)=>page.evaluate(fraction=>{
  const owner=innerExtent>30?'reader':'window';
  const extent=owner==='reader'?innerExtent:Math.max(0,document.documentElement.scrollHeight-innerHeight);
  const target=Math.round(extent*fraction);
- if(owner==='reader')reader.scrollTop=target;else window.scrollTo(0,target);
+ if(owner==='reader')reader.scrollTop=target;else window.scrollTo({top:target,behavior:'instant'});
  return {owner,extent,top:owner==='reader'?reader.scrollTop:window.scrollY};
 },fraction);
 const readReadingPosition=(page,owner)=>page.evaluate(owner=>
@@ -159,6 +159,9 @@ for(const device of viewports){
   const root=page.locator('.cms-student-reading[data-student-scroll-root]');
   const before=await setReadingPosition(page,.65);
   expect(before.extent,'long material needs meaningful scrolling').toBeGreaterThan(30);
+  if(before.owner==='reader'){
+   await expect.poll(()=>page.evaluate(()=>history.state?.__cmsStudentReaderScrollV1)).toBe(before.top);
+  }
   await page.goto(next,{waitUntil:'networkidle'});
   await expect(page.locator('body.cms-student-material[data-cms-page-id="102"]')).toHaveCount(1);
   await page.goBack({waitUntil:'domcontentloaded'});
