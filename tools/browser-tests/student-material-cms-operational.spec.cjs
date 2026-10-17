@@ -137,6 +137,36 @@ for(const device of viewports){
  });
 }
 
+// Browser history is the real navigation between material pages. Returning
+// must recover the independent reader viewport, not merely window.scrollY.
+for(const device of viewports){
+ test('CMS material Back/Forward retains previous reading position — '+device.name,async({page})=>{
+  await page.setViewportSize({width:device.width,height:device.height});
+  const first=base+'?page=current&cohort=cohort-a';
+  const next=base+'?page=next&cohort=cohort-a';
+  const open=await page.goto(first,{waitUntil:'networkidle'});
+  expect(open?.status()).toBe(200);
+  const root=page.locator('.cms-student-reading[data-student-scroll-root]');
+  const before=await root.evaluate(el=>{
+   const extent=el.scrollHeight-el.clientHeight;
+   el.scrollTop=Math.round(extent*.65);
+   return{top:el.scrollTop,extent};
+  });
+  expect(before.extent,'long material needs independent scrolling').toBeGreaterThan(30);
+  await page.goto(next,{waitUntil:'networkidle'});
+  await expect(page.locator('body.cms-student-material[data-cms-page-id="102"]')).toHaveCount(1);
+  await page.goBack({waitUntil:'domcontentloaded'});
+  await expect(page.locator('body.cms-student-material[data-cms-page-id="101"]')).toHaveCount(1);
+  await expect.poll(()=>root.evaluate(el=>Math.abs(el.scrollTop-before.top)),{timeout:7000}).toBeLessThanOrEqual(5);
+  await page.screenshot({path:'student-visual-audit/material-reading-continuity/'+device.name+'-after-browser-back.png',animations:'disabled'});
+  await page.goForward({waitUntil:'domcontentloaded'});
+  await expect(page.locator('body.cms-student-material[data-cms-page-id="102"]')).toHaveCount(1);
+  await page.goBack({waitUntil:'domcontentloaded'});
+  await expect.poll(()=>root.evaluate(el=>Math.abs(el.scrollTop-before.top)),{timeout:7000}).toBeLessThanOrEqual(5);
+  await expect(page.locator('.student-mobile-nav a[href="/aluno/cursos.php"]')).toHaveAttribute('aria-current','page');
+ });
+}
+
 test('CMS route rejects absent enrollment, wrong student and wrong cohort before rendering',async({page})=>{
  for(const q of ['actor=none','actor=other','cohort=cohort-b']){
    const res=await page.goto(base+'?page=current&'+q,{waitUntil:'domcontentloaded'});
