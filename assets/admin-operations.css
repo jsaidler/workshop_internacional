@@ -1,0 +1,68 @@
+/* Operation-specific workspace components: registrations, cohorts, students and people. */
+.admin-operation-note{max-width:72ch;color:var(--admin-muted);font-size:12px;line-height:1.5}
+.admin-operation-detail{border-top:3px solid var(--admin-ink)}
+.admin-operation-detail>header{align-items:center}
+.admin-operation-detail>header .admin-kicker{margin-bottom:3px}
+.admin-operation-detail .admin-detail-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:7px;color:var(--admin-muted);font-size:12px}
+.admin-operation-detail .admin-detail-meta .admin-badge{margin:0}
+.admin-operation-section{padding-top:20px;border-top:1px solid var(--admin-line)}
+.admin-operation-section:first-of-type{padding-top:0;border-top:0}
+.admin-operation-section>h3{margin:0 0 12px;font-size:15px}
+.admin-operation-section>p{margin:0;color:var(--admin-muted);font-size:13px}
+.admin-operation-danger{padding-top:20px;border-top:1px solid #d7aaa5}
+.admin-operation-danger h3{margin:0 0 6px;color:var(--admin-danger);font-size:15px}
+.admin-operation-danger p{max-width:68ch;margin:0 0 12px;color:var(--admin-muted);font-size:12px}
+.admin-operation-create{display:flex;justify-content:flex-end}
+.admin-operation-create details{width:min(100%,760px)}
+.admin-operation-create details>summary{list-style:none;cursor:pointer}
+.admin-operation-create details>summary::-webkit-details-marker{display:none}
+.admin-operation-create details[open]>summary{margin-bottom:12px}
+.admin-operation-create .admin-card{box-shadow:none}
+@media(max-width:800px){
+  .admin-operation-detail>header{align-items:flex-start}
+  .admin-operation-detail>header .admin-card-actions{width:100%}
+  .admin-operation-detail>header .admin-card-actions .admin-button{width:100%}
+}
+@media(max-width:560px){
+  .admin-operation-create{justify-content:stretch}
+  .admin-operation-create details{width:100%}
+}
+
+
+/* Transfer of a course participant is a high-value administrative task.
+   Do not inherit the small inline table-toolbar hit targets. */
+.admin-student-transfer{display:grid;gap:14px}
+.admin-student-transfer>h3{
+  margin:0;color:var(--admin-ink);
+  font:700 clamp(17px,2vw,21px)/1.25 var(--admin-body,Arial,sans-serif)
+}
+.admin-student-transfer>p{max-width:65ch;margin:0;color:var(--admin-muted);font-size:13px;line-height:1.55}
+.admin-student-transfer>p strong{color:var(--admin-ink)}
+.admin-student-transfer form.admin-inline-actions{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;gap:12px;width:100%;max-width:760px;min-width:0;margin:0
+}
+.admin-student-transfer form.admin-inline-actions>label{
+  display:grid;gap:8px;min-width:0;
+  font:600 13px/1.4 var(--admin-body,Arial,sans-serif);
+  color:var(--admin-ink)
+}
+.admin-student-transfer form.admin-inline-actions select{
+  display:block;min-width:0;width:100%;min-height:46px;box-sizing:border-box;
+  padding:9px 13px;border:1px solid var(--admin-line);border-radius:10px;
+  background:var(--admin-surface);color:var(--admin-ink);
+  font:500 15px/1.35 var(--admin-body,Arial,sans-serif)
+}
+.admin-student-transfer form.admin-inline-actions>.admin-button{
+  display:flex;align-items:center;justify-content:center;
+  min-height:46px;padding:10px 16px;box-sizing:border-box;
+  border-radius:10px;font:650 13px/1.35 var(--admin-body,Arial,sans-serif);
+  text-align:center;white-space:normal
+}
+.admin-student-transfer form.admin-inline-actions :is(select,.admin-button):focus-visible{
+  outline:2px solid var(--admin-ink);outline-offset:3px
+}
+@media(max-width:800px){
+ .admin-student-transfer form.admin-inline-actions{grid-template-columns:minmax(0,1fr)}
+ .admin-student-transfer form.admin-inline-actions>.admin-button{width:100%}
+}

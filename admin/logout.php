@@ -1,0 +1,1 @@
+<?php require __DIR__.'/../app/bootstrap.php';if($_SERVER['REQUEST_METHOD']==='POST'&&verify_csrf('logout',$_POST['_csrf']??null)){$_SESSION=[];session_destroy();}header('Location: /admin/login.php',true,303);
