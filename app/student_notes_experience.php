@@ -131,7 +131,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
     $questionContext=function_exists('student_enrollment_material_context')?student_enrollment_material_context($db,$student,$page,$cohortUuid):null;
     if($questionContext&&trim((string)($questionContext['cohort_uuid']??''))!=='')$cohortUuid=(string)$questionContext['cohort_uuid'];
     $questionAvailable=$questionContext&&(int)($questionContext['cohort_id']??0)>0&&function_exists('student_question_create')&&function_exists('student_question_attach_annotation');
-    $activeQuestionEnrollments=student_enrollment_list($db,(int)$student['id']);
+    $activeQuestionEnrollments=null; // Resolve once, only when a saved note actually has a linked question.
     $questionComposer=static function(bool $existing=false) use($questionAvailable,$cohortUuid): string {
         if(!$questionAvailable)return '';
         $submitName=$existing?'annotation_action':'create_question';$submitValue=$existing?'question':'1';
@@ -189,7 +189,7 @@ function student_material_render_notebook(PDO $db,array $student,array $page,arr
         foreach($annotations as $note){
             $id=(int)$note['id'];$selection=(string)$note['anchor_type']==='selection';
             $linkedQuestion=function_exists('student_question_from_annotation')?student_question_from_annotation($db,(int)$student['id'],$id):null;
-            $linkedQuestionUrl=$linkedQuestion?student_question_annotation_url($db,(int)$student['id'],$linkedQuestion,$cohortUuid,$activeQuestionEnrollments):'';
+            $linkedQuestionUrl=$linkedQuestion?student_question_annotation_url($db,(int)$student['id'],$linkedQuestion,$cohortUuid,$activeQuestionEnrollments??=student_enrollment_list($db,(int)$student['id'])):'';
             $panel.='<article class="student-note-item'.($selection?' is-selection':' is-page').'" id="anotacao-'.$id.'" data-annotation-item="'.$id.'">'
                 .'<header><span>'.($selection?'Trecho':'Página').'</span><strong class="student-note-title">'.h($selection?mb_substr(trim((string)$note['quote_exact']),0,140):'Anotação geral').'</strong>'.($selection?'<small data-annotation-status="'.$id.'">Localizando trecho…</small>':'').'</header>'
                 .'<p class="student-note-body-preview">'.nl2br(h((string)$note['body'])).'</p>'
