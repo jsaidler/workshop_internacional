@@ -148,6 +148,54 @@ for(const device of viewports){
  });
 }
 
+// A failed AJAX save must leave the draft editable and announce the error at the
+// form, with keyboard focus on the message (not the previous submit control).
+for(const device of viewports){
+ test('CMS notes show actionable save failures without losing draft — '+device.name,async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.setViewportSize({width:device.width,height:device.height});
+  await page.route('**/aluno/material-anotacao.php',route=>route.fulfill({
+   status:422,contentType:'application/json',
+   body:JSON.stringify({ok:false,error:'Não foi possível salvar esta anotação.'})
+  }));
+  await page.goto(base+'?page=current&cohort=cohort-a',{waitUntil:'networkidle'});
+  const panel=page.locator('[data-student-notes-panel]');
+  await panel.locator(':scope > summary').click();
+  // Opening the independent sheet can change the viewport scroll owner.
+  // Measure the reading position only after the sheet reaches its open state.
+  const before=await setReadingPosition(page,.48);
+  const article=panel.locator('[data-annotation-item="1"]');
+  await article.locator('[data-annotation-edit]').click();
+  const textarea=article.locator('textarea[name="body"]');
+  const draft='Rascunho mantido após falha de servidor.';
+  await textarea.fill(draft);
+  await article.locator('button[name="annotation_action"][value="update"]').click();
+  const error=article.locator('[data-note-save-status][role="alert"]');
+  await expect(error).toHaveText('Não foi possível salvar esta anotação.');
+  await expect(error).toBeVisible();
+  await expect(error).toBeFocused();
+  // Check the actual rendered contrast; a focusable warning with pale text
+  // on a pale CMS surface is still unusable.
+  const contrast=await error.evaluate(el=>{
+    const rgb=value=>(value.match(/[0-9.]+/g)||[]).slice(0,3).map(Number);
+    const luminance=value=>{
+      const channels=rgb(value).map(c=>{
+        const v=c/255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;
+      });
+      return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;
+    };
+    const style=getComputedStyle(el),a=luminance(style.color),b=luminance(style.backgroundColor);
+    return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+  });
+  expect(contrast,'message must remain readable in CMS themes').toBeGreaterThanOrEqual(4.5);
+  await expect(textarea).toHaveValue(draft);
+  await expect(article.locator('button[name="annotation_action"][value="update"]')).toBeEnabled();
+  await expect.poll(async()=>Math.abs((await readReadingPosition(page,before.owner))-before.top)).toBeLessThanOrEqual(2);
+  await page.screenshot({path:'student-visual-audit/material-reading-continuity/'+device.name+'-save-error.png',animations:'disabled'});
+  expect(errors).toEqual([]);
+ });
+}
+
 // Browser history must restore the active reading scroll owner after navigation.
 for(const device of viewports){
  test('CMS material Back/Forward retains previous reading position — '+device.name,async({page})=>{

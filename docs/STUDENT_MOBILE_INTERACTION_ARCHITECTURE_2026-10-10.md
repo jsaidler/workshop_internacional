@@ -130,3 +130,11 @@ O termo antigo 'quatro destinos' no histórico deste documento se refere ao proj
 ## Material — editor de notas e retorno ao leitor (16/10/2026)
 
 O painel de anotações é um estado transitório da página de material, não novo destino navegável: manter a URL e o histórico. Ao entrar em edição de nota salva, o campo de texto ganha o foco quando a ação que o abriu deixa de estar visível. `← Todas as anotações` devolve foco ao acionador daquele item. Usar `preventScroll` no foco do editor, porque o Material autenticado usa `.cms-student-reading` no telefone e `window` no desktop. Em contraste, Back/Forward entre páginas do CMS continua sendo navegação real e deve restaurar a posição do contêiner de leitura. O mesmo contrato vale em 320/390/1440 px e para notas legadas.
+
+## Material — falhas de salvamento nas anotações (17/10/2026)
+
+Ao falhar uma operação AJAX de anotação, o rascunho permanece íntegro no editor, os comandos voltam a ficar disponíveis e a mensagem de erro é colocada antes das ações de envio, no próprio formulário. A mensagem recebe foco programático para comunicar a falha a quem usa teclado ou leitor de tela; o painel rola internamente, apenas quando necessário para torná-la visível. O contêiner de leitura do CMS não é movido. Um sucesso não deve deslocar o foco para a mensagem. Não alterar endpoint, CSRF, matrículas, permissões ou histórico para corrigir feedback de formulário.
+
+A regressão operacional deve simular erro HTTP/JSON, verificar rascunho, controles, mensagem/foco, preservação da posição de leitura e capturas de 320/390/1440 px. A simulação não substitui o teste de escrita autenticada na hospedagem.
+
+**Correção por inspeção do primeiro artefato verde:** o estado de falha no tema claro usava texto de erro `#ecc5b7` sobre superfície clara, legível apenas precariamente. A mensagem de erro adota `var(--text)` do Design CMS para assegurar legibilidade em ambos os temas, preservando a identificação de erro pela borda e pelo estado acessível. A regressão mede contraste de texto/fundo (pelo menos 4,5:1), não apenas presença do alerta.
