@@ -58,6 +58,48 @@ const fingerprint=text=>{let hash=2166136261;for(let i=0;i<text.length;i++){hash
 const nodeInsideRoot=node=>{const target=node?.nodeType===Node.ELEMENT_NODE?node:node?.parentNode;return!!target&&root.contains(target);};
 const readingBlock=blockKey=>blockKey?root.querySelector(`[data-student-anchor-block="${CSS.escape(blockKey)}"]`):null;
 const readingScrollRoot=()=>document.querySelector('.cms-student-reading');
+
+// Native Back/Forward restores the window on desktop, but not necessarily a
+// scrollable reading pane on phones. Attach the pane offset to its own history
+// entry; replaceState preserves the native stack and any unrelated state.
+const readingHistoryKey='__cmsStudentReaderScrollV1';
+const internalReader=()=>{
+  const reader=readingScrollRoot();
+  return reader&&reader.scrollHeight>reader.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(reader).overflowY)?reader:null;
+};
+let restoringReader=true,saveReadingFrame=0;
+const saveReadingHistory=()=>{
+  if(restoringReader)return;
+  const reader=internalReader();if(!reader)return;
+  const state=history.state;
+  if(state!==null&&(typeof state!=='object'||Array.isArray(state)))return;
+  const top=Math.round(reader.scrollTop);
+  if(state?.[readingHistoryKey]===top)return;
+  try{history.replaceState({...state,[readingHistoryKey]:top},'');}catch(_){/* Keep reading usable when History API is restricted. */}
+};
+const restoreReadingHistory=()=>{
+  const reader=internalReader(),saved=history.state?.[readingHistoryKey];
+  if(reader&&typeof saved==='number'&&Number.isFinite(saved)&&saved>=0&&Math.abs(reader.scrollTop-saved)>1)
+    reader.scrollTop=saved;
+};
+const scheduleReadingRestore=()=>{
+  restoringReader=true;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    restoreReadingHistory();
+    requestAnimationFrame(()=>{restoringReader=false;});
+  }));
+};
+readingScrollRoot()?.addEventListener('scroll',()=>{
+  if(restoringReader||saveReadingFrame)return;
+  saveReadingFrame=requestAnimationFrame(()=>{saveReadingFrame=0;saveReadingHistory();});
+},{passive:true});
+window.addEventListener('pagehide',()=>{
+  if(saveReadingFrame){cancelAnimationFrame(saveReadingFrame);saveReadingFrame=0;}
+  saveReadingHistory();
+});
+window.addEventListener('pageshow',scheduleReadingRestore);
+scheduleReadingRestore();
+
 const currentReadingScroll=()=>readingScrollRoot()?.scrollTop??window.scrollY;
 const adjustReadingScroll=delta=>{const root=readingScrollRoot();if(root)root.scrollTop+=delta;else window.scrollBy(0,delta);};
 const restoreReadingScroll=value=>{const root=readingScrollRoot();if(root)root.scrollTop=value;else window.scrollTo(0,value);};
