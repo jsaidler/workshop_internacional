@@ -68,9 +68,9 @@ function student_question_attach_annotation(PDO $db,int $questionId,int $student
 }
 
 function student_question_create_from_annotation(PDO $db,int $studentId,int $cohortId,int $annotationId,array $input): array {
-    $existing=student_question_from_annotation($db,$studentId,$annotationId);if($existing)return $existing;
     $source=student_question_annotation_source($db,$studentId,$cohortId,$annotationId);
     if(!$source)throw new RuntimeException('Anotação de origem inválida para esta turma.');
+    $existing=student_question_from_annotation($db,$studentId,$annotationId);if($existing)return $existing;
     $title=student_workspace_text($input['question_title']??'',180);if($title==='')throw new RuntimeException('Dê um título à dúvida.');
     $visibility=(string)($input['question_visibility']??'private');if(!in_array($visibility,['private','cohort','course'],true))$visibility='private';
     $created=student_question_create($db,$studentId,$cohortId,['topic'=>'Material','title'=>$title,'body'=>(string)$source['body'],'visibility'=>$visibility,'test_id'=>'']);
