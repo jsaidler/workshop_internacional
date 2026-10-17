@@ -16,7 +16,7 @@ require $root.'/app/bootstrap.php';
 $db=database();
 
 if($mode==='snapshot'){
-    $notes=$db->query("SELECT a.id,a.student_id,a.page_id,a.body,a.anchor_type,a.section_key,a.quote_exact,a.block_key,a.source_page_revision,q.id question_id,q.cohort_id question_cohort_id,q.visibility FROM student_material_annotations a LEFT JOIN student_questions q ON q.source_annotation_id=a.id ORDER BY a.id")->fetchAll(PDO::FETCH_ASSOC);
+    $notes=$db->query("SELECT a.id,a.student_id,a.page_id,a.body,a.anchor_type,a.section_key,a.quote_exact,a.block_key,a.source_block_hash,a.source_page_revision,q.id question_id,q.cohort_id question_cohort_id,q.visibility FROM student_material_annotations a LEFT JOIN student_questions q ON q.source_annotation_id=a.id ORDER BY a.id")->fetchAll(PDO::FETCH_ASSOC);
     $questions=$db->query('SELECT id,student_id,cohort_id,source_annotation_id,visibility,body FROM student_questions ORDER BY id')->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode(['notes'=>$notes,'questions'=>$questions],JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE)."\n";
     exit;
