@@ -33,6 +33,30 @@ function student_question_from_annotation(PDO $db,int $studentId,int $annotation
     return $q->fetch(PDO::FETCH_ASSOC)?:null;
 }
 
+/** Resolve a linked question to a context the annotation owner can actually open.
+ * The current material cohort is only a preference, never the authority.
+ * Reuse the enrollment list and question-visibility policy from the domain.
+ */
+function student_question_annotation_url(PDO $db,int $studentId,array $question,string $preferredCohortUuid='',?array $activeEnrollments=null): string {
+    $questionId=(int)($question['id']??0);
+    if($questionId<1||$studentId<1||(int)($question['student_id']??0)!==$studentId)return '';
+    $activeEnrollments??=student_enrollment_list($db,$studentId);
+    $available=[];
+    foreach($activeEnrollments as $enrollment){
+        $cohortId=(int)($enrollment['cohort_id']??0);
+        $uuid=trim((string)($enrollment['cohort_uuid']??''));
+        if($cohortId<1||$uuid===''||!student_question_in_cohort_context($db,$question,$cohortId))continue;
+        $available[]=['cohort_id'=>$cohortId,'uuid'=>$uuid];
+    }
+    if(!$available)return '';
+    $selected=null;
+    $preferredCohortUuid=trim($preferredCohortUuid);
+    if($preferredCohortUuid!=='')foreach($available as $option)if($option['uuid']===$preferredCohortUuid){$selected=$option;break;}
+    if($selected===null)foreach($available as $option)if($option['cohort_id']===(int)$question['cohort_id']){$selected=$option;break;}
+    $selected??=$available[0];
+    return '/aluno/duvidas.php?cohort='.rawurlencode($selected['uuid']).'&id='.$questionId;
+}
+
 function student_question_attach_annotation(PDO $db,int $questionId,int $studentId,int $cohortId,int $annotationId): void {
     if($annotationId<1)return;
     if(!student_question_annotation_source($db,$studentId,$cohortId,$annotationId))throw new RuntimeException('Anotação de origem inválida para esta turma.');
