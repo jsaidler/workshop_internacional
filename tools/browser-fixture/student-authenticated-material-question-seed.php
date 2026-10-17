@@ -25,6 +25,27 @@ if($mode==='revoke'){
     $db->prepare("UPDATE course_enrollments SET status='disabled' WHERE student_id=(SELECT id FROM student_users WHERE email=?) AND cohort_id=(SELECT id FROM course_cohorts WHERE cohort_uuid=?)")->execute(['journey-owner@example.invalid','journey-b']);
     echo "revoked\n";exit;
 }
+if($mode==='revise-formatted'){
+    // An actual published CMS document with a paragraph spanning inline
+    // emphasis and an anchor; the normal route sanitizes and instruments it.
+    $activityId=(int)$db->query("SELECT id FROM activities WHERE is_root=1 ORDER BY id LIMIT 1")->fetchColumn();
+    $page=cms_page_by_slug($db,$activityId,'pt-BR','material');
+    if(!$page)throw new RuntimeException('Fixture material not found.');
+    $document=cms_page_doc($page,false);
+    $document['html']='<article class="study-material"><section data-cms-section="investigacao">'
+        .'<h1>Material para regressão autenticada</h1>'
+        .'<p>Antes <strong>exposição <em>e</em></strong> <a href="#destino-link">revelação e evidência</a> depois final. '
+        .'<a href="#destino-normal">Consultar fonte</a>.</p>'
+        .'<p id="destino-link">Destino da referência editorial.</p>'
+        .'<p id="destino-normal">Destino da fonte sem destaque.</p>'
+        .'</section></article>';
+    $page=cms_page_save($db,(int)$page['id'],$document,(int)$page['draft_revision'],[
+        'title'=>(string)$page['title'],'slug'=>(string)$page['slug'],'show_in_nav'=>true
+    ]);
+    $page=cms_page_publish($db,(int)$page['id']);
+    echo json_encode(['revision'=>$page['published_revision'],'mode'=>$mode],JSON_THROW_ON_ERROR)."\\n";
+    exit;
+}
 if($mode==='revise'){
     // Use the same CMS draft/publish services as the application. The stable
     // page and section survive, but the old source excerpt no longer exists.
