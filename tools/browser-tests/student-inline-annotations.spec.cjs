@@ -282,6 +282,49 @@ for(const [device,width,height] of [['phone',390,844],['desktop',1280,820]]){
   });
 }
 
+test('general note composer resets question mode after successful question publication',async({page})=>{
+  const submissions=[];
+  await page.route('**/aluno/material-anotacao.php',async route=>{
+    const body=route.request().postData()||'';
+    submissions.push(body);
+    const id=90+submissions.length;
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      ok:true,action:'create_page',annotation_id:id,
+      annotation:{id,anchorType:'page',sectionKey:'pagina',body:submissions.length===1?'Primeira anotação':'Segunda anotação'},
+      ...(submissions.length===1?{question:{id:44,title:'Primeira dúvida'},question_url:'/aluno/duvidas.php?cohort=turma-1&id=44'}:{})
+    })});
+  });
+  await page.goto(url,{waitUntil:'networkidle'});
+  const panel=page.locator('[data-student-notes-panel]');
+  await panel.locator(':scope > summary').click();
+  const general=panel.locator('[data-student-note-new]');
+  await general.locator(':scope > summary').click();
+  const form=general.locator('form');
+  await form.locator('textarea[name="body"]').fill('Primeira anotação');
+  const question=form.locator('[data-note-question]');
+  await question.locator(':scope > summary').click();
+  await form.locator('[name="question_title"]').fill('Primeira dúvida');
+  await form.locator('[name="question_visibility"][value="cohort"]').check();
+  await form.locator('[data-note-question-publish]').click();
+  await expect(panel.locator('[data-annotation-item="91"]')).toHaveCount(1);
+  await expect(general).not.toHaveAttribute('open','');
+  await expect(general.locator(':scope > summary')).toBeFocused();
+  await general.locator(':scope > summary').click();
+  await expect(panel).toHaveClass(/is-general-composing/);
+  await expect(panel).not.toHaveClass(/is-page-questioning/);
+  await expect(question).not.toHaveAttribute('open','');
+  await expect(form.locator('textarea[name="body"]')).toBeVisible();
+  await expect(form.locator('textarea[name="body"]')).toHaveValue('');
+  await expect(form.locator('[name="question_title"]')).toHaveValue('');
+  await expect(form.locator('[name="question_visibility"][value="private"]')).toBeChecked();
+  await form.locator('textarea[name="body"]').fill('Segunda anotação');
+  await form.getByRole('button',{name:'Salvar anotação da página'}).click();
+  await expect(panel.locator('[data-annotation-item="92"]')).toHaveCount(1);
+  expect(submissions).toHaveLength(2);
+  expect(submissions[0]).toContain('name="create_question"');
+  expect(submissions[1]).not.toContain('name="create_question"');
+});
+
 test('failed saved-note update preserves its draft and exposes an accessible error',async({page})=>{
   await page.route('**/aluno/material-anotacao.php',route=>route.fulfill({
     status:422,contentType:'application/json',body:JSON.stringify({ok:false,error:'Não foi possível salvar. Tente novamente.'})
