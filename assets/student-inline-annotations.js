@@ -123,9 +123,44 @@ panel.addEventListener('toggle',()=>{if(!panel.open&&compose&&!compose.hidden&&c
 const unmark=()=>root.querySelectorAll('mark.student-inline-note-mark').forEach(mark=>mark.replaceWith(...mark.childNodes));
 const findOccurrences=(text,needle)=>{const out=[];let from=0;while(needle&&from<=text.length){const at=text.indexOf(needle,from);if(at<0)break;out.push(at);from=at+Math.max(1,needle.length);}return out;};
 const scoreCandidate=(text,start,note)=>{let score=0,end=start+note.exact.length;if(note.prefix){const before=text.slice(Math.max(0,start-note.prefix.length),start);if(before===note.prefix)score+=4;else if(before.endsWith(note.prefix.slice(-Math.min(40,note.prefix.length))))score+=2;}if(note.suffix){const after=text.slice(end,end+note.suffix.length);if(after===note.suffix)score+=4;else if(after.startsWith(note.suffix.slice(0,Math.min(40,note.suffix.length))))score+=2;}return score;};
-const candidatesInBlock=(block,note)=>findOccurrences(block.textContent||'',note.exact).map(start=>({block,start,end:start+note.exact.length,score:scoreCandidate(block.textContent||'',start,note)}));
-const uniqueBest=list=>{if(!list.length)return null;const sorted=[...list].sort((a,b)=>b.score-a.score);return sorted.length>1&&sorted[0].score===sorted[1].score?{ambiguous:true}:sorted[0];};
-const locate=note=>{if(note.anchorType!=='selection'||!note.exact)return null;const preferred=root.querySelector(`[data-student-anchor-block="${CSS.escape(note.blockKey||'')}"]`);if(preferred){const text=preferred.textContent||'',start=Number(note.start),end=Number(note.end);if(Number.isInteger(start)&&Number.isInteger(end)&&start>=0&&end<=text.length&&text.slice(start,end)===note.exact)return{block:preferred,start,end,state:'linked'};const local=uniqueBest(candidatesInBlock(preferred,note));if(local?.ambiguous)return{state:'ambiguous',block:preferred};if(local)return{...local,state:'linked'};}const all=[];root.querySelectorAll('[data-student-anchor-block]').forEach(block=>candidatesInBlock(block,note).forEach(c=>{c.score+=(block.closest('[data-student-note-context]')?.getAttribute('data-student-note-context')===note.sectionKey?2:0);all.push(c);}));const best=uniqueBest(all);if(best?.ambiguous)return{state:'ambiguous',block:preferred||null};if(best)return{...best,state:'moved'};return{state:preferred?'altered':'removed',block:preferred||null};};
+// Offset and ordinal alone do not identify a passage after an editorial CMS
+// revision: a different paragraph can occupy the same slot and quote the same
+// short phrase. Prefer the full source-block fingerprint where available;
+// otherwise demand an exact textual neighbour, not a section/ordinal heuristic.
+const candidatesInBlock=(block,note)=>{
+  const text=block.textContent||'';
+  const unchanged=!!note.sourceBlockHash&&fingerprint(text)===note.sourceBlockHash;
+  return findOccurrences(text,note.exact).map(start=>{
+    const end=start+note.exact.length;
+    const prefixExact=!!note.prefix&&text.slice(Math.max(0,start-note.prefix.length),start)===note.prefix;
+    const suffixExact=!!note.suffix&&text.slice(end,end+note.suffix.length)===note.suffix;
+    const hashMatch=unchanged&&Number(note.start)===start&&Number(note.end)===end;
+    const context=scoreCandidate(text,start,note);
+    return{block,start,end,score:(hashMatch?16:0)+context,strong:hashMatch||prefixExact||suffixExact};
+  });
+};
+const uniqueBest=list=>{
+  if(!list.length)return null;
+  const sorted=[...list].sort((a,b)=>b.score-a.score);
+  if(!sorted[0].strong||(sorted.length>1&&sorted[0].score===sorted[1].score))
+    return{ambiguous:true};
+  return sorted[0];
+};
+const locate=note=>{
+  if(note.anchorType!=='selection'||!note.exact)return null;
+  const preferred=root.querySelector(`[data-student-anchor-block="${CSS.escape(note.blockKey||'')}"]`);
+  if(preferred&&note.sourceBlockHash&&fingerprint(preferred.textContent||'')===note.sourceBlockHash){
+    const start=Number(note.start),end=Number(note.end),text=preferred.textContent||'';
+    if(Number.isInteger(start)&&Number.isInteger(end)&&start>=0&&end<=text.length&&text.slice(start,end)===note.exact)
+      return{block:preferred,start,end,state:'linked'};
+  }
+  const all=[];
+  root.querySelectorAll('[data-student-anchor-block]').forEach(block=>all.push(...candidatesInBlock(block,note)));
+  const best=uniqueBest(all);
+  if(best?.ambiguous)return{state:'ambiguous',block:preferred||null};
+  if(best)return{...best,state:best.block===preferred?'linked':'moved'};
+  return{state:preferred?'altered':'removed',block:preferred||null};
+};
 const rangeFromOffsets=(block,start,end)=>{const nodes=textNodes(block);let cursor=0,sn=null,so=0,en=null,eo=0;for(const node of nodes){const len=node.nodeValue?.length||0;if(!sn&&start>=cursor&&start<=cursor+len){sn=node;so=start-cursor;}if(end>=cursor&&end<=cursor+len){en=node;eo=end-cursor;break;}cursor+=len;}if(!sn||!en)return null;const range=document.createRange();range.setStart(sn,so);range.setEnd(en,eo);return range;};
 const setStatus=(id,text,state)=>{const status=panel.querySelector(`[data-annotation-status="${id}"]`);if(status){status.textContent=text;status.dataset.anchorState=state;}};
 const renderHighlights=()=>{unmark();const resolved=[];annotations.forEach(note=>{const loc=locate(note);if(!loc)return;if(loc.state==='altered'){setStatus(note.id,'Trecho alterado — a anotação foi preservada.','altered');return;}if(loc.state==='removed'){setStatus(note.id,'Trecho original removido — a anotação foi preservada.','removed');return;}if(loc.state==='ambiguous'){setStatus(note.id,'Trecho não identificado com segurança — reassocie para restaurar o destaque.','ambiguous');return;}setStatus(note.id,loc.state==='moved'?'Trecho localizado após alteração do material.':'Vinculada ao texto.',loc.state);resolved.push({note,...loc});});resolved.sort((a,b)=>a.block===b.block?b.start-a.start:0).forEach(item=>{const range=rangeFromOffsets(item.block,item.start,item.end);if(!range||range.collapsed)return;const mark=document.createElement('mark');mark.className='student-inline-note-mark';mark.dataset.annotationId=String(item.note.id);mark.setAttribute('role','button');mark.tabIndex=0;mark.title='Abrir anotação';try{mark.appendChild(range.extractContents());range.insertNode(mark);}catch(_){return;}const open=()=>editSavedNote(panel.querySelector(`[data-annotation-item="${item.note.id}"]`));mark.addEventListener('click',open);mark.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});});};
