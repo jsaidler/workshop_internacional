@@ -149,11 +149,9 @@ const uniqueBest=list=>{
 const locate=note=>{
   if(note.anchorType!=='selection'||!note.exact)return null;
   const preferred=root.querySelector(`[data-student-anchor-block="${CSS.escape(note.blockKey||'')}"]`);
-  if(preferred&&note.sourceBlockHash&&fingerprint(preferred.textContent||'')===note.sourceBlockHash){
-    const start=Number(note.start),end=Number(note.end),text=preferred.textContent||'';
-    if(Number.isInteger(start)&&Number.isInteger(end)&&start>=0&&end<=text.length&&text.slice(start,end)===note.exact)
-      return{block:preferred,start,end,state:'linked'};
-  }
+  // Do not accept even an unchanged-looking old slot before examining the
+  // rest of the currently published page. The CMS could have copied that
+  // entire paragraph into the slot while moving the actual source elsewhere.
   const all=[];
   root.querySelectorAll('[data-student-anchor-block]').forEach(block=>all.push(...candidatesInBlock(block,note)));
   const best=uniqueBest(all);
