@@ -32,9 +32,7 @@ function database():PDO {
  $db->exec("INSERT INTO activities VALUES(1,'Positivo direto','Positivo direto','workshop',1);
  INSERT INTO courses VALUES(12,1,'Positivo direto em filme de raio-X',NULL,'active');
  INSERT INTO course_cohorts VALUES(7,12,1,NULL,'Turma Outubro 2026','cohort-a','active');
- INSERT INTO course_cohorts VALUES(8,12,1,NULL,'Turma Novembro 2026','cohort-b','active');
  INSERT INTO course_enrollments VALUES(1,99,7,'active','2026-10-01T00:00:00Z');
- INSERT INTO course_enrollments VALUES(2,99,8,'active','2026-11-01T00:00:00Z');
  INSERT INTO course_lessons VALUES(1,12,1,'Exposição pensando no positivo','exposure',1),
  (2,12,1,'Processo químico completo','chemistry',2),
  (3,12,1,'Segunda revelação e acabamento','finish',3),
@@ -45,6 +43,13 @@ function database():PDO {
  (7,3,'2026-10-02T00:00:00Z','now','now'),
  (7,4,NULL,'now','now')");
  $db->exec("INSERT INTO student_material_annotations VALUES(1,99,101,'page','pagina','','','','',NULL,NULL,'','Comparar EI 200 e EI 400 mantendo os parâmetros da revelação','2026-10-01T00:00:00Z'),(2,99,101,'page','pagina','','','','',NULL,NULL,'','Conferir lavagem depois do branqueamento','2026-10-02T00:00:00Z')");
+ // The normal CMS fixture still has one authorized cohort. Introduce the
+ // second cohort only for explicit linked-question cases, so wrong-cohort
+ // access regressions continue to exercise their original data boundary.
+ if(isset($_GET['linked'])){
+    $db->exec("INSERT INTO course_cohorts VALUES(8,12,1,NULL,'Turma Novembro 2026','cohort-b','active')");
+    $db->exec("INSERT INTO course_enrollments VALUES(2,99,8,'active','2026-11-01T00:00:00Z')");
+ }
  $linked=(string)($_GET['linked']??'');
  if(in_array($linked,['private','course'],true)){
     $stmt=$db->prepare('INSERT INTO student_questions VALUES(41,99,7,1,?,?)');
