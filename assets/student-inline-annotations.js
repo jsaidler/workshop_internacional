@@ -44,6 +44,11 @@ const editSavedNote=article=>{
   if(noteBack)noteBack.hidden=false;
   panel.open=true;
   sheet?.scrollTo({top:0,behavior:'auto'});
+  // The edit trigger is hidden in this state. Move focus to the actual field
+  // without scrolling the independent CMS reading region behind the sheet.
+  requestAnimationFrame(()=>{
+    if(panel.open&&article.classList.contains('is-active'))article.querySelector('textarea[name="body"]')?.focus({preventScroll:true});
+  });
 };
 
 const textNodes=block=>{const out=[],walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.nodeValue?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});while(walker.nextNode())out.push(walker.currentNode);return out;};
@@ -53,6 +58,48 @@ const fingerprint=text=>{let hash=2166136261;for(let i=0;i<text.length;i++){hash
 const nodeInsideRoot=node=>{const target=node?.nodeType===Node.ELEMENT_NODE?node:node?.parentNode;return!!target&&root.contains(target);};
 const readingBlock=blockKey=>blockKey?root.querySelector(`[data-student-anchor-block="${CSS.escape(blockKey)}"]`):null;
 const readingScrollRoot=()=>document.querySelector('.cms-student-reading');
+
+// Native Back/Forward restores the window on desktop, but not necessarily a
+// scrollable reading pane on phones. Attach the pane offset to its own history
+// entry; replaceState preserves the native stack and any unrelated state.
+const readingHistoryKey='__cmsStudentReaderScrollV1';
+const internalReader=()=>{
+  const reader=readingScrollRoot();
+  return reader&&reader.scrollHeight>reader.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(reader).overflowY)?reader:null;
+};
+let restoringReader=true,saveReadingFrame=0;
+const saveReadingHistory=()=>{
+  if(restoringReader)return;
+  const reader=internalReader();if(!reader)return;
+  const state=history.state;
+  if(state!==null&&(typeof state!=='object'||Array.isArray(state)))return;
+  const top=Math.round(reader.scrollTop);
+  if(state?.[readingHistoryKey]===top)return;
+  try{history.replaceState({...state,[readingHistoryKey]:top},'');}catch(_){/* Keep reading usable when History API is restricted. */}
+};
+const restoreReadingHistory=()=>{
+  const reader=internalReader(),saved=history.state?.[readingHistoryKey];
+  if(reader&&typeof saved==='number'&&Number.isFinite(saved)&&saved>=0&&Math.abs(reader.scrollTop-saved)>1)
+    reader.scrollTop=saved;
+};
+const scheduleReadingRestore=()=>{
+  restoringReader=true;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    restoreReadingHistory();
+    requestAnimationFrame(()=>{restoringReader=false;});
+  }));
+};
+readingScrollRoot()?.addEventListener('scroll',()=>{
+  if(restoringReader||saveReadingFrame)return;
+  saveReadingFrame=requestAnimationFrame(()=>{saveReadingFrame=0;saveReadingHistory();});
+},{passive:true});
+window.addEventListener('pagehide',()=>{
+  if(saveReadingFrame){cancelAnimationFrame(saveReadingFrame);saveReadingFrame=0;}
+  saveReadingHistory();
+});
+window.addEventListener('pageshow',scheduleReadingRestore);
+scheduleReadingRestore();
+
 const currentReadingScroll=()=>readingScrollRoot()?.scrollTop??window.scrollY;
 const adjustReadingScroll=delta=>{const root=readingScrollRoot();if(root)root.scrollTop+=delta;else window.scrollBy(0,delta);};
 const restoreReadingScroll=value=>{const root=readingScrollRoot();if(root)root.scrollTop=value;else window.scrollTo(0,value);};
@@ -94,7 +141,15 @@ const statusMessage=(form,message,error=false)=>{let box=form.querySelector('[da
 panel.addEventListener('submit',async event=>{const form=event.target.closest('form[action="/aluno/material-anotacao.php"]');if(!form)return;event.preventDefault();const submitter=event.submitter;const actionName=submitter?.name==='annotation_action'?submitter.value:form.querySelector('[name="annotation_action"]')?.value||'';const id=Number(form.querySelector('[name="annotation_id"]')?.value||0);if(actionName==='remove'||submitter?.name==='remove'){const dialog=panel.querySelector('[data-note-remove-confirm]');if(!dialog||typeof dialog.showModal!=='function')throw new Error('Confirmação de exclusão indisponível.');dialog.returnValue='cancel';const approved=await new Promise(resolve=>{dialog.addEventListener('close',()=>resolve(dialog.returnValue==='confirm'),{once:true});dialog.showModal();});if(!approved)return;}const origin=readingOrigin||captureReadingOrigin(form.querySelector('[data-anchor-block]')?.value||'');form.querySelectorAll('button[type="submit"]').forEach(b=>b.disabled=true);try{const payload=await requestForm(form,submitter);if(payload.legacy){if(payload.removed){form.closest('.student-note-item')?.remove();listSavedNotes();}else{statusMessage(form,'Salvo.');const preview=form.closest('.student-note-item')?.querySelector('.student-note-body-preview');if(preview)preview.textContent=form.querySelector('textarea[name="body"]')?.value||'';}updateCounts();return;}if(actionName==='create_selection'||actionName==='create_page'){const note=normalizeNote(payload.annotation);annotations.push(note);const linkedQuestion=payload.question?{...payload.question,url:payload.question_url||''}:null;renderArticle(note,linkedQuestion);if(actionName==='create_selection'){compose.hidden=true;setComposeMode(false);compose.querySelector('textarea').value='';panel.open=false;readingOrigin=null;renderHighlights();restoreReadingOrigin(origin);}else{form.reset();form.closest('[data-student-note-new]')?.removeAttribute('open');panel.classList.remove('is-page-questioning');renderHighlights();}}else if(actionName==='update'){const note=annotations.find(n=>n.id===id);if(note)note.body=form.querySelector('textarea')?.value||'';const preview=form.closest('[data-annotation-item]')?.querySelector('.student-note-body-preview');if(preview)preview.textContent=note?.body||'';statusMessage(form,'Salvo.');}else if(actionName==='question'){const note=annotations.find(n=>n.id===id);if(note)note.body=form.querySelector('textarea')?.value||'';const details=form.querySelector('[data-note-question]');if(details&&payload.question){const link=document.createElement('a');link.className='student-material-note-secondary';link.href=payload.question_url||questionUrl(id,Number(payload.question.id||0));link.textContent='Ver dúvida';details.replaceWith(link);}panel.classList.remove('is-existing-questioning');const preview=form.closest('[data-annotation-item]')?.querySelector('.student-note-body-preview');if(preview)preview.textContent=note?.body||'';statusMessage(form,'Anotação salva e dúvida publicada.');}else if(actionName==='remove'){annotations=annotations.filter(n=>n.id!==id);form.closest('[data-annotation-item]')?.remove();listSavedNotes();renderHighlights();updateCounts();}else if(actionName==='detach'){const note=normalizeNote(payload.annotation);annotations=annotations.map(n=>n.id===id?note:n);const old=form.closest('[data-annotation-item]');const fresh=renderArticle(note);old?.remove();updateCounts();renderHighlights();editSavedNote(fresh);}else if(actionName==='reanchor'){const note=normalizeNote(payload.annotation);annotations=annotations.map(n=>n.id===id?note:n);compose.hidden=true;setComposeMode(false);reanchorId=0;reanchorHint.hidden=true;panel.open=false;readingOrigin=null;const article=panel.querySelector(`[data-annotation-item="${id}"]`);if(article){article.querySelector('.student-note-quote').textContent=note.exact;article.querySelector('[name="section_key"]').value=note.sectionKey;}renderHighlights();restoreReadingOrigin(origin);}}catch(error){statusMessage(form,error instanceof Error?error.message:'Não foi possível salvar.',true);}finally{form.querySelectorAll('button[type="submit"]').forEach(b=>b.disabled=false);}});
 panel.addEventListener('click',event=>{
   const back=event.target.closest('[data-student-notes-back-button]');
-  if(back){listSavedNotes();return;}
+  if(back){
+    const active=panel.querySelector('.student-note-item.is-active');
+    const trigger=active?.querySelector('[data-annotation-edit],[data-legacy-edit]');
+    listSavedNotes();
+    // Returning to the list is a real interaction state change: focus must not
+    // remain on the now-hidden Back control or editor form.
+    trigger?.focus();
+    return;
+  }
   const edit=event.target.closest('[data-annotation-edit],[data-legacy-edit]');
   if(edit){editSavedNote(edit.closest('.student-note-item'));return;}
   const re=event.target.closest('[data-annotation-reanchor]');if(re){listSavedNotes();reanchorId=Number(re.dataset.annotationReanchor||0);if(!reanchorId)return;compose.hidden=true;setComposeMode(false);panel.open=false;reanchorHint.hidden=false;action.hidden=true;setSelectionActive(false);pendingAnchor=null;window.getSelection()?.removeAllRanges();return;}const cancel=event.target.closest('[data-inline-note-cancel]');if(cancel){compose.hidden=true;setComposeMode(false);reanchorId=0;reanchorHint.hidden=true;const body=compose.querySelector('textarea');if(body){body.disabled=false;body.value='';}panel.open=false;const origin=readingOrigin;readingOrigin=null;restoreReadingOrigin(origin);}});

@@ -125,3 +125,8 @@ A referência histórica aos quatro destinos e à posição de Agenda sob Cursos
 A distinção página dedicada vs diálogo já era correta, mas faltava organizar a tarefa. Calibração passa a abrir na medição do tempo do branco, seguida do nome de consulta; condições experimentais opcionais ficam em disclosure nativo, aberto quando existem valores, edição ou erro, sem perder campos no envio. Predefinições passam a identificar revelador, composição, condições de uso e agitação opcional. A superfície é o formulário PHP operacional único, incluindo AJAX do desktop e POST/303 no telefone. A barra global não vira gaveta. O limite das barras de rolagem é pertencimento visual do shell/diálogo, não um teste exclusivamente de `scrollWidth`.
 
 O termo antigo 'quatro destinos' no histórico deste documento se refere ao projeto anterior, não ao contrato vigente de cinco.
+
+
+## Material — editor de notas e retorno ao leitor (16/10/2026)
+
+O painel de anotações é um estado transitório da página de material, não novo destino navegável: manter a URL e o histórico. Ao entrar em edição de nota salva, o campo de texto ganha o foco quando a ação que o abriu deixa de estar visível. `← Todas as anotações` devolve foco ao acionador daquele item. Usar `preventScroll` no foco do editor, porque o Material autenticado usa `.cms-student-reading` no telefone e `window` no desktop. Em contraste, Back/Forward entre páginas do CMS continua sendo navegação real e deve restaurar a posição do contêiner de leitura. O mesmo contrato vale em 320/390/1440 px e para notas legadas.
