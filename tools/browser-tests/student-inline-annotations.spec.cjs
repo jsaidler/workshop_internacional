@@ -308,6 +308,7 @@ test('general note composer resets question mode after successful question publi
   await form.locator('[data-note-question-publish]').click();
   await expect(panel.locator('[data-annotation-item="91"]')).toHaveCount(1);
   await expect(general).not.toHaveAttribute('open','');
+  await expect(general.locator(':scope > summary')).toBeFocused();
   await general.locator(':scope > summary').click();
   await expect(panel).toHaveClass(/is-general-composing/);
   await expect(panel).not.toHaveClass(/is-page-questioning/);
