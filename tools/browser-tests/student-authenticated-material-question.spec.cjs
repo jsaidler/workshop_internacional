@@ -79,6 +79,48 @@ test.describe('authenticated Material → annotation → question → Material, 
     if(sandbox)fs.rmSync(sandbox,{recursive:true,force:true,maxRetries:8,retryDelay:100});
   });
 
+  test('general question composer can be reused for a separate note without duplicating questions',async({browser})=>{
+    const context=await browser.newContext({viewport:{width:390,height:844}});
+    const page=await context.newPage();
+    try{
+      await signIn(page,'journey-owner@example.invalid');
+      await page.goto(materialUrl('journey-b'),{waitUntil:'networkidle'});
+      const panel=page.locator('[data-student-notes-panel]');
+      await panel.locator(':scope > summary').click();
+      const general=panel.locator('[data-student-note-new]');
+      await general.locator(':scope > summary').click();
+      const form=general.locator('form');
+      const question=form.locator('[data-note-question]');
+      await form.locator('textarea[name="body"]').fill('Anotação um com pergunta');
+      await question.locator(':scope > summary').click();
+      await form.locator('input[name="question_title"]').fill('Minha pergunta única');
+      await form.locator('input[name="question_visibility"][value="cohort"]').check();
+      await form.getByRole('button',{name:'Salvar e publicar dúvida'}).click();
+      await expect(general).not.toHaveAttribute('open','');
+      expect(snapshot().notes).toHaveLength(1);
+      expect(snapshot().questions).toHaveLength(1);
+      await general.locator(':scope > summary').click();
+      await expect(question).not.toHaveAttribute('open','');
+      await expect(panel).toHaveClass(/is-general-composing/);
+      await expect(panel).not.toHaveClass(/is-page-questioning/);
+      await expect(form.locator('textarea[name="body"]')).toBeVisible();
+      await expect(form.locator('textarea[name="body"]')).toHaveValue('');
+      await expect(form.locator('input[name="question_title"]')).toHaveValue('');
+      await expect(form.locator('input[name="question_visibility"][value="private"]')).toBeChecked();
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/general-again-390.png',animations:'disabled'});
+      await form.locator('textarea[name="body"]').fill('Anotação dois sem pergunta');
+      await form.getByRole('button',{name:'Salvar anotação da página'}).click();
+      const recorded=snapshot();
+      expect(recorded.notes).toHaveLength(2);
+      expect(recorded.questions).toHaveLength(1);
+      expect(recorded.questions[0].source_annotation_id).toBe(recorded.notes[0].id);
+      await page.setViewportSize({width:1440,height:900});
+      await general.locator(':scope > summary').click();
+      await expect(form.locator('textarea[name="body"]')).toBeVisible();
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/general-again-1440.png',animations:'disabled'});
+    }finally{await context.close();}
+  });
+
   test('real login, save, cross-cohort navigation, private scope and revocation',async({browser})=>{
     const context=await browser.newContext({viewport:{width:390,height:844}});
     const page=await context.newPage();
