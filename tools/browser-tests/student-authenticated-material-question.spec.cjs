@@ -420,4 +420,136 @@ test.describe('authenticated Material → annotation → question → Material, 
     }finally{await context.close();}
   });
 
+
+  test('CMS cannot silently relink a short repeated excerpt to a replacement paragraph',async({browser})=>{
+    const context=await browser.newContext({viewport:{width:390,height:844}});
+    const page=await context.newPage();
+    try{
+      await signIn(page,'journey-owner@example.invalid');
+      await page.goto(materialUrl('journey-b'),{waitUntil:'networkidle'});
+      const panel=page.locator('[data-student-notes-panel]');
+      const token=await panel.locator('[data-inline-note-compose] input[name="_csrf"]').inputValue();
+      const first=page.locator('[data-student-note-context="investigacao"] p[data-student-anchor-block]').first();
+      const anchor=await first.evaluate(block=>{
+        const text=block.textContent||'';
+        let hash=2166136261;
+        for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}
+        const exact='Exposição',start=text.indexOf(exact);
+        return{
+          section_key:'investigacao',
+          block_key:block.getAttribute('data-student-anchor-block'),
+          quote_exact:exact,quote_prefix:text.slice(Math.max(0,start-120),start),
+          quote_suffix:text.slice(start+exact.length,start+exact.length+120),
+          start_offset:start,end_offset:start+exact.length,
+          source_block_hash:(hash>>>0).toString(16).padStart(8,'0')
+        };
+      });
+      expect(anchor.quote_exact).toBe('Exposição');
+      expect(anchor.quote_suffix).toBe(' e revelação são decisões independentes.');
+      const sourceRevision=await panel.getAttribute('data-student-page-revision');
+      const create=async(input)=>{
+        const res=await page.evaluate(async data=>{
+          const form=new FormData();
+          for(const [key,value] of Object.entries(data))form.set(key,String(value));
+          const response=await fetch('/aluno/material-anotacao.php',{
+            method:'POST',credentials:'same-origin',body:form,
+            headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}
+          });
+          return{status:response.status,payload:await response.json()};
+        },{
+          ...anchor,...input,
+          _csrf:token,page_id:seedData.pageId,
+          return_to:'/?page=material&lang=pt-br&cohort=journey-b',
+          cohort:'journey-b',annotation_action:'create_selection',
+          source_page_revision:sourceRevision||''
+        });
+        expect(res.status).toBe(200);
+        expect(res.payload.ok).toBe(true);
+        return res.payload;
+      };
+      const linked=await create({
+        body:'Registro pessoal do trecho antes da revisão',
+        create_question:1,question_title:'Pergunta que não pode mudar de origem',
+        question_visibility:'private'
+      });
+      const id=linked.annotation.id,qid=linked.question.id;
+      const uncertain=await create({
+        body:'Anotação legada sem impressão digital nem contexto',
+        quote_prefix:'',quote_suffix:'',source_block_hash:''
+      });
+      const uncertainId=uncertain.annotation.id;
+      const weak=await create({
+        body:'Anotação sem âncora segura com contexto curto',
+        quote_prefix:'',quote_suffix:' e revelação',source_block_hash:''
+      });
+      const weakId=weak.annotation.id;
+      expect(snapshot().questions).toHaveLength(1);
+      await page.reload({waitUntil:'networkidle'});
+      await expect(page.locator('[data-annotation-status="'+id+'"]')).toHaveText('Vinculada ao texto.');
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]')).toHaveCount(1);
+      await expect(page.locator('[data-annotation-status="'+uncertainId+'"]')).toContainText('não identificado com segurança');
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+uncertainId+'"]')).toHaveCount(0);
+      await expect(page.locator('[data-annotation-status="'+weakId+'"]')).toContainText('não identificado com segurança');
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+weakId+'"]')).toHaveCount(0);
+
+      // A new CMS revision puts the same short quote in the old ordinal,
+      // but with different text, while the original block moves to p:2.
+      const unique=JSON.parse(execFileSync('php',[seedScript,sandbox,'revise-duplicates'],{encoding:'utf8',timeout:45000}));
+      expect(unique.mode).toBe('revise-duplicates');
+      await page.reload({waitUntil:'networkidle'});
+      const candidates=page.locator('[data-student-note-context="investigacao"] p[data-student-anchor-block]');
+      await expect(candidates).toHaveCount(2);
+      await expect(page.locator('[data-annotation-status="'+id+'"]')).toContainText('localizado após alteração');
+      const found=page.locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]');
+      await expect(found).toHaveCount(1);
+      await expect(found).toContainText('Exposição');
+      await expect(found.locator('xpath=ancestor::p')).toContainText('Exposição e revelação são decisões independentes.');
+      await expect(candidates.first().locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]')).toHaveCount(0);
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+uncertainId+'"]')).toHaveCount(0);
+      await panel.locator(':scope > summary').click();
+      let note=panel.locator('[data-annotation-item="'+id+'"]');
+      await note.locator('[data-annotation-edit]').click();
+      await expect(note.locator('textarea[name="body"]')).toHaveValue('Registro pessoal do trecho antes da revisão');
+      await expect(note.getByRole('link',{name:'Ver dúvida'})).toHaveAttribute('href','/aluno/duvidas.php?cohort=journey-b&id='+qid);
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-duplicate-excerpt-recovered.png',animations:'disabled'});
+      await panel.locator('[data-student-notes-back-button]').click();
+
+      // A second copy with the same whole-block fingerprint and neighbours
+      // removes the evidence of which occurrence was the original.
+      const duplicate=JSON.parse(execFileSync('php',[seedScript,sandbox,'revise-ambiguous'],{encoding:'utf8',timeout:45000}));
+      expect(duplicate.mode).toBe('revise-ambiguous');
+      await page.reload({waitUntil:'networkidle'});
+      await expect(page.locator('[data-annotation-status="'+id+'"]')).toContainText('não identificado com segurança');
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]')).toHaveCount(0);
+      await panel.locator(':scope > summary').click();
+      note=panel.locator('[data-annotation-item="'+id+'"]');
+      await note.locator('[data-annotation-edit]').click();
+      await expect(note.locator('.student-note-quote')).toHaveText('Exposição');
+      await expect(note.locator('textarea[name="body"]')).toHaveValue('Registro pessoal do trecho antes da revisão');
+      await expect(note.getByRole('button',{name:'Reassociar'})).toBeVisible();
+      await expect(note.getByRole('link',{name:'Ver dúvida'})).toHaveAttribute('href','/aluno/duvidas.php?cohort=journey-b&id='+qid);
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-duplicate-excerpt-ambiguous.png',animations:'disabled'});
+      await page.setViewportSize({width:1440,height:900});
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/desktop-duplicate-excerpt-ambiguous.png',animations:'disabled'});
+      // An exact copy in the old ordinal is still ambiguous when the same
+      // original paragraph also appears elsewhere: block hash is not identity.
+      const copied=JSON.parse(execFileSync('php',[seedScript,sandbox,'revise-ambiguous-preferred'],{encoding:'utf8',timeout:45000}));
+      expect(copied.mode).toBe('revise-ambiguous-preferred');
+      await page.reload({waitUntil:'networkidle'});
+      await expect(page.locator('[data-annotation-status="'+id+'"]')).toContainText('não identificado com segurança');
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]')).toHaveCount(0);
+      const persisted=snapshot();
+      expect(persisted.notes).toHaveLength(3);
+      expect(persisted.questions).toHaveLength(1);
+      const source=persisted.notes.find(n=>Number(n.id)===Number(id));
+      expect(source).toMatchObject({
+        quote_exact:'Exposição',
+        block_key:anchor.block_key,
+        source_block_hash:anchor.source_block_hash,
+        body:'Registro pessoal do trecho antes da revisão',
+        question_id:qid
+      });
+    }finally{await context.close();}
+  });
+
 });

@@ -16,7 +16,7 @@ require $root.'/app/bootstrap.php';
 $db=database();
 
 if($mode==='snapshot'){
-    $notes=$db->query("SELECT a.id,a.student_id,a.page_id,a.body,a.anchor_type,a.section_key,a.quote_exact,a.block_key,a.source_page_revision,q.id question_id,q.cohort_id question_cohort_id,q.visibility FROM student_material_annotations a LEFT JOIN student_questions q ON q.source_annotation_id=a.id ORDER BY a.id")->fetchAll(PDO::FETCH_ASSOC);
+    $notes=$db->query("SELECT a.id,a.student_id,a.page_id,a.body,a.anchor_type,a.section_key,a.quote_exact,a.block_key,a.source_block_hash,a.source_page_revision,q.id question_id,q.cohort_id question_cohort_id,q.visibility FROM student_material_annotations a LEFT JOIN student_questions q ON q.source_annotation_id=a.id ORDER BY a.id")->fetchAll(PDO::FETCH_ASSOC);
     $questions=$db->query('SELECT id,student_id,cohort_id,source_annotation_id,visibility,body FROM student_questions ORDER BY id')->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode(['notes'=>$notes,'questions'=>$questions],JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE)."\n";
     exit;
@@ -36,6 +36,28 @@ if($mode==='revise'){
     $page=cms_page_save($db,(int)$page['id'],$document,(int)$page['draft_revision'],['title'=>(string)$page['title'],'slug'=>(string)$page['slug'],'show_in_nav'=>true]);
     $page=cms_page_publish($db,(int)$page['id']);
     echo json_encode(['published_revision'=>$page['published_revision']],JSON_THROW_ON_ERROR)."\n";
+    exit;
+}
+if(in_array($mode,['revise-duplicates','revise-ambiguous','revise-ambiguous-preferred'],true)){
+    // Real CMS publish, not a DOM patch. Ordinal p:1 keeps the short quote
+    // but changes its surrounding paragraph; the original full paragraph
+    // reappears later. Ambiguous additionally repeats that original exactly.
+    $activityId=(int)$db->query("SELECT id FROM activities WHERE is_root=1 ORDER BY id LIMIT 1")->fetchColumn();
+    $page=cms_page_by_slug($db,$activityId,'pt-BR','material');
+    if(!$page)throw new RuntimeException('Fixture material not found.');
+    $document=cms_page_doc($page,false);
+    $old='<p>Exposição e revelação são decisões independentes.</p>';
+    $changed='<p>Exposição e revelação foram reorganizadas na aula.</p>';
+    $html='<article class="study-material"><section data-cms-section="investigacao">'
+        .'<h1>Material para regressão autenticada</h1>'
+        .($mode==='revise-ambiguous-preferred'?$old:$changed).$old.($mode==='revise-ambiguous'?$old:'')
+        .'</section></article>';
+    $document['html']=$html;
+    $page=cms_page_save($db,(int)$page['id'],$document,(int)$page['draft_revision'],[
+        'title'=>(string)$page['title'],'slug'=>(string)$page['slug'],'show_in_nav'=>true
+    ]);
+    $page=cms_page_publish($db,(int)$page['id']);
+    echo json_encode(['revision'=>$page['published_revision'],'mode'=>$mode],JSON_THROW_ON_ERROR)."\n";
     exit;
 }
 if($mode!=='seed'){fwrite(STDERR,"Unknown mode.\n");exit(1);}
