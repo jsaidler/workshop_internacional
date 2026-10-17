@@ -524,6 +524,13 @@ test.describe('authenticated Material → annotation → question → Material, 
       await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-duplicate-excerpt-ambiguous.png',animations:'disabled'});
       await page.setViewportSize({width:1440,height:900});
       await page.screenshot({path:'student-visual-audit/authenticated-material-question/desktop-duplicate-excerpt-ambiguous.png',animations:'disabled'});
+      // An exact copy in the old ordinal is still ambiguous when the same
+      // original paragraph also appears elsewhere: block hash is not identity.
+      const copied=JSON.parse(execFileSync('php',[seedScript,sandbox,'revise-ambiguous-preferred'],{encoding:'utf8',timeout:45000}));
+      expect(copied.mode).toBe('revise-ambiguous-preferred');
+      await page.reload({waitUntil:'networkidle'});
+      await expect(page.locator('[data-annotation-status="'+id+'"]')).toContainText('não identificado com segurança');
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]')).toHaveCount(0);
       const persisted=snapshot();
       expect(persisted.notes).toHaveLength(2);
       expect(persisted.questions).toHaveLength(1);
