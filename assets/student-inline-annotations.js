@@ -136,7 +136,11 @@ const candidatesInBlock=(block,note)=>{
     const suffixExact=!!note.suffix&&text.slice(end,end+note.suffix.length)===note.suffix;
     const hashMatch=unchanged&&Number(note.start)===start&&Number(note.end)===end;
     const context=scoreCandidate(text,start,note);
-    return{block,start,end,score:(hashMatch?16:0)+context,strong:hashMatch||prefixExact||suffixExact};
+    // A one-word or punctuation-only neighbour is not independent evidence:
+    // such contexts occur routinely across a long photographic material.
+    const contextualProof=(prefixExact&&note.prefix.trim().length>=12)
+      ||(suffixExact&&note.suffix.trim().length>=12);
+    return{block,start,end,score:(hashMatch?16:0)+context,strong:hashMatch||contextualProof};
   });
 };
 const uniqueBest=list=>{
