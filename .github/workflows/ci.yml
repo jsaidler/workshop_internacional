@@ -31,6 +31,7 @@ jobs:
         run: |
           set -o pipefail
           {
+            php tools/test-form-purpose-pre-migration.php
             php tools/test-cms.php
             php tools/test-cms-v3.php
             php tools/test-cms-professional-3.php
@@ -171,6 +172,8 @@ jobs:
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
+          # Fail fast on the real session/SQLite journey before the large browser suite.
+          npx playwright test tools/browser-tests/student-authenticated-material-question.spec.cjs --workers=1
           npm run test:browser 2>&1 | tee /tmp/browser-tests.log
           npx playwright test tools/browser-tests/student-inline-annotations.spec.cjs --browser=webkit 2>&1 | tee /tmp/browser-webkit.log
       - name: Preserve browser diagnostics
