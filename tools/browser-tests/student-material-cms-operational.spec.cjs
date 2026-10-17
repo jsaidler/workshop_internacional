@@ -224,6 +224,42 @@ for(const device of viewports){
  });
 }
 
+// Real CMS notebook renderer: one personal annotation can be reached through
+// multiple cohorts, but its linked conversation keeps its own visibility.
+for(const device of viewports){
+ test('linked question preserves authorized cohort in CMS notes — '+device.name,async({page})=>{
+  await page.setViewportSize({width:device.width,height:device.height});
+  const cases=[
+   {name:'private-other-cohort',query:'linked=private&cohort=cohort-b',expected:'/aluno/duvidas.php?cohort=cohort-a&id=41'},
+   {name:'course-other-cohort',query:'linked=course&cohort=cohort-b',expected:'/aluno/duvidas.php?cohort=cohort-b&id=41'},
+   {name:'revoked-origin',query:'linked=private&cohort=cohort-b&origin=disabled',expected:null}
+  ];
+  for(const scenario of cases){
+   const errors=[];const listener=error=>errors.push(error.message);page.on('pageerror',listener);
+   const response=await page.goto(base+'?page=current&'+scenario.query,{waitUntil:'networkidle'});
+   expect(response?.status(),scenario.name).toBe(200);
+   const panel=page.locator('[data-student-notes-panel]');
+   await panel.locator(':scope > summary').click();
+   const note=panel.locator('[data-annotation-item="1"]');
+   await note.locator('[data-annotation-edit]').click();
+   const link=note.getByRole('link',{name:'Ver dúvida'});
+   if(scenario.expected){
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href',scenario.expected);
+    await expect(note.locator('.student-note-linked-unavailable')).toHaveCount(0);
+   }else{
+    await expect(link).toHaveCount(0);
+    await expect(note.locator('.student-note-linked-unavailable')).toContainText('acesso indisponível');
+    await expect(note.locator('[data-note-question]')).toHaveCount(0);
+   }
+   await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
+   await page.screenshot({path:'student-visual-audit/material-linked-question/'+device.name+'-'+scenario.name+'.png',animations:'disabled'});
+   expect(errors,scenario.name).toEqual([]);
+   page.off('pageerror',listener);
+  }
+ });
+}
+
 test('CMS route rejects absent enrollment, wrong student and wrong cohort before rendering',async({page})=>{
  for(const q of ['actor=none','actor=other','cohort=cohort-b']){
    const res=await page.goto(base+'?page=current&'+q,{waitUntil:'domcontentloaded'});
