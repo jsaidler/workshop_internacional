@@ -31,6 +31,8 @@ on:
       - 'tools/browser-fixture/student-auth-visual-audit.html'
       - 'tools/browser-fixture/student-auth-operational.php'
       - 'tools/browser-tests/student-auth-operational.spec.cjs'
+      - 'tools/browser-tests/student-authenticated-material-question.spec.cjs'
+      - 'tools/browser-fixture/student-authenticated-material-question-seed.php'
       - 'tools/browser-fixture/student-tools-current-audit.html'
       - 'tools/browser-fixture/student-tools-mechanics-audit.html'
       - 'tools/browser-fixture/student-process-product-audit.html'
@@ -177,6 +179,7 @@ jobs:
           npx playwright test tools/browser-tests/student-questions-inventory-task-first.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-profile.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-auth-operational.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/student-authenticated-material-question.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-process-saved-cards.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-agenda.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-home-operational.spec.cjs --workers=1
