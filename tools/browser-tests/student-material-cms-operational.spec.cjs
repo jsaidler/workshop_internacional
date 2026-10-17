@@ -78,6 +78,65 @@ for(const device of viewports){
     expect(errors).toEqual([]);
   });
 }
+// The authenticated CMS reader scrolls in .cms-student-reading, not window.
+// Editing a saved note cannot move reading position or abandon keyboard focus.
+for(const device of viewports){
+ test('CMS notes retain reader scroll and restore list focus — '+device.name,async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.setViewportSize({width:device.width,height:device.height});
+  await page.route('**/aluno/material-anotacao.php',async route=>{
+   expect(route.request().method()).toBe('POST');
+   const body=route.request().postData()||'';
+   expect(body).toContain('name="annotation_action"');
+   expect(body).toContain('update');
+   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,action:'update',annotation_id:1})});
+  });
+  await page.goto(base+'?page=current&cohort=cohort-a',{waitUntil:'networkidle'});
+  const root=page.locator('.cms-student-reading[data-student-scroll-root]');
+  const panel=page.locator('[data-student-notes-panel]');
+  await panel.locator(':scope > summary').click();
+  await expect(panel).toHaveAttribute('open','');
+  const position=await root.evaluate(el=>{
+    el.scrollTop=Math.round(Math.max(0,el.scrollHeight-el.clientHeight)*.48);
+    return {top:el.scrollTop,extent:el.scrollHeight-el.clientHeight};
+  });
+  expect(position.extent,'reader must have independent scroll').toBeGreaterThan(30);
+  const entry=panel.locator('[data-annotation-item="1"]');
+  await entry.locator('[data-annotation-edit]').click();
+  const textarea=entry.locator('textarea[name="body"]');
+  await expect(textarea).toBeVisible();
+  await expect(textarea).toBeFocused();
+  await expect.poll(()=>root.evaluate(el=>el.scrollTop)).toBe(position.top);
+  await textarea.fill('Comparar resultados mantendo as condições constantes.');
+  await entry.locator('button[name="annotation_action"][value="update"]').click();
+  await expect(entry.locator('[data-note-save-status]')).toHaveText('Salvo.');
+  await expect(textarea).toHaveValue('Comparar resultados mantendo as condições constantes.');
+  await expect.poll(()=>root.evaluate(el=>el.scrollTop)).toBe(position.top);
+  await page.screenshot({path:'student-visual-audit/material-reading-continuity/'+device.name+'-editing.png',animations:'disabled'});
+  await panel.locator('[data-student-notes-back-button]').click();
+  const trigger=entry.locator('[data-annotation-edit]');
+  await expect(trigger).toBeFocused();
+  await expect(entry.locator('form')).toBeHidden();
+  await expect.poll(()=>root.evaluate(el=>el.scrollTop)).toBe(position.top);
+  await page.screenshot({path:'student-visual-audit/material-reading-continuity/'+device.name+'-returned-to-list.png',animations:'disabled'});
+  const geometry=await page.evaluate(()=>{
+   const reader=document.querySelector('.cms-student-reading');
+   const nav=document.querySelector('.student-mobile-nav');
+   return {documentOver:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+    readingOver:reader.scrollWidth-reader.clientWidth,
+    navCount:nav.querySelectorAll('a').length,
+    readerBottom:reader.getBoundingClientRect().bottom,navTop:nav.getBoundingClientRect().top,
+    navDisplay:getComputedStyle(nav).display};
+  });
+  expect(geometry.navCount).toBe(5);
+  expect(geometry.documentOver).toBeLessThanOrEqual(1);
+  expect(geometry.readingOver).toBeLessThanOrEqual(1);
+  if(device.width<=820&&geometry.navDisplay!=='none')
+   expect(geometry.readerBottom).toBeLessThanOrEqual(geometry.navTop+1);
+  expect(errors).toEqual([]);
+ });
+}
+
 test('CMS route rejects absent enrollment, wrong student and wrong cohort before rendering',async({page})=>{
  for(const q of ['actor=none','actor=other','cohort=cohort-b']){
    const res=await page.goto(base+'?page=current&'+q,{waitUntil:'domcontentloaded'});
