@@ -478,12 +478,19 @@ test.describe('authenticated Material → annotation → question → Material, 
         quote_prefix:'',quote_suffix:'',source_block_hash:''
       });
       const uncertainId=uncertain.annotation.id;
+      const weak=await create({
+        body:'Anotação sem âncora segura com contexto curto',
+        quote_prefix:'',quote_suffix:' e revelação',source_block_hash:''
+      });
+      const weakId=weak.annotation.id;
       expect(snapshot().questions).toHaveLength(1);
       await page.reload({waitUntil:'networkidle'});
       await expect(page.locator('[data-annotation-status="'+id+'"]')).toHaveText('Vinculada ao texto.');
       await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]')).toHaveCount(1);
       await expect(page.locator('[data-annotation-status="'+uncertainId+'"]')).toContainText('não identificado com segurança');
       await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+uncertainId+'"]')).toHaveCount(0);
+      await expect(page.locator('[data-annotation-status="'+weakId+'"]')).toContainText('não identificado com segurança');
+      await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+weakId+'"]')).toHaveCount(0);
 
       // A new CMS revision puts the same short quote in the old ordinal,
       // but with different text, while the original block moves to p:2.
@@ -532,7 +539,7 @@ test.describe('authenticated Material → annotation → question → Material, 
       await expect(page.locator('[data-annotation-status="'+id+'"]')).toContainText('não identificado com segurança');
       await expect(page.locator('mark.student-inline-note-mark[data-annotation-id="'+id+'"]')).toHaveCount(0);
       const persisted=snapshot();
-      expect(persisted.notes).toHaveLength(2);
+      expect(persisted.notes).toHaveLength(3);
       expect(persisted.questions).toHaveLength(1);
       const source=persisted.notes.find(n=>Number(n.id)===Number(id));
       expect(source).toMatchObject({
