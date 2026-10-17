@@ -258,7 +258,16 @@ const renderHighlights=()=>{
         mark.setAttribute('aria-label',label);
         mark.appendChild(range.extractContents());
         range.insertNode(mark);
-        const open=event=>{event.preventDefault();event.stopPropagation();openAnnotatedFragment(segment.ids);};
+        const open=event=>{
+          event.preventDefault();
+          event.stopPropagation();
+          // A real pointer drag that selects text inside an existing highlight
+          // also emits click on mouseup. Let the selection action handle it.
+          // Keep keyboard and programmatic activation available even if an
+          // unrelated selection is still present elsewhere on the page.
+          if(event.type==='click'&&event.detail>0&&!window.getSelection()?.isCollapsed)return;
+          openAnnotatedFragment(segment.ids);
+        };
         mark.addEventListener('click',open);
         mark.addEventListener('keydown',event=>{
           if(event.key==='Enter'||event.key===' '){open(event);}

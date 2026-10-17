@@ -35,6 +35,28 @@ test('annotations relink to stable text and preserve altered or removed sources'
   await expect(page.locator('[data-student-notes-panel]')).toHaveAttribute('open','');
 });
 
+test('real mouse drag inside an existing highlight selects text instead of opening the note editor',async({page})=>{
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto(url,{waitUntil:'networkidle'});
+  const mark=page.locator('mark.student-inline-note-mark').first();
+  await scrollBlockIntoViewInstantly(mark);
+  const bounds=await mark.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds.width).toBeGreaterThan(110);
+  const y=bounds.y+bounds.height/2;
+  await page.mouse.move(bounds.x+25,y);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x+bounds.width-25,y,{steps:24});
+  await page.mouse.up();
+  const selection=await page.evaluate(()=>window.getSelection()?.toString()||'');
+  expect(selection.length).toBeGreaterThan(5);
+  await expect(page.locator('[data-student-notes-panel]')).not.toHaveAttribute('open','');
+  const annotate=page.locator('.student-selection-note-action');
+  await expect(annotate).toBeVisible();
+  await annotate.click();
+  await expect(page.locator('[data-inline-note-compose]')).toBeVisible();
+});
+
 test('selecting source text opens an annotation composer even if focus collapses the native selection before click',async({page})=>{
   await page.goto(url,{waitUntil:'networkidle'});
   await selectSubstring(page,'[data-student-anchor-block="introducao:p:2"]','trecho permanece disponível');
