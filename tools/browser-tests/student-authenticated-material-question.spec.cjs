@@ -93,6 +93,13 @@ test.describe('authenticated Material → annotation → question → Material, 
       const question=form.locator('[data-note-question]');
       await form.locator('textarea[name="body"]').fill('Anotação um com pergunta');
       await question.locator(':scope > summary').click();
+      // A rejected publication must not reset or collapse either draft.
+      await form.getByRole('button',{name:'Salvar e publicar dúvida'}).click();
+      await expect(form.locator('[data-note-save-status]')).toHaveAttribute('role','alert');
+      await expect(question).toHaveAttribute('open','');
+      await expect(form.locator('textarea[name="body"]')).toHaveValue('Anotação um com pergunta');
+      expect(snapshot().notes).toHaveLength(0);
+      expect(snapshot().questions).toHaveLength(0);
       await form.locator('input[name="question_title"]').fill('Minha pergunta única');
       await form.locator('input[name="question_visibility"][value="cohort"]').check();
       await form.getByRole('button',{name:'Salvar e publicar dúvida'}).click();
