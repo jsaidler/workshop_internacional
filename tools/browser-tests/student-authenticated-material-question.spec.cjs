@@ -106,6 +106,8 @@ test.describe('authenticated Material → annotation → question → Material, 
       await expect(general).not.toHaveAttribute('open','');
       expect(snapshot().notes).toHaveLength(1);
       expect(snapshot().questions).toHaveLength(1);
+      await expect(form.locator('[data-note-save-status]')).toHaveCount(0);
+      await expect(general.locator(':scope > summary')).toBeFocused();
       await general.locator(':scope > summary').click();
       await expect(question).not.toHaveAttribute('open','');
       await expect(panel).toHaveClass(/is-general-composing/);
