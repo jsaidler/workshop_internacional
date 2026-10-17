@@ -15,6 +15,7 @@ function database():PDO {
  static $db=null;if($db instanceof PDO)return $db;
  $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
  $db->exec(<<<'SQL'
+ CREATE TABLE activities(id INTEGER PRIMARY KEY,public_title TEXT,admin_name TEXT,slug TEXT,is_root INTEGER);
  CREATE TABLE courses(id INTEGER PRIMARY KEY,activity_id INTEGER,title TEXT,public_page_id INTEGER,status TEXT);
  CREATE TABLE course_cohorts(id INTEGER PRIMARY KEY,course_id INTEGER,activity_id INTEGER,workshop_page_id INTEGER,title TEXT,cohort_uuid TEXT,status TEXT);
  CREATE TABLE cms_site_settings(activity_id INTEGER,locale TEXT,settings_json TEXT,updated_at TEXT,PRIMARY KEY(activity_id,locale));
@@ -25,9 +26,11 @@ function database():PDO {
  CREATE TABLE course_lessons(id INTEGER PRIMARY KEY,course_id INTEGER,activity_id INTEGER,title TEXT,lesson_key TEXT,sort_order INTEGER);
  CREATE TABLE course_material_sections(course_id INTEGER,page_id INTEGER,section_key TEXT,lesson_id INTEGER);
  CREATE TABLE student_material_annotations(id INTEGER PRIMARY KEY,student_id INTEGER,page_id INTEGER,anchor_type TEXT,section_key TEXT,block_key TEXT,quote_exact TEXT,quote_prefix TEXT,quote_suffix TEXT,start_offset INTEGER,end_offset INTEGER,source_block_hash TEXT,body TEXT,created_at TEXT);
+ CREATE TABLE student_questions(id INTEGER PRIMARY KEY,student_id INTEGER,cohort_id INTEGER,source_annotation_id INTEGER,visibility TEXT,title TEXT);
  CREATE TABLE cohort_lesson_releases(cohort_id INTEGER,lesson_id INTEGER,released_at TEXT,created_at TEXT,updated_at TEXT,meeting_starts_at TEXT,meeting_timezone TEXT,meeting_duration_minutes INTEGER,meeting_url TEXT,meeting_notes TEXT,meeting_status TEXT,PRIMARY KEY(cohort_id,lesson_id));
  SQL);
- $db->exec("INSERT INTO courses VALUES(12,1,'Positivo direto em filme de raio-X',NULL,'active');
+ $db->exec("INSERT INTO activities VALUES(1,'Positivo direto','Positivo direto','workshop',1);
+ INSERT INTO courses VALUES(12,1,'Positivo direto em filme de raio-X',NULL,'active');
  INSERT INTO course_cohorts VALUES(7,12,1,NULL,'Turma Outubro 2026','cohort-a','active');
  INSERT INTO course_enrollments VALUES(1,99,7,'active','2026-10-01T00:00:00Z');
  INSERT INTO course_lessons VALUES(1,12,1,'Exposição pensando no positivo','exposure',1),
@@ -40,6 +43,24 @@ function database():PDO {
  (7,3,'2026-10-02T00:00:00Z','now','now'),
  (7,4,NULL,'now','now')");
  $db->exec("INSERT INTO student_material_annotations VALUES(1,99,101,'page','pagina','','','','',NULL,NULL,'','Comparar EI 200 e EI 400 mantendo os parâmetros da revelação','2026-10-01T00:00:00Z'),(2,99,101,'page','pagina','','','','',NULL,NULL,'','Conferir lavagem depois do branqueamento','2026-10-02T00:00:00Z')");
+ // The normal CMS fixture still has one authorized cohort. Introduce the
+ // second cohort only for explicit linked-question cases, so wrong-cohort
+ // access regressions continue to exercise their original data boundary.
+ if(isset($_GET['linked'])){
+    $db->exec("INSERT INTO course_cohorts VALUES(8,12,1,NULL,'Turma Novembro 2026','cohort-b','active')");
+    $db->exec("INSERT INTO course_enrollments VALUES(2,99,8,'active','2026-11-01T00:00:00Z')");
+    // The CMS filters unreleased sections before injecting notes. Release the
+    // section holding this notebook fixture, not the entire course.
+    $db->exec("INSERT INTO cohort_lesson_releases(cohort_id,lesson_id,released_at,created_at,updated_at) VALUES(8,2,'2026-10-02T00:00:00Z','now','now')");
+ }
+ $linked=(string)($_GET['linked']??'');
+ if(in_array($linked,['private','course'],true)){
+    $stmt=$db->prepare('INSERT INTO student_questions VALUES(41,99,7,1,?,?)');
+    $stmt->execute([$linked,'Dúvida já vinculada à anotação']);
+ }
+ if((string)($_GET['origin']??'')==='disabled'){
+    $db->exec("UPDATE course_enrollments SET status='disabled' WHERE student_id=99 AND cohort_id=7");
+ }
  $pages=[
   [100,'exposicao','Exposição pensando no positivo','<section class="study-unit" data-cms-section="exposure"><h2>Exposição pensando no positivo</h2><p>Exposição é uma decisão independente dos processos de revelação.</p></section>',1],
   [101,'processo-quimico-completo','Processo químico completo',<<<'HTML'
@@ -89,6 +110,8 @@ function student_account_current(PDO $db):?array{
 require_once __DIR__.'/../../app/cms_pages.php';
 require_once __DIR__.'/../../app/courses.php';
 require_once __DIR__.'/../../app/student_enrollments.php';
+require_once __DIR__.'/../../app/student_workbench_hardening.php';
+require_once __DIR__.'/../../app/student_question_annotations.php';
 require_once __DIR__.'/../../app/cms_access.php';
 require_once __DIR__.'/../../app/student_notes_experience.php';
 require_once __DIR__.'/../../app/student_shell.php';
