@@ -137,6 +137,8 @@ test.describe('authenticated Material → annotation → question → Material, 
       await backToPage.click();
       await expect(page.locator('[data-annotation-item]')).toHaveCount(1);
       await expect(page.locator('[data-annotation-item]')).toContainText('Qual o efeito da exposição no positivo?');
+      await page.locator('[data-student-notes-panel] > summary').click();
+      await page.locator('[data-annotation-item] [data-annotation-edit]').click();
       await page.screenshot({path:'student-visual-audit/authenticated-material-question/phone-return.png',animations:'disabled'});
 
       // The note is personal to a CMS page; its private question belongs to B.
@@ -153,11 +155,12 @@ test.describe('authenticated Material → annotation → question → Material, 
         await signIn(peer,'journey-peer@example.invalid');
         await peer.goto(materialUrl('journey-a'),{waitUntil:'networkidle'});
         await expect(peer.locator('[data-annotation-item]')).toHaveCount(0);
+        // Obtain a real CSRF token from the Material before leaving that
+        // document. Dúvidas has no annotation panel or annotation CSRF input.
+        const token=await peer.locator('[data-student-notes-panel] input[name="_csrf"]').first().inputValue();
         await peer.goto(origin+'/aluno/duvidas.php?cohort=journey-a&id='+questionId);
         await expect(peer.getByRole('heading',{name:'Relação entre exposição e positivo'})).toHaveCount(0);
-        // An authenticated student cannot mutate someone else's annotation
-        // by guessing a numeric annotation ID and using a valid own CSRF token.
-        const token=await peer.locator('[data-student-notes-panel] input[name="_csrf"]').first().inputValue();
+        // Another authenticated student cannot mutate the author's note by ID.
         const forged=await peer.evaluate(async payload=>{
           const data=new FormData();
           for(const [key,value] of Object.entries(payload))data.set(key,String(value));
