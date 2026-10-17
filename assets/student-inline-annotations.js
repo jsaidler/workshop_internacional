@@ -26,9 +26,16 @@ const coarsePointer=window.matchMedia?.('(pointer: coarse)').matches||window.mat
 
 const sheet=panel.querySelector('.student-notes-sheet');
 const noteBack=panel.querySelector('[data-student-notes-back]');
+const overlapChooser=document.createElement('section');
+overlapChooser.className='student-note-overlap-chooser';
+overlapChooser.hidden=true;
+overlapChooser.setAttribute('aria-label','Anotações do trecho destacado');
+overlapChooser.innerHTML='<h3>Qual anotação deseja abrir?</h3><p>Este trecho está associado a mais de uma anotação.</p><div data-note-overlap-options></div>';
+noteBack?.after(overlapChooser);
 const listSavedNotes=()=>{
   const general=panel.querySelector('[data-student-note-new]');if(general)general.open=false;
-  panel.classList.remove('is-editing','is-existing-questioning','is-page-questioning','is-general-composing');
+  panel.classList.remove('is-editing','is-existing-questioning','is-page-questioning','is-general-composing','is-overlap-choosing');
+  overlapChooser.hidden=true;
   panel.querySelectorAll('.student-note-item').forEach(article=>{article.classList.remove('is-active');article.querySelectorAll('[data-note-question]').forEach(question=>question.open=false);});
   if(noteBack)noteBack.hidden=true;
   sheet?.scrollTo({top:0,behavior:'auto'});
@@ -37,7 +44,8 @@ const editSavedNote=article=>{
   if(!article?.matches('.student-note-item'))return;
   compose.hidden=true;setComposeMode(false);
   const general=panel.querySelector('[data-student-note-new]');if(general)general.open=false;
-  panel.classList.remove('is-general-composing');
+  panel.classList.remove('is-general-composing','is-overlap-choosing');
+  overlapChooser.hidden=true;
   panel.querySelectorAll('.student-note-item').forEach(item=>{item.classList.toggle('is-active',item===article);if(item!==article)item.querySelectorAll('[data-note-question]').forEach(q=>q.open=false);});
   panel.classList.add('is-editing');
   panel.classList.remove('is-existing-questioning','is-page-questioning');
@@ -120,7 +128,11 @@ action.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation()
 const composeQuestion=compose?.querySelector('[data-note-question]');
 composeQuestion?.addEventListener('toggle',()=>syncQuestionMode(composeQuestion));
 panel.addEventListener('toggle',()=>{if(!panel.open&&compose&&!compose.hidden&&composeQuestion?.open){composeQuestion.open=false;syncQuestionMode(composeQuestion);}});
-const unmark=()=>root.querySelectorAll('mark.student-inline-note-mark').forEach(mark=>mark.replaceWith(...mark.childNodes));
+const unmark=()=>root.querySelectorAll('mark.student-inline-note-mark').forEach(mark=>{
+  const parent=mark.parentNode;
+  mark.replaceWith(...mark.childNodes);
+  parent?.normalize();
+});
 const findOccurrences=(text,needle)=>{const out=[];let from=0;while(needle&&from<=text.length){const at=text.indexOf(needle,from);if(at<0)break;out.push(at);from=at+Math.max(1,needle.length);}return out;};
 const scoreCandidate=(text,start,note)=>{let score=0,end=start+note.exact.length;if(note.prefix){const before=text.slice(Math.max(0,start-note.prefix.length),start);if(before===note.prefix)score+=4;else if(before.endsWith(note.prefix.slice(-Math.min(40,note.prefix.length))))score+=2;}if(note.suffix){const after=text.slice(end,end+note.suffix.length);if(after===note.suffix)score+=4;else if(after.startsWith(note.suffix.slice(0,Math.min(40,note.suffix.length))))score+=2;}return score;};
 // Offset and ordinal alone do not identify a passage after an editorial CMS
@@ -163,9 +175,99 @@ const locate=note=>{
   if(best)return{...best,state:best.block===preferred?'linked':'moved'};
   return{state:preferred?'altered':'removed',block:preferred||null};
 };
-const rangeFromOffsets=(block,start,end)=>{const nodes=textNodes(block);let cursor=0,sn=null,so=0,en=null,eo=0;for(const node of nodes){const len=node.nodeValue?.length||0;if(!sn&&start>=cursor&&start<=cursor+len){sn=node;so=start-cursor;}if(end>=cursor&&end<=cursor+len){en=node;eo=end-cursor;break;}cursor+=len;}if(!sn||!en)return null;const range=document.createRange();range.setStart(sn,so);range.setEnd(en,eo);return range;};
+// Segments describe every note covering a piece of text, without nesting
+// marks or extracting structural CMS elements (links, emphasis, headings).
+const annotationSegments=items=>{
+  const offsets=[...new Set(items.flatMap(item=>[item.start,item.end]))].sort((a,b)=>a-b);
+  const segments=[];
+  for(let i=0;i<offsets.length-1;i++){
+    const start=offsets[i],end=offsets[i+1];
+    const ids=items.filter(item=>item.start<=start&&item.end>=end).map(item=>item.note.id).sort((a,b)=>a-b);
+    if(!ids.length)continue;
+    const previous=segments.at(-1);
+    if(previous&&previous.end===start&&previous.ids.join(',')===ids.join(','))previous.end=end;
+    else segments.push({start,end,ids});
+  }
+  return segments;
+};
+const openAnnotatedFragment=ids=>{
+  if(ids.length===1){
+    editSavedNote(panel.querySelector(`[data-annotation-item="${ids[0]}"]`));
+    return;
+  }
+  listSavedNotes();
+  const options=overlapChooser.querySelector('[data-note-overlap-options]');
+  if(!options)return;
+  options.replaceChildren();
+  ids.forEach((id,index)=>{
+    const note=annotations.find(item=>item.id===id);
+    if(!note)return;
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='student-note-overlap-option';
+    button.dataset.noteOverlapChoice=String(id);
+    button.textContent=`Anotação ${index+1}: ${(note.body||note.exact||'Sem descrição').slice(0,120)}`;
+    options.appendChild(button);
+  });
+  overlapChooser.hidden=false;
+  panel.classList.add('is-overlap-choosing');
+  if(noteBack)noteBack.hidden=false;
+  panel.open=true;
+  sheet?.scrollTo({top:0,behavior:'auto'});
+  requestAnimationFrame(()=>options.querySelector('button')?.focus({preventScroll:true}));
+};
 const setStatus=(id,text,state)=>{const status=panel.querySelector(`[data-annotation-status="${id}"]`);if(status){status.textContent=text;status.dataset.anchorState=state;}};
-const renderHighlights=()=>{unmark();const resolved=[];annotations.forEach(note=>{const loc=locate(note);if(!loc)return;if(loc.state==='altered'){setStatus(note.id,'Trecho alterado — a anotação foi preservada.','altered');return;}if(loc.state==='removed'){setStatus(note.id,'Trecho original removido — a anotação foi preservada.','removed');return;}if(loc.state==='ambiguous'){setStatus(note.id,'Trecho não identificado com segurança — reassocie para restaurar o destaque.','ambiguous');return;}setStatus(note.id,loc.state==='moved'?'Trecho localizado após alteração do material.':'Vinculada ao texto.',loc.state);resolved.push({note,...loc});});resolved.sort((a,b)=>a.block===b.block?b.start-a.start:0).forEach(item=>{const range=rangeFromOffsets(item.block,item.start,item.end);if(!range||range.collapsed)return;const mark=document.createElement('mark');mark.className='student-inline-note-mark';mark.dataset.annotationId=String(item.note.id);mark.setAttribute('role','button');mark.tabIndex=0;mark.title='Abrir anotação';try{mark.appendChild(range.extractContents());range.insertNode(mark);}catch(_){return;}const open=()=>editSavedNote(panel.querySelector(`[data-annotation-item="${item.note.id}"]`));mark.addEventListener('click',open);mark.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});});};
+const renderHighlights=()=>{
+  unmark();
+  const grouped=new Map();
+  annotations.forEach(note=>{
+    const loc=locate(note);
+    if(!loc)return;
+    if(loc.state==='altered'){setStatus(note.id,'Trecho alterado — a anotação foi preservada.','altered');return;}
+    if(loc.state==='removed'){setStatus(note.id,'Trecho original removido — a anotação foi preservada.','removed');return;}
+    if(loc.state==='ambiguous'){setStatus(note.id,'Trecho não identificado com segurança — reassocie para restaurar o destaque.','ambiguous');return;}
+    setStatus(note.id,loc.state==='moved'?'Trecho localizado após alteração do material.':'Vinculada ao texto.',loc.state);
+    if(!grouped.has(loc.block))grouped.set(loc.block,[]);
+    grouped.get(loc.block).push({note,start:loc.start,end:loc.end});
+  });
+  grouped.forEach((items,block)=>{
+    const segments=annotationSegments(items);
+    let cursor=0;
+    // Freeze the original text nodes and work from right to left within each.
+    // This preserves <a>, <strong> and <em> elements and all their attributes.
+    textNodes(block).forEach(node=>{
+      const length=node.nodeValue?.length||0,end=cursor+length;
+      const matches=segments.filter(segment=>segment.end>cursor&&segment.start<end);
+      for(let i=matches.length-1;i>=0;i--){
+        const segment=matches[i];
+        const from=Math.max(segment.start,cursor)-cursor;
+        const to=Math.min(segment.end,end)-cursor;
+        if(to<=from)continue;
+        const range=document.createRange();
+        range.setStart(node,from);
+        range.setEnd(node,to);
+        const mark=document.createElement('mark');
+        mark.className='student-inline-note-mark';
+        mark.dataset.annotationId=String(segment.ids[0]);
+        mark.dataset.annotationIds=segment.ids.join(',');
+        mark.setAttribute('role','button');
+        mark.tabIndex=0;
+        const plural=segment.ids.length>1;
+        const label=plural?`Escolher entre ${segment.ids.length} anotações`:'Abrir anotação';
+        mark.title=label;
+        mark.setAttribute('aria-label',label);
+        mark.appendChild(range.extractContents());
+        range.insertNode(mark);
+        const open=event=>{event.preventDefault();event.stopPropagation();openAnnotatedFragment(segment.ids);};
+        mark.addEventListener('click',open);
+        mark.addEventListener('keydown',event=>{
+          if(event.key==='Enter'||event.key===' '){open(event);}
+        });
+      }
+      cursor=end;
+    });
+  });
+};
 const questionComposer=(annotationId,question=null)=>question?.id
   ?(question.url
     ?`<a class="student-material-note-secondary" href="${question.url.replaceAll('&','&amp;').replaceAll('"','&quot;')}">Ver dúvida</a>`
@@ -204,6 +306,11 @@ const statusMessage=(form,message,error=false)=>{
 };
 panel.addEventListener('submit',async event=>{const form=event.target.closest('form[action="/aluno/material-anotacao.php"]');if(!form)return;event.preventDefault();const submitter=event.submitter;const actionName=submitter?.name==='annotation_action'?submitter.value:form.querySelector('[name="annotation_action"]')?.value||'';const id=Number(form.querySelector('[name="annotation_id"]')?.value||0);if(actionName==='remove'||submitter?.name==='remove'){const dialog=panel.querySelector('[data-note-remove-confirm]');if(!dialog||typeof dialog.showModal!=='function')throw new Error('Confirmação de exclusão indisponível.');dialog.returnValue='cancel';const approved=await new Promise(resolve=>{dialog.addEventListener('close',()=>resolve(dialog.returnValue==='confirm'),{once:true});dialog.showModal();});if(!approved)return;}const origin=readingOrigin||captureReadingOrigin(form.querySelector('[data-anchor-block]')?.value||'');form.querySelectorAll('button[type="submit"]').forEach(b=>b.disabled=true);try{const payload=await requestForm(form,submitter);if(payload.legacy){if(payload.removed){form.closest('.student-note-item')?.remove();listSavedNotes();}else{statusMessage(form,'Salvo.');const preview=form.closest('.student-note-item')?.querySelector('.student-note-body-preview');if(preview)preview.textContent=form.querySelector('textarea[name="body"]')?.value||'';}updateCounts();return;}if(actionName==='create_selection'||actionName==='create_page'){const note=normalizeNote(payload.annotation);annotations.push(note);const linkedQuestion=payload.question?{...payload.question,url:payload.question_url||''}:null;renderArticle(note,linkedQuestion);if(actionName==='create_selection'){compose.hidden=true;setComposeMode(false);compose.querySelector('textarea').value='';panel.open=false;readingOrigin=null;renderHighlights();restoreReadingOrigin(origin);}else{form.reset();form.closest('[data-student-note-new]')?.removeAttribute('open');panel.classList.remove('is-page-questioning');renderHighlights();}}else if(actionName==='update'){const note=annotations.find(n=>n.id===id);if(note)note.body=form.querySelector('textarea')?.value||'';const preview=form.closest('[data-annotation-item]')?.querySelector('.student-note-body-preview');if(preview)preview.textContent=note?.body||'';statusMessage(form,'Salvo.');}else if(actionName==='question'){const note=annotations.find(n=>n.id===id);if(note)note.body=form.querySelector('textarea')?.value||'';const details=form.querySelector('[data-note-question]');if(details&&payload.question){const link=document.createElement('a');link.className='student-material-note-secondary';if(!payload.question_url)throw new Error('A dúvida vinculada não tem um destino autorizado.');link.href=payload.question_url;link.textContent='Ver dúvida';details.replaceWith(link);}panel.classList.remove('is-existing-questioning');const preview=form.closest('[data-annotation-item]')?.querySelector('.student-note-body-preview');if(preview)preview.textContent=note?.body||'';statusMessage(form,'Anotação salva e dúvida publicada.');}else if(actionName==='remove'){annotations=annotations.filter(n=>n.id!==id);form.closest('[data-annotation-item]')?.remove();listSavedNotes();renderHighlights();updateCounts();}else if(actionName==='detach'){const note=normalizeNote(payload.annotation);annotations=annotations.map(n=>n.id===id?note:n);const old=form.closest('[data-annotation-item]');const linkedQuestion=payload.question?{...payload.question,url:payload.question_url||''}:null;const fresh=renderArticle(note,linkedQuestion);old?.remove();updateCounts();renderHighlights();editSavedNote(fresh);}else if(actionName==='reanchor'){const note=normalizeNote(payload.annotation);annotations=annotations.map(n=>n.id===id?note:n);compose.hidden=true;setComposeMode(false);reanchorId=0;reanchorHint.hidden=true;panel.open=false;readingOrigin=null;const article=panel.querySelector(`[data-annotation-item="${id}"]`);if(article){article.querySelector('.student-note-quote').textContent=note.exact;article.querySelector('.student-note-title').textContent=(note.exact||'Trecho do material').slice(0,140);article.querySelector('[name="section_key"]').value=note.sectionKey;}renderHighlights();restoreReadingOrigin(origin);}}catch(error){statusMessage(form,error instanceof Error?error.message:'Não foi possível salvar.',true);}finally{form.querySelectorAll('button[type="submit"]').forEach(b=>b.disabled=false);}});
 panel.addEventListener('click',event=>{
+  const overlapChoice=event.target.closest('[data-note-overlap-choice]');
+  if(overlapChoice){
+    editSavedNote(panel.querySelector(`[data-annotation-item="${overlapChoice.dataset.noteOverlapChoice}"]`));
+    return;
+  }
   const back=event.target.closest('[data-student-notes-back-button]');
   if(back){
     const active=panel.querySelector('.student-note-item.is-active');
