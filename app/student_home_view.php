@@ -35,10 +35,10 @@ $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):
   <?php elseif(($priority['kind']??'')==='notice'):
     $event=$priority['item'];?>
     <section class="student-home-feature student-home-feature-message" aria-labelledby="student-home-main-event" data-home-message>
-      <p class="student-home-feature-meta"><?=h(($event['kind']==='answer'?'Resposta do professor':'Retorno da avaliação').' · '.$event['cohort'])?></p>
+      <p class="student-home-feature-meta"><?=h(($event['kind']==='answer'?'Resposta do professor':($event['kind']==='opportunity'?'Encontro de outra turma':'Retorno da avaliação')).' · '.$event['cohort'])?></p>
       <h2 id="student-home-main-event"><?=h((string)$event['title'])?></h2>
       <p><?=h((string)$event['course'])?></p>
-      <a class="button button-primary" href="<?=h((string)$event['href'])?>"><?=h(($event['kind']==='answer'?'Ler resposta':'Ler retorno'))?> →</a>
+      <a class="button button-primary" href="<?=h((string)$event['href'])?>"><?=h(($event['kind']==='answer'?'Ler resposta':($event['kind']==='opportunity'?'Ver como ouvinte':'Ler retorno')))?> →</a>
     </section>
   <?php elseif($meeting):?>
     <section class="student-home-next" data-home-upcoming-meeting aria-label="Próximo encontro">
@@ -53,8 +53,8 @@ $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):
       <div class="student-home-notice-list">
       <?php foreach($firstTwo as $notice):?>
         <a class="student-home-notice<?=$notice['unread']?' is-unread':''?>" href="<?=h((string)$notice['href'])?>">
-          <span class="student-home-notice-symbol" aria-hidden="true"><?=($notice['kind']==='answer')?'↗':'✓'?></span>
-          <span><small><?=h(($notice['kind']==='answer'?'Resposta recebida':'Avaliação').' · '.$notice['cohort'])?></small>
+          <span class="student-home-notice-symbol" aria-hidden="true"><?=($notice['kind']==='answer')?'↗':(($notice['kind']==='opportunity')?'◷':'✓')?></span>
+          <span><small><?=h(($notice['kind']==='answer'?'Resposta recebida':($notice['kind']==='opportunity'?'Encontro como ouvinte':'Avaliação')).' · '.$notice['cohort'])?></small>
             <strong><?=h((string)$notice['title'])?></strong>
           </span><span aria-hidden="true">›</span>
         </a>

@@ -303,3 +303,8 @@ A prioridade é encontro programado dentro de 48 horas, depois resposta não lid
 A oferta comercial só usa curso ativo com página pública CMS efetivamente publicada e não matriculado; não afirmar inscrições abertas nem inventar imagem/campanha. Relação temática automática dúvida ↔ outra turma não deve ser feita por semelhança de texto. Agenda mantém contrato de participação e reserva; quando não houver associação acadêmica canônica por aula, a oferta de ouvinte deve permanecer na Agenda, não ser promovida como fato pessoal na Home.
 
 Gate: smoke PHP SQLite e Playwright com renderer PHP operacional, visual phone 320/390 e desktop 1440, temas, sessão/CSRF e regressão da matriz inteira. PR continua draft até os três workflows no mesmo SHA e inspeção efetiva. Publicação na hospedagem segue instalação manual.
+
+
+### Vínculo pedagógico de oportunidades de ouvinte — 19/10/2026
+
+A Home só pode associar uma dúvida aberta a um encontro de outra turma quando existir \`student_questions.source_annotation_id\` do próprio aluno, a anotação for de seleção identificada e existir correspondência explícita \`course_material_sections\` para o mesmo curso, página, seção e \`lesson_id\`; o encontro precisa usar a **mesma aula** (\`cohort_lesson_releases.lesson_id\`) e estar agendado no futuro. Somente outra turma ativa no mesmo curso, sem matrícula ativa na turma de destino, com elegibilidade \`course_agenda_can_listen\`, aparece como \`Ver como ouvinte\`. É um link de **consulta**, sem reservar vagas, marcar presença ou afirmar confirmação. Sem relação acadêmica explícita, não há recomendação. Não usar similaridade lexical de tópicos/títulos como atalho.

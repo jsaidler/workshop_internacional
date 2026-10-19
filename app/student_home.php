@@ -152,7 +152,7 @@ function student_home_feedback_notices(PDO $db,int $studentId): array {
     return $out;
 }
 function student_home_live_notices(PDO $db,int $studentId): array {
-    $notices=[...student_home_question_notices($db,$studentId),...student_home_feedback_notices($db,$studentId)];
+    $notices=[...student_home_question_notices($db,$studentId),...student_home_feedback_notices($db,$studentId),...student_home_related_listener_opportunities($db,$studentId)];
     usort($notices,static function(array $a,array $b): int {
         $attention=(int)($b['unread']||($b['action']??false))<=>(int)($a['unread']||($a['action']??false));
         return $attention!==0?$attention:(strcmp((string)$b['at'],(string)$a['at'])?:strcmp($a['key'],$b['key']));
@@ -185,4 +185,55 @@ function student_home_live_priority(?array $meeting,array $notices,?int $now=nul
     if($soon)return ['kind'=>'meeting','item'=>$meeting];
     foreach($notices as $notice)if(!empty($notice['unread'])||!empty($notice['action']))return ['kind'=>'notice','item'=>$notice];
     return [];
+}
+
+
+/**
+ * An opportunity is related to a student's open doubt only if its source
+ * annotation belongs to an explicit CMS lesson-section mapping.
+ * Visibility alone or a common word in titles is never sufficient evidence.
+ */
+function student_home_related_listener_opportunities(PDO $db,int $studentId,int $limit=5): array {
+    if($studentId<1||!student_question_annotation_available($db))return [];
+    $sql="SELECT DISTINCT q.id question_id,q.title question_title,
+         target.id target_cohort_id,target.title target_cohort_title,
+         c.title course_title,l.title lesson_title,
+         r.meeting_starts_at,r.meeting_timezone
+      FROM student_questions q
+      JOIN student_material_annotations a ON a.id=q.source_annotation_id AND a.student_id=q.student_id
+      JOIN course_cohorts origin ON origin.id=q.cohort_id AND origin.course_id IS NOT NULL
+      JOIN course_enrollments owned ON owned.cohort_id=origin.id AND owned.student_id=q.student_id AND owned.status='active'
+      JOIN course_material_pages material ON material.course_id=origin.course_id AND material.page_id=a.page_id
+      JOIN course_material_sections mapped ON mapped.course_id=origin.course_id
+         AND mapped.page_id=a.page_id AND mapped.section_key=a.section_key AND mapped.lesson_id=a.lesson_id
+      JOIN course_lessons l ON l.id=mapped.lesson_id AND l.course_id=origin.course_id
+      JOIN course_cohorts target ON target.course_id=origin.course_id AND target.id!=origin.id AND target.status='active'
+      JOIN courses c ON c.id=origin.course_id AND c.status='active'
+      JOIN cohort_lesson_releases r ON r.cohort_id=target.id AND r.lesson_id=l.id
+      WHERE q.student_id=? AND q.status='open' AND q.source_annotation_id IS NOT NULL
+       AND a.anchor_type='selection' AND r.meeting_status='scheduled' AND r.meeting_starts_at>?
+       AND NOT EXISTS(SELECT 1 FROM course_enrollments active
+            WHERE active.student_id=? AND active.cohort_id=target.id AND active.status='active')
+      ORDER BY r.meeting_starts_at,target.id,q.id LIMIT ?";
+    $q=$db->prepare($sql);
+    $q->bindValue(1,$studentId,PDO::PARAM_INT);
+    $q->bindValue(2,gmdate('Y-m-d\TH:i:s\Z'),PDO::PARAM_STR);
+    $q->bindValue(3,$studentId,PDO::PARAM_INT);
+    $q->bindValue(4,max(1,min(20,$limit*4)),PDO::PARAM_INT);
+    $q->execute();$out=[];$seen=[];
+    foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){
+        $target=(int)$row['target_cohort_id'];
+        if(!course_agenda_can_listen($db,$studentId,$target)||isset($seen[$target]))continue;
+        $seen[$target]=true;
+        $out[]=[
+          'kind'=>'opportunity','key'=>'listener:'.$target.':'.(int)$row['question_id'],
+          'title'=>(string)$row['lesson_title'],
+          'course'=>(string)$row['course_title'],'cohort'=>(string)$row['target_cohort_title'],
+          'question'=>(string)$row['question_title'],
+          'href'=>'/aluno/agenda.php?view=ouvintes','at'=>(string)$row['meeting_starts_at'],
+          'unread'=>false,'action'=>false,
+        ];
+        if(count($out)>=$limit)break;
+    }
+    return $out;
 }
