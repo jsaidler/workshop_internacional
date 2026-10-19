@@ -22,9 +22,20 @@ for(const target of ['materials','bibliography']){
     await expect(page.getByText(/CRAIG, C. C. Craig Film Holder/)).toBeVisible();
    }
    fs.mkdirSync('student-visual-audit/resource-pages',{recursive:true});
-   await page.screenshot({path:'student-visual-audit/resource-pages/'+target+'-'+width+'-top.png',animations:'disabled'});
-   await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));
-   await page.screenshot({path:'student-visual-audit/resource-pages/'+target+'-'+width+'-bottom.png',animations:'disabled'});
+   const top=await page.screenshot({path:'student-visual-audit/resource-pages/'+target+'-'+width+'-top.png',animations:'disabled'});
+   // Canonical CSS sets html scroll-behavior:smooth; an immediate screenshot
+   // after scrollTo() captures the TOP again. Force instant scrolling.
+   const scroll=await page.evaluate(()=>{
+    const root=document.scrollingElement;
+    const full=root.scrollHeight;
+    window.scrollTo({top:full,behavior:'instant'});
+    return {full,viewport:innerHeight,y:scrollY};
+   });
+   expect(scroll.full, 'resource document must extend beyond the viewport').toBeGreaterThan(scroll.viewport+100);
+   expect(scroll.y, 'bottom screenshot must actually reach the bottom').toBeGreaterThan(0);
+   expect(scroll.y+scroll.viewport).toBeGreaterThanOrEqual(scroll.full-2);
+   const bottom=await page.screenshot({path:'student-visual-audit/resource-pages/'+target+'-'+width+'-bottom.png',animations:'disabled'});
+   expect(Buffer.compare(top,bottom),'top and bottom screenshots must differ').not.toBe(0);
   });
  }
 }
