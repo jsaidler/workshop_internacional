@@ -266,6 +266,7 @@
       width: min(100%, var(--max));
       margin: 0 auto;
       padding: var(--section) var(--gutter);
+      overflow-wrap: anywhere;
     }
     .section-label { margin: 0 0 30px; color: var(--muted); }
     .statement-grid {
