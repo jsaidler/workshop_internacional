@@ -116,6 +116,6 @@ O último HTML da matriz (`student-material-context.html`) foi substituído por 
 
 ### Novo destino de notificações após a Home viva — 19/10/2026
 
-- \`aluno/notificacoes.php\`: superfície nova, autenticada, de mensagens e retornos; adicional às 46 superfícies-base anteriores e contabilizada separadamente até revisão integral da matriz. O renderer compartilhado é \`app/student_home_notifications_view.php\`, consumido também pela fixture PHP de Home para evidência visual com o mesmo shell, tokens, contexto e estados.
+- `aluno/notificacoes.php`: superfície nova, autenticada, de mensagens e retornos; adicional às 46 superfícies-base anteriores e contabilizada separadamente até revisão integral da matriz. O renderer compartilhado é `app/student_home_notifications_view.php`, consumido também pela fixture PHP de Home para evidência visual com o mesmo shell, tokens, contexto e estados.
 - A abertura da lista não marca mensagens como lidas; somente o acesso autorizado ao conteúdo da dúvida registra o maior ID da resposta administrativa consultada. Nenhum texto privado é persistido no service worker.
 - Inspeção obrigatória em 320/390/1440, tema claro/escuro, ausência de avisos, vários avisos e retorno nativo.
