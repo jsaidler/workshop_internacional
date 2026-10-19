@@ -21,7 +21,7 @@ $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):
         <div class="student-home-meeting-info"><h2 id="student-home-main-event"><?=h((string)$event['lesson'])?></h2>
           <p><?=h((string)$event['course'])?> · <?=h((string)$event['cohort'])?></p></div>
       </div>
-      <div class="student-home-live-feature-foot"><time datetime="<?=h((string)$event['date_iso'])?>"><?=h((string)$event['hour'])?> · Brasília</time>
+      <div class="student-home-live-feature-foot"><time datetime="<?=h((string)$event['date_iso'])?>"><?=h((string)$event['hour'])?> · <?=h((string)$event['timezone_label'])?></time>
         <?php if(!empty($event['url'])):?><a class="button button-primary" href="<?=h((string)$event['url'])?>" target="_blank" rel="noopener noreferrer">Acessar encontro ↗</a>
         <?php else:?><a class="button button-primary" href="/aluno/agenda.php">Ver encontro →</a><?php endif;?>
       </div>

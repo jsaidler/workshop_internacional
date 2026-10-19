@@ -84,6 +84,7 @@ test('Notifications render through the same operational PHP projection and do no
  await page.setViewportSize({width:390,height:844});
  await page.goto(base+'?state=active&screen=notifications',{waitUntil:'domcontentloaded'});
  await expect(page.getByRole('heading',{name:'Notificações'})).toBeVisible();
+ await expect(page.locator('.student-appbar-title')).toHaveText('Notificações');
  await expect(page.getByRole('link',{name:/Segunda revelação/})).toHaveAttribute('href',/cohort=cohort-a&id=42/);
  await expect(page.locator('.student-home-notice.is-unread')).toHaveCount(1);
  await expect(page.locator('nav.student-mobile-nav a')).toHaveCount(5);

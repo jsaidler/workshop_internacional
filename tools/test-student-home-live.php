@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 function utc_now():string{return gmdate('c');}
-function course_agenda_safe_meeting_url(mixed $v):string{return (string)$v;}
+require __DIR__.'/../app/course_agenda.php';
 function student_feedback_pending_for_student(PDO $db,int $id,?int $cohort=null,int $limit=20):array{return [];}
 function student_feedback_state(array $v):array{return ['unseen'=>false,'requires_action'=>false];}
 require __DIR__.'/../app/student_home.php';
@@ -42,6 +42,9 @@ student_home_mark_question_read($db,1,5,104);
 check_home(student_home_question_notices($db,1)[0]['unread']===true,'new admin answer arriving after conversation render must remain unread');
 student_home_mark_question_read($db,1,5,105);
 check_home(student_home_question_notices($db,1)[0]['unread']===false,'explicitly displayed latest admin answer must be acknowledged');
+$alternate=student_home_next_meeting([['meeting_status'=>'scheduled','meeting_starts_at'=>'2030-10-22T22:00:00Z','meeting_timezone'=>'Europe/Lisbon','lesson_title'=>'Encontro internacional']],strtotime('2030-10-22T19:00:00Z'));
+check_home($alternate!==null&&$alternate['hour']==='23:00'&&$alternate['timezone_label']==='Lisbon','Home must label converted time with the configured timezone');
+check_home(course_agenda_timezone_label('America/Sao_Paulo')==='Brasília','canonical timezone label for Sao Paulo changed');
 $now=strtotime('2030-10-22T20:00:00Z');
 $m=['date_iso'=>'2030-10-22T22:00:00Z','in_window'=>false];
 check_home(student_home_live_priority($m,[], $now)['kind']==='meeting','imminent meeting should have priority');

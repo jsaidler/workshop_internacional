@@ -27,6 +27,11 @@ function course_agenda_timezone(string $name): DateTimeZone {
     try {return new DateTimeZone(trim($name));}
     catch(Throwable) {throw new RuntimeException('Escolha um fuso horário válido.');}
 }
+function course_agenda_timezone_label(string $timezone): string {
+    if($timezone==='America/Sao_Paulo')return 'Brasília';
+    $segments=explode('/',$timezone);
+    return str_replace('_',' ',(string)end($segments));
+}
 function course_agenda_to_utc(string $local,string $timezone): ?string {
     $local=trim($local);
     if($local==='')return null;
@@ -44,8 +49,7 @@ function course_agenda_when(?string $utc,string $timezone='America/Sao_Paulo'): 
     if(!$utc)return 'Sem data definida';
     try{
         $local=(new DateTimeImmutable($utc))->setTimezone(course_agenda_timezone($timezone));
-        $segments=explode('/',$timezone);
-        $place=$timezone==='America/Sao_Paulo'?'Brasília':str_replace('_',' ',(string)end($segments));
+        $place=course_agenda_timezone_label($timezone);
         return $local->format('d/m/Y · H:i').' ('.$place.')';
     }
     catch(Throwable){return 'Data indisponível';}

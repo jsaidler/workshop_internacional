@@ -174,3 +174,7 @@ No Início, a Agenda deve ser primeiro acesso rápido para alunos matriculados e
 ### Reconstrução mobile-first v2 (13/10/2026)
 
 A seção histórica que exige quatro destinos é supersedida: **Início / Agenda / Cursos / Caderno / Laboratório** são cinco áreas globais. A Home deve usar o mesmo dado autorizado que a Agenda, sem duplicar matrículas ou inventar presença. A mudança visual é incremental e não significa que todas as áreas tenham sido migradas. Autoridade de navegação: `docs/STUDENT_NAVIGATION_CANONICAL_2026-10-07.md` seção 17.
+
+### Home acadêmica v6.2 — revisão de qualidade (19/10/2026, PR #267)
+
+Os encontros prioritários usam a janela de 48 horas sem antecipar urgência; o horário exibido é convertido para o fuso cadastrado e o nome do fuso mostrado na Home deve coincidir com a autoridade da Agenda (`course_agenda_timezone_label`). A central de notificações possui título próprio no cabeçalho, ainda que permaneça no destino global Início. A conferência visual abrange 320, 390 e 1440 px, temas e estados acadêmicos, sem substituir os contratos funcionais e de autorização.
