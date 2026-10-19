@@ -44,7 +44,7 @@ must_student_premium_ui(str_contains($uiJs,"form[data-ui-validate]")&&str_contai
 
 $homeView=(string)file_get_contents($root.'/app/student_home_view.php');
 must_student_premium_ui(str_contains($home,'student_home_live_notices')&&str_contains($homeView,'student-home-live')&&str_contains($homeView,'data-home-meeting'),'student Home must project authorized events and a factual upcoming meeting');
-must_student_premium_ui(str_contains($homeView,'student-home-live-section')&&str_contains($homeView,'student-home-course')&&str_contains($homeView,'student-home-bell')&&str_contains($homeView,'/aluno/agenda.php'),'student Home must expose academic updates, authorized courses and notifications');
+must_student_premium_ui(str_contains($homeView,'student-home-live-section')&&str_contains($homeView,'student-home-course')&&str_contains($shell,'student_shell_notification_link')&&str_contains($homeView,'/aluno/agenda.php'),'student Home must expose academic updates, authorized courses and notifications');
 $mobileAppCss=$css; // Navigation geometry is now owned by canonical student-area.css.
 must_student_premium_ui(!is_file($root.'/assets/student-app-shell.css'),'parallel shell stylesheet was reintroduced');
 must_student_premium_ui(str_contains($shell,"'agenda'=>['label'=>'Agenda','href'=>'/aluno/agenda.php']")&&str_contains($mobileAppCss,'grid-template-columns:repeat(5,minmax(0,1fr))'),'approved five-destination shell is not integrated');
