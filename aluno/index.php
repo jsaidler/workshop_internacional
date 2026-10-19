@@ -29,6 +29,7 @@ $home=[
     'courses'=>student_home_course_items($db,$enrollments),
     'notices'=>student_home_live_notices($db,$studentId),
     'offers'=>student_home_public_offers($db,$studentId),
+    'bibliography_url'=>student_home_shared_bibliography_url($db),
 ];
 student_shell_start('Início',null,$student,count(array_filter($home['notices'],static fn(array $notice):bool=>!empty($notice['unread']))));
 require __DIR__.'/../app/student_home_view.php';

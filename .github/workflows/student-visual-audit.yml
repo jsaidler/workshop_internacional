@@ -90,6 +90,9 @@ on:
       - 'tools/browser-fixture/student-process-runner-operational.php'
       - 'tools/browser-fixture/student-material-cms-operational.php'
       - 'tools/browser-tests/student-material-cms-operational.spec.cjs'
+      - 'tools/browser-fixture/student-resource-pages.php'
+      - 'tools/browser-tests/student-resource-pages.spec.cjs'
+      - 'migrations/100_student_materials_and_shared_bibliography.php'
       - 'tools/browser-tests/student-questions-inventory-task-first.spec.cjs'
       - 'tools/browser-fixture/student-questions-operational.php'
       - 'app/student_question_annotations.php'
@@ -157,6 +160,7 @@ jobs:
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
+          npx playwright test tools/browser-tests/student-resource-pages.spec.cjs --workers=1
           npx playwright test tools/browser-tests/student-visual-audit.spec.cjs tools/browser-tests/student-tools-current-audit.spec.cjs tools/browser-tests/student-tools-mechanics-audit.spec.cjs tools/browser-tests/student-process-product-audit.spec.cjs tools/browser-tests/student-process-routes-audit.spec.cjs tools/browser-tests/student-process-execution-state-audit.spec.cjs tools/browser-tests/admin-process-domain-audit.spec.cjs tools/browser-tests/student-material-notes-audit.spec.cjs tools/browser-tests/student-caderno-product-audit.spec.cjs tools/browser-tests/student-lab-stock-product-audit.spec.cjs tools/browser-tests/student-complete-area-audit.spec.cjs --workers=1
           node tools/generate-aula3-screenshot-pack.cjs student-visual-audit/complete/desktop migrations/assets/aula3-hires.pack.b64
           npx playwright test tools/browser-tests/student-cross-route-journeys.spec.cjs --workers=1

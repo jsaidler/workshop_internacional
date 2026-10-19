@@ -5,6 +5,7 @@ $meeting=$home['meeting']??null;
 $notices=$home['notices']??[];
 $courses=$home['courses']??[];
 $offers=$home['offers']??[];
+$bibliographyUrl=$home['bibliography_url']??'';
 $priority=student_home_live_priority($meeting,$notices,$home['now']??null);
 $unread=count(array_filter($notices,static fn(array $item):bool=>!empty($item['unread'])));
 $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):bool=>
@@ -72,6 +73,16 @@ $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):
       </article>
     <?php endforeach;?>
   </section>
+  <?php if($bibliographyUrl!==''):?>
+    <section class="student-home-live-section" aria-labelledby="home-shared-reading">
+      <div class="student-home-live-section-head"><h2 id="home-shared-reading">Referências</h2></div>
+      <a class="student-home-notice" href="<?=h((string)$bibliographyUrl)?>">
+        <span class="student-home-notice-symbol" aria-hidden="true">↗</span>
+        <span><small>Disponível para todos os alunos</small><strong>Bibliografia da pesquisa fotográfica</strong></span>
+        <span aria-hidden="true">›</span>
+      </a>
+    </section>
+  <?php endif;?>
   <?php if($offers):?>
     <section class="student-home-live-section student-home-live-offers" aria-labelledby="home-other-courses">
       <div class="student-home-live-section-head"><h2 id="home-other-courses">Outras formações</h2></div>
