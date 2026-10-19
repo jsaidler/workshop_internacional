@@ -53,13 +53,7 @@ check_home(student_home_live_priority(null,[],$now)===[],'fabricated urgency');
 
 /* Listener opportunity requires an exact annotation→CMS section→lesson match. */
 function student_question_annotation_available(PDO $db):bool{return true;}
-function course_agenda_can_listen(PDO $db,int $studentId,int $target):bool{
-    $q=$db->prepare("SELECT 1 FROM course_cohorts c WHERE c.id=? AND c.status='active'
-      AND EXISTS(SELECT 1 FROM course_enrollments e JOIN course_cohorts own ON own.id=e.cohort_id
-       WHERE e.student_id=? AND e.status='active' AND own.course_id=c.course_id AND own.id!=c.id)
-      AND NOT EXISTS(SELECT 1 FROM course_enrollments e WHERE e.student_id=? AND e.cohort_id=c.id AND e.status='active')");
-    $q->execute([$target,$studentId,$studentId]);return (bool)$q->fetchColumn();
-}
+$db->exec("ALTER TABLE student_users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'");
 $db->exec(<<<'SQL'
 ALTER TABLE student_questions ADD COLUMN source_annotation_id INTEGER NULL;
 ALTER TABLE student_questions ADD COLUMN status TEXT NOT NULL DEFAULT 'open';
