@@ -6,6 +6,18 @@ declare(strict_types=1);
  * student's own enrollment, record and tool authorizations.
  * No inferred attendance, unread flags or obligatory notebook steps.
  */
+function student_home_shared_bibliography_url(PDO $db): string {
+    $q=$db->query("SELECT p.slug,p.is_home,p.locale,a.id activity_id,a.slug activity_slug,a.is_root
+      FROM cms_pages p JOIN activities a ON a.id=p.activity_id
+      WHERE a.is_root=1 AND p.locale='pt-BR' AND p.slug='bibliografia'
+        AND p.status!='archived' AND p.published_document_json IS NOT NULL
+        AND p.access_level='authenticated'
+      LIMIT 1");
+    $page=$q->fetch(PDO::FETCH_ASSOC);
+    if(!$page)return '';
+    return cms_page_url(['id'=>(int)$page['activity_id'],'slug'=>(string)$page['activity_slug'],'is_root'=>(int)$page['is_root']],$page,(string)$page['locale']);
+}
+
 function student_home_safe_meeting_url(mixed $value): string {
     return course_agenda_safe_meeting_url($value);
 }
