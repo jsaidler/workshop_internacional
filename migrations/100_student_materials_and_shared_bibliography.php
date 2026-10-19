@@ -56,6 +56,7 @@ MATERIAL_HTML;
 <p class="section-label" data-cms-editable>Pesquisa fotográfica · leitura e referências</p>
 <h1 data-cms-editable>Bibliografia</h1>
 <div class="statement-copy">
+<p data-cms-editable>Deixo aqui a bibliografia que utilizei no desenvolvimento da pesquisa em fotografia alternativa e experimental.</p>
 <p data-cms-editable>Em 2018 não haviam IAs disponíveis ao grande público. Pesquisar informalmente estava muito próximo ao trabalho acadêmico formal. Consultar livros, patentes e sites especializados.</p>
 <p data-cms-editable>Hoje é muito mais simples perguntar para uma máquina e usar este conhecimento prévio na detecção de incoerências, afinal, como está escrito nas letras pequeninas no rodapé do Chat GPT, IAs erram.</p>
 <p data-cms-editable>Continuo lendo e estudando fotografia em livros e uso a IA em pesquisas pontuais ou quando a resposta que preciso dependeria de uma leitura extensa e multidisciplinar. Você vai notar que as últimas datas são de 2022.</p>
