@@ -16,6 +16,10 @@ for(const [state,width,height] of [
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
   expect(errors).toEqual([]);
   if(width<=760){
+   // DOMContentLoaded does not guarantee that the external canonical CSS has loaded.
+   // Check the actual styled mobile shell, not an unstyled hidden navigation node.
+   await page.waitForFunction(()=>[...document.querySelectorAll('link[rel="stylesheet"]')].some(link=>(link.getAttribute('href')||'').includes('/assets/student-area.css')&&!!link.sheet));
+   await expect(page.locator('nav.student-mobile-nav')).toBeVisible();
    const boxes=await page.evaluate(()=>{const main=document.querySelector('main.student-main').getBoundingClientRect(),nav=document.querySelector('nav.student-mobile-nav').getBoundingClientRect();return [main.bottom,nav.top]});
    expect(boxes[0]).toBeLessThanOrEqual(boxes[1]+1);
   }
