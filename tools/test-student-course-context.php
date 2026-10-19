@@ -17,5 +17,5 @@ must_student_course_context(str_contains($coursesView,'Todos os cursos')&&str_co
 must_student_course_context(str_contains($coursesView,'As aulas aparecerão conforme forem cadastradas.'),'empty lesson state is misleading');
 must_student_course_context(str_contains($courses,"student_shell_start('Cursos',\$selectedActivity,\$student)"),'selected course design context is not passed to student shell');
 must_student_course_context(str_contains($coursesView,'student-v2-course-selector')&&str_contains($coursesView,'student-v2-course-pages')&&str_contains($courses,'student_enrollment_pages_for_enrollment'),'course surface still uses dashboard-style card composition');
-must_student_course_context(str_contains($home,'student_experience_dashboard_state')&&!str_contains($home,'student_course_context_header'),'student home must remain a next-action surface, not the course workspace');
+must_student_course_context(str_contains($home,'student_home_course_items')&&str_contains($home,'student_home_live_notices')&&!str_contains($home,'student_course_context_header'),'student home must remain a next-action surface, not the course workspace');
 echo "student-course-context: ok\n";
