@@ -15,6 +15,9 @@ INSERT INTO activities VALUES(1,'',1);
 INSERT INTO courses VALUES(1,1,'Positivo Direto em Filme de Raio-X','active');
 INSERT INTO course_lessons VALUES(1,1,'Primeira aula',1);
 INSERT INTO course_cohorts VALUES(1,1,'active');
+INSERT INTO cms_pages(page_uuid,activity_id,locale,slug,title,nav_title,status,is_home,show_in_nav,sort_order,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,created_at,updated_at,access_level)
+ VALUES('canonical-study',1,'pt-BR','caderno-positivo-direto','Caderno de Positivo Direto','Material','active',0,0,1,'{"html":"<section></section>"}','{"html":"<section></section>"}',1,1,'','','','','activity');
+INSERT INTO course_material_pages VALUES(1,1,1,'2026-01-01','2026-01-01');
 SQL);
 $migration=require __DIR__.'/../../migrations/100_student_materials_and_shared_bibliography.php';
 $migration($db);
