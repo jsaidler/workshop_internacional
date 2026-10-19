@@ -76,7 +76,7 @@ $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):
       <div class="student-home-live-section-head"><h2 id="home-other-courses">Outras formações</h2></div>
       <?php foreach($offers as $offer):?>
         <a class="student-home-promo" href="<?=h((string)$offer['url'])?>">
-          <small>FORMAÇÃO · PÁGINA PUBLICADA</small>
+          <small>FORMAÇÃO</small>
           <strong><?=h((string)$offer['title'])?></strong>
           <span>Conhecer a formação →</span>
         </a>
