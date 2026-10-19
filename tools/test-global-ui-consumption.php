@@ -90,7 +90,7 @@ must_global_ui(!str_contains($taskShell,'Georgia'),'student shell brings back an
 must_global_ui(!preg_match('/\\.student-app \\.student-shell\\{[^}]*--(?:bg|surface|surface-2|text|muted|line|line-strong|focus)\\s*:/',$taskShell),'task shell overwrites the CMS color tokens');
 must_global_ui(!str_contains($taskShell,'.student-v2-cta{'),'task Home recreates the canonical button primitive');
 $taskHome=(string)file_get_contents($root.'/app/student_home_view.php');
-must_global_ui(str_contains($taskHome,'class="student-title"')&&str_contains($taskHome,'student-home-meeting-info')&&str_contains($studentCss,'.student-home-meeting-info h2')&&str_contains($studentCss,'var(--title)'),'live Home headings must consume the CMS display font');
+must_global_ui(str_contains($taskHome,'class="student-home-live-accessible-title"')&&str_contains($taskHome,'student-home-meeting-info')&&str_contains($studentCss,'.student-home-meeting-info h2')&&str_contains($studentCss,'var(--title)'),'live Home headings must consume the CMS display font');
 must_global_ui(str_contains($taskHome,'class="button button-primary"')&&str_contains($taskHome,'student-home-course-actions'),'live Home must reuse canonical primary button and direct course actions');
 foreach(['student_agenda_view.php','student_courses_view.php','student_laboratory_view.php'] as $renderer){
     $src=(string)file_get_contents($root.'/app/'.$renderer);
