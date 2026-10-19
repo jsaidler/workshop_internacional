@@ -53,7 +53,7 @@ $home=[
 <header class="student-topbar"><a class="brand student-wordmark" href="/aluno/"><span class="student-brand-compact">JS<span>.</span></span><span class="student-brand-full">JSaidler Fotografia</span></a><span class="student-appbar-divider"></span><strong class="student-appbar-title">Início</strong><span class="student-topbar-spacer"></span><button class="button button-secondary button-compact student-tools-trigger" type="button" data-toolbox-open>Atalhos</button><details class="student-user-menu"><summary aria-label="Conta"><span class="student-account-initial">J</span><span class="student-account-label">Conta</span></summary><div class="student-user-menu-panel"><button type="button" class="student-tools-menu-trigger" data-toolbox-open>Ferramentas rápidas</button></div></details></header>
 <?php student_shell_toolbox(['id'=>1]); ?>
 <main class="student-main">
-<?php require __DIR__.'/../../app/student_home_view.php'; ?>
+<?php if(($_GET['screen']??'')==='notifications'){ $notices=$home['notices']??[];require __DIR__.'/../../app/student_home_notifications_view.php'; }else{ require __DIR__.'/../../app/student_home_view.php'; } ?>
 <?php student_record_create_dialog($state==='empty'?[]:[['cohort_id'=>12,'course_title'=>$course['title'],'cohort_title'=>$course['cohort']]],'fixture-csrf',$state==='error'?['title'=>'EI 400 — tratamento alterado','context_scope'=>'course','context_cohort_id'=>'12']:[],$state==='error'?'Verifique o título e tente novamente.':'','/aluno/'); ?>
 </main>
 <?php student_shell_nav('home','student-mobile-nav'); ?>

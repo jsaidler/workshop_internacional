@@ -69,3 +69,17 @@ for(const theme of ['light','dark']){
   await page.screenshot({path:'student-visual-audit/home-live/theme-'+theme+'.png',animations:'disabled'});
  });
 }
+
+test('Notifications render through the same operational PHP projection and do not auto-mark read',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto(base+'?state=active&screen=notifications',{waitUntil:'domcontentloaded'});
+ await expect(page.getByRole('heading',{name:'Notificações'})).toBeVisible();
+ await expect(page.getByRole('link',{name:/Segunda revelação/})).toHaveAttribute('href',/cohort=cohort-a&id=42/);
+ await expect(page.locator('.student-home-notice.is-unread')).toHaveCount(1);
+ await expect(page.locator('nav.student-mobile-nav a')).toHaveCount(5);
+ fs.mkdirSync('student-visual-audit/home-live',{recursive:true});
+ await page.screenshot({path:'student-visual-audit/home-live/notifications-390.png',animations:'disabled'});
+ await page.setViewportSize({width:320,height:720});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+ await page.screenshot({path:'student-visual-audit/home-live/notifications-320.png',animations:'disabled'});
+});
