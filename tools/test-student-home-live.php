@@ -42,4 +42,42 @@ $m=['date_iso'=>'2030-10-22T22:00:00Z','in_window'=>false];
 check_home(student_home_live_priority($m,[], $now)['kind']==='meeting','imminent meeting should have priority');
 check_home(student_home_live_priority(['date_iso'=>'2030-11-22T22:00:00Z'],[['kind'=>'answer','unread'=>true]],$now)['kind']==='notice','distant meeting eclipsed response');
 check_home(student_home_live_priority(null,[],$now)===[],'fabricated urgency');
+
+/* Listener opportunity requires an exact annotation→CMS section→lesson match. */
+function student_question_annotation_available(PDO $db):bool{return true;}
+function course_agenda_can_listen(PDO $db,int $studentId,int $target):bool{
+    $q=$db->prepare("SELECT 1 FROM course_cohorts c WHERE c.id=? AND c.status='active'
+      AND EXISTS(SELECT 1 FROM course_enrollments e JOIN course_cohorts own ON own.id=e.cohort_id
+       WHERE e.student_id=? AND e.status='active' AND own.course_id=c.course_id AND own.id!=c.id)
+      AND NOT EXISTS(SELECT 1 FROM course_enrollments e WHERE e.student_id=? AND e.cohort_id=c.id AND e.status='active')");
+    $q->execute([$target,$studentId,$studentId]);return (bool)$q->fetchColumn();
+}
+$db->exec(<<<'SQL'
+ALTER TABLE student_questions ADD COLUMN source_annotation_id INTEGER NULL;
+ALTER TABLE student_questions ADD COLUMN status TEXT NOT NULL DEFAULT 'open';
+CREATE TABLE student_material_annotations(id INTEGER PRIMARY KEY,student_id INTEGER,page_id INTEGER,lesson_id INTEGER,section_key TEXT,anchor_type TEXT);
+CREATE TABLE course_material_pages(course_id INTEGER,page_id INTEGER);
+CREATE TABLE course_material_sections(course_id INTEGER,page_id INTEGER,section_key TEXT,lesson_id INTEGER);
+CREATE TABLE course_lessons(id INTEGER PRIMARY KEY,course_id INTEGER,title TEXT);
+CREATE TABLE cohort_lesson_releases(cohort_id INTEGER,lesson_id INTEGER,meeting_starts_at TEXT,meeting_status TEXT,meeting_timezone TEXT);
+INSERT INTO course_cohorts VALUES(13,2,'Turma Janeiro','cohort-c','active');
+INSERT INTO course_material_pages VALUES(2,100);
+INSERT INTO course_material_sections VALUES(2,100,'branqueamento',201);
+INSERT INTO course_lessons VALUES(201,2,'Branqueamento');
+INSERT INTO cohort_lesson_releases VALUES(13,201,'2030-12-01T21:00:00Z','scheduled','America/Sao_Paulo');
+INSERT INTO student_material_annotations VALUES(301,1,100,201,'branqueamento','selection');
+UPDATE student_questions SET source_annotation_id=301 WHERE id=5;
+SQL);
+$op=student_home_related_listener_opportunities($db,1);
+check_home(count($op)===1 && $op[0]['kind']==='opportunity' && $op[0]['href']==='/aluno/agenda.php?view=ouvintes','exactly mapped future lesson should allow a consultation link');
+check_home(count(student_home_related_listener_opportunities($db,2))===0,'another account sees unrelated doubt opportunity');
+$db->exec("UPDATE student_material_annotations SET section_key='sem-vinculo' WHERE id=301");
+check_home(student_home_related_listener_opportunities($db,1)===[],'lexically similar but unmapped section appeared as an opportunity');
+$db->exec("UPDATE student_material_annotations SET section_key='branqueamento' WHERE id=301");
+$db->exec("UPDATE student_questions SET status='resolved' WHERE id=5");
+check_home(student_home_related_listener_opportunities($db,1)===[],'resolved doubt still produced an opportunity');
+$db->exec("UPDATE student_questions SET status='open' WHERE id=5");
+$db->exec("INSERT INTO course_enrollments VALUES(4,1,13,'active')");
+check_home(student_home_related_listener_opportunities($db,1)===[],'already enrolled student offered a listener seat');
+
 echo "student-home-live: ok\n";
