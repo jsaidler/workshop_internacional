@@ -162,7 +162,7 @@ function student_home_live_notices(PDO $db,int $studentId): array {
 function student_home_public_offers(PDO $db,int $studentId,int $limit=2): array {
     // The editorial source is a published public CMS course page, not a fabricated campaign.
     if(!course_domain_available($db))return [];
-    $q=$db->prepare("SELECT c.id,c.title,c.activity_id,p.id page_id,p.locale,p.slug,p.title page_title
+    $q=$db->prepare("SELECT c.id,c.title,c.activity_id,p.id page_id,p.locale,p.slug,p.is_home,p.title page_title
       FROM courses c JOIN cms_pages p ON p.id=c.public_page_id
       WHERE c.status='active' AND p.status!='archived' AND p.access_level='public'
         AND p.published_document_json IS NOT NULL AND p.locale='pt-BR'
