@@ -216,12 +216,15 @@ function student_home_related_listener_opportunities(PDO $db,int $studentId,int 
        AND a.anchor_type='selection' AND r.meeting_status='scheduled' AND r.meeting_starts_at>?
        AND NOT EXISTS(SELECT 1 FROM course_enrollments active
             WHERE active.student_id=? AND active.cohort_id=target.id AND active.status='active')
+       AND NOT EXISTS(SELECT 1 FROM course_listener_reservations lr
+            WHERE lr.student_id=? AND lr.cohort_id=target.id AND lr.status IN ('waiting','confirmed'))
       ORDER BY r.meeting_starts_at,target.id,q.id LIMIT ?";
     $q=$db->prepare($sql);
     $q->bindValue(1,$studentId,PDO::PARAM_INT);
     $q->bindValue(2,gmdate('Y-m-d\TH:i:s\Z'),PDO::PARAM_STR);
     $q->bindValue(3,$studentId,PDO::PARAM_INT);
-    $q->bindValue(4,max(1,min(20,$limit*4)),PDO::PARAM_INT);
+    $q->bindValue(4,$studentId,PDO::PARAM_INT);
+    $q->bindValue(5,max(1,min(20,$limit*4)),PDO::PARAM_INT);
     $q->execute();$out=[];$seen=[];
     foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){
         $target=(int)$row['target_cohort_id'];
