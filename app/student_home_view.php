@@ -1,109 +1,92 @@
 <?php
 declare(strict_types=1);
-/** Same authenticated data projection as before; visual hierarchy rebuilt for mobile. */
+/** Authenticated Home. Events and destinations are projected in the controller. */
 $meeting=$home['meeting']??null;
-$feedback=$home['feedback']??null;
-$focus=$home['focus']??null;
+$notices=$home['notices']??[];
 $courses=$home['courses']??[];
-$recent=$home['recent']??[];
-$firstMaterial=null;
-foreach($courses as $item){if(($item['material']??null)!==null){$firstMaterial=$item['material'];break;}}
-// A distant meeting is not more actionable than a requested revision or an unfinished record.
-$startsAt=$meeting?strtotime((string)($meeting['date_iso']??'')):false;
-$meetingSoon=$meeting && (!empty($meeting['in_window']) || ($startsAt!==false && $startsAt>=time() && ($startsAt-time())<=48*3600));
-$hero=($meeting && ($meetingSoon || (!$feedback && !$focus && !$firstMaterial)))?'meeting':($feedback?'feedback':($focus?'focus':($firstMaterial?'study':'empty')));
-$continueMaterial=$firstMaterial && $hero!=='study';
-$continueFocus=$focus && $hero!=='focus';
-$continueMeeting=$meeting && $hero!=='meeting';
+$offers=$home['offers']??[];
+$priority=student_home_live_priority($meeting,$notices);
+$unread=count(array_filter($notices,static fn(array $item):bool=>!empty($item['unread'])));
+$firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):bool=>
+    ($priority['kind']??'')!=='notice'||$item['key']!==($priority['item']['key']??''))),0,2);
 ?>
-<div class="student-v2-home" data-student-home>
-  <header class="student-v2-heading">
-    <p class="student-v2-eyebrow">Área do aluno</p>
-    <h1 class="student-title">Sua próxima atividade</h1>
-    <p>Retome o que precisa de atenção ou continue sua pesquisa.</p>
+<div class="student-home-live" data-student-home data-home-live>
+  <header class="student-home-live-header">
+    <h1 class="student-title">Início</h1>
+    <a class="student-home-bell" href="/aluno/notificacoes.php" aria-label="Notificações<?= $unread?' — '.$unread.' não lidas':'' ?>">
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+      <?php if($unread):?><span class="student-home-bell-count"><?=h((string)$unread)?></span><?php endif;?>
+    </a>
   </header>
-  <?php if($hero==='meeting'):?>
-    <section class="student-v2-next" aria-labelledby="student-home-feature-title" data-home-meeting>
-      <div class="student-v2-feature-top"><span><?=!empty($meeting['in_window'])?'Horário previsto do encontro':'Próximo encontro'?></span><span class="student-v2-feature-state">Agendado</span></div>
-      <div class="student-v2-date-line">
-        <time datetime="<?=h((string)$meeting['date_iso'])?>"><strong><?=h((string)$meeting['day'])?></strong><span><?=h((string)$meeting['weekday'])?><br><?=h((string)$meeting['month'])?></span></time>
-        <strong class="student-v2-hour"><?=h((string)$meeting['hour'])?></strong>
+  <?php if(($priority['kind']??'')==='meeting'):
+    $event=$priority['item'];?>
+    <section class="student-home-feature" aria-labelledby="student-home-main-event" data-home-meeting>
+      <div class="student-home-feature-meta"><span>Próximo encontro</span><span><?=h(!empty($event['in_window'])?'No horário previsto':'Programado')?></span></div>
+      <div class="student-home-meeting">
+        <div class="student-home-meeting-date"><strong><?=h((string)$event['day'])?></strong><small><?=h((string)$event['month'])?></small></div>
+        <div class="student-home-meeting-info"><h2 id="student-home-main-event"><?=h((string)$event['lesson'])?></h2>
+          <p><?=h((string)$event['course'])?> · <?=h((string)$event['cohort'])?></p></div>
       </div>
-      <h2 class="student-subtitle" id="student-home-feature-title"><?=h((string)$meeting['lesson'])?></h2>
-      <p class="student-v2-next-context"><?=h((string)$meeting['course'])?> · <?=h((string)$meeting['cohort'])?></p>
-      <div class="student-v2-actions">
-        <?php if((string)$meeting['url']!==''):?><a class="button button-primary student-v2-cta" href="<?=h((string)$meeting['url'])?>" target="_blank" rel="noopener noreferrer">Acessar encontro ↗</a><?php else:?><span class="student-v2-unavailable">Link ainda não informado</span><?php endif;?>
-        <a class="button button-secondary student-v2-secondary-link" href="/aluno/agenda.php">Ver agenda →</a>
+      <div class="student-home-feature-foot"><time datetime="<?=h((string)$event['date_iso'])?>"><?=h((string)$event['hour'])?> · Brasília</time>
+        <?php if(!empty($event['url'])):?><a class="button button-primary" href="<?=h((string)$event['url'])?>" target="_blank" rel="noopener noreferrer">Acessar encontro ↗</a>
+        <?php else:?><a class="button button-primary" href="/aluno/agenda.php">Ver encontro →</a><?php endif;?>
       </div>
     </section>
-  <?php elseif($feedback || $focus || $firstMaterial):?>
-    <?php $primary=$feedback??$focus; ?>
-    <section class="student-v2-next student-v2-next-simple" aria-labelledby="student-home-feature-title" <?=$feedback?'data-home-feedback-feature':($focus?'data-home-record-feature':'data-home-study-feature')?>>
-      <div class="student-v2-feature-top"><span><?=$primary?'Continuar sua pesquisa':'Material disponível'?></span></div>
-      <h2 class="student-subtitle" id="student-home-feature-title"><?=h((string)($primary['title']??$firstMaterial['title']))?></h2>
-      <p class="student-v2-next-context"><?=h((string)($primary['status']??'Disponível para estudar'))?></p>
-      <a class="button button-primary student-v2-cta" href="<?=h((string)($primary['url']??$firstMaterial['url']))?>"><?=h((string)($primary['action']??'Abrir material'))?> →</a>
+  <?php elseif(($priority['kind']??'')==='notice'):
+    $event=$priority['item'];?>
+    <section class="student-home-feature student-home-feature-message" aria-labelledby="student-home-main-event" data-home-message>
+      <p class="student-home-feature-meta"><?=h(($event['kind']==='answer'?'Resposta do professor':'Retorno da avaliação').' · '.$event['cohort'])?></p>
+      <h2 id="student-home-main-event"><?=h((string)$event['title'])?></h2>
+      <p><?=h((string)$event['course'])?></p>
+      <a class="button button-primary" href="<?=h((string)$event['href'])?>"><?=h(($event['kind']==='answer'?'Ler resposta':'Ler retorno'))?> →</a>
     </section>
-  <?php else:?>
-    <section class="student-v2-next student-v2-next-simple" aria-labelledby="student-home-feature-title" data-home-empty-feature>
-      <div class="student-v2-feature-top"><span>Seu espaço de pesquisa</span></div>
-      <h2 class="student-subtitle" id="student-home-feature-title">Comece pelo Caderno</h2>
-      <p class="student-v2-next-context">Registre uma exposição, um processamento ou um resultado.</p>
-      <button class="button button-primary student-v2-cta" type="button" data-record-create-open>Novo registro +</button>
+  <?php elseif($meeting):?>
+    <section class="student-home-next" data-home-upcoming-meeting aria-label="Próximo encontro">
+      <a href="/aluno/agenda.php"><span><small>Próximo encontro · <?=h((string)$meeting['day'].' '.(string)$meeting['month'].' · '.(string)$meeting['hour'])?></small>
+        <strong><?=h((string)$meeting['lesson'])?></strong>
+        <small><?=h((string)$meeting['cohort'])?></small></span><span aria-hidden="true">›</span></a>
     </section>
   <?php endif;?>
-  <?php if($continueMaterial || $continueFocus || $continueMeeting):?>
-    <section class="student-v2-section" aria-labelledby="student-v2-continue-title">
-      <h2 class="student-subtitle" id="student-v2-continue-title">Continuar</h2>
-      <div class="student-v2-list">
-      <?php if($continueMaterial):?><a class="student-v2-row" href="<?=h((string)$firstMaterial['url'])?>">
-        <span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('courses')?></span>
-        <span class="student-v2-row-text"><small>Material disponível</small><strong><?=h((string)$firstMaterial['title'])?></strong><?php if(count($courses)>1):?><em><?=h((string)($firstMaterial['course']??''))?> · <?=h((string)($firstMaterial['cohort']??''))?></em><?php endif;?></span><span aria-hidden="true">›</span>
-      </a><?php endif;?>
-      <?php if($continueFocus):?><a class="student-v2-row" href="<?=h((string)$focus['url'])?>">
-        <span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('notebook')?></span>
-        <span class="student-v2-row-text"><small>Caderno · <?=h((string)$focus['status'])?></small><strong><?=h((string)$focus['title'])?></strong></span><span aria-hidden="true">›</span>
-      </a><?php endif;?>
-      <?php if($continueMeeting):?><a class="student-v2-row" href="/aluno/agenda.php" data-home-upcoming-meeting>
-        <span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('agenda')?></span>
-        <span class="student-v2-row-text"><small>Próximo encontro · <?=h((string)$meeting['day'])?> <?=h((string)$meeting['month'])?> · <?=h((string)$meeting['hour'])?></small><strong><?=h((string)$meeting['lesson'])?></strong></span><span aria-hidden="true">›</span>
-      </a><?php endif;?>
+  <?php if($firstTwo):?>
+    <section class="student-home-live-section" data-home-updates aria-labelledby="home-updates-label">
+      <div class="student-home-live-section-head"><h2 id="home-updates-label">Atualizações</h2><a href="/aluno/notificacoes.php">Todas →</a></div>
+      <div class="student-home-notice-list">
+      <?php foreach($firstTwo as $notice):?>
+        <a class="student-home-notice<?=$notice['unread']?' is-unread':''?>" href="<?=h((string)$notice['href'])?>">
+          <span class="student-home-notice-symbol" aria-hidden="true"><?=($notice['kind']==='answer')?'↗':'✓'?></span>
+          <span><small><?=h(($notice['kind']==='answer'?'Resposta recebida':'Avaliação').' · '.$notice['cohort'])?></small>
+            <strong><?=h((string)$notice['title'])?></strong>
+          </span><span aria-hidden="true">›</span>
+        </a>
+      <?php endforeach;?>
       </div>
     </section>
   <?php endif;?>
-  <?php if($feedback && $hero==='meeting'):?><section class="student-v2-section" aria-labelledby="student-v2-feedback-title" data-home-feedback>
-    <h2 class="student-subtitle" id="student-v2-feedback-title">Retorno do professor</h2>
-    <a class="student-v2-feedback" href="<?=h((string)$feedback['url'])?>"><span><small><?=h((string)$feedback['status'])?></small><strong><?=h((string)$feedback['title'])?></strong></span><span aria-hidden="true">›</span></a>
-  </section><?php endif;?>
-  <?php if($hero!=='empty'||!empty($home['can_timer'])||!empty($home['can_reciprocity'])):?>
-  <section class="student-v2-section student-v2-shortcuts" aria-labelledby="student-v2-shortcuts-title">
-    <h2 class="student-subtitle" id="student-v2-shortcuts-title">Acesso direto</h2>
-    <div class="student-v2-footer-actions">
-      <?php if($hero!=='empty'):?><button class="student-v2-tool-tile" type="button" data-record-create-open>
-        <?=student_shell_nav_icon('notebook')?>
-        <strong>Novo registro</strong><small>Exposição, processo ou resultado</small>
-      </button><?php endif;?>
-      <?php if(!empty($home['can_timer'])):?><a class="student-v2-tool-tile" href="/aluno/processamentos.php">
-        <?=student_shell_nav_icon('laboratory')?>
-        <strong>Processamentos</strong><small>Roteiros e temporização</small>
-      </a><?php endif;?>
-    </div>
-    <?php if(!empty($home['can_reciprocity'])):?><a class="student-v2-calculation-link" href="/aluno/reciprocidade.php">Calcular reciprocidade →</a><?php endif;?>
+  <section class="student-home-live-section student-home-live-courses" aria-labelledby="home-my-courses" data-home-courses>
+    <div class="student-home-live-section-head"><h2 id="home-my-courses">Meus cursos</h2><a href="/aluno/cursos.php">Ver todos →</a></div>
+    <?php if(!$courses):?><p class="student-home-live-empty">Não há matrículas ativas.</p><?php endif;?>
+    <?php foreach($courses as $course):?>
+      <article class="student-home-course">
+        <div><p class="student-home-course-cohort"><?=h((string)$course['cohort'])?></p>
+          <a class="student-home-course-title" href="<?=h((string)$course['url'])?>"><?=h((string)$course['title'])?> <span aria-hidden="true">›</span></a></div>
+        <div class="student-home-course-actions">
+          <?php if($course['material']):?><a class="student-home-material" href="<?=h((string)$course['material']['url'])?>">Material</a>
+          <?php else:?><span class="student-home-unavailable">Material aguardando liberação</span><?php endif;?>
+          <a href="<?=h((string)$course['questions_url'])?>">Dúvidas</a>
+        </div>
+      </article>
+    <?php endforeach;?>
   </section>
+  <?php if($offers):?>
+    <section class="student-home-live-section student-home-live-offers" aria-labelledby="home-other-courses">
+      <div class="student-home-live-section-head"><h2 id="home-other-courses">Outras formações</h2></div>
+      <?php foreach($offers as $offer):?>
+        <a class="student-home-promo" href="<?=h((string)$offer['url'])?>">
+          <small>FORMAÇÃO · PÁGINA PUBLICADA</small>
+          <strong><?=h((string)$offer['title'])?></strong>
+          <span>Conhecer a formação →</span>
+        </a>
+      <?php endforeach;?>
+    </section>
   <?php endif;?>
-  <section class="student-v2-section" aria-labelledby="student-v2-courses-title">
-    <div class="student-v2-section-heading"><h2 class="student-subtitle" id="student-v2-courses-title">Meus cursos</h2><a href="/aluno/cursos.php">Ver todos →</a></div>
-    <?php if(!$courses):?><p class="student-v2-muted">Nenhuma matrícula ativa. O Caderno pessoal permanece disponível.</p>
-    <?php else:?><div class="student-v2-course-list"><?php foreach(array_slice($courses,0,3) as $item):?><article class="student-v2-course">
-      <a class="student-v2-course-title" href="<?=h((string)$item['url'])?>"><strong><?=h((string)$item['title'])?></strong><span aria-hidden="true">›</span></a>
-      <p><?=h((string)$item['cohort'])?></p>
-      <div class="student-home-course-actions"><?php if($item['material']):?><a href="<?=h((string)$item['material']['url'])?>">Abrir material</a><?php else:?><span>Material aguardando liberação</span><?php endif;?><a href="<?=h((string)$item['questions_url'])?>">Dúvidas</a></div>
-    </article><?php endforeach;?></div><?php endif;?>
-  </section>
-  <section class="student-v2-section" aria-labelledby="student-v2-notebook-title">
-    <div class="student-v2-section-heading"><h2 class="student-subtitle" id="student-v2-notebook-title">Caderno recente</h2><a href="/aluno/caderno.php">Ver caderno →</a></div>
-    <?php if(!$recent):?><p class="student-v2-muted">Nenhum registro ainda.</p>
-    <?php else:?><div class="student-v2-list"><?php foreach($recent as $record):?><a class="student-v2-row" href="<?=h((string)$record['url'])?>"><span class="student-v2-row-icon" aria-hidden="true"><?=student_shell_nav_icon('notebook')?></span><span class="student-v2-row-text"><small><?=h((string)$record['scope'])?> · <?=h((string)$record['date'])?></small><strong><?=h((string)$record['title'])?></strong></span><span aria-hidden="true">›</span></a><?php endforeach;?></div><?php endif;?>
-  </section>
-
 </div>

@@ -67,6 +67,8 @@ $home=[
     'recent'=>student_home_record_items($records),
     'can_timer'=>$canTimer,
     'can_reciprocity'=>$canReciprocity,
+    'notices'=>student_home_live_notices($db,$studentId),
+    'offers'=>student_home_public_offers($db,$studentId),
 ];
 student_shell_start('Início',null,$student);
 require __DIR__.'/../app/student_home_view.php';
