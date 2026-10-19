@@ -135,15 +135,17 @@ BIBLIOGRAPHY_HTML;
        'Bibliografia da pesquisa de João Saidler em fotografia experimental e alternativa, publicada em janeiro de 2026.',
        $bibliographyHtml,'authenticated');
 
-    // Identify the real course by established material relation or its canonical
-    // distinctive title. Never infer cohorts from a fixed ID or release timestamps.
-    $courses=$db->query("SELECT DISTINCT c.id,c.activity_id FROM courses c
-      WHERE c.status='active'
-      AND (
-        (LOWER(c.title) LIKE '%positivo%' AND LOWER(c.title) LIKE '%raio%')
-        OR EXISTS(SELECT 1 FROM course_material_pages mp JOIN cms_pages p ON p.id=mp.page_id
-                  WHERE mp.course_id=c.id AND p.slug='caderno-positivo-direto' AND p.status!='archived')
-      ) ORDER BY c.id")->fetchAll(PDO::FETCH_ASSOC);
+    // The canonical course is identified only by the existing explicit
+    // course-to-material relationship. Titles do not authorize associations.
+    // A new installation without the canonical material relationship is not
+    // silently guessed; the administrator must establish the course first.
+    $courses=$db->query("SELECT DISTINCT c.id,c.activity_id
+      FROM courses c
+      JOIN course_material_pages existing_map ON existing_map.course_id=c.id
+      JOIN cms_pages canonical ON canonical.id=existing_map.page_id
+      WHERE c.status='active' AND canonical.status!='archived'
+        AND canonical.locale='pt-BR' AND canonical.slug='caderno-positivo-direto'
+      ORDER BY c.id")->fetchAll(PDO::FETCH_ASSOC);
     $findLesson=$db->prepare("SELECT id FROM course_lessons WHERE course_id=? ORDER BY sort_order,id LIMIT 1");
     $associate=$db->prepare("INSERT OR IGNORE INTO course_material_pages(course_id,page_id,sort_order,created_at,updated_at) VALUES(?,?,?,?,?)");
     $mapSection=$db->prepare("INSERT OR IGNORE INTO course_material_sections(course_id,page_id,section_key,lesson_id,created_at,updated_at) VALUES(?,?,?,?,?,?)");
