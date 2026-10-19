@@ -348,25 +348,23 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
 /* Authenticated Home: academic activity, course contexts and notifications.
    Design tokens remain owned by the CMS; no alternate palette or type scale. */
 .student-home-live{max-width:880px;margin:0 auto;padding:0 20px 48px;font-family:var(--body);color:var(--text)}
-.student-home-live-header{min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.student-home-live-header h1{margin:0;font:500 38px/1 var(--title);text-transform:none}
-.student-home-live-header>a:not(.student-home-bell){font:500 13px var(--body);color:var(--muted);min-height:48px;display:inline-flex;align-items:center}
-.student-home-bell{position:relative;min-width:48px;min-height:48px;display:inline-grid;place-items:center;color:var(--text);text-decoration:none}
+.student-home-live-accessible-title{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;white-space:nowrap;clip-path:inset(50%);border:0}
+.student-home-bell{position:relative;margin-right:6px;min-width:48px;min-height:48px;display:inline-grid;place-items:center;color:var(--text);text-decoration:none}
 .student-home-bell svg{width:23px;height:23px}
 .student-home-bell-count{position:absolute;top:1px;right:0;min-width:20px;height:20px;border-radius:50%;padding:2px 4px;background:var(--inverse-bg);color:var(--inverse);display:grid;place-items:center;font:600 11px/1 var(--body)}
-.student-home-feature{background:var(--surface);padding:20px;margin:4px -6px 14px}
-.student-home-feature-meta{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;color:var(--muted);font:500 11px/1.35 var(--mono);letter-spacing:.02em}
+.student-home-live-feature{background:var(--surface);padding:20px;margin:4px -6px 14px}
+.student-home-live-feature-meta{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;color:var(--muted);font:500 11px/1.35 var(--mono);letter-spacing:.02em}
 .student-home-meeting{display:grid;grid-template-columns:52px minmax(0,1fr);gap:14px;margin-top:15px}
 .student-home-meeting-date strong{display:block;font:500 60px/.9 var(--title)}
 .student-home-meeting-date small{display:block;margin-top:5px;color:var(--muted);font:500 11px var(--mono);text-transform:uppercase}
 .student-home-meeting-info{min-width:0}
-.student-home-meeting-info h2,.student-home-feature-message h2{font:500 32px/1.05 var(--title);text-transform:none;margin:0;overflow-wrap:anywhere}
-.student-home-meeting-info p,.student-home-feature-message>p:not(.student-home-feature-meta){font:400 13px/1.5 var(--body);color:var(--muted);margin:8px 0 0}
-.student-home-feature-foot{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
-.student-home-feature-foot time{font:500 13px/1.35 var(--body)}
-.student-home-feature .button{min-height:48px;text-decoration:none;font-size:13px}
-.student-home-feature-message{display:grid;gap:14px}
-.student-home-feature-message>a{justify-self:start}
+.student-home-meeting-info h2,.student-home-live-feature-message h2{font:500 32px/1.05 var(--title);text-transform:none;margin:0;overflow-wrap:anywhere}
+.student-home-meeting-info p,.student-home-live-feature-message>p:not(.student-home-live-feature-meta){font:400 13px/1.5 var(--body);color:var(--muted);margin:8px 0 0}
+.student-home-live-feature-foot{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.student-home-live-feature-foot time{font:500 13px/1.35 var(--body)}
+.student-home-live-feature .button{min-height:48px;text-decoration:none;font-size:13px}
+.student-home-live-feature-message{display:grid;gap:14px}
+.student-home-live-feature-message>a{justify-self:start}
 .student-home-next>a{min-height:76px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--line);color:var(--text);text-decoration:none}
 .student-home-next>a>span:first-child{display:grid;gap:5px}
 .student-home-next strong{font:600 14px/1.4 var(--body)}
@@ -395,5 +393,5 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
 .student-home-promo strong{font:500 42px/1 var(--title)}
 .student-home-promo span{font:600 13px var(--body)}
 .student-home-live-empty{padding:16px 0;color:var(--muted);font:400 14px/1.5 var(--body)}
-@media(max-width:760px){.student-home-live{padding:0 19px 28px}.student-home-feature{margin-left:-4px;margin-right:-4px}.student-home-meeting-info h2{font-size:29px}.student-home-live-section{margin-top:18px}}
-@media(max-width:340px){.student-home-live{padding-left:15px;padding-right:15px}.student-home-meeting{grid-template-columns:48px minmax(0,1fr);gap:12px}.student-home-meeting-date strong{font-size:54px}.student-home-meeting-info h2{font-size:27px}.student-home-feature-foot .button{width:100%}}
+@media(max-width:760px){.student-home-live{padding:0 19px 28px}.student-home-live-feature{margin-left:-4px;margin-right:-4px}.student-home-meeting-info h2{font-size:29px}.student-home-live-section{margin-top:18px}}
+@media(max-width:340px){.student-home-live{padding-left:15px;padding-right:15px}.student-home-meeting{grid-template-columns:48px minmax(0,1fr);gap:12px}.student-home-meeting-date strong{font-size:54px}.student-home-meeting-info h2{font-size:27px}.student-home-live-feature-foot .button{width:100%}}

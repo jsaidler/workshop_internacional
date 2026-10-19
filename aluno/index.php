@@ -30,7 +30,7 @@ $home=[
     'notices'=>student_home_live_notices($db,$studentId),
     'offers'=>student_home_public_offers($db,$studentId),
 ];
-student_shell_start('Início',null,$student);
+student_shell_start('Início',null,$student,count(array_filter($home['notices'],static fn(array $notice):bool=>!empty($notice['unread']))));
 require __DIR__.'/../app/student_home_view.php';
 // Existing open tabs may still POST a record to Home; recover their draft on error only.
 if($createError!=='')student_record_create_dialog($enrollments,csrf_token('student-process-notebook'),$createDraft,$createError,'/aluno/');

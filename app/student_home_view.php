@@ -11,31 +11,25 @@ $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):
     ($priority['kind']??'')!=='notice'||$item['key']!==($priority['item']['key']??''))),0,2);
 ?>
 <div class="student-home-live" data-student-home data-home-live>
-  <header class="student-home-live-header">
-    <h1 class="student-title">Início</h1>
-    <a class="student-home-bell" href="/aluno/notificacoes.php" aria-label="Notificações<?= $unread?' — '.$unread.' não lidas':'' ?>">
-      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
-      <?php if($unread):?><span class="student-home-bell-count"><?=h((string)$unread)?></span><?php endif;?>
-    </a>
-  </header>
+  <h1 class="student-home-live-accessible-title">Início</h1>
   <?php if(($priority['kind']??'')==='meeting'):
     $event=$priority['item'];?>
-    <section class="student-home-feature" aria-labelledby="student-home-main-event" data-home-meeting>
-      <div class="student-home-feature-meta"><span>Próximo encontro</span><span><?=h(!empty($event['in_window'])?'No horário previsto':'Programado')?></span></div>
+    <section class="student-home-live-feature" aria-labelledby="student-home-main-event" data-home-meeting>
+      <div class="student-home-live-feature-meta"><span>Próximo encontro</span><span><?=h(!empty($event['in_window'])?'No horário previsto':'Programado')?></span></div>
       <div class="student-home-meeting">
         <div class="student-home-meeting-date"><strong><?=h((string)$event['day'])?></strong><small><?=h((string)$event['month'])?></small></div>
         <div class="student-home-meeting-info"><h2 id="student-home-main-event"><?=h((string)$event['lesson'])?></h2>
           <p><?=h((string)$event['course'])?> · <?=h((string)$event['cohort'])?></p></div>
       </div>
-      <div class="student-home-feature-foot"><time datetime="<?=h((string)$event['date_iso'])?>"><?=h((string)$event['hour'])?> · Brasília</time>
+      <div class="student-home-live-feature-foot"><time datetime="<?=h((string)$event['date_iso'])?>"><?=h((string)$event['hour'])?> · Brasília</time>
         <?php if(!empty($event['url'])):?><a class="button button-primary" href="<?=h((string)$event['url'])?>" target="_blank" rel="noopener noreferrer">Acessar encontro ↗</a>
         <?php else:?><a class="button button-primary" href="/aluno/agenda.php">Ver encontro →</a><?php endif;?>
       </div>
     </section>
   <?php elseif(($priority['kind']??'')==='notice'):
     $event=$priority['item'];?>
-    <section class="student-home-feature student-home-feature-message" aria-labelledby="student-home-main-event" data-home-message>
-      <p class="student-home-feature-meta"><?=h(($event['kind']==='answer'?'Resposta do professor':($event['kind']==='opportunity'?'Encontro de outra turma':'Retorno da avaliação')).' · '.$event['cohort'])?></p>
+    <section class="student-home-live-feature student-home-live-feature-message" aria-labelledby="student-home-main-event" data-home-message>
+      <p class="student-home-live-feature-meta"><?=h(($event['kind']==='answer'?'Resposta do professor':($event['kind']==='opportunity'?'Encontro de outra turma':'Retorno da avaliação')).' · '.$event['cohort'])?></p>
       <h2 id="student-home-main-event"><?=h((string)$event['title'])?></h2>
       <p><?=h((string)$event['course'])?></p>
       <a class="button button-primary" href="<?=h((string)$event['href'])?>"><?=h(($event['kind']==='answer'?'Ler resposta':($event['kind']==='opportunity'?'Ver como ouvinte':(!empty($event['action'])?'Ler retorno e revisar':'Ler retorno'))))?> →</a>

@@ -41,6 +41,9 @@ test('Home always contains authorized course Material/Dúvidas context without d
 test('Home exposes notice link and consistent unread number without fake conversation text',async({page})=>{
  await page.goto(base+'?state=active');
  await expect(page.locator('.student-home-bell-count')).toHaveText('1');
+ await expect(page.locator('main.student-main h1')).toHaveClass(/student-home-live-accessible-title/);
+ await expect(page.locator('.student-home-live-header')).toHaveCount(0);
+ expect(await page.locator('[data-home-meeting]').evaluate(n=>getComputedStyle(n).borderLeftWidth)).toBe('0px');
  await expect(page.getByRole('link',{name:/Segunda revelação/})).toHaveAttribute('href',/cohort=cohort-a&id=42/);
  await expect(page.locator('[data-home-meeting]')).toBeVisible();
  await expect(page.locator('[data-home-updates]')).toBeVisible();
@@ -55,6 +58,7 @@ test('Home does not invent urgency when there are no upcoming events',async({pag
 });
 for(const theme of ['light','dark']){
  test('Live Home inherits CMS typography and theme '+theme,async({page})=>{
+  await page.setViewportSize({width:390,height:844});
   await page.goto(base+'?state=active',{waitUntil:'domcontentloaded'});
   await page.evaluate(theme=>document.documentElement.setAttribute('data-theme',theme),theme);
   const style=await page.evaluate(()=>{
