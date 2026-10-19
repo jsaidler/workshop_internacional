@@ -941,3 +941,14 @@ Auditoria das capturas operacionais `process-runner/phone-idle-start|middle|end.
 No produto, o roteiro e o timer são apoios à pesquisa fotográfica; a tela de edição é tarefa deliberada, não uma etapa obrigatória nem fato de laboratório. A view passa a iniciar o `details.student-lab-timer-settings` recolhido e a abri-lo no retorno com erro, preservando os parâmetros e o contexto. O menu continua nativo, acessível por teclado/touch, com resumo legível de 12 px por `--body` e alvo de 44 px. Nenhuma mudança nos serviços de tempo, payload das etapas, agitação, confirmações, POST/CSRF, propriedade, marcação factual ou inventário.
 
 O teste operacional percorre 320/390/1440 no estado inicial e com editor aberto, verifica todos os campos e alternância de `details`, assegura que erro de salvamento mantém o formulário visível e timer/etapa sem mutação, e produz capturas início/meio/fim. Uma fixture sintética não verifica sessão real ou persistência de hospedagem. Exigir os três workflows no HEAD e inspeção das capturas antes da publicação; pacotes liberados exigem instalação humana em `Admin → Sistema e atualizações`.
+
+
+## Recursos acadêmicos — materiais e bibliografia (PR #268, 19/10/2026)
+
+Implementação em `migrations/100_student_materials_and_shared_bibliography.php`, na PR #268, sujeita aos gates e à instalação manual após merge:
+
+- `materiais-positivo-direto`: página CMS com menu público oculto, associada somente ao curso canônico de Positivo Direto. Quatro seções vinculadas por `course_material_sections` à primeira aula preexistente; acesso à turma depende de `cohort_lesson_releases.released_at`, que a migração não modifica. Conteúdo não deve vazar em HTML antes da liberação.
+- `bibliografia`: página CMS `authenticated` na atividade raiz, conteúdo fiel à publicação autoral no Substack em 24/01/2026, sem associação a um curso; aparece como link de Referências na Home autenticada quando publicada.
+- Lista de materiais baseada no e-mail de 07/09/2026 e equipamentos solicitados, com canais de busca/fornecimento; fornecedores e preços não são garantidos. Utensílios exigem compatibilidade química; oxidantes e corrosivos não são apresentados como produtos domésticos.
+- Sem novo renderer, alteração de matrícula, inscrição, aulas, calendário ou páginas CMS preexistentes. Testes `tools/test-student-resource-pages.php` e `tools/browser-tests/student-resource-pages.spec.cjs` (320, 390, 1440 px) verificam autorização, liberação e responsividade.
+- Publicação do GitHub não significa atualização da hospedagem; instalação exclusivamente manual pelo Admin → Sistema e atualizações.
