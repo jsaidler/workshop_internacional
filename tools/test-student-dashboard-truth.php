@@ -21,10 +21,11 @@ $courses=(string)file_get_contents($root.'/aluno/cursos.php');$courseView=(strin
 must_student_dashboard_truth(str_contains($courses,'course_material_page_release_summary'),'course surface does not derive page availability from canonical lesson releases');
 must_student_dashboard_truth(str_contains($courses,'$pendingLessons')&&str_contains($courseView,'Próximas liberações')&&str_contains($courseView,'student-v2-course-releases'),'course surface does not keep pending lesson availability secondary to material');
 must_student_dashboard_truth(!str_contains($courses,'$releasedCount')&&!str_contains($courses,'student-course-dashboard'),'course surface returned to progress-style parallel cards');
-must_student_dashboard_truth(str_contains($home,'student_experience_dashboard_state'),'dashboard still prioritizes the newest record without checking whether it needs action');
+must_student_dashboard_truth(str_contains($home,'student_home_live_notices'),'Home does not aggregate real authenticated notices');
 must_student_dashboard_truth(str_contains($home,'course_agenda_student_meetings'),'Home does not consume the canonical Agenda');
 must_student_dashboard_truth(str_contains($home,'student_home_course_items'),'Home does not show available course materials');
-must_student_dashboard_truth(str_contains((string)file_get_contents($root.'/app/student_home_view.php'),'data-record-create-open'),'Home does not offer direct record creation');
+must_student_dashboard_truth(str_contains((string)file_get_contents($root.'/app/student_home_view.php'),'data-home-courses'),'Home does not keep authorized course contexts directly accessible');
+must_student_dashboard_truth(!str_contains((string)file_get_contents($root.'/app/student_home_view.php'),'data-record-create-open'),'Home repeats Caderno operations as a primary feature');
 $meetingRows=[['meeting_status'=>'completed','meeting_starts_at'=>'2030-01-05T00:00:00Z','meeting_url'=>'https://example.org/completed'],['meeting_status'=>'scheduled','meeting_starts_at'=>'2030-01-06T00:00:00Z','meeting_timezone'=>'UTC','meeting_url'=>'javascript:alert(1)','lesson_title'=>'Aula 2'],['meeting_status'=>'scheduled','meeting_starts_at'=>'2030-01-07T00:00:00Z','meeting_timezone'=>'UTC','meeting_url'=>'https://example.org/allowed','lesson_title'=>'Aula 3']];
 $meeting=student_home_next_meeting($meetingRows,strtotime('2030-01-04T00:00:00Z'));
 must_student_dashboard_truth(($meeting['lesson']??'')==='Aula 2'&&($meeting['url']??'')==='','Home did not reject a dangerous meeting URL while selecting the first scheduled meeting');

@@ -15,6 +15,28 @@ if(!$root||!is_file($root.'/storage/installed.lock')||!is_file($root.'/config/lo
 require $root.'/app/bootstrap.php';
 $db=database();
 
+if(in_array($mode,['home-answer','home-answer-followup'],true)){
+    $studentId=(int)$db->query("SELECT id FROM student_users WHERE email='journey-owner@example.invalid'")->fetchColumn();
+    $cohortId=(int)$db->query("SELECT id FROM course_cohorts WHERE cohort_uuid='journey-a'")->fetchColumn();
+    if($studentId<1||$cohortId<1)throw new RuntimeException('Home fixture identity missing.');
+    if($mode==='home-answer'){
+        $question=student_question_create($db,$studentId,$cohortId,[
+            'title'=>'Segunda revelação — teste autenticado',
+            'body'=>'Dúvida registrada no curso.',
+            'visibility'=>'private',
+        ]);
+        $questionId=(int)$question['id'];
+    }else{
+        $q=$db->prepare('SELECT id FROM student_questions WHERE student_id=? AND cohort_id=? AND title=?');
+        $q->execute([$studentId,$cohortId,'Segunda revelação — teste autenticado']);
+        $questionId=(int)$q->fetchColumn();
+        if($questionId<1)throw new RuntimeException('Home test question not found.');
+    }
+    $messageId=student_question_admin_reply($db,$questionId,
+        $mode==='home-answer'?'Resposta inicial de verificação.':'Nova resposta após a primeira leitura.');
+    echo json_encode(['questionId'=>$questionId,'messageId'=>$messageId],JSON_THROW_ON_ERROR)."\n";
+    exit;
+}
 if($mode==='snapshot'){
     $notes=$db->query("SELECT a.id,a.student_id,a.page_id,a.body,a.anchor_type,a.section_key,a.quote_exact,a.block_key,a.source_block_hash,a.source_page_revision,q.id question_id,q.cohort_id question_cohort_id,q.visibility FROM student_material_annotations a LEFT JOIN student_questions q ON q.source_annotation_id=a.id ORDER BY a.id")->fetchAll(PDO::FETCH_ASSOC);
     $questions=$db->query('SELECT id,student_id,cohort_id,source_annotation_id,visibility,body FROM student_questions ORDER BY id')->fetchAll(PDO::FETCH_ASSOC);

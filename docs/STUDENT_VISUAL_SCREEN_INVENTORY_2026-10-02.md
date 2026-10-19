@@ -112,3 +112,10 @@ A entrada `lab-runner` de 46 estados deixa o HTML `student-process-execution-sta
 ### Material — última superfície demonstrativa substituída (15/10/2026, PR #243 em draft)
 
 O último HTML da matriz (`student-material-context.html`) foi substituído por `student-material-cms-operational.php?page=current&cohort=cohort-a`. O novo cenário usa a rota visual compartilhada `cms_render_public_page`, a autorização CMS existente, o contexto de matrícula/curso, as relações de páginas/seções-aulas, os estados de liberação e o painel real de anotações `student_material_render_notebook`. Os dados são exclusivamente fictícios. O leitor tem shell CMS próprio, diferente de `student-shell`; sua rolagem é `.cms-student-reading` e o destino global ativo é Cursos. Bloqueio de seção, conta e turma, paginação liberada, navegação e acessibilidade do skip-link têm testes explícitos. **Matriz projetada: 46 fontes PHP e 0 fontes HTML**. A mudança elimina demonstração HTML da matriz, mas não equivale à homologação autenticada da hospedagem; imagens e workflows do HEAD final precisam ser auditados antes da aceitação.
+
+
+### Novo destino de notificações após a Home viva — 19/10/2026
+
+- `aluno/notificacoes.php`: superfície nova, autenticada, de mensagens e retornos; adicional às 46 superfícies-base anteriores e contabilizada separadamente até revisão integral da matriz. O renderer compartilhado é `app/student_home_notifications_view.php`, consumido também pela fixture PHP de Home para evidência visual com o mesmo shell, tokens, contexto e estados.
+- A abertura da lista não marca mensagens como lidas; somente o acesso autorizado ao conteúdo da dúvida registra o maior ID da resposta administrativa consultada. Nenhum texto privado é persistido no service worker.
+- Inspeção obrigatória em 320/390/1440, tema claro/escuro, ausência de avisos, vários avisos e retorno nativo.

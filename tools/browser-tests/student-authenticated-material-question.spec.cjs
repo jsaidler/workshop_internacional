@@ -764,4 +764,41 @@ test.describe('authenticated Material → annotation → question → Material, 
     }finally{await context.close();}
   });
 
+  test('authenticated Home notices acknowledge only opened replies and preserve isolation across students',async({browser})=>{
+    const owner=await browser.newContext({viewport:{width:390,height:844}});
+    const peer=await browser.newContext({viewport:{width:390,height:844}});
+    const page=await owner.newPage(),other=await peer.newPage();
+    try{
+      await signIn(page,'journey-owner@example.invalid');
+      await page.goto(origin+'/aluno/',{waitUntil:'domcontentloaded'});
+      await expect(page.locator('[data-home-live]')).toBeVisible();
+      await expect(page.locator('.student-home-course')).toHaveCount(2);
+      await expect(page.locator('.student-home-bell-count')).toHaveCount(0);
+      const answer=JSON.parse(execFileSync('php',[seedScript,sandbox,'home-answer'],{encoding:'utf8',timeout:45000}));
+      await page.reload({waitUntil:'domcontentloaded'});
+      await expect(page.locator('.student-home-bell-count')).toHaveText('1');
+      await expect(page.locator('[data-home-message]')).toContainText('Segunda revelação — teste autenticado');
+      await page.locator('.student-home-bell').click();
+      await expect(page).toHaveURL(/\/aluno\/notificacoes.php/);
+      await expect(page.locator('.student-home-notice.is-unread')).toHaveCount(1);
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/home-unread-390.png',animations:'disabled'});
+      await page.getByRole('link',{name:/Segunda revelação — teste autenticado/}).click();
+      await expect(page).toHaveURL(new RegExp('/aluno/duvidas.php\\?cohort=journey-a&id='+answer.questionId));
+      await expect(page.getByRole('heading',{name:'Segunda revelação — teste autenticado'})).toBeVisible();
+      await page.goto(origin+'/aluno/',{waitUntil:'domcontentloaded'});
+      await expect(page.locator('.student-home-bell-count')).toHaveCount(0);
+      execFileSync('php',[seedScript,sandbox,'home-answer-followup'],{encoding:'utf8',timeout:45000});
+      await page.reload({waitUntil:'domcontentloaded'});
+      await expect(page.locator('.student-home-bell-count')).toHaveText('1');
+      await page.setViewportSize({width:1440,height:900});
+      await page.screenshot({path:'student-visual-audit/authenticated-material-question/home-unread-1440.png',animations:'disabled'});
+      await signIn(other,'journey-peer@example.invalid');
+      await other.goto(origin+'/aluno/',{waitUntil:'domcontentloaded'});
+      await expect(other.locator('.student-home-bell-count')).toHaveCount(0);
+      await expect(other.getByText('Segunda revelação — teste autenticado')).toHaveCount(0);
+      await other.goto(origin+'/aluno/notificacoes.php',{waitUntil:'domcontentloaded'});
+      await expect(other.locator('.student-home-notice')).toHaveCount(0);
+    }finally{await owner.close();await peer.close();}
+  });
+
 });

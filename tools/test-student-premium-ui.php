@@ -43,12 +43,12 @@ must_student_premium_ui(str_contains($uiCss,'appearance:none')&&str_contains($ui
 must_student_premium_ui(str_contains($uiJs,"form[data-ui-validate]")&&str_contains($uiJs,'workshop-theme'),'global UI behavior does not own validation and theme');
 
 $homeView=(string)file_get_contents($root.'/app/student_home_view.php');
-must_student_premium_ui(str_contains($home,'student_experience_dashboard_state')&&str_contains($homeView,'student-v2-home')&&str_contains($homeView,'data-home-meeting'),'student Home must consume operational state and feature the next authorized meeting');
-must_student_premium_ui(str_contains($homeView,'student-v2-next')&&str_contains($homeView,'student-v2-section')&&str_contains($homeView,'student-v2-course')&&str_contains($homeView,'data-record-create-open')&&str_contains($homeView,'/aluno/agenda.php'),'student Home must preserve contextual work, courses, record creation and direct Agenda access');
+must_student_premium_ui(str_contains($home,'student_home_live_notices')&&str_contains($homeView,'student-home-live')&&str_contains($homeView,'data-home-meeting'),'student Home must project authorized events and a factual upcoming meeting');
+must_student_premium_ui(str_contains($homeView,'student-home-live-section')&&str_contains($homeView,'student-home-course')&&str_contains($shell,'student_shell_notification_link')&&str_contains($homeView,'/aluno/agenda.php'),'student Home must expose academic updates, authorized courses and notifications');
 $mobileAppCss=$css; // Navigation geometry is now owned by canonical student-area.css.
 must_student_premium_ui(!is_file($root.'/assets/student-app-shell.css'),'parallel shell stylesheet was reintroduced');
 must_student_premium_ui(str_contains($shell,"'agenda'=>['label'=>'Agenda','href'=>'/aluno/agenda.php']")&&str_contains($mobileAppCss,'grid-template-columns:repeat(5,minmax(0,1fr))'),'approved five-destination shell is not integrated');
-must_student_premium_ui(str_contains($mobileAppCss,'.student-desktop-nav')&&str_contains($mobileAppCss,'.student-mobile-nav')&&str_contains($homeView,'student-v2-date-line'),'mobile-first shell/sidebar and factual date hierarchy are absent');
+must_student_premium_ui(str_contains($mobileAppCss,'.student-desktop-nav')&&str_contains($mobileAppCss,'.student-mobile-nav')&&str_contains($homeView,'student-home-meeting-date'),'mobile-first shell/sidebar and factual date hierarchy are absent');
 must_student_premium_ui(!str_contains($home,'Escolha o que você veio fazer')&&!str_contains($home,'Abrir laboratório'),'student home regressed to a duplicate navigation catalog');
 must_student_premium_ui(str_contains($courses,'elseif(count($enrollments)===1)$selectedEnrollment=$enrollments[0]'),'single enrollment still requires a course-selector click');
 must_student_premium_ui(str_contains($coursesView,'student-v2-course-pages')&&str_contains($coursesView,'Dúvidas e respostas')&&str_contains($courses,'course_material_page_release_summary'),'course workspace is not flattened around study tasks');
