@@ -55,7 +55,7 @@ $home=[
 <?php student_shell_toolbox(['id'=>1]); ?>
 <main class="student-main">
 <?php if(($_GET['screen']??'')==='notifications'){ $notices=$home['notices']??[];require __DIR__.'/../../app/student_home_notifications_view.php'; }else{ require __DIR__.'/../../app/student_home_view.php'; } ?>
-<?php student_record_create_dialog($state==='empty'?[]:[['cohort_id'=>12,'course_title'=>$course['title'],'cohort_title'=>$course['cohort']]],'fixture-csrf',$state==='error'?['title'=>'EI 400 — tratamento alterado','context_scope'=>'course','context_cohort_id'=>'12']:[],$state==='error'?'Verifique o título e tente novamente.':'','/aluno/'); ?>
+<?php if($state==='error')student_record_create_dialog([['cohort_id'=>12,'course_title'=>$course['title'],'cohort_title'=>$course['cohort']]],'fixture-csrf',['title'=>'EI 400 — tratamento alterado','context_scope'=>'course','context_cohort_id'=>'12'],'Verifique o título e tente novamente.','/aluno/'); ?>
 </main>
 <?php student_shell_nav('home','student-mobile-nav'); ?>
 </div>

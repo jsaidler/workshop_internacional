@@ -37,6 +37,11 @@ $db->exec("INSERT INTO student_question_messages VALUES(104,5,'admin','2026-10-1
 check_home(student_home_question_notices($db,1)[0]['unread']===true,'new admin reply must become unread again');
 student_home_mark_question_read($db,1,5);
 check_home(student_home_question_notices($db,1)[0]['unread']===false,'latest reply acknowledgment failed');
+$db->exec("INSERT INTO student_question_messages VALUES(105,5,'admin','2026-10-19T21:00:00Z')");
+student_home_mark_question_read($db,1,5,104);
+check_home(student_home_question_notices($db,1)[0]['unread']===true,'new admin answer arriving after conversation render must remain unread');
+student_home_mark_question_read($db,1,5,105);
+check_home(student_home_question_notices($db,1)[0]['unread']===false,'explicitly displayed latest admin answer must be acknowledged');
 $now=strtotime('2030-10-22T20:00:00Z');
 $m=['date_iso'=>'2030-10-22T22:00:00Z','in_window'=>false];
 check_home(student_home_live_priority($m,[], $now)['kind']==='meeting','imminent meeting should have priority');

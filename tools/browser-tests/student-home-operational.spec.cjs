@@ -36,6 +36,7 @@ test('Home always contains authorized course Material/Dúvidas context without d
  await expect(courses.nth(0).getByRole('link',{name:'Dúvidas'})).toHaveAttribute('href',/cohort=cohort-a/);
  await expect(courses.nth(1).getByRole('link',{name:'Dúvidas'})).toHaveAttribute('href',/cohort=cohort-b/);
  await expect(page.locator('[data-record-create-open]')).toHaveCount(0);
+ await expect(page.locator('[data-record-create-dialog]')).toHaveCount(0);
 });
 test('Home exposes notice link and consistent unread number without fake conversation text',async({page})=>{
  await page.goto(base+'?state=active');

@@ -122,8 +122,9 @@ function student_home_question_notices(PDO $db,int $studentId,int $limit=30): ar
     }
     return $out;
 }
-function student_home_mark_question_read(PDO $db,int $studentId,int $questionId): void {
+function student_home_mark_question_read(PDO $db,int $studentId,int $questionId,?int $visibleAdminMessageId=null): void {
     if($studentId<1||$questionId<1||!student_home_notices_table($db))return;
+    if($visibleAdminMessageId!==null&&$visibleAdminMessageId<1)return;
     // Only the question author with an active enrollment may acknowledge admin replies.
     $q=$db->prepare("SELECT MAX(m.id) FROM student_questions q
         JOIN course_enrollments e ON e.cohort_id=q.cohort_id AND e.student_id=? AND e.status='active'
@@ -131,6 +132,7 @@ function student_home_mark_question_read(PDO $db,int $studentId,int $questionId)
         JOIN student_question_messages m ON m.question_id=q.id AND m.author_role='admin'
         WHERE q.id=? AND q.student_id=?");
     $q->execute([$studentId,$questionId,$studentId]);$messageId=(int)$q->fetchColumn();
+    if($visibleAdminMessageId!==null)$messageId=min($messageId,$visibleAdminMessageId);
     if($messageId<1)return;
     $db->prepare("INSERT INTO student_home_notice_reads(student_id,question_id,message_id,seen_at)
         VALUES(?,?,?,?)
