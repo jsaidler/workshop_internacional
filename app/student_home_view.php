@@ -34,7 +34,8 @@ $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):
       <p><?=h((string)$event['course'])?></p>
       <a class="button button-primary" href="<?=h((string)$event['href'])?>"><?=h(($event['kind']==='answer'?'Ler resposta':($event['kind']==='opportunity'?'Ver como ouvinte':(!empty($event['action'])?'Ler retorno e revisar':'Ler retorno'))))?> →</a>
     </section>
-  <?php elseif($meeting):?>
+  <?php endif;?>
+  <?php if($meeting&&($priority['kind']??'')!=='meeting'):?>
     <section class="student-home-next" data-home-upcoming-meeting aria-label="Próximo encontro">
       <a href="/aluno/agenda.php"><span><small>Próximo encontro · <?=h((string)$meeting['day'].' '.(string)$meeting['month'].' · '.(string)$meeting['hour'])?></small>
         <strong><?=h((string)$meeting['lesson'])?></strong>
