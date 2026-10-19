@@ -70,6 +70,7 @@ jobs:
             php tools/test-student-accounts.php
             php tools/test-multi-course-enrollment.php
             php tools/test-student-dashboard-truth.php
+            php tools/test-student-home-live.php
             php tools/test-student-course-context.php
             php tools/test-student-account-experience.php
             php tools/test-student-material-context.php
