@@ -27,6 +27,7 @@ $feedback=['title'=>'Retrato 04 — janela lateral','status'=>'Revisão solicita
 $focus=['title'=>'EI 200 — Primeiro processamento','status'=>'Exposição registrada','action'=>'Registrar processamento','url'=>'/aluno/teste.php?id=22&view=process'];
 $recent=[['title'=>'EI 200 — Primeiro processamento','scope'=>'Curso','date'=>'11/10/2026','url'=>'/aluno/teste.php?id=22'],['title'=>'Papel de contraste variável','scope'=>'Pessoal','date'=>'09/10/2026','url'=>'/aluno/teste.php?id=21']];
 $noticeAnswer=['kind'=>'answer','title'=>'Segunda revelação','course'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','href'=>'/aluno/duvidas.php?cohort=cohort-a&id=42','at'=>'2030-10-22T08:00:00Z','unread'=>true,'key'=>'question:42'];
+$noticeFeedback=['kind'=>'feedback','title'=>'Retrato 04 — janela lateral','course'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','href'=>'/aluno/teste.php?id=17&view=review','at'=>'2030-10-22T10:00:00Z','unread'=>true,'action'=>true,'key'=>'feedback:17'];
 $noticeRead=['kind'=>'feedback','title'=>'Retrato 04 — janela lateral','course'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','href'=>'/aluno/teste.php?id=17&view=review','at'=>'2030-10-20T08:00:00Z','unread'=>false,'key'=>'feedback:17'];
 $home=[
  'meeting'=>in_array($state,['active','multiple','no-link','long','ongoing'],true)?student_home_next_meeting($meetings,strtotime($state==='ongoing'?'2030-10-22T22:15:00Z':'2030-10-20T00:00:00Z')):null,
@@ -37,7 +38,7 @@ $home=[
  'can_timer'=>$state!=='restricted',
  'can_reciprocity'=>$state!=='restricted',
  'now'=>strtotime('2030-10-22T20:00:00Z'),
- 'notices'=>in_array($state,['active','feedback','multiple','long'],true)?[$noticeAnswer,$noticeRead]:[],
+ 'notices'=>$state==='feedback'?[$noticeFeedback]:(in_array($state,['active','multiple','long'],true)?[$noticeAnswer,$noticeRead]:[]),
  'offers'=>in_array($state,['study','restricted'],true)?[['title'=>'Formação com página pública publicada','url'=>'/curso-publico']]:[],
 ];
 ?><!doctype html>

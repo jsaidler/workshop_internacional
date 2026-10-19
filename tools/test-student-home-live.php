@@ -10,13 +10,13 @@ $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTI
 $db->exec(<<<'SQL'
 PRAGMA foreign_keys=ON;
 CREATE TABLE student_users(id INTEGER PRIMARY KEY);
-CREATE TABLE courses(id INTEGER PRIMARY KEY,title TEXT);
+CREATE TABLE courses(id INTEGER PRIMARY KEY,title TEXT,status TEXT NOT NULL DEFAULT 'active');
 CREATE TABLE course_cohorts(id INTEGER PRIMARY KEY,course_id INTEGER,title TEXT,cohort_uuid TEXT,status TEXT);
 CREATE TABLE course_enrollments(id INTEGER PRIMARY KEY,student_id INTEGER,cohort_id INTEGER,status TEXT);
 CREATE TABLE student_questions(id INTEGER PRIMARY KEY,student_id INTEGER,cohort_id INTEGER,title TEXT);
 CREATE TABLE student_question_messages(id INTEGER PRIMARY KEY,question_id INTEGER,author_role TEXT,created_at TEXT);
 INSERT INTO student_users VALUES(1),(2);
-INSERT INTO courses VALUES(2,'Positivo direto em filme de raio-X');
+INSERT INTO courses(id,title) VALUES(2,'Positivo direto em filme de raio-X');
 INSERT INTO course_cohorts VALUES(11,2,'Turma Outubro','cohort-a','active'),(12,2,'Turma Novembro','cohort-b','active');
 INSERT INTO course_enrollments VALUES(1,1,11,'active'),(2,1,12,'disabled'),(3,2,12,'active');
 INSERT INTO student_questions VALUES(5,1,11,'Segunda revelação'),(6,1,12,'Outra turma'),(7,2,12,'Outra pessoa');
