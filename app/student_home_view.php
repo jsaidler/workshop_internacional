@@ -5,7 +5,7 @@ $meeting=$home['meeting']??null;
 $notices=$home['notices']??[];
 $courses=$home['courses']??[];
 $offers=$home['offers']??[];
-$priority=student_home_live_priority($meeting,$notices);
+$priority=student_home_live_priority($meeting,$notices,$home['now']??null);
 $unread=count(array_filter($notices,static fn(array $item):bool=>!empty($item['unread'])));
 $firstTwo=array_slice(array_values(array_filter($notices,static fn(array $item):bool=>
     ($priority['kind']??'')!=='notice'||$item['key']!==($priority['item']['key']??''))),0,2);
