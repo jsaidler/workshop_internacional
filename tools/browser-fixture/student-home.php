@@ -11,7 +11,7 @@ function database(): PDO {static $fixtureDb=null;return $fixtureDb??=new PDO('sq
 function student_tools_for_student(PDO $db,int $id): array {return [['tool_key'=>'reciprocity'],['tool_key'=>'lab_timer']];}
 require_once __DIR__.'/../../app/student_record_create_dialog.php';
 $state=(string)($_GET['state']??'active');
-$scenario=['active','study','multiple','empty','feedback','no-link','long','restricted','record','error','ongoing'];
+$scenario=['active','study','multiple','empty','feedback','no-link','long','restricted','record','error','ongoing','distant'];
 if(!in_array($state,$scenario,true))$state='active';
 $course=['title'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','url'=>'/aluno/cursos.php?cohort=cohort-a','questions_url'=>'/aluno/duvidas.php?cohort=cohort-a','material'=>['title'=>'Exposição pensando no positivo','url'=>'/material-do-curso?cohort=cohort-a','course'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026'],'available'=>2];
 $course2=['title'=>'Pesquisa em processos fotográficos','cohort'=>'Turma Novembro 2026','url'=>'/aluno/cursos.php?cohort=cohort-b','questions_url'=>'/aluno/duvidas.php?cohort=cohort-b','material'=>['title'=>'Química de revelação','url'=>'/processos?cohort=cohort-b','course'=>'Pesquisa em processos fotográficos','cohort'=>'Turma Novembro 2026'],'available'=>1];
@@ -30,15 +30,15 @@ $noticeAnswer=['kind'=>'answer','title'=>'Segunda revelação','course'=>'Positi
 $noticeFeedback=['kind'=>'feedback','title'=>'Retrato 04 — janela lateral','course'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','href'=>'/aluno/teste.php?id=17&view=review','at'=>'2030-10-22T10:00:00Z','unread'=>true,'action'=>true,'key'=>'feedback:17'];
 $noticeRead=['kind'=>'feedback','title'=>'Retrato 04 — janela lateral','course'=>'Positivo direto em filme de raio-X','cohort'=>'Turma Outubro 2026','href'=>'/aluno/teste.php?id=17&view=review','at'=>'2030-10-20T08:00:00Z','unread'=>false,'key'=>'feedback:17'];
 $home=[
- 'meeting'=>in_array($state,['active','multiple','no-link','long','ongoing'],true)?student_home_next_meeting($meetings,strtotime($state==='ongoing'?'2030-10-22T22:15:00Z':'2030-10-20T00:00:00Z')):null,
+ 'meeting'=>in_array($state,['active','multiple','no-link','long','ongoing','distant'],true)?student_home_next_meeting($meetings,strtotime($state==='ongoing'?'2030-10-22T22:15:00Z':'2030-10-20T00:00:00Z')):null,
  'feedback'=>in_array($state,['active','feedback','long'],true)?$feedback:null,
  'focus'=>in_array($state,['active','multiple','long','record'],true)?$focus:null,
  'courses'=>match($state){'empty'=>[],'multiple'=>[$course,$course2],'long'=>[$course,$course2,$course3],'restricted'=>[array_replace($course,['material'=>null,'available'=>0])],default=>[$course]},
  'recent'=>in_array($state,['empty','study','feedback','restricted'],true)?[]:$recent,
  'can_timer'=>$state!=='restricted',
  'can_reciprocity'=>$state!=='restricted',
- 'now'=>strtotime('2030-10-22T20:00:00Z'),
- 'notices'=>$state==='feedback'?[$noticeFeedback]:(in_array($state,['active','multiple','long'],true)?[$noticeAnswer,$noticeRead]:[]),
+ 'now'=>strtotime($state==='distant'?'2030-10-18T00:00:00Z':'2030-10-22T20:00:00Z'),
+ 'notices'=>in_array($state,['feedback','distant'],true)?[$noticeFeedback]:(in_array($state,['active','multiple','long'],true)?[$noticeAnswer,$noticeRead]:[]),
  'offers'=>in_array($state,['study','restricted'],true)?[['title'=>'Formação com página pública publicada','url'=>'/curso-publico']]:[],
 ];
 ?><!doctype html>

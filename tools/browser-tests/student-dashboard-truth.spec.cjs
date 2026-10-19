@@ -1,25 +1,33 @@
 const {test,expect}=require('@playwright/test');
 const base='http://127.0.0.1:8099/tools/browser-fixture/student-home.php';
-test('Home prioritizes requested review while preserving upcoming meeting and work together',async({page})=>{
-  await page.goto(base+'?state=active');
-  await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();
-  await expect(page.locator('[data-home-upcoming-meeting]')).toBeVisible();
-  await expect(page.getByRole('heading',{name:'Continuar'})).toBeVisible();
-  await expect(page.getByRole('heading',{name:'Caderno recente'})).toBeVisible();
+
+test('imminent authorized meeting outranks notifications, but does not hide them',async({page})=>{
+  await page.goto(base+'?state=active',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('[data-home-meeting]')).toBeVisible();
+  await expect(page.getByRole('link',{name:/Segunda revelação/})).toHaveAttribute('href',/cohort=cohort-a&id=42/);
+  await expect(page.locator('.student-home-bell-count')).toHaveText('1');
+  await expect(page.locator('[data-home-courses]')).toBeVisible();
 });
-test('Home opens material for a single enrollment without extra choice',async({page})=>{
-  await page.goto(base+'?state=study');
-  await expect(page.locator('[data-home-study-feature] a')).toHaveAttribute('href',/cohort=cohort-a/);
+test('single enrollment offers direct course-scoped Material without a selector',async({page})=>{
+  await page.goto(base+'?state=study',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.student-home-course')).toHaveCount(1);
+  await expect(page.locator('.student-home-course .student-home-material')).toHaveAttribute('href',/cohort=cohort-a/);
 });
-test('multiple enrollments expose scoped links, not a selector gate',async({page})=>{
-  await page.goto(base+'?state=multiple');
-  await expect(page.locator('.student-v2-course')).toHaveCount(2);
-  await expect(page.locator('.student-home-course-actions a[href*="cohort-b"]')).toHaveCount(2);
+test('multiple enrollments preserve course and cohort context',async({page})=>{
+  await page.goto(base+'?state=multiple',{waitUntil:'domcontentloaded'});
+  const courses=page.locator('.student-home-course');
+  await expect(courses).toHaveCount(2);
+  await expect(courses.nth(0).locator('.student-home-course-actions a')).toHaveCount(2);
+  await expect(courses.nth(1).locator('.student-home-course-actions a')).toHaveCount(2);
+  await expect(courses.nth(0).getByRole('link',{name:'Material'})).toHaveAttribute('href',/cohort=cohort-a/);
+  await expect(courses.nth(1).getByRole('link',{name:'Material'})).toHaveAttribute('href',/cohort=cohort-b/);
+  await expect(page.locator('[data-record-create-open]')).toHaveCount(0);
 });
-test('mobile first viewport contains primary action and bottom navigation',async({page})=>{
+test('first phone screen exposes a real academic event and global navigation',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto(base+'?state=active');
-  await expect(page.locator('[data-home-feedback-feature] .student-v2-cta')).toBeInViewport();
-  await expect(page.locator('.student-v2-footer-actions [data-record-create-open]')).toHaveCount(1);
+  await page.goto(base+'?state=active',{waitUntil:'networkidle'});
+  await expect(page.locator('[data-home-meeting]')).toBeInViewport();
   await expect(page.locator('.student-mobile-nav')).toBeVisible();
+  await expect(page.locator('.student-mobile-nav a')).toHaveCount(5);
+  await expect(page.locator('[data-home-updates]')).toBeVisible();
 });

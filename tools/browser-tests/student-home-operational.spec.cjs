@@ -8,6 +8,7 @@ for(const [state,width,height] of [
 ]){
  test('live authenticated Home PHP renderer '+state+' '+width,async({page})=>{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.setViewportSize({width,height});
   const res=await page.goto(base+'?state='+state,{waitUntil:'domcontentloaded'});
   expect(res?.status()).toBe(200);await expect(page.locator('[data-home-live]')).toBeVisible();
   await expect(page.locator('nav.student-mobile-nav a')).toHaveCount(5);

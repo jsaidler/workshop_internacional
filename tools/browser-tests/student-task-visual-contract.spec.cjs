@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const host='http://127.0.0.1:8099/tools/browser-fixture/';
 const samples=[
-  {name:'Início',url:'student-home.php?state=ongoing',root:'[data-student-home]',title:'.student-v2-heading h1',body:'.student-v2-row-text strong',card:'.student-v2-next',secondary:'.student-v2-secondary-link'},
+  {name:'Início',url:'student-home.php?state=ongoing',root:'[data-student-home]',title:'.student-home-meeting-info h2',body:'.student-home-notice strong',card:'.student-home-live-feature',secondary:'.student-home-course-actions a'},
   {name:'Cursos',url:'student-courses.php?state=detail',root:'[data-student-courses]',title:'.student-v2-course-detail-heading h1',body:'.student-academic-material-title',card:'.student-v2-course-page.is-next',secondary:'.student-v2-course-local-nav'},
   {name:'Caderno',url:'student-notebook.php?state=mixed',root:'[data-student-notebook]',title:'.student-v2-notebook-header h1',body:'.student-v2-notebook-card .student-record-summary span',card:'.student-v2-notebook-card',secondary:'.student-v2-notebook-card .student-record-menu>summary'},
   {name:'Processamentos',url:'student-process-saved-cards.php?mode=library',root:'[data-process-saved-card]',title:'.student-process-template-main h3',body:'.student-process-template-main p',card:'.student-process-template-card',secondary:'.student-process-card-options>summary'}
@@ -29,7 +29,7 @@ for(const [viewport,width,height] of [['phone',390,844],['desktop',1440,1100]]){
       expect(layout.body).toBe(layout.bodyToken);
       expect(layout.overflowing).toBe(false);
       if(sample.name==='Início'){
-        expect(layout.cardBorders).toEqual([0,0,0,3]);
+        expect(layout.cardBorders).toEqual([0,0,0,0]);
         expect(layout.secondaryBorders).toEqual([0,0,0,0]);
       }
       if(sample.name==='Cursos'){
@@ -50,16 +50,16 @@ for(const [viewport,width,height] of [['phone',390,844],['desktop',1440,1100]]){
   }
 }
 test('uma revisão solicitada é mais urgente que encontro distante',async({page})=>{
-  await page.goto(host+'student-home.php?state=active');
-  await expect(page.locator('[data-home-feedback-feature]')).toBeVisible();
+  await page.goto(host+'student-home.php?state=distant');
+  await expect(page.locator('[data-home-message]')).toBeVisible();
   await expect(page.locator('[data-home-upcoming-meeting]')).toBeVisible();
-  await expect(page.locator('[data-home-upcoming-meeting]')).toHaveAttribute('href','/aluno/agenda.php');
+  await expect(page.locator('[data-home-upcoming-meeting] a')).toHaveAttribute('href','/aluno/agenda.php');
   await expect(page.locator('[data-home-meeting]')).toHaveCount(0);
 });
 test('encontro em andamento mantém acesso prioritário',async({page})=>{
   await page.goto(host+'student-home.php?state=ongoing');
   await expect(page.locator('[data-home-meeting]')).toBeVisible();
-  await expect(page.locator('[data-home-meeting] .student-v2-cta')).toHaveAttribute('href','https://example.org/private-meeting');
+  await expect(page.locator('[data-home-meeting] a.button-primary')).toHaveAttribute('href','https://example.org/private-meeting');
 });
 test('Cursos oferece uma leitura liberada como próxima ação, sem promover conteúdo bloqueado',async({page})=>{
   await page.goto(host+'student-courses.php?state=detail');
