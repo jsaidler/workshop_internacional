@@ -40,10 +40,13 @@ CREATE TABLE course_material_pages(course_id INTEGER,page_id INTEGER,sort_order 
 CREATE TABLE course_material_sections(course_id INTEGER,page_id INTEGER,section_key TEXT,lesson_id INTEGER,created_at TEXT,updated_at TEXT,PRIMARY KEY(course_id,page_id,section_key));
 CREATE TABLE cohort_lesson_releases(cohort_id INTEGER,lesson_id INTEGER,released_at TEXT,created_at TEXT,updated_at TEXT,PRIMARY KEY(cohort_id,lesson_id));
 INSERT INTO activities VALUES(1,'',1);
-INSERT INTO courses VALUES(2,1,'Positivo direto em filme de raio-X','active'),(3,1,'Fotografia experimental em grande formato','active');
+INSERT INTO courses VALUES(2,1,'Positivo direto em filme de raio-X','active'),(3,1,'Fotografia experimental em grande formato','active'),(4,1,'Positivo Direto em Filme de Raio-X — outro curso sem vínculo','active');
 INSERT INTO course_lessons VALUES(51,2,'Segunda aula',2),(50,2,'Primeira aula',1),(70,3,'Aula introdutória',1);
 INSERT INTO course_cohorts VALUES(11,1,2,'active','cohort-rx'),(12,1,3,'active','cohort-other');
 INSERT INTO course_enrollments VALUES(1,101,11,'active'),(2,102,12,'active'),(3,103,11,'inactive');
+INSERT INTO cms_pages(page_uuid,activity_id,locale,slug,title,nav_title,status,is_home,show_in_nav,sort_order,draft_document_json,published_document_json,draft_revision,published_revision,draft_updated_at,published_at,created_at,updated_at,access_level)
+ VALUES('canonical-study',1,'pt-BR','caderno-positivo-direto','Caderno de Positivo Direto','Material','active',0,0,1,'{"html":"<section></section>"}','{"html":"<section></section>"}',1,1,'','','','','activity');
+INSERT INTO course_material_pages VALUES(2,1,1,'2026-01-01','2026-01-01');
 SQL);
 $migration=require __DIR__.'/../migrations/100_student_materials_and_shared_bibliography.php';
 $migration($db);
@@ -58,7 +61,8 @@ foreach(['Termômetro culinário','Béquer','1 litro','300 ml','bomba de vácuo'
     resource_assert(str_contains($material['html'],$name),'missing specified shopping material: '.$name);
 resource_assert(substr_count($material['html'],'Onde procurar:')>=22,'shopping suggestion omitted for a material');
 resource_assert(!str_contains($material['html'],'<style'),'page introduced a competing CSS system');
-resource_assert((int)$db->query('SELECT COUNT(*) FROM course_material_pages')->fetchColumn()===1,'materials associated with another course');
+resource_assert((int)$db->query('SELECT COUNT(*) FROM course_material_pages WHERE course_id=2')->fetchColumn()===2,'materials not attached to canonical course');
+resource_assert((int)$db->query('SELECT COUNT(*) FROM course_material_pages WHERE course_id=3 OR course_id=4')->fetchColumn()===0,'course selected by title rather than canonical association');
 resource_assert((int)$db->query('SELECT COUNT(*) FROM course_material_sections')->fetchColumn()===4,'all sections must be gated');
 resource_assert((int)$db->query('SELECT COUNT(*) FROM course_material_sections WHERE lesson_id=50')->fetchColumn()===4,'not gated by FIRST lesson');
 resource_assert((string)$db->query('SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=11 AND lesson_id=50')->fetchColumn()==='','migration must not release a lesson');
