@@ -1,0 +1,98 @@
+const {test,expect}=require('@playwright/test');
+const {execFileSync,spawn}=require('node:child_process');
+const fs=require('node:fs');
+const path=require('node:path');
+const os=require('node:os');
+const net=require('node:net');
+const root=path.resolve(__dirname,'../..');
+const seed=path.join(root,'tools/browser-fixture/course-review-communications-seed.php');
+const pw='fixture-password-123!';
+let sandbox,server,origin,fixture,log;
+async function freePort(){return new Promise((resolve,reject)=>{const s=net.createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=s.address().port;s.close(e=>e?reject(e):resolve(p));});});}
+async function ready(url){
+  for(let i=0;i<90;i++){try{const r=await fetch(url);if(r.status===200)return;}catch(_){}await new Promise(r=>setTimeout(r,160));}
+  throw Error('Disposable application not responding');
+}
+test.describe('real application: reviews and communications',()=>{
+ test.describe.configure({mode:'serial'});
+ test.setTimeout(120000);
+ test.beforeAll(async()=>{
+   sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'course-communications-qa-'));
+   for(const p of ['app','admin','aluno','assets','migrations','template','index.php','newsletter-sair.php']){
+     const source=path.join(root,p);if(fs.existsSync(source))fs.cpSync(source,path.join(sandbox,p),{recursive:true});
+   }
+   fs.mkdirSync(path.join(sandbox,'config'),{recursive:true});
+   fs.mkdirSync(path.join(sandbox,'storage'),{recursive:true});
+   fs.writeFileSync(path.join(sandbox,'storage/installed.lock'),'isolated test');
+   fs.writeFileSync(path.join(sandbox,'storage/database.sqlite'),'');
+   fs.writeFileSync(path.join(sandbox,'config/local.php'),
+     "<?php return ['app_secret'=>'"+'a'.repeat(64)+"','ip_hash_secret'=>'"+'b'.repeat(64)+"','site_name'=>'QA Site','public_url'=>'https://example.test','timezone'=>'UTC'];\n");
+   fixture=JSON.parse(execFileSync('php',[seed,sandbox,'seed'],{encoding:'utf8',timeout:60000}));
+   const port=await freePort();origin='http://127.0.0.1:'+port;
+   log=fs.openSync(path.join(sandbox,'server.log'),'w');
+   server=spawn('php',['-S','127.0.0.1:'+port,'-t',sandbox],{cwd:sandbox,stdio:['ignore',log,log]});
+   await ready(origin+'/admin/login.php');
+ });
+ test.afterAll(async()=>{
+   if(server){server.kill();await new Promise(r=>setTimeout(r,150));}
+   if(log!==undefined)fs.closeSync(log);
+   if(sandbox)fs.rmSync(sandbox,{recursive:true,force:true});
+ });
+ test('create one optional review, view authorized Agenda, queue only opted-in newsletter',async({browser},info)=>{
+   const adminCtx=await browser.newContext({viewport:{width:1440,height:900}});
+   const admin=await adminCtx.newPage(),errors=[];
+   admin.on('pageerror',e=>errors.push(e.message));
+   await admin.goto(origin+'/admin/login.php');
+   await admin.locator('input[name="email"]').fill('admin-qa@example.test');
+   await admin.locator('input[name="password"]').fill(pw);
+   await Promise.all([admin.waitForURL(/\/admin\/$/),admin.getByRole('button',{name:'Entrar'}).click()]);
+   const pathLessons='/admin/lessons.php?activity='+fixture.activityId+'&course='+fixture.courseId+'&cohort='+fixture.cohortIds[0];
+   await admin.goto(origin+pathLessons);
+   await expect(admin.getByText('Agendar revisão')).toBeVisible();
+   await admin.getByText('Agendar revisão').click();
+   const form=admin.locator('form').filter({has:admin.locator('input[name="action"][value="save_review"]')}).last();
+   await form.locator('input[name="title"]').fill('Revisão real no navegador');
+   await form.locator('input[name="meeting_starts_at"]').fill('2030-07-10T19:00');
+   await form.locator('select[name="cohort_id"]').selectOption(String(fixture.cohortIds[0]));
+   await form.locator('input[name="meeting_url"]').fill('https://example.test/meeting-secret');
+   await form.getByRole('button',{name:'Criar revisão'}).click();
+   await expect(admin.getByText('Revisão real no navegador').first()).toBeVisible();
+   const studentCtx=await browser.newContext({viewport:{width:390,height:844}});
+   const student=await studentCtx.newPage();
+   student.on('pageerror',e=>errors.push(e.message));
+   await student.goto(origin+'/aluno/login.php');
+   await student.locator('input[name="email"]').fill('student-qa@example.test');
+   await student.locator('input[name="password"]').fill(pw);
+   await student.getByRole('button',{name:'Entrar'}).click();
+   await student.goto(origin+'/aluno/agenda.php');
+   await expect(student.getByText('Revisão real no navegador')).toBeVisible();
+   await expect(student.getByRole('link',{name:/Acessar encontro/})).toHaveAttribute('href','https://example.test/meeting-secret');
+   await student.screenshot({path:info.outputPath('review-agenda-mobile.png')});
+   await student.goto(origin+'/aluno/perfil.php');
+   await expect(student.locator('input[name="newsletter_opt_in"]')).toBeChecked();
+   await student.screenshot({path:info.outputPath('newsletter-opt-in-mobile.png')});
+   await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId);
+   await expect(admin.getByRole('heading',{name:'Comunicações',exact:true})).toBeVisible();
+   await admin.locator('select[name="category"]').selectOption('newsletter');
+   await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
+   await admin.locator('input[name="subject"]').fill('Nova atividade de fotografia');
+   await admin.locator('textarea[name="body_text"]').fill('Encontro experimental com vagas abertas.');
+   await admin.getByRole('button',{name:'Ver destinatários e prévia'}).click();
+   await expect(admin.getByText('1 destinatário elegível')).toBeVisible();
+   await admin.getByRole('button',{name:'Salvar rascunho'}).click();
+   await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeVisible();
+   await admin.getByRole('button',{name:'Confirmar e colocar na fila'}).click();
+   await expect(admin.getByText(/e-mail\(s\) incluído\(s\) na fila/)).toBeVisible();
+   await admin.screenshot({path:info.outputPath('communications-desktop.png')});
+   await admin.setViewportSize({width:390,height:844});
+   await admin.screenshot({path:info.outputPath('communications-mobile.png')});
+   const data=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(data.reviews).toHaveLength(1);
+   expect(data.campaigns).toHaveLength(1);
+   expect(data.campaigns[0].status).toBe('queued');
+   expect(data.deliveries).toHaveLength(1);
+   expect(data.deliveries[0].status).toBe('pending');
+   expect(errors).toEqual([]);
+   await studentCtx.close();await adminCtx.close();
+ });
+});
