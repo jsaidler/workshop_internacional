@@ -18,7 +18,7 @@ test.describe('real application: reviews and communications',()=>{
  test.setTimeout(120000);
  test.beforeAll(async()=>{
    sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'course-communications-qa-'));
-   for(const p of ['app','admin','aluno','assets','migrations','template','index.php','newsletter-sair.php']){
+   for(const p of ['app','admin','aluno','assets','data','migrations','template','index.php','newsletter-sair.php']){
      const source=path.join(root,p);if(fs.existsSync(source))fs.cpSync(source,path.join(sandbox,p),{recursive:true});
    }
    fs.mkdirSync(path.join(sandbox,'config'),{recursive:true});
