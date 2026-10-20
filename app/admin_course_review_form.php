@@ -2,7 +2,7 @@
 /** One canonical form for creating and editing a supplementary meeting. */
 $reviewId=(int)($reviewEdit['id']??0);
 $reviewTimezone=(string)($reviewEdit['meeting_timezone']??'America/Sao_Paulo');
-$reviewCohortId=(int)($reviewEdit['cohort_id']??($cohort['id']??0));
+$reviewCohortId=$reviewEdit!==null?(int)$reviewEdit['cohort_id']:(int)($cohort['id']??0);
 ?>
 <form method="post" class="admin-form-grid">
   <input type="hidden" name="_csrf" value="<?=h(csrf_token('lessons-admin'))?>">
