@@ -193,3 +193,19 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
     $db->exec("UPDATE communication_campaigns SET status='completed',updated_at='".utc_now()."' WHERE status='queued' AND NOT EXISTS(SELECT 1 FROM communication_deliveries d WHERE d.campaign_id=communication_campaigns.id AND d.status IN ('pending','processing'))");
     return $result;
 }
+
+function communication_update_campaign(PDO $db,int $activityId,int $id,array $input): int {
+    if($id===0)return communication_create_campaign($db,$activityId,$input);
+    $existing=communication_campaign($db,$activityId,$id);
+    if(!$existing || $existing['status']!=='draft')throw new RuntimeException('Somente rascunhos podem ser editados.');
+    $category=(string)($input['category']??'');
+    $courseId=max(0,(int)($input['course_id']??0));
+    $cohortId=max(0,(int)($input['cohort_id']??0));
+    communication_assert_scope($db,$activityId,$courseId,$cohortId,$category);
+    $subject=trim((string)($input['subject']??''));
+    $body=trim((string)($input['body_text']??''));
+    if($subject===''||mb_strlen($subject)>180||$body===''||mb_strlen($body)>20000)throw new RuntimeException('Preencha assunto (até 180 caracteres) e mensagem (até 20 mil caracteres).');
+    $db->prepare("UPDATE communication_campaigns SET category=?,course_id=?,cohort_id=?,subject=?,body_text=?,updated_at=? WHERE id=? AND activity_id=? AND status='draft'")
+       ->execute([$category,$courseId?:null,$cohortId?:null,$subject,$body,utc_now(),$id,$activityId]);
+    return $id;
+}
