@@ -128,6 +128,7 @@ resource_assert((string)$db->query("SELECT published_document_json FROM cms_page
 $revisionNum=(int)$pending['draft_revision'];
 $revision($db);
 resource_assert((int)$db->query("SELECT draft_revision FROM cms_pages WHERE slug='materiais-positivo-direto'")->fetchColumn()===$revisionNum,'repeat execution rewrote a draft');
-resource_assert($db->query("SELECT published_document_json FROM cms_pages WHERE slug='materiais-positivo-direto'")->fetchColumn()===false,'repeat execution republished page');
+$publishedAgain=$db->query("SELECT published_document_json FROM cms_pages WHERE slug='materiais-positivo-direto'")->fetchColumn();
+resource_assert($publishedAgain===null || $publishedAgain===false,'repeat execution republished page');
 
 echo "student-resource-pages: ok\n";
