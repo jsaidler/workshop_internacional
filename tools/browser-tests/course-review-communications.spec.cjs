@@ -61,9 +61,10 @@ test.describe('real application: reviews and communications',()=>{
    const student=await studentCtx.newPage();
    student.on('pageerror',e=>errors.push(e.message));
    await student.goto(origin+'/aluno/login.php');
-   await student.locator('input[name="email"]').fill('student-qa@example.test');
-   await student.locator('input[name="password"]').fill(pw);
-   await student.getByRole('button',{name:'Entrar'}).click();
+   const login=student.locator('form').filter({has:student.locator('input[name="mode"][value="login"]')});
+   await login.locator('input[name="email"]').fill('student-qa@example.test');
+   await login.locator('input[name="password"]').fill(pw);
+   await login.getByRole('button',{name:'Entrar'}).click();
    await student.goto(origin+'/aluno/agenda.php');
    await expect(student.getByText('Revisão real no navegador')).toBeVisible();
    await expect(student.getByRole('link',{name:/Acessar encontro/})).toHaveAttribute('href','https://example.test/meeting-secret');
