@@ -14,7 +14,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST' && $user){
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Preferência de e-mails · Fotografia</title></head><body>
-<main style="max-width:38rem;margin:4rem auto;padding:1.5rem;font-family:system-ui,sans-serif">
+<main>
 <h1>Novidades por e-mail</h1>
 <?php if($done):?><p>Sua assinatura de novidades foi cancelada. Você continuará recebendo apenas comunicações necessárias aos cursos de que participa.</p>
 <?php elseif(!$user):?><p>Este link não está disponível. Você também pode alterar as preferências em sua Conta.</p>
