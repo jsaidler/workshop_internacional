@@ -97,4 +97,37 @@ $again=$db->query("SELECT published_document_json FROM cms_pages WHERE slug='mat
 resource_assert(hash('sha256',(string)$again)===$hash,'second migration rewrote published content');
 resource_assert((string)$db->query('SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=11 AND lesson_id=50')->fetchColumn()==='2020-01-01T00:00:00Z','migration overwrote cohort release state');
 
+
+/* Draft-only revision. Unpublish the previous document and verify that no
+ * production/student material page can render the pending editorial revision. */
+$bookBefore=(string)$db->query("SELECT published_document_json FROM cms_pages WHERE slug='bibliografia'")->fetchColumn();
+$associationsBefore=(int)$db->query('SELECT COUNT(*) FROM course_material_pages')->fetchColumn();
+$sectionMapsBefore=(int)$db->query('SELECT COUNT(*) FROM course_material_sections')->fetchColumn();
+$revision=require __DIR__.'/../migrations/101_student_materials_review_draft.php';
+$revision($db);
+$pending=$db->query("SELECT * FROM cms_pages WHERE slug='materiais-positivo-direto'")->fetch(PDO::FETCH_ASSOC);
+resource_assert((bool)$pending,'revised materials draft does not exist');
+resource_assert($pending['published_document_json']===null && $pending['published_revision']===null && $pending['published_at']===null,'old page still published');
+resource_assert((int)$pending['show_in_nav']===0 && $pending['status']==='active','draft was added to public nav or archived');
+resource_assert($pending['access_level']==='activity','access control changed');
+resource_assert((int)$db->query("SELECT COUNT(*) FROM cms_pages WHERE slug='materiais-positivo-direto' AND published_document_json IS NOT NULL")->fetchColumn()===0,'student path can still serve old published content');
+$draft=json_decode((string)$pending['draft_document_json'],true,512,JSON_THROW_ON_ERROR);
+resource_assert(str_contains($draft['html'],'Bandejas plásticas para marmita'),'revised draft text not saved');
+foreach(['Béquer ou copo medidor','Termômetro digital culinário','Garrafas de vidro âmbar de 1 litro','Garrafa de cerveja âmbar de aproximadamente 300 ml',
+  'Pipeta graduada de 25 ml e pipetador','Bomba manual de vácuo para vinho, com rolha','04 — Cuidados no laboratório','Peróxido de hidrogênio'] as $term)
+  resource_assert(str_contains($draft['html'],$term),'revised item missing: '.$term);
+resource_assert(substr_count($draft['html'],'data-cms-image-placeholder')===5,'CMS image upload placeholders lost');
+resource_assert(substr_count($draft['html'],'data-cms-section=')===4,'lesson-gated section identities changed');
+resource_assert(!preg_match('/\\bprofessor(?:a)?\\b|\\[ESPAÇO PARA IMAGEM\\]/iu',$draft['html']),'internal notes or third-person references leaked to readers');
+resource_assert((int)$db->query('SELECT COUNT(*) FROM course_material_pages')->fetchColumn()===$associationsBefore,'course associations were changed');
+resource_assert((int)$db->query('SELECT COUNT(*) FROM course_material_sections')->fetchColumn()===$sectionMapsBefore,'release maps were changed');
+resource_assert((int)$db->query('SELECT COUNT(*) FROM course_material_sections WHERE lesson_id=50')->fetchColumn()===4,'first lesson gate no longer covers sections');
+resource_assert((string)$db->query("SELECT released_at FROM cohort_lesson_releases WHERE cohort_id=11 AND lesson_id=50")->fetchColumn()==='2020-01-01T00:00:00Z','release state changed during editorial revision');
+resource_assert((string)$db->query("SELECT published_document_json FROM cms_pages WHERE slug='bibliografia'")->fetchColumn()===$bookBefore,'bibliography was edited');
+
+$revisionNum=(int)$pending['draft_revision'];
+$revision($db);
+resource_assert((int)$db->query("SELECT draft_revision FROM cms_pages WHERE slug='materiais-positivo-direto'")->fetchColumn()===$revisionNum,'repeat execution rewrote a draft');
+resource_assert($db->query("SELECT published_document_json FROM cms_pages WHERE slug='materiais-positivo-direto'")->fetchColumn()===false,'repeat execution republished page');
+
 echo "student-resource-pages: ok\n";
