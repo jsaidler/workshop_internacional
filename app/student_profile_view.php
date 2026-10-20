@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /** Authenticated account view. Authorization and updates belong to aluno/perfil.php. */
-function student_profile_render(array $profile,string $error='',string $notice=''):void {
+function student_profile_render(array $profile,string $error='',string $notice='',bool $newsletterOptIn=false):void {
     $failed=$error!=='';
 ?>
 <div class="student-profile-page">
@@ -43,6 +43,16 @@ function student_profile_render(array $profile,string $error='',string $notice='
     <p class="student-profile-privacy"><a href="/?page=privacidade&lang=pt-br">Aviso de Privacidade</a></p>
   </section>
   <div class="student-profile-settings">
+    <section class="student-profile-setting" aria-labelledby="student-newsletter-heading">
+      <p class="student-kicker">Comunicações</p><h2 id="student-newsletter-heading">Novos cursos e atividades</h2>
+      <p>Escolha se deseja receber novidades por e-mail. Avisos necessários sobre aulas de que participa são independentes dessa opção.</p>
+      <form method="post">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-newsletter'))?>">
+        <input type="hidden" name="action" value="newsletter">
+        <label><input type="checkbox" name="newsletter_opt_in" value="yes"<?=$newsletterOptIn?' checked':''?>> Quero receber novidades sobre cursos, turmas e atividades.</label>
+        <div class="student-actions"><button type="submit" class="button button-secondary">Salvar preferência</button></div>
+      </form>
+    </section>
     <section class="student-profile-setting" aria-labelledby="student-security-heading">
       <p class="student-kicker">Segurança</p><h2 id="student-security-heading">Senha</h2>
       <p>Altere sua senha sem modificar os dados da conta.</p>
