@@ -177,7 +177,7 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
         if($job['category']==='newsletter'){
             $config=app_config();$site=rtrim((string)($config['public_url']??''),'/');
             if(!str_starts_with($site,'https://'))throw new RuntimeException('Configure public_url HTTPS antes do envio.');
-            $body.="\n\nPara deixar de receber novidades: ".$site.'/newsletter/sair.php?token='.rawurlencode(communication_unsubscribe_token((int)$job['student_id'],(string)$job['email']));
+            $body.="\n\nPara deixar de receber novidades: ".$site.'/newsletter-sair.php?token='.rawurlencode(communication_unsubscribe_token((int)$job['student_id'],(string)$job['email']));
         }
         try{
             $receipt=$sender(['name'=>(string)$job['name'],'email'=>(string)$job['email'],
