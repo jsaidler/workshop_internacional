@@ -6,6 +6,12 @@ $root=realpath((string)($argv[1]??''));$mode=(string)($argv[2]??'seed');
 if(!$root||!file_exists($root.'/storage/installed.lock')||!file_exists($root.'/config/local.php'))throw new RuntimeException('Invalid isolated fixture.');
 require $root.'/app/bootstrap.php';
 $db=database();
+if($mode==='token'){
+    $q=$db->prepare('SELECT id,email FROM student_users WHERE email=?');
+    $q->execute(['student-qa@example.test']);$person=$q->fetch();
+    if(!$person)throw new RuntimeException('Missing test identity');
+    echo communication_unsubscribe_token((int)$person['id'],(string)$person['email']).PHP_EOL;exit;
+}
 if($mode==='snapshot'){
     echo json_encode([
       'reviews'=>$db->query('SELECT id,course_id,cohort_id,title,meeting_status FROM course_review_sessions ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
