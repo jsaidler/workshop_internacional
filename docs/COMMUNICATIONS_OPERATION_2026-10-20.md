@@ -7,7 +7,7 @@ Estado: implementado em branch, **não implantado**. Referências de autoridade:
 - `Conta → Novos cursos e atividades`: opção promocional inicialmente desmarcada.
 - `newsletter-sair.php`: cancelamento por link assinado; uma campanha já enviada não pode ser desfeita.
 - `admin/communications-worker.php`: execução **exclusivamente via CLI**, verificando novamente as matrículas e preferências antes de enviar.
-- `communication_campaigns` e `communication_deliveries`: status persistente, até três tentativas, deduplicação por campanha/usuário.
+- `communication_campaigns` e `communication_deliveries`: status persistente, até três tentativas, deduplicação por campanha/usuário. Status `sent` confirma apenas aceite da API pelo provedor, não entrega à caixa de entrada.
 
 ## Habilitar a entrega real
 1. Contratar/configurar uma conta Brevo e verificar um domínio/remetente autenticado (SPF, DKIM e DMARC).
