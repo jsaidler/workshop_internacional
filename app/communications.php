@@ -147,6 +147,14 @@ function communication_send_brevo(array $payload): array {
 function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): array {
     $limit=max(1,min(50,$limit));
     if($sender===null){communication_provider_configuration();$sender='communication_send_brevo';}
+    // Brevo Free currently allows 300/day. Default to 250 so retries and
+    // other occasional sends do not unexpectedly hit the provider queue.
+    $dailyLimit=max(1,min(100000,(int)(app_config()['email_daily_limit']??250)));
+    $from=gmdate('Y-m-d').'T00:00:00Z';
+    $daily=$db->prepare("SELECT COUNT(*) FROM communication_deliveries WHERE status='sent' AND delivered_at>=?");
+    $daily->execute([$from]);
+    $limit=min($limit,max(0,$dailyLimit-(int)$daily->fetchColumn()));
+    if($limit===0)return ['sent'=>0,'skipped'=>0,'failed'=>0];
     $jobs=course_agenda_with_lock($db,static function() use($db,$limit): array {
         $stale=gmdate('Y-m-d\TH:i:s\Z',time()-1800);
         $db->prepare("UPDATE communication_deliveries SET status='pending' WHERE status='processing' AND attempts<3 AND updated_at<?")->execute([$stale]);
