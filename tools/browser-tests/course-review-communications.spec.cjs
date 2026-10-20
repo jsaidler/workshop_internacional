@@ -73,7 +73,7 @@ test.describe('real application: reviews and communications',()=>{
    await expect(student.locator('input[name="newsletter_opt_in"]')).toBeChecked();
    await student.screenshot({path:info.outputPath('newsletter-opt-in-mobile.png')});
    await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId);
-   await expect(admin.getByRole('heading',{name:'Comunicações',exact:true})).toBeVisible();
+   await expect(admin.getByRole('heading',{name:'Comunicações',level:2,exact:true})).toBeVisible();
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Nova atividade de fotografia');
