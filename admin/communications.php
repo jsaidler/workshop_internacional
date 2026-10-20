@@ -67,7 +67,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <?php if($notice!==''):?><p class="admin-notice success" role="status"><?=h($notice)?></p><?php endif;?>
 <?php if($error!==''):?><p class="admin-notice error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="admin-card admin-teaching-detail">
-  <header><div><h1>Comunicações</h1><p>Avisos de curso e novidades por e-mail. Campanhas promocionais somente para quem aceitou recebê-las.</p></div></header>
+  <header><div><h2>Comunicações</h2><p>Avisos de curso e novidades por e-mail. Campanhas promocionais somente para quem aceitou recebê-las.</p></div></header>
   <p class="muted">O envio é realizado pela fila, não durante o salvamento. Se o provedor ainda não estiver configurado, os rascunhos e a prévia continuam disponíveis.</p>
 </section>
 <section class="admin-card admin-release-card">
