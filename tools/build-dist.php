@@ -3,7 +3,7 @@ declare(strict_types=1);
 const BUILD_DIR='.build';
 const MANIFEST='.build/dist-managed-files.json';
 const DIRS=['app','admin','aluno','assets','editor','preview','template','install','migrations','inscricao'];
-const FILES=['.htaccess','index.php','interest-submit.php','form-submit.php','form-config.php','media-stream.php','sitemap.php','robots.php'];
+const FILES=['.htaccess','index.php','interest-submit.php','newsletter-sair.php','form-submit.php','form-config.php','media-stream.php','sitemap.php','robots.php'];
 const STRUCTURAL=['config/install.example.php','config/local.example.php','storage/.htaccess','uploads/.htaccess','editor/.htaccess'];
 const PERSISTENT_PATHS=['config/local.php','storage/database.sqlite','storage/installed.lock'];
 function fail(string $message): never { fwrite(STDERR,"build-dist: $message\n"); exit(1); }
