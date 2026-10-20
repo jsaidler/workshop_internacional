@@ -52,7 +52,10 @@ function course_review_save(PDO $db,int $courseId,int $reviewId,array $input): i
  */
 function course_review_student_meetings(PDO $db,int $studentId,array $regular): array {
     $q=$db->prepare(<<<'SQL'
-SELECT r.*,c.title course_title,COALESCE(cc.title,'Todas as turmas') cohort_title
+SELECT r.*,c.title course_title,COALESCE(cc.title,'Todas as turmas') cohort_title,
+  CASE WHEN r.cohort_id IS NULL OR EXISTS(SELECT 1 FROM course_enrollments own
+    WHERE own.student_id=? AND own.cohort_id=r.cohort_id AND own.status='active')
+    THEN 'regular' ELSE 'listener' END participation
 FROM course_review_sessions r
 JOIN courses c ON c.id=r.course_id AND c.status!='archived'
 LEFT JOIN course_cohorts cc ON cc.id=r.cohort_id AND cc.course_id=r.course_id
@@ -70,7 +73,7 @@ WHERE (r.cohort_id IS NULL AND EXISTS (
                    AND ec.id!=r.cohort_id AND ec.status!='archived'))
 ))
 SQL);
-    $q->execute([$studentId,$studentId,$studentId,$studentId,$studentId]);
+    $q->execute([$studentId,$studentId,$studentId,$studentId,$studentId,$studentId]);
     foreach($q->fetchAll() as $item){
         $regular[]=[
             'cohort_id'=>$item['cohort_id'],'cohort_title'=>$item['cohort_title'],
@@ -79,7 +82,7 @@ SQL);
             'meeting_timezone'=>$item['meeting_timezone'],
             'meeting_duration_minutes'=>$item['meeting_duration_minutes'],
             'meeting_url'=>$item['meeting_url'],'meeting_notes'=>$item['meeting_notes'],
-            'meeting_status'=>$item['meeting_status'],'participation'=>'regular',
+            'meeting_status'=>$item['meeting_status'],'participation'=>$item['participation'],
             'meeting_kind'=>'review','review_id'=>(int)$item['id']
         ];
     }
