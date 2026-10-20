@@ -21,10 +21,15 @@ INSERT INTO course_material_pages VALUES(1,1,1,'2026-01-01','2026-01-01');
 SQL);
 $migration=require __DIR__.'/../../migrations/100_student_materials_and_shared_bibliography.php';
 $migration($db);
+$revision=require __DIR__.'/../../migrations/101_student_materials_review_draft.php';
+$revision($db);
 $which=($_GET['page']??'materials')==='bibliography'?'bibliografia':'materiais-positivo-direto';
 $q=$db->prepare("SELECT * FROM cms_pages WHERE slug=? AND locale='pt-BR'");$q->execute([$which]);$page=$q->fetch();
 if(!$page){http_response_code(404);exit('Página não criada pela migração.');}
-$document=json_decode((string)$page['published_document_json'],true,512,JSON_THROW_ON_ERROR);
+// Materials are intentionally an unpublished review draft; the fixture
+// previews the draft in isolation without changing public access semantics.
+$previewColumn=$which==='materiais-positivo-direto'?'draft_document_json':'published_document_json';
+$document=json_decode((string)$page[$previewColumn],true,512,JSON_THROW_ON_ERROR);
 $title=htmlspecialchars((string)$page['title'],ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
 ?>
 <!doctype html><html lang="pt-BR" data-theme="<?=htmlspecialchars((string)($_GET['theme']??'light'))?>"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
