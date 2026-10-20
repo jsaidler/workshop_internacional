@@ -104,7 +104,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <p><strong><?=$preview?></strong> <?=($preview===1?'destinatário elegível':'destinatários elegíveis')?> na consulta atual.</p>
       <p><strong><?=h((string)$form['subject'])?></strong></p>
       <p><?=nl2br(h((string)$form['body_text']))?></p>
-      <?php if($selected && $selected['status']==='draft'):?>
+      <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id']):?>
       <form method="post" class="admin-form-actions">
         <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
         <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
