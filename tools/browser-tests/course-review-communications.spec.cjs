@@ -92,6 +92,15 @@ test.describe('real application: reviews and communications',()=>{
    expect(data.campaigns[0].status).toBe('queued');
    expect(data.deliveries).toHaveLength(1);
    expect(data.deliveries[0].status).toBe('pending');
+   const token=execFileSync('php',[seed,sandbox,'token'],{encoding:'utf8',timeout:30000}).trim();
+   const unsubscribe=await browser.newPage();
+   await unsubscribe.goto(origin+'/newsletter-sair.php?token='+encodeURIComponent(token));
+   await expect(unsubscribe.getByRole('button',{name:'Cancelar assinatura de novidades'})).toBeVisible();
+   await unsubscribe.getByRole('button',{name:'Cancelar assinatura de novidades'}).click();
+   await expect(unsubscribe.getByText(/Sua assinatura de novidades foi cancelada/)).toBeVisible();
+   const after=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(after.preferences[0].newsletter_opt_in).toBe(0);
+   await unsubscribe.close();
    expect(errors).toEqual([]);
    await studentCtx.close();await adminCtx.close();
  });
