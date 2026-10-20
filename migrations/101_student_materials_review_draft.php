@@ -56,7 +56,7 @@ return static function(PDO $db): void {
 <div class="cms-resource-item">
 <h3 data-cms-editable>Garrafas de vidro âmbar de 1 litro</h3>
 <p data-cms-editable><strong>Quantidade:</strong> até 3 unidades, conforme os processos utilizados.</p>
-<p data-cms-editable>Os frascos têm finalidades diferentes:<ul><li>1 para a solução de cloreto férrico.</li><li>1 para a solução de amônia.</li><li>1 recipiente específico para a solução peracética, caso esse processo seja utilizado.</li></ul></p>
+<p data-cms-editable>Os frascos têm finalidades diferentes:</p><ul data-cms-editable><li>1 para a solução de cloreto férrico.</li><li>1 para a solução de amônia.</li><li>1 recipiente específico para a solução peracética, caso esse processo seja utilizado.</li></ul>
 <p data-cms-editable>Para cloreto férrico e amônia, escolha frascos com fechamento compatível com as soluções. A solução peracética exige cuidados adicionais: seu recipiente precisa ser adequado a oxidantes e permitir alívio seguro de pressão. Uma garrafa comum hermeticamente fechada não é apropriada.</p>
 <p data-cms-editable><strong>Onde comprar:</strong> Lojas de frascos e embalagens ou <a href="https://www.adrialaboratorios.com.br/embalagem/frasco-gpp-ambar-1000ml-com-tampa-preta-e-batoque" target="_blank" rel="noopener noreferrer">exemplo de frasco âmbar de 1 litro com tampa</a>. Esse modelo serve como referência de formato, não como indicação para armazenar a solução peracética.</p>
 <figure class="media-figure"><div class="cms-media-placeholder" data-cms-image-placeholder><span>Adicionar imagem: frasco âmbar de 1 litro</span></div></figure>
