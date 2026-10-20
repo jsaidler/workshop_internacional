@@ -137,7 +137,7 @@ test('student fields use one canonical vocabulary at the source',()=>{
   expect(read('aluno/inventario.php')).toContain("require __DIR__.'/../app/student_inventory_view.php'");
   expect(read('app/student_inventory_view.php')).toContain('student_inventory_create_panel($createDraft');
   expect(read('aluno/processamentos.php')).toContain("require_once __DIR__.'/../app/student_process_template_step_editor.php'");
-  expect(read('aluno/perfil.php')).toContain('student_profile_render($profile,$error,$notice)');
+  expect(read('aluno/perfil.php')).toContain('student_profile_render($profile,$error,$notice,communication_opted_in(');
   expect(read('aluno/inventario-item.php')).toContain('student_inventory_item_editor($item');
   for(const [file,needles] of Object.entries(required)){
     const text=compactMarkup(read(file));

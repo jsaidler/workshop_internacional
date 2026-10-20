@@ -29,7 +29,8 @@ for(const width of [320,390,1440]){
   expect(hierarchy.identityBorder).toBe(0);
   expect(hierarchy.identityBackground).toBe('rgba(0, 0, 0, 0)');
   expect(hierarchy.secondaryBorders).toEqual([0,0]);
-  expect(hierarchy.settingBorders).toEqual([0,0]);
+  expect(hierarchy.settingBorders).toEqual([0,0,0]);
+  await expect(page.locator('input[name="newsletter_opt_in"]')).toHaveCount(1);
   if(width<821)expect(hierarchy.nameY,'essential profile field should begin in first screen').toBeLessThanOrEqual(375);
   expect(hierarchy.nameY).toBeGreaterThan(hierarchy.headingY);
   await expect(form.locator('[name="name"]')).toBeVisible();

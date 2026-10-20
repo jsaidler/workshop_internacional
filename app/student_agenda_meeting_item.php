@@ -11,6 +11,7 @@ $participation=(string)($meeting['participation']??'regular')==='listener'?'Ouvi
 <article class="agenda-meeting student-v2-agenda-meeting <?=$isHistory?'is-history':($isPrimary?'is-next':'is-later')?>" data-meeting-history="<?=$isHistory?'true':'false'?>">
   <div class="student-v2-agenda-meeting-meta">
     <span class="student-v2-agenda-status"><?=$isHistory?h($statusText):($isPrimary?'Próximo encontro':'Agendado')?></span>
+    <?php if(($meeting["meeting_kind"]??"")==="review"):?><span class="student-status">Revisão</span><?php endif;?>
     <span class="student-status"><?=h($participation)?></span>
   </div>
   <div class="student-v2-agenda-meeting-main">

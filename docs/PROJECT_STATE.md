@@ -4,6 +4,12 @@ Este é o documento canônico de estado operacional do projeto. Leia antes de al
 
 **Regra global anterior a qualquer trabalho:** ler `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md`. Se existir documentação aplicável à tarefa, ela deve ser descoberta e consultada antes de qualquer decisão ou alteração. Essa obrigação vale para qualquer projeto e não apenas para este repositório.
 
+## Extensão da Agenda e Comunicações — 20/10/2026 (branch de implementação; não publicado)
+
+A branch `feat/course-reviews-communications-2026-10-20` preserva a Agenda #234/PR #236 e acrescenta: (1) revisões opcionais de curso/turma, isoladas de `course_lessons` e de `released_at`; (2) projeção de revisões na Agenda e no próximo encontro da Home; (3) preferências promocionais explícitas em Conta; (4) `Admin → Comunicações` para redigir, consultar audiência, testar, confirmar e enfileirar avisos acadêmicos/newsletters; (5) processamento CLI de fila com provedor Brevo mediante configuração, e cancelamento seguro por link.
+
+Migrações aditivas 102/103. Nenhuma inscrição, aluno, material ou liberação histórica é alterada, e nenhuma campanha passa a ser automaticamente enviada a partir de alterações em cursos. O envio externo depende de credenciais, `public_url` HTTPS, remetente autorizado e cron na hospedagem, não instalados nesta branch. Aceite requer CI e teste de integração com serviço real, inspeção no navegador de admin/Conta/Agenda e decisão de implantação do responsável. Documento de domínio e `docs/PRIVACY_LGPD.md` são as autoridades complementares desta mudança; não inferir status de produção pela existência de PR ou pacote.
+
 ## Contas ativadas e dados históricos de inscrição — 15/10/2026 (em branch)
 
 Relatos de dificuldade para ativar contas e/ou entrar motivaram auditoria do fluxo `aluno/login.php`, `aluno/senha.php`, `student_accounts.php` e `student_enrollments.php`. A regra de acesso continua exigindo matrícula ativa, não apenas pagamento ou inscrição sem turma, e contas já ativadas exigem a senha escolhida (sem recuperação por e-mail implementada até aqui). Essas condições dependem da situação de cada aluno e ainda exigem conferência dos casos relatados.

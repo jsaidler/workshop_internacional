@@ -66,6 +66,7 @@ jobs:
           php tools/test-student-long-editors-db.php
           php tools/test-student-resource-pages.php
           php tools/test-course-agenda.php
+          php tools/test-course-reviews-communications.php
           php tools/test-admin-cohort-transfer.php
           php tools/test-aula3-student-area-material.php
           php tools/test-cms-v3.php

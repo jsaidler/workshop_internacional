@@ -83,6 +83,7 @@ jobs:
             php tools/test-workshop-page-enrollment-scope.php
             php tools/test-course-domain-material.php
             php tools/test-course-agenda.php
+            php tools/test-course-reviews-communications.php
             php tools/test-admin-cohort-transfer.php
             php tools/test-course-registration-transfer.php
             php tools/test-course-material-release-filter.php

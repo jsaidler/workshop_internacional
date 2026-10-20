@@ -48,7 +48,7 @@ function admin_status_tone(string $scope,string $value): string {
 
 function admin_workspace(string $section): string {return match($section){
     'overview'=>'overview',
-    'courses','registrations','cohorts','lessons','material','questions','tests'=>'courses',
+    'courses','registrations','cohorts','lessons','material','questions','tests','communications'=>'courses',
     'students','people','studentops'=>'students',
     'processes','lab-catalogs'=>'laboratory',
     'pages','blocks','design','site','seo','forms','responses'=>'site',
@@ -62,6 +62,7 @@ function admin_context_items(string $workspace,?array $activity): array {return 
     'courses'=>[
         'courses'=>['Cursos',admin_shell_url('/admin/courses.php',$activity)],
         'students'=>['Alunos',admin_shell_url('/admin/students.php',$activity)],
+        'communications'=>['Comunicações',admin_shell_url('/admin/communications.php',$activity)],
     ],
     'laboratory'=>[
         'processes'=>['Processos globais','/admin/processes.php'],
@@ -108,6 +109,7 @@ function admin_course_url(int $activityId,int $courseId,string $area='overview')
         'students'=>'/admin/students.php?'.http_build_query($args),
         'lessons','content'=>'/admin/lessons.php?'.http_build_query($args),
         'material'=>'/admin/material.php?'.http_build_query($args),
+        'communications'=>'/admin/communications.php?'.http_build_query($args),
         'questions','followup'=>'/admin/questions.php?'.http_build_query($args),
         'tests'=>'/admin/tests.php?'.http_build_query($args),
         'setup'=>'/admin/courses.php?'.http_build_query($args+['view'=>'setup']),
@@ -129,6 +131,7 @@ function admin_course_workspace_items(int $activityId,int $courseId): array {ret
     'registrations'=>['Inscrições',admin_course_url($activityId,$courseId,'registrations')],
     'cohorts'=>['Turmas',admin_course_url($activityId,$courseId,'cohorts')],
     'students'=>['Alunos',admin_course_url($activityId,$courseId,'students')],
+    'communications'=>['Comunicações',admin_course_url($activityId,$courseId,'communications')],
     'content'=>['Conteúdo',admin_course_url($activityId,$courseId,'content')],
     'followup'=>['Acompanhamento',admin_course_url($activityId,$courseId,'followup')],
 ];}
