@@ -1,0 +1,45 @@
+name: course-communications-integration
+on:
+  pull_request:
+    paths:
+      - 'app/communications.php'
+      - 'app/course_reviews.php'
+      - 'admin/communications.php'
+      - 'admin/lessons.php'
+      - 'tools/browser-tests/course-review-communications.spec.cjs'
+      - 'tools/browser-fixture/course-review-communications-seed.php'
+      - '.github/workflows/course-communications-integration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-application-journey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_sqlite, sqlite3, mbstring, dom, gd, imagick
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate course review and communications logic
+        run: php tools/test-course-reviews-communications.php
+      - name: Install focused browser runtime
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Real PHP SQLite integration
+        run: npx playwright test tools/browser-tests/course-review-communications.spec.cjs --workers=1 --reporter=line
+      - name: Preserve mobile and desktop screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: course-communications-browser-artifacts
+          path: |
+            test-results
+          if-no-files-found: ignore
