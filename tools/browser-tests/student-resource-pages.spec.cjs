@@ -15,8 +15,10 @@ for(const target of ['materials','bibliography']){
    expect(size).toBeLessThanOrEqual(1);
    expect(errors).toEqual([]);
    if(target==='materials'){
-    await expect(page.getByText('Termômetro culinário digital')).toBeVisible();
-    await expect(page.getByText('Garrafas de cerveja de vidro âmbar, cerca de 300 ml')).toBeVisible();
+    await expect(page.locator('[data-cms-image-placeholder]')).toHaveCount(5);
+    await expect(page.getByRole('heading',{name:'04 — Cuidados no laboratório'})).toBeVisible();
+    await expect(page.getByText('Termômetro digital culinário')).toBeVisible();
+    await expect(page.getByText('Garrafa de cerveja âmbar de aproximadamente 300 ml')).toBeVisible();
    }else{
     await expect(page.getByText(/TAYLOR, J. Traill/)).toBeVisible();
     await expect(page.getByText(/CRAIG, C. C. Craig Film Holder/)).toBeVisible();
