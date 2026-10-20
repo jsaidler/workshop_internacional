@@ -116,6 +116,14 @@ Estruturas legadas não devem ser apagadas no mesmo release que introduz sua sub
 - canal público específico para solicitações de privacidade, se for desejado separar esse contato das comunicações usuais;
 - prazos de retenção para cada categoria de registro;
 - procedimento administrativo para pedidos de eliminação que atinjam registros sujeitos a obrigação de conservação;
-- eventual uso futuro de marketing, newsletter ou ferramentas de terceiros além das finalidades atuais.
+- revisão jurídica e operacional do uso de fornecedor externo de e-mail, retenção de logs de envio e contratos de tratamento de dados; veja política de newsletter abaixo.
 
 Esses pontos não devem ser preenchidos por suposição no código. Devem ser definidos a partir da operação real e, quando necessário, de orientação jurídica/contábil específica.
+
+## Comunicações acadêmicas e newsletter — implementação em branch (20/10/2026)
+
+Avisos acadêmicos necessários para cursos e turmas têm finalidade distinta de comunicações promocionais. **Não** existe opt-in de publicidade implícito por inscrição, pagamento, aceite do aviso de privacidade ou presença de e-mail em arquivo histórico. A preferência promocional inicia desativada, pode ser ativada/desativada na Conta e desativada por link pessoal validado no servidor. Uma desativação após a campanha entrar na fila bloqueia o envio ainda pendente; não suprime avisos de serviço necessários.
+
+Os destinatários de campanhas são derivados de matrículas atualmente elegíveis e, quando direcionados a uma turma, ouvintes confirmados desse curso. O provedor recebe somente nome, e-mail, assunto e mensagem estritamente necessários à entrega. A lista completa de alunos, CPF, experimentos e fichas nunca é transmitida ao provedor. Logs internos armazenam status, tentativas e identificador de entrega, sem persistir credenciais nem duplicar conteúdo da mensagem por destinatário. O conjunto ainda requer avaliação de retenção e contrato de tratamento de dados antes de operação real.
+
+A fila é processada em segundo plano mediante configuração administrativa do serviço externo. O armazenamento do consentimento e a decisão de público permanecem no site, não no provedor. É obrigatória verificação funcional do descadastro e da entregabilidade antes da primeira campanha.
