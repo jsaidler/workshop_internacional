@@ -31,7 +31,7 @@ jobs:
         run: php tools/test-course-reviews-communications.php
       - name: Install focused browser runtime
         run: |
-          npm ci --no-audit --no-fund
+          npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
       - name: Real PHP SQLite integration
         run: npx playwright test tools/browser-tests/course-review-communications.spec.cjs --workers=1 --reporter=line
