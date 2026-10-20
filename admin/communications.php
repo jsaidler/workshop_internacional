@@ -118,7 +118,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <section class="admin-card">
   <header><div><h2>Histórico</h2><p>Rascunhos e campanhas. Mensagens não são enviadas ao carregar esta tela.</p></div></header>
   <?php if(!$campaigns):?><p class="muted">Nenhuma comunicação cadastrada.</p><?php else:?>
-  <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list"><thead><tr><th>Assunto</th><th>Tipo</th><th>Situação</th><th>Entregas</th><th></th></tr></thead><tbody>
+  <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list"><thead><tr><th>Assunto</th><th>Tipo</th><th>Situação</th><th>Aceitos pelo provedor</th><th></th></tr></thead><tbody>
     <?php foreach($campaigns as $campaign):?><tr>
       <td data-primary="true"><?=h((string)$campaign['subject'])?></td>
       <td><?=h($campaign['category']==='newsletter'?'Newsletter':'Aviso de curso')?></td>
