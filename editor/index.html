@@ -35,12 +35,13 @@
   <div class="editor-toolbar editor-actions">
     <button type="button" id="editor-structure-mobile" class="editor-structure-mobile-toggle" aria-controls="editor-structure-panel" aria-expanded="false">Estrutura</button>
     <a id="editor-submissions" class="editor-context-link" href="/admin/submissions.php">Inscrições<span id="editor-new-count" hidden></span></a>
-    <span id="save-status" aria-live="polite"></span>
+    <span id="save-status" role="status" aria-live="polite"></span>
+    <button type="button" id="save-page" class="editor-save-action">Salvar rascunho</button>
     <button type="button" id="publish-page" class="publish">Publicar</button>
     <details class="editor-more" id="editor-more">
       <summary aria-label="Mais opções">•••</summary>
       <div class="editor-more-menu">
-        <button type="button" id="save-page">Salvar agora</button>
+        <button type="button" id="unpublish-page" hidden>Retirar da publicação</button>
         <button type="button" id="page-settings">Configurar página</button>
         <button type="button" id="add-section">Adicionar seção</button>
         <hr>
