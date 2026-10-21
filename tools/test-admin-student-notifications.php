@@ -13,7 +13,7 @@ $db->exec(<<<'SQL'
 CREATE TABLE admin_users(id INTEGER PRIMARY KEY,email TEXT NOT NULL);
 CREATE TABLE student_users(id INTEGER PRIMARY KEY,status TEXT NOT NULL,name TEXT NOT NULL);
 CREATE TABLE courses(id INTEGER PRIMARY KEY,activity_id INTEGER NOT NULL,title TEXT NOT NULL);
-CREATE TABLE course_cohorts(id INTEGER PRIMARY KEY,course_id INTEGER NOT NULL,title TEXT NOT NULL);
+CREATE TABLE course_cohorts(id INTEGER PRIMARY KEY,course_id INTEGER NOT NULL,title TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'active');
 CREATE TABLE student_questions(id INTEGER PRIMARY KEY,student_id INTEGER,cohort_id INTEGER,title TEXT,body TEXT);
 CREATE TABLE student_tests(id INTEGER PRIMARY KEY,student_id INTEGER,cohort_id INTEGER,title TEXT,status TEXT);
 INSERT INTO admin_users(id,email) VALUES(1,'teacher@example.test'),(2,'assistant@example.test');
