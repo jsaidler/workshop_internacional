@@ -33,6 +33,7 @@ jobs:
           {
             php tools/test-form-purpose-pre-migration.php
             php tools/test-cms.php
+            php tools/test-editor-integrity-contract.php
             php tools/test-cms-v3.php
             php tools/test-cms-professional-3.php
             php tools/test-task-centric-admin.php
