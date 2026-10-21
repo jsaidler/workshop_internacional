@@ -12,12 +12,23 @@ if($mode==='token'){
     if(!$person)throw new RuntimeException('Missing test identity');
     echo communication_unsubscribe_token((int)$person['id'],(string)$person['email']).PHP_EOL;exit;
 }
+if($mode==='student-action'){
+    $studentId=(int)$db->query("SELECT id FROM student_users WHERE email='student-qa@example.test'")->fetchColumn();
+    $cohortId=(int)$db->query("SELECT id FROM course_cohorts WHERE cohort_uuid='review-qa-0'")->fetchColumn();
+    if(!$studentId||!$cohortId)throw new RuntimeException('Student action QA identity missing');
+    $question=student_question_create($db,$studentId,$cohortId,[
+       'title'=>'Dúvida criada pelo aluno QA','body'=>'Dados privados do aluno não são copiados no aviso',
+       'visibility'=>'private'
+    ]);
+    echo json_encode(['id'=>(int)$question['id']],JSON_THROW_ON_ERROR).PHP_EOL;exit;
+}
 if($mode==='snapshot'){
     echo json_encode([
       'reviews'=>$db->query('SELECT id,course_id,cohort_id,title,meeting_status FROM course_review_sessions ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
       'campaigns'=>$db->query('SELECT id,category,status FROM communication_campaigns ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
       'deliveries'=>$db->query('SELECT campaign_id,student_id,status FROM communication_deliveries ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
-      'preferences'=>$db->query('SELECT * FROM communication_preferences ORDER BY student_id')->fetchAll(PDO::FETCH_ASSOC)
+      'preferences'=>$db->query('SELECT * FROM communication_preferences ORDER BY student_id')->fetchAll(PDO::FETCH_ASSOC),
+      'staff_notices'=>$db->query('SELECT admin_id,event_kind,status,event_key FROM admin_student_notice_outbox ORDER BY id')->fetchAll(PDO::FETCH_ASSOC)
     ],JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE).PHP_EOL;exit;
 }
 if($mode!=='seed')throw new RuntimeException('Invalid mode');
