@@ -28,8 +28,9 @@ must(str_contains($admin,'Editar página inicial'),'dashboard must keep direct e
 must(str_contains($editor,'id="editor-page-switcher"'),'editor must expose page switching in context');
 must(str_contains($editor,'id="editor-submissions"'),'editor must expose inscriptions without leaving the site mental model');
 must(str_contains($editor,'id="media-library-search"'),'image replacement must have inline library search');
-must(str_contains($editor,'<button type="button" id="save-page">Salvar agora</button>'),'manual save must remain available but secondary');
-must(strpos($editor,'id="publish-page"')<strpos($editor,'id="save-page"'),'publish must be the primary visible editorial action');
+must(str_contains($editor,'<button type="button" id="save-page" class="editor-save-action">Salvar rascunho</button>'),'manual save must be visible in the primary toolbar');
+must(strpos($editor,'id="save-page"')<strpos($editor,'id="publish-page"'),'save must precede the distinct publish action');
+must(str_contains($editor,'id="unpublish-page"'),'reversible unpublication control must remain available');
 if(str_contains($coreEditor,"$('#editor-title').textContent"))must(str_contains($editor,'id="editor-title"'),'editor core title target must exist');
 if(str_contains($coreEditor,"$('#editor-locale').textContent"))must(str_contains($editor,'id="editor-locale"'),'editor core locale target must exist');
 must(str_contains($editorEntry,"deploy-info.json"),'editor entry point must derive an installed-version token for its assets');
