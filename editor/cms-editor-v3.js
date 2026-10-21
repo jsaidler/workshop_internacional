@@ -5,6 +5,8 @@ if(!pageId){location.replace('/admin/pages.php');return;}
 const $=s=>document.querySelector(s),frame=$('#page-frame'),device=$('#device-frame'),sectionsHost=$('#sections-list'),inspector=$('#inspector'),statusEl=$('#save-status'),toast=$('#toast'),textToolbar=$('#text-toolbar'),mediaDialog=$('#media-dialog'),mediaGrid=$('#media-grid');
 let state={csrf:'',page:null,activity:null,forms:[],selected:null,editing:null,dirty:false,history:[],historyIndex:-1,loading:true,serial:0,saving:false,saveError:''};
 let inFlightSave=null;
+let lastAcknowledged=null;
+function signature(){if(!state.page)return '';const settings={title:state.page.title,nav_title:state.page.navTitle,slug:state.page.slug,show_in_nav:state.page.showInNav};return JSON.stringify({document:{...state.page.document,html:serialize()},settings})}
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const clone=v=>JSON.parse(JSON.stringify(v));
 function say(message){toast.textContent=message;toast.classList.add('show');clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove('show'),2200)}
