@@ -29,3 +29,15 @@ Estado: implementado em branch, **não implantado**. Referências de autoridade:
 - Os links privados para aulas não são inseridos automaticamente em e-mails para evitar circulação indevida de credenciais de reunião. O aluno obtém o URL autorizado na Agenda.
 - Não há automação para disparar newsletter no instante da criação de uma turma: o autor decide o conteúdo e confirma o envio.
 - A implantação deve ser feita pelo fluxo do CMS: merge após testes, pacote `production-dist` e instalação manual em **Admin → Sistema e atualizações**; merge ou CI isolados não representam produção atualizada.
+
+## Avisos de atividades dos alunos — 21/10/2026
+
+O canal de avisos **aluno → administrador** é independente das campanhas **administrador → alunos**. Após instalação da migração 104:
+
+- Em **Admin → Comunicações → Avisos sobre atividades dos alunos**, cada administrador pode marcar quais eventos deve receber no e-mail da própria conta administrativa. Por padrão, os quatro eventos pedagógicos estão ativados.
+- Eventos: dúvida criada, resposta de aluno em dúvida, registro enviado para avaliação e comentário de aluno em registro. Rascunhos, presença, acesso à página, movimentação de estoque, fotos anexadas e etapas de laboratório não geram avisos isolados.
+- A fila referencia o objeto original, não copia conteúdo pessoal. Inclui nome do aluno, curso, turma, título e um link de administração; exige login para ler o conteúdo.
+- A mesma tarefa cron já usada por `admin/communications-worker.php` processa também o canal administrativo. Preferências desativadas após o evento também são aplicadas antes do envio. O botão **Enviar e-mail de teste** permite verificar o transporte sem simular ação de aluno.
+- Quando a chave Brevo está configurada, usa API Brevo; sem ela, usa `mail()` do PHP, tal como o módulo preexistente de alertas de formulário. A disponibilidade de `mail()` e a entregabilidade externa não podem ser inferidas do sucesso dos testes locais. Se o cron não estiver configurado, eventos permanecerão **Na fila**.
+
+A ativação e a entrega devem ser validadas no endereço de e-mail real da conta administrativa depois da instalação. O status `Aceito para envio` não equivale a entrega confirmada ou leitura.
