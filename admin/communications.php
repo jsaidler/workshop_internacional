@@ -17,7 +17,19 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('communications-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Solicitação inválida.');}
     $action=(string)($_POST['action']??'');
     try{
-        if(in_array($action,['preview','save'],true)){
+        if($action==='admin_notice_preferences'){
+            $adminId=(int)(current_admin()['id']??0);
+            admin_student_notice_set_preferences($db,$adminId,is_array($_POST['alerts']??null)?$_POST['alerts']:[]);
+            $_SESSION['communications_notice']='Preferências dos avisos atualizadas.';
+            header('Location: /admin/communications.php?activity='.$activityId,true,303);exit;
+        }elseif($action==='admin_notice_test'){
+            $email=(string)(current_admin()['email']??'');
+            if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('O e-mail da sua conta administrativa é inválido.');
+            admin_student_notice_send(['name'=>$email,'email'=>$email,
+               'subject'=>'[TESTE] Avisos de atividades de alunos',
+               'body'=>"Este é um teste do canal de avisos das ações dos alunos.\n\nO envio deste teste não corresponde a uma ação real."]);
+            $notice='E-mail de teste aceito pelo mecanismo de envio. Confira sua caixa de entrada.';
+        }elseif(in_array($action,['preview','save'],true)){
             $form=[
               'category'=>(string)($_POST['category']??''),
               'course_id'=>max(0,(int)($_POST['course_id']??0)),
@@ -69,6 +81,37 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <section class="admin-card admin-teaching-detail">
   <header><div><h2>Comunicações</h2><p>Avisos de curso e novidades por e-mail. Campanhas promocionais somente para quem aceitou recebê-las.</p></div></header>
   <p class="muted">O envio é realizado pela fila, não durante o salvamento. Se o provedor ainda não estiver configurado, os rascunhos e a prévia continuam disponíveis.</p>
+</section>
+<?php
+$adminId=(int)(current_admin()['id']??0);
+$adminNoticeSettings=admin_student_notice_preferences($db,$adminId);
+$adminNoticeHistory=admin_student_notice_recent($db,$adminId);
+?>
+<section class="admin-card admin-release-card">
+  <header><div><h2>Avisos sobre atividades dos alunos</h2>
+    <p>Receba no e-mail da sua conta administrativa avisos das ações que exigem acompanhamento.</p></div></header>
+  <p><strong>Destino:</strong> <?=h((string)(current_admin()['email']??''))?></p>
+  <form method="post" class="admin-form-grid">
+    <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+    <input type="hidden" name="action" value="admin_notice_preferences">
+    <?php foreach(admin_student_notice_kinds() as $kind=>$label):?>
+    <label class="admin-form-span-2"><input type="checkbox" name="alerts[<?=h($kind)?>]" value="1"<?=!empty($adminNoticeSettings[$kind])?' checked':''?>> <?=h($label)?></label>
+    <?php endforeach;?>
+    <div class="admin-form-actions"><button type="submit" class="admin-button">Salvar avisos</button></div>
+  </form>
+  <form method="post" class="admin-form-actions">
+    <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+    <button type="submit" name="action" value="admin_notice_test" class="admin-button secondary">Enviar e-mail de teste</button>
+  </form>
+  <p class="muted">Os avisos são gerados pelas ações dos alunos e entregues pelo processamento automático de e-mails. Os textos de dúvidas e fotografias não são incluídos nas mensagens.</p>
+  <?php if($adminNoticeHistory):?><details class="admin-secondary-setup"><summary class="admin-button secondary">Últimos avisos (<?=count($adminNoticeHistory)?>)</summary>
+    <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list"><thead><tr><th>Ação</th><th>Situação</th><th>Registrado em</th></tr></thead><tbody>
+    <?php foreach($adminNoticeHistory as $row):?>
+    <tr><td><?=h(admin_student_notice_kinds()[(string)$row['event_kind']]??(string)$row['event_kind'])?></td>
+        <td><?=h(['pending'=>'Na fila','processing'=>'Processando','sent'=>'Aceito para envio','skipped'=>'Ignorado','failed'=>'Falha'][$row['status']]??(string)$row['status'])?></td>
+        <td><?=h((string)$row['created_at'])?></td></tr>
+    <?php endforeach;?></tbody></table></div>
+  </details><?php endif;?>
 </section>
 <section class="admin-card admin-release-card">
   <header><div><h2><?=$selectedId?'Comunicação #'.$selectedId:'Nova comunicação'?></h2>
