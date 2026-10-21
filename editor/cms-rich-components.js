@@ -24,10 +24,7 @@ function remember(node){const id=ensureNodeId(node);if(id)sessionStorage.setItem
 function saveAndReload(node){
   remember(node);
   clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{
-    saveButton.click();
-    setTimeout(()=>{try{frame.contentWindow.location.reload()}catch{}},650);
-  },70);
+  window.CmsEditorDraft?.save().then(()=>{try{frame.contentWindow.location.reload()}catch{}}).catch(()=>{});
 }
 function saveSoon(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveButton.click(),220)}
 function hiddenLabel(doc,label){const span=doc.createElement('span');span.hidden=true;span.setAttribute('aria-hidden','true');span.dataset.cmsComponentLabel='';span.textContent=label;return span}
