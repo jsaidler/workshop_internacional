@@ -8,8 +8,14 @@ foreach($argv as $arg)if(preg_match('/^--limit=(\d{1,2})$/',$arg,$m))$limit=max(
 $lock=@fopen(dirname(__DIR__).'/storage/communications-worker.lock','c+');
 if(!$lock || !flock($lock,LOCK_EX|LOCK_NB)){fwrite(STDERR,"Communications worker: outra execução em andamento.\n");exit(1);}
 try{
-    $result=communication_dispatch(database(),$limit);
-    fwrite(STDOUT,'Communications: '.json_encode($result,JSON_UNESCAPED_SLASHES)."\n");
+    $db=database();
+    $staff=admin_student_notice_dispatch($db,$limit);
+    fwrite(STDOUT,'Student alerts: '.json_encode($staff,JSON_UNESCAPED_SLASHES)."\n");
+    $queue=(int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE status IN ('pending','processing')")->fetchColumn();
+    if($queue>0){
+        $result=communication_dispatch($db,$limit);
+        fwrite(STDOUT,'Communications: '.json_encode($result,JSON_UNESCAPED_SLASHES)."\n");
+    }
 }catch(Throwable $e){
     fwrite(STDERR,'Communications worker: '.$e->getMessage()."\n");exit(1);
 }finally{flock($lock,LOCK_UN);fclose($lock);}

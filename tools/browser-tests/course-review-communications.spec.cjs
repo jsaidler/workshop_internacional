@@ -73,6 +73,13 @@ test.describe('real application: reviews and communications',()=>{
    await expect(student.locator('input[name="newsletter_opt_in"]')).toBeChecked();
    await student.screenshot({path:info.outputPath('newsletter-opt-in-mobile.png')});
    await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId);
+   await expect(admin.getByRole('heading',{name:'Avisos sobre atividades dos alunos'})).toBeVisible();
+   const alerts=admin.locator('form').filter({has:admin.locator('input[name="action"][value="admin_notice_preferences"]')});
+   await expect(alerts.locator('input[name="alerts[question_created]"]')).toBeChecked();
+   await alerts.locator('input[name="alerts[test_commented]"]').uncheck();
+   await alerts.getByRole('button',{name:'Salvar avisos'}).click();
+   await expect(alerts.locator('input[name="alerts[test_commented]"]')).not.toBeChecked();
+   await admin.screenshot({path:info.outputPath('staff-notifications-desktop.png')});
    await expect(admin.getByRole('heading',{name:'Comunicações',level:2,exact:true})).toBeVisible();
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
@@ -94,6 +101,11 @@ test.describe('real application: reviews and communications',()=>{
    expect(data.campaigns[0].status).toBe('queued');
    expect(data.deliveries).toHaveLength(1);
    expect(data.deliveries[0].status).toBe('pending');
+   execFileSync('php',[seed,sandbox,'student-action'],{encoding:'utf8',timeout:45000});
+   const afterAction=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(afterAction.staff_notices).toHaveLength(1);
+   expect(afterAction.staff_notices[0].event_kind).toBe('question_created');
+   expect(afterAction.staff_notices[0].status).toBe('pending');
    const token=execFileSync('php',[seed,sandbox,'token'],{encoding:'utf8',timeout:30000}).trim();
    const unsubscribe=await browser.newPage();
    await unsubscribe.goto(origin+'/newsletter-sair.php?token='+encodeURIComponent(token));

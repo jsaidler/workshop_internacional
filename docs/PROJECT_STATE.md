@@ -4,6 +4,16 @@ Este é o documento canônico de estado operacional do projeto. Leia antes de al
 
 **Regra global anterior a qualquer trabalho:** ler `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md`. Se existir documentação aplicável à tarefa, ela deve ser descoberta e consultada antes de qualquer decisão ou alteração. Essa obrigação vale para qualquer projeto e não apenas para este repositório.
 
+## Avisos acadêmicos para administradores — 21/10/2026 (branch isolada)
+
+Branch `feat/admin-student-action-email-2026-10-21` implementa alertas operacionais de ações de alunos. Eventos notificados: criação de dúvida, nova resposta de aluno em dúvida, envio de registro/teste para avaliação (inclui reenvio após revisão) e novo comentário do aluno em registro. Não enviar e-mail para edição de rascunho, navegação, fotografia anexada isoladamente ou execução de etapa de laboratório; não inferir participação pedagógica a partir desses eventos.
+
+Fonte da verdade: serviços de mutação canônicos `student_question_create`, `student_question_reply_enrolled`, `student_test_submit`, `student_test_add_student_message`. A fila `admin_student_notice_outbox` registra referências a aluno, turma e item no mesmo banco SQLite, inclusive dentro da transação de criação de dúvida; o e-mail nunca é despachado na requisição de aluno. O worker CLI existente de Comunicações processa esse canal; preferências por administrador permitem desabilitar categorias. O destinatário é o endereço da conta `admin_users` autenticada; não criar base de e-mails paralela.
+
+O e-mail contém aluno, curso, turma, natureza da ação e caminho de administração, sem cópia de texto privado nem imagens. Usa o mesmo provedor Brevo configurado para Comunicações, ou o mecanismo PHP `mail()` já existente nas notificações de formulário quando não houver chave Brevo. Estado `sent` significa aceite pelo transporte, não confirmação de caixa de entrada. Entrega contínua depende da tarefa cron e da configuração real do servidor, que devem ser verificadas após o deploy. Migration 104 aditiva, testes `tools/test-admin-student-notifications.php` e workflow PHP.
+
+**Estado desta seção: implementação em revisão. Não confundir PR ou publicação no canal de atualização com instalação na hospedagem.**
+
 ## Extensão da Agenda e Comunicações — 20/10/2026 (branch de implementação; não publicado)
 
 A branch `feat/course-reviews-communications-2026-10-20` preserva a Agenda #234/PR #236 e acrescenta: (1) revisões opcionais de curso/turma, isoladas de `course_lessons` e de `released_at`; (2) projeção de revisões na Agenda e no próximo encontro da Home; (3) preferências promocionais explícitas em Conta; (4) `Admin → Comunicações` para redigir, consultar audiência, testar, confirmar e enfileirar avisos acadêmicos/newsletters; (5) processamento CLI de fila com provedor Brevo mediante configuração, e cancelamento seguro por link.
