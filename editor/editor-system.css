@@ -168,8 +168,8 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
 .task-editor-bar #save-status[data-state="saving"]{color:#f8d79c}
 .task-editor-bar .editor-save-action{background:#f5f5f2;color:#20231f;border:1px solid #d3d5cc;font-weight:650}
 .task-editor-bar .editor-save-action:hover{background:#e6e8e0}
-.task-editor-bar #publish-page{background:transparent;border:1px solid #9eaaa2;color:#f3f5f2}
-.task-editor-bar #publish-page:hover{background:#286e51}
+.task-editor-bar #publish-page{background:transparent;border:1px solid #9eaaa2;color:#252a25}
+.task-editor-bar #publish-page:hover{background:#e6eee8;color:#173e2c}
 .task-editor-bar #publish-page:disabled,.task-editor-bar #save-page:disabled{opacity:.5;cursor:wait}
 @media(max-width:1024px){
   .task-editor-bar #save-status{display:inline-flex;max-width:min(32vw,170px);font-size:10px;white-space:normal}
