@@ -160,3 +160,23 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
 #media-dialog .media-item[hidden]{display:none}
 @media(max-width:1100px){:root{--task-left:188px;--task-right:280px}.editor-site-name{display:none}.editor-page-switcher-wrap{grid-template-columns:1fr}.task-editor-bar{grid-template-columns:auto minmax(180px,280px) auto 1fr}.editor-context-link{display:none}}
 @media(max-width:1024px){html,body.task-centric-editor{overflow:auto}.task-editor-bar{position:sticky;top:0;grid-template-columns:auto minmax(0,1fr) auto;height:auto;min-height:58px;padding:8px 10px}.viewport-toolbar{display:none}.task-editor-bar .editor-actions{gap:4px}.task-editor-bar #save-status{display:none}.editor-page-switcher>span{display:none}.editor-page-switcher{grid-template-columns:1fr}.editor-structure-mobile-toggle{display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 9px;border:1px solid #cbccc5;border-radius:6px;background:#fff;color:#30312c;font:600 11px/1 "IBM Plex Sans",sans-serif}.editor-structure-mobile-toggle[aria-expanded=true]{background:#e2e9e5;border-color:#9fb4aa;color:#183d31}.task-editor-workspace{height:auto;min-height:calc(100vh - 58px);display:block}.task-editor-workspace .sections-panel{display:block;position:fixed;left:0;top:0;bottom:0;width:min(86vw,360px);max-width:none;z-index:130;padding:18px 12px;transform:translateX(-102%);transition:transform .2s ease;box-shadow:12px 0 34px rgba(0,0,0,.18);border-right:1px solid #cfd0ca}.structure-mobile-open .task-editor-workspace .sections-panel{transform:translateX(0)}.structure-mobile-close{display:grid;width:32px;height:32px;place-items:center;border:1px solid #d0d1ca;border-radius:6px;background:#fff;color:#44453f;font:20px/1 Arial,sans-serif;cursor:pointer}.editor-structure-backdrop{position:fixed;inset:0;z-index:120;border:0;background:rgba(22,23,19,.34);padding:0}.structure-mobile-open .editor-structure-backdrop{display:block}.structure-mobile-open{overflow:hidden}.task-editor-workspace .editor-canvas{min-height:calc(100vh - 58px);padding:8px}.task-editor-workspace .inspector{position:fixed;left:0;right:0;bottom:0;max-height:54dvh;z-index:80;border-top:1px solid #d4d5ce;box-shadow:0 -10px 30px rgba(0,0,0,.13);display:none;overflow:auto;overscroll-behavior:contain}.task-editor-workspace .inspector:has(.inspector-section){display:block}.task-editor-workspace .inspector:has([data-inspector-mode="page"]){max-height:min(76dvh,720px)}.editor-more-menu{right:0}.media-dialog-tools{grid-template-columns:1fr;align-items:stretch}.media-dialog-tools .upload-label,#media-maintenance-link{justify-self:start}}
+
+
+/* Editorial state remains visible and saving stays primary at every viewport. */
+.task-editor-bar #save-status{display:inline-flex;align-items:center;max-width:230px;white-space:normal;line-height:1.25}
+.task-editor-bar #save-status[data-state="error"]{color:#ffb5ac;font-weight:700}
+.task-editor-bar #save-status[data-state="saving"]{color:#f8d79c}
+.task-editor-bar .editor-save-action{background:#f5f5f2;color:#20231f;border:1px solid #d3d5cc;font-weight:650}
+.task-editor-bar .editor-save-action:hover{background:#e6e8e0}
+.task-editor-bar #publish-page{background:transparent;border:1px solid #9eaaa2;color:#f3f5f2}
+.task-editor-bar #publish-page:hover{background:#286e51}
+.task-editor-bar #publish-page:disabled,.task-editor-bar #save-page:disabled{opacity:.5;cursor:wait}
+@media(max-width:1024px){
+  .task-editor-bar #save-status{display:inline-flex;max-width:min(32vw,170px);font-size:10px;white-space:normal}
+  .task-editor-bar .editor-save-action{min-height:34px}
+}
+@media(max-width:600px){
+  .task-editor-bar #save-status{max-width:110px;font-size:10px}
+  .task-editor-bar .editor-save-action{font-size:10px;padding:5px 7px}
+  .task-editor-bar #publish-page{font-size:10px;padding:5px 7px}
+}
