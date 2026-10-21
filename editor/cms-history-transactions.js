@@ -203,7 +203,7 @@ function refreshCurrentSelection(){
 function persistRestoredState(selection){
   if(selection?.nodeId)sessionStorage.setItem('cms-editor-reselect',selection.nodeId);
   // Revision persistence is owned by the canonical editor. Toast text is not an ACK.
-  window.CmsEditorDraft?.save().then(()=>{
+  (window.CmsEditorDraft ? window.CmsEditorDraft.save() : (saveButton.click(),Promise.resolve(null))).then(()=>{
     try{frame.contentWindow.location.reload()}catch{}
   }).catch(()=>{/* Retain local content and editor error state on failure. */});
 }
