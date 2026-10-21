@@ -104,5 +104,6 @@ test('responsive toolbar keeps save status and distinct publication control visi
   await expect(page.locator('#save-status')).toBeVisible();
   await expect(page.locator('#save-page')).toBeVisible();
   await expect(page.locator('#publish-page')).toBeVisible();
+  require('fs').mkdirSync('test-results/editor-integrity',{recursive:true});
   await page.screenshot({path:'test-results/editor-integrity/mobile-draft.png',animations:'disabled'});
 });
