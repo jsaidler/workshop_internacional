@@ -105,8 +105,9 @@ function student_question_reply_enrolled(PDO $db,int $studentId,int $questionId,
     if((string)$question['visibility']==='private'&&(int)$question['student_id']!==$studentId)throw new RuntimeException('Esta dúvida é privada.');
     $body=student_workspace_text($body,4000);if($body==='')throw new RuntimeException('Escreva uma resposta.');$now=utc_now();
     $db->prepare("INSERT INTO student_question_messages(message_uuid,question_id,author_role,student_id,body,created_at) VALUES(?,?,'student',?,?,?)")
-        ->execute([student_uuid(),$questionId,$studentId,$body,$now]);
+        ->execute([student_uuid(),$questionId,$studentId,$body,$now]);$messageId=(int)$db->lastInsertId();
     $db->prepare('UPDATE student_questions SET updated_at=? WHERE id=?')->execute([$now,$questionId]);
+    if(function_exists('admin_student_notice_capture'))admin_student_notice_capture($db,$studentId,(int)$question['cohort_id'],'question_replied',$questionId,(string)$messageId);
 }
 
 function student_questions_for_admin(PDO $db,int $courseId=0,int $cohortId=0,string $status=''): array {
