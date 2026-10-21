@@ -77,6 +77,7 @@ async function persistUntilCurrent(){
         if(serial===state.serial&&before===after){
           Object.assign(state.page,r.page);
           state.dirty=false;
+          lastAcknowledged=signature();
           break;
         }
         // Local content is newer than the ACK. Keep it intact and persist it in order.
@@ -96,12 +97,8 @@ async function persistUntilCurrent(){
 function save(){
   finishText(true);
   if(inFlightSave)return inFlightSave;
-  if(!state.dirty){
-    // Other component controllers edit the iframe before invoking Save.
-    // The conservative path still persists a draft when they request it.
-    // No duplicate request is made for read-only selection.
-    return Promise.resolve(state.page);
-  }
+  if(!state.dirty&&signature()!==lastAcknowledged)changed(false);
+  if(!state.dirty)return Promise.resolve(state.page);
   const request=persistUntilCurrent();
   inFlightSave=request;
   request.finally(()=>{if(inFlightSave===request)inFlightSave=null}).catch(()=>{});
@@ -131,7 +128,7 @@ async function unpublish(){
 window.CmsEditorDraft={save,isDirty:()=>state.dirty||state.saving,getState:()=>({dirty:state.dirty,saving:state.saving,error:state.saveError,serial:state.serial,revision:state.page?.draftRevision})};
 function reload(){state.selected=null;state.editing=null;textToolbar.hidden=true;frame.src=`/preview/?page=${state.page.id}&v=${Date.now()}`}
 async function load(){try{const data=await json(`/admin/api/cms-page-load.php?page=${pageId}`);state.csrf=data.csrf;state.page=data.page;state.activity=data.activity;state.forms=data.forms||[];$('#editor-title').textContent=state.page.title;$('#editor-locale').textContent=state.page.locale;frame.src=`/preview/?page=${pageId}`;renderStatus()}catch(e){say(e.message);setTimeout(()=>location.replace('/admin/pages.php'),1400)}}
-frame.addEventListener('load',()=>{if(!state.page)return;state.loading=false;hookFrame();const d=doc();if(d&&!d.__cmsDirtyBound){d.__cmsDirtyBound=true;d.addEventListener('input',event=>{if(event.target?.closest?.('[data-cms-editable][contenteditable]'))changed(false)},true)}state.history=[snapshot()];state.historyIndex=0;historyButtons();renderInspector();renderStatus()});
+frame.addEventListener('load',()=>{if(!state.page)return;state.loading=false;hookFrame();if(lastAcknowledged===null)lastAcknowledged=signature();const d=doc();if(d&&!d.__cmsDirtyBound){d.__cmsDirtyBound=true;d.addEventListener('input',event=>{if(event.target?.closest?.('[data-cms-editable][contenteditable]'))changed(false)},true)}state.history=[snapshot()];state.historyIndex=0;historyButtons();renderInspector();renderStatus()});
 $('#save-page').onclick=()=>save().catch(()=>{});$('#publish-page').onclick=publish;$('#unpublish-page').onclick=unpublish;$('#page-settings').onclick=pageSettings;$('#undo').onclick=undo;$('#redo').onclick=redo;document.querySelectorAll('[data-viewport]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-viewport]').forEach(x=>x.classList.remove('active'));b.classList.add('active');device.className=`device-frame ${b.dataset.viewport}`});textToolbar.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>{doc().execCommand(b.dataset.command,false,b.dataset.command==='createLink'?prompt('URL')||null:null);changed(false)});$('#finish-text').onclick=()=>finishText(true);$('#media-upload').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{await MediaLibrary.load();await MediaLibrary.upload(file);say('Imagem enviada.');if(mediaDialog.open&&state.selected&&(state.selected.type==='image'||state.selected.type==='image-placeholder'))openMedia(state.selected.el,state.selected.type)}catch(error){say(error.message)}finally{e.target.value=''}};
 load();
 })();
