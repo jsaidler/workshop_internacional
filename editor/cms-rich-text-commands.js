@@ -58,7 +58,17 @@ function lift(marker,editable,touched){
   }
 }
 function strip(container,selector){
-  [...container.querySelectorAll(selector)].reverse().forEach(unwrap);
+  [...container.querySelectorAll(selector)].reverse().forEach(node=>{
+    // Editor/DOM identifiers can be attached to inline formatting nodes.
+    // Keep those attributes by converting semantic formatting to a neutral span.
+    const identity=[...node.attributes].some(a=>a.name==='id'||a.name==='name'||a.name.startsWith('data-'));
+    if(!identity){unwrap(node);return}
+    if(node.tagName==='SPAN')return; // Never discard a component's attributed span.
+    const neutral=node.ownerDocument.createElement('span');
+    for(const attr of [...node.attributes])neutral.setAttribute(attr.name,attr.value);
+    neutral.append(...node.childNodes);
+    node.replaceWith(neutral);
+  });
 }
 function removeEmptyFormatting(editable,touched){
   const candidates=new Set();
