@@ -14,5 +14,11 @@ CREATE TABLE IF NOT EXISTS communication_sender_settings (
     sender_email TEXT NOT NULL DEFAULT '',
     updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS communication_worker_state (
+    id INTEGER PRIMARY KEY CHECK(id=1),
+    last_started_at TEXT,
+    last_finished_at TEXT,
+    last_error TEXT
+);
 SQL);
 };
