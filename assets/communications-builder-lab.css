@@ -38,6 +38,8 @@
 .communications-email-lab .gjs-blocks-c{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .communications-email-lab .gjs-block{width:auto;min-width:0;margin:0;padding:12px 5px;min-height:72px}
 .communications-email-lab .gjs-block-label{overflow-wrap:anywhere}
+.communications-email-lab .email-lab-block-icon{display:flex;justify-content:center;align-items:center;width:100%;height:36px;font:700 30px/1 Arial,sans-serif;color:#f1f3f1}
+.communications-email-lab .gjs-block-label{font-size:12px}
 .communications-email-lab .gjs-sm-sectors{display:block;max-width:100%}
 .communications-email-lab .gjs-sm-sector{min-width:0}
 .communications-email-lab .gjs-sm-properties{min-width:0}
