@@ -96,3 +96,38 @@ test('editor canonical CSS declarations are consumed by the browser',async({page
   expect(styles.toastPosition).toBe('fixed');
   expect(Number(styles.toastOpacity)).toBe(0);
 });
+
+
+for(const name of ['phone','tablet']){
+  test('interactive mobile inspector expanded, collapsed and restored '+name,async({page})=>{
+    const viewport=viewports[name];
+    await page.setViewportSize(viewport);
+    await page.goto(url+'&state=section');
+    const inspector=page.locator('#inspector');
+    const toggle=inspector.locator('.cms-mobile-inspector-toggle');
+    const editorField=inspector.locator('input').first();
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded','true');
+    await expect(editorField).toBeVisible();
+    const originalValue=await editorField.inputValue();
+    const status=page.locator('#save-status');
+    await expect(status).toHaveAttribute('data-short-label','No ar · rascunho');
+    await noOverflow(page,name+'/inspector-expanded');
+    const out=path.join('test-results','admin-complete-audit','editor');
+    fs.mkdirSync(out,{recursive:true});
+    await page.screenshot({path:path.join(out,name+'-inspector-expanded-real.png'),fullPage:true,animations:'disabled'});
+    await toggle.click();
+    await expect(inspector).toHaveClass(/cms-mobile-collapsed/);
+    await expect(toggle).toHaveAttribute('aria-expanded','false');
+    await expect(editorField).toBeHidden();
+    expect(await editorField.evaluate(el=>el.inert||el.closest('[inert]')!==null)).toBe(true);
+    await noOverflow(page,name+'/inspector-collapsed');
+    await page.screenshot({path:path.join(out,name+'-inspector-collapsed-real.png'),fullPage:true,animations:'disabled'});
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded','true');
+    await expect(editorField).toBeVisible();
+    expect(await editorField.inputValue()).toBe(originalValue);
+    await page.keyboard.press('Escape');
+    await expect(toggle).toHaveAttribute('aria-expanded','false');
+  });
+}
