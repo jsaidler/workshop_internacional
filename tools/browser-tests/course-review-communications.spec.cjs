@@ -130,7 +130,7 @@ test.describe('real application: reviews and communications',()=>{
    const emailMedia=JSON.parse(execFileSync('php',[seed,sandbox,'email-media'],{encoding:'utf8',timeout:45000}));
    expect(emailMedia.id).toBeGreaterThan(0);
    await admin.getByRole('navigation',{name:'Áreas de comunicações'}).getByRole('link',{name:'Mensagens'}).click();
-   await expect(admin.getByRole('heading',{name:'Mensagens'})).toBeVisible();
+   await expect(admin.getByRole('heading',{name:'Mensagens',exact:true})).toBeVisible();
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Nova atividade de fotografia');
