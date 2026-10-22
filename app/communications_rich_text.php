@@ -31,11 +31,12 @@ function communication_clean_node(DOMNode $node): string {
         if(!preg_match('/^[1-9][0-9]{0,10}$/D',$id)||$alt===''||mb_strlen($alt)>250)return '';
         return '<figure data-email-media-id="'.$id.'" data-email-alt="'.htmlspecialchars($alt,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'"></figure>';
     }
-    $allowed=['p','br','strong','b','em','i','u','ul','ol','li','blockquote','h2','h3','a','div'];
+    $allowed=['p','br','strong','b','em','i','u','ul','ol','li','blockquote','h2','h3','a','hr','div'];
     $inner='';
     foreach($node->childNodes as $child)$inner.=communication_clean_node($child);
     if(!in_array($tag,$allowed,true))return $inner;
     if($tag==='br')return '<br>';
+    if($tag==='hr')return '<hr>';
     if($tag==='b')$tag='strong';
     if($tag==='i')$tag='em';
     if($tag==='div')$tag='p';
@@ -47,6 +48,7 @@ function communication_clean_node(DOMNode $node): string {
             || ($protocol==='mailto'&&filter_var(substr($href,7),FILTER_VALIDATE_EMAIL)!==false);
         if(!$valid)return $inner;
         $attrs=' href="'.htmlspecialchars($href,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'" rel="noopener noreferrer"';
+        if($node->getAttribute('data-email-button')==='1')$attrs.=' data-email-button="1"';
     }
     return '<'.$tag.$attrs.'>'.$inner.'</'.$tag.'>';
 }
