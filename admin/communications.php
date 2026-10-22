@@ -295,7 +295,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <?php if($selectedId):?><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Nova mensagem</a><?php endif;?>
   </div>
   <section class="admin-card comms-section" data-communication-composer data-audience-url="/admin/communications-audience.php">
-    <header><div><h2><?=($selectedId?'Editar mensagem':'Nova mensagem')?></h2>
+    <header><div><h2><?=($selectedId?((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId):'Nova mensagem')?></h2>
     <p><?=h((string)(($form['status']??'draft')==='draft'?'Rascunho':'Envio já colocado na fila'))?></p></div></header>
     <?php if(($form['status']??'draft')==='draft'):?>
     <form method="post" class="comms-compose-form" data-composer-form>
@@ -363,8 +363,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <?php else:?>
     <h3><?=h((string)$form['subject'])?></h3>
     <div class="comms-email-preview"><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
+    <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila e será processada pelo envio automático.':'O processamento desta mensagem foi concluído.')?></p>
     <?php endif;?>
-    <?php if($preview!==null):?>
+    <?php if($preview!==null && ($form['status']??'draft')==='draft'):?>
     <section class="comms-send-review" aria-labelledby="send-review-title">
       <header><h3 id="send-review-title">Revisão do envio</h3><p><strong><?=$preview?></strong> destinatário(s) selecionado(s) e elegível(is).</p></header>
       <p><strong><?=h((string)$form['subject'])?></strong></p>
