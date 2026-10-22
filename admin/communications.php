@@ -15,7 +15,7 @@ $actionTab=[
  'mail_settings'=>'settings','mail_test'=>'settings','site_url_save'=>'settings',
  'admin_notice_preferences'=>'alerts','admin_notice_test'=>'alerts',
  'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','queue_now'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns',
-  'run_queue'=>'campaigns','cancel_queue'=>'campaigns'
+  'run_queue'=>'campaigns','cancel_queue'=>'campaigns','cancel_campaign'=>'campaigns'
 ];
 $selectedId=max(0,(int)($_POST['campaign_id']??$_GET['id']??0));
 $selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
@@ -79,6 +79,11 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $count=communication_cancel_queue($db,$activityId);
             $_SESSION['communications_notice']=$count.' envio(s) pendente(s) cancelado(s). Mensagens já em processamento ou aceitas pelo provedor não podem ser canceladas.';
             header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns']),true,303);exit;
+        }elseif($action==='cancel_campaign'){
+            if(!$selected)throw new RuntimeException('Mensagem não encontrada.');
+            $count=communication_cancel_queue($db,$activityId,$selectedId);
+            $_SESSION['communications_notice']=$count.' envio(s) pendente(s) cancelado(s) desta mensagem. Envios já aceitos não foram alterados.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
         }elseif($action==='duplicate'){
             if(!$selected)throw new RuntimeException('Selecione uma mensagem para duplicar.');
             $id=communication_duplicate_campaign($db,$activityId,$selectedId);
@@ -480,13 +485,23 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <td><?=h($campaign['status']==='completed' && (int)$campaign['cancelled_count']>0
           ? ((int)$campaign['cancelled_count']===(int)$campaign['audience_count']?'Cancelada':'Parcialmente cancelada')
           : (['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status']))?></td>
-      <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?></td>
+      <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?>
+        <?php if((int)$campaign['cancelled_count']>0 || (int)$campaign['failed_count']>0):?>
+          <small class="muted">· <?=(int)$campaign['cancelled_count']?> cancelado(s) · <?=(int)$campaign['failed_count']?> falha(s)</small>
+        <?php endif;?>
+      </td>
       <td data-actions="true"><div class="comms-history-actions">
         <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$campaign['id']]))?>">Abrir</a>
         <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
           <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
           <button type="submit" name="action" value="duplicate" class="admin-button secondary">Duplicar</button>
         </form>
+        <?php if($campaign['status']==='queued' && (int)$campaign['pending_count']>0):?>
+        <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+          <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
+          <button type="submit" name="action" value="cancel_campaign" class="admin-button secondary" data-confirm="Cancelar apenas os envios ainda pendentes desta mensagem?">Cancelar pendentes</button>
+        </form>
+        <?php endif;?>
       </div></td>
     </tr><?php endforeach;?>
   </tbody></table></div>
