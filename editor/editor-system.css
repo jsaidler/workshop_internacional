@@ -229,7 +229,7 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
     outline:3px solid #186f4d;outline-offset:2px
   }
   .task-editor-workspace .inspector.cms-mobile-collapsed{
-    display:block;max-height:48px!important;min-height:48px;overflow:hidden;
+    display:block;max-height:48px;min-height:48px;overflow:hidden;
   }
-  .task-editor-workspace .inspector.cms-mobile-collapsed > :not(.cms-mobile-inspector-header){display:none!important}
+  .task-editor-workspace .inspector.cms-mobile-collapsed > :not(.cms-mobile-inspector-header){display:none}
 }
