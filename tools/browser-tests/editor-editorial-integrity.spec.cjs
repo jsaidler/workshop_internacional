@@ -286,3 +286,68 @@ test('clearing inline formatting preserves hyperlinks and their destination',asy
   expect(state.html).toContain('href="/bibliografia"');
   expect(state.html).not.toContain('<strong>');
 });
+
+
+test('clearing the middle of a bold run preserves formatting on both sides',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro" data-cms-section-name="Introdução"><p id="edited-text" data-cms-editable><strong>ABCDEFGHIJ</strong></p></section>';
+  await open(page);
+  const field=page.frameLocator('#page-frame').locator('#edited-text');
+  await field.click();
+  await field.locator('strong').evaluate(el=>{
+    const text=el.firstChild,range=el.ownerDocument.createRange();
+    range.setStart(text,2);range.setEnd(text,5);
+    const selection=el.ownerDocument.defaultView.getSelection();selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(field.locator('strong')).toHaveCount(2);
+  await expect(field.locator('strong').first()).toHaveText('AB');
+  await expect(field.locator('strong').last()).toHaveText('FGHIJ');
+  expect(await field.textContent()).toBe('ABCDEFGHIJ');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('<strong>AB</strong>CDE<strong>FGHIJ</strong>');
+});
+
+test('toggling bold off a substring preserves every segment of a nested hyperlink',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro" data-cms-section-name="Introdução"><p id="edited-text" data-cms-editable>Leia <strong><a href="/bibliografia" id="reference-link">ABCDEFG</a></strong> agora.</p></section>';
+  await open(page);
+  const field=page.frameLocator('#page-frame').locator('#edited-text');
+  await field.click({position:{x:4,y:4}});
+  await field.locator('#reference-link').evaluate(el=>{
+    const text=el.firstChild,range=el.ownerDocument.createRange();
+    range.setStart(text,1);range.setEnd(text,4);
+    const selection=el.ownerDocument.defaultView.getSelection();selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="bold"]').click();
+  await expect(field.locator('strong')).toHaveCount(2);
+  await expect(field.locator('a')).toHaveCount(3);
+  await expect(field.locator('#reference-link')).toHaveCount(1);
+  for(const href of await field.locator('a').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('href'))))
+    expect(href).toBe('/bibliografia');
+  expect(await field.textContent()).toBe('Leia ABCDEFG agora.');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('<a href="/bibliografia">BCD</a>');
+  expect(state.html).toContain('<strong><a href="/bibliografia"');
+});
+
+test('selection across mixed markup never removes formatting outside a selected run',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro" data-cms-section-name="Introdução"><p id="edited-text" data-cms-editable><strong>Primeiro</strong> e <em>segundo</em>.</p></section>';
+  await open(page);
+  const field=page.frameLocator('#page-frame').locator('#edited-text');
+  await field.click();
+  await field.evaluate(el=>{
+    const bold=el.querySelector('strong').firstChild,ital=el.querySelector('em').firstChild;
+    const range=el.ownerDocument.createRange();range.setStart(bold,3);range.setEnd(ital,3);
+    const selection=el.ownerDocument.defaultView.getSelection();selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  expect(await field.textContent()).toBe('Primeiro e segundo.');
+  // Remaining unselected prefixes/suffixes keep their semantic wrappers.
+  await expect(field.locator('strong')).toHaveText('Primeiro');
+  await expect(field.locator('em')).toHaveText('segundo');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('<strong>Primeiro</strong>');
+  expect(state.html).toContain('<em>segundo</em>');
+});
