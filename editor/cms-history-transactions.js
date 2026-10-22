@@ -45,6 +45,10 @@ function captureSelection(){
   return section?{nodeId:'',sectionKey:sectionKey(section)}:null;
 }
 function snapshotHtml(){
+  // The core editor owns page serialization. History must snapshot exactly
+  // the HTML that will be persisted (no selection classes or editor chrome).
+  if(typeof window.CmsEditorDraft?.serialize==='function')
+    return window.CmsEditorDraft.serialize();
   const current=root();
   if(!current)return'';
   const copy=current.cloneNode(true);
