@@ -389,7 +389,7 @@ function communication_cancel_queue(PDO $db,int $activityId,?int $campaignId=nul
 }
 
 /** Reuse the CLI worker's lock, but run safely from an administrator POST. */
-function communication_dispatch_manual(PDO $db,int $activityId,int $limit=5,?callable $sender=null): array {
+function communication_dispatch_manual(PDO $db,int $activityId,int $limit=1,?callable $sender=null): array {
     $lock=@fopen(dirname(__DIR__).'/storage/communications-worker.lock','c+');
     if(!$lock)throw new RuntimeException('Não foi possível acessar o controle de envio. Verifique as permissões do servidor.');
     if(!flock($lock,LOCK_EX|LOCK_NB)){
@@ -397,7 +397,7 @@ function communication_dispatch_manual(PDO $db,int $activityId,int $limit=5,?cal
         return ['busy'=>true,'sent'=>0,'skipped'=>0,'failed'=>0];
     }
     try {
-        return ['busy'=>false]+communication_dispatch($db,max(1,min(5,$limit)),$sender,$activityId);
+        return ['busy'=>false]+communication_dispatch($db,max(1,min(1,$limit)),$sender,$activityId);
     }finally {
         flock($lock,LOCK_UN);fclose($lock);
     }
