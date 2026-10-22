@@ -33,14 +33,26 @@ function splitFormattedRun(formatted,range,doc,selection){
   if(current.parentNode!==formatted||formatted.childNodes.length!==1)return false;
   const value=text.data,selected=value.slice(from,to);
   if(!selected)return false;
+  const usedUniqueAttrs=new Set();
+  function cloneInline(original){
+    const wrapper=original.cloneNode(false);
+    for(const name of ['id','data-cms-node-id']){
+      const value=wrapper.getAttribute(name);
+      if(!value)continue;
+      const key=name+':'+value;
+      if(usedUniqueAttrs.has(key))wrapper.removeAttribute(name);
+      else usedUniqueAttrs.add(key);
+    }
+    return wrapper;
+  }
   function piece(value,includeFormat){
     let leaf=doc.createTextNode(value),node=leaf;
     for(let i=inner.length-1;i>=0;i--){
-      const wrapper=inner[i].cloneNode(false);
+      const wrapper=cloneInline(inner[i]);
       wrapper.append(node);node=wrapper;
     }
     if(includeFormat){
-      const wrapper=formatted.cloneNode(false);
+      const wrapper=cloneInline(formatted);
       wrapper.append(node);node=wrapper;
     }
     return {root:node,text:leaf};
@@ -79,6 +91,15 @@ function apply(command,doc,capturedRange){
     range.setStartBefore(first);range.setEndAfter(last);
     selection?.removeAllRanges();selection?.addRange(range);
     return true;
+  }
+  if(range.startContainer!==range.endContainer){
+    const at=node=>node.nodeType===3?node.parentElement:node;
+    const styles='strong,b,em,i,span,font,u';
+    const a=at(range.startContainer)?.closest?.(styles);
+    const b=at(range.endContainer)?.closest?.(styles);
+    // Cross-styled partial selections require tree normalization. Do not silently
+    // relocate selected content inside the wrong formatting ancestor.
+    if(a||b)return false;
   }
   const selected=range.extractContents();
   let first=null,last=null;
