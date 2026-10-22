@@ -160,3 +160,26 @@ test('link selected at 390px retains a usable inspector and feedback',async({pag
   require('fs').mkdirSync('test-results/editor-integrity',{recursive:true});
   await page.screenshot({path:'test-results/editor-integrity/mobile-link-selected.png',animations:'disabled'});
 });
+
+
+test('editor-only selection, drag hints and inline controls never enter the saved HTML',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  await open(page);
+  await page.frameLocator('#page-frame').locator('#edited-text').evaluate(el=>{
+    el.classList.add('cms-structure-selected','cms-direct-drop-before','cms-pro-selected');
+    el.setAttribute('title','Clique para editar');
+    const ui=el.ownerDocument.createElement('span');
+    ui.setAttribute('data-cms-editor-ui','1');ui.textContent='Botão de edição';
+    el.append(ui);
+    el.firstChild.textContent='Texto alterado';
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.saved).toHaveLength(1);
+  expect(state.html).toContain('Texto alterado');
+  expect(state.html).not.toContain('cms-structure-selected');
+  expect(state.html).not.toContain('cms-direct-drop-before');
+  expect(state.html).not.toContain('cms-pro-selected');
+  expect(state.html).not.toContain('data-cms-editor-ui');
+  expect(state.html).not.toContain('Clique para editar');
+});
