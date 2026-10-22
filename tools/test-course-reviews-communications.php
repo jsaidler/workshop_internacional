@@ -171,4 +171,43 @@ $duplicate=communication_duplicate_campaign($db,1,$selected);
 $duplicateRow=communication_campaign($db,1,$duplicate);
 check_feature($duplicateRow['status']==='draft'&&$duplicateRow['subject']==='Mensagem individual','duplicated message remains a draft');
 check_feature(communication_campaign_target_ids($db,$duplicate)===[5],'duplication retains current eligible recipient selection');
+
+/* Manual processing, cancellation, history, idempotence and activity isolation. */
+$storage=dirname(__DIR__).'/storage';
+if(!is_dir($storage))mkdir($storage,0770,true);
+$pending=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Cancelamento parcial','body_text'=>'Mensagem',
+ 'selection_explicit'=>1,'recipient_ids'=>[1,5]
+]);
+check_feature(communication_queue_campaign($db,1,$pending)===2,'two individual recipients queued');
+$seenBefore=count($sent);
+$batch=communication_dispatch_manual($db,1,1,$fake);
+check_feature(!$batch['busy']&&$batch['sent']===1,'manual batch sends without a cron');
+check_feature(count($sent)===$seenBefore+1,'manual action sends exactly one recipient');
+$state=communication_queue_summary($db,1);
+check_feature($state['pending']===1,'manual batch leaves remaining recipients queued');
+check_feature(communication_cancel_queue($db,1)===1,'admin cancels only pending messages');
+check_feature(communication_queue_summary($db,1)['pending']===0,'cancellation empties pending queue');
+check_feature(communication_queue_summary($db,1)['cancelled']===1,'cancellation has a distinct auditable reason');
+check_feature(communication_campaign($db,1,$pending)['status']==='completed','partially cancelled campaign finalizes');
+check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND status='sent'")===1,'accepted message stays accepted');
+check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND error_code='cancelled_by_admin'")===1,'cancellation persists separate from other skipped messages');
+$afterCancel=count($sent);
+check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0&&count($sent)===$afterCancel,'no duplicate send on repeated manual clicks');
+
+$other=communication_create_campaign($db,2,[
+ 'category'=>'operational','course_id'=>2,'cohort_id'=>21,
+ 'subject'=>'Outro setor','body_text'=>'Fora desta área',
+ 'selection_explicit'=>1,'recipient_ids'=>[3]
+]);
+check_feature(communication_queue_campaign($db,2,$other)===1,'other activity queued separately');
+check_feature(communication_queue_summary($db,1)['pending']===0,'dashboard queue is scoped');
+check_feature(communication_cancel_queue($db,1)===0,'cancel cannot cross activity');
+check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0,'manual execution cannot cross activity');
+check_feature(communication_queue_summary($db,2)['pending']===1,'other activity queue preserved');
+check_feature(communication_cancel_queue($db,2,$other)===1,'cancel specific campaign within activity');
+$otherRows=communication_campaigns($db,2);
+check_feature((int)$otherRows[0]['cancelled_count']===1,'campaign history exposes cancelled count');
+
 echo "course-comms: OK\n";
