@@ -10,7 +10,7 @@ function communication_template_key(string $key):string {
 }
 function communication_media_asset(PDO $db,int $id):array {
     $q=$db->prepare("SELECT a.id,a.kind,a.visibility,a.archived_at,a.processing_status,a.active_version_id,
-         a.title,a.default_alt,v.original_path
+         a.title,a.default_alt,a.width,v.original_path
          FROM media_assets a JOIN media_versions v ON v.id=a.active_version_id
          WHERE a.id=? AND a.kind='image' AND a.visibility='public'
            AND a.archived_at IS NULL AND a.processing_status='ready' AND v.processing_status='ready'");
@@ -20,7 +20,9 @@ function communication_media_asset(PDO $db,int $id):array {
          AND mime_type IN ('image/jpeg','image/png') AND width<=1024
          ORDER BY CASE WHEN mime_type='image/jpeg' THEN 0 ELSE 1 END,width DESC LIMIT 1");
     $q->execute([(int)$asset['active_version_id']]);
-    $asset['email_path']=(string)($q->fetchColumn()?:$asset['original_path']);
+    $derivative=$q->fetchColumn();
+    $asset['email_path']=(string)($derivative?:$asset['original_path']);
+    $asset['display_width']=max(1,min(600,(int)($asset['width']??600)));
     return $asset;
 }
 function communication_media_tokens(string $html):array {
@@ -56,8 +58,9 @@ function communication_render_media(PDO $db,string $html):string {
           $url=$origin.media_url((string)$asset['email_path']);
           $src=htmlspecialchars($url,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
           $alt=htmlspecialchars(html_entity_decode($m[2],ENT_QUOTES|ENT_HTML5,'UTF-8'),ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+          $width=(int)$asset['display_width'];
           return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:22px 0"><tr><td>'
-            .'<img src="'.$src.'" width="600" alt="'.$alt.'" style="display:block;width:100%;max-width:600px;height:auto;border:0">'
+            .'<img src="'.$src.'" width="'.$width.'" alt="'.$alt.'" style="display:block;width:100%;max-width:'.$width.'px;height:auto;border:0">'
             .'</td></tr></table>';
       },$html)??$html;
 }
