@@ -23,4 +23,13 @@ foreach(['cms-pro-editor.js','cms-component-editor.js','cms-rich-components.js',
     integrity_expect(str_contains($js,'CmsEditorDraft'),'module '.$path.' does not await save');
     integrity_expect(!str_contains($js,'setTimeout(()=>{try{frame.contentWindow.location.reload()}catch{}},650)'),'timer reload still present: '.$path);
 }
+$rich=(string)file_get_contents($root.'/editor/cms-rich-components.js');
+integrity_expect(str_contains($editor,'data-cms-link-inspector'),'inline link inspector must be available');
+integrity_expect(str_contains($editor,'validLinkDestination'),'link destination validation missing');
+integrity_expect(!str_contains($editor,"prompt('URL')"),'browser prompt cannot be the canonical link editor');
+integrity_expect(str_contains($editor,'const wrapper=el.closest('),'image insertion must reuse the image block');
+integrity_expect(str_contains($rich,'data-rich-list-item')&&str_contains($rich,'data-rich-gallery-item'),'individual list/gallery item selectors missing');
+
+$audience=(string)file_get_contents($root.'/editor/cms-access-controls.js');
+integrity_expect(str_contains($audience,'data.pagePublished')&&str_contains($audience,'efeito imediato'),'live-audience changes must disclose immediate exposure');
 echo "editor-integrity: ok\n";

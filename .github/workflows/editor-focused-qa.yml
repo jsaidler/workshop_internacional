@@ -1,0 +1,53 @@
+name: editor-focused-qa
+on:
+  pull_request:
+    paths:
+      - 'editor/**'
+      - 'admin/api/cms-page-*.php'
+      - 'app/cms_pages.php'
+      - 'tools/browser-tests/editor-editorial-integrity.spec.cjs'
+      - 'tools/browser-tests/editor-component-items.spec.cjs'
+      - 'tools/browser-fixture/editor-inline-insert.html'
+      - 'tools/test-editor-integrity-contract.php'
+      - '.github/workflows/editor-focused-qa.yml'
+  workflow_dispatch:
+jobs:
+  editor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_sqlite,sqlite3,dom,mbstring
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Quick syntax and integrity contract
+        run: |
+          php -l admin/api/cms-page-publish.php
+          php -l admin/api/cms-page-unpublish.php
+          node --check editor/cms-editor-v3.js
+          node --check editor/cms-component-editor.js
+          node --check editor/cms-rich-components.js
+          php tools/test-editor-integrity-contract.php
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Browser editor core regressions
+        run: |
+          php -S 127.0.0.1:8099 -t . >/tmp/editor-focused-qa.log 2>&1 &
+          PID=$!
+          trap 'kill $PID' EXIT
+          sleep 1
+          npx playwright test tools/browser-tests/editor-editorial-integrity.spec.cjs tools/browser-tests/editor-component-items.spec.cjs --workers=1
+      - name: Upload focused visual and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: editor-focused-qa-${{ github.sha }}
+          path: |
+            test-results/editor-integrity/
+            test-results/editor-editorial-integrity-*/
+            test-results/editor-component-items-*/
+            /tmp/editor-focused-qa.log
+          if-no-files-found: ignore
