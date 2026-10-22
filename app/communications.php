@@ -200,10 +200,8 @@ function communication_provider_configuration(?PDO $db=null): array {
     $key=$db?communication_brevo_key($db):trim((string)($config['brevo_api_key']??getenv('BREVO_API_KEY')?:''));
     $sender=$db?communication_sender_settings($db):null;
     $from=$sender!==null?$sender['sender_email']:trim((string)($config['email_from']??getenv('BREVO_FROM_EMAIL')?:''));
-    $site=trim((string)($config['public_url']??''));
-    if($key===''||!filter_var($from,FILTER_VALIDATE_EMAIL))throw new RuntimeException('O serviço externo não está configurado. É possível usar o e-mail da hospedagem.');
-    if(!preg_match('~^https://[^/]+~i',$site))throw new RuntimeException('Configure public_url como endereço HTTPS.');
-    return ['key'=>$key,'from'=>$from,'site'=>rtrim($site,'/'),'name'=>$sender!==null?$sender['sender_name']:(string)($config['site_name']??'Fotografia')];
+    if($key===''||!filter_var($from,FILTER_VALIDATE_EMAIL))throw new RuntimeException('Configure um remetente válido em Envio de e-mails.');
+    return ['key'=>$key,'from'=>$from,'name'=>$sender!==null?$sender['sender_name']:(string)($config['site_name']??'Fotografia')];
 }
 function communication_send_brevo(array $payload,?PDO $db=null): array {
     $cfg=communication_provider_configuration($db);
@@ -262,8 +260,8 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
         }
         $body=(string)$job['body_text'];
         if($job['category']==='newsletter'){
-            $config=app_config();$site=rtrim((string)($config['public_url']??''),'/');
-            if(!str_starts_with($site,'https://'))throw new RuntimeException('Configure public_url HTTPS antes do envio.');
+            $site=communication_site_url($db);
+            if($site==='')throw new RuntimeException('Defina o endereço do site em Comunicações → Configuração antes de enviar newsletter.');
             $body.="\n\nPara deixar de receber novidades: ".$site.'/newsletter-sair.php?token='.rawurlencode(communication_unsubscribe_token((int)$job['student_id'],(string)$job['email']));
         }
         try{
