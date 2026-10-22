@@ -95,7 +95,7 @@ test.describe('real application: reviews and communications',()=>{
    await expect(brevoKey).toHaveValue('');
    await expect(admin.getByText('Não conectado')).toBeVisible();
    await expect(admin.getByText('Serviço atual: E-mail da hospedagem',{exact:true})).toBeVisible();
-   await expect(admin.getByText('Nenhuma registrada',{exact:true})).toBeVisible();
+   await expect(admin.locator('.comms-automation')).toContainText('Nenhuma registrada');
    await expect(admin.locator('body')).not.toContainText('BREVO_API_KEY');
    const senderForm=admin.locator('form').filter({has:admin.locator('input[name="action"][value="mail_settings"]')});
    await senderForm.locator('input[name="sender_name"]').fill('Ateliê fotográfico');
