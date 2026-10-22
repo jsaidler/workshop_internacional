@@ -25,16 +25,28 @@
 .communications-email-lab .gjs-one-bg{background:#252b2b}
 .communications-email-lab .gjs-two-color{color:#e7e9e9}
 @media(max-width:1120px){.email-lab-workspace{grid-template-columns:minmax(0,1fr)}.email-lab-side{grid-template-columns:repeat(2,minmax(0,1fr))}.email-lab-side h2,.email-lab-side p,.email-lab-side hr,.email-lab-side iframe,.email-lab-side details{grid-column:1/-1}}
+
+/* Embed GrapesJS library managers in the existing CMS column. */
 .email-lab-inspector-toggle{display:none}
+.email-lab-side-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;grid-column:1/-1}
+.email-lab-side-tabs button{width:100%;background:#f1f2ee}
+.email-lab-side-tabs button[aria-selected=true]{background:#202727;color:#fff;border-color:#202727}
+.email-lab-manager{display:grid;gap:8px;grid-column:1/-1;min-width:0}
+.email-lab-manager[hidden]{display:none}
+.email-lab-manager>div{min-width:0}
+.communications-email-lab .gjs-cv-canvas{width:100%;left:0}
+.communications-email-lab .gjs-blocks-c{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.communications-email-lab .gjs-block{width:auto;min-width:0;margin:0;padding:12px 5px;min-height:72px}
+.communications-email-lab .gjs-block-label{overflow-wrap:anywhere}
+.communications-email-lab .gjs-sm-sectors{display:block;max-width:100%}
+.communications-email-lab .gjs-sm-sector{min-width:0}
+.communications-email-lab .gjs-sm-properties{min-width:0}
+@media(max-width:1120px){
+  .email-lab-side-tabs,.email-lab-manager{grid-column:1/-1}
+}
 @media(max-width:640px){
   .email-lab-inspector-toggle{display:inline-flex}
   .email-lab-canvas-panel{position:relative}
-  .communications-email-lab .gjs-pn-views-container{display:none}
-  .communications-email-lab .gjs-pn-views{display:none}
-  .communications-email-lab .gjs-cv-canvas{left:0;width:100%}
-  .communications-email-lab.email-lab-inspector-open .gjs-pn-views-container{
-    display:block;position:absolute;left:0;right:0;top:43px;bottom:0;width:100%;height:auto;z-index:10
-  }
-  .communications-email-lab.email-lab-inspector-open .gjs-cv-canvas{visibility:hidden}
+  .communications-email-lab .gjs-blocks-c{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:640px){.email-lab-heading{display:grid}.email-lab-side{grid-template-columns:1fr}.email-lab-canvas-panel [data-lab-canvas]{height:550px}.email-lab-heading h1{font-size:21px}}
