@@ -185,3 +185,48 @@ test('editor-only selection, drag hints and inline controls never enter the save
   expect(state.html).not.toContain('data-cms-editor-ui');
   expect(state.html).not.toContain('Clique para editar');
 });
+
+
+test('mobile inspector collapses without destroying content and expands for a new selection',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await mockApp(page,{published:null});
+  await open(page);
+  await page.frameLocator('#page-frame').locator('#edited-text').click();
+  const inspector=page.locator('#inspector');
+  const toggle=inspector.locator('.cms-mobile-inspector-toggle');
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded','true');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
+  await expect(inspector).toHaveClass(/cms-mobile-collapsed/);
+  const height=await inspector.evaluate(node=>node.getBoundingClientRect().height);
+  expect(height).toBeLessThanOrEqual(52);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded','true');
+  await page.frameLocator('#page-frame').locator('#photo').click();
+  await expect(inspector.locator('#i-alt')).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded','true');
+  await page.keyboard.press('Escape');
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
+  await toggle.click();
+  await expect(inspector.locator('#i-alt')).toBeVisible();
+  require('fs').mkdirSync('test-results/editor-integrity',{recursive:true});
+  await page.screenshot({path:'test-results/editor-integrity/mobile-inspector-expanded.png',animations:'disabled'});
+});
+
+test('page navigation checks canonical dirty state even when status label looks saved',async({page})=>{
+  await mockApp(page,{published:1});
+  await open(page);
+  await page.frameLocator('#page-frame').locator('#edited-text').evaluate(el=>{
+    el.textContent='Alteração ainda não salva';
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  await expect.poll(()=>page.evaluate(()=>window.CmsEditorDraft.isDirty())).toBe(true);
+  await page.locator('#save-status').evaluate(el=>{el.textContent='Publicado · atualizado';el.dataset.state='published'});
+  const notices=[];
+  page.on('dialog',async dialog=>{notices.push(dialog.message());await dialog.dismiss()});
+  await page.locator('#editor-more').evaluate(el=>el.open=true);
+  await page.locator('#editor-pages-link').click();
+  expect(notices.some(v=>v.includes('alterações não salvas'))).toBe(true);
+  expect(page.url()).toContain('/editor/index.html?page=301');
+});
