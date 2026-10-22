@@ -434,3 +434,27 @@ test('mixed inline selection clears only the selected range and retains CMS node
   expect((state.html.match(/data-cms-node-id="bold-identity"/g)||[]).length).toBe(1);
   expect(state.html).toContain('</strong>meiro e seg<em>undo</em>');
 });
+
+
+test('clearing whole formatted CMS node retains its unique identity as a neutral inline span',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><p id="edited-text" data-cms-editable><strong id="stable-identifier" data-cms-node-id="node-ink">Alvo inteiro</strong> permanece.</p></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.click();
+  await edited.locator('strong').evaluate(el=>{
+    const range=el.ownerDocument.createRange();
+    range.selectNodeContents(el);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited.locator('strong')).toHaveCount(0);
+  const neutral=edited.locator('span#stable-identifier');
+  await expect(neutral).toHaveText('Alvo inteiro');
+  await expect(neutral).toHaveAttribute('data-cms-node-id','node-ink');
+  await expect(edited).toHaveText('Alvo inteiro permanece.');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect((state.html.match(/id="stable-identifier"/g)||[]).length).toBe(1);
+  expect(state.html).toContain('<span id="stable-identifier" data-cms-node-id="node-ink">Alvo inteiro</span>');
+});
