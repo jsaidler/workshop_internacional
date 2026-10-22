@@ -368,6 +368,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
           <button type="button" data-editor-command="underline" aria-label="Sublinhado"><u>S</u></button>
           <button type="button" data-editor-command="insertUnorderedList">Lista</button>
           <button type="button" data-editor-command="insertOrderedList">1. Lista</button>
+          <button type="button" data-editor-command="formatBlock" data-editor-value="h2">Título</button>
+          <button type="button" data-editor-command="insertHorizontalRule">Separador</button>
+          <button type="button" data-editor-command="createButton">Botão</button>
           <button type="button" data-editor-command="createLink">Link</button>
           <button type="button" data-email-media-open class="comms-toolbar-image">Inserir imagem</button>
           <button type="button" data-editor-command="removeFormat">Limpar formatação</button>
