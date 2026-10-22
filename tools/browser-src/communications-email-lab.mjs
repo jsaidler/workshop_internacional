@@ -136,6 +136,11 @@ function initLab(){
   root.querySelector('[data-lab-redo]')?.addEventListener('click',()=>editor.UndoManager.redo());
   root.querySelector('[data-lab-desktop]')?.addEventListener('click',()=>editor.setDevice('Desktop'));
   root.querySelector('[data-lab-mobile]')?.addEventListener('click',()=>editor.setDevice('Mobile'));
+  root.querySelector('[data-lab-inspector-toggle]')?.addEventListener('click',event=>{
+    const active=root.classList.toggle('email-lab-inspector-open');
+    event.currentTarget.setAttribute('aria-pressed',String(active));
+    event.currentTarget.textContent=active?'Fechar estilos':'Estilos';
+  });
   root.querySelector('[data-lab-add-text]')?.addEventListener('click',()=>{
     const column=findComponent('mj-column');
     if(!column){setStatus(status,'Selecione uma coluna para inserir texto.',true);return;}
