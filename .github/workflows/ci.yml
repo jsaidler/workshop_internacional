@@ -85,6 +85,7 @@ jobs:
             php tools/test-course-domain-material.php
             php tools/test-course-agenda.php
             php tools/test-course-reviews-communications.php
+            php tools/test-communications-email-design.php
             php tools/test-communications-mail-fallback.php
             php tools/test-communications-site-url.php
             php tools/test-communications-brevo-credentials.php
