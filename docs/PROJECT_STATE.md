@@ -1,5 +1,12 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Envio imediato e controle da fila de Comunicações — 22/10/2026 (PR em revisão)
+
+A operação de campanhas não depende mais de cron para iniciar a entrega: depois da revisão do rascunho, **Confirmar e enviar agora** enfileira os destinatários selecionados e processa imediatamente um envio. A interface continua os lotes por requisições AJAX autenticadas de **um destinatário por vez**, até esgotar os pendentes executáveis ou atingir o limite diário. **Enviar agora**, disponível em Visão geral e Mensagens, também processa as campanhas anteriores ainda pendentes da activity atual. O navegador deve permanecer aberto durante essa sequência; interromper o navegador mantém os itens pendentes, não é um job remoto em background. O fallback sem JavaScript processa um lote por clique. O cron é opcional, como serviço de continuidade/recuperação, e compartilha o arquivo de lock com o envio manual.
+
+**Cancelar fila** elimina somente entregas ainda `pending` da activity do administrador, por transação, mantendo auditoria por `status=skipped` e `error_code=cancelled_by_admin`; não altera envios já aceitos pelo transporte e não pode interromper uma requisição em andamento. O worker periódico reivindica um destinatário por vez para que o cancelamento dos demais tenha efeito no próximo item. Histórico distingue campanhas canceladas integralmente e parcialmente e expõe o total cancelado. Não há alteração do schema existente nem apagamento de entregas. Os testes de regressão cobrem cancelamento parcial, idempotência no reprocessamento, ausência de inclusão de novos destinatários e isolamento entre activities. Publicação no GitHub não equivale à atualização instalada nem ao recebimento de e-mail em produção.
+
+
 ## Imagens e modelos visuais de e-mails — 22/10/2026
 
 O editor de **Admin → Comunicações → Mensagens** oferece três modelos de e-mail compatíveis com clientes de correio: **Essencial, Editorial e Destaque**, derivados da identidade do site (nome, cores de texto, fundo e acento) por `cms_site_settings()` e `cms_design_settings()`. O design do site não é copiado como HTML: o renderer usa tabelas de apresentação e estilos inline conservadores, mantendo suporte aos clientes de e-mail. A migração aditiva 109 guarda `template_key` em cada rascunho; registros anteriores assumem `minimal`. O teste ao administrador, a prévia e o dispatch usam o mesmo `communication_email_document()`; alterações no Design afetam novos renders, por isso conferir a prévia antes de despachar.
