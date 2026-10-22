@@ -351,9 +351,8 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
         </div>
         <div class="comms-rich-editor" data-mail-editor role="textbox" aria-label="Corpo da mensagem" aria-multiline="true" contenteditable="true" hidden><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
         <input type="hidden" name="body_html" value="">
-        <input type="hidden" name="body_text" value="<?=h((string)$form['body_text'])?>">
         <label data-plain-fallback class="comms-compose-label">Texto da mensagem
-          <textarea rows="11" oninput="this.form.elements.body_text.value=this.value"><?=h((string)$form['body_text'])?></textarea>
+          <textarea name="body_text" rows="11"><?=h((string)$form['body_text'])?></textarea>
         </label>
       </section>
       <div class="comms-compose-actions">
@@ -363,7 +362,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     </form>
     <?php else:?>
     <h3><?=h((string)$form['subject'])?></h3>
-    <div class="comms-email-preview"><?=communication_email_html((string)($form['body_html']??''),(string)$form['body_text'])?></div>
+    <div class="comms-email-preview"><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
     <?php endif;?>
     <?php if($preview!==null):?>
     <section class="comms-send-review" aria-labelledby="send-review-title">
@@ -389,7 +388,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <td data-primary="true"><?=h((string)$campaign['subject'])?></td>
       <td><?=h($campaign['category']==='newsletter'?'Newsletter':'Aviso de curso')?></td>
       <td><?=h(['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status'])?></td>
-      <td><?=(int)$campaign['sent_count']?> / <?=(int)$campaign['audience_count']?></td>
+      <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?></td>
       <td data-actions="true"><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$campaign['id']]))?>">Abrir</a></td>
     </tr><?php endforeach;?>
   </tbody></table></div>
