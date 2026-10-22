@@ -143,14 +143,32 @@ const mediaStatus=root.querySelector('[data-email-media-status]');
 const mediaPanel=root.querySelector('[data-email-media-insert-panel]');
 const mediaAlt=root.querySelector('[data-email-media-alt]');
 const mediaSelectedImage=root.querySelector('[data-email-media-selected-image]');
-let mediaItems=[],mediaSelected=null,savedRange=null;
-const htmlEscape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let mediaItems=[],mediaSelected=null,savedRange=null,editingFigure=null;
+function syncMediaEditor(){
+  if(htmlField && editor)htmlField.value=editor.innerHTML;
+  if(textField && editor)textField.value=editor.innerText.trim();
+  markChanged();
+}
 function decorateFigure(fig,item){
-  if(!fig.querySelector('img')){
-    const img=document.createElement('img');img.src=item.src;img.alt=fig.dataset.emailAlt||item.alt||'';
-    img.loading='lazy';img.style.maxWidth='100%';img.style.height='auto';fig.append(img);
-  }
   fig.contentEditable='false';
+  let img=fig.querySelector('img');
+  if(!img){img=document.createElement('img');img.loading='lazy';fig.prepend(img);}
+  if(item.src)img.src=item.src;
+  img.alt=fig.dataset.emailAlt||item.alt||'';
+  img.style.maxWidth='100%';img.style.height='auto';
+  if(fig.querySelector('.comms-figure-actions'))return;
+  const actions=document.createElement('div');actions.className='comms-figure-actions';
+  const edit=document.createElement('button');edit.type='button';edit.textContent='Editar imagem';
+  edit.addEventListener('click',()=>{
+    editingFigure=fig;
+    const selected=mediaItems.find(x=>String(x.id)===fig.dataset.emailMediaId);
+    if(selected)selectMedia(selected);
+    if(mediaAlt)mediaAlt.value=fig.dataset.emailAlt||'';
+    mediaDialog?.showModal();loadMedia();
+  });
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Remover imagem';
+  remove.addEventListener('click',()=>{fig.remove();syncMediaEditor();});
+  actions.append(edit,remove);fig.append(actions);
 }
 function renderMediaList(){
   if(!mediaGallery)return;
@@ -185,6 +203,7 @@ async function loadMedia(){
   }catch(error){if(mediaStatus)mediaStatus.textContent=String(error.message||'Falha ao carregar imagens.');}
 }
 root.querySelector('[data-email-media-open]')?.addEventListener('click',()=>{
+  editingFigure=null;
   const selection=window.getSelection();
   if(selection?.rangeCount && editor?.contains(selection.anchorNode))savedRange=selection.getRangeAt(0).cloneRange();
   mediaDialog?.showModal();loadMedia();
@@ -208,15 +227,18 @@ if(editor?.querySelector('figure[data-email-media-id]'))loadMedia();
 root.querySelector('[data-email-media-insert]')?.addEventListener('click',()=>{
   if(!editor||!mediaSelected||!mediaAlt)return;
   const alt=mediaAlt.value.trim();if(!alt){mediaAlt.focus();return;}
-  const figure=document.createElement('figure');
+  const figure=editingFigure||document.createElement('figure');
   figure.dataset.emailMediaId=String(mediaSelected.id);figure.dataset.emailAlt=alt;
+  const oldImage=figure.querySelector('img');
+  if(oldImage)oldImage.src=mediaSelected.src;
   decorateFigure(figure,mediaSelected);
-  if(savedRange && editor.contains(savedRange.commonAncestorContainer)){
-    let node=savedRange.endContainer;while(node!==editor && node.parentNode!==editor)node=node.parentNode;if(node!==editor && node.parentNode===editor)editor.insertBefore(figure,node.nextSibling);else editor.append(figure);
-  }else editor.append(figure);
-  editor.append(document.createElement('p'));
-  htmlField.value=editor.innerHTML;textField.value=editor.innerText.trim();
-  markChanged();mediaDialog?.close();savedRange=null;
+  if(!editingFigure){
+    if(savedRange && editor.contains(savedRange.commonAncestorContainer)){
+      let node=savedRange.endContainer;while(node!==editor && node.parentNode!==editor)node=node.parentNode;if(node!==editor && node.parentNode===editor)editor.insertBefore(figure,node.nextSibling);else editor.append(figure);
+    }else editor.append(figure);
+    editor.append(document.createElement('p'));
+  }
+  syncMediaEditor();mediaDialog?.close();savedRange=null;editingFigure=null;
 });
 updateCount();
 })();
