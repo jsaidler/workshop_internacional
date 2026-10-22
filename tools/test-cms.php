@@ -65,6 +65,21 @@ $saved=cms_page_save($db,(int)$created['id'],$doc,(int)$created['draft_revision'
 expect(!str_contains(cms_page_doc($saved,false)['html'],'<script'),'page sanitizer failed');
 $published=cms_page_publish($db,(int)$created['id']);expect((int)$published['published_revision']===(int)$published['draft_revision'],'page publication revision mismatch');
 
+$publishedAtRevision=(int)$published['draft_revision'];
+$stalePublishRejected=false;
+try{cms_page_publish($db,(int)$created['id'],$publishedAtRevision-1);}catch(RuntimeException $error){$stalePublishRejected=$error->getMessage()==='revision_conflict';}
+expect($stalePublishRejected,'stale publish revision must not succeed');
+$staleUnpublishRejected=false;
+try{cms_page_unpublish($db,(int)$created['id'],$publishedAtRevision-1);}catch(RuntimeException $error){$staleUnpublishRejected=$error->getMessage()==='revision_conflict';}
+expect($staleUnpublishRejected,'stale unpublish revision must not succeed');
+$withdrawn=cms_page_unpublish($db,(int)$created['id'],$publishedAtRevision);
+expect($withdrawn['published_document_json']===null&&$withdrawn['published_revision']===null,'withdrawn page must have no public document');
+expect((int)$withdrawn['draft_revision']===$publishedAtRevision&&$withdrawn['draft_document_json']!==null,'withdrawal must preserve editable draft');
+expect((int)$withdrawn['show_in_nav']===0,'withdrawn page cannot remain in navigation');
+$publishedAgain=cms_page_publish($db,(int)$created['id'],$publishedAtRevision);
+expect((int)$publishedAgain['published_revision']===$publishedAtRevision,'approved draft must be republishable');
+
+
 $schema=cms_form_schema($enForm,true);[$values,$errors]=cms_form_validate_submission($schema,[],PUBLIC_LOCALE_EN);expect(($errors['name']??'')==='This field is required.','EN validation message not localized');
 [$values,$errors]=cms_form_validate_submission($ptSchema,[],PUBLIC_LOCALE_PT_BR);expect(($errors['name']??'')==='Campo obrigatório.','PT validation message not localized');expect(($errors['availability']??'')==='Campo obrigatório.','PT availability validation missing');expect(($errors['payment_method']??'')==='Campo obrigatório.','PT payment validation missing');expect(($errors['terms']??'')==='Campo obrigatório.','PT terms validation missing');
 $newForm=cms_form_create($db,$activityId,PUBLIC_LOCALE_PT_BR,'Questionário','questionario','interest');$schema=cms_form_schema($newForm,false);$schema['fields'][]=['id'=>'custom_field','type'=>'text','label'=>'Campo customizado','required'=>false,'width'=>'full'];$newForm=cms_form_save($db,(int)$newForm['id'],$schema,(int)$newForm['draft_revision'],'Questionário atualizado');expect(count(cms_form_schema($newForm,false)['fields'])===count($schema['fields']),'form field save failed');$newForm=cms_form_publish($db,(int)$newForm['id']);expect((int)$newForm['published_revision']===(int)$newForm['draft_revision'],'form publication revision mismatch');

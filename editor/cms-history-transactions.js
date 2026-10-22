@@ -202,27 +202,10 @@ function refreshCurrentSelection(){
 }
 function persistRestoredState(selection){
   if(selection?.nodeId)sessionStorage.setItem('cms-editor-reselect',selection.nodeId);
-  if(!toast){saveButton.click();return}
-  toast.textContent='';
-  toast.classList.remove('show');
-  let finished=false;
-  const observer=new MutationObserver(()=>{
-    const message=clean(toast.textContent);
-    if(!message)return;
-    if(message==='Página salva.'){
-      finished=true;
-      observer.disconnect();
-      try{frame.contentWindow.location.reload()}catch{}
-      return;
-    }
-    if(message!=='Página salva.'){
-      finished=true;
-      observer.disconnect();
-    }
-  });
-  observer.observe(toast,{subtree:true,childList:true,characterData:true,attributes:true});
-  saveButton.click();
-  setTimeout(()=>{if(!finished)observer.disconnect()},6000);
+  // Revision persistence is owned by the canonical editor. Toast text is not an ACK.
+  (window.CmsEditorDraft ? window.CmsEditorDraft.save() : (saveButton.click(),Promise.resolve(null))).then(()=>{
+    try{frame.contentWindow.location.reload()}catch{}
+  }).catch(()=>{/* Retain local content and editor error state on failure. */});
 }
 function restoreAt(nextIndex){
   if(nextIndex<0||nextIndex>=history.length||nextIndex===historyIndex)return;

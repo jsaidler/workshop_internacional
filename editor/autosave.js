@@ -1,43 +1,23 @@
 (()=>{
 'use strict';
-const save=document.querySelector('#save-page');
-const status=document.querySelector('#save-status');
-if(!save||!status)return;
-
-const DIRTY='não salvas';
+const service=()=>window.CmsEditorDraft;
 let timer=null;
-let saving=false;
-let lastDirtyAt=0;
-
-function isDirty(){return (status.textContent||'').toLowerCase().includes(DIRTY)}
-function schedule(){
-  if(!isDirty()){if(timer){clearTimeout(timer);timer=null}return;}
-  lastDirtyAt=Date.now();
-  if(timer)clearTimeout(timer);
-  timer=setTimeout(flush,3200);
-}
+function stop(){if(timer!==null){clearTimeout(timer);timer=null}}
 function flush(){
-  timer=null;
-  if(saving||!isDirty())return;
-  // Avoid racing a change that happened while the debounce timer was firing.
-  const idleFor=Date.now()-lastDirtyAt;
-  if(idleFor<2800){timer=setTimeout(flush,3200-idleFor);return;}
-  saving=true;
-  save.click();
-  const release=()=>{saving=false;if(isDirty())schedule()};
-  setTimeout(release,1800);
+  stop();
+  if(!service()?.isDirty())return;
+  service().save().catch(()=>{/* The editor keeps a persistent error and local content. */});
 }
-
-const observer=new MutationObserver(schedule);
-observer.observe(status,{childList:true,characterData:true,subtree:true});
-
+function schedule(){
+  stop();
+  if(service()?.isDirty())timer=setTimeout(flush,3200);
+}
+window.addEventListener('cms-editor:dirty',schedule);
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='hidden'&&isDirty()&&!saving){saving=true;save.click();setTimeout(()=>saving=false,1200)}
+  if(document.visibilityState==='hidden'&&service()?.isDirty())flush();
 });
-
 window.addEventListener('beforeunload',event=>{
-  if(!isDirty())return;
-  event.preventDefault();
-  event.returnValue='';
+  if(!service()?.isDirty())return;
+  event.preventDefault();event.returnValue='';
 });
 })();

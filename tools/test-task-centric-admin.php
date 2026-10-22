@@ -28,14 +28,15 @@ must(str_contains($admin,'Editar página inicial'),'dashboard must keep direct e
 must(str_contains($editor,'id="editor-page-switcher"'),'editor must expose page switching in context');
 must(str_contains($editor,'id="editor-submissions"'),'editor must expose inscriptions without leaving the site mental model');
 must(str_contains($editor,'id="media-library-search"'),'image replacement must have inline library search');
-must(str_contains($editor,'<button type="button" id="save-page">Salvar agora</button>'),'manual save must remain available but secondary');
-must(strpos($editor,'id="publish-page"')<strpos($editor,'id="save-page"'),'publish must be the primary visible editorial action');
+must(str_contains($editor,'<button type="button" id="save-page" class="editor-save-action">Salvar rascunho</button>'),'manual save must be visible in the primary toolbar');
+must(strpos($editor,'id="save-page"')<strpos($editor,'id="publish-page"'),'save must precede the distinct publish action');
+must(str_contains($editor,'id="unpublish-page"'),'reversible unpublication control must remain available');
 if(str_contains($coreEditor,"$('#editor-title').textContent"))must(str_contains($editor,'id="editor-title"'),'editor core title target must exist');
 if(str_contains($coreEditor,"$('#editor-locale').textContent"))must(str_contains($editor,'id="editor-locale"'),'editor core locale target must exist');
 must(str_contains($editorEntry,"deploy-info.json"),'editor entry point must derive an installed-version token for its assets');
 must(str_contains($editorEntry,"?v='.\$version"),'editor entry point must append the installed version to editor CSS/JS URLs');
 must(strpos($editor,'/editor/cms-video-library.js')<strpos($editor,'/editor/cms-pro-editor.js'),'dedicated video interception must load before legacy pro-editor video hooks');
-must(str_contains($autosave,'MutationObserver'),'autosave must react to dirty-state changes');
+must(str_contains($autosave,"cms-editor:dirty")&&!str_contains($autosave,'MutationObserver'),'autosave must react to explicit dirty events, not status text');
 must(str_contains($autosave,'setTimeout(flush,3200)'),'autosave must debounce short editing pauses');
 must(!str_contains($autosave,'setInterval'),'autosave must not wait on a fixed polling interval');
 must(str_contains($client,'/admin/api/editor-context.php'),'editor context must be loaded from the authenticated endpoint');

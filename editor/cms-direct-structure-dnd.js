@@ -33,10 +33,7 @@ function saveAndReload(node){
   remember(node);
   clearCanvasMarks();
   clearTreeMarks();
-  setTimeout(()=>{
-    saveButton.click();
-    setTimeout(()=>{try{frame.contentWindow.location.reload()}catch{}},650);
-  },70);
+  (window.CmsEditorDraft ? window.CmsEditorDraft.save() : (saveButton.click(),Promise.resolve(null))).then(()=>{try{frame.contentWindow.location.reload()}catch{}}).catch(()=>{});
 }
 function canDrop(drag,target){
   if(!drag||!target||drag===target||drag.contains(target))return false;

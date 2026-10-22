@@ -14,7 +14,7 @@ const uid=prefix=>`${prefix}-${Date.now().toString(36)}-${Math.random().toString
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 function ensureNodeId(node){if(!node)return'';if(!node.dataset.cmsNodeId)node.dataset.cmsNodeId=uid('node');return node.dataset.cmsNodeId}
 function remember(node){if(!node)return;sessionStorage.setItem('cms-editor-reselect',ensureNodeId(node))}
-function saveAndReload(node){remember(node);clearTimeout(timer);timer=setTimeout(()=>{saveButton.click();setTimeout(()=>{try{frame.contentWindow.location.reload()}catch{}},650)},80)}
+function saveAndReload(node){remember(node);clearTimeout(timer);(window.CmsEditorDraft ? window.CmsEditorDraft.save() : (saveButton.click(),Promise.resolve(null))).then(()=>{try{frame.contentWindow.location.reload()}catch{}}).catch(()=>{})}
 function saveSoon(){clearTimeout(timer);timer=setTimeout(()=>saveButton.click(),250)}
 function clearStructureSelection(){d()?.querySelectorAll('.cms-structure-selected').forEach(n=>n.classList.remove('cms-structure-selected'))}
 function clearCoreSelection(){d()?.querySelectorAll('.cms-selection,.cms-section-selected,.cms-editing').forEach(n=>n.classList.remove('cms-selection','cms-section-selected','cms-editing'))}

@@ -125,7 +125,31 @@ function cms_page_create(PDO $db,int $activityId,string $locale,string $title,st
 function cms_page_save(PDO $db,int $id,array $document,int $revision,array $settings=[]): array {
     $page=cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');$document=cms_page_document($document);$json=json_encode($document,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);$locale=normalize_public_locale((string)($settings['locale']??$page['locale']))??$page['locale'];$slug=(int)$page['is_home']===1?'':cms_page_unique_slug($db,(int)$page['activity_id'],$locale,(string)($settings['slug']??$page['slug']),$id);$title=trim((string)($settings['title']??$page['title']))?:$page['title'];$nav=trim((string)($settings['nav_title']??$page['nav_title']))?:$title;$show=!empty($settings['show_in_nav'])?1:0;$new=$revision+1;$now=utc_now();$q=$db->prepare('UPDATE cms_pages SET locale=?,slug=?,title=?,nav_title=?,show_in_nav=?,draft_document_json=?,draft_revision=?,draft_updated_at=?,updated_at=? WHERE id=? AND draft_revision=?');$q->execute([$locale,$slug,$title,$nav,$show,$json,$new,$now,$now,$id,$revision]);if($q->rowCount()!==1)throw new RuntimeException('revision_conflict');return cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');
 }
-function cms_page_publish(PDO $db,int $id): array {$page=cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');$now=utc_now();$q=$db->prepare('UPDATE cms_pages SET published_document_json=draft_document_json,published_revision=draft_revision,published_at=?,updated_at=? WHERE id=?');$q->execute([$now,$now,$id]);return cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');}
+function cms_page_publish(PDO $db,int $id,?int $expectedRevision=null): array {
+    $page=cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');
+    if($expectedRevision!==null&&($expectedRevision<1||(int)$page['draft_revision']!==$expectedRevision))
+        throw new RuntimeException('revision_conflict');
+    $now=utc_now();
+    if($expectedRevision!==null){
+        $q=$db->prepare('UPDATE cms_pages SET published_document_json=draft_document_json,published_revision=draft_revision,published_at=?,updated_at=? WHERE id=? AND draft_revision=?');
+        $q->execute([$now,$now,$id,$expectedRevision]);
+        if($q->rowCount()!==1)throw new RuntimeException('revision_conflict');
+    }else{
+        $q=$db->prepare('UPDATE cms_pages SET published_document_json=draft_document_json,published_revision=draft_revision,published_at=?,updated_at=? WHERE id=?');
+        $q->execute([$now,$now,$id]);
+    }
+    return cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');
+}
+function cms_page_unpublish(PDO $db,int $id,int $expectedRevision): array {
+    $page=cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');
+    if((int)$page['is_home']===1)throw new RuntimeException('cannot_unpublish_home');
+    if($expectedRevision<1||(int)$page['draft_revision']!==$expectedRevision)
+        throw new RuntimeException('revision_conflict');
+    $q=$db->prepare('UPDATE cms_pages SET published_document_json=NULL,published_revision=NULL,published_at=NULL,show_in_nav=0,updated_at=? WHERE id=? AND draft_revision=?');
+    $q->execute([utc_now(),$id,$expectedRevision]);
+    if($q->rowCount()!==1)throw new RuntimeException('revision_conflict');
+    return cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');
+}
 function cms_page_set_home(PDO $db,int $id): array {$page=cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');$db->beginTransaction();try{$q=$db->prepare('UPDATE cms_pages SET is_home=0 WHERE activity_id=? AND locale=?');$q->execute([(int)$page['activity_id'],$page['locale']]);$q=$db->prepare("UPDATE cms_pages SET is_home=1,slug='',show_in_nav=1,updated_at=? WHERE id=?");$q->execute([utc_now(),$id]);$db->commit();return cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}}
 function cms_page_archive(PDO $db,int $id): void {$page=cms_page_by_id($db,$id)??throw new RuntimeException('page_not_found');if((int)$page['is_home']===1)throw new RuntimeException('cannot_archive_home');$q=$db->prepare("UPDATE cms_pages SET status='archived',show_in_nav=0,updated_at=? WHERE id=?");$q->execute([utc_now(),$id]);}
 function cms_nav_pages(PDO $db,int $activityId,string $locale): array {$q=$db->prepare("SELECT * FROM cms_pages WHERE activity_id=? AND locale=? AND status!='archived' AND show_in_nav=1 AND published_document_json IS NOT NULL ORDER BY sort_order,id");$q->execute([$activityId,$locale]);return $q->fetchAll();}
