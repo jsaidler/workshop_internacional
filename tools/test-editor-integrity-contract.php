@@ -35,4 +35,8 @@ integrity_expect(str_contains($audience,'data.pagePublished')&&str_contains($aud
 foreach(['cms-structure-selected','cms-pro-selected','cms-direct-drop-before','cms-inline-empty-outline','data-cms-editor-ui'] as $marker){
     integrity_expect(str_contains($editor,$marker),'transient editor marker not excluded by serialization: '.$marker);
 }
+$formatter=(string)file_get_contents($root.'/editor/cms-rich-text-commands.js');
+integrity_expect(str_contains($formatter,"window.CmsRichTextCommands={apply}"),'native formatter must export command authority');
+integrity_expect(!str_contains($editor,'.execCommand('),'core editor still uses deprecated browser formatting');
+integrity_expect(str_contains((string)file_get_contents($root.'/editor/index.html'),'/editor/cms-rich-text-commands.js'),'formatter not installed');
 echo "editor-integrity: ok\n";
