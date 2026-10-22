@@ -154,6 +154,9 @@ function communication_queue_campaign(PDO $db,int $activityId,int $id): int {
     return course_agenda_with_lock($db,static function() use($db,$activityId,$id): int {
         $campaign=communication_campaign($db,$activityId,$id);
         if(!$campaign || $campaign['status']!=='draft')throw new RuntimeException('Campanha não disponível para envio.');
+        communication_validate_images($db,(string)($campaign['body_html']??''));
+        if(str_contains((string)($campaign['body_html']??''),'data-email-media-id')&&communication_site_url($db)==='')
+            throw new RuntimeException('Defina o endereço HTTPS do site antes de enviar imagens.');
         $audience=communication_campaign_audience($db,$activityId,$campaign);
         if(!$audience)throw new RuntimeException('Nenhum destinatário elegível. Não foi criado envio.');
         $now=utc_now();
