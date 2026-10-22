@@ -12,7 +12,7 @@ function communication_template_key(string $key):string {
 function communication_preheader(string $value):string {
     $value=trim($value);
     if($value==='' )return '';
-    if(preg_match('/[\\x00-\\x1f\\x7f]/u',$value)||mb_strlen($value,'UTF-8')>150)
+    if(preg_match('/[\x00-\x1f\x7f]/u',$value)||mb_strlen($value,'UTF-8')>150)
         throw new RuntimeException('O pré-cabeçalho deve ter até 150 caracteres, sem quebras de linha.');
     return $value;
 }
