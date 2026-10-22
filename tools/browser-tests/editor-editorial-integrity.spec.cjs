@@ -379,6 +379,16 @@ test('stale revision opens recovery without overwriting server, local draft can 
   expect(backup.basedOnRevision).toBe(2);
   await dialog.locator('[data-conflict-check]').click();
   await expect(dialog.locator('#cms-conflict-feedback')).toContainText('revisão atual no servidor é 3');
+  // Compare the actual modal at desktop and mobile viewports, not CSS alone.
+  const fs=require('fs');
+  fs.mkdirSync('test-results/editor-integrity',{recursive:true});
+  await page.screenshot({path:'test-results/editor-integrity/conflict-recovery-desktop.png'});
+  await page.setViewportSize({width:390,height:844});
+  await expect(dialog.locator('[data-conflict-download]')).toBeVisible();
+  await expect(dialog.locator('[data-conflict-copy]')).toBeVisible();
+  await expect(dialog.locator('[data-conflict-check]')).toBeVisible();
+  await expect(dialog.locator('[data-conflict-close]')).toBeVisible();
+  await page.screenshot({path:'test-results/editor-integrity/conflict-recovery-mobile-390.png'});
   await dialog.locator('[data-conflict-close]').click();
   await expect(dialog).not.toBeVisible();
   await expect.poll(()=>page.evaluate(()=>window.CmsEditorDraft.isDirty())).toBe(true);
