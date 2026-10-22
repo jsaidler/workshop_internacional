@@ -38,7 +38,7 @@ function cleanClone(container){
 }
 function serialize(){const r=root();if(!r)return '';const copy=r.cloneNode(true);cleanClone(copy);return copy.innerHTML.trim()}
 function snapshot(){return state.page?{html:root()?.innerHTML||'',settings:{title:state.page.title,navTitle:state.page.navTitle,slug:state.page.slug,showInNav:state.page.showInNav,document:clone(state.page.document)}}:null}
-function pushHistory(){if(state.loading||!state.page)return;const s=snapshot(),last=state.history[state.historyIndex];if(last&&last.html===s.html&&JSON.stringify(last.settings)===JSON.stringify(s.settings))return;state.history=state.history.slice(0,state.historyIndex+1);state.history.push(s);if(state.history.length>80)state.history.shift();state.historyIndex=state.history.length-1;historyButtons()}
+function pushHistory(){if(window.CmsEditorHistory||state.loading||!state.page)return;const s=snapshot(),last=state.history[state.historyIndex];if(last&&last.html===s.html&&JSON.stringify(last.settings)===JSON.stringify(s.settings))return;state.history=state.history.slice(0,state.historyIndex+1);state.history.push(s);if(state.history.length>80)state.history.shift();state.historyIndex=state.history.length-1;historyButtons()}
 function changed(history=true){
   state.dirty=true;state.serial++;state.saveError='';
   renderStatus();if(history)pushHistory();
@@ -60,7 +60,7 @@ function renderStatus(){
   if(publishButton)publishButton.disabled=state.saving;
   window.dispatchEvent(new CustomEvent('cms-editor:status',{detail:{code,dirty:state.dirty,saving:state.saving}}));
 }
-function historyButtons(){$('#undo').disabled=state.historyIndex<=0;$('#redo').disabled=state.historyIndex<0||state.historyIndex>=state.history.length-1}
+function historyButtons(){if(window.CmsEditorHistory)return;$('#undo').disabled=state.historyIndex<=0;$('#redo').disabled=state.historyIndex<0||state.historyIndex>=state.history.length-1}
 function restore(s){if(!s)return;finishText(false);root().innerHTML=s.html;Object.assign(state.page,{title:s.settings.title,navTitle:s.settings.navTitle,slug:s.settings.slug,showInNav:s.settings.showInNav});state.page.document=clone(s.settings.document);state.dirty=true;hookFrame();renderInspector();renderStatus()}
 function undo(){if(state.historyIndex<=0)return;state.historyIndex--;restore(state.history[state.historyIndex]);historyButtons()}
 function redo(){if(state.historyIndex>=state.history.length-1)return;state.historyIndex++;restore(state.history[state.historyIndex]);historyButtons()}
@@ -223,10 +223,10 @@ async function unpublish(){
     state.page.showInNav=false;renderStatus();say('Página retirada da publicação. O rascunho permanece editável.');
   }catch(e){state.saveError=e.message;renderStatus();say(state.saveError)}
 }
-window.CmsEditorDraft={save,isDirty:()=>state.dirty||state.saving,getState:()=>({dirty:state.dirty,saving:state.saving,error:state.saveError,serial:state.serial,revision:state.page?.draftRevision})};
+window.CmsEditorDraft={save,serialize,isDirty:()=>state.dirty||state.saving,getState:()=>({dirty:state.dirty,saving:state.saving,error:state.saveError,serial:state.serial,revision:state.page?.draftRevision})};
 function reload(){state.selected=null;state.editing=null;textToolbar.hidden=true;frame.src=`/preview/?page=${state.page.id}&v=${Date.now()}`}
 async function load(){try{const data=await json(`/admin/api/cms-page-load.php?page=${pageId}`);state.csrf=data.csrf;state.page=data.page;state.activity=data.activity;state.forms=data.forms||[];$('#editor-title').textContent=state.page.title;$('#editor-locale').textContent=state.page.locale;frame.src=`/preview/?page=${pageId}`;renderStatus()}catch(e){say(e.message);setTimeout(()=>location.replace('/admin/pages.php'),1400)}}
-frame.addEventListener('load',()=>{if(!state.page)return;state.loading=false;hookFrame();if(lastAcknowledged===null)lastAcknowledged=signature();const d=doc();if(d&&!d.__cmsDirtyBound){d.__cmsDirtyBound=true;d.addEventListener('input',event=>{if(event.target?.closest?.('[data-cms-editable][contenteditable]'))changed(false)},true)}state.history=[snapshot()];state.historyIndex=0;historyButtons();renderInspector();renderStatus()});
+frame.addEventListener('load',()=>{if(!state.page)return;state.loading=false;hookFrame();if(lastAcknowledged===null)lastAcknowledged=signature();const d=doc();if(d&&!d.__cmsDirtyBound){d.__cmsDirtyBound=true;d.addEventListener('input',event=>{if(event.target?.closest?.('[data-cms-editable][contenteditable]'))changed(false)},true)}if(!window.CmsEditorHistory){state.history=[snapshot()];state.historyIndex=0;historyButtons()}renderInspector();renderStatus()});
 $('#save-page').onclick=()=>save().catch(()=>{});$('#publish-page').onclick=publish;if($('#unpublish-page'))$('#unpublish-page').onclick=unpublish;$('#page-settings').onclick=pageSettings;$('#undo').onclick=undo;$('#redo').onclick=redo;document.querySelectorAll('[data-viewport]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-viewport]').forEach(x=>x.classList.remove('active'));b.classList.add('active');device.className=`device-frame ${b.dataset.viewport}`});textToolbar.querySelectorAll('[data-command]').forEach(b=>{
   b.addEventListener('pointerdown',()=>{
     const sel=frame.contentWindow?.getSelection();
