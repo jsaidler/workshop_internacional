@@ -351,3 +351,56 @@ test('selection across mixed markup never removes formatting outside a selected 
   expect(state.html).toContain('<strong>Primeiro</strong>');
   expect(state.html).toContain('<em>segundo</em>');
 });
+
+
+test('partial clear formatting retains adjacent bold text and undo/redo history',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><div class="section-inner"><p id="edited-text" data-cms-editable><strong>antes meio depois</strong></p></div></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.click();
+  await edited.locator('strong').evaluate(el=>{
+    const node=el.firstChild,offset=node.textContent.indexOf('meio');
+    const range=el.ownerDocument.createRange();
+    range.setStart(node,offset);range.setEnd(node,offset+4);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited).toHaveText('antes meio depois');
+  await expect(edited.locator('strong')).toHaveCount(2);
+  expect(await edited.innerHTML()).toContain('<strong>antes </strong>meio<strong> depois</strong>');
+  await page.locator('#editor-more summary').click();
+  await page.locator('#undo').click();
+  await expect(edited.locator('strong')).toHaveCount(1);
+  await expect(edited.locator('strong')).toHaveText('antes meio depois');
+  await page.locator('#redo').click();
+  await expect(edited.locator('strong')).toHaveCount(2);
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('<strong>antes </strong>meio<strong> depois</strong>');
+  expect(state.html).not.toContain('cmsSelectionBoundary');
+});
+
+test('partial clear formatting splits links without losing destination or duplicating IDs',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><div class="section-inner"><p id="edited-text" data-cms-editable>Leia <strong><a id="keep-link" href="/bibliografia">Bibliografia</a></strong> depois.</p></div></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.evaluate(el=>el.click());
+  await edited.locator('a').evaluate(el=>{
+    const node=el.firstChild,range=el.ownerDocument.createRange();
+    range.setStart(node,3);range.setEnd(node,7);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited).toHaveText('Leia Bibliografia depois.');
+  await expect(edited.locator('a')).toHaveCount(3);
+  await expect(edited.locator('#keep-link')).toHaveCount(1);
+  await expect(edited.locator('strong')).toHaveCount(2);
+  for(const anchor of await edited.locator('a').all())await expect(anchor).toHaveAttribute('href','/bibliografia');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('href="/bibliografia"');
+  expect((state.html.match(/id="keep-link"/g)||[]).length).toBe(1);
+  expect(state.html).not.toContain('contenteditable');
+});
