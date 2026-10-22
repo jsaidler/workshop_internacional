@@ -25,4 +25,16 @@
 .communications-email-lab .gjs-one-bg{background:#252b2b}
 .communications-email-lab .gjs-two-color{color:#e7e9e9}
 @media(max-width:1120px){.email-lab-workspace{grid-template-columns:minmax(0,1fr)}.email-lab-side{grid-template-columns:repeat(2,minmax(0,1fr))}.email-lab-side h2,.email-lab-side p,.email-lab-side hr,.email-lab-side iframe,.email-lab-side details{grid-column:1/-1}}
+.email-lab-inspector-toggle{display:none}
+@media(max-width:640px){
+  .email-lab-inspector-toggle{display:inline-flex}
+  .email-lab-canvas-panel{position:relative}
+  .communications-email-lab .gjs-pn-views-container{display:none}
+  .communications-email-lab .gjs-pn-views{display:none}
+  .communications-email-lab .gjs-cv-canvas{left:0;width:100%}
+  .communications-email-lab.email-lab-inspector-open .gjs-pn-views-container{
+    display:block;position:absolute;left:0;right:0;top:43px;bottom:0;width:100%;height:auto;z-index:10
+  }
+  .communications-email-lab.email-lab-inspector-open .gjs-cv-canvas{visibility:hidden}
+}
 @media(max-width:640px){.email-lab-heading{display:grid}.email-lab-side{grid-template-columns:1fr}.email-lab-canvas-panel [data-lab-canvas]{height:550px}.email-lab-heading h1{font-size:21px}}
