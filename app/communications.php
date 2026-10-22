@@ -298,8 +298,9 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
     $allowNewsletter=communication_site_url($db)!=='';
     $jobs=course_agenda_with_lock($db,static function() use($db,$limit,$allowNewsletter,$activityId): array {
         $stale=gmdate('Y-m-d\TH:i:s\Z',time()-1800);
-        $db->prepare("UPDATE communication_deliveries SET status='pending' WHERE status='processing' AND attempts<3 AND updated_at<?")->execute([$stale]);
-        $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='processing_timeout' WHERE status='processing' AND attempts>=3 AND updated_at<?")->execute([$stale]);
+        // The provider may have accepted a message before the worker crashed.
+        // Never retry uncertain sends automatically: an operator must investigate.
+        $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='processing_outcome_unknown',updated_at=? WHERE status='processing' AND updated_at<?")->execute([utc_now(),$stale]);
         $q=$db->prepare("SELECT d.id,d.campaign_id,d.student_id,c.activity_id,c.category,c.course_id,c.cohort_id,c.subject,c.body_text,c.body_html,c.template_key,c.selection_mode,u.name,u.email
           FROM communication_deliveries d JOIN communication_campaigns c ON c.id=d.campaign_id
           JOIN student_users u ON u.id=d.student_id WHERE d.status='pending' AND d.attempts<3
@@ -316,9 +317,14 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
     foreach($jobs as $job){
         $id=(int)$job['id'];$campaign=(int)$job['campaign_id'];
         if(!isset($audiences[$campaign])){
-            $audiences[$campaign]=array_flip(array_map('intval',array_column(
-                communication_campaign_audience($db,(int)$job['activity_id'],$job),'id'
-            )));
+            try{
+                $audiences[$campaign]=array_flip(array_map('intval',array_column(
+                    communication_campaign_audience($db,(int)$job['activity_id'],$job),'id'
+                )));
+            }catch(Throwable $e){
+                $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='audience_validation_error',updated_at=? WHERE id=? AND status='processing'")->execute([utc_now(),$id]);
+                $result['failed']++;continue;
+            }
         }
         if(!isset($audiences[$campaign][(int)$job['student_id']])){
             $db->prepare("UPDATE communication_deliveries SET status='skipped',error_code='no_longer_eligible',updated_at=? WHERE id=?")->execute([utc_now(),$id]);
@@ -326,6 +332,12 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
         }
         $body=(string)$job['body_text'];
         $html=(string)($job['body_html']??'');
+        try{
+            communication_validate_images($db,$html);
+        }catch(Throwable $e){
+            $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='media_unavailable',updated_at=? WHERE id=? AND status='processing'")->execute([utc_now(),$id]);
+            $result['failed']++;continue;
+        }
         if($job['category']==='newsletter'){
             $site=communication_site_url($db);
             if($site==='')throw new RuntimeException('Defina o endereço do site em Comunicações → Configuração antes de enviar newsletter.');
@@ -341,7 +353,8 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
               ->execute([substr((string)($receipt['id']??''),0,240),utc_now(),utc_now(),$id]);
             $result['sent']++;
         }catch(Throwable $e){
-            $db->prepare("UPDATE communication_deliveries SET status=CASE WHEN attempts>=3 THEN 'failed' ELSE 'pending' END,error_code='provider_failure',updated_at=? WHERE id=?")
+            // A network timeout can occur after acceptance: no blind retry.
+            $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='provider_failure',updated_at=? WHERE id=? AND status='processing'")
               ->execute([utc_now(),$id]);$result['failed']++;
         }
     }
