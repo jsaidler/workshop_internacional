@@ -313,7 +313,10 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
         $stale=gmdate('Y-m-d\TH:i:s\Z',time()-1800);
         // The provider may have accepted a message before the worker crashed.
         // Never retry uncertain sends automatically: an operator must investigate.
-        $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='processing_outcome_unknown',updated_at=? WHERE status='processing' AND updated_at<?")->execute([utc_now(),$stale]);
+        $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='processing_outcome_unknown',updated_at=?
+            WHERE status='processing' AND updated_at<?"
+            .($activityId!==null?" AND campaign_id IN (SELECT id FROM communication_campaigns WHERE activity_id=?)":""))
+          ->execute($activityId!==null?[utc_now(),$stale,$activityId]:[utc_now(),$stale]);
         $q=$db->prepare("SELECT d.id,d.campaign_id,d.student_id,c.activity_id,c.category,c.course_id,c.cohort_id,c.subject,c.body_text,c.body_html,c.template_key,c.selection_mode,u.name,u.email
           FROM communication_deliveries d JOIN communication_campaigns c ON c.id=d.campaign_id
           JOIN student_users u ON u.id=d.student_id WHERE d.status='pending' AND d.attempts<3
@@ -371,7 +374,11 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
               ->execute([utc_now(),$id]);$result['failed']++;
         }
     }
-    $db->exec("UPDATE communication_campaigns SET status='completed',updated_at='".utc_now()."' WHERE status='queued' AND NOT EXISTS(SELECT 1 FROM communication_deliveries d WHERE d.campaign_id=communication_campaigns.id AND d.status IN ('pending','processing'))");
+    $complete=$db->prepare("UPDATE communication_campaigns SET status='completed',updated_at=?
+        WHERE status='queued' ".($activityId!==null?"AND activity_id=? ":"")."
+        AND NOT EXISTS(SELECT 1 FROM communication_deliveries d
+            WHERE d.campaign_id=communication_campaigns.id AND d.status IN ('pending','processing'))");
+    $complete->execute($activityId!==null?[utc_now(),$activityId]:[utc_now()]);
     return $result;
 }
 
