@@ -209,3 +209,27 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
   .task-editor-bar #save-status[data-short-label]{flex-basis:66px;max-width:66px}
   .task-editor-bar #save-page,.task-editor-bar #publish-page{padding-inline:5px}
 }
+
+
+/* Mobile inspector is an explicit, reversible editing drawer; the canvas stays visible when collapsed. */
+.cms-mobile-inspector-header{display:none}
+@media(max-width:1024px){
+  .task-editor-workspace .inspector:has(> .inspector-section){display:block}
+  .task-editor-workspace .inspector > .cms-mobile-inspector-header{
+    display:flex;position:sticky;top:0;z-index:5;align-items:center;justify-content:space-between;
+    gap:10px;min-height:48px;padding:8px 14px;background:#f8f7f3;
+    border-bottom:1px solid #d4d5ce;color:#242723
+  }
+  .cms-mobile-inspector-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600}
+  .task-editor-workspace .inspector .cms-mobile-inspector-toggle{
+    flex-shrink:0;min-height:34px;padding:6px 12px;border:1px solid #c4c8bf;
+    border-radius:6px;background:#fff;color:#244437;font-size:12px;font-weight:600;
+  }
+  .task-editor-workspace .inspector .cms-mobile-inspector-toggle:focus-visible{
+    outline:3px solid #186f4d;outline-offset:2px
+  }
+  .task-editor-workspace .inspector.cms-mobile-collapsed{
+    display:block;max-height:48px;min-height:48px;overflow:hidden;
+  }
+  .task-editor-workspace .inspector.cms-mobile-collapsed > :not(.cms-mobile-inspector-header){display:none}
+}

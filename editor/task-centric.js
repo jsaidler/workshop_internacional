@@ -21,7 +21,7 @@ const activityLinks={
   '#editor-seo-link':'/admin/seo.php',
   '#editor-media-link':'/admin/media.php'
 };
-function dirty(){return ($('#save-status')?.textContent||'').toLowerCase().includes('não salvas')}
+function dirty(){const canonical=window.CmsEditorDraft;if(canonical?.isDirty)return canonical.isDirty();return ['dirty','saving','error'].includes($('#save-status')?.dataset.state||'')}
 function leaveTo(url){
   if(dirty()&&!confirm('Há alterações não salvas nesta página. Sair mesmo assim?'))return false;
   location.href=url;
