@@ -203,7 +203,7 @@ root.querySelector('[data-email-media-insert]')?.addEventListener('click',()=>{
   figure.dataset.emailMediaId=String(mediaSelected.id);figure.dataset.emailAlt=alt;
   decorateFigure(figure,mediaSelected);
   if(savedRange && editor.contains(savedRange.commonAncestorContainer)){
-    savedRange.deleteContents();savedRange.insertNode(figure);
+    let node=savedRange.endContainer;while(node!==editor && node.parentNode!==editor)node=node.parentNode;if(node!==editor && node.parentNode===editor)editor.insertBefore(figure,node.nextSibling);else editor.append(figure);
   }else editor.append(figure);
   editor.append(document.createElement('p'));
   htmlField.value=editor.innerHTML;textField.value=editor.innerText.trim();
