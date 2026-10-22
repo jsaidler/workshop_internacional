@@ -145,6 +145,10 @@ test.describe('real application: reviews and communications',()=>{
    await admin.locator('[data-mail-editor]').selectText('Encontro');
    await admin.getByRole('button',{name:'Negrito'}).click();
    await expect(admin.locator('[data-mail-editor] strong, [data-mail-editor] b').first()).toContainText('Encontro');
+   await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-desktop.png')});
+   await admin.setViewportSize({width:390,height:844});
+   await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-mobile.png')});
+   await admin.setViewportSize({width:1440,height:900});
    await admin.getByRole('button',{name:'Revisar mensagem'}).click();
    await expect(admin.locator('.comms-send-review')).toContainText('1 destinatário(s)');
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
@@ -154,6 +158,8 @@ test.describe('real application: reviews and communications',()=>{
    admin.once('dialog',dialog=>dialog.accept());
    await admin.getByRole('button',{name:'Confirmar e colocar na fila'}).click();
    await expect(admin.getByText(/e-mail\(s\) incluído\(s\) na fila/)).toBeVisible();
+   await expect(admin.getByRole('heading',{name:'Revisão do envio'})).toHaveCount(0);
+   await expect(admin.getByRole('heading',{name:/Mensagem #/})).toBeVisible();
    await admin.screenshot({path:info.outputPath('communications-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
    await admin.evaluate(()=>window.scrollTo(0,0));
