@@ -47,9 +47,9 @@ jobs:
           npm run build:email-lab
           npx playwright install --with-deps chromium
       - name: Real PHP SQLite integration
-        run: npx playwright test tools/browser-tests/course-review-communications.spec.cjs --workers=1 --reporter=line
+        run: npx playwright test tools/browser-tests/course-review-communications.spec.cjs --workers=1 --reporter=line --output=test-results/real-admin
       - name: Validate visual e-mail builder in Chromium
-        run: npx playwright test tools/browser-tests/communications-builder-lab.spec.cjs --workers=1 --reporter=line
+        run: npx playwright test tools/browser-tests/communications-builder-lab.spec.cjs --workers=1 --reporter=line --output=test-results/lab
       - name: Preserve mobile and desktop screenshots
         if: always()
         uses: actions/upload-artifact@v4
