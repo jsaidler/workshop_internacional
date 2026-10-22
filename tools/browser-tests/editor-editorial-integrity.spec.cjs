@@ -208,6 +208,7 @@ test('mobile inspector collapses without destroying content and expands for a ne
   await expect(toggle).toHaveAttribute('aria-expanded','false');
   await page.frameLocator('#page-frame').locator('#photo').click();
   await expect(inspector.locator('#i-alt')).toBeVisible();
+  await expect(inspector.locator('.cms-mobile-inspector-name')).toHaveText('Imagem');
   await expect(toggle).toHaveAttribute('aria-expanded','true');
   await page.keyboard.press('Escape');
   await expect(toggle).toHaveAttribute('aria-expanded','false');
