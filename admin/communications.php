@@ -294,7 +294,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <p>Redija avisos acadêmicos ou newsletters e revise os destinatários antes de enviar.</p></div>
     <?php if($selectedId):?><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Nova mensagem</a><?php endif;?>
   </div>
-  <section class="admin-card comms-section" data-communication-composer data-audience-url="/admin/communications-audience.php">
+  <section class="admin-card comms-section" data-communication-composer data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
     <header><div><h2><?=($selectedId?((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId):'Nova mensagem')?></h2>
     <p><?=h((string)(($form['status']??'draft')==='draft'?'Rascunho':'Envio já colocado na fila'))?></p></div></header>
     <?php if(($form['status']??'draft')==='draft'):?>
@@ -355,6 +355,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
           <textarea name="body_text" rows="11"><?=h((string)$form['body_text'])?></textarea>
         </label>
       </section>
+      <p class="comms-attention" data-unsaved-warning hidden>Você alterou a mensagem. Salve o rascunho antes de confirmar o envio.</p>
       <div class="comms-compose-actions">
         <button type="submit" name="action" value="save" class="admin-button">Salvar rascunho</button>
         <button type="submit" name="action" value="preview" class="admin-button secondary">Revisar mensagem</button>
