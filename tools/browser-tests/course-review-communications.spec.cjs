@@ -127,6 +127,8 @@ test.describe('real application: reviews and communications',()=>{
    await alerts.getByRole('button',{name:'Salvar avisos'}).click();
    await expect(alerts.locator('input[name="alerts[test_commented]"]')).not.toBeChecked();
    await admin.screenshot({path:info.outputPath('staff-notifications-desktop.png')});
+   const emailMedia=JSON.parse(execFileSync('php',[seed,sandbox,'email-media'],{encoding:'utf8',timeout:45000}));
+   expect(emailMedia.id).toBeGreaterThan(0);
    await admin.getByRole('navigation',{name:'Áreas de comunicações'}).getByRole('link',{name:'Mensagens'}).click();
    await expect(admin.getByRole('heading',{name:'Mensagens'})).toBeVisible();
    await admin.locator('select[name="category"]').selectOption('newsletter');
@@ -145,6 +147,15 @@ test.describe('real application: reviews and communications',()=>{
    await admin.locator('[data-mail-editor]').selectText('Encontro');
    await admin.getByRole('button',{name:'Negrito'}).click();
    await expect(admin.locator('[data-mail-editor] strong, [data-mail-editor] b').first()).toContainText('Encontro');
+   await admin.getByRole('radio',{name:'Editorial'}).check();
+   await admin.getByRole('button',{name:'Inserir imagem'}).click();
+   await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeVisible();
+   await expect(admin.locator('[data-email-media-gallery] .comms-media-tile')).toHaveCount(1);
+   await admin.locator('[data-email-media-gallery] .comms-media-tile').first().click();
+   await admin.locator('[data-email-media-alt]').fill('Bancada no laboratório fotográfico');
+   await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
+   await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeHidden();
+   await expect(admin.locator('[data-mail-editor] figure img')).toHaveCount(1);
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-mobile.png')});
@@ -153,7 +164,12 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('.comms-send-review')).toContainText('1 destinatário(s)');
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
    await expect(admin.locator('[data-recipient-count]')).toContainText('1 de 1');
-   await expect(admin.locator('.comms-email-preview').last()).toContainText('Encontro experimental');
+   const emailFrame=admin.frameLocator('.comms-send-review iframe[title="Prévia visual do e-mail"]');
+   await expect(emailFrame.locator('body')).toContainText('Encontro experimental');
+   await expect(emailFrame.locator('img')).toHaveAttribute('alt','Bancada no laboratório fotográfico');
+   await expect(emailFrame.locator('img')).toHaveAttribute('src',/https:\/\/example\.test\/uploads\/media\//);
+   await admin.locator('.comms-send-review [data-email-preview-mode="mobile"]').click();
+   await expect(admin.locator('.comms-send-review .comms-email-frame')).toHaveClass(/is-mobile/);
    await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeVisible();
    await admin.getByRole('button',{name:'Limpar seleção'}).click();
    await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeHidden();
