@@ -155,6 +155,12 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-recipient-count]')).toContainText('1 de 1');
    await expect(admin.locator('.comms-email-preview').last()).toContainText('Encontro experimental');
    await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeVisible();
+   await admin.getByRole('button',{name:'Limpar seleção'}).click();
+   await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeHidden();
+   await expect(admin.locator('[data-unsaved-warning]')).toBeVisible();
+   await admin.getByRole('button',{name:'Selecionar todos'}).click();
+   await admin.getByRole('button',{name:'Salvar rascunho'}).click();
+   await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeVisible();
    admin.once('dialog',dialog=>dialog.accept());
    await admin.getByRole('button',{name:'Confirmar e colocar na fila'}).click();
    await expect(admin.getByText(/e-mail\(s\) incluído\(s\) na fila/)).toBeVisible();
