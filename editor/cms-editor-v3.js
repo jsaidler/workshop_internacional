@@ -53,7 +53,7 @@ function renderStatus(){
   else if(state.page.publishedRevision===null){label='Rascunho · fora do ar';code='draft'}
   else if(state.page.draftRevision!==state.page.publishedRevision){label='Publicado · alterações em rascunho';code='draft-with-live'}
   else {label='Publicado · atualizado';code='published'}
-  statusEl.textContent=label;statusEl.dataset.state=code;
+  statusEl.textContent=label;statusEl.dataset.state=code;statusEl.dataset.shortLabel=({error:'Erro ao salvar',saving:'Salvando…',dirty:'Não salvo',draft:'Rascunho', 'draft-with-live':'No ar · rascunho',published:'Publicado'})[code]||label;statusEl.setAttribute('aria-label',label);
   const unpublish=document.querySelector('#unpublish-page');
   if(unpublish){unpublish.hidden=state.page.publishedRevision===null||state.page.isHome===true;unpublish.disabled=state.saving}
   const publishButton=document.querySelector('#publish-page');
