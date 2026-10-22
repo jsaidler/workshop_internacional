@@ -233,3 +233,21 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
   }
   .task-editor-workspace .inspector.cms-mobile-collapsed > :not(.cms-mobile-inspector-header){display:none}
 }
+
+
+/* Revision conflicts must stay readable and actionable even on mobile. */
+.cms-conflict-recovery{
+  width:min(560px,calc(100vw - 26px));max-height:min(85dvh,740px);overflow:auto;
+  border:1px solid #b6bcb5;border-radius:10px;padding:0;color:#252923;
+  background:#fafbf8;box-shadow:0 18px 60px rgba(0,0,0,.25)
+}
+.cms-conflict-recovery::backdrop{background:rgba(10,20,16,.58)}
+.cms-conflict-content{display:grid;gap:14px;padding:22px}
+.cms-conflict-content h2{margin:0;font-size:21px;line-height:1.25}
+.cms-conflict-content p{margin:0;font-size:13px;line-height:1.5}
+.cms-conflict-actions{display:flex;flex-wrap:wrap;gap:8px}
+.cms-conflict-actions button{border:1px solid #b7c3b9;background:#fff;color:#203c2e;min-height:38px;padding:9px 12px;border-radius:6px;font-weight:600;cursor:pointer}
+.cms-conflict-actions [data-conflict-download]{background:#186f4d;color:#fff;border-color:#186f4d}
+.cms-conflict-actions button:focus-visible{outline:3px solid #186f4d;outline-offset:2px}
+#cms-conflict-feedback{min-height:20px;color:#274835}
+@media(max-width:600px){.cms-conflict-content{padding:16px}.cms-conflict-actions{display:grid;grid-template-columns:1fr}.cms-conflict-actions button{text-align:center}}
