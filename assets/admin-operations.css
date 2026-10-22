@@ -103,4 +103,4 @@
 .comms-checklist label{display:flex;gap:12px;align-items:center;min-height:44px;padding:8px 10px;border:1px solid var(--admin-line);border-radius:4px;color:var(--admin-ink);font-size:13px;cursor:pointer}
 .comms-checklist input{min-height:18px;width:18px;accent-color:var(--admin-focus);flex:none}
 @media(max-width:950px){.comms-overview-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:720px){.comms-overview-grid,.comms-settings-grid{grid-template-columns:1fr}.comms-lead{align-items:flex-start;flex-direction:column;gap:16px}.comms-automation{display:grid;gap:9px}.comms-tabs{margin-bottom:16px}}
+@media(max-width:720px){.comms-overview-grid,.comms-settings-grid{grid-template-columns:1fr}.comms-lead{align-items:flex-start;flex-direction:column;gap:16px}.comms-automation{display:grid;gap:9px}.comms-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-bottom:16px;overflow:visible}.comms-tabs a{min-width:0;text-align:center}}
