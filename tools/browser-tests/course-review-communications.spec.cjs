@@ -156,6 +156,18 @@ test.describe('real application: reviews and communications',()=>{
    await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
    await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeHidden();
    await expect(admin.locator('[data-mail-editor] figure img')).toHaveCount(1);
+   await admin.getByRole('button',{name:'Editar imagem'}).click();
+   await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeVisible();
+   await admin.locator('[data-email-media-alt]').fill('Retrato do laboratório em bancada');
+   await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
+   await expect(admin.locator('[data-mail-editor] figure')).toHaveAttribute('data-email-alt','Retrato do laboratório em bancada');
+   await admin.getByRole('button',{name:'Remover imagem'}).click();
+   await expect(admin.locator('[data-mail-editor] figure')).toHaveCount(0);
+   await admin.getByRole('button',{name:'Inserir imagem'}).click();
+   await admin.locator('[data-email-media-gallery] .comms-media-tile').filter({hasText:'Fotografia do laboratório'}).click();
+   await admin.locator('[data-email-media-alt]').fill('Bancada no laboratório fotográfico');
+   await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
+   await expect(admin.locator('[data-mail-editor] figure img')).toHaveCount(1);
    await expect(admin.locator('[data-mail-editor]')).toContainText('Encontro experimental com vagas abertas.');
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
