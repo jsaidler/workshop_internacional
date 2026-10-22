@@ -209,6 +209,11 @@ test.describe('real application: reviews and communications',()=>{
    expect(data.campaigns[0].status).toBe('queued');
    expect(data.deliveries).toHaveLength(1);
    expect(data.deliveries[0].status).toBe('pending');
+   // A crafted GET query must never start dispatch, even for an authenticated admin.
+   await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId+'&tab=campaigns&run=1');
+   await expect(admin.locator('[data-communications-queue]')).toHaveAttribute('data-auto-run','0');
+   const afterCraftedGet=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(afterCraftedGet.deliveries[0].status).toBe('pending');
    await expect(admin.locator('[data-communications-queue] [data-queue-run]')).toBeVisible();
    await expect(admin.locator('[data-communications-queue] [data-queue-cancel]')).toBeEnabled();
    admin.once('dialog',dialog=>dialog.accept());
