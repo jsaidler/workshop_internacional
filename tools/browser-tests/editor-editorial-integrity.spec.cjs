@@ -404,3 +404,27 @@ test('partial clear formatting splits links without losing destination or duplic
   expect((state.html.match(/id="keep-link"/g)||[]).length).toBe(1);
   expect(state.html).not.toContain('contenteditable');
 });
+
+
+test('mixed inline selection clears only the selected range and retains CMS node identity',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><p id="edited-text" data-cms-editable><strong data-cms-node-id="bold-identity">Primeiro</strong> e <em>segundo</em>.</p></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.evaluate(el=>el.click());
+  await edited.evaluate(el=>{
+    const bold=el.querySelector('strong').firstChild,italic=el.querySelector('em').firstChild;
+    const range=el.ownerDocument.createRange();
+    range.setStart(bold,3);range.setEnd(italic,3);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited).toHaveText('Primeiro e segundo.');
+  await expect(edited.locator('strong')).toHaveText('Pri');
+  await expect(edited.locator('em')).toHaveText('undo');
+  expect(await edited.innerHTML()).toContain('</strong>meiro e seg<em>undo</em>');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect((state.html.match(/data-cms-node-id="bold-identity"/g)||[]).length).toBe(1);
+  expect(state.html).toContain('</strong>meiro e seg<em>undo</em>');
+});
