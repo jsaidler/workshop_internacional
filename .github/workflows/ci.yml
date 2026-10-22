@@ -179,6 +179,7 @@ jobs:
       - name: Install browser test dependencies
         run: |
           npm install --no-audit --no-fund
+          npm run build:email-lab
           npx playwright install --with-deps chromium webkit
       - name: Browser interaction regression
         run: |
