@@ -180,3 +180,32 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
   .task-editor-bar .editor-save-action{font-size:10px;padding:5px 7px}
   .task-editor-bar #publish-page{font-size:10px;padding:5px 7px}
 }
+
+
+/* Keep editor actions readable without hiding the true live/draft state. */
+@media(max-width:600px){
+  .task-editor-bar #save-status[data-short-label]{
+    flex:0 1 86px;
+    max-width:86px;
+    min-width:54px;
+    font-size:0;
+    line-height:1.15;
+  }
+  .task-editor-bar #save-status[data-short-label]::after{
+    content:attr(data-short-label);
+    font-size:10px;
+    line-height:1.15;
+    font-weight:550;
+  }
+  .task-editor-bar #save-page,
+  .task-editor-bar #publish-page{
+    flex-shrink:0;
+    min-height:34px;
+    white-space:normal;
+    line-height:1.15;
+  }
+}
+@media(max-width:340px){
+  .task-editor-bar #save-status[data-short-label]{flex-basis:66px;max-width:66px}
+  .task-editor-bar #save-page,.task-editor-bar #publish-page{padding-inline:5px}
+}

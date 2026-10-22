@@ -102,6 +102,8 @@ test('responsive toolbar keeps save status and distinct publication control visi
   await page.setViewportSize({width:390,height:844});
   await open(page);
   await expect(page.locator('#save-status')).toBeVisible();
+  await expect(page.locator('#save-status')).toHaveAttribute('data-short-label','Rascunho');
+  await expect.poll(()=>page.locator('#save-status').evaluate(el=>getComputedStyle(el,'::after').content)).toContain('Rascunho');
   await expect(page.locator('#save-page')).toBeVisible();
   await expect(page.locator('#publish-page')).toBeVisible();
   require('fs').mkdirSync('test-results/editor-integrity',{recursive:true});
