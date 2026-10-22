@@ -380,3 +380,45 @@ test('history captures the initial iframe state before immediate text formatting
   await expect(page.locator('#redo')).toBeEnabled();
   expect(state.html).toContain('Texto inicial');
 });
+
+test('stale revision opens recovery without overwriting server, local draft can be exported',async({page})=>{
+  const state=await mockApp(page,{published:1});
+  await open(page);
+  state.revision=3; // Another authenticated session has saved revision 3.
+  const field=page.frameLocator('#page-frame').locator('#edited-text');
+  await field.click();
+  await field.evaluate(el=>{
+    el.textContent='Minha edição local não pode ser perdida';
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  await page.evaluate(()=>window.CmsEditorDraft.save().catch(()=>{}));
+  const dialog=page.locator('#cms-conflict-recovery');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('#cms-conflict-revisions')).toContainText('revisão 2');
+  expect(state.revision).toBe(3);
+  expect(state.html).not.toContain('Minha edição local');
+  const fileEvent=page.waitForEvent('download');
+  await dialog.locator('[data-conflict-download]').click();
+  const download=await fileEvent;
+  expect(download.suggestedFilename()).toContain('pagina-301-revisao-2');
+  const backup=JSON.parse(require('fs').readFileSync(await download.path(),'utf8'));
+  expect(backup.format).toBe('workshop-cms-editor-recovery-v1');
+  expect(backup.document.html).toContain('Minha edição local não pode ser perdida');
+  expect(backup.basedOnRevision).toBe(2);
+  await dialog.locator('[data-conflict-check]').click();
+  await expect(dialog.locator('#cms-conflict-feedback')).toContainText('revisão atual no servidor é 3');
+  // Compare the actual modal at desktop and mobile viewports, not CSS alone.
+  const fs=require('fs');
+  fs.mkdirSync('test-results/editor-integrity',{recursive:true});
+  await page.screenshot({path:'test-results/editor-integrity/conflict-recovery-desktop.png'});
+  await page.setViewportSize({width:390,height:844});
+  await expect(dialog.locator('[data-conflict-download]')).toBeVisible();
+  await expect(dialog.locator('[data-conflict-copy]')).toBeVisible();
+  await expect(dialog.locator('[data-conflict-check]')).toBeVisible();
+  await expect(dialog.locator('[data-conflict-close]')).toBeVisible();
+  await page.screenshot({path:'test-results/editor-integrity/conflict-recovery-mobile-390.png'});
+  await dialog.locator('[data-conflict-close]').click();
+  await expect(dialog).not.toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>window.CmsEditorDraft.isDirty())).toBe(true);
+  await expect(field).toContainText('Minha edição local não pode ser perdida');
+});
