@@ -48,7 +48,7 @@ test('GrapesJS MJML builder: real components, compilation, round trip, safe reje
   // Explicitly adding an external image must NEVER yield exportable HTML.
   const invalid=await page.evaluate(()=>{
     const ed=window.__communicationsEmailLab.editor;
-    const col=ed.getWrapper().find('mj-column')[0];
+    const col=window.__communicationsEmailLab.findComponent('mj-column');
     col.append('<mj-image src="https://tracking.example.org/pixel.png" alt="Tracker" />');
     try{window.__communicationsEmailLab.exportEmail();return 'accepted';}
     catch(e){return e.message;}
