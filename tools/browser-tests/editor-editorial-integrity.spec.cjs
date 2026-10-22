@@ -379,6 +379,7 @@ test('partial clear formatting retains adjacent bold text and undo/redo history'
   await page.locator('#undo').click();
   await expect(edited.locator('strong')).toHaveCount(1);
   await expect(edited.locator('strong')).toHaveText('antes meio depois');
+  expect(await edited.innerHTML()).toContain('<strong>antes meio depois</strong>');
   await expect(page.locator('#redo')).toBeEnabled();
   await page.locator('#redo').click();
   await expect(edited.locator('strong')).toHaveCount(2);
