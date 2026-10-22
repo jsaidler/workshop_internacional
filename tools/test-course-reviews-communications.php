@@ -55,6 +55,7 @@ SQL);
 (require dirname(__DIR__).'/migrations/103_communications.php')($db);
 (require dirname(__DIR__).'/migrations/108_communication_recipient_rich_body.php')($db);
 (require dirname(__DIR__).'/migrations/109_communication_email_templates.php')($db);
+(require dirname(__DIR__).'/migrations/110_communication_preheader.php')($db);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
 require dirname(__DIR__).'/app/course_reviews.php';
 require dirname(__DIR__).'/app/communications_brevo_credentials.php';
@@ -145,10 +146,11 @@ check_feature(str_contains(communication_html_text($clean),'Mensagem importante'
 
 $selected=communication_create_campaign($db,1,[
  'category'=>'operational','course_id'=>1,'cohort_id'=>11,
- 'subject'=>'Mensagem individual','body_html'=>'<p><strong>Encontro</strong> especial.</p>',
+ 'subject'=>'Mensagem individual','preheader'=>'Acompanhe o encontro experimental','body_html'=>'<p><strong>Encontro</strong> especial.</p>',
  'body_text'=>'ignored fallback','selection_explicit'=>1,'recipient_ids'=>[5]
 ]);
 check_feature(communication_campaign_target_ids($db,$selected)===[5],'only explicitly selected recipient saved');
+check_feature((string)communication_campaign($db,1,$selected)['preheader']==='Acompanhe o encontro experimental','preheader persisted with draft');
 check_feature(count(communication_campaign_audience($db,1,communication_campaign($db,1,$selected)))===1,'selected audience limited to one');
 $invalid=false;try{
  communication_update_campaign($db,1,$selected,[
@@ -166,11 +168,13 @@ $sentRich=communication_dispatch($db,20,$richSender);
 check_feature($sentRich['sent']===1&&count($richSent)===1,'exactly one selected rich email sent');
 check_feature($richSent[0]['email']==='e@example.test','only specifically chosen student received email');
 check_feature(str_contains($richSent[0]['html'],'<strong>Encontro</strong>'),'HTML survives delivery preparation');
+check_feature($richSent[0]['preheader']==='Acompanhe o encontro experimental','dispatch forwards preheader to sender');
 check_feature(str_contains($richSent[0]['body'],'Encontro especial.'),'plaintext alternative available');
 
 $duplicate=communication_duplicate_campaign($db,1,$selected);
 $duplicateRow=communication_campaign($db,1,$duplicate);
 check_feature($duplicateRow['status']==='draft'&&$duplicateRow['subject']==='Mensagem individual','duplicated message remains a draft');
+check_feature($duplicateRow['preheader']==='Acompanhe o encontro experimental','duplicating a campaign retains the optional preheader');
 check_feature(communication_campaign_target_ids($db,$duplicate)===[5],'duplication retains current eligible recipient selection');
 
 /* Manual processing, cancellation, history, idempotence and activity isolation. */
