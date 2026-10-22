@@ -192,7 +192,7 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
    admin.once('dialog',dialog=>dialog.accept());
    await admin.getByRole('button',{name:'Somente colocar na fila'}).click();
-   await expect(admin.getByText(/e-mail\\(s\\) colocado\\(s\\) na fila/)).toBeVisible();
+   await expect(admin.getByText(/e-mail\(s\) colocado\(s\) na fila/)).toBeVisible();
    await expect(admin.getByRole('heading',{name:'Revisão do envio'})).toHaveCount(0);
    await expect(admin.getByRole('heading',{name:/Mensagem #/})).toBeVisible();
    await admin.screenshot({path:info.outputPath('communications-desktop.png')});
