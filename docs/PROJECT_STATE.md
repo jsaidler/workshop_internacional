@@ -1,5 +1,12 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Correção editorial de mensagens de comunicações — 22/10/2026 (branch de revisão)
+
+Em `admin_student_notice_message()` foi identificado conteúdo indevido no e-mail ao administrador: a frase sobre imagens permanecerem no CMS reproduzia uma justificativa interna de privacidade e implementação, sem função para o destinatário. O corpo do aviso deve se limitar ao evento, aluno, curso, turma, identificação da atividade e link autenticado de acesso. A regra de não enviar textos ou imagens privados permanece nos serviços, testes e documentação, nunca como justificativa incorporada ao corpo do e-mail.
+
+Na tela **Admin → Comunicações**, os textos de ajuda foram simplificados para operações e decisões do administrador, eliminando explicações redundantes sobre arquitetura interna, deduplicação e ausência de envio automático ao carregar a página. Revisão conforme `docs/UI_CONTENT_RULES.md`. Mudança estritamente editorial, sem alteração dos controles de acesso, filas, transporte e consentimento. Até o merge e pacote publicado, esta correção não está no site.
+
+
 ## Correção do envio de e-mails — 22/10/2026 (branch de correção)
 
 Relato operacional: na administração de Comunicações, o teste de mensagem exigia `BREVO_API_KEY` e `BREVO_FROM_EMAIL` e lançava uma mensagem de exceção técnica ao administrador. Causa: campanha e botão de teste chamavam apenas o transporte externo; avisos aos administradores tinham fallback paralelo via `mail()`. Isso descumpre o princípio de uma autoridade e de um CMS administrável.
