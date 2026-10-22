@@ -311,12 +311,12 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       </form>
     </section>
     <section class="admin-card comms-section comms-wide">
-      <header><div><h2>Envio automático</h2><p>Mensagens na fila aguardam o processamento periódico da hospedagem.</p></div></header>
+      <header><div><h2>Envio automático (opcional)</h2><p>Para enviar manualmente, use Enviar agora em Mensagens ou Visão geral. A rotina agendada é apenas uma alternativa para processar pendências sem manter a página aberta.</p></div></header>
       <div class="comms-automation">
         <p><strong>Última execução:</strong> <?=$workerLast?h((string)$workerLast):'Nenhuma registrada'?></p>
         <p><strong>Na fila:</strong> <?=$staffQueueCount?> avisos e <?=$mailQueueCount?> mensagens.</p>
       </div>
-      <?php if(!$workerActive):?><p class="comms-attention"><?=$workerLast?'A rotina não executou recentemente.':'A rotina automática ainda não foi detectada.'?> Verifique o agendamento de tarefas da hospedagem.</p><?php endif;?>
+      <?php if(!$workerActive):?><p class="comms-attention"><?=$workerLast?'A rotina automática não executou recentemente.':'Nenhuma execução automática identificada.'?> Se desejar entregas periódicas sem abrir o painel, configure o agendamento na hospedagem.</p><?php endif;?>
     </section>
   </div>
 <?php elseif($tab==='alerts'):?>
@@ -363,7 +363,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
   </div>
   <section class="admin-card comms-section" data-communication-composer data-email-media-url="/admin/communications-media.php" data-email-csrf="<?=h(csrf_token('communications-admin'))?>" data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
     <header><div><h2><?=($selectedId?((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId):'Nova mensagem')?></h2>
-    <p><?=h((string)(($form['status']??'draft')==='draft'?'Rascunho':'Envio já colocado na fila'))?></p></div></header>
+    <p><?=h((string)(($form['status']??'draft')==='draft'?'Rascunho':(($form['status']??'')==='queued'?'Aguardando processamento':'Processamento encerrado')))?></p></div></header>
     <?php if(($form['status']??'draft')==='draft'):?>
     <form method="post" class="comms-compose-form" data-composer-form>
       <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
@@ -528,7 +528,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <td><?=h($campaign['category']==='newsletter'?'Newsletter':'Aviso de curso')?></td>
       <td><?=h($campaign['status']==='completed' && (int)$campaign['cancelled_count']>0
           ? ((int)$campaign['cancelled_count']===(int)$campaign['audience_count']?'Cancelada':'Parcialmente cancelada')
-          : (['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status']))?></td>
+          : ($campaign['status']==='completed' && (int)$campaign['failed_count']>0
+            ? 'Processada com falhas'
+            : (['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status'])))?></td>
       <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?>
         <?php if((int)$campaign['cancelled_count']>0 || (int)$campaign['failed_count']>0):?>
           <small class="muted">· <?=(int)$campaign['cancelled_count']?> cancelado(s) · <?=(int)$campaign['failed_count']?> falha(s)</small>
