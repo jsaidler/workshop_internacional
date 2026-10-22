@@ -194,6 +194,6 @@ function admin_student_notice_dispatch_manual(PDO $db,int $adminId,?callable $se
 }
 
 function admin_student_notice_recent(PDO $db,int $adminId): array {
-    $q=$db->prepare('SELECT event_kind,status,created_at,sent_at FROM admin_student_notice_outbox WHERE admin_id=? ORDER BY id DESC LIMIT 10');
+    $q=$db->prepare('SELECT event_kind,status,error_code,created_at,updated_at,sent_at FROM admin_student_notice_outbox WHERE admin_id=? ORDER BY id DESC LIMIT 10');
     $q->execute([$adminId]);return $q->fetchAll(PDO::FETCH_ASSOC);
 }
