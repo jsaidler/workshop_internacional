@@ -1,5 +1,13 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Correção do envio de e-mails — 22/10/2026 (branch de correção)
+
+Relato operacional: na administração de Comunicações, o teste de mensagem exigia `BREVO_API_KEY` e `BREVO_FROM_EMAIL` e lançava uma mensagem de exceção técnica ao administrador. Causa: campanha e botão de teste chamavam apenas o transporte externo; avisos aos administradores tinham fallback paralelo via `mail()`. Isso descumpre o princípio de uma autoridade e de um CMS administrável.
+
+Branch `fix/communications-mail-setup-2026-10-22`: centraliza envio no serviço `communication_send_message()`, com seleção de Brevo configurado ou do `mail()` nativo da hospedagem, sem exigir Brevo. Adiciona a migração 105 para nome/e-mail remetente (configuráveis dentro do CMS) e o estado da execução periódica do worker. Em **Admin → Comunicações** existe um controle de remetente, teste ao e-mail da conta atual, estado do mecanismo, data da última execução automática e quantidade pendente de avisos/campanhas. Mantém separados aviso dos alunos ao administrador, aviso acadêmico e newsletter opt-in; não envia e-mails dentro das mutações pedagógicas.
+
+A implementação não garante recebimento sem configuração/deliverability do servidor e não configura cron na hospedagem. O teste só atesta aceite pelo transporte; verificação de caixa de entrada, remetente e agendamento continuam obrigatórias. Esta seção descreve código em revisão, **não publicado nem instalado**.
+
 Este é o documento canônico de estado operacional do projeto. Leia antes de alterar código, conteúdo, deploy ou fluxo administrativo. Atualize este arquivo sempre que uma decisão estrutural, operacional ou editorial mudar.
 
 **Regra global anterior a qualquer trabalho:** ler `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md`. Se existir documentação aplicável à tarefa, ela deve ser descoberta e consultada antes de qualquer decisão ou alteração. Essa obrigação vale para qualquer projeto e não apenas para este repositório.
