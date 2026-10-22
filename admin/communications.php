@@ -21,7 +21,7 @@ $selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
 if($selectedId && !$selected){http_response_code(404);exit('Comunicação não encontrada nesta área.');}
 $form=$selected?:[
     'category'=>'newsletter','course_id'=>max(0,(int)($_GET['course']??0)),
-    'cohort_id'=>0,'subject'=>'','body_text'=>'','body_html'=>'','status'=>'draft'
+    'cohort_id'=>0,'subject'=>'','body_text'=>'','body_html'=>'','template_key'=>'minimal','status'=>'draft'
 ];
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('communications-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Solicitação inválida.');}
@@ -75,6 +75,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
               'subject'=>(string)($_POST['subject']??''),
               'body_text'=>(string)($_POST['body_text']??''),
               'body_html'=>(string)($_POST['body_html']??''),
+              'template_key'=>(string)($_POST['template_key']??'minimal'),
               'recipient_ids'=>is_array($_POST['recipient_ids']??null)?$_POST['recipient_ids']:[],
               'selection_explicit'=>1,'status'=>'draft'
             ];
@@ -101,7 +102,9 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
               'name'=>'Teste do administrador','email'=>$email,
               'subject'=>'[TESTE] '.(string)$selected['subject'],
               'body'=>(string)$selected['body_text']."\n\n[Mensagem de teste. Nenhum aluno foi notificado.]",
-              'html'=>(string)($selected['body_html']??'')
+              'html'=>(string)($selected['body_html']??''),
+              'template'=>(string)($selected['template_key']??'minimal'),
+              'activity_id'=>$activityId
             ]);
             $notice='O servidor aceitou a mensagem de teste. Confira sua caixa de entrada e a pasta de spam.';
         }else throw new RuntimeException('Ação inválida.');
@@ -294,7 +297,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <p>Redija avisos acadêmicos ou newsletters e revise os destinatários antes de enviar.</p></div>
     <?php if($selectedId):?><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Nova mensagem</a><?php endif;?>
   </div>
-  <section class="admin-card comms-section" data-communication-composer data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
+  <section class="admin-card comms-section" data-communication-composer data-email-media-url="/admin/communications-media.php" data-email-csrf="<?=h(csrf_token('communications-admin'))?>" data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
     <header><div><h2><?=($selectedId?((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId):'Nova mensagem')?></h2>
     <p><?=h((string)(($form['status']??'draft')==='draft'?'Rascunho':'Envio já colocado na fila'))?></p></div></header>
     <?php if(($form['status']??'draft')==='draft'):?>
@@ -337,6 +340,18 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
         </div>
         <p class="muted" data-recipient-status aria-live="polite">Somente pessoas elegíveis para o tipo, curso e turma escolhidos.</p>
       </section>
+      <fieldset class="comms-template-picker">
+        <legend>Modelo visual do e-mail</legend>
+        <div class="comms-template-grid">
+          <?php foreach(communication_template_keys() as $key=>$label):?>
+            <label class="comms-template-option">
+              <input type="radio" name="template_key" value="<?=h($key)?>"<?=($form['template_key']??'minimal')===$key?' checked':''?>>
+              <span class="comms-template-thumbnail comms-template-<?=h($key)?>" aria-hidden="true"><span></span><i></i><b></b><em></em></span>
+              <strong><?=h($label)?></strong>
+            </label>
+          <?php endforeach;?>
+        </div>
+      </fieldset>
       <label class="comms-compose-label">Assunto<input name="subject" maxlength="180" value="<?=h((string)$form['subject'])?>" required></label>
       <section class="comms-rich-section" aria-labelledby="rich-heading">
         <div class="comms-recipient-heading"><h3 id="rich-heading">Mensagem</h3><span class="muted">Editor visual</span></div>
@@ -347,6 +362,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
           <button type="button" data-editor-command="insertUnorderedList">Lista</button>
           <button type="button" data-editor-command="insertOrderedList">1. Lista</button>
           <button type="button" data-editor-command="createLink">Link</button>
+          <button type="button" data-email-media-open class="comms-toolbar-image">Inserir imagem</button>
           <button type="button" data-editor-command="removeFormat">Limpar formatação</button>
         </div>
         <div class="comms-rich-editor" data-mail-editor role="textbox" aria-label="Corpo da mensagem" aria-multiline="true" contenteditable="true" hidden><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
@@ -361,17 +377,35 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
         <button type="submit" name="action" value="preview" class="admin-button secondary">Revisar mensagem</button>
       </div>
     </form>
+    <dialog class="comms-media-dialog" data-email-media-dialog aria-labelledby="email-media-dialog-heading">
+      <div class="comms-media-dialog-inner">
+        <header><h3 id="email-media-dialog-heading">Adicionar imagem</h3><button type="button" class="admin-button secondary" data-email-media-close>Fechar</button></header>
+        <div class="comms-media-picker-actions">
+          <label>Pesquisar na Biblioteca<input type="search" data-email-media-search placeholder="Nome da imagem"></label>
+          <label class="admin-button secondary">Enviar nova imagem<input type="file" data-email-media-upload accept="image/jpeg,image/png,image/webp" hidden></label>
+        </div>
+        <p class="muted" data-email-media-status aria-live="polite"></p>
+        <div class="comms-media-gallery" data-email-media-gallery></div>
+        <div class="comms-media-insert" hidden data-email-media-insert-panel>
+          <img alt="" data-email-media-selected-image>
+          <label>Descrição da imagem (texto alternativo)<input type="text" data-email-media-alt maxlength="250" required placeholder="Descreva o conteúdo para quem não puder visualizar"></label>
+          <button type="button" class="admin-button" data-email-media-insert>Inserir na mensagem</button>
+        </div>
+      </div>
+    </dialog>
     <?php else:?>
     <h3><?=h((string)$form['subject'])?></h3>
-    <div class="comms-email-preview"><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
+    <div class="comms-preview-toolbar"><strong>Prévia do e-mail</strong><div class="comms-preview-toggle" aria-label="Largura da prévia"><button type="button" data-email-preview-mode="desktop" aria-pressed="true">Computador</button><button type="button" data-email-preview-mode="mobile" aria-pressed="false">Celular</button></div></div>
+      <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h(communication_email_document((string)($form['body_html']??''),(string)$form['body_text'],$db,(string)($form['template_key']??'minimal'),$activityId))?>"></iframe></div>
     <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila e será processada pelo envio automático.':'O processamento desta mensagem foi concluído.')?></p>
     <?php endif;?>
     <?php if($preview!==null && ($form['status']??'draft')==='draft'):?>
     <section class="comms-send-review" aria-labelledby="send-review-title">
       <header><h3 id="send-review-title">Revisão do envio</h3><p><strong><?=$preview?></strong> destinatário(s) selecionado(s) e elegível(is).</p></header>
       <p><strong><?=h((string)$form['subject'])?></strong></p>
-      <div class="comms-email-preview"><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
-      <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)($form['body_html']??'')===(string)($selected['body_html']??'') && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id']):?>
+      <div class="comms-preview-toolbar"><strong>Prévia do e-mail</strong><div class="comms-preview-toggle" aria-label="Largura da prévia"><button type="button" data-email-preview-mode="desktop" aria-pressed="true">Computador</button><button type="button" data-email-preview-mode="mobile" aria-pressed="false">Celular</button></div></div>
+      <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h(communication_email_document((string)($form['body_html']??''),(string)$form['body_text'],$db,(string)($form['template_key']??'minimal'),$activityId))?>"></iframe></div>
+      <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)($form['body_html']??'')===(string)($selected['body_html']??'') && (string)($form['template_key']??'minimal')===(string)($selected['template_key']??'minimal') && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id']):?>
       <form method="post" class="comms-inline-actions">
         <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
         <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
