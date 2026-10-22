@@ -17,7 +17,7 @@
   <div class="editor-toolbar editor-actions">
     <button type="button" id="editor-structure-mobile" class="editor-structure-mobile-toggle" aria-controls="editor-structure-panel" aria-expanded="false">Estrutura</button>
     <a id="editor-submissions" class="editor-context-link" href="#">Inscrições</a>
-    <span id="save-status" data-state="draft-with-live" role="status" aria-live="polite">Publicado · alterações em rascunho</span>
+    <span id="save-status" data-state="draft-with-live" data-short-label="No ar · rascunho" role="status" aria-live="polite">Publicado · alterações em rascunho</span>
     <button type="button" id="save-page" class="editor-save-action">Salvar rascunho</button>
     <button type="button" id="publish-page" class="publish">Publicar</button>
     <details class="editor-more"><summary>•••</summary><div class="editor-more-menu"><button type="button" id="unpublish-page">Retirar da publicação</button><a href="#">Páginas</a></div></details>
@@ -53,5 +53,7 @@ if(auditState==='empty'){
 window.fetch=(url)=>Promise.resolve(new Response(JSON.stringify({activity:{id:1,title:'JSaidler Fotografia',publicUrl:'/'},pages:[{id:1,locale:'pt-BR',title:'Positivo Direto',navTitle:'Positivo Direto',isHome:true,publishedRevision:1,draftRevision:1}],newResponses:0}),{status:200,headers:{'Content-Type':'application/json'}}));
 </script>
 <script src="/editor/task-centric.js"></script>
+<!-- Same interactive mobile inspector controller as the production editor. -->
+<script src="/editor/cms-mobile-inspector.js"></script>
 </body>
 </html>
