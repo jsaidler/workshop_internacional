@@ -1,5 +1,9 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Substituição do editor de e-mails — laboratório GrapesJS/MJML (22/10/2026, branch isolada)
+
+Questão #290. O compositor artesanal de `contenteditable` não atende a edição visual profissional. A prova de conceito autenticada `/admin/communications-builder-lab.php` utiliza bibliotecas instaladas via npm e compiladas durante a construção do pacote, sem CDN ou Node na hospedagem. Permite blocos, duas colunas, edição direta, imagens da Biblioteca pública, prévia MJML e reabertura em memória. **Sem persistência, sem envio e sem acesso aos dados das campanhas** nesta etapa; não afeta a versão publicada. O backend atual sanitiza HTML e descarta layouts tabulares, então NÃO pode substituir-se a UI sem criar um pipeline completo de validação do documento MJML, renderização e geração de texto simples, com testes de segurança e compatibilidade, especialmente com imagens e rascunhos já enviados. O teste de navegador isola compilação, reabertura e rejeição de mídia externa; QA visual e análise dos resultados continuam obrigatórios.
+
 ## Envio imediato e controle da fila de Comunicações — 22/10/2026 (PR em revisão)
 
 **Avisos administrativos também não dependem de cron.** A aba Avisos dos alunos passou a oferecer envio manual, cancelamento de pendentes e reprocessamento confirmado de falhas. Claims, recuperações e estado da fila respeitam o administrador autenticado; o mesmo lock coordena campanha, avisos e worker opcional. Não há reenvio automático após resultado externo inconclusivo. A migração preexistente 104 comporta estados e motivos utilizados. Testes unitários e de navegador foram acrescentados e ainda precisam de validação no CI.
