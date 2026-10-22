@@ -81,14 +81,24 @@ function initLab(){
     return;
   }
   const findComponent=(type)=>{
-    const selected=editor.getSelected();
-    let parent=selected;
-    while(parent){
-      if(String(parent.get('tagName')||'').toLowerCase()===type)return parent;
-      parent=parent.parent();
-    }
-    const found=editor.getWrapper().find(type);
-    return found.length?found[0]:null;
+    // GrapesJS MJML components have component types; CSS selector-based find()
+    // does not match those types consistently across GrapesJS versions.
+    const match=component=>component&&(
+      String(component.get('type')||'').toLowerCase()===type||
+      String(component.get('tagName')||'').toLowerCase()===type
+    );
+    let selected=editor.getSelected();
+    while(selected){if(match(selected))return selected;selected=selected.parent();}
+    const walk=component=>{
+      if(match(component))return component;
+      const children=component.components();
+      for(let i=0;i<children.length;i++){
+        const found=walk(children.at(i));
+        if(found)return found;
+      }
+      return null;
+    };
+    return walk(editor.getWrapper());
   };
   const exportEmail=()=>{
     const mjml=editor.getHtml();
@@ -180,7 +190,7 @@ function initLab(){
     }
     setStatus(status,'Construtor carregado. Edite blocos e gere a prévia para conferir o HTML.');
   });
-  window.__communicationsEmailLab={editor,exportEmail,roundTrip,doExport,allowedMedia,ready:true};
+  window.__communicationsEmailLab={editor,exportEmail,roundTrip,doExport,findComponent,allowedMedia,ready:true};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initLab,{once:true});
 else initLab();
