@@ -83,6 +83,8 @@ function communication_email_document(string $html,string $plain,?PDO $db=null,s
     $brand=communication_email_brand($db,$activityId);
     $name=htmlspecialchars($brand['name'],ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
     $ink=$brand['ink'];$accent=$brand['accent'];$bg=$brand['bg'];$muted=$brand['muted'];
+    $inner=str_replace('<hr>','<hr style="border:0;border-top:1px solid #d5d7d4;margin:25px 0">',$inner);
+    $inner=str_replace(' data-email-button="1"',' style="display:inline-block;background:'.$accent.';color:#ffffff;padding:12px 20px;text-decoration:none;font:bold 14px Arial,sans-serif"',$inner);
     $ground=$template==='minimal'?'#ffffff':$bg;
     $mast=$template==='destaque'
       ?'<tr><td style="padding:32px 36px;background:'.$ink.';color:#ffffff;font:bold 19px Arial,sans-serif">'.$name.'</td></tr>'
