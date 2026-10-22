@@ -9,6 +9,55 @@ function editableFor(range){
   return edit&&edit.contains(range.startContainer)&&edit.contains(range.endContainer)?edit:null;
 }
 function unwrap(node){node.replaceWith(...node.childNodes)}
+/**
+ * Toggle a partial selection off inside one formatted text run. Split the run
+ * into before / selection / after, cloning its non-editable structure. Nested
+ * links are preserved with their original href instead of being flattened.
+ * Mixed-node selections still use the conservative path below.
+ */
+function splitFormattedRun(formatted,range,doc,selection){
+  const text=range.startContainer;
+  if(text!==range.endContainer||text?.nodeType!==3||!formatted.contains(text))return false;
+  const from=range.startOffset,to=range.endOffset;
+  if(from<=0&&to>=text.length)return false;
+  const inner=[];
+  let current=text;
+  while(current.parentNode&&current.parentNode!==formatted){
+    const parent=current.parentNode;
+    if(parent.nodeType!==1||parent.childNodes.length!==1||parent.firstChild!==current)return false;
+    // Only clone ordinary inline wrappers; editing links is safe and retains href.
+    if(!['A','EM','I','STRONG','B','SPAN','U','FONT'].includes(parent.tagName))return false;
+    inner.unshift(parent);
+    current=parent;
+  }
+  if(current.parentNode!==formatted||formatted.childNodes.length!==1)return false;
+  const value=text.data,selected=value.slice(from,to);
+  if(!selected)return false;
+  function piece(value,includeFormat){
+    let leaf=doc.createTextNode(value),node=leaf;
+    for(let i=inner.length-1;i>=0;i--){
+      const wrapper=inner[i].cloneNode(false);
+      wrapper.append(node);node=wrapper;
+    }
+    if(includeFormat){
+      const wrapper=formatted.cloneNode(false);
+      wrapper.append(node);node=wrapper;
+    }
+    return {root:node,text:leaf};
+  }
+  const left=value.slice(0,from),right=value.slice(to);
+  const fragment=doc.createDocumentFragment();
+  if(left)fragment.append(piece(left,true).root);
+  const middle=piece(selected,false);
+  fragment.append(middle.root);
+  if(right)fragment.append(piece(right,true).root);
+  formatted.replaceWith(fragment);
+  const newRange=doc.createRange();
+  newRange.selectNodeContents(middle.text);
+  selection?.removeAllRanges();
+  selection?.addRange(newRange);
+  return true;
+}
 function apply(command,doc,capturedRange){
   if(!['bold','italic','removeFormat'].includes(command)||!doc)return false;
   const selection=doc.defaultView?.getSelection();
@@ -22,7 +71,7 @@ function apply(command,doc,capturedRange){
     // A whole formatted span can be toggled off without reparenting links.
     // Partial spans are not flattened because that would silently strip
     // formatting from unselected characters.
-    if(range.toString()!==present.textContent)return false;
+    if(range.toString()!==present.textContent)return splitFormattedRun(present,range,doc,selection);
     if(command==='removeFormat')present.querySelectorAll('strong,b,em,i,span,font,u').forEach(unwrap);
     const nodes=[...present.childNodes],first=nodes[0],last=nodes.at(-1);
     if(!nodes.length)return false;
