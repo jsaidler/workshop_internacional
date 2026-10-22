@@ -54,6 +54,8 @@ function initLab(){
   const mediaPicker=root.querySelector('[data-lab-media]');
   const mediaAlt=root.querySelector('[data-lab-media-alt]');
   const mediaStatus=root.querySelector('[data-lab-media-status]');
+  const blocksHost=root.querySelector('[data-lab-blocks]');
+  const stylesHost=root.querySelector('[data-lab-styles]');
   if(!mount||!preview||!source)return;
   if(typeof mjmlPlugin!=='function'){
     setStatus(status,'Não foi possível carregar a biblioteca MJML.',true);return;
@@ -66,6 +68,9 @@ function initLab(){
       fromElement:false,
       height:'630px',
       storageManager:false,
+      panels:{defaults:[]},
+      blockManager:{appendTo:blocksHost},
+      styleManager:{appendTo:stylesHost},
       allowScripts:0,
       avoidInlineStyle:false,
       noticeOnUnload:false,
@@ -136,10 +141,20 @@ function initLab(){
   root.querySelector('[data-lab-redo]')?.addEventListener('click',()=>editor.UndoManager.redo());
   root.querySelector('[data-lab-desktop]')?.addEventListener('click',()=>editor.setDevice('Desktop'));
   root.querySelector('[data-lab-mobile]')?.addEventListener('click',()=>editor.setDevice('Mobile'));
-  root.querySelector('[data-lab-inspector-toggle]')?.addEventListener('click',event=>{
-    const active=root.classList.toggle('email-lab-inspector-open');
-    event.currentTarget.setAttribute('aria-pressed',String(active));
-    event.currentTarget.textContent=active?'Fechar estilos':'Estilos';
+  function showTool(tool){
+    for(const tab of root.querySelectorAll('[data-lab-tool]'))
+      tab.setAttribute('aria-selected',String(tab.dataset.labTool===tool));
+    const blocksPanel=root.querySelector('[data-lab-blocks-panel]');
+    const stylesPanel=root.querySelector('[data-lab-styles-panel]');
+    if(blocksPanel)blocksPanel.hidden=tool!=='blocks';
+    if(stylesPanel)stylesPanel.hidden=tool!=='styles';
+    const mobileToggle=root.querySelector('[data-lab-inspector-toggle]');
+    if(mobileToggle)mobileToggle.setAttribute('aria-pressed',String(tool==='styles'));
+  }
+  root.querySelectorAll('[data-lab-tool]').forEach(tab=>tab.addEventListener('click',()=>showTool(tab.dataset.labTool)));
+  root.querySelector('[data-lab-inspector-toggle]')?.addEventListener('click',()=>{
+    showTool('styles');
+    root.querySelector('[data-lab-side]')?.scrollIntoView({block:'start',behavior:'smooth'});
   });
   root.querySelector('[data-lab-add-text]')?.addEventListener('click',()=>{
     const column=findComponent('mj-column');
