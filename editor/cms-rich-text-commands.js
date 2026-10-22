@@ -1,124 +1,110 @@
 (()=>{
 'use strict';
-// Formatting lives in the edited iframe. The browser's deprecated execCommand
-// cannot be used as a reliable source of editor history or selection state.
-function editableFor(range){
-  if(!range||range.collapsed)return null;
-  const anchor=range.commonAncestorContainer.nodeType===1?range.commonAncestorContainer:range.commonAncestorContainer.parentElement;
-  const edit=anchor?.closest?.('[data-cms-editable][contenteditable="true"]');
-  return edit&&edit.contains(range.startContainer)&&edit.contains(range.endContainer)?edit:null;
+// Split inline markup only at selection boundaries: unselected characters,
+// hyperlinks and other inline formatting retain their original semantics.
+const selectors={bold:'strong,b',italic:'em,i',removeFormat:'strong,b,em,i,span,font,u'};
+const splittable=new Set(['A','STRONG','B','EM','I','SPAN','FONT','U','S','DEL','MARK','SMALL','SUP','SUB','CODE']);
+function editableFor(range,doc){
+  if(!range||range.collapsed||range.startContainer.ownerDocument!==doc)return null;
+  const ancestor=range.commonAncestorContainer;
+  const node=ancestor.nodeType===1?ancestor:ancestor.parentElement;
+  const edit=node?.closest?.('[data-cms-editable][contenteditable="true"]');
+  return edit&&doc.contains(edit)&&edit.contains(range.startContainer)&&edit.contains(range.endContainer)?edit:null;
 }
 function unwrap(node){node.replaceWith(...node.childNodes)}
-/**
- * Toggle a partial selection off inside one formatted text run. Split the run
- * into before / selection / after, cloning its non-editable structure. Nested
- * links are preserved with their original href instead of being flattened.
- * Mixed-node selections still use the conservative path below.
- */
-function splitFormattedRun(formatted,range,doc,selection){
-  const text=range.startContainer;
-  if(text!==range.endContainer||text?.nodeType!==3||!formatted.contains(text))return false;
-  const from=range.startOffset,to=range.endOffset;
-  if(from<=0&&to>=text.length)return false;
-  const inner=[];
-  let current=text;
-  while(current.parentNode&&current.parentNode!==formatted){
-    const parent=current.parentNode;
-    if(parent.nodeType!==1||parent.childNodes.length!==1||parent.firstChild!==current)return false;
-    // Only clone ordinary inline wrappers; editing links is safe and retains href.
-    if(!['A','EM','I','STRONG','B','SPAN','U','FONT'].includes(parent.tagName))return false;
-    inner.unshift(parent);
-    current=parent;
+function styleCoverage(range,editable,selector){
+  const walker=editable.ownerDocument.createTreeWalker(editable,NodeFilter.SHOW_TEXT);
+  let node,found=false,allStyled=true,hasStyle=false;
+  while((node=walker.nextNode())){
+    if(!range.intersectsNode(node)||!node.textContent.trim())continue;
+    const from=node===range.startContainer?range.startOffset:0;
+    const to=node===range.endContainer?range.endOffset:node.length;
+    if(!node.textContent.slice(from,to).trim())continue;
+    found=true;
+    const ancestor=node.parentElement?.closest(selector);
+    const styled=Boolean(ancestor&&editable.contains(ancestor));
+    allStyled&&=styled;
+    hasStyle||=styled;
   }
-  if(current.parentNode!==formatted||formatted.childNodes.length!==1)return false;
-  const value=text.data,selected=value.slice(from,to);
-  if(!selected)return false;
-  const usedUniqueAttrs=new Set();
-  function cloneInline(original){
-    const wrapper=original.cloneNode(false);
-    for(const name of ['id','data-cms-node-id']){
-      const value=wrapper.getAttribute(name);
-      if(!value)continue;
-      const key=name+':'+value;
-      if(usedUniqueAttrs.has(key))wrapper.removeAttribute(name);
-      else usedUniqueAttrs.add(key);
+  return {found,allStyled,hasStyle};
+}
+function validBoundaries(range,editable){
+  for(const boundary of [range.startContainer,range.endContainer]){
+    let node=boundary.nodeType===1?boundary:boundary.parentElement;
+    while(node&&node!==editable){
+      if(!splittable.has(node.tagName))return false;
+      node=node.parentElement;
     }
-    return wrapper;
+    if(node!==editable)return false;
   }
-  function piece(value,includeFormat){
-    let leaf=doc.createTextNode(value),node=leaf;
-    for(let i=inner.length-1;i>=0;i--){
-      const wrapper=cloneInline(inner[i]);
-      wrapper.append(node);node=wrapper;
-    }
-    if(includeFormat){
-      const wrapper=cloneInline(formatted);
-      wrapper.append(node);node=wrapper;
-    }
-    return {root:node,text:leaf};
+  // Avoid wrapping block content inside inline elements or moving CMS components.
+  return !range.cloneContents().querySelector('div,p,section,article,header,footer,figure,table,ul,ol,li,h1,h2,h3,h4,h5,h6,blockquote,form,iframe,video,button,[data-cms-editor-ui]');
+}
+function lift(marker,editable,touched){
+  while(marker.parentNode!==editable){
+    const parent=marker.parentNode;
+    const trailing=parent.cloneNode(false);
+    touched.add(parent);touched.add(trailing);
+    // A split hyperlink may need multiple anchors, but IDs must remain unique.
+    trailing.removeAttribute('id');
+    while(marker.nextSibling)trailing.appendChild(marker.nextSibling);
+    parent.after(marker);
+    if(trailing.hasChildNodes())marker.after(trailing);
+    if(!parent.hasChildNodes())parent.remove();
   }
-  const left=value.slice(0,from),right=value.slice(to);
-  const fragment=doc.createDocumentFragment();
-  if(left)fragment.append(piece(left,true).root);
-  const middle=piece(selected,false);
-  fragment.append(middle.root);
-  if(right)fragment.append(piece(right,true).root);
-  formatted.replaceWith(fragment);
-  const newRange=doc.createRange();
-  newRange.selectNodeContents(middle.text);
-  selection?.removeAllRanges();
-  selection?.addRange(newRange);
-  return true;
+}
+function strip(container,selector){
+  [...container.querySelectorAll(selector)].reverse().forEach(unwrap);
+}
+function removeEmptyFormatting(editable,touched){
+  const candidates=new Set();
+  for(const item of touched){
+    if(!editable.contains(item))continue;
+    candidates.add(item);
+    item.querySelectorAll('strong,b,em,i,span,font,u,a').forEach(child=>candidates.add(child));
+  }
+  [...candidates].reverse().forEach(node=>{
+    if(!editable.contains(node)||!node.matches('strong,b,em,i,span,font,u,a'))return;
+    if(node.textContent!==''||node.querySelector('img,svg,video,audio,iframe,br,input'))return;
+    if(node.hasAttribute('id')||node.hasAttribute('name')||[...node.attributes].some(a=>a.name.startsWith('data-')))return;
+    node.remove();
+  });
 }
 function apply(command,doc,capturedRange){
-  if(!['bold','italic','removeFormat'].includes(command)||!doc)return false;
+  if(!Object.hasOwn(selectors,command)||!doc)return false;
   const selection=doc.defaultView?.getSelection();
   const range=capturedRange?.cloneRange()||(!selection?.isCollapsed?selection?.getRangeAt(0).cloneRange():null);
-  if(!editableFor(range)||!range.toString().trim())return false;
-  const format=command==='bold'?'strong':'em';
-  const ancestor=range.commonAncestorContainer.nodeType===1?range.commonAncestorContainer:range.commonAncestorContainer.parentElement;
-  const styles=command==='removeFormat'?'strong,b,em,i,span,font,u':command==='bold'?'strong,b':'em,i';
-  const present=ancestor?.closest?.(styles);
-  if(present&&present.closest('[data-cms-editable]')){
-    // A whole formatted span can be toggled off without reparenting links.
-    // Partial spans are not flattened because that would silently strip
-    // formatting from unselected characters.
-    if(range.toString()!==present.textContent)return splitFormattedRun(present,range,doc,selection);
-    if(command==='removeFormat')present.querySelectorAll('strong,b,em,i,span,font,u').forEach(unwrap);
-    const nodes=[...present.childNodes],first=nodes[0],last=nodes.at(-1);
-    if(!nodes.length)return false;
-    unwrap(present);
-    range.setStartBefore(first);range.setEndAfter(last);
-    selection?.removeAllRanges();selection?.addRange(range);
-    return true;
-  }
-  if(range.startContainer!==range.endContainer){
-    const at=node=>node.nodeType===3?node.parentElement:node;
-    const styles='strong,b,em,i,span,font,u';
-    const a=at(range.startContainer)?.closest?.(styles);
-    const b=at(range.endContainer)?.closest?.(styles);
-    // Cross-styled partial selections require tree normalization. Do not silently
-    // relocate selected content inside the wrong formatting ancestor.
-    if(a||b)return false;
-  }
-  const selected=range.extractContents();
-  let first=null,last=null;
-  if(command==='removeFormat'){
-    [...selected.querySelectorAll('strong,b,em,i,span,font,u')].reverse().forEach(unwrap);
-    const nodes=[...selected.childNodes];
-    if(!nodes.length)return false;
+  const editable=editableFor(range,doc);
+  if(!editable||!range.toString().trim()||!validBoundaries(range,editable))return false;
+  const selector=selectors[command];
+  const coverage=styleCoverage(range,editable,selector);
+  if(!coverage.found||command==='removeFormat'&&!coverage.hasStyle)return false;
+  const remove=command==='removeFormat'||coverage.allStyled;
+  // Insert the end marker first so offsets in one text node are not shifted.
+  const end=doc.createElement('span'),start=doc.createElement('span');
+  const atEnd=range.cloneRange();atEnd.collapse(false);atEnd.insertNode(end);
+  const atStart=range.cloneRange();atStart.collapse(true);atStart.insertNode(start);
+  const touched=new Set();
+  lift(start,editable,touched);
+  lift(end,editable,touched);
+  const isolated=doc.createRange();isolated.setStartAfter(start);isolated.setEndBefore(end);
+  const content=isolated.extractContents();
+  strip(content,selector);
+  let first,last;
+  if(remove){
+    const nodes=[...content.childNodes];
     first=nodes[0];last=nodes.at(-1);
-    range.insertNode(selected);
+    end.before(content);
   }else{
-    const wrapper=doc.createElement(format);
-    wrapper.append(selected);
-    // Avoid redundant nested formatting from previously styled selections.
-    wrapper.querySelectorAll(format).forEach(unwrap);
-    range.insertNode(wrapper);
-    first=wrapper;last=wrapper;
+    const wrapper=doc.createElement(command==='bold'?'strong':'em');
+    wrapper.append(content);end.before(wrapper);
+    first=last=wrapper;
   }
-  range.setStartBefore(first);range.setEndAfter(last);
-  selection?.removeAllRanges();selection?.addRange(range);
+  start.remove();end.remove();
+  removeEmptyFormatting(editable,touched);
+  if(!first||!last)return false;
+  const restored=doc.createRange();restored.setStartBefore(first);restored.setEndAfter(last);
+  selection?.removeAllRanges();selection?.addRange(restored);
   return true;
 }
 window.CmsRichTextCommands={apply};
