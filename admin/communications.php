@@ -148,6 +148,7 @@ if($tab==='campaigns'&&($form['status']??'draft')==='draft'){
     }catch(Throwable $ignored){$recipientCandidates=[];}
 }
 $recipientLookup=array_fill_keys($selectedRecipientIds,true);
+$emailBrand=communication_email_brand($db,$activityId);
 $renderedEmailPreview='';
 if($tab==='campaigns'&&trim((string)($form['body_text']??''))!==''){
     try {
@@ -354,7 +355,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       </section>
       <fieldset class="comms-template-picker">
         <legend>Modelo visual do e-mail</legend>
-        <div class="comms-template-grid">
+        <div class="comms-template-grid" style="--comms-preview-accent:<?=h($emailBrand['accent'])?>;--comms-preview-ink:<?=h($emailBrand['ink'])?>;--comms-preview-ground:<?=h($emailBrand['bg'])?>">
           <?php foreach(communication_template_keys() as $key=>$label):?>
             <label class="comms-template-option">
               <input type="radio" name="template_key" value="<?=h($key)?>"<?=($form['template_key']??'minimal')===$key?' checked':''?>>
