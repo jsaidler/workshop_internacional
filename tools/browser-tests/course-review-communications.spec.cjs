@@ -30,7 +30,12 @@ test.describe('real application: reviews and communications',()=>{
    fixture=JSON.parse(execFileSync('php',[seed,sandbox,'seed'],{encoding:'utf8',timeout:60000}));
    const port=await freePort();origin='http://127.0.0.1:'+port;
    log=fs.openSync(path.join(sandbox,'server.log'),'w');
-   server=spawn('php',['-S','127.0.0.1:'+port,'-t',sandbox],{cwd:sandbox,stdio:['ignore',log,log]});
+   // Intercept PHP mail() in the disposable server; never contact real recipients.
+   const fakeSendmail=path.join(sandbox,'fake-sendmail.sh');
+   fs.writeFileSync(fakeSendmail,'#!/bin/sh\ncat >> "$FAKE_MAIL_LOG"\nprintf "\\n==MESSAGE==\\n" >> "$FAKE_MAIL_LOG"\n');
+   fs.chmodSync(fakeSendmail,0o700);
+   server=spawn('php',['-d','sendmail_path='+fakeSendmail,'-S','127.0.0.1:'+port,'-t',sandbox],
+     {cwd:sandbox,stdio:['ignore',log,log],env:{...process.env,FAKE_MAIL_LOG:path.join(sandbox,'storage/fake-mail.log')}});
    await ready(origin+'/admin/login.php');
  });
  test.afterAll(async()=>{
