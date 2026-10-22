@@ -156,6 +156,7 @@ test.describe('real application: reviews and communications',()=>{
    await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
    await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeHidden();
    await expect(admin.locator('[data-mail-editor] figure img')).toHaveCount(1);
+   await expect(admin.locator('[data-mail-editor]')).toContainText('Encontro experimental com vagas abertas.');
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-mobile.png')});
