@@ -1,5 +1,9 @@
 # Arquitetura canônica — Curso, inscrição, turma e material didático — 27/09/2026
 
+## Laboratório de composição por blocos — 22/10/2026 (não publicado)
+
+Como experimento isolado da questão #290, o CMS passa a estudar a edição de e-mails com GrapesJS/MJML, separado do documento `body_html` atualmente salvo e do renderizador `communication_email_document()`. Nenhuma campanha pode usar diretamente o HTML emitido pelo navegador como fonte de envio antes de validação e compilação canônicas no servidor. O construtor experimental não manipula matrícula, consentimento, audiência ou fila. Migrar rascunhos requer preservação exata das mensagens legadas e da identidade de cada imagem por ID da Biblioteca.
+
 Este documento substitui, para regras de negócio, a interpretação transitória em que a página raiz do workshop era usada como entidade `curso`. Páginas continuam sendo a autoridade editorial; `activity` continua sendo apenas o limite técnico do site.
 
 ## Princípio estrutural
