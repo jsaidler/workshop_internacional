@@ -45,6 +45,7 @@ notify_assert($stats['sent']===5 && $stats['failed']===0,'normal sending');
 notify_assert(count($sent)===5,'one transport call for every eligible notice');
 notify_assert(str_contains($sent[0]['body'],'/admin/questions.php?')&&str_contains($sent[0]['body'],'course=7'),'admin URL and course scope');
 notify_assert(!str_contains(implode("\n",array_column($sent,'body')),'CONTEXTO PRIVADO'),'private question body must not be emailed');
+notify_assert(!str_contains($sent[0]['body'],'permanecem no CMS'),'no implementation notes in the email received by administrators');
 notify_assert(admin_student_notice_dispatch($db,20,$fake)['sent']===0,'no duplicate sends');
 
 admin_student_notice_capture($db,1,10,'question_replied',11,'message-15');
