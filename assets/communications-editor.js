@@ -195,6 +195,7 @@ root.querySelector('[data-email-media-upload]')?.addEventListener('change',async
   }catch(error){if(mediaStatus)mediaStatus.textContent=String(error.message||'Falha no envio.');}
   e.target.value='';
 });
+if(editor?.querySelector('figure[data-email-media-id]'))loadMedia();
 root.querySelector('[data-email-media-insert]')?.addEventListener('click',()=>{
   if(!editor||!mediaSelected||!mediaAlt)return;
   const alt=mediaAlt.value.trim();if(!alt){mediaAlt.focus();return;}
