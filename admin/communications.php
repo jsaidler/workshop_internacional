@@ -399,7 +399,10 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Ação</th><th>Situação</th><th>Data</th></tr></thead><tbody>
       <?php foreach($adminNoticeHistory as $row):?>
       <tr><td><?=h(admin_student_notice_kinds()[(string)$row['event_kind']]??(string)$row['event_kind'])?></td>
-        <td><?=h(['pending'=>'Na fila','processing'=>'Processando','sent'=>'Aceito para envio','skipped'=>'Ignorado','failed'=>'Falha'][$row['status']]??(string)$row['status'])?></td>
+        <td><?=h(($row['error_code']??null)==='cancelled_by_admin'?'Cancelado':(['pending'=>'Na fila','processing'=>'Processando','sent'=>'Aceito para envio','skipped'=>'Ignorado','failed'=>'Falha'][$row['status']]??(string)$row['status']))?>
+         <?php if(($row['error_code']??null)!==null):?>
+         <small class="muted"><?=h(['transport_failure'=>'O serviço não confirmou o envio','processing_outcome_unknown'=>'Resultado incerto após interrupção','attempts_exhausted'=>'Tentativas esgotadas','cancelled_by_admin'=>'Cancelado pelo administrador','ineligible'=>'Destinatário não elegível'][$row['error_code']]??'Falha registrada')?></small>
+         <?php endif;?></td>
         <td><?=h((string)$row['created_at'])?></td></tr>
       <?php endforeach;?>
     </tbody></table></div>
