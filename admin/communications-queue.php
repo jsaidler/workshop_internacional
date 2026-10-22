@@ -37,6 +37,11 @@ try{
         if($adminId<1)throw new RuntimeException('Administrador não identificado.');
         $cancelled=admin_student_notice_cancel_pending($db,$adminId);
         $response=['ok'=>true,'cancelled'=>$cancelled,'queue'=>admin_student_notice_queue_summary($db,$adminId)];
+    }elseif($action==='retry_alerts'){
+        $adminId=(int)(current_admin()['id']??0);
+        if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+        $requeued=admin_student_notice_retry_failed($db,$adminId);
+        $response=['ok'=>true,'requeued'=>$requeued,'queue'=>admin_student_notice_queue_summary($db,$adminId)];
     }else{
         http_response_code(400);
         echo json_encode(['ok'=>false,'error'=>'Ação inválida.']);exit;
