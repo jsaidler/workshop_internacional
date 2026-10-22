@@ -307,7 +307,8 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
     $daily=$db->prepare("SELECT COUNT(*) FROM communication_deliveries WHERE status='sent' AND delivered_at>=?");
     $daily->execute([$from]);
     $limit=min($limit,max(0,$dailyLimit-(int)$daily->fetchColumn()));
-    if($limit===0)return ['sent'=>0,'skipped'=>0,'failed'=>0];
+    // Even when the daily quota is exhausted, clean up abandoned/exhausted jobs
+    // and finalize campaigns; otherwise the panel can show a stuck queue forever.
     $allowNewsletter=communication_site_url($db)!=='';
     $jobs=course_agenda_with_lock($db,static function() use($db,$limit,$allowNewsletter,$activityId): array {
         $stale=gmdate('Y-m-d\TH:i:s\Z',time()-1800);
