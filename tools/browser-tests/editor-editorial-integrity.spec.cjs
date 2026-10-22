@@ -331,7 +331,7 @@ test('toggling bold off a substring preserves every segment of a nested hyperlin
   expect(state.html).toContain('<strong><a href="/bibliografia"');
 });
 
-test('selection across mixed markup never removes formatting outside a selected run',async({page})=>{
+test('selection across mixed markup removes only selected styles and preserves untouched runs',async({page})=>{
   const state=await mockApp(page,{published:null});
   state.html='<section data-cms-section="intro" data-cms-section-name="Introdução"><p id="edited-text" data-cms-editable><strong>Primeiro</strong> e <em>segundo</em>.</p></section>';
   await open(page);
@@ -339,17 +339,21 @@ test('selection across mixed markup never removes formatting outside a selected 
   await field.click();
   await field.evaluate(el=>{
     const bold=el.querySelector('strong').firstChild,ital=el.querySelector('em').firstChild;
-    const range=el.ownerDocument.createRange();range.setStart(bold,3);range.setEnd(ital,3);
-    const selection=el.ownerDocument.defaultView.getSelection();selection.removeAllRanges();selection.addRange(range);
+    const range=el.ownerDocument.createRange();
+    range.setStart(bold,3);range.setEnd(ital,3);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
   });
   await page.locator('#text-toolbar [data-command="removeFormat"]').click();
-  expect(await field.textContent()).toBe('Primeiro e segundo.');
-  // Remaining unselected prefixes/suffixes keep their semantic wrappers.
-  await expect(field.locator('strong')).toHaveText('Primeiro');
-  await expect(field.locator('em')).toHaveText('segundo');
+  await expect(field).toHaveText('Primeiro e segundo.');
+  await expect(field.locator('strong')).toHaveCount(1);
+  await expect(field.locator('strong')).toHaveText('Pri');
+  await expect(field.locator('em')).toHaveCount(1);
+  await expect(field.locator('em')).toHaveText('undo');
+  expect(await field.innerHTML()).toContain('<strong>Pri</strong>meiro e seg<em>undo</em>');
   await page.evaluate(()=>window.CmsEditorDraft.save());
-  expect(state.html).toContain('<strong>Primeiro</strong>');
-  expect(state.html).toContain('<em>segundo</em>');
+  expect(state.html).toContain('<strong>Pri</strong>meiro e seg<em>undo</em>');
+  expect(state.html).not.toContain('contenteditable');
 });
 
 
