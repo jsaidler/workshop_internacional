@@ -63,8 +63,24 @@ $db->exec("UPDATE student_users SET status='active' WHERE id=2");
 admin_student_notice_capture($db,1,10,'test_commented',21,'comment-1');
 $failure=static function(array $message):array {throw new RuntimeException('down');};
 notify_assert(admin_student_notice_dispatch($db,20,$failure)['failed']===1,'transport failures handled');
-notify_assert(admin_student_notice_dispatch($db,20,$fake)['sent']===1,'retry pending once');
-notify_assert(admin_student_notice_dispatch($db,20,$fake)['sent']===0,'retry idempotent');
+notify_assert(admin_student_notice_dispatch($db,20,$fake)['sent']===0,'uncertain transport outcome not retried automatically');
+notify_assert(admin_student_notice_queue_summary($db,1)['failed']===1,'admin can see failure count');
+notify_assert(admin_student_notice_queue_summary($db,2)['failed']===0,'queue summary scoped to administrator');
+notify_assert(admin_student_notice_retry_failed($db,2)===0,'other admin cannot retry this notice');
+notify_assert(admin_student_notice_retry_failed($db,1)===1,'explicit retry of failed notice');
+notify_assert(admin_student_notice_retry_failed($db,1)===0,'pending notice not retried twice');
+$storage=dirname(__DIR__).'/storage';
+if(!is_dir($storage))mkdir($storage,0770,true);
+$batch=admin_student_notice_dispatch_manual($db,1,$fake);
+notify_assert($batch['sent']===1&&!$batch['busy'],'manual send works without cron');
+notify_assert(admin_student_notice_dispatch($db,20,$fake)['sent']===0,'manual retry stays idempotent');
+
+admin_student_notice_capture($db,1,10,'test_commented',21,'cancelled-by-admin');
+notify_assert(admin_student_notice_queue_summary($db,1)['pending']===1,'fresh notice pending');
+notify_assert(admin_student_notice_cancel_pending($db,2)===0,'other admin cannot cancel pending notice');
+notify_assert(admin_student_notice_cancel_pending($db,1)===1,'own pending notice cancelled');
+notify_assert(admin_student_notice_queue_summary($db,1)['cancelled']===1,'cancellation audit retained');
+notify_assert(admin_student_notice_dispatch_manual($db,1,$fake)['sent']===0,'cancelled notice never sent');
 
 $db->beginTransaction();
 admin_student_notice_capture($db,1,10,'question_replied',11,'rolled-back');
