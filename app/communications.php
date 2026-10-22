@@ -367,3 +367,17 @@ function communication_update_campaign(PDO $db,int $activityId,int $id,array $in
         return $id;
     });
 }
+
+
+function communication_duplicate_campaign(PDO $db,int $activityId,int $campaignId):int {
+    $source=communication_campaign($db,$activityId,$campaignId);
+    if(!$source)throw new RuntimeException('Mensagem não encontrada.');
+    $audience=communication_campaign_audience($db,$activityId,$source);
+    return communication_create_campaign($db,$activityId,[
+        'category'=>(string)$source['category'],'course_id'=>(int)$source['course_id'],
+        'cohort_id'=>(int)$source['cohort_id'],'subject'=>(string)$source['subject'],
+        'body_text'=>(string)$source['body_text'],'body_html'=>(string)($source['body_html']??''),
+        'template_key'=>(string)($source['template_key']??'minimal'),
+        'selection_explicit'=>1,'recipient_ids'=>array_column($audience,'id')
+    ]);
+}
