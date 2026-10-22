@@ -299,6 +299,19 @@ test.describe('real application: reviews and communications',()=>{
    const after=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(after.preferences[0].newsletter_opt_in).toBe(0);
    await unsubscribe.close();
+   // Real authenticated page: inspect the library under the CMS security policy.
+   const capturedBeforeBuilder=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   await admin.goto(origin+'/admin/communications-builder-lab.php?activity='+fixture.activityId);
+   await expect(admin.locator('[data-communications-email-lab]')).toBeVisible();
+   await expect.poll(()=>admin.evaluate(()=>Boolean(window.__communicationsEmailLab?.ready))).toBe(true);
+   await admin.locator('[data-lab-add-columns]').click();
+   await expect.poll(()=>admin.evaluate(()=>window.__communicationsEmailLab.editor.getHtml().match(/<mj-column\b/g)?.length||0)).toBeGreaterThanOrEqual(3);
+   await admin.locator('[data-lab-export]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('nenhum e-mail foi enviado');
+   await admin.screenshot({path:info.outputPath('email-builder-real-admin-desktop.png')});
+   await admin.setViewportSize({width:390,height:844});
+   await admin.screenshot({path:info.outputPath('email-builder-real-admin-mobile.png')});
+   expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toBe(capturedBeforeBuilder);
    expect(errors).toEqual([]);
    await studentCtx.close();await adminCtx.close();
  });
