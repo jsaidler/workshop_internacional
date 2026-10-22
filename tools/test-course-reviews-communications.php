@@ -230,5 +230,12 @@ check_feature(communication_dispatch_manual($db,1,1,$fail)['failed']===1,'provid
 check_feature($attempted===1,'failed provider requested once');
 check_feature(communication_dispatch_manual($db,1,1,$fail)['sent']===0&&$attempted===1,'ambiguous provider outcome is not automatically retried');
 check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$uncertain")->fetchColumn()==='failed','ambiguous provider outcome requires review');
+$crossRetry=false;
+try{communication_retry_failed($db,2,$uncertain);}catch(RuntimeException){$crossRetry=true;}
+check_feature($crossRetry,'failed recipients cannot be requeued from another activity');
+check_feature(communication_retry_failed($db,1,$uncertain)===1,'explicit admin retry requeues failed recipient only');
+check_feature(communication_retry_failed($db,1,$uncertain)===0,'repeated retry cannot duplicate pending entries');
+check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===1,'authorized retry uses ordinary queue and accepts one recipient');
+check_feature(communication_retry_failed($db,1,$uncertain)===0,'accepted messages cannot be requeued as failed');
 
 echo "course-comms: OK\n";
