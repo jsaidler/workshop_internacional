@@ -203,6 +203,9 @@ test('mobile inspector collapses without destroying content and expands for a ne
   expect(height).toBeLessThanOrEqual(52);
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded','true');
+  // A mobile sheet covers the lower canvas; collapse it before choosing another block.
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
   await page.frameLocator('#page-frame').locator('#photo').click();
   await expect(inspector.locator('#i-alt')).toBeVisible();
   await expect(toggle).toHaveAttribute('aria-expanded','true');
