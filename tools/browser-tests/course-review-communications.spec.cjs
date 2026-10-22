@@ -30,7 +30,12 @@ test.describe('real application: reviews and communications',()=>{
    fixture=JSON.parse(execFileSync('php',[seed,sandbox,'seed'],{encoding:'utf8',timeout:60000}));
    const port=await freePort();origin='http://127.0.0.1:'+port;
    log=fs.openSync(path.join(sandbox,'server.log'),'w');
-   server=spawn('php',['-S','127.0.0.1:'+port,'-t',sandbox],{cwd:sandbox,stdio:['ignore',log,log]});
+   // Intercept PHP mail() in the disposable server; never contact real recipients.
+   const fakeSendmail=path.join(sandbox,'fake-sendmail.sh');
+   fs.writeFileSync(fakeSendmail,'#!/bin/sh\ncat >> "$FAKE_MAIL_LOG"\nprintf "\\n==MESSAGE==\\n" >> "$FAKE_MAIL_LOG"\n');
+   fs.chmodSync(fakeSendmail,0o700);
+   server=spawn('php',['-d','sendmail_path='+fakeSendmail,'-S','127.0.0.1:'+port,'-t',sandbox],
+     {cwd:sandbox,stdio:['ignore',log,log],env:{...process.env,FAKE_MAIL_LOG:path.join(sandbox,'storage/fake-mail.log')}});
    await ready(origin+'/admin/login.php');
  });
  test.afterAll(async()=>{
@@ -127,8 +132,10 @@ test.describe('real application: reviews and communications',()=>{
    await alerts.getByRole('button',{name:'Salvar avisos'}).click();
    await expect(alerts.locator('input[name="alerts[test_commented]"]')).not.toBeChecked();
    await admin.screenshot({path:info.outputPath('staff-notifications-desktop.png')});
+   const emailMedia=JSON.parse(execFileSync('php',[seed,sandbox,'email-media'],{encoding:'utf8',timeout:45000}));
+   expect(emailMedia.id).toBeGreaterThan(0);
    await admin.getByRole('navigation',{name:'Áreas de comunicações'}).getByRole('link',{name:'Mensagens'}).click();
-   await expect(admin.getByRole('heading',{name:'Mensagens'})).toBeVisible();
+   await expect(admin.getByRole('heading',{name:'Mensagens',exact:true})).toBeVisible();
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Nova atividade de fotografia');
@@ -145,6 +152,28 @@ test.describe('real application: reviews and communications',()=>{
    await admin.locator('[data-mail-editor]').selectText('Encontro');
    await admin.getByRole('button',{name:'Negrito'}).click();
    await expect(admin.locator('[data-mail-editor] strong, [data-mail-editor] b').first()).toContainText('Encontro');
+   await admin.getByRole('radio',{name:'Editorial'}).check();
+   await admin.getByRole('button',{name:'Inserir imagem'}).click();
+   await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeVisible();
+   await expect(admin.locator('[data-email-media-gallery] .comms-media-tile').filter({hasText:'Fotografia do laboratório'})).toHaveCount(1);
+   await admin.locator('[data-email-media-gallery] .comms-media-tile').filter({hasText:'Fotografia do laboratório'}).click();
+   await admin.locator('[data-email-media-alt]').fill('Bancada no laboratório fotográfico');
+   await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
+   await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeHidden();
+   await expect(admin.locator('[data-mail-editor] figure img')).toHaveCount(1);
+   await admin.getByRole('button',{name:'Editar imagem'}).click();
+   await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeVisible();
+   await admin.locator('[data-email-media-alt]').fill('Retrato do laboratório em bancada');
+   await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
+   await expect(admin.locator('[data-mail-editor] figure')).toHaveAttribute('data-email-alt','Retrato do laboratório em bancada');
+   await admin.getByRole('button',{name:'Remover imagem'}).click();
+   await expect(admin.locator('[data-mail-editor] figure')).toHaveCount(0);
+   await admin.getByRole('button',{name:'Inserir imagem'}).click();
+   await admin.locator('[data-email-media-gallery] .comms-media-tile').filter({hasText:'Fotografia do laboratório'}).click();
+   await admin.locator('[data-email-media-alt]').fill('Bancada no laboratório fotográfico');
+   await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
+   await expect(admin.locator('[data-mail-editor] figure img')).toHaveCount(1);
+   await expect(admin.locator('[data-mail-editor]')).toContainText('Encontro experimental com vagas abertas.');
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-mobile.png')});
@@ -153,17 +182,22 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('.comms-send-review')).toContainText('1 destinatário(s)');
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
    await expect(admin.locator('[data-recipient-count]')).toContainText('1 de 1');
-   await expect(admin.locator('.comms-email-preview').last()).toContainText('Encontro experimental');
-   await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeVisible();
+   const emailFrame=admin.frameLocator('.comms-send-review iframe[title="Prévia visual do e-mail"]');
+   await expect(emailFrame.locator('body')).toContainText('Encontro experimental');
+   await expect(emailFrame.locator('img')).toHaveAttribute('alt','Bancada no laboratório fotográfico');
+   await expect(emailFrame.locator('img')).toHaveAttribute('src',/https:\/\/example\.test\/uploads\/media\//);
+   await admin.locator('.comms-send-review [data-email-preview-mode="mobile"]').click();
+   await expect(admin.locator('.comms-send-review .comms-email-frame')).toHaveClass(/is-mobile/);
+   await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
    await admin.getByRole('button',{name:'Limpar seleção'}).click();
-   await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeHidden();
+   await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeHidden();
    await expect(admin.locator('[data-unsaved-warning]')).toBeVisible();
    await admin.getByRole('button',{name:'Selecionar todos'}).click();
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
-   await expect(admin.getByRole('button',{name:'Confirmar e colocar na fila'})).toBeVisible();
+   await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
    admin.once('dialog',dialog=>dialog.accept());
-   await admin.getByRole('button',{name:'Confirmar e colocar na fila'}).click();
-   await expect(admin.getByText(/e-mail\(s\) incluído\(s\) na fila/)).toBeVisible();
+   await admin.getByRole('button',{name:'Somente colocar na fila'}).click();
+   await expect(admin.getByText(/e-mail\(s\) colocado\(s\) na fila/)).toBeVisible();
    await expect(admin.getByRole('heading',{name:'Revisão do envio'})).toHaveCount(0);
    await expect(admin.getByRole('heading',{name:/Mensagem #/})).toBeVisible();
    await admin.screenshot({path:info.outputPath('communications-desktop.png')});
@@ -180,11 +214,82 @@ test.describe('real application: reviews and communications',()=>{
    expect(data.campaigns[0].status).toBe('queued');
    expect(data.deliveries).toHaveLength(1);
    expect(data.deliveries[0].status).toBe('pending');
+   // A crafted GET query must never start dispatch, even for an authenticated admin.
+   await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId+'&tab=campaigns&run=1');
+   await expect(admin.locator('[data-communications-queue]')).toHaveAttribute('data-auto-run','0');
+   const afterCraftedGet=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(afterCraftedGet.deliveries[0].status).toBe('pending');
+   await expect(admin.locator('[data-communications-queue] [data-queue-run]')).toBeVisible();
+   await expect(admin.locator('[data-communications-queue] [data-queue-cancel]')).toBeEnabled();
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.locator('[data-communications-queue] [data-queue-cancel]').click();
+   await expect(admin.locator('[data-queue-feedback]')).toContainText('1 envio(s) pendente(s) cancelado(s)');
+   const cancelled=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(cancelled.deliveries[0].status).toBe('skipped');
+   // A URL de segurança acima abriu o compositor vazio; nenhuma navegação extra é necessária.
+   // Envio imediato real pelo PHP, interceptado pela fixture de sendmail.
+   await admin.locator('select[name="category"]').selectOption('newsletter');
+   await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
+   await admin.locator('input[name="subject"]').fill('Envio imediato QA');
+   await admin.locator('[data-mail-editor]').fill('Teste de envio imediato pela fila do CMS.');
+   await admin.getByRole('button',{name:'Salvar rascunho'}).click();
+   await expect(admin.getByRole('button',{name:'Confirmar e enviar agora'})).toBeVisible();
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.getByRole('button',{name:'Confirmar e enviar agora'}).click();
+   await expect(admin.locator('[data-queue-feedback]')).toContainText('Envio concluído');
+   await expect(admin.locator('[data-queue-feedback]')).toContainText('1 aceito(s) pelo provedor');
+   const delivered=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(delivered.deliveries).toHaveLength(2);
+   expect(delivered.deliveries.filter(row=>row.status==='sent')).toHaveLength(1);
+   expect(delivered.deliveries.filter(row=>row.status==='skipped')).toHaveLength(1);
+   const capturedEmail=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   expect(capturedEmail).toContain('student-qa@example.test');
+   // Rich HTML emails use multipart/alternative with a Base64 text/plain part.
+   // Inspect decoded message content, not raw MIME transport bytes.
+   function decodedPlainMessages(raw){
+     const parts=[...raw.matchAll(/Content-Type: text\/plain; charset=UTF-8\r?\nContent-Transfer-Encoding: base64\r?\n\r?\n([A-Za-z0-9+/=\r\n]+)/gi)];
+     return parts.map(part=>Buffer.from(part[1].replace(/\s+/g,''),'base64').toString('utf8')).join('\n');
+   }
+   expect(decodedPlainMessages(capturedEmail)).toContain('Teste de envio imediato pela fila do CMS.');
+   // Um envio enfileirado anteriormente precisa poder ser disparado pelo botão global.
+   await admin.getByRole('link',{name:'Nova mensagem'}).click();
+   await admin.locator('select[name="category"]').selectOption('newsletter');
+   await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
+   await admin.locator('input[name="subject"]').fill('Fila antiga QA');
+   await admin.locator('[data-mail-editor]').fill('Mensagem pendente enviada manualmente.');
+   await admin.getByRole('button',{name:'Salvar rascunho'}).click();
+   await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.getByRole('button',{name:'Somente colocar na fila'}).click();
+   await expect(admin.locator('[data-communications-queue] [data-queue-count]')).toContainText('1 pendente(s)');
+   await admin.locator('[data-communications-queue] [data-queue-run]').click();
+   await expect(admin.locator('[data-queue-feedback]')).toContainText('Envio concluído: 1 aceito(s)');
+   const resent=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(resent.deliveries).toHaveLength(3);
+   expect(resent.deliveries.filter(row=>row.status==='sent')).toHaveLength(2);
+   expect(resent.deliveries.filter(row=>row.status==='skipped')).toHaveLength(1);
+   expect(decodedPlainMessages(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8'))).toContain('Mensagem pendente enviada manualmente.');
    execFileSync('php',[seed,sandbox,'student-action'],{encoding:'utf8',timeout:45000});
    const afterAction=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(afterAction.staff_notices).toHaveLength(1);
    expect(afterAction.staff_notices[0].event_kind).toBe('question_created');
    expect(afterAction.staff_notices[0].status).toBe('pending');
+   // Staff alerts are a separate queue, but must also support manual dispatch.
+   await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId+'&tab=alerts');
+   await expect(admin.locator('[data-communications-alerts] [data-alerts-run]')).toBeEnabled();
+   await admin.locator('[data-communications-alerts] [data-alerts-run]').click();
+   await expect(admin.locator('[data-alerts-feedback]')).toContainText('Processamento concluído: 1 aceito(s)');
+   const sentAlert=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(sentAlert.staff_notices[0].status).toBe('sent');
+   execFileSync('php',[seed,sandbox,'student-action'],{encoding:'utf8',timeout:45000});
+   await admin.reload();
+   await expect(admin.locator('[data-communications-alerts] [data-alerts-cancel]')).toBeEnabled();
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.locator('[data-communications-alerts] [data-alerts-cancel]').click();
+   await expect(admin.locator('[data-alerts-feedback]')).toContainText('1 aviso(s) pendente(s) cancelado(s)');
+   const cancelledAlert=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(cancelledAlert.staff_notices.filter(row=>row.status==='sent')).toHaveLength(1);
+   expect(cancelledAlert.staff_notices.filter(row=>row.status==='skipped')).toHaveLength(1);
    const token=execFileSync('php',[seed,sandbox,'token'],{encoding:'utf8',timeout:30000}).trim();
    const unsubscribe=await browser.newPage();
    await unsubscribe.goto(origin+'/newsletter-sair.php?token='+encodeURIComponent(token));

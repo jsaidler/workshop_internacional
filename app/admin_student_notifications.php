@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * Staff alerts for student-initiated pedagogical actions. Reuses the site's
- * authenticated admin identities and the existing CLI communications worker.
+ * authenticated admin identities and the shared manual/optional CLI sending mechanism.
  * Stores references only: no private question body or images in the outbox.
  */
 function admin_student_notice_kinds(): array {
@@ -92,14 +92,19 @@ function admin_student_notice_send(array $message): array {
     return communication_send_message(database(),$message);
 }
 
-function admin_student_notice_dispatch(PDO $db,int $limit=20,?callable $sender=null): array {
+function admin_student_notice_dispatch(PDO $db,int $limit=20,?callable $sender=null,?int $adminId=null): array {
     $result=['sent'=>0,'skipped'=>0,'failed'=>0];
     if(!admin_student_notice_available($db))return $result;
     $limit=max(1,min(50,$limit));$sender??='admin_student_notice_send';
-    $jobs=course_agenda_with_lock($db,static function()use($db,$limit):array {
+    $jobs=course_agenda_with_lock($db,static function()use($db,$limit,$adminId):array {
         $stale=gmdate('Y-m-d\TH:i:s\Z',time()-1800);
-        $db->prepare("UPDATE admin_student_notice_outbox SET status='pending' WHERE status='processing' AND attempts<3 AND updated_at<?")->execute([$stale]);
-        $db->prepare("UPDATE admin_student_notice_outbox SET status='failed',error_code='processing_timeout' WHERE status='processing' AND attempts>=3 AND updated_at<?")->execute([$stale]);
+        // A provider can accept mail before the PHP process is interrupted.
+        // An unknown outcome must be reviewed, not sent again automatically.
+        $whereAdmin=$adminId!==null?' AND admin_id=?':'';
+        $db->prepare("UPDATE admin_student_notice_outbox SET status='failed',error_code='processing_outcome_unknown',updated_at=? WHERE status='processing' AND updated_at<?".$whereAdmin)
+          ->execute($adminId!==null?[utc_now(),$stale,$adminId]:[utc_now(),$stale]);
+        $db->prepare("UPDATE admin_student_notice_outbox SET status='failed',error_code='attempts_exhausted',updated_at=? WHERE status='pending' AND attempts>=3".$whereAdmin)
+          ->execute($adminId!==null?[utc_now(),$adminId]:[utc_now()]);
         $sql=<<<'SQL'
 SELECT n.*,a.email admin_email,u.name student_name,u.status student_status,
        c.title cohort_title,c.course_id,c.status cohort_status,
@@ -109,9 +114,14 @@ JOIN admin_users a ON a.id=n.admin_id
 JOIN student_users u ON u.id=n.student_id
 JOIN course_cohorts c ON c.id=n.cohort_id
 JOIN courses cr ON cr.id=c.course_id
-WHERE n.status='pending' AND n.attempts<3 ORDER BY n.id LIMIT ?
+WHERE n.status='pending' AND n.attempts<3
 SQL;
-        $q=$db->prepare($sql);$q->bindValue(1,$limit,PDO::PARAM_INT);$q->execute();$rows=$q->fetchAll(PDO::FETCH_ASSOC);
+        if($adminId!==null)$sql.=' AND n.admin_id=?';
+        $sql.=' ORDER BY n.id LIMIT ?';
+        $q=$db->prepare($sql);
+        if($adminId!==null)$q->bindValue(1,$adminId,PDO::PARAM_INT);
+        $q->bindValue($adminId!==null?2:1,$limit,PDO::PARAM_INT);
+        $q->execute();$rows=$q->fetchAll(PDO::FETCH_ASSOC);
         $mark=$db->prepare("UPDATE admin_student_notice_outbox SET status='processing',attempts=attempts+1,updated_at=? WHERE id=? AND status='pending'");
         foreach($rows as $row)$mark->execute([utc_now(),(int)$row['id']]);
         return $rows;
@@ -130,14 +140,60 @@ SQL;
             $change->execute(['sent',substr((string)($receipt['id']??''),0,240),null,utc_now(),utc_now(),(int)$job['id']]);
             $result['sent']++;
         }catch(Throwable $e){
-            $status=(int)$job['attempts']+1>=3?'failed':'pending';
-            $change->execute([$status,null,'transport_failure',null,utc_now(),(int)$job['id']]);
+            // A timeout or transport exception is not proof of rejection.
+            $change->execute(['failed',null,'transport_failure',null,utc_now(),(int)$job['id']]);
             $result['failed']++;
         }
     }
     return $result;
 }
+
+/** Admin-only queue operations are scoped to the signed-in administrator. */
+function admin_student_notice_queue_summary(PDO $db,int $adminId): array {
+    $q=$db->prepare("SELECT
+      COALESCE(SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END),0) pending,
+      COALESCE(SUM(CASE WHEN status='processing' THEN 1 ELSE 0 END),0) processing,
+      COALESCE(SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END),0) accepted,
+      COALESCE(SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END),0) failed,
+      COALESCE(SUM(CASE WHEN error_code='cancelled_by_admin' THEN 1 ELSE 0 END),0) cancelled
+      FROM admin_student_notice_outbox WHERE admin_id=?");
+    $q->execute([$adminId]);
+    return array_map('intval',$q->fetch(PDO::FETCH_ASSOC)?:[
+        'pending'=>0,'processing'=>0,'accepted'=>0,'failed'=>0,'cancelled'=>0
+    ]);
+}
+function admin_student_notice_cancel_pending(PDO $db,int $adminId): int {
+    return course_agenda_with_lock($db,static function()use($db,$adminId):int{
+        $q=$db->prepare("UPDATE admin_student_notice_outbox
+           SET status='skipped',error_code='cancelled_by_admin',updated_at=?
+           WHERE admin_id=? AND status='pending'");
+        $q->execute([utc_now(),$adminId]);return $q->rowCount();
+    });
+}
+/** Explicit requeue only: ambiguous provider outcomes must be checked before retry. */
+function admin_student_notice_retry_failed(PDO $db,int $adminId): int {
+    return course_agenda_with_lock($db,static function()use($db,$adminId):int{
+        $q=$db->prepare("UPDATE admin_student_notice_outbox
+          SET status='pending',attempts=0,error_code=NULL,updated_at=?
+          WHERE admin_id=? AND status='failed'");
+        $q->execute([utc_now(),$adminId]);return $q->rowCount();
+    });
+}
+function admin_student_notice_dispatch_manual(PDO $db,int $adminId,?callable $sender=null): array {
+    $lock=@fopen(dirname(__DIR__).'/storage/communications-worker.lock','c+');
+    if(!$lock)throw new RuntimeException('Não foi possível acessar o controle de envio.');
+    if(!flock($lock,LOCK_EX|LOCK_NB)){
+        fclose($lock);
+        return ['busy'=>true,'sent'=>0,'skipped'=>0,'failed'=>0];
+    }
+    try {
+        return ['busy'=>false]+admin_student_notice_dispatch($db,1,$sender,$adminId);
+    }finally{
+        flock($lock,LOCK_UN);fclose($lock);
+    }
+}
+
 function admin_student_notice_recent(PDO $db,int $adminId): array {
-    $q=$db->prepare('SELECT event_kind,status,created_at,sent_at FROM admin_student_notice_outbox WHERE admin_id=? ORDER BY id DESC LIMIT 10');
+    $q=$db->prepare('SELECT event_kind,status,error_code,created_at,updated_at,sent_at FROM admin_student_notice_outbox WHERE admin_id=? ORDER BY id DESC LIMIT 10');
     $q->execute([$adminId]);return $q->fetchAll(PDO::FETCH_ASSOC);
 }

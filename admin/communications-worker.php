@@ -14,7 +14,14 @@ try{
     fwrite(STDOUT,'Student alerts: '.json_encode($staff,JSON_UNESCAPED_SLASHES)."\n");
     $queue=(int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE status IN ('pending','processing')")->fetchColumn();
     if($queue>0){
-        $result=communication_dispatch($db,$limit);
+        $result=['sent'=>0,'skipped'=>0,'failed'=>0];
+        for($i=0;$i<$limit;$i++){
+            // Claim one at a time so an administrator can cancel pending jobs
+            // between provider requests even while the CLI cron holds its lock.
+            $batch=communication_dispatch($db,1);
+            foreach($result as $key=>$_)$result[$key]+=(int)($batch[$key]??0);
+            if(array_sum($batch)===0)break;
+        }
         fwrite(STDOUT,'Communications: '.json_encode($result,JSON_UNESCAPED_SLASHES)."\n");
     }
     communication_worker_record($db,false);

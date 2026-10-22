@@ -27,6 +27,7 @@ function course_agenda_with_lock(PDO $db,callable $work): mixed {
 }
 function app_config(): array {
     return ['app_secret'=>str_repeat('x',40),'public_url'=>'https://example.test',
+       'email_daily_limit'=>$GLOBALS['communication_test_daily_limit']??250,
       'site_name'=>'Fotografia','email_from'=>'contato@example.test','brevo_api_key'=>'test-key'];
 }
 $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
@@ -53,11 +54,13 @@ SQL);
 (require dirname(__DIR__).'/migrations/102_course_review_sessions.php')($db);
 (require dirname(__DIR__).'/migrations/103_communications.php')($db);
 (require dirname(__DIR__).'/migrations/108_communication_recipient_rich_body.php')($db);
+(require dirname(__DIR__).'/migrations/109_communication_email_templates.php')($db);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
 require dirname(__DIR__).'/app/course_reviews.php';
 require dirname(__DIR__).'/app/communications_brevo_credentials.php';
 require dirname(__DIR__).'/app/communications_site_url.php';
 require dirname(__DIR__).'/app/communications_rich_text.php';
+require dirname(__DIR__).'/app/communications_email_design.php';
 require dirname(__DIR__).'/app/communications.php';
 check_feature(communication_mail_status($db)['transport']==='brevo','configured external mail remains usable');
 $senderBefore=communication_sender_settings($db);
@@ -164,5 +167,89 @@ check_feature($sentRich['sent']===1&&count($richSent)===1,'exactly one selected 
 check_feature($richSent[0]['email']==='e@example.test','only specifically chosen student received email');
 check_feature(str_contains($richSent[0]['html'],'<strong>Encontro</strong>'),'HTML survives delivery preparation');
 check_feature(str_contains($richSent[0]['body'],'Encontro especial.'),'plaintext alternative available');
+
+$duplicate=communication_duplicate_campaign($db,1,$selected);
+$duplicateRow=communication_campaign($db,1,$duplicate);
+check_feature($duplicateRow['status']==='draft'&&$duplicateRow['subject']==='Mensagem individual','duplicated message remains a draft');
+check_feature(communication_campaign_target_ids($db,$duplicate)===[5],'duplication retains current eligible recipient selection');
+
+/* Manual processing, cancellation, history, idempotence and activity isolation. */
+$storage=dirname(__DIR__).'/storage';
+if(!is_dir($storage))mkdir($storage,0770,true);
+$pending=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Cancelamento parcial','body_text'=>'Mensagem',
+ 'selection_explicit'=>1,'recipient_ids'=>[1,5]
+]);
+check_feature(communication_queue_campaign($db,1,$pending)===2,'two individual recipients queued');
+$seenBefore=count($sent);
+$batch=communication_dispatch_manual($db,1,1,$fake);
+check_feature(!$batch['busy']&&$batch['sent']===1,'manual batch sends without a cron');
+check_feature(count($sent)===$seenBefore+1,'manual action sends exactly one recipient');
+$state=communication_queue_summary($db,1);
+check_feature($state['pending']===1,'manual batch leaves remaining recipients queued');
+check_feature(communication_cancel_queue($db,1)===1,'admin cancels only pending messages');
+check_feature(communication_queue_summary($db,1)['pending']===0,'cancellation empties pending queue');
+check_feature(communication_queue_summary($db,1)['cancelled']===1,'cancellation has a distinct auditable reason');
+check_feature(communication_campaign($db,1,$pending)['status']==='completed','partially cancelled campaign finalizes');
+$recipientAudit=communication_campaign_deliveries($db,1,$pending);
+check_feature(count($recipientAudit)===2,'recipient audit shows each recipient');
+check_feature(count(array_filter($recipientAudit,static fn(array $row):bool=>$row['error_code']==='cancelled_by_admin'))===1,'audit distinguishes cancelled recipient');
+check_feature(communication_campaign_deliveries($db,2,$pending)===[],'recipient audit cannot cross CMS activity');
+check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND status='sent'")===1,'accepted message stays accepted');
+check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND error_code='cancelled_by_admin'")===1,'cancellation persists separate from other skipped messages');
+$afterCancel=count($sent);
+check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0&&count($sent)===$afterCancel,'no duplicate send on repeated manual clicks');
+
+$other=communication_create_campaign($db,2,[
+ 'category'=>'operational','course_id'=>2,'cohort_id'=>21,
+ 'subject'=>'Outro setor','body_text'=>'Fora desta área',
+ 'selection_explicit'=>1,'recipient_ids'=>[3]
+]);
+check_feature(communication_queue_campaign($db,2,$other)===1,'other activity queued separately');
+check_feature(communication_queue_summary($db,1)['pending']===0,'dashboard queue is scoped');
+check_feature(communication_cancel_queue($db,1)===0,'cancel cannot cross activity');
+check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0,'manual execution cannot cross activity');
+check_feature(communication_queue_summary($db,2)['pending']===1,'other activity queue preserved');
+check_feature(communication_cancel_queue($db,2,$other)===1,'cancel specific campaign within activity');
+$otherRows=communication_campaigns($db,2);
+check_feature((int)$otherRows[0]['cancelled_count']===1,'campaign history exposes cancelled count');
+
+
+$uncertain=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Falha ambígua','body_text'=>'Não repetir',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+check_feature(communication_queue_campaign($db,1,$uncertain)===1,'uncertain delivery prepared');
+$attempted=0;
+$fail=static function(array $payload)use(&$attempted):array {
+    $attempted++;
+    throw new RuntimeException('Simulated timeout after provider request');
+};
+check_feature(communication_dispatch_manual($db,1,1,$fail)['failed']===1,'provider failure accounted');
+check_feature($attempted===1,'failed provider requested once');
+check_feature(communication_dispatch_manual($db,1,1,$fail)['sent']===0&&$attempted===1,'ambiguous provider outcome is not automatically retried');
+check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$uncertain")->fetchColumn()==='failed','ambiguous provider outcome requires review');
+$crossRetry=false;
+try{communication_retry_failed($db,2,$uncertain);}catch(RuntimeException){$crossRetry=true;}
+check_feature($crossRetry,'failed recipients cannot be requeued from another activity');
+check_feature(communication_retry_failed($db,1,$uncertain)===1,'explicit admin retry requeues failed recipient only');
+check_feature(communication_retry_failed($db,1,$uncertain)===0,'repeated retry cannot duplicate pending entries');
+check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===1,'authorized retry uses ordinary queue and accepts one recipient');
+check_feature(communication_retry_failed($db,1,$uncertain)===0,'accepted messages cannot be requeued as failed');
+
+
+$exhausted=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Tentativas antigas','body_text'=>'Não repetir',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+check_feature(communication_queue_campaign($db,1,$exhausted)===1,'legacy pending row queued');
+$db->exec("UPDATE communication_deliveries SET attempts=3 WHERE campaign_id=$exhausted");
+$GLOBALS['communication_test_daily_limit']=1; // already reached: cleanup must not depend on quota.
+check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0,'exhausted legacy row never sent automatically');
+check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$exhausted")->fetchColumn()==='failed','exhausted legacy row converted to failed');
+check_feature(communication_queue_summary($db,1)['pending']===0,'no permanent pending count after exhausted attempts');
 
 echo "course-comms: OK\n";

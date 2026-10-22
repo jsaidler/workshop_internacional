@@ -31,12 +31,27 @@ function communication_unsubscribe_resolve(PDO $db,string $token): ?array {
 function communication_campaigns(PDO $db,int $activityId): array {
     $q=$db->prepare('SELECT campaign.*,c.title course_title,cc.title cohort_title,
     (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id) audience_count,
-    (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.status=\'sent\') sent_count
+    (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.status=\'sent\') sent_count,
+    (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.error_code=\'cancelled_by_admin\') cancelled_count,
+    (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.status=\'failed\') failed_count,
+    (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.status=\'pending\') pending_count
     FROM communication_campaigns campaign LEFT JOIN courses c ON c.id=campaign.course_id
     LEFT JOIN course_cohorts cc ON cc.id=campaign.cohort_id
     WHERE campaign.activity_id=? ORDER BY campaign.id DESC LIMIT 80');
     $q->execute([$activityId]);return $q->fetchAll();
 }
+/** Status per recipient for the selected campaign. Never reveal this outside admin. */
+function communication_campaign_deliveries(PDO $db,int $activityId,int $campaignId): array {
+    $q=$db->prepare("SELECT d.id,d.status,d.error_code,d.attempts,d.updated_at,u.name,u.email
+        FROM communication_deliveries d
+        JOIN communication_campaigns c ON c.id=d.campaign_id
+        JOIN student_users u ON u.id=d.student_id
+        WHERE c.activity_id=? AND c.id=?
+        ORDER BY d.id LIMIT 300");
+    $q->execute([$activityId,$campaignId]);
+    return $q->fetchAll(PDO::FETCH_ASSOC);
+}
+
 function communication_campaign(PDO $db,int $activityId,int $campaignId): ?array {
     $q=$db->prepare('SELECT * FROM communication_campaigns WHERE id=? AND activity_id=?');
     $q->execute([$campaignId,$activityId]);return $q->fetch()?:null;
@@ -136,12 +151,14 @@ function communication_create_campaign(PDO $db,int $activityId,array $input): in
     $subject=trim((string)($input['subject']??''));
     if($subject===''||mb_strlen($subject)>180)throw new RuntimeException('Informe um assunto com até 180 caracteres.');
     $body=communication_campaign_body($input);
+    communication_validate_images($db,$body['body_html']);
+    $template=communication_template_key((string)($input['template_key']??'minimal'));
     $individual=!empty($input['selection_explicit']);
     $targets=$individual?communication_validate_targets($db,$activityId,$input):[];
-    return course_agenda_with_lock($db,static function()use($db,$activityId,$category,$courseId,$cohortId,$subject,$body,$individual,$targets):int{
+    return course_agenda_with_lock($db,static function()use($db,$activityId,$category,$courseId,$cohortId,$subject,$body,$individual,$targets,$template):int{
         $now=utc_now();
-        $db->prepare("INSERT INTO communication_campaigns(activity_id,category,course_id,cohort_id,subject,body_text,body_html,selection_mode,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'draft',?,?)")
-           ->execute([$activityId,$category,$courseId?:null,$cohortId?:null,$subject,$body['body_text'],$body['body_html'],$individual?'selected':'all',$now,$now]);
+        $db->prepare("INSERT INTO communication_campaigns(activity_id,category,course_id,cohort_id,subject,body_text,body_html,selection_mode,template_key,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,'draft',?,?)")
+           ->execute([$activityId,$category,$courseId?:null,$cohortId?:null,$subject,$body['body_text'],$body['body_html'],$individual?'selected':'all',$template,$now,$now]);
         $id=(int)$db->lastInsertId();
         if($individual)communication_save_campaign_targets($db,$id,$targets);
         return $id;
@@ -152,6 +169,9 @@ function communication_queue_campaign(PDO $db,int $activityId,int $id): int {
     return course_agenda_with_lock($db,static function() use($db,$activityId,$id): int {
         $campaign=communication_campaign($db,$activityId,$id);
         if(!$campaign || $campaign['status']!=='draft')throw new RuntimeException('Campanha não disponível para envio.');
+        communication_validate_images($db,(string)($campaign['body_html']??''));
+        if(str_contains((string)($campaign['body_html']??''),'data-email-media-id')&&communication_site_url($db)==='')
+            throw new RuntimeException('Defina o endereço HTTPS do site antes de enviar imagens.');
         $audience=communication_campaign_audience($db,$activityId,$campaign);
         if(!$audience)throw new RuntimeException('Nenhum destinatário elegível. Não foi criado envio.');
         $now=utc_now();
@@ -219,7 +239,7 @@ function communication_send_php(PDO $db,array $payload): array {
     if($html!==''){
         $boundary='alt_'.bin2hex(random_bytes(16));
         $headers[]='Content-Type: multipart/alternative; boundary="'.$boundary.'"';
-        $plain=base64_encode($body);$rich=base64_encode(communication_email_html($html,$body));
+        $plain=base64_encode($body);$rich=base64_encode(communication_email_document($html,$body,$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0)));
         $body='--'.$boundary."\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split($plain,76,"\r\n")
             .'--'.$boundary."\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split($rich,76,"\r\n")
             .'--'.$boundary."--\r\n";
@@ -264,7 +284,7 @@ function communication_send_brevo(array $payload,?PDO $db=null): array {
     $body=['sender'=>['name'=>$cfg['name'],'email'=>$cfg['from']],
       'to'=>[['name'=>$payload['name'],'email'=>$payload['email']]],
       'subject'=>$payload['subject'],'textContent'=>$payload['body']];
-    if(!empty($payload['html']))$body['htmlContent']=communication_email_html((string)$payload['html'],(string)$payload['body']);
+    if(!empty($payload['html']))$body['htmlContent']=communication_email_document((string)$payload['html'],(string)$payload['body'],$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0));
     $request=curl_init('https://api.brevo.com/v3/smtp/email');
     curl_setopt_array($request,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,
       CURLOPT_TIMEOUT=>18,CURLOPT_CONNECTTIMEOUT=>5,
@@ -277,7 +297,7 @@ function communication_send_brevo(array $payload,?PDO $db=null): array {
     return ['id'=>is_array($result)?(string)($result['messageId']??''):''];
 }
 /** Claim jobs before any network request; recover abandoned processing jobs. */
-function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): array {
+function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?int $activityId=null): array {
     $limit=max(1,min(50,$limit));
     if($sender===null)$sender=static fn(array $payload):array=>communication_send_message($db,$payload);
     // Brevo Free currently allows 300/day. Default to 250 so retries and
@@ -287,17 +307,29 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
     $daily=$db->prepare("SELECT COUNT(*) FROM communication_deliveries WHERE status='sent' AND delivered_at>=?");
     $daily->execute([$from]);
     $limit=min($limit,max(0,$dailyLimit-(int)$daily->fetchColumn()));
-    if($limit===0)return ['sent'=>0,'skipped'=>0,'failed'=>0];
+    // Even when the daily quota is exhausted, clean up abandoned/exhausted jobs
+    // and finalize campaigns; otherwise the panel can show a stuck queue forever.
     $allowNewsletter=communication_site_url($db)!=='';
-    $jobs=course_agenda_with_lock($db,static function() use($db,$limit,$allowNewsletter): array {
+    $jobs=course_agenda_with_lock($db,static function() use($db,$limit,$allowNewsletter,$activityId): array {
         $stale=gmdate('Y-m-d\TH:i:s\Z',time()-1800);
-        $db->prepare("UPDATE communication_deliveries SET status='pending' WHERE status='processing' AND attempts<3 AND updated_at<?")->execute([$stale]);
-        $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='processing_timeout' WHERE status='processing' AND attempts>=3 AND updated_at<?")->execute([$stale]);
-        $q=$db->prepare("SELECT d.id,d.campaign_id,d.student_id,c.activity_id,c.category,c.course_id,c.cohort_id,c.subject,c.body_text,c.body_html,c.selection_mode,u.name,u.email
+        // The provider may have accepted a message before the worker crashed.
+        // Never retry uncertain sends automatically: an operator must investigate.
+        $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='processing_outcome_unknown',updated_at=?
+            WHERE status='processing' AND updated_at<?"
+            .($activityId!==null?" AND campaign_id IN (SELECT id FROM communication_campaigns WHERE activity_id=?)":""))
+          ->execute($activityId!==null?[utc_now(),$stale,$activityId]:[utc_now(),$stale]);
+        // Recover legacy rows which have exhausted the automatic attempt limit.
+        $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='attempts_exhausted',updated_at=?
+            WHERE status='pending' AND attempts>=3"
+            .($activityId!==null?" AND campaign_id IN (SELECT id FROM communication_campaigns WHERE activity_id=?)":""))
+          ->execute($activityId!==null?[utc_now(),$activityId]:[utc_now()]);
+        $q=$db->prepare("SELECT d.id,d.campaign_id,d.student_id,c.activity_id,c.category,c.course_id,c.cohort_id,c.subject,c.body_text,c.body_html,c.template_key,c.selection_mode,u.name,u.email
           FROM communication_deliveries d JOIN communication_campaigns c ON c.id=d.campaign_id
           JOIN student_users u ON u.id=d.student_id WHERE d.status='pending' AND d.attempts<3
-          AND c.status='queued' ".($allowNewsletter?'':"AND c.category!='newsletter' ")."ORDER BY d.id LIMIT ?");
-        $q->bindValue(1,$limit,PDO::PARAM_INT);$q->execute();$rows=$q->fetchAll();
+          AND c.status='queued' ".($allowNewsletter?'':"AND c.category!='newsletter' ")
+          .($activityId!==null?"AND c.activity_id=? ":"")."ORDER BY d.id LIMIT ?");
+        if($activityId!==null)$q->bindValue(1,$activityId,PDO::PARAM_INT);
+        $q->bindValue($activityId!==null?2:1,$limit,PDO::PARAM_INT);$q->execute();$rows=$q->fetchAll();
         $mark=$db->prepare("UPDATE communication_deliveries SET status='processing',attempts=attempts+1,updated_at=? WHERE id=? AND status='pending'");
         foreach($rows as $row)$mark->execute([utc_now(),(int)$row['id']]);
         return $rows;
@@ -307,9 +339,14 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
     foreach($jobs as $job){
         $id=(int)$job['id'];$campaign=(int)$job['campaign_id'];
         if(!isset($audiences[$campaign])){
-            $audiences[$campaign]=array_flip(array_map('intval',array_column(
-                communication_campaign_audience($db,(int)$job['activity_id'],$job),'id'
-            )));
+            try{
+                $audiences[$campaign]=array_flip(array_map('intval',array_column(
+                    communication_campaign_audience($db,(int)$job['activity_id'],$job),'id'
+                )));
+            }catch(Throwable $e){
+                $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='audience_validation_error',updated_at=? WHERE id=? AND status='processing'")->execute([utc_now(),$id]);
+                $result['failed']++;continue;
+            }
         }
         if(!isset($audiences[$campaign][(int)$job['student_id']])){
             $db->prepare("UPDATE communication_deliveries SET status='skipped',error_code='no_longer_eligible',updated_at=? WHERE id=?")->execute([utc_now(),$id]);
@@ -317,6 +354,12 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
         }
         $body=(string)$job['body_text'];
         $html=(string)($job['body_html']??'');
+        try{
+            communication_validate_images($db,$html);
+        }catch(Throwable $e){
+            $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='media_unavailable',updated_at=? WHERE id=? AND status='processing'")->execute([utc_now(),$id]);
+            $result['failed']++;continue;
+        }
         if($job['category']==='newsletter'){
             $site=communication_site_url($db);
             if($site==='')throw new RuntimeException('Defina o endereço do site em Comunicações → Configuração antes de enviar newsletter.');
@@ -326,17 +369,94 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
         }
         try{
             $receipt=$sender(['name'=>(string)$job['name'],'email'=>(string)$job['email'],
-                'subject'=>(string)$job['subject'],'body'=>$body,'html'=>$html]);
+                'subject'=>(string)$job['subject'],'body'=>$body,'html'=>$html,
+                'template'=>(string)($job['template_key']??'minimal'),'activity_id'=>(int)$job['activity_id']]);
             $db->prepare("UPDATE communication_deliveries SET status='sent',provider_id=?,error_code=NULL,delivered_at=?,updated_at=? WHERE id=?")
               ->execute([substr((string)($receipt['id']??''),0,240),utc_now(),utc_now(),$id]);
             $result['sent']++;
         }catch(Throwable $e){
-            $db->prepare("UPDATE communication_deliveries SET status=CASE WHEN attempts>=3 THEN 'failed' ELSE 'pending' END,error_code='provider_failure',updated_at=? WHERE id=?")
+            // A network timeout can occur after acceptance: no blind retry.
+            $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='provider_failure',updated_at=? WHERE id=? AND status='processing'")
               ->execute([utc_now(),$id]);$result['failed']++;
         }
     }
-    $db->exec("UPDATE communication_campaigns SET status='completed',updated_at='".utc_now()."' WHERE status='queued' AND NOT EXISTS(SELECT 1 FROM communication_deliveries d WHERE d.campaign_id=communication_campaigns.id AND d.status IN ('pending','processing'))");
+    $complete=$db->prepare("UPDATE communication_campaigns SET status='completed',updated_at=?
+        WHERE status='queued' ".($activityId!==null?"AND activity_id=? ":"")."
+        AND NOT EXISTS(SELECT 1 FROM communication_deliveries d
+            WHERE d.campaign_id=communication_campaigns.id AND d.status IN ('pending','processing'))");
+    $complete->execute($activityId!==null?[utc_now(),$activityId]:[utc_now()]);
     return $result;
+}
+
+
+/** Counts and mutations are limited to the selected CMS activity. */
+function communication_queue_summary(PDO $db,int $activityId): array {
+    $q=$db->prepare("SELECT
+      COALESCE(SUM(CASE WHEN d.status='pending' AND c.status='queued' THEN 1 ELSE 0 END),0) pending,
+      COALESCE(SUM(CASE WHEN d.status='processing' THEN 1 ELSE 0 END),0) processing,
+      COALESCE(SUM(CASE WHEN d.status='sent' THEN 1 ELSE 0 END),0) accepted,
+      COALESCE(SUM(CASE WHEN d.status='failed' THEN 1 ELSE 0 END),0) failed,
+      COALESCE(SUM(CASE WHEN d.status='skipped' AND d.error_code='cancelled_by_admin' THEN 1 ELSE 0 END),0) cancelled
+      FROM communication_deliveries d JOIN communication_campaigns c ON c.id=d.campaign_id
+      WHERE c.activity_id=?");
+    $q->execute([$activityId]);
+    return array_map('intval',$q->fetch(PDO::FETCH_ASSOC)?:[
+        'pending'=>0,'processing'=>0,'accepted'=>0,'failed'=>0,'cancelled'=>0
+    ]);
+}
+
+/** Never revoke provider-accepted messages, only entries still pending. */
+function communication_cancel_queue(PDO $db,int $activityId,?int $campaignId=null): int {
+    return course_agenda_with_lock($db,static function()use($db,$activityId,$campaignId):int{
+        $filter=$campaignId!==null?' AND c.id=?':'';
+        $params=$campaignId!==null?[$activityId,$campaignId]:[$activityId];
+        $q=$db->prepare("SELECT d.id FROM communication_deliveries d JOIN communication_campaigns c ON c.id=d.campaign_id
+            WHERE c.activity_id=? AND c.status='queued' AND d.status='pending'".$filter);
+        $q->execute($params);
+        $ids=array_map('intval',$q->fetchAll(PDO::FETCH_COLUMN));
+        if(!$ids)return 0;
+        $update=$db->prepare("UPDATE communication_deliveries SET status='skipped',error_code='cancelled_by_admin',updated_at=?
+            WHERE id=? AND status='pending'");
+        $now=utc_now();$total=0;
+        foreach($ids as $id){$update->execute([$now,$id]);$total+=$update->rowCount();}
+        $db->prepare("UPDATE communication_campaigns SET status='completed',updated_at=?
+            WHERE activity_id=? AND status='queued'
+            AND NOT EXISTS(SELECT 1 FROM communication_deliveries d WHERE d.campaign_id=communication_campaigns.id
+                AND d.status IN ('pending','processing'))")->execute([$now,$activityId]);
+        return $total;
+    });
+}
+
+/** Explicit retry after operator verification. Never requeue sent or cancelled jobs. */
+function communication_retry_failed(PDO $db,int $activityId,int $campaignId): int {
+    return course_agenda_with_lock($db,static function()use($db,$activityId,$campaignId):int{
+        $campaign=communication_campaign($db,$activityId,$campaignId);
+        if(!$campaign || $campaign['status']==='draft')throw new RuntimeException('Mensagem não disponível para reprocessamento.');
+        $now=utc_now();
+        $q=$db->prepare("UPDATE communication_deliveries
+            SET status='pending',attempts=0,error_code=NULL,updated_at=?
+            WHERE campaign_id=? AND status='failed'");
+        $q->execute([$now,$campaignId]);
+        $count=$q->rowCount();
+        if($count>0)$db->prepare("UPDATE communication_campaigns SET status='queued',updated_at=?
+            WHERE id=? AND activity_id=? AND status='completed'")->execute([$now,$campaignId,$activityId]);
+        return $count;
+    });
+}
+
+/** Reuse the CLI worker's lock, but run safely from an administrator POST. */
+function communication_dispatch_manual(PDO $db,int $activityId,int $limit=1,?callable $sender=null): array {
+    $lock=@fopen(dirname(__DIR__).'/storage/communications-worker.lock','c+');
+    if(!$lock)throw new RuntimeException('Não foi possível acessar o controle de envio. Verifique as permissões do servidor.');
+    if(!flock($lock,LOCK_EX|LOCK_NB)){
+        fclose($lock);
+        return ['busy'=>true,'sent'=>0,'skipped'=>0,'failed'=>0];
+    }
+    try {
+        return ['busy'=>false]+communication_dispatch($db,max(1,min(1,$limit)),$sender,$activityId);
+    }finally {
+        flock($lock,LOCK_UN);fclose($lock);
+    }
 }
 
 function communication_update_campaign(PDO $db,int $activityId,int $id,array $input): int {
@@ -350,12 +470,28 @@ function communication_update_campaign(PDO $db,int $activityId,int $id,array $in
     $subject=trim((string)($input['subject']??''));
     if($subject===''||mb_strlen($subject)>180)throw new RuntimeException('Informe um assunto com até 180 caracteres.');
     $body=communication_campaign_body($input);
+    communication_validate_images($db,$body['body_html']);
+    $template=communication_template_key((string)($input['template_key']??'minimal'));
     $individual=!empty($input['selection_explicit']);
     $targets=$individual?communication_validate_targets($db,$activityId,$input):[];
-    return course_agenda_with_lock($db,static function()use($db,$id,$activityId,$category,$courseId,$cohortId,$subject,$body,$individual,$targets):int{
-        $db->prepare('UPDATE communication_campaigns SET category=?,course_id=?,cohort_id=?,subject=?,body_text=?,body_html=?,selection_mode=CASE WHEN ?=1 THEN \'selected\' ELSE selection_mode END,updated_at=? WHERE id=? AND activity_id=? AND status=\'draft\'')
-           ->execute([$category,$courseId?:null,$cohortId?:null,$subject,$body['body_text'],$body['body_html'],$individual?1:0,utc_now(),$id,$activityId]);
+    return course_agenda_with_lock($db,static function()use($db,$id,$activityId,$category,$courseId,$cohortId,$subject,$body,$individual,$targets,$template):int{
+        $db->prepare('UPDATE communication_campaigns SET category=?,course_id=?,cohort_id=?,subject=?,body_text=?,body_html=?,template_key=?,selection_mode=CASE WHEN ?=1 THEN \'selected\' ELSE selection_mode END,updated_at=? WHERE id=? AND activity_id=? AND status=\'draft\'')
+           ->execute([$category,$courseId?:null,$cohortId?:null,$subject,$body['body_text'],$body['body_html'],$template,$individual?1:0,utc_now(),$id,$activityId]);
         if($individual)communication_save_campaign_targets($db,$id,$targets);
         return $id;
     });
+}
+
+
+function communication_duplicate_campaign(PDO $db,int $activityId,int $campaignId):int {
+    $source=communication_campaign($db,$activityId,$campaignId);
+    if(!$source)throw new RuntimeException('Mensagem não encontrada.');
+    $audience=communication_campaign_audience($db,$activityId,$source);
+    return communication_create_campaign($db,$activityId,[
+        'category'=>(string)$source['category'],'course_id'=>(int)$source['course_id'],
+        'cohort_id'=>(int)$source['cohort_id'],'subject'=>(string)$source['subject'],
+        'body_text'=>(string)$source['body_text'],'body_html'=>(string)($source['body_html']??''),
+        'template_key'=>(string)($source['template_key']??'minimal'),
+        'selection_explicit'=>1,'recipient_ids'=>array_column($audience,'id')
+    ]);
 }

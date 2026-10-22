@@ -1,4 +1,10 @@
 name: validate
+
+# Cancel obsolete PR checks after new commits; never cancel production pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 on:
   pull_request:
   push:
@@ -85,6 +91,7 @@ jobs:
             php tools/test-course-domain-material.php
             php tools/test-course-agenda.php
             php tools/test-course-reviews-communications.php
+            php tools/test-communications-email-design.php
             php tools/test-communications-mail-fallback.php
             php tools/test-communications-site-url.php
             php tools/test-communications-brevo-credentials.php
