@@ -281,6 +281,15 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-alerts-feedback]')).toContainText('Processamento concluído: 1 aceito(s)');
    const sentAlert=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(sentAlert.staff_notices[0].status).toBe('sent');
+   execFileSync('php',[seed,sandbox,'student-action'],{encoding:'utf8',timeout:45000});
+   await admin.reload();
+   await expect(admin.locator('[data-communications-alerts] [data-alerts-cancel]')).toBeEnabled();
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.locator('[data-communications-alerts] [data-alerts-cancel]').click();
+   await expect(admin.locator('[data-alerts-feedback]')).toContainText('1 aviso(s) pendente(s) cancelado(s)');
+   const cancelledAlert=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(cancelledAlert.staff_notices.filter(row=>row.status==='sent')).toHaveLength(1);
+   expect(cancelledAlert.staff_notices.filter(row=>row.status==='skipped')).toHaveLength(1);
    const token=execFileSync('php',[seed,sandbox,'token'],{encoding:'utf8',timeout:30000}).trim();
    const unsubscribe=await browser.newPage();
    await unsubscribe.goto(origin+'/newsletter-sair.php?token='+encodeURIComponent(token));
