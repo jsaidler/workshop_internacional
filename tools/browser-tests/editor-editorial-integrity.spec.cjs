@@ -353,6 +353,34 @@ test('selection across mixed markup never removes formatting outside a selected 
 });
 
 
+test('history captures the initial iframe state before immediate text formatting',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  await open(page);
+  // No artificial delay: the very first edit must have a baseline to undo to.
+  const initial=await page.evaluate(()=>window.CmsEditorHistory?.getState());
+  expect(initial).toBeTruthy();
+  expect(initial.length).toBe(1);
+  expect(initial.index).toBe(0);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.click();
+  await edited.evaluate(el=>{
+    const range=el.ownerDocument.createRange();
+    range.setStart(el.firstChild,0);
+    range.setEnd(el.firstChild,5);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="bold"]').click();
+  await expect(edited.locator('strong')).toHaveText('Texto');
+  await expect(page.locator('#undo')).toBeEnabled();
+  expect(await page.evaluate(()=>window.CmsEditorHistory.getState().length)).toBeGreaterThan(1);
+  await page.evaluate(()=>window.CmsEditorHistory.undo());
+  await expect(edited.locator('strong')).toHaveCount(0);
+  await expect(edited).toHaveText('Texto inicial');
+  await expect(page.locator('#redo')).toBeEnabled();
+  expect(state.html).toContain('Texto inicial');
+});
+
 test('stale revision opens recovery without overwriting server, local draft can be exported',async({page})=>{
   const state=await mockApp(page,{published:1});
   await open(page);
