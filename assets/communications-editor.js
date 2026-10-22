@@ -16,6 +16,13 @@ const category=form.querySelector('[name="category"]');
 const course=form.querySelector('[name="course_id"]');
 const cohort=form.querySelector('[name="cohort_id"]');
 const audienceUrl=root.getAttribute('data-audience-url');
+const review=root.querySelector('.comms-send-review');
+const unsavedWarning=root.querySelector('[data-unsaved-warning]');
+function markChanged(){
+  if(root.dataset.savedDraft!=='1')return;
+  if(review)review.hidden=true;
+  if(unsavedWarning)unsavedWarning.hidden=false;
+}
 if(editor && htmlField && textField){
   if(plainFallback)plainFallback.hidden=true;
   editor.hidden=false;
@@ -23,7 +30,7 @@ if(editor && htmlField && textField){
     htmlField.value=editor.innerHTML;
     textField.value=editor.innerText.trim();
   };
-  editor.addEventListener('input',sync);
+  editor.addEventListener('input',()=>{sync();markChanged();});
   root.querySelectorAll('[data-editor-command]').forEach(button=>{
     button.addEventListener('mousedown',event=>event.preventDefault());
     button.addEventListener('click',()=>{
@@ -36,7 +43,7 @@ if(editor && htmlField && textField){
         if(!/^https:\/\/[^\s]+$/i.test(url.trim())){window.alert('Informe um link HTTPS válido.');return;}
         if(selection && !selection.isCollapsed)document.execCommand(command,false,url.trim());
       }else document.execCommand(command,false,null);
-      sync();
+      sync();markChanged();
     });
   });
   form.addEventListener('submit',sync);
@@ -74,12 +81,12 @@ function filterResults(){
   });
 }
 if(search)search.addEventListener('input',filterResults);
-list?.addEventListener('change',updateCount);
+list?.addEventListener('change',()=>{updateCount();markChanged();});
 root.querySelector('[data-recipient-all]')?.addEventListener('click',()=>{
-  list.querySelectorAll('input[name="recipient_ids[]"]').forEach(x=>x.checked=true);updateCount();
+  list.querySelectorAll('input[name="recipient_ids[]"]').forEach(x=>x.checked=true);updateCount();markChanged();
 });
 root.querySelector('[data-recipient-none]')?.addEventListener('click',()=>{
-  list.querySelectorAll('input[name="recipient_ids[]"]').forEach(x=>x.checked=false);updateCount();
+  list.querySelectorAll('input[name="recipient_ids[]"]').forEach(x=>x.checked=false);updateCount();markChanged();
 });
 async function refreshRecipients(){
   if(!audienceUrl)return;
@@ -101,12 +108,13 @@ async function refreshRecipients(){
     if(status)status.textContent=String(err.message||'Falha ao carregar destinatários.');
   }finally{if(id===requestId)list.removeAttribute('aria-busy');}
 }
-[category,course,cohort].forEach(input=>input?.addEventListener('change',()=>{
+[category,course,cohort].forEach(input=>input?.addEventListener('change',()=>{markChanged();
   if(input===course){
     const selected=cohort.selectedOptions[0];
     if(selected && selected.dataset.course && selected.dataset.course!==course.value)cohort.value='0';
   }
   refreshRecipients();
 }));
+form.querySelector('[name="subject"]')?.addEventListener('input',markChanged);
 updateCount();
 })();
