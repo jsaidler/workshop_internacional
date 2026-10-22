@@ -39,4 +39,8 @@ $formatter=(string)file_get_contents($root.'/editor/cms-rich-text-commands.js');
 integrity_expect(str_contains($formatter,"window.CmsRichTextCommands={apply}"),'native formatter must export command authority');
 integrity_expect(!str_contains($editor,'.execCommand('),'core editor still uses deprecated browser formatting');
 integrity_expect(str_contains((string)file_get_contents($root.'/editor/index.html'),'/editor/cms-rich-text-commands.js'),'formatter not installed');
+integrity_expect(str_contains($editor,'window.CmsEditorDraft={save,serialize,'),'canonical draft service must expose serializer');
+$history=(string)file_get_contents($root.'/editor/cms-history-transactions.js');
+integrity_expect(str_contains($history,'window.CmsEditorDraft.serialize()'),'history must snapshot canonical serialized page');
+integrity_expect(str_contains($editor,'if(window.CmsEditorHistory||state.loading'),'legacy history must defer to history transaction controller');
 echo "editor-integrity: ok\n";
