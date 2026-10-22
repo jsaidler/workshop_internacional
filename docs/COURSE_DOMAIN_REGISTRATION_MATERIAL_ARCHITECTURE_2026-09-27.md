@@ -210,3 +210,7 @@ A fila `communication_deliveries` grava um registro por campanha e conta (`UNIQU
 ### Ajuste do transporte de comunicações — 22/10/2026
 
 A escolha do transporte pertence ao serviço canônico de comunicações, não à identidade do curso ou matrícula. A fila continua isolada do fluxo transacional das ações dos alunos. O administrador pode usar o serviço nativo `mail()` do servidor sem Brevo, ou Brevo se estiver configurado. O status de entrega no CMS informa aceite, não entrega na caixa de entrada. Remetente e monitoramento de cron têm configuração operacional na interface administrativa, enquanto credenciais continuam privadas.
+
+### Brevo gerenciado pelo CMS — 22/10/2026
+
+A credencial do serviço externo pode ser cadastrada em **Admin → Comunicações**, sem acesso do autor a arquivos do servidor. A entidade de envio continua única: `communication_send_message()` obtém a credencial de armazenamento cifrado do CMS, mantendo como contingência a configuração privada legada do servidor. Validação de chave, remetente e envio de teste pertencem à administração, não às ações dos alunos. O cadastro da chave não altera consentimento, audiência, controle de matrículas, enfileiramento, isolamento de domínio ou direitos de acesso. Agendamento real da entrega permanece dependente de cron CLI na hospedagem.
