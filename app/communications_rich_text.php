@@ -25,6 +25,12 @@ function communication_clean_node(DOMNode $node): string {
     if(!$node instanceof DOMElement)return '';
     $tag=strtolower($node->tagName);
     if(in_array($tag,['script','style','iframe','object','embed','form','input','svg','math','video','audio','img','template','meta','link'],true))return '';
+    if($tag==='figure'){
+        $id=$node->getAttribute('data-email-media-id');
+        $alt=trim($node->getAttribute('data-email-alt'));
+        if(!preg_match('/^[1-9][0-9]{0,10}$/D',$id)||$alt===''||mb_strlen($alt)>250)return '';
+        return '<figure data-email-media-id="'.$id.'" data-email-alt="'.htmlspecialchars($alt,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'"></figure>';
+    }
     $allowed=['p','br','strong','b','em','i','u','ul','ol','li','blockquote','h2','h3','a','div'];
     $inner='';
     foreach($node->childNodes as $child)$inner.=communication_clean_node($child);
@@ -46,6 +52,8 @@ function communication_clean_node(DOMNode $node): string {
 }
 function communication_html_text(string $html): string {
     if($html==='')return '';
+    $html=preg_replace_callback('~<figure data-email-media-id="[0-9]+" data-email-alt="([^"]*)"></figure>~',
+        static fn(array $m):string=>'[Imagem: '.html_entity_decode($m[1],ENT_QUOTES|ENT_HTML5,'UTF-8').']'."\n",$html)??$html;
     $spaced=preg_replace('~<br\s*/?>|</(?:p|div|li|h2|h3|blockquote)>~i',"\n",$html);
     $text=html_entity_decode(strip_tags((string)$spaced),ENT_QUOTES|ENT_HTML5,'UTF-8');
     return trim(preg_replace("/\n{3,}/","\n\n",str_replace("\r",'',$text))??'');
