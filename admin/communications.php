@@ -17,7 +17,19 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('communications-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Solicitação inválida.');}
     $action=(string)($_POST['action']??'');
     try{
-        if($action==='admin_notice_preferences'){
+        if($action==='mail_settings'){
+            communication_sender_save($db,$_POST);
+            $_SESSION['communications_notice']='Remetente salvo. Envie um teste para confirmar o funcionamento.';
+            header('Location: /admin/communications.php?activity='.$activityId,true,303);exit;
+        }elseif($action==='mail_test'){
+            $admin=current_admin();$email=(string)($admin['email']??'');
+            if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('A conta administrativa não tem um endereço de e-mail válido.');
+            communication_send_message($db,[
+              'name'=>$email,'email'=>$email,'subject'=>'[TESTE] Envio de e-mails do site',
+              'body'=>"Mensagem de verificação do sistema de e-mail.\n\nSe você recebeu este teste, o envio para sua conta está funcionando."
+            ]);
+            $notice='O servidor aceitou a mensagem de teste. Confira sua caixa de entrada e a pasta de spam.';
+        }elseif($action==='admin_notice_preferences'){
             $adminId=(int)(current_admin()['id']??0);
             admin_student_notice_set_preferences($db,$adminId,is_array($_POST['alerts']??null)?$_POST['alerts']:[]);
             $_SESSION['communications_notice']='Preferências dos avisos atualizadas.';
@@ -54,12 +66,12 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             if(!$selected || $selected['status']!=='draft')throw new RuntimeException('Salve o rascunho antes do teste.');
             $admin=current_admin();$email=(string)($admin['email']??'');
             if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('Conta administrativa sem e-mail válido.');
-            communication_send_brevo([
+            communication_send_message($db,[
               'name'=>'Teste do administrador','email'=>$email,
               'subject'=>'[TESTE] '.(string)$selected['subject'],
               'body'=>(string)$selected['body_text']."\n\n[Mensagem de teste. Nenhum aluno foi notificado.]"
             ]);
-            $notice='Teste enviado ao e-mail da sua conta administrativa.';
+            $notice='O servidor aceitou a mensagem de teste. Confira sua caixa de entrada e a pasta de spam.';
         }else throw new RuntimeException('Ação inválida.');
     }catch(Throwable $e){$error=$e->getMessage();}
 }
@@ -69,6 +81,13 @@ foreach($courses as $course)foreach(course_cohorts_for_course($db,(int)$course['
  'id'=>(int)$cohort['id'],'course_id'=>(int)$course['id'],
  'label'=>(string)$course['title'].' — '.(string)$cohort['title']
 ];
+$mailSettings=communication_sender_settings($db);
+$mailStatus=communication_mail_status($db);
+$worker=communication_worker_status($db);
+$workerLast=$worker['last_finished_at']??null;
+$workerActive=$workerLast && strtotime((string)$workerLast)!==false && strtotime((string)$workerLast)>time()-3600;
+$mailQueueCount=(int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE status IN ('pending','processing')")->fetchColumn();
+$staffQueueCount=(int)$db->query("SELECT COUNT(*) FROM admin_student_notice_outbox WHERE status IN ('pending','processing')")->fetchColumn();
 $campaigns=communication_campaigns($db,$activityId);
 if($selected && $preview===null){
     try{$preview=count(communication_audience($db,$activityId,(string)$selected['category'],(int)$selected['course_id'],(int)$selected['cohort_id']));}
@@ -79,8 +98,41 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <?php if($notice!==''):?><p class="admin-notice success" role="status"><?=h($notice)?></p><?php endif;?>
 <?php if($error!==''):?><p class="admin-notice error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="admin-card admin-teaching-detail">
-  <header><div><h2>Comunicações</h2><p>Avisos de curso e novidades por e-mail. Campanhas promocionais somente para quem aceitou recebê-las.</p></div></header>
-  <p class="muted">O envio é realizado pela fila, não durante o salvamento. Se o provedor ainda não estiver configurado, os rascunhos e a prévia continuam disponíveis.</p>
+  <header><div><h2>Comunicações</h2><p>Notificações dos alunos, avisos de curso e newsletter.</p></div></header>
+  <p>O e-mail do servidor pode ser usado sem contratar outro serviço. Antes de enviar mensagens aos alunos, confirme o remetente e faça um teste de recebimento.</p>
+</section>
+<section class="admin-card admin-release-card" aria-labelledby="mail-settings-heading">
+  <header><div><h2 id="mail-settings-heading">Envio de e-mails</h2>
+  <p>Configure o remetente e confirme que as mensagens chegam à sua caixa de entrada.</p></div></header>
+  <p><strong>Meio de envio:</strong> <?=h($mailStatus['transport_label'])?></p>
+  <?php if($mailStatus['transport']==='php'):?>
+  <p class="muted">O site usará o serviço de e-mail da hospedagem. Não precisa de chave de API. A entrega depende das condições desse serviço.</p>
+  <?php else:?>
+  <p class="muted">O serviço externo já foi configurado no servidor. O remetente deve estar autorizado por esse serviço.</p>
+  <?php endif;?>
+  <form method="post" class="admin-form-grid">
+    <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+    <input type="hidden" name="action" value="mail_settings">
+    <label>Nome do remetente<input type="text" name="sender_name" maxlength="100" value="<?=h((string)$mailSettings['sender_name'])?>" autocomplete="organization"></label>
+    <label>E-mail do remetente<input type="email" name="sender_email" value="<?=h((string)$mailSettings['custom_sender_email'])?>" placeholder="<?=h((string)($mailSettings['sender_email']?:'seu-endereco@dominio.com.br'))?>" autocomplete="off"></label>
+    <p class="admin-form-span-2 muted">Use preferencialmente um endereço do domínio do site, autorizado pela hospedagem. Se deixar em branco, será usada a identidade padrão do servidor.</p>
+    <div class="admin-form-actions"><button type="submit" class="admin-button">Salvar remetente</button></div>
+  </form>
+  <form method="post" class="admin-form-actions">
+    <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+    <input type="hidden" name="action" value="mail_test">
+    <button type="submit" class="admin-button secondary">Enviar teste para <?=h((string)(current_admin()['email']??'minha conta'))?></button>
+  </form>
+  <h3>Envio automático</h3>
+  <?php if(!$workerLast):?>
+    <p><strong>Sem execução registrada.</strong> Para que os avisos saiam sem abrir este painel, é necessário ativar a tarefa automática de envio na hospedagem.</p>
+  <?php elseif(!$workerActive):?>
+    <p><strong>Automação sem execução recente.</strong> Última execução concluída: <?=h((string)$workerLast)?>.</p>
+  <?php else:?>
+    <p><strong>Rotina executada recentemente:</strong> <?=h((string)$workerLast)?>. Isso não comprova o recebimento dos e-mails.</p>
+  <?php endif;?>
+  <p><strong>Na fila:</strong> <?=$staffQueueCount?> aviso(s) sobre alunos e <?=$mailQueueCount?> mensagem(ns) para alunos.</p>
+  <?php if(!empty($worker['last_error'])):?><p class="admin-notice error" role="alert"><?=h((string)$worker['last_error'])?></p><?php endif;?>
 </section>
 <?php
 $adminId=(int)(current_admin()['id']??0);
