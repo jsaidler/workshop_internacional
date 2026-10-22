@@ -1,5 +1,12 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Destinatários individuais e editor WYSIWYG de Comunicações — 22/10/2026
+
+Revisão de produto: filtro de curso/turma determina uma lista de alunos elegíveis, não implica envio para todos. Em **Comunicações → Mensagens**, o administrador vê nome e e-mail e pode marcar/desmarcar individualmente, selecionar todos ou nenhum e pesquisar, com quantidade conferida na revisão. A migração aditiva 108 persiste os IDs explicitamente escolhidos em `communication_campaign_targets`; `selection_mode` mantém retrocompatibilidade para campanhas anteriores. IDs escolhidos devem continuar matriculados/elegíveis e, em newsletter, com opt-in explícito, no salvamento, enfileiramento e despacho; escolha individual nunca substitui a autorização. O endpoint de leitura da audiência exige autenticação administrativa.
+
+O corpo da mensagem passa a ser editado visualmente: negrito, itálico, sublinhado, listas, links HTTPS e limpar formatação, com persistência de `body_html` estritamente sanitizado no servidor e alternativa `body_text`. Brevo recebe htmlContent + textContent; PHP mail usa multipart/alternative para mensagens ricas. Não permitir scripts, CSS arbitrário, imagens externas, URLs perigosas ou conteúdo de terceiros. Rascunhos históricos em texto simples são mantidos. Testes expandem a segurança e o fluxo real de UI. Publicar/instalar/confirmar entrega são estados distintos.
+
+
 ## Diagnóstico e reorganização de Comunicações — 22/10/2026
 
 ### Correção de Comunicações e URL de site — 22/10/2026 (PR atual)

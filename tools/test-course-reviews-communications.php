@@ -52,10 +52,12 @@ INSERT INTO course_listener_reservations(student_id,cohort_id,status) VALUES
 SQL);
 (require dirname(__DIR__).'/migrations/102_course_review_sessions.php')($db);
 (require dirname(__DIR__).'/migrations/103_communications.php')($db);
+(require dirname(__DIR__).'/migrations/108_communication_recipient_rich_body.php')($db);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
 require dirname(__DIR__).'/app/course_reviews.php';
 require dirname(__DIR__).'/app/communications_brevo_credentials.php';
 require dirname(__DIR__).'/app/communications_site_url.php';
+require dirname(__DIR__).'/app/communications_rich_text.php';
 require dirname(__DIR__).'/app/communications.php';
 check_feature(communication_mail_status($db)['transport']==='brevo','configured external mail remains usable');
 $senderBefore=communication_sender_settings($db);
@@ -130,4 +132,37 @@ $result=communication_dispatch($db,20,$fake);
 check_feature($result['sent']===2&&$result['skipped']===1,'eligibility rechecked before dispatch');
 check_feature(count($sent)===2,'exactly two notices dispatched');
 check_feature(count(communication_campaigns($db,1))===2,'history displays queued campaigns');
+
+$unsafe='<p onclick="evil()"><strong>Mensagem <em>importante</em></strong><script>alert(1)</script><a href="javascript:alert(2)">x</a><a href="https://example.test">seguro</a><img src="https://tracker.test/pixel"></p>';
+$clean=communication_safe_html($unsafe);
+check_feature(str_contains($clean,'<strong>')&&str_contains($clean,'<em>'),'basic rich formatting is retained');
+check_feature(!str_contains($clean,'onclick')&&!str_contains($clean,'script')&&!str_contains($clean,'javascript:')&&!str_contains($clean,'tracker.test'),'unsafe rich content must be stripped');
+check_feature(str_contains($clean,'href="https://example.test"'),'safe HTTPS link kept');
+check_feature(str_contains(communication_html_text($clean),'Mensagem importante'),'plaintext fallback derived from rich content');
+
+$selected=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Mensagem individual','body_html'=>'<p><strong>Encontro</strong> especial.</p>',
+ 'body_text'=>'ignored fallback','selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+check_feature(communication_campaign_target_ids($db,$selected)===[5],'only explicitly selected recipient saved');
+check_feature(count(communication_campaign_audience($db,1,communication_campaign($db,1,$selected)))===1,'selected audience limited to one');
+$invalid=false;try{
+ communication_update_campaign($db,1,$selected,[
+  'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+  'subject'=>'Wrong','body_html'=>'<p>Wrong</p>',
+  'selection_explicit'=>1,'recipient_ids'=>[3]
+ ]);
+}catch(RuntimeException){$invalid=true;}
+check_feature($invalid,'cross-course selected recipient rejected');
+check_feature(communication_campaign_target_ids($db,$selected)===[5],'invalid edit does not alter previous recipient');
+check_feature(communication_queue_campaign($db,1,$selected)===1,'only selected recipient queued');
+check_feature((int)$db->query('SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id='.$selected)->fetchColumn()===1,'no implicit additional delivery');
+$richSent=[];$richSender=static function(array $payload)use(&$richSent):array{$richSent[]=$payload;return ['id'=>'fake-html'];};
+$sentRich=communication_dispatch($db,20,$richSender);
+check_feature($sentRich['sent']===1&&count($richSent)===1,'exactly one selected rich email sent');
+check_feature($richSent[0]['email']==='e@example.test','only specifically chosen student received email');
+check_feature(str_contains($richSent[0]['html'],'<strong>Encontro</strong>'),'HTML survives delivery preparation');
+check_feature(str_contains($richSent[0]['body'],'Encontro especial.'),'plaintext alternative available');
+
 echo "course-comms: OK\n";

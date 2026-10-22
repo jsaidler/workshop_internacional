@@ -21,7 +21,7 @@ $selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
 if($selectedId && !$selected){http_response_code(404);exit('Comunicação não encontrada nesta área.');}
 $form=$selected?:[
     'category'=>'newsletter','course_id'=>max(0,(int)($_GET['course']??0)),
-    'cohort_id'=>0,'subject'=>'','body_text'=>'','status'=>'draft'
+    'cohort_id'=>0,'subject'=>'','body_text'=>'','body_html'=>'','status'=>'draft'
 ];
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('communications-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Solicitação inválida.');}
@@ -74,7 +74,9 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
               'cohort_id'=>max(0,(int)($_POST['cohort_id']??0)),
               'subject'=>(string)($_POST['subject']??''),
               'body_text'=>(string)($_POST['body_text']??''),
-              'status'=>'draft'
+              'body_html'=>(string)($_POST['body_html']??''),
+              'recipient_ids'=>is_array($_POST['recipient_ids']??null)?$_POST['recipient_ids']:[],
+              'selection_explicit'=>1,'status'=>'draft'
             ];
             $audience=communication_audience($db,$activityId,$form['category'],$form['course_id'],$form['cohort_id']);
             if($action==='save'){
@@ -82,7 +84,8 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
                 $_SESSION['communications_notice']='Rascunho salvo. Revise a audiência antes de colocar na fila.';
                 header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$id]),true,303);exit;
             }
-            $preview=count($audience);
+            $chosen=communication_validate_targets($db,$activityId,$form);
+            $preview=count($chosen);
         }elseif($action==='queue'){
             if(!$selected)throw new RuntimeException('Salve o rascunho antes de enviar.');
             if($selected['category']==='newsletter'&&communication_site_url($db)==='')
@@ -97,7 +100,8 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             communication_send_message($db,[
               'name'=>'Teste do administrador','email'=>$email,
               'subject'=>'[TESTE] '.(string)$selected['subject'],
-              'body'=>(string)$selected['body_text']."\n\n[Mensagem de teste. Nenhum aluno foi notificado.]"
+              'body'=>(string)$selected['body_text']."\n\n[Mensagem de teste. Nenhum aluno foi notificado.]",
+              'html'=>(string)($selected['body_html']??'')
             ]);
             $notice='O servidor aceitou a mensagem de teste. Confira sua caixa de entrada e a pasta de spam.';
         }else throw new RuntimeException('Ação inválida.');
@@ -120,9 +124,22 @@ $mailQueueCount=(int)$db->query("SELECT COUNT(*) FROM communication_deliveries W
 $staffQueueCount=(int)$db->query("SELECT COUNT(*) FROM admin_student_notice_outbox WHERE status IN ('pending','processing')")->fetchColumn();
 $campaigns=communication_campaigns($db,$activityId);
 if($selected && $preview===null){
-    try{$preview=count(communication_audience($db,$activityId,(string)$selected['category'],(int)$selected['course_id'],(int)$selected['cohort_id']));}
+    try{$preview=count(communication_campaign_audience($db,$activityId,$selected));}
     catch(Throwable $e){$error=$e->getMessage();}
 }
+$recipientCandidates=[];
+$selectedRecipientIds=[];
+if($tab==='campaigns'&&($form['status']??'draft')==='draft'){
+    try{
+        $recipientCandidates=communication_audience($db,$activityId,(string)$form['category'],(int)$form['course_id'],(int)$form['cohort_id']);
+        if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&isset($_POST['selection_explicit'])){
+            $selectedRecipientIds=communication_requested_ids(is_array($_POST['recipient_ids']??null)?$_POST['recipient_ids']:[]);
+        }elseif($selected && ($selected['selection_mode']??'all')==='selected'){
+            $selectedRecipientIds=communication_campaign_target_ids($db,(int)$selected['id']);
+        }else $selectedRecipientIds=array_map('intval',array_column($recipientCandidates,'id'));
+    }catch(Throwable $ignored){$recipientCandidates=[];}
+}
+$recipientLookup=array_fill_keys($selectedRecipientIds,true);
 admin_shell_start('communications','Comunicações',$state,['/assets/admin-operations.css']);
 ?>
 <?php if($notice!==''):?><p class="admin-notice success" role="status"><?=h($notice)?></p><?php endif;?>
@@ -277,51 +294,94 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <p>Redija avisos acadêmicos ou newsletters e revise os destinatários antes de enviar.</p></div>
     <?php if($selectedId):?><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Nova mensagem</a><?php endif;?>
   </div>
-  <section class="admin-card comms-section">
-  <header><div><h2><?=$selectedId?'Comunicação #'.$selectedId:'Nova comunicação'?></h2>
-  <p><?=h((string)($form['status']??'draft')==='draft'?'Rascunho':'Envio já colocado na fila')?></p></div></header>
-  <?php if(($form['status']??'draft')==='draft'):?>
-  <form class="admin-form-grid" method="post">
-    <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
-    <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
-    <label>Tipo<select name="category">
-      <option value="newsletter"<?=($form['category']==='newsletter')?' selected':''?>>Newsletter · novidades</option>
-      <option value="operational"<?=($form['category']==='operational')?' selected':''?>>Aviso acadêmico · curso</option>
-    </select></label>
-    <label>Curso (opcional na newsletter)<select name="course_id">
-      <option value="0">Todos os meus cursos</option>
-      <?php foreach($courses as $course):?><option value="<?=(int)$course['id']?>"<?=(int)($form['course_id']??0)===(int)$course['id']?' selected':''?>><?=h((string)$course['title'])?></option><?php endforeach;?>
-    </select></label>
-    <label class="admin-form-span-2">Turma (opcional; selecione o curso correspondente)<select name="cohort_id">
-      <option value="0">Todas as turmas elegíveis</option>
-      <?php foreach($allCohorts as $cohort):?><option value="<?=$cohort['id']?>"<?=(int)($form['cohort_id']??0)===$cohort['id']?' selected':''?>><?=h($cohort['label'])?></option><?php endforeach;?>
-    </select></label>
-    <label class="admin-form-span-2">Assunto<input name="subject" maxlength="180" value="<?=h((string)$form['subject'])?>" required></label>
-    <label class="admin-form-span-2">Mensagem<textarea name="body_text" rows="10" maxlength="20000" required><?=h((string)$form['body_text'])?></textarea></label>
-    <p class="admin-form-span-2 muted">Newsletter: somente para alunos que autorizaram o recebimento de novidades. Avisos acadêmicos: para participantes do curso ou turma selecionados.</p>
-    <div class="admin-form-actions">
-      <button type="submit" name="action" value="preview" class="admin-button secondary">Ver destinatários e prévia</button>
-      <button type="submit" name="action" value="save" class="admin-button">Salvar rascunho</button>
-    </div>
-  </form>
-  <?php else:?><h3><?=h((string)$form['subject'])?></h3><p><?=nl2br(h((string)$form['body_text']))?></p><?php endif;?>
-  <?php if($preview!==null):?>
-    <section class="admin-card">
-      <h3>Prévia</h3>
-      <p><strong><?=$preview?></strong> <?=($preview===1?'destinatário elegível':'destinatários elegíveis')?> na consulta atual.</p>
+  <section class="admin-card comms-section" data-communication-composer data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
+    <header><div><h2><?=($selectedId?((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId):'Nova mensagem')?></h2>
+    <p><?=h((string)(($form['status']??'draft')==='draft'?'Rascunho':'Envio já colocado na fila'))?></p></div></header>
+    <?php if(($form['status']??'draft')==='draft'):?>
+    <form method="post" class="comms-compose-form" data-composer-form>
+      <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+      <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+      <input type="hidden" name="selection_explicit" value="1">
+      <div class="comms-filter-grid">
+        <label>Tipo de mensagem<select name="category">
+          <option value="newsletter"<?=$form['category']==='newsletter'?' selected':''?>>Newsletter</option>
+          <option value="operational"<?=$form['category']==='operational'?' selected':''?>>Aviso acadêmico</option>
+        </select></label>
+        <label>Curso<select name="course_id">
+          <option value="0">Todos os cursos</option>
+          <?php foreach($courses as $course):?><option value="<?=(int)$course['id']?>"<?=(int)($form['course_id']??0)===(int)$course['id']?' selected':''?>><?=h((string)$course['title'])?></option><?php endforeach;?>
+        </select></label>
+        <label>Turma<select name="cohort_id">
+          <option value="0">Todas as turmas elegíveis</option>
+          <?php foreach($allCohorts as $cohort):?><option data-course="<?=$cohort['course_id']?>" value="<?=$cohort['id']?>"<?=(int)($form['cohort_id']??0)===$cohort['id']?' selected':''?>><?=h($cohort['label'])?></option><?php endforeach;?>
+        </select></label>
+      </div>
+      <section class="comms-recipient-panel" aria-labelledby="recipients-title">
+        <div class="comms-recipient-heading">
+          <div><h3 id="recipients-title">Destinatários</h3><p data-recipient-count aria-live="polite"></p></div>
+          <div class="comms-recipient-actions">
+            <button type="button" class="admin-button secondary" data-recipient-all>Selecionar todos</button>
+            <button type="button" class="admin-button secondary" data-recipient-none>Limpar seleção</button>
+          </div>
+        </div>
+        <label class="comms-search-label">Buscar por nome ou e-mail
+          <input type="search" data-recipient-search placeholder="Pesquisar destinatários" autocomplete="off">
+        </label>
+        <div class="comms-recipient-list" data-recipient-list aria-label="Pessoas elegíveis">
+          <?php foreach($recipientCandidates as $person):?>
+          <label class="comms-recipient-row">
+            <input type="checkbox" name="recipient_ids[]" value="<?=(int)$person['id']?>"<?=isset($recipientLookup[(int)$person['id']])?' checked':''?>>
+            <span class="comms-recipient-identity"><strong><?=h((string)$person['name'])?></strong><small><?=h((string)$person['email'])?></small></span>
+          </label>
+          <?php endforeach;?>
+        </div>
+        <p class="muted" data-recipient-status aria-live="polite">Somente pessoas elegíveis para o tipo, curso e turma escolhidos.</p>
+      </section>
+      <label class="comms-compose-label">Assunto<input name="subject" maxlength="180" value="<?=h((string)$form['subject'])?>" required></label>
+      <section class="comms-rich-section" aria-labelledby="rich-heading">
+        <div class="comms-recipient-heading"><h3 id="rich-heading">Mensagem</h3><span class="muted">Editor visual</span></div>
+        <div class="comms-editor-toolbar" role="toolbar" aria-label="Formatação da mensagem">
+          <button type="button" data-editor-command="bold" aria-label="Negrito"><strong>N</strong></button>
+          <button type="button" data-editor-command="italic" aria-label="Itálico"><em>I</em></button>
+          <button type="button" data-editor-command="underline" aria-label="Sublinhado"><u>S</u></button>
+          <button type="button" data-editor-command="insertUnorderedList">Lista</button>
+          <button type="button" data-editor-command="insertOrderedList">1. Lista</button>
+          <button type="button" data-editor-command="createLink">Link</button>
+          <button type="button" data-editor-command="removeFormat">Limpar formatação</button>
+        </div>
+        <div class="comms-rich-editor" data-mail-editor role="textbox" aria-label="Corpo da mensagem" aria-multiline="true" contenteditable="true" hidden><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
+        <input type="hidden" name="body_html" value="">
+        <label data-plain-fallback class="comms-compose-label">Texto da mensagem
+          <textarea name="body_text" rows="11"><?=h((string)$form['body_text'])?></textarea>
+        </label>
+      </section>
+      <p class="comms-attention" data-unsaved-warning hidden>Você alterou a mensagem. Salve o rascunho antes de confirmar o envio.</p>
+      <div class="comms-compose-actions">
+        <button type="submit" name="action" value="save" class="admin-button">Salvar rascunho</button>
+        <button type="submit" name="action" value="preview" class="admin-button secondary">Revisar mensagem</button>
+      </div>
+    </form>
+    <?php else:?>
+    <h3><?=h((string)$form['subject'])?></h3>
+    <div class="comms-email-preview"><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
+    <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila e será processada pelo envio automático.':'O processamento desta mensagem foi concluído.')?></p>
+    <?php endif;?>
+    <?php if($preview!==null && ($form['status']??'draft')==='draft'):?>
+    <section class="comms-send-review" aria-labelledby="send-review-title">
+      <header><h3 id="send-review-title">Revisão do envio</h3><p><strong><?=$preview?></strong> destinatário(s) selecionado(s) e elegível(is).</p></header>
       <p><strong><?=h((string)$form['subject'])?></strong></p>
-      <p><?=nl2br(h((string)$form['body_text']))?></p>
-      <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id']):?>
-      <form method="post" class="admin-form-actions">
+      <div class="comms-email-preview"><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
+      <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)($form['body_html']??'')===(string)($selected['body_html']??'') && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id']):?>
+      <form method="post" class="comms-inline-actions">
         <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
         <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
-        <button class="admin-button secondary" type="submit" name="action" value="test">Enviar teste para meu e-mail</button>
-        <button class="admin-button" type="submit" name="action" value="queue"<?=$preview===0?' disabled':''?> data-confirm="Colocar esta comunicação na fila para os destinatários elegíveis?">Confirmar e colocar na fila</button>
+        <button type="submit" class="admin-button secondary" name="action" value="test">Enviar teste para meu e-mail</button>
+        <button type="submit" class="admin-button" name="action" value="queue"<?=$preview===0?' disabled':''?> data-confirm="Confirmar envio somente para os destinatários selecionados e elegíveis?">Confirmar e colocar na fila</button>
       </form>
-      <?php endif;?>
+      <?php else:?><p class="muted">Salve o rascunho para confirmar o envio.</p><?php endif;?>
     </section>
-  <?php endif;?>
-</section>
+    <?php endif;?>
+  </section>
 <section class="admin-card">
   <header><div><h2>Histórico</h2><p>Consulte seus rascunhos e envios.</p></div></header>
   <?php if(!$campaigns):?><p class="muted">Nenhuma comunicação cadastrada.</p><?php else:?>
@@ -330,7 +390,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <td data-primary="true"><?=h((string)$campaign['subject'])?></td>
       <td><?=h($campaign['category']==='newsletter'?'Newsletter':'Aviso de curso')?></td>
       <td><?=h(['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status'])?></td>
-      <td><?=(int)$campaign['sent_count']?> / <?=(int)$campaign['audience_count']?></td>
+      <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?></td>
       <td data-actions="true"><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$campaign['id']]))?>">Abrir</a></td>
     </tr><?php endforeach;?>
   </tbody></table></div>
@@ -339,4 +399,5 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 
 <?php endif;?>
 </div>
+<script src="/assets/communications-editor.js" defer></script>
 <?php admin_shell_end();

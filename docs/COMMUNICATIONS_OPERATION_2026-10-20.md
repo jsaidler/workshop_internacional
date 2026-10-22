@@ -41,6 +41,17 @@ Estado: recursos de comunicações integrados ao CMS; a correção da configura�
 
 **Aceite:** regressões para URL de configuração vazia, validação de conexão Brevo sem URL, links newsletter, preservação da fila, navegação autenticada por abas, gravação do endereço, fluxo de campanha e responsividade. Integração na branch de produção e publicação `production-dist` não significam instalação na hospedagem; entrega real depende de remetente autorizado, teste recebido e rotina automática CLI ativa.
 
+
+## Composição rica e destinatários individuais — 22/10/2026 (em revisão)
+
+A interface de Mensagens passa a apresentar lista real de alunos elegíveis por filtro de finalidade, curso e turma, com nome, e-mail, busca local, selecionar todos e desmarcar todos. O administrador pode escolher uma única pessoa ou um subconjunto em vez de enviar automaticamente a todos. O botão de revisão exibe a quantidade escolhida e o envio exige rascunho salvo. A busca **não** reduz a seleção: ela filtra visualmente a lista, preservando pessoas já marcadas fora do resultado exibido.
+
+**Autoridade:** `communication_audience()` continua a verificar vínculo de curso, turma e consentimento promocional; o endpoint autenticado `admin/communications-audience.php` só mostra elegíveis, sem expor CPF ou dados privados. A migração 108 adiciona `communication_campaign_targets`, `selection_mode` e `body_html`, sem modificar filas antigas. Rascunhos novos com seleção explícita persistem IDs escolhidos em transação; IDs fora de escopo são rejeitados. Enfileiramento calcula interseção com elegibilidade atual e worker repete esta checagem, sem acrescentar destinatários automaticamente. Rascunhos legados preservam modo anterior (`all`) até que sejam editados com escolha explícita. Nenhum usuário pode contornar o opt-in da newsletter por seleção individual.
+
+**Editor:** composição de texto diretamente em `contenteditable` com ações de negrito, itálico, sublinhado, listas, links HTTPS e remoção de formatação. Armazena HTML sanitizado por allowlist no servidor, sem scripts, estilos arbitrários, imagens externas ou pixels de rastreamento; deriva texto simples alternativo. `communication_send_brevo()` envia conteúdo HTML e texto, e `communication_send_php()` usa MIME multipart/alternative quando há HTML. Rascunhos anteriores em texto simples continuam legíveis e editáveis. O editor mantém textarea fallback se JavaScript estiver desativado.
+
+**Aceite:** testar seleção individual, falta de destinatário, cross-course, consentimento newsletter, persistência, rechecagem pré-envio e privacidade, XSS em HTML e href, HTML/plain enviados ao transporte, navegação e comportamento do editor WYSIWYG em navegador real. Não confundir aceitação do provedor com entrega.
+
 ## Semântica
 - **Aviso acadêmico**: exige seleção de curso; consulta matrículas ativas e, quando houver turma selecionada, inclui seus ouvintes confirmados elegíveis. Não é afetado pelo opt-out de novidades.
 - **Newsletter**: exige opção afirmativa registrada no banco, inclusive quando o administrador seleciona uma turma. Ninguém é inscrito por força de importação CSV, formulário antigo ou compra de curso.
