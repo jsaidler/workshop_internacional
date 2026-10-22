@@ -143,6 +143,13 @@ if($tab==='campaigns'&&($form['status']??'draft')==='draft'){
     }catch(Throwable $ignored){$recipientCandidates=[];}
 }
 $recipientLookup=array_fill_keys($selectedRecipientIds,true);
+$renderedEmailPreview='';
+if($tab==='campaigns'&&trim((string)($form['body_text']??''))!==''){
+    try {
+        $renderedEmailPreview=communication_email_document((string)($form['body_html']??''),(string)$form['body_text'],
+            $db,(string)($form['template_key']??'minimal'),$activityId);
+    }catch(Throwable $e){$error=$e->getMessage();}
+}
 admin_shell_start('communications','Comunicações',$state,['/assets/admin-operations.css']);
 ?>
 <?php if($notice!==''):?><p class="admin-notice success" role="status"><?=h($notice)?></p><?php endif;?>
@@ -396,7 +403,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <?php else:?>
     <h3><?=h((string)$form['subject'])?></h3>
     <div class="comms-preview-toolbar"><strong>Prévia do e-mail</strong><div class="comms-preview-toggle" aria-label="Largura da prévia"><button type="button" data-email-preview-mode="desktop" aria-pressed="true">Computador</button><button type="button" data-email-preview-mode="mobile" aria-pressed="false">Celular</button></div></div>
-      <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h(communication_email_document((string)($form['body_html']??''),(string)$form['body_text'],$db,(string)($form['template_key']??'minimal'),$activityId))?>"></iframe></div>
+      <?php if($renderedEmailPreview!==''):?>
+      <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h($renderedEmailPreview)?>"></iframe></div>
+      <?php else:?><p class="comms-attention">A prévia não está disponível. Verifique as imagens e o endereço do site.</p><?php endif;?>
     <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila e será processada pelo envio automático.':'O processamento desta mensagem foi concluído.')?></p>
     <?php endif;?>
     <?php if($preview!==null && ($form['status']??'draft')==='draft'):?>
@@ -404,7 +413,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <header><h3 id="send-review-title">Revisão do envio</h3><p><strong><?=$preview?></strong> destinatário(s) selecionado(s) e elegível(is).</p></header>
       <p><strong><?=h((string)$form['subject'])?></strong></p>
       <div class="comms-preview-toolbar"><strong>Prévia do e-mail</strong><div class="comms-preview-toggle" aria-label="Largura da prévia"><button type="button" data-email-preview-mode="desktop" aria-pressed="true">Computador</button><button type="button" data-email-preview-mode="mobile" aria-pressed="false">Celular</button></div></div>
-      <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h(communication_email_document((string)($form['body_html']??''),(string)$form['body_text'],$db,(string)($form['template_key']??'minimal'),$activityId))?>"></iframe></div>
+      <?php if($renderedEmailPreview!==''):?>
+      <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h($renderedEmailPreview)?>"></iframe></div>
+      <?php else:?><p class="comms-attention">A prévia não está disponível. Verifique as imagens e o endereço do site.</p><?php endif;?>
       <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)($form['body_html']??'')===(string)($selected['body_html']??'') && (string)($form['template_key']??'minimal')===(string)($selected['template_key']??'minimal') && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id']):?>
       <form method="post" class="comms-inline-actions">
         <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
