@@ -19,6 +19,7 @@ on:
       - 'tools/browser-tests/admin-complete-product-audit.spec.cjs'
       - 'tools/browser-tests/editor-admin-ux-audit.spec.cjs'
       - 'tools/browser-tests/editor-inspector-coherence.spec.cjs'
+      - 'tools/browser-tests/editor-editorial-integrity.spec.cjs'
       - '.github/workflows/admin-visual-audit.yml'
   workflow_dispatch:
 
@@ -40,7 +41,7 @@ jobs:
           PHP_SERVER_PID=$!
           trap 'kill $PHP_SERVER_PID' EXIT
           sleep 1
-          npx playwright test             tools/browser-tests/admin-complete-product-audit.spec.cjs             tools/browser-tests/editor-admin-ux-audit.spec.cjs             tools/browser-tests/editor-inspector-coherence.spec.cjs             tools/browser-tests/admin-cohort-transfer.spec.cjs             --workers=1
+          npx playwright test             tools/browser-tests/admin-complete-product-audit.spec.cjs             tools/browser-tests/editor-admin-ux-audit.spec.cjs             tools/browser-tests/editor-inspector-coherence.spec.cjs             tools/browser-tests/editor-editorial-integrity.spec.cjs             tools/browser-tests/admin-cohort-transfer.spec.cjs             --workers=1
       - name: Upload administrative screens
         if: always()
         uses: actions/upload-artifact@v4

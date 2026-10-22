@@ -48,7 +48,7 @@ async function mockApp(page,{latency=0,published=1}={}){
 }
 async function open(page){
   await page.goto(root);
-  await expect(page.frameLocator('#page-frame').locator('#edited-text')).toBeVisible();
+  await expect(page.frameLocator('#page-frame').locator('[data-cms-page-main]')).toBeVisible();
   await expect.poll(()=>page.evaluate(()=>Boolean(window.CmsEditorDraft))).toBe(true);
 }
 
@@ -106,4 +106,57 @@ test('responsive toolbar keeps save status and distinct publication control visi
   await expect(page.locator('#publish-page')).toBeVisible();
   require('fs').mkdirSync('test-results/editor-integrity',{recursive:true});
   await page.screenshot({path:'test-results/editor-integrity/mobile-draft.png',animations:'disabled'});
+});
+
+test('inline link inspector edits an existing link without losing the paragraph',async({page})=>{
+  const state=await mockApp(page,{published:1});
+  state.html='<section data-cms-section="test" data-cms-section-name="Teste"><p id="edited-text" data-cms-editable>Veja <a id="inline-link" href="https://example.com/old">este material</a> antes da aula.</p></section>';
+  await open(page);
+  await page.frameLocator('#page-frame').locator('#inline-link').click();
+  await expect(page.locator('[data-cms-link-inspector]')).toBeVisible();
+  await page.locator('#cms-link-href').fill('javascript:alert(1)');
+  await page.locator('#cms-link-apply').click();
+  await expect(page.locator('#cms-link-error')).toBeVisible();
+  await expect(page.frameLocator('#page-frame').locator('#inline-link')).toHaveAttribute('href','https://example.com/old');
+  await page.locator('#cms-link-href').fill('https://example.org/novo');
+  await page.locator('#cms-link-text').fill('novo material');
+  await page.locator('#cms-link-newtab').check();
+  await page.locator('#cms-link-apply').click();
+  await expect(page.frameLocator('#page-frame').locator('#inline-link')).toHaveAttribute('href','https://example.org/novo');
+  await expect(page.frameLocator('#page-frame').locator('#inline-link')).toHaveAttribute('rel','noopener noreferrer');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('novo material</a> antes da aula.');
+  expect(state.html).toContain('href="https://example.org/novo"');
+});
+
+test('image placeholder replacement preserves the existing figure wrapper',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="test" data-cms-section-name="Teste"><figure id="picture-wrap" data-cms-image-block><div id="picture-slot" class="cms-media-placeholder" data-cms-image-placeholder><span>Adicionar imagem</span></div><figcaption data-cms-editable>Legenda original</figcaption></figure></section>';
+  await open(page);
+  await page.evaluate(()=>{
+    window.MediaLibrary.load=async()=>{window.MediaLibrary.images=[{id:731,src:'/assets/media/hero-medusa.webp',label:'Retrato',alt:'Retrato em filme',versionId:1}];return window.MediaLibrary.images;};
+  });
+  await page.frameLocator('#page-frame').locator('#picture-slot').click();
+  await expect(page.locator('#i-choose')).toBeVisible();
+  await page.locator('#i-choose').click();
+  await expect(page.locator('#media-grid .media-item')).toHaveCount(1);
+  await page.locator('#media-grid .media-item').click();
+  await expect(page.frameLocator('#page-frame').locator('#picture-wrap')).toHaveCount(1);
+  await expect(page.frameLocator('#page-frame').locator('#picture-wrap figure')).toHaveCount(0);
+  await expect(page.frameLocator('#page-frame').locator('#picture-wrap img')).toHaveCount(1);
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('Legenda original');
+  expect(state.html).toContain('data-media-asset-id="731"');
+});
+
+test('link selected at 390px retains a usable inspector and feedback',async({page})=>{
+  const state=await mockApp(page,{published:1});
+  state.html='<section data-cms-section="test" data-cms-section-name="Teste"><p data-cms-editable>Leia <a id="inline-link" href="/bibliografia">a bibliografia</a>.</p></section>';
+  await page.setViewportSize({width:390,height:844});
+  await open(page);
+  await page.frameLocator('#page-frame').locator('#inline-link').click();
+  await expect(page.locator('[data-cms-link-inspector] #cms-link-href')).toBeVisible();
+  await expect(page.locator('#save-status')).toBeVisible();
+  require('fs').mkdirSync('test-results/editor-integrity',{recursive:true});
+  await page.screenshot({path:'test-results/editor-integrity/mobile-link-selected.png',animations:'disabled'});
 });

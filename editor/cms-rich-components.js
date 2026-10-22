@@ -114,7 +114,8 @@ function addRichButtons(host,inline=false){
 }
 function listElement(node){if(!node)return null;if(node.matches?.('ul,ol'))return node;return node.querySelector?.(':scope > ul,:scope > ol')||node.querySelector?.('ul,ol')||null}
 function addListItem(node){const list=listElement(node);if(!list)return;const li=d().createElement('li');li.dataset.cmsEditable='';li.textContent='Novo item';list.append(li);saveAndReload(node.matches('ul,ol')?node:node)}
-function removeListItem(node){const list=listElement(node),item=list?.lastElementChild;if(!list||!item)return;if(list.children.length<=1){alert('A lista precisa ter pelo menos um item.');return}if(confirm('Remover o último item da lista?')){item.remove();saveAndReload(node)}}
+function removeListItem(node,index){const list=listElement(node),item=list?.children[index];if(!list||!item)return;if(list.children.length<=1){alert('A lista precisa ter pelo menos um item.');return}if(confirm('Remover este item da lista?')){item.remove();saveAndReload(node)}}
+function moveListItem(node,index,dir){const list=listElement(node),item=list?.children[index],target=list?.children[index+dir];if(!item||!target)return;dir<0?target.before(item):target.after(item);saveAndReload(node)}
 function changeListType(node,tag){
   const list=listElement(node);if(!list||!['ul','ol'].includes(tag)||list.tagName.toLowerCase()===tag)return;
   const replacement=d().createElement(tag);
@@ -124,20 +125,22 @@ function changeListType(node,tag){
 }
 function galleryItems(node){return [...node.querySelectorAll(':scope > .cms-gallery-item')]}
 function addGalleryItem(node){node.append(mediaSlot(d()));saveAndReload(node)}
-function removeGalleryItem(node){const items=galleryItems(node),item=items.at(-1);if(!item)return;if(items.length<=1){alert('A galeria precisa ter pelo menos uma imagem.');return}const hasContent=!!item.querySelector('img,[data-cms-image-block]');if(hasContent&&!confirm('Remover a última imagem da galeria?'))return;item.remove();saveAndReload(node)}
+function removeGalleryItem(node,index){const items=galleryItems(node),item=items[index];if(!item)return;if(items.length<=1){alert('A galeria precisa ter pelo menos uma imagem.');return}if(!confirm('Remover a imagem selecionada da galeria?'))return;item.remove();saveAndReload(node)}
+function moveGalleryItem(node,index,dir){const items=galleryItems(node),item=items[index],target=items[index+dir];if(!item||!target)return;dir<0?target.before(item):target.after(item);saveAndReload(node)}
 function changeGallerySize(node,size){applyGalleryLayout(node,['s','m','l'].includes(size)?size:'m');saveSoon()}
 function openVideoEditor(node){const video=node.querySelector('video');if(!video)return;video.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:frame.contentWindow}))}
+const escapeOption=s=>String(s||'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
 function specialMarkup(node){
   const type=richType(node);
   if(type==='list'){
-    const list=listElement(node),ordered=list?.tagName.toLowerCase()==='ol';
-    return `<div class="cms-rich-controls"><hr><p class="eyebrow">Lista</p><label>Formato<select data-rich-list-type><option value="ul" ${ordered?'':'selected'}>Com marcadores</option><option value="ol" ${ordered?'selected':''}>Numerada</option></select></label><div class="button-row"><button type="button" data-rich-list-add>+ Item</button><button type="button" data-rich-list-remove>− Item</button></div></div>`;
+    const list=listElement(node),ordered=list?.tagName.toLowerCase()==='ol';const opts=[...(list?.children||[])].map((item,index)=>'<option value="'+index+'">'+escapeOption(item.textContent.trim().slice(0,45))+'</option>').join('');
+    return `<div class="cms-rich-controls"><hr><p class="eyebrow">Lista</p><label>Formato<select data-rich-list-type><option value="ul" ${ordered?'':'selected'}>Com marcadores</option><option value="ol" ${ordered?'selected':''}>Numerada</option></select></label><label>Item<select data-rich-list-item>${opts}</select></label><div class="button-row"><button type="button" data-rich-list-add>+ Item</button><button type="button" data-rich-list-up>↑</button><button type="button" data-rich-list-down>↓</button><button type="button" data-rich-list-remove>Remover selecionado</button></div></div>`;
   }
   if(type==='quote')return '<div class="cms-rich-controls"><hr><p class="eyebrow">Citação</p><p class="inspector-note">Edite a citação e a autoria diretamente na página.</p></div>';
   if(type==='video')return '<div class="cms-rich-controls"><hr><p class="eyebrow">Vídeo</p><p class="inspector-note">Escolha o arquivo, a capa e as opções de reprodução no editor do vídeo.</p><button type="button" class="panel-button" data-rich-video-edit>Editar vídeo</button></div>';
   if(type==='gallery'){
-    const size=node.dataset.cmsGallerySize||'m';
-    return `<div class="cms-rich-controls"><hr><p class="eyebrow">Galeria</p><p class="inspector-note">${galleryItems(node).length} posições de imagem.</p><label>Tamanho das imagens<select data-rich-gallery-size><option value="s" ${size==='s'?'selected':''}>Compactas</option><option value="m" ${size==='m'?'selected':''}>Médias</option><option value="l" ${size==='l'?'selected':''}>Grandes</option></select></label><div class="button-row"><button type="button" data-rich-gallery-add>+ Imagem</button><button type="button" data-rich-gallery-remove>− Imagem</button></div></div>`;
+    const size=node.dataset.cmsGallerySize||'m';const galleryOptions=galleryItems(node).map((item,index)=>'<option value="'+index+'">Imagem '+(index+1)+(item.querySelector('img')?.alt?' · '+escapeOption(item.querySelector('img').alt.slice(0,32)):'')+'</option>').join('');
+    return `<div class="cms-rich-controls"><hr><p class="eyebrow">Galeria</p><p class="inspector-note">${galleryItems(node).length} posições de imagem.</p><label>Tamanho das imagens<select data-rich-gallery-size><option value="s" ${size==='s'?'selected':''}>Compactas</option><option value="m" ${size==='m'?'selected':''}>Médias</option><option value="l" ${size==='l'?'selected':''}>Grandes</option></select></label><label>Imagem<select data-rich-gallery-item>${galleryOptions}</select></label><div class="button-row"><button type="button" data-rich-gallery-add>+ Imagem</button><button type="button" data-rich-gallery-up>↑</button><button type="button" data-rich-gallery-down>↓</button><button type="button" data-rich-gallery-remove>Remover selecionada</button></div></div>`;
   }
   return'';
 }
@@ -152,10 +155,10 @@ function enhanceInspector(){
     const wrapper=document.createElement('div');wrapper.innerHTML=specialMarkup(node);const controls=wrapper.firstElementChild;if(controls)actions?.after(controls);
   }
   const listAdd=panel.querySelector('[data-rich-list-add]');if(listAdd)listAdd.onclick=()=>addListItem(node);
-  const listRemove=panel.querySelector('[data-rich-list-remove]');if(listRemove)listRemove.onclick=()=>removeListItem(node);
+  const listIndex=()=>Number(panel.querySelector('[data-rich-list-item]')?.value||0);const listRemove=panel.querySelector('[data-rich-list-remove]');if(listRemove)listRemove.onclick=()=>removeListItem(node,listIndex());panel.querySelector('[data-rich-list-up]')?.addEventListener('click',()=>moveListItem(node,listIndex(),-1));panel.querySelector('[data-rich-list-down]')?.addEventListener('click',()=>moveListItem(node,listIndex(),1));
   const listType=panel.querySelector('[data-rich-list-type]');if(listType)listType.onchange=event=>changeListType(node,event.currentTarget.value);
   const galleryAdd=panel.querySelector('[data-rich-gallery-add]');if(galleryAdd)galleryAdd.onclick=()=>addGalleryItem(node);
-  const galleryRemove=panel.querySelector('[data-rich-gallery-remove]');if(galleryRemove)galleryRemove.onclick=()=>removeGalleryItem(node);
+  const galleryIndex=()=>Number(panel.querySelector('[data-rich-gallery-item]')?.value||0);const galleryRemove=panel.querySelector('[data-rich-gallery-remove]');if(galleryRemove)galleryRemove.onclick=()=>removeGalleryItem(node,galleryIndex());panel.querySelector('[data-rich-gallery-up]')?.addEventListener('click',()=>moveGalleryItem(node,galleryIndex(),-1));panel.querySelector('[data-rich-gallery-down]')?.addEventListener('click',()=>moveGalleryItem(node,galleryIndex(),1));
   const gallerySize=panel.querySelector('[data-rich-gallery-size]');if(gallerySize)gallerySize.onchange=event=>changeGallerySize(node,event.currentTarget.value);
   const videoEdit=panel.querySelector('[data-rich-video-edit]');if(videoEdit)videoEdit.onclick=()=>openVideoEditor(node);
   enhanceInspectorTree(node.closest('[data-cms-section]'));
