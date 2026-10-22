@@ -52,8 +52,23 @@ INSERT INTO course_listener_reservations(student_id,cohort_id,status) VALUES
 SQL);
 (require dirname(__DIR__).'/migrations/102_course_review_sessions.php')($db);
 (require dirname(__DIR__).'/migrations/103_communications.php')($db);
+(require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
 require dirname(__DIR__).'/app/course_reviews.php';
 require dirname(__DIR__).'/app/communications.php';
+check_feature(communication_mail_status($db)['transport']==='brevo','configured external mail remains usable');
+$senderBefore=communication_sender_settings($db);
+check_feature($senderBefore['sender_email']==='contato@example.test','legacy sender fallback');
+communication_sender_save($db,['sender_name'=>'Laboratório Saidler','sender_email'=>'avisos@example.test']);
+check_feature(communication_sender_settings($db)['sender_email']==='avisos@example.test','sender updated through CMS');
+check_feature(communication_mail_status($db)['sender_name']==='Laboratório Saidler','sender name persisted');
+check_feature(communication_provider_configuration($db)['from']==='avisos@example.test','external sender override');
+$invalidSender=false;
+try{communication_sender_save($db,['sender_email'=>"mail@example.test\r\nBCC: anyone@example.test"]);}catch(RuntimeException){$invalidSender=true;}
+check_feature($invalidSender,'reject mail header injection');
+communication_worker_record($db,true);
+communication_worker_record($db,false);
+check_feature((bool)communication_worker_status($db)['last_finished_at'],'worker heartbeat persisted');
+
 $input=['title'=>'Revisão dos resultados','cohort_id'=>'0',
   'meeting_starts_at'=>'2030-07-01T19:00','meeting_timezone'=>'America/Sao_Paulo',
   'meeting_duration_minutes'=>'90','meeting_url'=>'https://example.test/meet',
