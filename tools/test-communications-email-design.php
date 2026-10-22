@@ -7,11 +7,11 @@ function media_url(string $path):string {return '/uploads/media/'.ltrim($path,'/
 require dirname(__DIR__).'/app/communications_rich_text.php';
 require dirname(__DIR__).'/app/communications_email_design.php';
 $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
-$db->exec("CREATE TABLE media_assets(id INTEGER PRIMARY KEY,kind TEXT,visibility TEXT,archived_at TEXT,processing_status TEXT,active_version_id INTEGER,title TEXT,default_alt TEXT);
+$db->exec("CREATE TABLE media_assets(id INTEGER PRIMARY KEY,kind TEXT,visibility TEXT,archived_at TEXT,processing_status TEXT,active_version_id INTEGER,title TEXT,default_alt TEXT,width INTEGER);
 CREATE TABLE media_versions(id INTEGER PRIMARY KEY,processing_status TEXT,original_path TEXT);
 CREATE TABLE media_derivatives(version_id INTEGER,mime_type TEXT,width INTEGER,path TEXT);
 INSERT INTO media_versions VALUES(4,'ready','aaa/bbb/original/file.jpg');
-INSERT INTO media_assets VALUES(7,'image','public',NULL,'ready',4,'Retrato','Uma pessoa sob a luz');
+INSERT INTO media_assets VALUES(7,'image','public',NULL,'ready',4,'Retrato','Uma pessoa sob a luz',640);
 INSERT INTO media_derivatives VALUES(4,'image/jpeg',768,'aaa/bbb/responsive/768.jpg');");
 $email='<p>Antes da imagem</p><figure data-email-media-id="7" data-email-alt="Retrato de uma pessoa"><img src="javascript:alert(2)"></figure><script>alert(1)</script><p>Depois</p>';
 $safe=communication_safe_html($email);
