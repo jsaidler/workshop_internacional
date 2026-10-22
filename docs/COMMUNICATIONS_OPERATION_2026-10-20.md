@@ -1,6 +1,6 @@
 # Comunicações por e-mail — operação
 
-Estado: implementado em branch, **não implantado**. Referências de autoridade: `docs/COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md`, `docs/PRIVACY_LGPD.md` e `AGENTS.md`.
+Estado: recursos de comunicações integrados ao CMS; a correção da configuração de envio de 22/10/2026 está em revisão. O status da hospedagem é independente do Git. Referências de autoridade: `docs/COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md`, `docs/PRIVACY_LGPD.md` e `AGENTS.md`.
 
 ## O que já existe
 - Área administrativa `Admin → Comunicações`: criação/edição de rascunhos, seleção de curso/turma, prévia da audiência, envio de teste, confirmação e fila.
@@ -10,19 +10,19 @@ Estado: implementado em branch, **não implantado**. Referências de autoridade:
 - `communication_campaigns` e `communication_deliveries`: status persistente, até três tentativas, deduplicação por campanha/usuário. Status `sent` confirma apenas aceite da API pelo provedor, não entrega à caixa de entrada.
 
 ## Habilitar a entrega real
-1. Contratar/configurar uma conta Brevo e verificar um domínio/remetente autenticado (SPF, DKIM e DMARC).
-2. Definir o remetente verificado e a chave API em **variáveis de ambiente no servidor/cron**: `BREVO_API_KEY` e `BREVO_FROM_EMAIL`. Alternativamente, definir `brevo_api_key` e `email_from` em `config/local.php`, que já está fora do versionamento. **Nunca** armazenar credenciais no repositório, em CSS, HTML ou no CMS.
-3. Conferir o `public_url` **HTTPS** da instalação em `config/local.php`, pois ele define o link de descadastro. Verificar se `curl` está habilitado no PHP da hospedagem.
-4. Configurar tarefa cron no painel HostGator para executar, com o caminho absoluto do PHP e da aplicação: `php /CAMINHO/DA/APLICACAO/admin/communications-worker.php --limit=30`. Não utilizar URL HTTP para disparar o worker. Começar com cron a cada 15 minutos, de acordo com a quota do plano.
-5. Na administração, salvar um rascunho, enviar um teste **apenas** ao administrador, conferir a renderização no provedor, confirmar audiência pequena de contas que realmente optaram por newsletter e verificar entrega e link de descadastro.
-6. Monitorar status de rejeição, hard bounce e reclamação no provedor. Antes de escala, validar política de supressão, limite diário e integração de eventos com o fornecedor.
+1. Em **Admin → Comunicações → Envio de e-mails**, escolha o nome e um endereço de remetente do seu domínio. Salve e use o botão de teste para a própria conta administrativa. O sistema utiliza por padrão o serviço de e-mail da hospedagem via `mail()`, sem exigir conta Brevo. É necessário que a hospedagem aceite o envio; confirme o recebimento e verifique a pasta de spam.
+2. Para volume maior ou entregabilidade mais previsível, **opcionalmente** configure Brevo com remetente autenticado (SPF/DKIM/DMARC) e chave privada `BREVO_API_KEY` no ambiente/arquivo local não versionado. Não mostrar nem armazenar essa chave no HTML, no CMS ou nos logs. O transporte externo passa a ser selecionado quando a chave e um remetente válido estão presentes.
+3. Verifique o `public_url` HTTPS do CMS no arquivo privado `config/local.php`: ele gera links de descadastro e de acompanhamento. O `curl` do PHP é necessário somente para a integração Brevo.
+4. Configure tarefa cron no painel da hospedagem, com caminho absoluto do PHP e do site: `php /CAMINHO/DA/APLICACAO/admin/communications-worker.php --limit=30`. Não utilizar URL HTTP. Comece com cron a cada 15 minutos, conforme limites de seu plano.
+5. O painel informa a última execução desse worker e as filas pendentes. Após o teste individual, confirme uma pequena campanha apenas com destinatários autorizados e valide entrega, links e descadastro.
+6. Para campanhas em escala, confirme limites diários, supressões, bloqueios, devoluções e reclamações junto ao serviço de envio usado.
 
 ## Semântica
 - **Aviso acadêmico**: exige seleção de curso; consulta matrículas ativas e, quando houver turma selecionada, inclui seus ouvintes confirmados elegíveis. Não é afetado pelo opt-out de novidades.
 - **Newsletter**: exige opção afirmativa registrada no banco, inclusive quando o administrador seleciona uma turma. Ninguém é inscrito por força de importação CSV, formulário antigo ou compra de curso.
 - Destinatários são recalculados ao entrar na fila e antes da tentativa de envio; alterações de vínculo e opt-out invalidam envios pendentes. E-mails não são enviados enquanto se salva curso, revisão ou material.
 - Revisão opcional aparece na Agenda e não altera `course_lessons` nem a liberação `released_at`.
-- A fila não substitui um provedor: sem credenciais configuradas, o worker falha com erro claro e preserva as mensagens pendentes.
+- A fila depende de um transporte ativo: o servidor da hospedagem pode enviar via PHP sem credenciais de terceiros. Se o transporte rejeitar um e-mail, a tentativa falha e permanece rastreável para nova tentativa, observados os limites.
 
 ## Limitações e decisões pendentes
 - A aplicação ainda não recebe webhooks de bounce/reclamação/cancelamento do Brevo. Não considerar taxa de entrega real medida apenas pelo recebimento da API.
