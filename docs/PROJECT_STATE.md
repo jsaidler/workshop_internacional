@@ -1,5 +1,14 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Brevo configurável na administração — 22/10/2026 (PR em desenvolvimento)
+
+Objetivo do usuário: configurar a integração com o provedor externo sem editar arquivos na hospedagem. A lacuna anterior era crítica: o formulário de remetente não aceitava a chave API. O CMS agora possui configuração Brevo diretamente em **Admin → Comunicações**: salvar e substituir chave API, teste de autenticação sem enviar mensagem, remoção e envio de teste. O campo de segredo permanece vazio e não expõe o valor. O sender name passado à API passa a ser o do formulário administrativo.
+
+Migração 106 aditiva cria credencial cifrada AES-256-GCM com chave derivada de `app_secret` (persistido no arquivo privado `config/local.php` que o atualizador preserva). Não salvar chaves em claro no DB, HTML, logs, testes ou controle de versão. Os mecanismos de envio de campanha/newsletter e notificação aluno→admin seguem uma única autoridade `communication_send_message()`. Chave salva no CMS prevalece sobre configuração legada do servidor; testes falhos não substituem a credencial válida. A API da Brevo é consultada antes de aceitar nova credencial. Regras de consentimento e matrículas não se alteram. Regredir criptografia/rotatividade/revogação, ausência de segredo no DOM, login+CSRF e integração do worker.
+
+**Limite operacional:** código publicado não equivale a instalação; autenticação API não equivale a entregabilidade. A rotina CLI depende de cron da hospedagem, ainda não configurado nem confirmado automaticamente por este trabalho. O status do cron deve continuar visível no painel. Documentos complementares: `docs/COMMUNICATIONS_OPERATION_2026-10-20.md`, `docs/PRIVACY_LGPD.md`. Esta seção está em PR, não deve ser descrita como implantada no site.
+
+
 ## Correção editorial de mensagens de comunicações — 22/10/2026 (branch de revisão)
 
 Em `admin_student_notice_message()` foi identificado conteúdo indevido no e-mail ao administrador: a frase sobre imagens permanecerem no CMS reproduzia uma justificativa interna de privacidade e implementação, sem função para o destinatário. O corpo do aviso deve se limitar ao evento, aluno, curso, turma, identificação da atividade e link autenticado de acesso. A regra de não enviar textos ou imagens privados permanece nos serviços, testes e documentação, nunca como justificativa incorporada ao corpo do e-mail.
