@@ -71,7 +71,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         }elseif($action==='run_queue'){
             $batch=communication_dispatch_manual($db,$activityId,1);
             $summary=communication_queue_summary($db,$activityId);
-            if(empty($batch['busy']))$_SESSION['communications_auto_run']=true;
+            if(empty($batch['busy'])){$_SESSION['communications_auto_run']=true;$_SESSION['communications_initial_batch']=$batch;}
             $_SESSION['communications_notice']=!empty($batch['busy'])
                 ?'Outro envio está em andamento. A fila permanece preservada.'
                 :'Lote processado: '.(int)$batch['sent'].' aceito(s), '.(int)$batch['skipped'].' ignorado(s) e '.(int)$batch['failed'].' falha(s). Restam '.(int)$summary['pending'].' pendente(s).';
@@ -90,7 +90,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $count=communication_retry_failed($db,$activityId,$selectedId);
             if($count===0)throw new RuntimeException('Não há falhas pendentes de reprocessamento nesta mensagem.');
             $batch=communication_dispatch_manual($db,$activityId,1);
-            if(empty($batch['busy']))$_SESSION['communications_auto_run']=true;
+            if(empty($batch['busy'])){$_SESSION['communications_auto_run']=true;$_SESSION['communications_initial_batch']=$batch;}
             $_SESSION['communications_notice']=$count.' destinatário(s) com falha recolocado(s) na fila após sua confirmação. '.(int)$batch['sent'].' aceito(s) no primeiro lote.';
             header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
         }elseif($action==='duplicate'){
@@ -125,7 +125,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $count=communication_queue_campaign($db,$activityId,$selectedId);
             if($action==='queue_now'){
                 $batch=communication_dispatch_manual($db,$activityId,1);
-                if(empty($batch['busy']))$_SESSION['communications_auto_run']=true;
+                if(empty($batch['busy'])){$_SESSION['communications_auto_run']=true;$_SESSION['communications_initial_batch']=$batch;}
                 $_SESSION['communications_notice']=$count.' destinatário(s) confirmado(s). '.(!empty($batch['busy'])
                     ?'Outro processamento está em andamento; tente novamente se necessário.'
                     :'Envio imediato iniciado. '.(int)$batch['sent'].' aceito(s) neste primeiro lote.');
@@ -166,7 +166,8 @@ $queueSummary=communication_queue_summary($db,$activityId);
 $mailQueueCount=$queueSummary['pending']+$queueSummary['processing'];
 // One-time POST-triggered session flag: a crafted GET URL must never trigger sends.
 $autoQueueRun=!empty($_SESSION['communications_auto_run']);
-unset($_SESSION['communications_auto_run']);
+$initialQueueBatch=is_array($_SESSION['communications_initial_batch']??null)?$_SESSION['communications_initial_batch']:[];
+unset($_SESSION['communications_auto_run'],$_SESSION['communications_initial_batch']);
 $staffQueueCount=(int)$db->query("SELECT COUNT(*) FROM admin_student_notice_outbox WHERE status IN ('pending','processing')")->fetchColumn();
 $campaigns=communication_campaigns($db,$activityId);
 $selectedDeliveryRows=$selected && $selected['status']!=='draft'?communication_campaign_deliveries($db,$activityId,$selectedId):[];
@@ -206,7 +207,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 </nav>
 <div class="comms-workspace">
 <?php if(in_array($tab,['overview','campaigns'],true)):?>
-<section class="admin-card comms-section comms-wide" data-communications-queue data-queue-url="/admin/communications-queue.php" data-auto-run="<?=$autoQueueRun?'1':'0'?>">
+<section class="admin-card comms-section comms-wide" data-communications-queue data-queue-url="/admin/communications-queue.php" data-auto-run="<?=$autoQueueRun?'1':'0'?>" data-initial-sent="<?=(int)($initialQueueBatch['sent']??0)?>" data-initial-skipped="<?=(int)($initialQueueBatch['skipped']??0)?>" data-initial-failed="<?=(int)($initialQueueBatch['failed']??0)?>">
   <header><div><h2>Fila de mensagens</h2><p>Envie quando quiser, mesmo sem agendamento no servidor.</p></div></header>
   <p data-queue-count aria-live="polite"><strong><?=$queueSummary['pending']?></strong> pendente(s) · <?=$queueSummary['processing']?> em processamento · <?=$queueSummary['accepted']?> aceito(s) pelo provedor · <?=$queueSummary['failed']?> falha(s) · <?=$queueSummary['cancelled']?> cancelado(s).</p>
   <form method="post" class="comms-inline-actions" data-queue-form>
