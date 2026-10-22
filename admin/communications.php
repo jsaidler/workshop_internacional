@@ -155,7 +155,7 @@ $adminNoticeHistory=admin_student_notice_recent($db,$adminId);
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
     <button type="submit" name="action" value="admin_notice_test" class="admin-button secondary">Enviar e-mail de teste</button>
   </form>
-  <p class="muted">Os avisos são gerados pelas ações dos alunos e entregues pelo processamento automático de e-mails. Os textos de dúvidas e fotografias não são incluídos nas mensagens.</p>
+  <p class="muted">Os e-mails incluem um link para abrir a atividade no painel.</p>
   <?php if($adminNoticeHistory):?><details class="admin-secondary-setup"><summary class="admin-button secondary">Últimos avisos (<?=count($adminNoticeHistory)?>)</summary>
     <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list"><thead><tr><th>Ação</th><th>Situação</th><th>Registrado em</th></tr></thead><tbody>
     <?php foreach($adminNoticeHistory as $row):?>
@@ -186,7 +186,7 @@ $adminNoticeHistory=admin_student_notice_recent($db,$adminId);
     </select></label>
     <label class="admin-form-span-2">Assunto<input name="subject" maxlength="180" value="<?=h((string)$form['subject'])?>" required></label>
     <label class="admin-form-span-2">Mensagem<textarea name="body_text" rows="10" maxlength="20000" required><?=h((string)$form['body_text'])?></textarea></label>
-    <p class="admin-form-span-2 muted">Newsletter: apenas alunos com autorização expressa. Aviso acadêmico: participantes elegíveis do curso ou turma selecionados. Um destinatário recebe uma única mensagem por campanha.</p>
+    <p class="admin-form-span-2 muted">Newsletter: somente para alunos que autorizaram o recebimento de novidades. Avisos acadêmicos: para participantes do curso ou turma selecionados.</p>
     <div class="admin-form-actions">
       <button type="submit" name="action" value="preview" class="admin-button secondary">Ver destinatários e prévia</button>
       <button type="submit" name="action" value="save" class="admin-button">Salvar rascunho</button>
@@ -211,7 +211,7 @@ $adminNoticeHistory=admin_student_notice_recent($db,$adminId);
   <?php endif;?>
 </section>
 <section class="admin-card">
-  <header><div><h2>Histórico</h2><p>Rascunhos e campanhas. Mensagens não são enviadas ao carregar esta tela.</p></div></header>
+  <header><div><h2>Histórico</h2><p>Consulte seus rascunhos e envios.</p></div></header>
   <?php if(!$campaigns):?><p class="muted">Nenhuma comunicação cadastrada.</p><?php else:?>
   <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list"><thead><tr><th>Assunto</th><th>Tipo</th><th>Situação</th><th>Aceitos pelo provedor</th><th></th></tr></thead><tbody>
     <?php foreach($campaigns as $campaign):?><tr>
