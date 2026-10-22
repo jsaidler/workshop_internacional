@@ -26,6 +26,11 @@ foreach(array_keys(communication_template_keys()) as $template){
  email_assert(str_contains($doc,'Ateliê fotográfico'),'site brand visible');
  email_assert(!str_contains($doc,'javascript:')&&!str_contains($doc,'<script'),'sanitization after rendering');
 }
+$cta=communication_safe_html('<h2>Título</h2><p><a data-email-button="1" href="https://example.test/inscricao">Participar</a></p><hr><a href="javascript:alert(1)">Inseguro</a>');
+email_assert(str_contains($cta,'data-email-button="1"')&&str_contains($cta,'<hr>'),'heading divider and CTA retained');
+email_assert(!str_contains($cta,'javascript:'),'unsafe CTA URL rejected');
+$styled=communication_email_document($cta,'Participar',$db,'destaque');
+email_assert(str_contains($styled,'display:inline-block')&&str_contains($styled,'border-top:1px'),'email blocks styled safely');
 $invalid=false;
 try{communication_template_key('bad');}catch(RuntimeException){$invalid=true;}
 email_assert($invalid,'unknown template rejected');
