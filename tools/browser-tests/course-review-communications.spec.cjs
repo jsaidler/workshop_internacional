@@ -144,8 +144,8 @@ test.describe('real application: reviews and communications',()=>{
    await admin.locator('[data-mail-editor]').selectText('Encontro');
    await admin.getByRole('button',{name:'Negrito'}).click();
    await expect(admin.locator('[data-mail-editor] strong, [data-mail-editor] b').first()).toContainText('Encontro');
-   await admin.getByRole('button',{name:'Ver destinatários e prévia'}).click();
-   await expect(admin.getByText('1 destinatário elegível')).toBeVisible();
+   await admin.getByRole('button',{name:'Revisar mensagem'}).click();
+   await expect(admin.locator('.comms-send-review')).toContainText('1 destinatário(s)');
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
    await expect(admin.locator('[data-recipient-count]')).toContainText('1 de 1');
    await expect(admin.locator('.comms-email-preview').last()).toContainText('Encontro experimental');
