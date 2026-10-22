@@ -283,7 +283,9 @@ document.addEventListener('keydown',event=>{
   }
 },true);
 
-frame.addEventListener('load',()=>setTimeout(initFrame,220));
+// Capture the authoritative baseline synchronously at iframe load. A delayed
+// initialization can miss a fast first edit and make Undo unavailable.
+frame.addEventListener('load',initFrame);
 window.CmsEditorHistory={commit:options=>commitNow(options?.selection||null),undo,redo,getState:()=>({index:historyIndex,length:history.length,canUndo:historyIndex>0,canRedo:historyIndex>=0&&historyIndex<history.length-1})};
 loadSettings();
 setTimeout(initFrame,260);
