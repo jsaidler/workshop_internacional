@@ -1,5 +1,12 @@
 # Comunicações por e-mail — operação
 
+## Enviar agora e cancelar a fila — 22/10/2026 (PR em revisão)
+
+O CMS dispõe dos controles **Enviar agora** e **Cancelar fila** em Visão geral e Mensagens. O botão **Confirmar e enviar agora** inicia uma campanha nova e também processa itens de campanhas previamente enfileiradas. O servidor processa uma requisição de e-mail por chamada administrativa autenticada, preservando o lock do worker CLI e as verificações de matrícula, consentimento, elegibilidade, limite diário e histórico. A interface realiza chamadas sucessivas enquanto permanece aberta. É um **envio manual imediato**, não um agendamento: cron permanece opcional para continuidade periódica quando a tela não está aberta. O envio não continua automaticamente em segundo plano após fechar a página, salvo se um cron independente estiver ativo.
+
+O botão **Cancelar fila** marca entregas ainda pendentes como ignoradas pelo motivo `cancelled_by_admin`, sem exclusão de registros. Entregas já aceitas pelo transporte e aquela em processamento não podem ser canceladas. O cron também passa a reivindicar mensagens uma por vez, permitindo cancelar os demais itens entre as requisições do provedor. O envio manual do administrador é limitado à activity selecionada e não executa nem cancela avisos administrativos gerados por ações dos alunos (canal separado). O histórico diferencia cancelamentos integrais/parciais. Em caso de limite diário atingido, credencial/remetente incorreto ou requisição falha, a fila continua preservada; o painel apresenta pendentes e falhas. Não interpretar aceite API como entrega comprovada.
+
+
 Estado: recursos de comunicações integrados ao CMS; a correção da configuração de envio de 22/10/2026 está em revisão. O status da hospedagem é independente do Git. Referências de autoridade: `docs/COURSE_DOMAIN_REGISTRATION_MATERIAL_ARCHITECTURE_2026-09-27.md`, `docs/PRIVACY_LGPD.md` e `AGENTS.md`.
 
 ## O que já existe
