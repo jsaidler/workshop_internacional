@@ -35,7 +35,9 @@ function update(){
         bar.querySelector('button')?.focus();
       });
     }
-    const name=section.querySelector('header h2')?.textContent?.trim()||'Propriedades';
+    const heading=section.querySelector('header h2')?.textContent?.trim()||'';
+    const kind=section.querySelector('header .eyebrow')?.textContent?.trim()||'';
+    const name=heading&&heading!=='Propriedades'?heading:(kind||'Propriedades');
     bar.querySelector('.cms-mobile-inspector-name').textContent=name;
     const button=bar.querySelector('button');
     button.textContent=collapsed?'Expandir':'Recolher';
