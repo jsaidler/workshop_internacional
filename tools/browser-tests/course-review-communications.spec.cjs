@@ -118,7 +118,7 @@ test.describe('real application: reviews and communications',()=>{
    admin.once('dialog',dialog=>dialog.accept());
    await admin.getByRole('button',{name:'Remover chave'}).click();
    await expect(admin.getByText('Não conectado')).toBeVisible();
-   await expect(admin.getByText('Meio de envio: E-mail da hospedagem',{exact:true})).toBeVisible();
+   await expect(admin.getByText('Serviço atual: E-mail da hospedagem',{exact:true})).toBeVisible();
    await admin.getByRole('navigation',{name:'Áreas de comunicações'}).getByRole('link',{name:'Avisos dos alunos'}).click();
    await expect(admin.getByRole('heading',{name:'Notificações'})).toBeVisible();
    const alerts=admin.locator('form').filter({has:admin.locator('input[name="action"][value="admin_notice_preferences"]')});
