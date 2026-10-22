@@ -17,6 +17,9 @@ test('GrapesJS MJML builder: real components, compilation, round trip, safe reje
     +'<button data-lab-undo>Desfazer</button><button data-lab-redo>Refazer</button>'
     +'<button data-lab-desktop>Computador</button><button data-lab-mobile>Celular</button>'
     +'<p data-lab-status></p><div data-lab-canvas></div>'
+    +'<div data-lab-side><button data-lab-tool="blocks">Blocos</button><button data-lab-tool="styles">Estilos</button>'
+    +'<section data-lab-blocks-panel><div data-lab-blocks></div></section>'
+    +'<section data-lab-styles-panel hidden><div data-lab-styles></div></section></div>'
     +'<select data-lab-media></select><input data-lab-media-alt><p data-lab-media-status></p>'
     +'<button data-lab-add-media>Imagem</button><iframe data-lab-preview sandbox></iframe>'
     +'<textarea data-lab-source></textarea></div>');
@@ -24,6 +27,7 @@ test('GrapesJS MJML builder: real components, compilation, round trip, safe reje
   await page.addScriptTag({path:bundle});
   await expect.poll(()=>page.evaluate(()=>Boolean(window.__communicationsEmailLab?.ready))).toBe(true);
   await expect.poll(()=>page.evaluate(()=>window.__communicationsEmailLab.editor.BlockManager.getAll().length)).toBeGreaterThan(1);
+  await expect.poll(()=>page.locator('[data-lab-blocks] .gjs-block').count()).toBeGreaterThan(1);
   await expect.poll(()=>page.evaluate(()=>window.__communicationsEmailLab.editor.getHtml().includes('<mjml'))).toBe(true);
   const first=await page.evaluate(()=>window.__communicationsEmailLab.exportEmail());
   expect(first.mjml).toContain('mj-section');
