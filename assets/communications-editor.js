@@ -42,7 +42,16 @@ if(editor && htmlField && textField){
         if(url===null)return;
         if(!/^https:\/\/[^\s]+$/i.test(url.trim())){window.alert('Informe um link HTTPS válido.');return;}
         if(selection && !selection.isCollapsed)document.execCommand(command,false,url.trim());
-      }else document.execCommand(command,false,null);
+      }else if(command==='createButton'){
+        const label=window.prompt('Texto do botão');
+        if(label===null)return;
+        const url=window.prompt('Endereço HTTPS do botão');
+        if(url===null)return;
+        if(!label.trim()||!/^https:\/\/[^\s]+$/i.test(url.trim())){window.alert('Informe um texto e um link HTTPS válido.');return;}
+        const p=document.createElement('p'),a=document.createElement('a');
+        a.href=url.trim();a.dataset.emailButton='1';a.textContent=label.trim().slice(0,110);
+        p.append(a);editor.append(p);
+      }else document.execCommand(command,false,button.dataset.editorValue||null);
       sync();markChanged();
     });
   });
