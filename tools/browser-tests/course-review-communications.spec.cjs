@@ -142,6 +142,11 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.getByText(/e-mail\(s\) incluído\(s\) na fila/)).toBeVisible();
    await admin.screenshot({path:info.outputPath('communications-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
+   await admin.evaluate(()=>window.scrollTo(0,0));
+   const mobileTabs=admin.getByRole('navigation',{name:'Áreas de comunicações'});
+   for(const label of ['Visão geral','Avisos dos alunos','Mensagens','Configuração']){
+     await expect(mobileTabs.getByRole('link',{name:label})).toBeInViewport();
+   }
    await admin.screenshot({path:info.outputPath('communications-mobile.png')});
    const data=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(data.reviews).toHaveLength(1);
