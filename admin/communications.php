@@ -14,7 +14,8 @@ $actionTab=[
  'brevo_save'=>'settings','brevo_check'=>'settings','brevo_remove'=>'settings',
  'mail_settings'=>'settings','mail_test'=>'settings','site_url_save'=>'settings',
  'admin_notice_preferences'=>'alerts','admin_notice_test'=>'alerts',
- 'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns'
+ 'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','queue_now'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns',
+  'run_queue'=>'campaigns','cancel_queue'=>'campaigns'
 ];
 $selectedId=max(0,(int)($_POST['campaign_id']??$_GET['id']??0));
 $selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
@@ -67,6 +68,17 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
                'subject'=>'[TESTE] Avisos de atividades de alunos',
                'body'=>"Este é um teste do canal de avisos das ações dos alunos.\n\nO envio deste teste não corresponde a uma ação real."]);
             $notice='E-mail de teste aceito pelo mecanismo de envio. Confira sua caixa de entrada.';
+        }elseif($action==='run_queue'){
+            $batch=communication_dispatch_manual($db,$activityId,5);
+            $summary=communication_queue_summary($db,$activityId);
+            $_SESSION['communications_notice']=!empty($batch['busy'])
+                ?'Outro envio está em andamento. A fila permanece preservada.'
+                :'Lote processado: '.(int)$batch['sent'].' aceito(s), '.(int)$batch['skipped'].' ignorado(s) e '.(int)$batch['failed'].' falha(s). Restam '.(int)$summary['pending'].' pendente(s).';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','run'=>1]),true,303);exit;
+        }elseif($action==='cancel_queue'){
+            $count=communication_cancel_queue($db,$activityId);
+            $_SESSION['communications_notice']=$count.' envio(s) pendente(s) cancelado(s). Mensagens já em processamento ou aceitas pelo provedor não podem ser canceladas.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns']),true,303);exit;
         }elseif($action==='duplicate'){
             if(!$selected)throw new RuntimeException('Selecione uma mensagem para duplicar.');
             $id=communication_duplicate_campaign($db,$activityId,$selectedId);
@@ -92,13 +104,20 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             }
             $chosen=communication_validate_targets($db,$activityId,$form);
             $preview=count($chosen);
-        }elseif($action==='queue'){
+        }elseif(in_array($action,['queue','queue_now'],true)){
             if(!$selected)throw new RuntimeException('Salve o rascunho antes de enviar.');
             if($selected['category']==='newsletter'&&communication_site_url($db)==='')
                 throw new RuntimeException('Configure o endereço do site em Configuração para incluir o link de descadastro.');
             $count=communication_queue_campaign($db,$activityId,$selectedId);
-            $_SESSION['communications_notice']=$count.' e-mail(s) incluído(s) na fila. O processamento depende do serviço de envio configurado.';
-            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+            if($action==='queue_now'){
+                $batch=communication_dispatch_manual($db,$activityId,5);
+                $_SESSION['communications_notice']=$count.' destinatário(s) confirmado(s). '.(!empty($batch['busy'])
+                    ?'Outro processamento está em andamento; tente novamente se necessário.'
+                    :'Envio imediato iniciado. '.(int)$batch['sent'].' aceito(s) neste primeiro lote.');
+            }else{
+                $_SESSION['communications_notice']=$count.' e-mail(s) colocado(s) na fila. Use Enviar agora para processá-los sem agendamento.';
+            }
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]+($action==='queue_now'?['run'=>1]:[])),true,303);exit;
         }elseif($action==='test'){
             if(!$selected || $selected['status']!=='draft')throw new RuntimeException('Salve o rascunho antes do teste.');
             $admin=current_admin();$email=(string)($admin['email']??'');
@@ -128,7 +147,9 @@ $siteUrl=communication_site_url($db);
 $worker=communication_worker_status($db);
 $workerLast=$worker['last_finished_at']??null;
 $workerActive=$workerLast && strtotime((string)$workerLast)!==false && strtotime((string)$workerLast)>time()-3600;
-$mailQueueCount=(int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE status IN ('pending','processing')")->fetchColumn();
+$queueSummary=communication_queue_summary($db,$activityId);
+$mailQueueCount=$queueSummary['pending']+$queueSummary['processing'];
+$autoQueueRun=(string)($_GET['run']??'')==='1';
 $staffQueueCount=(int)$db->query("SELECT COUNT(*) FROM admin_student_notice_outbox WHERE status IN ('pending','processing')")->fetchColumn();
 $campaigns=communication_campaigns($db,$activityId);
 if($selected && $preview===null){
@@ -166,6 +187,18 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <?php endforeach;?>
 </nav>
 <div class="comms-workspace">
+<?php if(in_array($tab,['overview','campaigns'],true)):?>
+<section class="admin-card comms-section comms-wide" data-communications-queue data-queue-url="/admin/communications-queue.php" data-auto-run="<?=$autoQueueRun?'1':'0'?>">
+  <header><div><h2>Fila de mensagens</h2><p>Envie quando quiser, mesmo sem agendamento no servidor.</p></div></header>
+  <p data-queue-count aria-live="polite"><strong><?=$queueSummary['pending']?></strong> pendente(s) · <?=$queueSummary['processing']?> em processamento · <?=$queueSummary['accepted']?> aceito(s) pelo provedor · <?=$queueSummary['failed']?> falha(s) · <?=$queueSummary['cancelled']?> cancelado(s).</p>
+  <form method="post" class="comms-inline-actions" data-queue-form>
+    <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+    <button class="admin-button" name="action" value="run_queue" type="submit"<?=$queueSummary['pending']<1?' disabled':''?> data-queue-run>Enviar agora</button>
+    <button class="admin-button secondary" name="action" value="cancel_queue" type="submit"<?=$queueSummary['pending']<1?' disabled':''?> data-queue-cancel>Cancelar fila</button>
+  </form>
+  <p class="muted" data-queue-feedback role="status" aria-live="polite">Cancelar afeta somente os envios ainda pendentes. Mensagens já aceitas ou em processamento não podem ser retiradas.</p>
+</section>
+<?php endif;?>
 <?php if($tab==='overview'):?>
   <div class="comms-lead">
     <div><p class="comms-eyebrow">Central de comunicações</p><h2>Visão geral</h2>
@@ -415,7 +448,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <?php if($renderedEmailPreview!==''):?>
       <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h($renderedEmailPreview)?>"></iframe></div>
       <?php else:?><p class="comms-attention">A prévia não está disponível. Verifique as imagens e o endereço do site.</p><?php endif;?>
-    <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila e será processada pelo envio automático.':'O processamento desta mensagem foi concluído.')?></p>
+    <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila. Use Enviar agora para processá-la sem depender do servidor agendado.':'O processamento desta mensagem foi concluído.')?></p>
     <?php endif;?>
     <?php if($preview!==null && ($form['status']??'draft')==='draft'):?>
     <section class="comms-send-review" aria-labelledby="send-review-title">
@@ -430,7 +463,8 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
         <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
         <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
         <button type="submit" class="admin-button secondary" name="action" value="test">Enviar teste para meu e-mail</button>
-        <button type="submit" class="admin-button" name="action" value="queue"<?=$preview===0?' disabled':''?> data-confirm="Confirmar envio somente para os destinatários selecionados e elegíveis?">Confirmar e colocar na fila</button>
+        <button type="submit" class="admin-button" name="action" value="queue_now"<?=$preview===0?' disabled':''?> data-confirm="Confirmar e iniciar agora o envio aos destinatários selecionados e elegíveis? Os demais envios pendentes também serão processados.">Confirmar e enviar agora</button>
+        <button type="submit" class="admin-button secondary" name="action" value="queue"<?=$preview===0?' disabled':''?> data-confirm="Confirmar e colocar na fila sem iniciar o processamento agora?">Somente colocar na fila</button>
       </form>
       <?php else:?><p class="muted">Salve o rascunho para confirmar o envio.</p><?php endif;?>
     </section>
@@ -443,7 +477,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <?php foreach($campaigns as $campaign):?><tr>
       <td data-primary="true"><?=h((string)$campaign['subject'])?></td>
       <td><?=h($campaign['category']==='newsletter'?'Newsletter':'Aviso de curso')?></td>
-      <td><?=h(['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status'])?></td>
+      <td><?=h($campaign['status']==='completed' && (int)$campaign['cancelled_count']>0
+          ? ((int)$campaign['cancelled_count']===(int)$campaign['audience_count']?'Cancelada':'Parcialmente cancelada')
+          : (['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status']))?></td>
       <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?></td>
       <td data-actions="true"><div class="comms-history-actions">
         <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$campaign['id']]))?>">Abrir</a>
@@ -460,4 +496,5 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <?php endif;?>
 </div>
 <script src="/assets/communications-editor.js" defer></script>
+<script src="/assets/communications-queue.js" defer></script>
 <?php admin_shell_end();
