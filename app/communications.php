@@ -414,6 +414,23 @@ function communication_cancel_queue(PDO $db,int $activityId,?int $campaignId=nul
     });
 }
 
+/** Explicit retry after operator verification. Never requeue sent or cancelled jobs. */
+function communication_retry_failed(PDO $db,int $activityId,int $campaignId): int {
+    return course_agenda_with_lock($db,static function()use($db,$activityId,$campaignId):int{
+        $campaign=communication_campaign($db,$activityId,$campaignId);
+        if(!$campaign || $campaign['status']==='draft')throw new RuntimeException('Mensagem não disponível para reprocessamento.');
+        $now=utc_now();
+        $q=$db->prepare("UPDATE communication_deliveries
+            SET status='pending',attempts=0,error_code=NULL,updated_at=?
+            WHERE campaign_id=? AND status='failed'");
+        $q->execute([$now,$campaignId]);
+        $count=$q->rowCount();
+        if($count>0)$db->prepare("UPDATE communication_campaigns SET status='queued',updated_at=?
+            WHERE id=? AND activity_id=? AND status='completed'")->execute([$now,$campaignId,$activityId]);
+        return $count;
+    });
+}
+
 /** Reuse the CLI worker's lock, but run safely from an administrator POST. */
 function communication_dispatch_manual(PDO $db,int $activityId,int $limit=1,?callable $sender=null): array {
     $lock=@fopen(dirname(__DIR__).'/storage/communications-worker.lock','c+');
