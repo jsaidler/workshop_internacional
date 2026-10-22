@@ -71,10 +71,11 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         }elseif($action==='run_queue'){
             $batch=communication_dispatch_manual($db,$activityId,1);
             $summary=communication_queue_summary($db,$activityId);
+            if(empty($batch['busy']))$_SESSION['communications_auto_run']=true;
             $_SESSION['communications_notice']=!empty($batch['busy'])
                 ?'Outro envio está em andamento. A fila permanece preservada.'
                 :'Lote processado: '.(int)$batch['sent'].' aceito(s), '.(int)$batch['skipped'].' ignorado(s) e '.(int)$batch['failed'].' falha(s). Restam '.(int)$summary['pending'].' pendente(s).';
-            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','run'=>1]),true,303);exit;
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns']),true,303);exit;
         }elseif($action==='cancel_queue'){
             $count=communication_cancel_queue($db,$activityId);
             $_SESSION['communications_notice']=$count.' envio(s) pendente(s) cancelado(s). Mensagens já em processamento ou aceitas pelo provedor não podem ser canceladas.';
@@ -89,8 +90,9 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $count=communication_retry_failed($db,$activityId,$selectedId);
             if($count===0)throw new RuntimeException('Não há falhas pendentes de reprocessamento nesta mensagem.');
             $batch=communication_dispatch_manual($db,$activityId,1);
+            if(empty($batch['busy']))$_SESSION['communications_auto_run']=true;
             $_SESSION['communications_notice']=$count.' destinatário(s) com falha recolocado(s) na fila após sua confirmação. '.(int)$batch['sent'].' aceito(s) no primeiro lote.';
-            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId,'run'=>1]),true,303);exit;
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
         }elseif($action==='duplicate'){
             if(!$selected)throw new RuntimeException('Selecione uma mensagem para duplicar.');
             $id=communication_duplicate_campaign($db,$activityId,$selectedId);
@@ -123,13 +125,14 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $count=communication_queue_campaign($db,$activityId,$selectedId);
             if($action==='queue_now'){
                 $batch=communication_dispatch_manual($db,$activityId,1);
+                if(empty($batch['busy']))$_SESSION['communications_auto_run']=true;
                 $_SESSION['communications_notice']=$count.' destinatário(s) confirmado(s). '.(!empty($batch['busy'])
                     ?'Outro processamento está em andamento; tente novamente se necessário.'
                     :'Envio imediato iniciado. '.(int)$batch['sent'].' aceito(s) neste primeiro lote.');
             }else{
                 $_SESSION['communications_notice']=$count.' e-mail(s) colocado(s) na fila. Use Enviar agora para processá-los sem agendamento.';
             }
-            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]+($action==='queue_now'?['run'=>1]:[])),true,303);exit;
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
         }elseif($action==='test'){
             if(!$selected || $selected['status']!=='draft')throw new RuntimeException('Salve o rascunho antes do teste.');
             $admin=current_admin();$email=(string)($admin['email']??'');
@@ -161,7 +164,9 @@ $workerLast=$worker['last_finished_at']??null;
 $workerActive=$workerLast && strtotime((string)$workerLast)!==false && strtotime((string)$workerLast)>time()-3600;
 $queueSummary=communication_queue_summary($db,$activityId);
 $mailQueueCount=$queueSummary['pending']+$queueSummary['processing'];
-$autoQueueRun=(string)($_GET['run']??'')==='1';
+// One-time POST-triggered session flag: a crafted GET URL must never trigger sends.
+$autoQueueRun=!empty($_SESSION['communications_auto_run']);
+unset($_SESSION['communications_auto_run']);
 $staffQueueCount=(int)$db->query("SELECT COUNT(*) FROM admin_student_notice_outbox WHERE status IN ('pending','processing')")->fetchColumn();
 $campaigns=communication_campaigns($db,$activityId);
 $selectedDeliveryRows=$selected && $selected['status']!=='draft'?communication_campaign_deliveries($db,$activityId,$selectedId):[];
