@@ -41,3 +41,13 @@ O canal de avisos **aluno → administrador** é independente das campanhas **ad
 - Quando a chave Brevo está configurada, usa API Brevo; sem ela, usa `mail()` do PHP, tal como o módulo preexistente de alertas de formulário. A disponibilidade de `mail()` e a entregabilidade externa não podem ser inferidas do sucesso dos testes locais. Se o cron não estiver configurado, eventos permanecerão **Na fila**.
 
 A ativação e a entrega devem ser validadas no endereço de e-mail real da conta administrativa depois da instalação. O status `Aceito para envio` não equivale a entrega confirmada ou leitura.
+
+## Correção da experiência de envio — 22/10/2026 (PR de correção)
+
+A tela administrativa não deve exigir que o usuário preencha nomes de variáveis de ambiente para testar o e-mail. A integração Brevo é **opcional**, e a escolha do envio obedece à autoridade única `communication_send_message()`: quando há chave externa e remetente elegível, usa Brevo; caso contrário, usa o `mail()` nativo do PHP, já disponível para avisos de formulários. A função original `communication_send_brevo()` fica restrita à implementação interna do adaptador externo. Os caminhos de teste e envio automático de campanhas, e de avisos de ações de alunos, usam o mesmo transporte.
+
+A seção **Comunicações → Envio de e-mails** permite definir nome/endereço do remetente, testar o envio diretamente à conta administrativa e conferir mensagens pendentes e o horário da última execução do worker. A identidade configurada é persistida em `communication_sender_settings`, migração 105, sem credenciais ou configuração da hospedagem no banco. As credenciais Brevo continuam opcionais e, quando usadas, permanecem no ambiente/configuração local privada. A página mostra `E-mail da hospedagem` quando o serviço nativo está selecionado.
+
+O resultado de `mail()` ou de uma API externa representa **aceite pelo transporte**, não garantia de entrega nem leitura; o teste precisa ser confirmado na caixa de entrada (inclusive spam). Um e-mail do próprio domínio com DNS autentificado oferece entregabilidade superior; não declarar que a hospedagem enviará corretamente sem teste real.
+
+A mesma migração registra a última execução do worker em `communication_worker_state`. Ausência de registro ou execução antiga sinaliza ao administrador que é preciso configurar/verificar cron na hospedagem; esse indicador não envia mensagens por si só. O agendamento de execução permanece exclusivamente no servidor, não em requisições web de alunos. Mensagens enfileiradas aguardam a execução. As preferências e limites de envio da newsletter não são alterados.
