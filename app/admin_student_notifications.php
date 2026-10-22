@@ -79,8 +79,7 @@ function admin_student_notice_message(array $job,array $target): array {
     $link=preg_match('~^https://[^/]+~i',$site)?$site.$url:$url;
     $body=$heading."\n\nAluno: ".$name."\nCurso: ".$job['course_title'].
         "\nTurma: ".$job['cohort_title']."\nItem: ".$target['title'].
-        "\n\nAbrir na administração: ".$link.
-        "\n\nA mensagem completa e as imagens permanecem no CMS.";
+        "\n\nAbrir na administração: ".$link;
     return ['name'=>(string)$job['admin_email'],'email'=>(string)$job['admin_email'],
       'subject'=>'['.(string)(app_config()['site_name']??'Cursos').'] '.$heading.' — '.$name,
       'body'=>$body];
