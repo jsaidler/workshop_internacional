@@ -140,6 +140,7 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-recipient-count]')).toContainText('0 de 1');
    await admin.getByRole('button',{name:'Selecionar todos'}).click();
    await expect(recipients).toBeChecked();
+   await expect(admin.locator('[data-plain-fallback]')).toBeHidden();
    await admin.locator('[data-mail-editor]').fill('Encontro experimental com vagas abertas.');
    await admin.locator('[data-mail-editor]').selectText('Encontro');
    await admin.getByRole('button',{name:'Negrito'}).click();
