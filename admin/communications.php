@@ -14,7 +14,7 @@ $actionTab=[
  'brevo_save'=>'settings','brevo_check'=>'settings','brevo_remove'=>'settings',
  'mail_settings'=>'settings','mail_test'=>'settings','site_url_save'=>'settings',
  'admin_notice_preferences'=>'alerts','admin_notice_test'=>'alerts',
- 'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','test'=>'campaigns'
+ 'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns'
 ];
 $selectedId=max(0,(int)($_POST['campaign_id']??$_GET['id']??0));
 $selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
@@ -67,6 +67,11 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
                'subject'=>'[TESTE] Avisos de atividades de alunos',
                'body'=>"Este é um teste do canal de avisos das ações dos alunos.\n\nO envio deste teste não corresponde a uma ação real."]);
             $notice='E-mail de teste aceito pelo mecanismo de envio. Confira sua caixa de entrada.';
+        }elseif($action==='duplicate'){
+            if(!$selected)throw new RuntimeException('Selecione uma mensagem para duplicar.');
+            $id=communication_duplicate_campaign($db,$activityId,$selectedId);
+            $_SESSION['communications_notice']='Cópia criada como rascunho. Confira os destinatários antes de enviar.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$id]),true,303);exit;
         }elseif(in_array($action,['preview','save'],true)){
             $form=[
               'category'=>(string)($_POST['category']??''),
@@ -439,7 +444,13 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <td><?=h($campaign['category']==='newsletter'?'Newsletter':'Aviso de curso')?></td>
       <td><?=h(['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status'])?></td>
       <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?></td>
-      <td data-actions="true"><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$campaign['id']]))?>">Abrir</a></td>
+      <td data-actions="true"><div class="comms-history-actions">
+        <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$campaign['id']]))?>">Abrir</a>
+        <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+          <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
+          <button type="submit" name="action" value="duplicate" class="admin-button secondary">Duplicar</button>
+        </form>
+      </div></td>
     </tr><?php endforeach;?>
   </tbody></table></div>
   <?php endif;?>
