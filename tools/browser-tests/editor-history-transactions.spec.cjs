@@ -121,3 +121,31 @@ test('editor-only rename participates in history and a new edit clears redo',asy
   await expect(frame.locator('#column-b > [data-cms-node-id="history-new-divider"]')).toHaveCount(1);
   await expect(page.locator('#redo')).toBeDisabled();
 });
+
+
+test('history snapshots defer to the canonical serializer when the core editor is present',async({page})=>{
+  const frame=await fixture(page);
+  await page.evaluate(()=>{
+    window.__canonicalSerializationCalls=0;
+    window.CmsEditorDraft={
+      serialize(){
+        window.__canonicalSerializationCalls++;
+        const content=document.querySelector('#page-frame').contentDocument.querySelector('[data-cms-page-main]').cloneNode(true);
+        content.querySelectorAll('[data-cms-editor-ui]').forEach(node=>node.remove());
+        return content.innerHTML.trim();
+      }
+    };
+  });
+  await frame.locator('#column-b').evaluate(node=>{
+    const p=node.ownerDocument.createElement('p');
+    p.textContent='Texto que participa do histórico';
+    node.append(p);
+    const chrome=node.ownerDocument.createElement('button');
+    chrome.dataset.cmsEditorUi='1';chrome.textContent='Excluir';
+    node.append(chrome);
+  });
+  await page.evaluate(()=>window.CmsEditorHistory.commit());
+  const calls=await page.evaluate(()=>window.__canonicalSerializationCalls);
+  expect(calls).toBeGreaterThan(0);
+  await expect(page.locator('#undo')).toBeEnabled();
+});
