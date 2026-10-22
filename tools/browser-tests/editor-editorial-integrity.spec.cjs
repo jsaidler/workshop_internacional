@@ -218,8 +218,9 @@ test('mobile inspector collapses without destroying content and expands for a ne
 });
 
 test('page navigation checks canonical dirty state even when status label looks saved',async({page})=>{
-  await mockApp(page,{published:1});
+  await mockApp(page,{published:1,latency:10000});
   await open(page);
+  await page.frameLocator('#page-frame').locator('#edited-text').click();
   await page.frameLocator('#page-frame').locator('#edited-text').evaluate(el=>{
     el.textContent='Alteração ainda não salva';
     el.dispatchEvent(new Event('input',{bubbles:true}));
