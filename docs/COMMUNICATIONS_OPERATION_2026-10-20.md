@@ -98,3 +98,8 @@ A composição fornece prévia **desktop e celular** dentro de um `iframe` sandb
 
 Esta entrega não inclui construtor universal de páginas, HTML livre, recursos remotos arbitrários, nem automação de templates comerciais. O contrato existente de audiência, consentimento e fila não foi alterado. Código publicado não equivale à instalação no servidor ou confirmação da entrega real.
 
+
+
+### Blocos simples e reaproveitamento de mensagens
+
+A barra de edição permite inserir título, separador e botão com link HTTPS, além de texto, listas e imagens. O sanitizer mantém apenas `h2`, `hr` e links com `data-email-button=1` e URL HTTPS válida; o renderer adiciona estilo inline ao botão e ao separador sem aceitar CSS arbitrário do usuário. O histórico oferece **Duplicar**: cria novo rascunho editável com modelo, texto, imagens e interseção dos destinatários ainda elegíveis. Duplicar nunca reutiliza a fila da comunicação original nem adiciona destinatários que não sejam elegíveis atualmente.
