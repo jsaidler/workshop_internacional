@@ -9,6 +9,12 @@ on:
   pull_request:
     paths:
       - 'app/communications.php'
+      - 'admin/communications-builder-lab.php'
+      - 'assets/communications-builder-lab.css'
+      - 'tools/browser-src/**'
+      - 'tools/build-communications-email-lab.mjs'
+      - 'tools/browser-tests/communications-builder-lab.spec.cjs'
+      - 'package.json'
       - 'app/course_reviews.php'
       - 'admin/communications.php'
       - 'admin/lessons.php'
@@ -38,9 +44,12 @@ jobs:
       - name: Install focused browser runtime
         run: |
           npm install --no-audit --no-fund
+          npm run build:email-lab
           npx playwright install --with-deps chromium
       - name: Real PHP SQLite integration
         run: npx playwright test tools/browser-tests/course-review-communications.spec.cjs --workers=1 --reporter=line
+      - name: Validate visual e-mail builder in Chromium
+        run: npx playwright test tools/browser-tests/communications-builder-lab.spec.cjs --workers=1 --reporter=line
       - name: Preserve mobile and desktop screenshots
         if: always()
         uses: actions/upload-artifact@v4
