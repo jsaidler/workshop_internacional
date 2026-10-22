@@ -52,11 +52,16 @@ new MutationObserver(records=>{
     [...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===1&&!node.classList.contains('cms-mobile-inspector-header'))))update();
 }).observe(inspector,{childList:true});
 mobile.addEventListener?.('change',update);
-document.addEventListener('keydown',event=>{
+function onEscape(event){
   if(event.key!=='Escape'||!mobile.matches||collapsed||!control())return;
   if(document.querySelector('dialog[open]')||document.body.classList.contains('structure-mobile-open'))return;
   collapsed=true;update();
   control()?.querySelector('button')?.focus();
-});
+}
+document.addEventListener('keydown',onEscape);
+// Keyboard events inside the page iframe never bubble to the parent document.
+const frame=document.querySelector('#page-frame');
+frame?.addEventListener('load',()=>frame.contentDocument?.addEventListener('keydown',onEscape));
+if(frame?.contentDocument)frame.contentDocument.addEventListener('keydown',onEscape);
 update();
 })();
