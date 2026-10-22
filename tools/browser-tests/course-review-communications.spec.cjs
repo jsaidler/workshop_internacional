@@ -226,8 +226,8 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-queue-feedback]')).toContainText('1 envio(s) pendente(s) cancelado(s)');
    const cancelled=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(cancelled.deliveries[0].status).toBe('skipped');
-   // Envio imediato real pelo PHP, porém interceptado pela fixture de sendmail.
-   await admin.getByRole('link',{name:'Nova mensagem'}).click();
+   // A URL de segurança acima abriu o compositor vazio; nenhuma navegação extra é necessária.
+   // Envio imediato real pelo PHP, interceptado pela fixture de sendmail.
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Envio imediato QA');
