@@ -6,6 +6,24 @@ $root=realpath((string)($argv[1]??''));$mode=(string)($argv[2]??'seed');
 if(!$root||!file_exists($root.'/storage/installed.lock')||!file_exists($root.'/config/local.php'))throw new RuntimeException('Invalid isolated fixture.');
 require $root.'/app/bootstrap.php';
 $db=database();
+if($mode==='email-media'){
+    $uuid=bin2hex(random_bytes(16));$version=bin2hex(random_bytes(16));
+    $relative=$uuid.'/'.$version.'/original/file.png';
+    $absolute=$root.'/uploads/media/'.$relative;
+    if(!is_dir(dirname($absolute)))mkdir(dirname($absolute),0755,true);
+    $bytes=base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+rJ3sAAAAASUVORK5CYII=',true);
+    if(!is_string($bytes)||file_put_contents($absolute,$bytes)===false)throw new RuntimeException('Media seed failed');
+    $now=gmdate('c');$hash=hash('sha256',$bytes);
+    $db->prepare("INSERT INTO media_assets(asset_uuid,kind,title,default_alt,original_name,mime_type,byte_size,width,height,checksum,processing_status,created_at,updated_at,visibility)
+      VALUES(?,'image','Fotografia do laboratório','Bancada de fotografia','seed.png','image/png',1,1,1,?,'ready',?,?,'public')")
+      ->execute([$uuid,$hash,$now,$now]);
+    $id=(int)$db->lastInsertId();
+    $db->prepare("INSERT INTO media_versions(asset_id,version_uuid,original_path,mime_type,byte_size,width,height,checksum,processing_status,created_at)
+       VALUES(?,?,?,'image/png',?,1,1,?,'ready',?)")
+       ->execute([$id,$version,$relative,strlen($bytes),$hash,$now]);
+    $db->prepare('UPDATE media_assets SET active_version_id=?,byte_size=? WHERE id=?')->execute([(int)$db->lastInsertId(),strlen($bytes),$id]);
+    echo json_encode(['id'=>$id,'src'=>media_url($relative)],JSON_THROW_ON_ERROR).PHP_EOL;exit;
+}
 if($mode==='token'){
     $q=$db->prepare('SELECT id,email FROM student_users WHERE email=?');
     $q->execute(['student-qa@example.test']);$person=$q->fetch();
