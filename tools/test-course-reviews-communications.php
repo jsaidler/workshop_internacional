@@ -210,4 +210,21 @@ check_feature(communication_cancel_queue($db,2,$other)===1,'cancel specific camp
 $otherRows=communication_campaigns($db,2);
 check_feature((int)$otherRows[0]['cancelled_count']===1,'campaign history exposes cancelled count');
 
+
+$uncertain=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Falha ambígua','body_text'=>'Não repetir',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+check_feature(communication_queue_campaign($db,1,$uncertain)===1,'uncertain delivery prepared');
+$attempted=0;
+$fail=static function(array $payload)use(&$attempted):array {
+    $attempted++;
+    throw new RuntimeException('Simulated timeout after provider request');
+};
+check_feature(communication_dispatch_manual($db,1,1,$fail)['failed']===1,'provider failure accounted');
+check_feature($attempted===1,'failed provider requested once');
+check_feature(communication_dispatch_manual($db,1,1,$fail)['sent']===0&&$attempted===1,'ambiguous provider outcome is not automatically retried');
+check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$uncertain")->fetchColumn()==='failed','ambiguous provider outcome requires review');
+
 echo "course-comms: OK\n";
