@@ -36,7 +36,7 @@ async function request(action){
 async function run(){
   if(running)return;
   running=true;stopRequested=false;send.disabled=true;
-  let sent=0,skipped=0,failed=0;
+  let sent=Number(panel.dataset.initialSent||0),skipped=Number(panel.dataset.initialSkipped||0),failed=Number(panel.dataset.initialFailed||0);
   feedback('Enviando mensagens pendentes. Mantenha esta página aberta para continuar os lotes.');
   try{
     while(!stopRequested){
