@@ -331,7 +331,7 @@ test('toggling bold off a substring preserves every segment of a nested hyperlin
   expect(state.html).toContain('<strong><a href="/bibliografia"');
 });
 
-test('selection across mixed markup never removes formatting outside a selected run',async({page})=>{
+test('selection across mixed markup removes only selected styles and preserves untouched runs',async({page})=>{
   const state=await mockApp(page,{published:null});
   state.html='<section data-cms-section="intro" data-cms-section-name="Introdução"><p id="edited-text" data-cms-editable><strong>Primeiro</strong> e <em>segundo</em>.</p></section>';
   await open(page);
@@ -339,17 +339,125 @@ test('selection across mixed markup never removes formatting outside a selected 
   await field.click();
   await field.evaluate(el=>{
     const bold=el.querySelector('strong').firstChild,ital=el.querySelector('em').firstChild;
-    const range=el.ownerDocument.createRange();range.setStart(bold,3);range.setEnd(ital,3);
-    const selection=el.ownerDocument.defaultView.getSelection();selection.removeAllRanges();selection.addRange(range);
+    const range=el.ownerDocument.createRange();
+    range.setStart(bold,3);range.setEnd(ital,3);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
   });
   await page.locator('#text-toolbar [data-command="removeFormat"]').click();
-  expect(await field.textContent()).toBe('Primeiro e segundo.');
-  // Remaining unselected prefixes/suffixes keep their semantic wrappers.
-  await expect(field.locator('strong')).toHaveText('Primeiro');
-  await expect(field.locator('em')).toHaveText('segundo');
+  await expect(field).toHaveText('Primeiro e segundo.');
+  await expect(field.locator('strong')).toHaveCount(1);
+  await expect(field.locator('strong')).toHaveText('Pri');
+  await expect(field.locator('em')).toHaveCount(1);
+  await expect(field.locator('em')).toHaveText('undo');
+  expect(await field.innerHTML()).toContain('<strong>Pri</strong>meiro e seg<em>undo</em>');
   await page.evaluate(()=>window.CmsEditorDraft.save());
-  expect(state.html).toContain('<strong>Primeiro</strong>');
-  expect(state.html).toContain('<em>segundo</em>');
+  expect(state.html).toContain('<strong>Pri</strong>meiro e seg<em>undo</em>');
+  expect(state.html).not.toContain('contenteditable');
+});
+
+
+test('partial clear formatting retains adjacent bold text and undo/redo history',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><div class="section-inner"><p id="edited-text" data-cms-editable><strong>antes meio depois</strong></p></div></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.click();
+  await edited.locator('strong').evaluate(el=>{
+    const node=el.firstChild,offset=node.textContent.indexOf('meio');
+    const range=el.ownerDocument.createRange();
+    range.setStart(node,offset);range.setEnd(node,offset+4);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited).toHaveText('antes meio depois');
+  await expect(edited.locator('strong')).toHaveCount(2);
+  expect(await edited.innerHTML()).toContain('<strong>antes </strong>meio<strong> depois</strong>');
+  await page.locator('#editor-more summary').click();
+  await expect(page.locator('#undo')).toBeEnabled();
+  await page.locator('#undo').click();
+  await expect(edited.locator('strong')).toHaveCount(1);
+  await expect(edited.locator('strong')).toHaveText('antes meio depois');
+  expect(await edited.innerHTML()).toContain('<strong>antes meio depois</strong>');
+  await expect(page.locator('#redo')).toBeEnabled();
+  await page.locator('#redo').click();
+  await expect(edited.locator('strong')).toHaveCount(2);
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('<strong>antes </strong>meio<strong> depois</strong>');
+  expect(state.html).not.toContain('cmsSelectionBoundary');
+});
+
+test('partial clear formatting splits links without losing destination or duplicating IDs',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><div class="section-inner"><p id="edited-text" data-cms-editable>Leia <strong><a id="keep-link" href="/bibliografia">Bibliografia</a></strong> depois.</p></div></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.evaluate(el=>el.click());
+  await edited.locator('a').evaluate(el=>{
+    const node=el.firstChild,range=el.ownerDocument.createRange();
+    range.setStart(node,3);range.setEnd(node,7);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited).toHaveText('Leia Bibliografia depois.');
+  await expect(edited.locator('a')).toHaveCount(3);
+  await expect(edited.locator('#keep-link')).toHaveCount(1);
+  await expect(edited.locator('strong')).toHaveCount(2);
+  for(const anchor of await edited.locator('a').all())await expect(anchor).toHaveAttribute('href','/bibliografia');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect(state.html).toContain('href="/bibliografia"');
+  expect((state.html.match(/id="keep-link"/g)||[]).length).toBe(1);
+  expect(state.html).not.toContain('contenteditable');
+});
+
+
+test('mixed inline selection clears only the selected range and retains CMS node identity',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><p id="edited-text" data-cms-editable><strong data-cms-node-id="bold-identity">Primeiro</strong> e <em>segundo</em>.</p></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.evaluate(el=>el.click());
+  await edited.evaluate(el=>{
+    const bold=el.querySelector('strong').firstChild,italic=el.querySelector('em').firstChild;
+    const range=el.ownerDocument.createRange();
+    range.setStart(bold,3);range.setEnd(italic,3);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited).toHaveText('Primeiro e segundo.');
+  await expect(edited.locator('strong')).toHaveText('Pri');
+  await expect(edited.locator('em')).toHaveText('undo');
+  expect(await edited.innerHTML()).toContain('</strong>meiro e seg<em>undo</em>');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect((state.html.match(/data-cms-node-id="bold-identity"/g)||[]).length).toBe(1);
+  expect(state.html).toContain('</strong>meiro e seg<em>undo</em>');
+});
+
+
+test('clearing whole formatted CMS node retains its unique identity as a neutral inline span',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><p id="edited-text" data-cms-editable><strong id="stable-identifier" data-cms-node-id="node-ink">Alvo inteiro</strong> permanece.</p></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.click();
+  await edited.locator('strong').evaluate(el=>{
+    const range=el.ownerDocument.createRange();
+    range.selectNodeContents(el);
+    const selection=el.ownerDocument.defaultView.getSelection();
+    selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited.locator('strong')).toHaveCount(0);
+  const neutral=edited.locator('span#stable-identifier');
+  await expect(neutral).toHaveText('Alvo inteiro');
+  await expect(neutral).toHaveAttribute('data-cms-node-id','node-ink');
+  await expect(edited).toHaveText('Alvo inteiro permanece.');
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect((state.html.match(/id="stable-identifier"/g)||[]).length).toBe(1);
+  expect(state.html).toContain('<span id="stable-identifier" data-cms-node-id="node-ink">Alvo inteiro</span>');
 });
 
 
