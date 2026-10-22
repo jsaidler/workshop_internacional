@@ -74,6 +74,17 @@ test.describe('real application: reviews and communications',()=>{
    await student.screenshot({path:info.outputPath('newsletter-opt-in-mobile.png')});
    await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId);
    await expect(admin.getByRole('heading',{name:'Envio de e-mails'})).toBeVisible();
+   await expect(admin.getByRole('heading',{name:'Brevo'})).toBeVisible();
+   const brevoForm=admin.locator('form').filter({has:admin.locator('input[name="action"][value="brevo_save"]')});
+   const brevoKey=brevoForm.locator('input[name="brevo_api_key"]');
+   await expect(brevoKey).toHaveAttribute('type','password');
+   await expect(brevoKey).toHaveAttribute('autocomplete','new-password');
+   await expect(brevoKey).toHaveValue('');
+   await brevoKey.fill('invalid');
+   await brevoForm.getByRole('button',{name:'Conectar Brevo'}).click();
+   await expect(admin.getByText('Cole uma chave API v3 válida do Brevo.')).toBeVisible();
+   await expect(brevoKey).toHaveValue('');
+   await expect(admin.getByText('Não conectado')).toBeVisible();
    await expect(admin.getByText('Meio de envio: E-mail da hospedagem',{exact:true})).toBeVisible();
    await expect(admin.getByText('Sem execução registrada.',{exact:false})).toBeVisible();
    await expect(admin.locator('body')).not.toContainText('BREVO_API_KEY');
