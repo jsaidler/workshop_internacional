@@ -66,3 +66,41 @@
  .admin-student-transfer form.admin-inline-actions{grid-template-columns:minmax(0,1fr)}
  .admin-student-transfer form.admin-inline-actions>.admin-button{width:100%}
 }
+
+
+/* Communications: task-first administration, shared admin tokens and controls. */
+.comms-tabs{margin-bottom:24px}
+.comms-workspace{display:grid;gap:24px;align-content:start}
+.comms-lead{display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;padding:4px 0 2px}
+.comms-lead h2{margin:0;font-size:clamp(23px,3vw,32px);line-height:1.15}
+.comms-lead p{margin:8px 0 0;max-width:66ch;color:var(--admin-muted);font-size:13px;line-height:1.5}
+.comms-lead .comms-eyebrow{margin:0 0 5px;font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+.comms-stats .admin-stat{min-width:0}
+.comms-stats .admin-stat strong{font-size:17px;overflow-wrap:anywhere}
+.comms-stats .admin-stat small{display:block;margin-top:7px;color:var(--admin-muted);font-size:11px;line-height:1.4}
+.comms-overview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.comms-overview-grid .admin-card{display:flex;flex-direction:column;align-items:flex-start;gap:16px}
+.comms-overview-grid .admin-card>header+*{margin-top:0}
+.comms-overview-grid .admin-card>a{margin-top:auto}
+.comms-overview-grid .admin-card>p{margin:0;color:var(--admin-muted);font-size:13px;line-height:1.55}
+.comms-overview-grid .admin-card>p strong{color:var(--admin-ink)}
+.comms-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.comms-settings-grid .comms-wide{grid-column:1/-1}
+.comms-section{min-width:0}
+.comms-section .admin-badge{flex-shrink:0}
+.comms-section>.comms-detail{margin:16px 0;color:var(--admin-muted);font-size:13px}
+.comms-form{display:grid;gap:14px;margin-top:18px;align-items:start}
+.comms-form label{display:grid;gap:7px;font-size:12px;font-weight:600;color:var(--admin-muted)}
+.comms-form input{width:100%;min-width:0}
+.comms-form p{margin:0;color:var(--admin-muted);font-size:12px;line-height:1.5}
+.comms-form .admin-button{justify-self:start}
+.comms-inline-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.comms-attention{padding:12px 14px;border-left:3px solid #9c782c;background:#faf7eb;color:var(--admin-ink);font-size:12px;line-height:1.5}
+.comms-automation{display:flex;gap:12px 30px;flex-wrap:wrap}
+.comms-automation p{margin:0;font-size:13px}
+.comms-max{max-width:760px}
+.comms-checklist{display:grid;gap:4px;align-items:start}
+.comms-checklist label{display:flex;gap:12px;align-items:center;min-height:44px;padding:8px 10px;border:1px solid var(--admin-line);border-radius:4px;color:var(--admin-ink);font-size:13px;cursor:pointer}
+.comms-checklist input{min-height:18px;width:18px;accent-color:var(--admin-focus);flex:none}
+@media(max-width:950px){.comms-overview-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.comms-overview-grid,.comms-settings-grid{grid-template-columns:1fr}.comms-lead{align-items:flex-start;flex-direction:column;gap:16px}.comms-automation{display:grid;gap:9px}.comms-tabs{margin-bottom:16px}}
