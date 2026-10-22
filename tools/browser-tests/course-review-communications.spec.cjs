@@ -226,6 +226,25 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-queue-feedback]')).toContainText('1 envio(s) pendente(s) cancelado(s)');
    const cancelled=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(cancelled.deliveries[0].status).toBe('skipped');
+   // Envio imediato real pelo PHP, porém interceptado pela fixture de sendmail.
+   await admin.getByRole('link',{name:'Nova mensagem'}).click();
+   await admin.locator('select[name="category"]').selectOption('newsletter');
+   await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
+   await admin.locator('input[name="subject"]').fill('Envio imediato QA');
+   await admin.locator('[data-mail-editor]').fill('Teste de envio imediato pela fila do CMS.');
+   await admin.getByRole('button',{name:'Salvar rascunho'}).click();
+   await expect(admin.getByRole('button',{name:'Confirmar e enviar agora'})).toBeVisible();
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.getByRole('button',{name:'Confirmar e enviar agora'}).click();
+   await expect(admin.locator('[data-queue-feedback]')).toContainText('Envio concluído');
+   await expect(admin.locator('[data-queue-feedback]')).toContainText('1 aceito(s) pelo provedor');
+   const delivered=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(delivered.deliveries).toHaveLength(2);
+   expect(delivered.deliveries.filter(row=>row.status==='sent')).toHaveLength(1);
+   expect(delivered.deliveries.filter(row=>row.status==='skipped')).toHaveLength(1);
+   const capturedEmail=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   expect(capturedEmail).toContain('student-qa@example.test');
+   expect(capturedEmail).toContain('Teste de envio imediato pela fila do CMS.');
    execFileSync('php',[seed,sandbox,'student-action'],{encoding:'utf8',timeout:45000});
    const afterAction=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(afterAction.staff_notices).toHaveLength(1);
