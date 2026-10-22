@@ -322,6 +322,7 @@ test('toggling bold off a substring preserves every segment of a nested hyperlin
   await page.locator('#text-toolbar [data-command="bold"]').click();
   await expect(field.locator('strong')).toHaveCount(2);
   await expect(field.locator('a')).toHaveCount(3);
+  await expect(field.locator('#reference-link')).toHaveCount(1);
   for(const href of await field.locator('a').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('href'))))
     expect(href).toBe('/bibliografia');
   expect(await field.textContent()).toBe('Leia ABCDEFG agora.');
@@ -344,8 +345,9 @@ test('selection across mixed markup never removes formatting outside a selected 
   await page.locator('#text-toolbar [data-command="removeFormat"]').click();
   expect(await field.textContent()).toBe('Primeiro e segundo.');
   // Remaining unselected prefixes/suffixes keep their semantic wrappers.
-  await expect(field.locator('strong')).toContainText('Pri');
-  await expect(field.locator('em')).toContainText('undo');
+  await expect(field.locator('strong')).toHaveText('Primeiro');
+  await expect(field.locator('em')).toHaveText('segundo');
   await page.evaluate(()=>window.CmsEditorDraft.save());
-  expect(state.html).toContain('<strong>Pri</strong>');
+  expect(state.html).toContain('<strong>Primeiro</strong>');
+  expect(state.html).toContain('<em>segundo</em>');
 });
