@@ -33,7 +33,8 @@ function communication_campaigns(PDO $db,int $activityId): array {
     (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id) audience_count,
     (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.status=\'sent\') sent_count,
     (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.error_code=\'cancelled_by_admin\') cancelled_count,
-    (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.status=\'failed\') failed_count
+    (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.status=\'failed\') failed_count,
+    (SELECT COUNT(*) FROM communication_deliveries d WHERE d.campaign_id=campaign.id AND d.status=\'pending\') pending_count
     FROM communication_campaigns campaign LEFT JOIN courses c ON c.id=campaign.course_id
     LEFT JOIN course_cohorts cc ON cc.id=campaign.cohort_id
     WHERE campaign.activity_id=? ORDER BY campaign.id DESC LIMIT 80');
