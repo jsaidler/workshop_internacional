@@ -167,4 +167,8 @@ check_feature($richSent[0]['email']==='e@example.test','only specifically chosen
 check_feature(str_contains($richSent[0]['html'],'<strong>Encontro</strong>'),'HTML survives delivery preparation');
 check_feature(str_contains($richSent[0]['body'],'Encontro especial.'),'plaintext alternative available');
 
+$duplicate=communication_duplicate_campaign($db,1,$selected);
+$duplicateRow=communication_campaign($db,1,$duplicate);
+check_feature($duplicateRow['status']==='draft'&&$duplicateRow['subject']==='Mensagem individual','duplicated message remains a draft');
+check_feature(communication_campaign_target_ids($db,$duplicate)===[5],'duplication retains current eligible recipient selection');
 echo "course-comms: OK\n";
