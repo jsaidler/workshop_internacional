@@ -41,7 +41,7 @@ email_assert(str_contains($withPreview,'Conteúdo real'),'preheader does not rep
 email_assert(!str_contains(communication_email_document('<p>Normal</p>','Normal',$db),'aria-hidden="true"'),'legacy emails contain no preheader wrapper');
 $invalid=false;try{communication_preheader(str_repeat('a',151));}catch(RuntimeException){$invalid=true;}
 email_assert($invalid,'overlong preheader rejected');
-$invalid=false;try{communication_preheader("Cabeçalho\\r\\nBcc: leak@example.test");}catch(RuntimeException){$invalid=true;}
+$invalid=false;try{communication_preheader("Cabeçalho\r\nBcc: leak@example.test");}catch(RuntimeException){$invalid=true;}
 email_assert($invalid,'line breaks and header injection rejected');
 $db->exec("UPDATE media_assets SET visibility='private' WHERE id=7");
 $invalid=false;try{communication_validate_images($db,$safe);}catch(RuntimeException){$invalid=true;}
