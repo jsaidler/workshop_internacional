@@ -114,7 +114,7 @@ function communication_validate_targets(PDO $db,int $activityId,array $input): a
 function communication_campaign_audience(PDO $db,int $activityId,array $campaign): array {
     $audience=communication_audience($db,$activityId,(string)$campaign['category'],(int)$campaign['course_id'],(int)$campaign['cohort_id']);
     if(($campaign['selection_mode']??'all')!=='selected')return $audience;
-    $ids=array_fill_keys(communication_campaign_target_ids($db,(int)$campaign['id']),true);
+    $ids=array_fill_keys(communication_campaign_target_ids($db,(int)($campaign['campaign_id']??$campaign['id'])),true);
     return array_values(array_filter($audience,static fn(array $r):bool=>isset($ids[(int)$r['id']])));
 }
 function communication_save_campaign_targets(PDO $db,int $campaignId,array $ids): void {
@@ -210,11 +210,21 @@ function communication_send_php(PDO $db,array $payload): array {
     if($subject===''||strpbrk($subject,"\r\n")!==false)throw new RuntimeException('Assunto inválido.');
     if(!function_exists('mail'))throw new RuntimeException('O servidor não disponibiliza envio de e-mail. Verifique o serviço da hospedagem.');
     $settings=communication_sender_settings($db);
-    $headers=['MIME-Version: 1.0','Content-Type: text/plain; charset=UTF-8'];
+    $headers=['MIME-Version: 1.0'];
     if(filter_var($settings['sender_email'],FILTER_VALIDATE_EMAIL))
         $headers[]='From: '.$settings['sender_email'];
     $encoded=mb_encode_mimeheader($subject,'UTF-8','B',"\r\n");
-    $accepted=@mail($recipient,$encoded,(string)($payload['body']??''),implode("\r\n",$headers));
+    $html=trim((string)($payload['html']??''));
+    $body=(string)($payload['body']??'');
+    if($html!==''){
+        $boundary='alt_'.bin2hex(random_bytes(16));
+        $headers[]='Content-Type: multipart/alternative; boundary="'.$boundary.'"';
+        $plain=base64_encode($body);$rich=base64_encode(communication_email_html($html,$body));
+        $body='--'.$boundary."\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split($plain,76,"\r\n")
+            .'--'.$boundary."\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split($rich,76,"\r\n")
+            .'--'.$boundary."--\r\n";
+    }else $headers[]='Content-Type: text/plain; charset=UTF-8';
+    $accepted=@mail($recipient,$encoded,$body,implode("\r\n",$headers));
     if(!$accepted)throw new RuntimeException('O servidor não aceitou o envio. Verifique o e-mail do remetente e as configurações da hospedagem.');
     return ['id'=>'php-mail-accepted'];
 }
@@ -254,6 +264,7 @@ function communication_send_brevo(array $payload,?PDO $db=null): array {
     $body=['sender'=>['name'=>$cfg['name'],'email'=>$cfg['from']],
       'to'=>[['name'=>$payload['name'],'email'=>$payload['email']]],
       'subject'=>$payload['subject'],'textContent'=>$payload['body']];
+    if(!empty($payload['html']))$body['htmlContent']=communication_email_html((string)$payload['html'],(string)$payload['body']);
     $request=curl_init('https://api.brevo.com/v3/smtp/email');
     curl_setopt_array($request,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,
       CURLOPT_TIMEOUT=>18,CURLOPT_CONNECTTIMEOUT=>5,
