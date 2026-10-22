@@ -16,6 +16,7 @@ $db=new PDO('sqlite::memory:',null,null,[
     PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC
 ]);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
+require dirname(__DIR__).'/app/communications_brevo_credentials.php';
 require dirname(__DIR__).'/app/communications.php';
 mail_check(communication_mail_status($db)['transport']==='php','PHP mail should be default without Brevo');
 mail_check(communication_mail_status($db)['transport_label']==='E-mail da hospedagem','provider label must not expose env names');
