@@ -148,6 +148,10 @@ O corpo da mensagem passa a ser editado visualmente: negrito, itálico, sublinha
 
 
 
+## Pré-cabeçalho opcional — 22/10/2026 (PR em revisão)
+
+O pré-cabeçalho de e-mail é conteúdo editorial salvo na campanha e exibido apenas na prévia HTML, sem introduzir categoria nova de tratamento de dados nem retirar filtros de matrícula e consentimento. Ele não contém informações extras de destinatário nem deve incluir dados pessoais não necessários. O sistema valida comprimento e quebras de linha e escapa o conteúdo no HTML; campanhas históricas permanecem sem pré-cabeçalho.
+
 ## Imagens e modelos visuais de e-mails — 22/10/2026
 
 O editor de **Admin → Comunicações → Mensagens** oferece três modelos de e-mail compatíveis com clientes de correio: **Essencial, Editorial e Destaque**, derivados da identidade do site (nome, cores de texto, fundo e acento) por `cms_site_settings()` e `cms_design_settings()`. O design do site não é copiado como HTML: o renderer usa tabelas de apresentação e estilos inline conservadores, mantendo suporte aos clientes de e-mail. A migração aditiva 109 guarda `template_key` em cada rascunho; registros anteriores assumem `minimal`. O teste ao administrador, a prévia e o dispatch usam o mesmo `communication_email_document()`; alterações no Design afetam novos renders, por isso conferir a prévia antes de despachar.
