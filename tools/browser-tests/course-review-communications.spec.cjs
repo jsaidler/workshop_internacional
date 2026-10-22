@@ -139,6 +139,7 @@ test.describe('real application: reviews and communications',()=>{
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Nova atividade de fotografia');
+   await admin.locator('input[name="preheader"]').fill('Um encontro e uma experiência no laboratório');
    const recipients=admin.locator('[data-recipient-list] input[name="recipient_ids[]"]');
    await expect(recipients).toHaveCount(1);
    await expect(admin.locator('[data-recipient-count]')).toContainText('1 de 1');
@@ -174,6 +175,7 @@ test.describe('real application: reviews and communications',()=>{
    await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
    await expect(admin.locator('[data-mail-editor] figure img')).toHaveCount(1);
    await expect(admin.locator('[data-mail-editor]')).toContainText('Encontro experimental com vagas abertas.');
+   await expect(admin.locator('input[name="preheader"]')).toHaveValue('Um encontro e uma experiência no laboratório');
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-mobile.png')});
@@ -184,6 +186,7 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-recipient-count]')).toContainText('1 de 1');
    const emailFrame=admin.frameLocator('.comms-send-review iframe[title="Prévia visual do e-mail"]');
    await expect(emailFrame.locator('body')).toContainText('Encontro experimental');
+   await expect(emailFrame.locator('body [aria-hidden="true"]')).toContainText('Um encontro e uma experiência no laboratório');
    await expect(emailFrame.locator('img')).toHaveAttribute('alt','Bancada no laboratório fotográfico');
    await expect(emailFrame.locator('img')).toHaveAttribute('src',/https:\/\/example\.test\/uploads\/media\//);
    await admin.locator('.comms-send-review [data-email-preview-mode="mobile"]').click();
