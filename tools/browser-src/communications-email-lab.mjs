@@ -203,10 +203,26 @@ function initLab(){
     });
   }
   editor.on('load',()=>{
+    const labels={
+      'mj-1-column':['Uma coluna','▣'],
+      'mj-2-columns':['Duas colunas','▥'],
+      'mj-text':['Texto','T'],
+      'mj-button':['Botão','↗'],
+      'mj-image':['Imagem','▧'],
+      'mj-divider':['Separador','━'],
+      'mj-spacer':['Espaçamento','↕'],
+    };
     const blocks=editor.BlockManager.getAll();
     for(const block of [...blocks.models]){
       const name=String(block.getId()||'');
-      if(/raw|social|navbar|hero|font|style|code/i.test(name))editor.BlockManager.remove(name);
+      if(/raw|social|navbar|hero|font|style|code/i.test(name)){
+        editor.BlockManager.remove(name);
+        continue;
+      }
+      if(labels[name]){
+        block.set('label',labels[name][0]);
+        block.set('media','<span class="email-lab-block-icon" aria-hidden="true">'+labels[name][1]+'</span>');
+      }
     }
     setStatus(status,'Construtor carregado. Edite blocos e gere a prévia para conferir o HTML.');
   });
