@@ -8,6 +8,14 @@ function communication_template_key(string $key):string {
     if(!array_key_exists($key,communication_template_keys()))throw new RuntimeException('Modelo de e-mail inválido.');
     return $key;
 }
+/** A short, plain-text inbox preview, not part of the message body or a mail header. */
+function communication_preheader(string $value):string {
+    $value=trim($value);
+    if($value==='' )return '';
+    if(preg_match('/[\\x00-\\x1f\\x7f]/u',$value)||mb_strlen($value,'UTF-8')>150)
+        throw new RuntimeException('O pré-cabeçalho deve ter até 150 caracteres, sem quebras de linha.');
+    return $value;
+}
 function communication_media_asset(PDO $db,int $id):array {
     $q=$db->prepare("SELECT a.id,a.kind,a.visibility,a.archived_at,a.processing_status,a.active_version_id,
          a.title,a.default_alt,a.width,v.original_path
@@ -79,7 +87,8 @@ function communication_email_brand(?PDO $db,int $activityId):array {
     }catch(Throwable){}
     return $brand;
 }
-function communication_email_document(string $html,string $plain,?PDO $db=null,string $template='minimal',int $activityId=0):string {
+function communication_email_document(string $html,string $plain,?PDO $db=null,string $template='minimal',int $activityId=0,string $preheader=''):string {
+    $preheader=communication_preheader($preheader);
     $template=communication_template_key($template);
     $inner=$html!==''?communication_safe_html($html):nl2br(htmlspecialchars($plain,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'));
     if($db)$inner=communication_render_media($db,$inner);
@@ -92,8 +101,10 @@ function communication_email_document(string $html,string $plain,?PDO $db=null,s
     $mast=$template==='destaque'
       ?'<tr><td style="padding:32px 36px;background:'.$ink.';color:#ffffff;font:bold 19px Arial,sans-serif">'.$name.'</td></tr>'
       :'<tr><td style="padding:28px 36px 20px;border-bottom:'.($template==='editorial'?'4px solid '.$accent:'1px solid #d5d7d4').';font:bold 18px Arial,sans-serif;color:'.$ink.'">'.$name.'</td></tr>';
+    $previewText=$preheader!==''?'<div aria-hidden="true" style="display:none;overflow:hidden;max-width:0;max-height:0;opacity:0;color:transparent;font-size:1px;line-height:1px;mso-hide:all">'
+        .htmlspecialchars($preheader,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'</div>':'';
     return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
-       .'<body style="margin:0;padding:0;background:'.$ground.'"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:'.$ground.'">'
+       .'<body style="margin:0;padding:0;background:'.$ground.'">'.$previewText.'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:'.$ground.'">'
        .'<tr><td align="center" style="padding:20px 10px"><table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;border-collapse:collapse;background:#ffffff">'
        .$mast.'<tr><td style="padding:34px 36px 40px;font:16px/1.65 Arial,Helvetica,sans-serif;color:'.$ink.';word-wrap:break-word">'
        .$inner.'</td></tr><tr><td style="padding:20px 36px 28px;border-top:1px solid #d5d7d4;font:12px/1.6 Arial,sans-serif;color:'.$muted.'">'
