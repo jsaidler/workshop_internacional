@@ -74,7 +74,7 @@ test.describe('real application: reviews and communications',()=>{
    await student.screenshot({path:info.outputPath('newsletter-opt-in-mobile.png')});
    await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId);
    await expect(admin.getByRole('heading',{name:'Envio de e-mails'})).toBeVisible();
-   await expect(admin.getByText('E-mail da hospedagem')).toBeVisible();
+   await expect(admin.getByText('Meio de envio: E-mail da hospedagem',{exact:true})).toBeVisible();
    await expect(admin.getByText('Sem execução registrada.',{exact:false})).toBeVisible();
    await expect(admin.locator('body')).not.toContainText('BREVO_API_KEY');
    const senderForm=admin.locator('form').filter({has:admin.locator('input[name="action"][value="mail_settings"]')});
