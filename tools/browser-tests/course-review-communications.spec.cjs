@@ -244,7 +244,13 @@ test.describe('real application: reviews and communications',()=>{
    expect(delivered.deliveries.filter(row=>row.status==='skipped')).toHaveLength(1);
    const capturedEmail=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
    expect(capturedEmail).toContain('student-qa@example.test');
-   expect(capturedEmail).toContain('Teste de envio imediato pela fila do CMS.');
+   // Rich HTML emails use multipart/alternative with a Base64 text/plain part.
+   // Inspect decoded message content, not raw MIME transport bytes.
+   function decodedPlainMessages(raw){
+     const parts=[...raw.matchAll(/Content-Type: text\/plain; charset=UTF-8\r?\nContent-Transfer-Encoding: base64\r?\n\r?\n([A-Za-z0-9+/=\r\n]+)/gi)];
+     return parts.map(part=>Buffer.from(part[1].replace(/\s+/g,''),'base64').toString('utf8')).join('\n');
+   }
+   expect(decodedPlainMessages(capturedEmail)).toContain('Teste de envio imediato pela fila do CMS.');
    // Um envio enfileirado anteriormente precisa poder ser disparado pelo botão global.
    await admin.getByRole('link',{name:'Nova mensagem'}).click();
    await admin.locator('select[name="category"]').selectOption('newsletter');
@@ -262,7 +268,7 @@ test.describe('real application: reviews and communications',()=>{
    expect(resent.deliveries).toHaveLength(3);
    expect(resent.deliveries.filter(row=>row.status==='sent')).toHaveLength(2);
    expect(resent.deliveries.filter(row=>row.status==='skipped')).toHaveLength(1);
-   expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toContain('Mensagem pendente enviada manualmente.');
+   expect(decodedPlainMessages(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8'))).toContain('Mensagem pendente enviada manualmente.');
    execFileSync('php',[seed,sandbox,'student-action'],{encoding:'utf8',timeout:45000});
    const afterAction=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(afterAction.staff_notices).toHaveLength(1);
