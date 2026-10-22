@@ -301,6 +301,7 @@ test.describe('real application: reviews and communications',()=>{
    await unsubscribe.close();
    // Real authenticated page: inspect the library under the CMS security policy.
    const capturedBeforeBuilder=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   await admin.setViewportSize({width:1440,height:900});
    await admin.goto(origin+'/admin/communications-builder-lab.php?activity='+fixture.activityId);
    await expect(admin.locator('[data-communications-email-lab]')).toBeVisible();
    await expect.poll(()=>admin.evaluate(()=>Boolean(window.__communicationsEmailLab?.ready))).toBe(true);
@@ -310,7 +311,13 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-lab-status]')).toContainText('nenhum e-mail foi enviado');
    await admin.screenshot({path:info.outputPath('email-builder-real-admin-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
+   await expect(admin.locator('[data-lab-inspector-toggle]')).toBeVisible();
+   await expect(admin.locator('.gjs-pn-views-container')).toBeHidden();
    await admin.screenshot({path:info.outputPath('email-builder-real-admin-mobile.png')});
+   await admin.locator('[data-lab-inspector-toggle]').click();
+   await expect(admin.locator('[data-lab-inspector-toggle]')).toHaveAttribute('aria-pressed','true');
+   await expect(admin.locator('.gjs-pn-views-container')).toBeVisible();
+   await admin.screenshot({path:info.outputPath('email-builder-real-admin-mobile-inspector.png')});
    expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toBe(capturedBeforeBuilder);
    expect(errors).toEqual([]);
    await studentCtx.close();await adminCtx.close();
