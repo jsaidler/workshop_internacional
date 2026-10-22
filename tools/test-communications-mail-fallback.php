@@ -7,7 +7,7 @@ function utc_now():string{return gmdate('Y-m-d\TH:i:s\Z');}
 function app_config():array {return [
     'app_secret'=>str_repeat('a',40),
     'site_name'=>'Curso de fotografia',
-    'public_url'=>'https://example.test',
+    'public_url'=>'',
 ];}
 putenv('BREVO_API_KEY=');
 putenv('BREVO_FROM_EMAIL=');
@@ -17,6 +17,7 @@ $db=new PDO('sqlite::memory:',null,null,[
 ]);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
 require dirname(__DIR__).'/app/communications_brevo_credentials.php';
+require dirname(__DIR__).'/app/communications_site_url.php';
 require dirname(__DIR__).'/app/communications.php';
 mail_check(communication_mail_status($db)['transport']==='php','PHP mail should be default without Brevo');
 mail_check(communication_mail_status($db)['transport_label']==='E-mail da hospedagem','provider label must not expose env names');
@@ -27,6 +28,11 @@ mail_check($settings['sender_name']==='João Saidler','sender name stored');
 mail_check($settings['sender_email']==='notificacoes@example.test','sender email stored');
 mail_check(communication_mail_status($db)['transport']==='php','saved sender cannot silently require Brevo');
 mail_check(communication_mail_status($db)['sender_configured']===true,'UI can display sender readiness');
+putenv('BREVO_API_KEY=xkeysib-fixture-only');
+mail_check(communication_provider_configuration($db)['from']==='notificacoes@example.test','Brevo transactional setup must not require public_url');
+mail_check(communication_mail_status($db)['transport']==='brevo','API selected with valid sender, even if URL missing');
+putenv('BREVO_API_KEY=');
+
 $invalid=false;
 try{communication_sender_save($db,['sender_email'=>'invalid']);}catch(RuntimeException){$invalid=true;}
 mail_check($invalid,'invalid email rejected');
