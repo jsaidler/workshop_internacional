@@ -1,5 +1,13 @@
 # Comunicações por e-mail — operação
 
+## Laboratório do construtor visual profissional — 22/10/2026 (branch experimental)
+
+A experiência anterior, `contenteditable` e `document.execCommand`, é insuficiente para compor visualmente e-mails. Por decisão editorial, a alternativa em avaliação é **GrapesJS 0.23.5 + grapesjs-mjml 1.0.8**, compilados por esbuild 0.25.12 em assets locais. A interface experimental autenticada `/admin/communications-builder-lab.php` permite organizar blocos, adicionar duas colunas, texto, botões, imagens da Biblioteca pública, alternar larguras, desfazer/refazer, exportar e conferir a prévia do HTML gerado pelo MJML. A página não salva rascunhos, não chama serviços de e-mail e não substitui o editor em produção.
+
+Diferente de um editor genérico de textos, o GrapesJS/MJML mantém a fonte editável em formato MJML e produz HTML separado, adequado às estruturas de e-mail. O formato atual `communication_safe_html()` **não pode receber diretamente** o HTML compilado, pois remove tabelas/estilos. A futura integração exige migration de projeto estruturado versionado, validador e compilador de confiança no servidor, associação por ID à Biblioteca, sanitização dos estilos, manutenção da prévia e round-trip dos rascunhos antigos. Não se considera seguro habilitar salvamento/envio da saída apenas pela validação feita no navegador. A verificação de imagens e links na versão experimental é apenas prévia; não é garantia de segurança de entrega.
+
+Build isolado: `npm install --no-audit --no-fund && npm run build:email-lab`, que produz `assets/vendor/email-builder/lab.js` e `grapes.min.css` para distribuição estática; nenhum Node é necessário na hospedagem. O navegador e as duas visualizações devem passar em QA antes de promover o editor ao fluxo de campanhas. A área existente de Mensagens permanece sem alteração de esquema, audiências, consentimento, transporte, estados ou entregas.
+
 ## Enviar agora e cancelar a fila — 22/10/2026 (PR em revisão)
 
 A aba **Avisos dos alunos** também oferece **Enviar avisos agora**, **Cancelar avisos pendentes** e **Reprocessar falhas**. O envio manual não requer cron e processa exclusivamente avisos destinados ao administrador autenticado. Usa o mesmo lock do worker agendado e um destinatário por requisição. Cancelamentos preservam histórico com estado ignorado e motivo identificado. Uma falha de transporte ou interrupção pode ocorrer depois do aceite externo; esses itens não são reenviados automaticamente, e a repetição exige confirmação expressa devido ao risco de duplicação. A página deve permanecer aberta até concluir os lotes. O cron é opcional também para avisos.
