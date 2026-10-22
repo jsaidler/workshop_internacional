@@ -32,6 +32,7 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
     <button type="button" data-lab-redo>Refazer</button>
     <button type="button" data-lab-desktop>Computador</button>
     <button type="button" data-lab-mobile>Celular</button>
+    <button type="button" data-lab-inspector-toggle aria-pressed="false" class="email-lab-inspector-toggle">Estilos</button>
     <button type="button" data-lab-reopen>Testar reabertura</button>
     <button type="button" data-lab-export class="email-lab-primary">Gerar prévia</button>
   </div>
