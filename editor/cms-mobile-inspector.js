@@ -17,7 +17,7 @@ function update(){
       inspector.classList.remove('cms-mobile-collapsed');
       content().forEach(node=>{node.inert=false});
       control()?.remove();
-      if(!mobile.matches)collapsed=false;
+      collapsed=false;
       lastSection=section||null;
       return;
     }
@@ -27,7 +27,7 @@ function update(){
     if(!bar){
       bar=document.createElement('div');
       bar.className='cms-mobile-inspector-header';
-      bar.innerHTML='<span class="cms-mobile-inspector-name" id="cms-mobile-inspector-title">Propriedades</span><button type="button" class="cms-mobile-inspector-toggle" aria-controls="inspector" aria-expanded="true">Recolher</button>';
+      bar.innerHTML='<span class="cms-mobile-inspector-name" id="cms-mobile-inspector-title">Propriedades</span><button type="button" class="cms-mobile-inspector-toggle" aria-expanded="true">Recolher</button>';
       inspector.prepend(bar);
       bar.querySelector('button').addEventListener('click',()=>{
         collapsed=!collapsed;
