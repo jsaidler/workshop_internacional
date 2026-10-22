@@ -304,6 +304,7 @@ test.describe('real application: reviews and communications',()=>{
    await admin.setViewportSize({width:1440,height:900});
    await admin.goto(origin+'/admin/communications-builder-lab.php?activity='+fixture.activityId);
    await expect(admin.locator('[data-communications-email-lab]')).toBeVisible();
+   await expect.poll(()=>admin.locator('[data-lab-blocks] .gjs-block').count()).toBeGreaterThan(1);
    await expect.poll(()=>admin.evaluate(()=>Boolean(window.__communicationsEmailLab?.ready))).toBe(true);
    await admin.locator('[data-lab-add-columns]').click();
    await expect.poll(()=>admin.evaluate(()=>window.__communicationsEmailLab.editor.getHtml().match(/<mj-column\b/g)?.length||0)).toBeGreaterThanOrEqual(3);
@@ -312,11 +313,13 @@ test.describe('real application: reviews and communications',()=>{
    await admin.screenshot({path:info.outputPath('email-builder-real-admin-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
    await expect(admin.locator('[data-lab-inspector-toggle]')).toBeVisible();
-   await expect(admin.locator('.gjs-pn-views-container')).toBeHidden();
+   await expect(admin.locator('[data-lab-blocks-panel]')).toBeVisible();
+   await expect(admin.locator('[data-lab-styles-panel]')).toBeHidden();
    await admin.screenshot({path:info.outputPath('email-builder-real-admin-mobile.png')});
    await admin.locator('[data-lab-inspector-toggle]').click();
    await expect(admin.locator('[data-lab-inspector-toggle]')).toHaveAttribute('aria-pressed','true');
-   await expect(admin.locator('.gjs-pn-views-container')).toBeVisible();
+   await expect(admin.locator('[data-lab-styles-panel]')).toBeVisible();
+   await expect(admin.locator('[data-lab-blocks-panel]')).toBeHidden();
    await admin.screenshot({path:info.outputPath('email-builder-real-admin-mobile-inspector.png')});
    expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toBe(capturedBeforeBuilder);
    expect(errors).toEqual([]);
