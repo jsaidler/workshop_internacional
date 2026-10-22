@@ -1,5 +1,13 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Diagnóstico e reorganização de Comunicações — 22/10/2026
+
+### Correção de Comunicações e URL de site — 22/10/2026 (PR atual)
+
+A antiga tela expunha ao administrador o erro técnico `Configure public_url como endereço HTTPS` ao enviar teste Brevo. O adaptador de e-mail externo erroneamente exigia a URL pública para autenticar e enviar mensagem simples; newsletter necessita dessa URL apenas para o link de descadastro. A correção central removeu a dependência de URL do envio Brevo, criou a migração 107 (`communication_site_origin`, administrável pelo CMS, validado HTTPS, compatível com `config/local.php` sem Host header) e manteve links em newsletter e avisos gerados a partir da origem validada. Newsletter nova sem URL é impedida de entrar na fila; newsletters já enfileiradas aguardam configuração sem consumir tentativas. A página de Comunicações foi dividida em quatro áreas autônomas: Visão geral, Avisos dos alunos, Mensagens e Configuração. Design usa primitivas existentes e CSS de feature em `assets/admin-operations.css`. A mudança não altera públicos-alvo, consentimento nem preferências; serviços API continuam atrás de autenticação e CSRF. Testes de validação HTTPS, ausência de URL, formulários, fila e integração visual foram adicionados. Publicação de pacote não equivale a instalação ou entrega real.
+
+
+
 ## Brevo configurável na administração — 22/10/2026 (PR em desenvolvimento)
 
 Objetivo do usuário: configurar a integração com o provedor externo sem editar arquivos na hospedagem. A lacuna anterior era crítica: o formulário de remetente não aceitava a chave API. O CMS agora possui configuração Brevo diretamente em **Admin → Comunicações**: salvar e substituir chave API, teste de autenticação sem enviar mensagem, remoção e envio de teste. O campo de segredo permanece vazio e não expõe o valor. O sender name passado à API passa a ser o do formulário administrativo.

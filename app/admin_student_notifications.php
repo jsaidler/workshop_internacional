@@ -62,7 +62,7 @@ function admin_student_notice_target(PDO $db,array $row): ?array {
     $q->execute([$targetId,(int)$row['student_id'],(int)$row['cohort_id']]);
     return $q->fetch(PDO::FETCH_ASSOC)?:null;
 }
-function admin_student_notice_message(array $job,array $target): array {
+function admin_student_notice_message(array $job,array $target,?PDO $db=null): array {
     $kind=(string)$job['event_kind'];$labels=[
        'question_created'=>'Nova dúvida',
        'question_replied'=>'Resposta de aluno em dúvida',
@@ -75,7 +75,7 @@ function admin_student_notice_message(array $job,array $target): array {
     $url=in_array($kind,['question_created','question_replied'],true)?
        '/admin/questions.php?'.http_build_query($params+['id'=>(int)$target['id']]):
        '/admin/tests.php?'.http_build_query($params+['test'=>(int)$target['id']]);
-    $site=rtrim((string)(app_config()['public_url']??''),'/');
+    $site=$db?communication_site_url($db):rtrim((string)(app_config()['public_url']??''),'/');
     $link=preg_match('~^https://[^/]+~i',$site)?$site.$url:$url;
     $body=$heading."\n\nAluno: ".$name."\nCurso: ".$job['course_title'].
         "\nTurma: ".$job['cohort_title']."\nItem: ".$target['title'].
@@ -126,7 +126,7 @@ SQL;
             $change->execute(['skipped',null,'ineligible',null,utc_now(),(int)$job['id']]);$result['skipped']++;continue;
         }
         try{
-            $receipt=$sender(admin_student_notice_message($job,$target));
+            $receipt=$sender(admin_student_notice_message($job,$target,$db));
             $change->execute(['sent',substr((string)($receipt['id']??''),0,240),null,utc_now(),utc_now(),(int)$job['id']]);
             $result['sent']++;
         }catch(Throwable $e){

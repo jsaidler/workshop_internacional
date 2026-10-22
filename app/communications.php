@@ -200,10 +200,8 @@ function communication_provider_configuration(?PDO $db=null): array {
     $key=$db?communication_brevo_key($db):trim((string)($config['brevo_api_key']??getenv('BREVO_API_KEY')?:''));
     $sender=$db?communication_sender_settings($db):null;
     $from=$sender!==null?$sender['sender_email']:trim((string)($config['email_from']??getenv('BREVO_FROM_EMAIL')?:''));
-    $site=trim((string)($config['public_url']??''));
-    if($key===''||!filter_var($from,FILTER_VALIDATE_EMAIL))throw new RuntimeException('O serviço externo não está configurado. É possível usar o e-mail da hospedagem.');
-    if(!preg_match('~^https://[^/]+~i',$site))throw new RuntimeException('Configure public_url como endereço HTTPS.');
-    return ['key'=>$key,'from'=>$from,'site'=>rtrim($site,'/'),'name'=>$sender!==null?$sender['sender_name']:(string)($config['site_name']??'Fotografia')];
+    if($key===''||!filter_var($from,FILTER_VALIDATE_EMAIL))throw new RuntimeException('Configure um remetente válido em Envio de e-mails.');
+    return ['key'=>$key,'from'=>$from,'name'=>$sender!==null?$sender['sender_name']:(string)($config['site_name']??'Fotografia')];
 }
 function communication_send_brevo(array $payload,?PDO $db=null): array {
     $cfg=communication_provider_configuration($db);
@@ -234,14 +232,15 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
     $daily->execute([$from]);
     $limit=min($limit,max(0,$dailyLimit-(int)$daily->fetchColumn()));
     if($limit===0)return ['sent'=>0,'skipped'=>0,'failed'=>0];
-    $jobs=course_agenda_with_lock($db,static function() use($db,$limit): array {
+    $allowNewsletter=communication_site_url($db)!=='';
+    $jobs=course_agenda_with_lock($db,static function() use($db,$limit,$allowNewsletter): array {
         $stale=gmdate('Y-m-d\TH:i:s\Z',time()-1800);
         $db->prepare("UPDATE communication_deliveries SET status='pending' WHERE status='processing' AND attempts<3 AND updated_at<?")->execute([$stale]);
         $db->prepare("UPDATE communication_deliveries SET status='failed',error_code='processing_timeout' WHERE status='processing' AND attempts>=3 AND updated_at<?")->execute([$stale]);
         $q=$db->prepare("SELECT d.id,d.campaign_id,d.student_id,c.activity_id,c.category,c.course_id,c.cohort_id,c.subject,c.body_text,u.name,u.email
           FROM communication_deliveries d JOIN communication_campaigns c ON c.id=d.campaign_id
           JOIN student_users u ON u.id=d.student_id WHERE d.status='pending' AND d.attempts<3
-          AND c.status='queued' ORDER BY d.id LIMIT ?");
+          AND c.status='queued' ".($allowNewsletter?'':"AND c.category!='newsletter' ")."ORDER BY d.id LIMIT ?");
         $q->bindValue(1,$limit,PDO::PARAM_INT);$q->execute();$rows=$q->fetchAll();
         $mark=$db->prepare("UPDATE communication_deliveries SET status='processing',attempts=attempts+1,updated_at=? WHERE id=? AND status='pending'");
         foreach($rows as $row)$mark->execute([utc_now(),(int)$row['id']]);
@@ -262,8 +261,8 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): a
         }
         $body=(string)$job['body_text'];
         if($job['category']==='newsletter'){
-            $config=app_config();$site=rtrim((string)($config['public_url']??''),'/');
-            if(!str_starts_with($site,'https://'))throw new RuntimeException('Configure public_url HTTPS antes do envio.');
+            $site=communication_site_url($db);
+            if($site==='')throw new RuntimeException('Defina o endereço do site em Comunicações → Configuração antes de enviar newsletter.');
             $body.="\n\nPara deixar de receber novidades: ".$site.'/newsletter-sair.php?token='.rawurlencode(communication_unsubscribe_token((int)$job['student_id'],(string)$job['email']));
         }
         try{

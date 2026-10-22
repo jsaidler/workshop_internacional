@@ -23,6 +23,7 @@ INSERT INTO course_cohorts(id,course_id,title) VALUES(10,7,'Turma A');
 INSERT INTO student_questions(id,student_id,cohort_id,title,body) VALUES(11,1,10,'O branqueamento','CONTEXTO PRIVADO DO ALUNO'),(12,2,10,'Óptica','CONTEUDO PRIVADO');
 INSERT INTO student_tests(id,student_id,cohort_id,title,status) VALUES(21,1,10,'Resultado experimental','submitted');
 SQL);
+require dirname(__DIR__).'/app/communications_site_url.php';
 require dirname(__DIR__).'/app/admin_student_notifications.php';
 (require dirname(__DIR__).'/migrations/104_admin_student_action_notifications.php')($db);
 notify_assert(admin_student_notice_available($db),'migration missing');

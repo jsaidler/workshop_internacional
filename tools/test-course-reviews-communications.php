@@ -55,6 +55,7 @@ SQL);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
 require dirname(__DIR__).'/app/course_reviews.php';
 require dirname(__DIR__).'/app/communications_brevo_credentials.php';
+require dirname(__DIR__).'/app/communications_site_url.php';
 require dirname(__DIR__).'/app/communications.php';
 check_feature(communication_mail_status($db)['transport']==='brevo','configured external mail remains usable');
 $senderBefore=communication_sender_settings($db);

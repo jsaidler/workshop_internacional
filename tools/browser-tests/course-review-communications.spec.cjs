@@ -26,7 +26,7 @@ test.describe('real application: reviews and communications',()=>{
    fs.writeFileSync(path.join(sandbox,'storage/installed.lock'),'isolated test');
    fs.writeFileSync(path.join(sandbox,'storage/database.sqlite'),'');
    fs.writeFileSync(path.join(sandbox,'config/local.php'),
-     "<?php return ['app_secret'=>'"+'a'.repeat(64)+"','ip_hash_secret'=>'"+'b'.repeat(64)+"','site_name'=>'QA Site','public_url'=>'https://example.test','timezone'=>'UTC'];\n");
+     "<?php return ['app_secret'=>'"+'a'.repeat(64)+"','ip_hash_secret'=>'"+'b'.repeat(64)+"','site_name'=>'QA Site','public_url'=>'','timezone'=>'UTC'];\n");
    fixture=JSON.parse(execFileSync('php',[seed,sandbox,'seed'],{encoding:'utf8',timeout:60000}));
    const port=await freePort();origin='http://127.0.0.1:'+port;
    log=fs.openSync(path.join(sandbox,'server.log'),'w');
@@ -73,7 +73,16 @@ test.describe('real application: reviews and communications',()=>{
    await expect(student.locator('input[name="newsletter_opt_in"]')).toBeChecked();
    await student.screenshot({path:info.outputPath('newsletter-opt-in-mobile.png')});
    await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId);
-   await expect(admin.getByRole('heading',{name:'Envio de e-mails'})).toBeVisible();
+   await expect(admin.getByRole('heading',{name:'Visão geral'})).toBeVisible();
+   await expect(admin.getByRole('navigation',{name:'Áreas de comunicações'}).getByRole('link')).toHaveCount(4);
+   await expect(admin.getByText('Endereço do site não definido.')).toBeVisible();
+   await admin.getByRole('navigation',{name:'Áreas de comunicações'}).getByRole('link',{name:'Configuração'}).click();
+   await expect(admin.getByRole('heading',{name:'Endereço do site'})).toBeVisible();
+   const siteForm=admin.locator('form').filter({has:admin.locator('input[name="action"][value="site_url_save"]')});
+   await siteForm.locator('input[name="public_url"]').fill('https://example.test');
+   await siteForm.getByRole('button',{name:'Salvar endereço'}).click();
+   await expect(siteForm.locator('input[name="public_url"]')).toHaveValue('https://example.test');
+   await expect(admin.getByRole('heading',{name:'Brevo'})).toBeVisible();
    await expect(admin.getByRole('heading',{name:'Brevo'})).toBeVisible();
    const brevoForm=admin.locator('form').filter({has:admin.locator('input[name="action"][value="brevo_save"]')});
    const brevoKey=brevoForm.locator('input[name="brevo_api_key"]');
@@ -85,8 +94,8 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.getByText('Cole uma chave API v3 válida do Brevo.')).toBeVisible();
    await expect(brevoKey).toHaveValue('');
    await expect(admin.getByText('Não conectado')).toBeVisible();
-   await expect(admin.getByText('Meio de envio: E-mail da hospedagem',{exact:true})).toBeVisible();
-   await expect(admin.getByText('Sem execução registrada.',{exact:false})).toBeVisible();
+   await expect(admin.getByText('Serviço atual: E-mail da hospedagem',{exact:true})).toBeVisible();
+   await expect(admin.locator('.comms-automation')).toContainText('Nenhuma registrada');
    await expect(admin.locator('body')).not.toContainText('BREVO_API_KEY');
    const senderForm=admin.locator('form').filter({has:admin.locator('input[name="action"][value="mail_settings"]')});
    await senderForm.locator('input[name="sender_name"]').fill('Ateliê fotográfico');
@@ -100,7 +109,7 @@ test.describe('real application: reviews and communications',()=>{
    expect(result.saved).toBe(true);
    await admin.reload();
    await expect(admin.getByText('Chave cadastrada')).toBeVisible();
-   await expect(admin.getByText('Meio de envio: Brevo',{exact:true})).toBeVisible();
+   await expect(admin.getByText('Serviço atual: Brevo',{exact:true})).toBeVisible();
    await expect(admin.getByRole('button',{name:'Testar conexão'})).toBeVisible();
    await expect(admin.getByRole('button',{name:'Substituir chave'})).toBeVisible();
    await expect(brevoKey).toHaveValue('');
@@ -109,15 +118,17 @@ test.describe('real application: reviews and communications',()=>{
    admin.once('dialog',dialog=>dialog.accept());
    await admin.getByRole('button',{name:'Remover chave'}).click();
    await expect(admin.getByText('Não conectado')).toBeVisible();
-   await expect(admin.getByText('Meio de envio: E-mail da hospedagem',{exact:true})).toBeVisible();
-   await expect(admin.getByRole('heading',{name:'Avisos sobre atividades dos alunos'})).toBeVisible();
+   await expect(admin.getByText('Serviço atual: E-mail da hospedagem',{exact:true})).toBeVisible();
+   await admin.getByRole('navigation',{name:'Áreas de comunicações'}).getByRole('link',{name:'Avisos dos alunos'}).click();
+   await expect(admin.getByRole('heading',{name:'Notificações'})).toBeVisible();
    const alerts=admin.locator('form').filter({has:admin.locator('input[name="action"][value="admin_notice_preferences"]')});
    await expect(alerts.locator('input[name="alerts[question_created]"]')).toBeChecked();
    await alerts.locator('input[name="alerts[test_commented]"]').uncheck();
    await alerts.getByRole('button',{name:'Salvar avisos'}).click();
    await expect(alerts.locator('input[name="alerts[test_commented]"]')).not.toBeChecked();
    await admin.screenshot({path:info.outputPath('staff-notifications-desktop.png')});
-   await expect(admin.getByRole('heading',{name:'Comunicações',level:2,exact:true})).toBeVisible();
+   await admin.getByRole('navigation',{name:'Áreas de comunicações'}).getByRole('link',{name:'Mensagens'}).click();
+   await expect(admin.getByRole('heading',{name:'Mensagens'})).toBeVisible();
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Nova atividade de fotografia');
@@ -131,6 +142,11 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.getByText(/e-mail\(s\) incluído\(s\) na fila/)).toBeVisible();
    await admin.screenshot({path:info.outputPath('communications-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
+   await admin.evaluate(()=>window.scrollTo(0,0));
+   const mobileTabs=admin.getByRole('navigation',{name:'Áreas de comunicações'});
+   for(const label of ['Visão geral','Avisos dos alunos','Mensagens','Configuração']){
+     await expect(mobileTabs.getByRole('link',{name:label})).toBeInViewport();
+   }
    await admin.screenshot({path:info.outputPath('communications-mobile.png')});
    const data=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(data.reviews).toHaveLength(1);
