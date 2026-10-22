@@ -39,7 +39,7 @@ jobs:
           PID=$!
           trap 'kill $PID' EXIT
           sleep 1
-          npx playwright test tools/browser-tests/editor-editorial-integrity.spec.cjs tools/browser-tests/editor-component-items.spec.cjs --workers=1
+          npx playwright test tools/browser-tests/editor-editorial-integrity.spec.cjs tools/browser-tests/editor-component-items.spec.cjs tools/browser-tests/editor-history-transactions.spec.cjs --workers=1
       - name: Upload focused visual and failures
         if: always()
         uses: actions/upload-artifact@v4
