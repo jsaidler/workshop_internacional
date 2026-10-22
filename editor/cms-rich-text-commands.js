@@ -45,12 +45,16 @@ function lift(marker,editable,touched){
     const parent=marker.parentNode;
     const trailing=parent.cloneNode(false);
     touched.add(parent);touched.add(trailing);
-    // A split hyperlink may need multiple anchors, but IDs must remain unique.
-    trailing.removeAttribute('id');
+    // Keep unique CMS node identifiers on the first surviving fragment.
     while(marker.nextSibling)trailing.appendChild(marker.nextSibling);
+    const hasPrefix=[...parent.childNodes].some(child=>child!==marker&&(child.nodeType!==3||child.textContent.length>0));
+    if(hasPrefix){
+      trailing.removeAttribute('id');
+      trailing.removeAttribute('data-cms-node-id');
+    }
     parent.after(marker);
     if(trailing.hasChildNodes())marker.after(trailing);
-    if(!parent.hasChildNodes())parent.remove();
+    if(!hasPrefix)parent.remove();
   }
 }
 function strip(container,selector){
