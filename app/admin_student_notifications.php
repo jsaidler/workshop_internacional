@@ -170,6 +170,15 @@ function admin_student_notice_cancel_pending(PDO $db,int $adminId): int {
         $q->execute([utc_now(),$adminId]);return $q->rowCount();
     });
 }
+/** Explicit requeue only: ambiguous provider outcomes must be checked before retry. */
+function admin_student_notice_retry_failed(PDO $db,int $adminId): int {
+    return course_agenda_with_lock($db,static function()use($db,$adminId):int{
+        $q=$db->prepare("UPDATE admin_student_notice_outbox
+          SET status='pending',attempts=0,error_code=NULL,updated_at=?
+          WHERE admin_id=? AND status='failed'");
+        $q->execute([utc_now(),$adminId]);return $q->rowCount();
+    });
+}
 function admin_student_notice_dispatch_manual(PDO $db,int $adminId,?callable $sender=null): array {
     $lock=@fopen(dirname(__DIR__).'/storage/communications-worker.lock','c+');
     if(!$lock)throw new RuntimeException('Não foi possível acessar o controle de envio.');
