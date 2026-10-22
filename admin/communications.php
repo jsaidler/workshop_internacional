@@ -3,6 +3,7 @@ declare(strict_types=1);
 require __DIR__.'/../app/bootstrap.php';
 require __DIR__.'/../app/admin_shell.php';
 security_headers();require_admin();
+header('Cache-Control: private, no-store, max-age=0');
 $db=database();$state=admin_activity_resolution($db);$activity=$state['activity'];
 if(!$activity){header('Location: /admin/activities.php',true,303);exit;}
 $activityId=(int)$activity['id'];$error='';$preview=null;$notice='';
@@ -17,7 +18,18 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('communications-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Solicitação inválida.');}
     $action=(string)($_POST['action']??'');
     try{
-        if($action==='mail_settings'){
+        if($action==='brevo_save'){
+            communication_brevo_save($db,(string)($_POST['brevo_api_key']??''));
+            $_SESSION['communications_notice']='Brevo conectado. A chave foi salva com segurança.';
+            header('Location: /admin/communications.php?activity='.$activityId,true,303);exit;
+        }elseif($action==='brevo_check'){
+            communication_brevo_check_connection($db);
+            $notice='Conexão com o Brevo confirmada.';
+        }elseif($action==='brevo_remove'){
+            communication_brevo_remove($db);
+            $_SESSION['communications_notice']='Chave salva removida. Confira o meio de envio ativo.';
+            header('Location: /admin/communications.php?activity='.$activityId,true,303);exit;
+        }elseif($action==='mail_settings'){
             communication_sender_save($db,$_POST);
             $_SESSION['communications_notice']='Remetente salvo. Envie um teste para confirmar o funcionamento.';
             header('Location: /admin/communications.php?activity='.$activityId,true,303);exit;
@@ -82,6 +94,7 @@ foreach($courses as $course)foreach(course_cohorts_for_course($db,(int)$course['
  'label'=>(string)$course['title'].' — '.(string)$cohort['title']
 ];
 $mailSettings=communication_sender_settings($db);
+$brevoSettings=communication_brevo_public_status($db);
 $mailStatus=communication_mail_status($db);
 $worker=communication_worker_status($db);
 $workerLast=$worker['last_finished_at']??null;
@@ -99,7 +112,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <?php if($error!==''):?><p class="admin-notice error" role="alert"><?=h($error)?></p><?php endif;?>
 <section class="admin-card admin-teaching-detail">
   <header><div><h2>Comunicações</h2><p>Notificações dos alunos, avisos de curso e newsletter.</p></div></header>
-  <p>O e-mail do servidor pode ser usado sem contratar outro serviço. Antes de enviar mensagens aos alunos, confirme o remetente e faça um teste de recebimento.</p>
+  <p>Configure o serviço de envio e confira os avisos que precisam de atenção.</p>
 </section>
 <section class="admin-card admin-release-card" aria-labelledby="mail-settings-heading">
   <header><div><h2 id="mail-settings-heading">Envio de e-mails</h2>
@@ -108,8 +121,36 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
   <?php if($mailStatus['transport']==='php'):?>
   <p class="muted">O site usará o serviço de e-mail da hospedagem. Não precisa de chave de API. A entrega depende das condições desse serviço.</p>
   <?php else:?>
-  <p class="muted">O serviço externo já foi configurado no servidor. O remetente deve estar autorizado por esse serviço.</p>
+  <p class="muted">Use um remetente autorizado na Brevo. Depois, envie um teste para confirmar o recebimento.</p>
   <?php endif;?>
+  <section aria-labelledby="brevo-heading">
+    <h3 id="brevo-heading">Brevo</h3>
+    <p><strong>Conexão:</strong> <?=($brevoSettings['configured']?'Chave cadastrada':'Não conectado')?></p>
+    <?php if($brevoSettings['configured']):?>
+    <p class="muted">A chave está protegida e não será exibida novamente. Você pode substituí-la ou testar a conexão.</p>
+    <?php else:?>
+    <p class="muted">Cole a chave API v3 para ativar o Brevo.</p>
+    <?php endif;?>
+    <form method="post" class="admin-form-grid" autocomplete="off">
+      <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+      <input type="hidden" name="action" value="brevo_save">
+      <label class="admin-form-span-2">Chave API do Brevo
+        <input type="password" name="brevo_api_key" value="" maxlength="512" autocomplete="new-password" spellcheck="false" required placeholder="<?=($brevoSettings['configured']?'Substituir chave cadastrada':'Cole sua chave API')?>">
+      </label>
+      <div class="admin-form-actions">
+        <button type="submit" class="admin-button"><?=($brevoSettings['configured']?'Substituir chave':'Conectar Brevo')?></button>
+      </div>
+    </form>
+    <?php if($brevoSettings['configured']):?>
+    <form method="post" class="admin-form-actions">
+      <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+      <button type="submit" name="action" value="brevo_check" class="admin-button secondary">Testar conexão</button>
+      <?php if($brevoSettings['managed_in_cms']):?>
+      <button type="submit" name="action" value="brevo_remove" class="admin-button secondary" data-confirm="Remover a chave salva do Brevo?">Remover chave</button>
+      <?php endif;?>
+    </form>
+    <?php endif;?>
+  </section>
   <form method="post" class="admin-form-grid">
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
     <input type="hidden" name="action" value="mail_settings">

@@ -54,6 +54,7 @@ SQL);
 (require dirname(__DIR__).'/migrations/103_communications.php')($db);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
 require dirname(__DIR__).'/app/course_reviews.php';
+require dirname(__DIR__).'/app/communications_brevo_credentials.php';
 require dirname(__DIR__).'/app/communications.php';
 check_feature(communication_mail_status($db)['transport']==='brevo','configured external mail remains usable');
 $senderBefore=communication_sender_settings($db);
@@ -62,6 +63,7 @@ communication_sender_save($db,['sender_name'=>'Laboratório Saidler','sender_ema
 check_feature(communication_sender_settings($db)['sender_email']==='avisos@example.test','sender updated through CMS');
 check_feature(communication_mail_status($db)['sender_name']==='Laboratório Saidler','sender name persisted');
 check_feature(communication_provider_configuration($db)['from']==='avisos@example.test','external sender override');
+check_feature(communication_provider_configuration($db)['name']==='Laboratório Saidler','configured sender name reaches Brevo API');
 $invalidSender=false;
 try{communication_sender_save($db,['sender_email'=>"mail@example.test\r\nBCC: anyone@example.test"]);}catch(RuntimeException){$invalidSender=true;}
 check_feature($invalidSender,'reject mail header injection');

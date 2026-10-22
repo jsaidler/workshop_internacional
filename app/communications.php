@@ -148,12 +148,13 @@ function communication_sender_save(PDO $db,array $input): void {
 function communication_mail_status(PDO $db): array {
     $settings=communication_sender_settings($db);
     $cfg=app_config();
-    $key=trim((string)($cfg['brevo_api_key']??getenv('BREVO_API_KEY')?:''));
-    $brevoReady=$key!==''&&filter_var($settings['sender_email'],FILTER_VALIDATE_EMAIL)!==false;
+    $brevo=communication_brevo_public_status($db);
+    $brevoReady=$brevo['configured'];
+    $senderValid=filter_var($settings['sender_email'],FILTER_VALIDATE_EMAIL)!==false;
     return ['transport'=>$brevoReady?'brevo':'php','sender'=>$settings['sender_email'],
         'sender_name'=>$settings['sender_name'],
-        'transport_label'=>$brevoReady?'Serviço externo configurado':'E-mail da hospedagem',
-        'sender_configured'=>filter_var($settings['sender_email'],FILTER_VALIDATE_EMAIL)!==false,
+        'transport_label'=>$brevoReady?($senderValid?'Brevo':'Brevo — configure o remetente'):'E-mail da hospedagem',
+        'sender_configured'=>$senderValid,
         'server_available'=>function_exists('mail')];
 }
 function communication_send_php(PDO $db,array $payload): array {
@@ -196,12 +197,13 @@ function communication_worker_record(PDO $db,bool $started,string $error=''): vo
 
 function communication_provider_configuration(?PDO $db=null): array {
     $config=app_config();
-    $key=trim((string)($config['brevo_api_key']??getenv('BREVO_API_KEY')?:''));
-    $from=$db?communication_sender_settings($db)['sender_email']:trim((string)($config['email_from']??getenv('BREVO_FROM_EMAIL')?:''));
+    $key=$db?communication_brevo_key($db):trim((string)($config['brevo_api_key']??getenv('BREVO_API_KEY')?:''));
+    $sender=$db?communication_sender_settings($db):null;
+    $from=$sender!==null?$sender['sender_email']:trim((string)($config['email_from']??getenv('BREVO_FROM_EMAIL')?:''));
     $site=trim((string)($config['public_url']??''));
     if($key===''||!filter_var($from,FILTER_VALIDATE_EMAIL))throw new RuntimeException('O serviço externo não está configurado. É possível usar o e-mail da hospedagem.');
     if(!preg_match('~^https://[^/]+~i',$site))throw new RuntimeException('Configure public_url como endereço HTTPS.');
-    return ['key'=>$key,'from'=>$from,'site'=>rtrim($site,'/'),'name'=>(string)($config['site_name']??'Fotografia')];
+    return ['key'=>$key,'from'=>$from,'site'=>rtrim($site,'/'),'name'=>$sender!==null?$sender['sender_name']:(string)($config['site_name']??'Fotografia')];
 }
 function communication_send_brevo(array $payload,?PDO $db=null): array {
     $cfg=communication_provider_configuration($db);
