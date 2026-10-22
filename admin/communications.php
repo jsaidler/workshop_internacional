@@ -15,7 +15,7 @@ $actionTab=[
  'mail_settings'=>'settings','mail_test'=>'settings','site_url_save'=>'settings',
  'admin_notice_preferences'=>'alerts','admin_notice_test'=>'alerts',
  'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','queue_now'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns',
-  'run_queue'=>'campaigns','cancel_queue'=>'campaigns','cancel_campaign'=>'campaigns'
+  'run_queue'=>'campaigns','cancel_queue'=>'campaigns','cancel_campaign'=>'campaigns','retry_campaign'=>'campaigns'
 ];
 $selectedId=max(0,(int)($_POST['campaign_id']??$_GET['id']??0));
 $selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
@@ -84,6 +84,13 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $count=communication_cancel_queue($db,$activityId,$selectedId);
             $_SESSION['communications_notice']=$count.' envio(s) pendente(s) cancelado(s) desta mensagem. Envios já aceitos não foram alterados.';
             header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='retry_campaign'){
+            if(!$selected)throw new RuntimeException('Mensagem não encontrada.');
+            $count=communication_retry_failed($db,$activityId,$selectedId);
+            if($count===0)throw new RuntimeException('Não há falhas pendentes de reprocessamento nesta mensagem.');
+            $batch=communication_dispatch_manual($db,$activityId,1);
+            $_SESSION['communications_notice']=$count.' destinatário(s) com falha recolocado(s) na fila após sua confirmação. '.(int)$batch['sent'].' aceito(s) no primeiro lote.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId,'run'=>1]),true,303);exit;
         }elseif($action==='duplicate'){
             if(!$selected)throw new RuntimeException('Selecione uma mensagem para duplicar.');
             $id=communication_duplicate_campaign($db,$activityId,$selectedId);
@@ -528,6 +535,12 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
           <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
           <button type="submit" name="action" value="duplicate" class="admin-button secondary">Duplicar</button>
         </form>
+        <?php if((int)$campaign['failed_count']>0):?>
+        <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+          <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
+          <button type="submit" name="action" value="retry_campaign" class="admin-button secondary" data-confirm="Reprocessar somente os destinatários com falha? Confira antes no provedor: uma resposta inconclusiva pode significar que o e-mail foi aceito, e repetir o envio pode duplicá-lo.">Reprocessar falhas</button>
+        </form>
+        <?php endif;?>
         <?php if($campaign['status']==='queued' && (int)$campaign['pending_count']>0):?>
         <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
           <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
