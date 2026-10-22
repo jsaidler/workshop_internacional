@@ -108,6 +108,7 @@
 
 /* Messaging composer — task-oriented editing with visible individual recipients. */
 .comms-compose-form{display:grid;gap:24px;margin-top:22px;max-width:900px}
+.comms-compose-form [hidden]{display:none}
 .comms-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .comms-filter-grid label,.comms-compose-label,.comms-search-label{display:grid;gap:8px;font-size:12px;font-weight:600;color:var(--admin-muted)}
 .comms-filter-grid select,.comms-compose-label input,.comms-search-label input{width:100%;min-width:0}
