@@ -274,6 +274,13 @@ test.describe('real application: reviews and communications',()=>{
    expect(afterAction.staff_notices).toHaveLength(1);
    expect(afterAction.staff_notices[0].event_kind).toBe('question_created');
    expect(afterAction.staff_notices[0].status).toBe('pending');
+   // Staff alerts are a separate queue, but must also support manual dispatch.
+   await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId+'&tab=alerts');
+   await expect(admin.locator('[data-communications-alerts] [data-alerts-run]')).toBeEnabled();
+   await admin.locator('[data-communications-alerts] [data-alerts-run]').click();
+   await expect(admin.locator('[data-alerts-feedback]')).toContainText('Processamento concluído: 1 aceito(s)');
+   const sentAlert=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(sentAlert.staff_notices[0].status).toBe('sent');
    const token=execFileSync('php',[seed,sandbox,'token'],{encoding:'utf8',timeout:30000}).trim();
    const unsubscribe=await browser.newPage();
    await unsubscribe.goto(origin+'/newsletter-sair.php?token='+encodeURIComponent(token));
