@@ -27,6 +27,7 @@ function course_agenda_with_lock(PDO $db,callable $work): mixed {
 }
 function app_config(): array {
     return ['app_secret'=>str_repeat('x',40),'public_url'=>'https://example.test',
+       'email_daily_limit'=>$GLOBALS['communication_test_daily_limit']??250,
       'site_name'=>'Fotografia','email_from'=>'contato@example.test','brevo_api_key'=>'test-key'];
 }
 $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
@@ -246,6 +247,7 @@ $exhausted=communication_create_campaign($db,1,[
 ]);
 check_feature(communication_queue_campaign($db,1,$exhausted)===1,'legacy pending row queued');
 $db->exec("UPDATE communication_deliveries SET attempts=3 WHERE campaign_id=$exhausted");
+$GLOBALS['communication_test_daily_limit']=1; // already reached: cleanup must not depend on quota.
 check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0,'exhausted legacy row never sent automatically');
 check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$exhausted")->fetchColumn()==='failed','exhausted legacy row converted to failed');
 check_feature(communication_queue_summary($db,1)['pending']===0,'no permanent pending count after exhausted attempts');
