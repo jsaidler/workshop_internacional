@@ -32,6 +32,7 @@ test('GrapesJS MJML builder: real components, compilation, round trip, safe reje
   expect(first.html).toMatch(/<table\b/i);
   expect(first.html).not.toMatch(/<mj-column\b/i);
   await page.locator('[data-lab-add-columns]').click();
+  console.log('TWO-COLUMN DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({mjml:window.__communicationsEmailLab.editor.getHtml(),status:document.querySelector('[data-lab-status]')?.textContent,columns:window.__communicationsEmailLab.editor.getWrapper().find('mj-column').map(x=>x.get('tagName'))}))));
   await expect.poll(()=>page.evaluate(()=>window.__communicationsEmailLab.editor.getHtml().match(/<mj-column\b/g)?.length||0)).toBeGreaterThanOrEqual(3);
   const changed=await page.evaluate(()=>window.__communicationsEmailLab.exportEmail());
   expect(changed.errors).toEqual([]);
