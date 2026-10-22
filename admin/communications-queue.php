@@ -22,7 +22,7 @@ try{
     $activityId=(int)$state['activity']['id'];
     $action=(string)($_POST['action']??'');
     if($action==='run_queue'){
-        $outcome=communication_dispatch_manual($db,$activityId,5);
+        $outcome=communication_dispatch_manual($db,$activityId,1);
         $response=['ok'=>true,'result'=>$outcome,'queue'=>communication_queue_summary($db,$activityId)];
     }elseif($action==='cancel_queue'){
         $cancelled=communication_cancel_queue($db,$activityId);
