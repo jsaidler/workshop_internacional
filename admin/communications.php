@@ -69,7 +69,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
                'body'=>"Este é um teste do canal de avisos das ações dos alunos.\n\nO envio deste teste não corresponde a uma ação real."]);
             $notice='E-mail de teste aceito pelo mecanismo de envio. Confira sua caixa de entrada.';
         }elseif($action==='run_queue'){
-            $batch=communication_dispatch_manual($db,$activityId,5);
+            $batch=communication_dispatch_manual($db,$activityId,1);
             $summary=communication_queue_summary($db,$activityId);
             $_SESSION['communications_notice']=!empty($batch['busy'])
                 ?'Outro envio está em andamento. A fila permanece preservada.'
@@ -110,7 +110,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
                 throw new RuntimeException('Configure o endereço do site em Configuração para incluir o link de descadastro.');
             $count=communication_queue_campaign($db,$activityId,$selectedId);
             if($action==='queue_now'){
-                $batch=communication_dispatch_manual($db,$activityId,5);
+                $batch=communication_dispatch_manual($db,$activityId,1);
                 $_SESSION['communications_notice']=$count.' destinatário(s) confirmado(s). '.(!empty($batch['busy'])
                     ?'Outro processamento está em andamento; tente novamente se necessário.'
                     :'Envio imediato iniciado. '.(int)$batch['sent'].' aceito(s) neste primeiro lote.');
