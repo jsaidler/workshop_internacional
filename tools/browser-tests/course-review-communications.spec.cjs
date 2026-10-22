@@ -150,8 +150,8 @@ test.describe('real application: reviews and communications',()=>{
    await admin.getByRole('radio',{name:'Editorial'}).check();
    await admin.getByRole('button',{name:'Inserir imagem'}).click();
    await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeVisible();
-   await expect(admin.locator('[data-email-media-gallery] .comms-media-tile')).toHaveCount(1);
-   await admin.locator('[data-email-media-gallery] .comms-media-tile').first().click();
+   await expect(admin.locator('[data-email-media-gallery] .comms-media-tile').filter({hasText:'Fotografia do laboratório'})).toHaveCount(1);
+   await admin.locator('[data-email-media-gallery] .comms-media-tile').filter({hasText:'Fotografia do laboratório'}).click();
    await admin.locator('[data-email-media-alt]').fill('Bancada no laboratório fotográfico');
    await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
    await expect(admin.getByRole('dialog',{name:'Adicionar imagem'})).toBeHidden();
