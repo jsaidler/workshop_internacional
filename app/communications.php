@@ -40,6 +40,18 @@ function communication_campaigns(PDO $db,int $activityId): array {
     WHERE campaign.activity_id=? ORDER BY campaign.id DESC LIMIT 80');
     $q->execute([$activityId]);return $q->fetchAll();
 }
+/** Status per recipient for the selected campaign. Never reveal this outside admin. */
+function communication_campaign_deliveries(PDO $db,int $activityId,int $campaignId): array {
+    $q=$db->prepare("SELECT d.id,d.status,d.error_code,d.attempts,d.updated_at,u.name,u.email
+        FROM communication_deliveries d
+        JOIN communication_campaigns c ON c.id=d.campaign_id
+        JOIN student_users u ON u.id=d.student_id
+        WHERE c.activity_id=? AND c.id=?
+        ORDER BY d.id LIMIT 300");
+    $q->execute([$activityId,$campaignId]);
+    return $q->fetchAll(PDO::FETCH_ASSOC);
+}
+
 function communication_campaign(PDO $db,int $activityId,int $campaignId): ?array {
     $q=$db->prepare('SELECT * FROM communication_campaigns WHERE id=? AND activity_id=?');
     $q->execute([$campaignId,$activityId]);return $q->fetch()?:null;
