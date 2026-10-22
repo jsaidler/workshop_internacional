@@ -189,3 +189,10 @@
 .comms-email-frame iframe{width:100%;height:520px;max-width:100%;border:0;background:#fff;transition:max-width .2s}
 .comms-email-frame.is-mobile iframe{max-width:390px}
 @media(max-width:720px){.comms-template-grid{gap:7px}.comms-template-thumbnail{height:90px;padding:12px}.comms-media-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.comms-media-dialog-inner{padding:15px}.comms-email-frame{padding:8px}}
+
+
+.comms-rich-editor a[data-email-button]{display:inline-block;padding:12px 20px;background:#186f4d;color:white;text-decoration:none;font-weight:700}
+.comms-rich-editor hr{border:0;border-top:1px solid var(--admin-line);margin:25px 0}
+.comms-rich-editor h2{margin:12px 0;font-size:24px}
+.comms-history-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.comms-history-actions form{margin:0}
