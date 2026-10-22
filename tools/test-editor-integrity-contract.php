@@ -32,4 +32,7 @@ integrity_expect(str_contains($rich,'data-rich-list-item')&&str_contains($rich,'
 
 $audience=(string)file_get_contents($root.'/editor/cms-access-controls.js');
 integrity_expect(str_contains($audience,'data.pagePublished')&&str_contains($audience,'efeito imediato'),'live-audience changes must disclose immediate exposure');
+foreach(['cms-structure-selected','cms-pro-selected','cms-direct-drop-before','cms-inline-empty-outline','data-cms-editor-ui'] as $marker){
+    integrity_expect(str_contains($editor,$marker),'transient editor marker not excluded by serialization: '.$marker);
+}
 echo "editor-integrity: ok\n";
