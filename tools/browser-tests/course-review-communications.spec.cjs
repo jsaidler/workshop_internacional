@@ -234,6 +234,7 @@ test.describe('real application: reviews and communications',()=>{
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Envio imediato QA');
+   await admin.locator('input[name="preheader"]').fill('Prévia real de uma mensagem para alunos');
    await admin.locator('[data-mail-editor]').fill('Teste de envio imediato pela fila do CMS.');
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
    await expect(admin.getByRole('button',{name:'Confirmar e enviar agora'})).toBeVisible();
@@ -254,6 +255,11 @@ test.describe('real application: reviews and communications',()=>{
      return parts.map(part=>Buffer.from(part[1].replace(/\s+/g,''),'base64').toString('utf8')).join('\n');
    }
    expect(decodedPlainMessages(capturedEmail)).toContain('Teste de envio imediato pela fila do CMS.');
+   const htmlPart=capturedEmail.match(/Content-Type: text\/html; charset=UTF-8\r?\nContent-Transfer-Encoding: base64\r?\n\r?\n([A-Za-z0-9+/=\r\n]+)/i);
+   expect(htmlPart).not.toBeNull();
+   const sentHtml=Buffer.from(htmlPart[1].replace(/\s+/g,''),'base64').toString('utf8');
+   expect(sentHtml).toContain('Prévia real de uma mensagem para alunos');
+   expect(sentHtml).toContain('aria-hidden="true"');
    // Um envio enfileirado anteriormente precisa poder ser disparado pelo botão global.
    await admin.getByRole('link',{name:'Nova mensagem'}).click();
    await admin.locator('select[name="category"]').selectOption('newsletter');
