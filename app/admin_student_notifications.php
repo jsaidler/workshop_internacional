@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * Staff alerts for student-initiated pedagogical actions. Reuses the site's
- * authenticated admin identities and the existing CLI communications worker.
+ * authenticated admin identities and the shared manual/optional CLI sending mechanism.
  * Stores references only: no private question body or images in the outbox.
  */
 function admin_student_notice_kinds(): array {
