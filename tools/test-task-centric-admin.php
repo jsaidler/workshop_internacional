@@ -40,7 +40,7 @@ must(str_contains($autosave,"cms-editor:dirty")&&!str_contains($autosave,'Mutati
 must(str_contains($autosave,'setTimeout(flush,3200)'),'autosave must debounce short editing pauses');
 must(!str_contains($autosave,'setInterval'),'autosave must not wait on a fixed polling interval');
 must(str_contains($client,'/admin/api/editor-context.php'),'editor context must be loaded from the authenticated endpoint');
-must(str_contains($client,"includes('não salvas')"),'page switching must protect unsaved changes');
+must(str_contains($client,'window.CmsEditorDraft')&&str_contains($client,'canonical.isDirty()'),'page switching must read canonical dirty state instead of visible text');
 must(str_contains($context,"status='new'"),'editor context must surface new inscriptions');
 must(!str_contains($shell,"'overview'=>['Início'"),'overview must remain a dashboard, not a redundant context-tab entry');
 must(str_contains($shell,'function admin_navigation_groups')&&str_contains($shell,"'Principal'=>")&&!str_contains($shell,'class="admin-context-nav"'),'admin must expose the dashboard and tools through one navigation hierarchy');
