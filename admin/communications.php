@@ -14,6 +14,7 @@ $actionTab=[
  'brevo_save'=>'settings','brevo_check'=>'settings','brevo_remove'=>'settings',
  'mail_settings'=>'settings','mail_test'=>'settings','site_url_save'=>'settings',
  'admin_notice_preferences'=>'alerts','admin_notice_test'=>'alerts',
+  'run_alerts'=>'alerts','cancel_alerts'=>'alerts','retry_alerts'=>'alerts',
  'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','queue_now'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns',
   'run_queue'=>'campaigns','cancel_queue'=>'campaigns','cancel_campaign'=>'campaigns','retry_campaign'=>'campaigns'
 ];
@@ -56,6 +57,36 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
               'body'=>"Mensagem de verificação do sistema de e-mail.\n\nSe você recebeu este teste, o envio para sua conta está funcionando."
             ]);
             $notice='O servidor aceitou a mensagem de teste. Confira sua caixa de entrada e a pasta de spam.';
+        }elseif($action==='run_alerts'){
+            $adminId=(int)(current_admin()['id']??0);
+            if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+            $batch=admin_student_notice_dispatch_manual($db,$adminId);
+            if(empty($batch['busy'])){
+                $_SESSION['communications_alerts_auto_run']=true;
+                $_SESSION['communications_alerts_initial_batch']=$batch;
+            }
+            $_SESSION['communications_notice']=!empty($batch['busy'])
+                ?'Outro processamento está em andamento. Tente novamente.'
+                :'Envio dos avisos iniciado: '.(int)$batch['sent'].' aceito(s) neste primeiro lote.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'alerts']),true,303);exit;
+        }elseif($action==='cancel_alerts'){
+            $adminId=(int)(current_admin()['id']??0);
+            if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+            $count=admin_student_notice_cancel_pending($db,$adminId);
+            $_SESSION['communications_notice']=$count.' aviso(s) pendente(s) cancelado(s), preservando o histórico.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'alerts']),true,303);exit;
+        }elseif($action==='retry_alerts'){
+            $adminId=(int)(current_admin()['id']??0);
+            if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+            $count=admin_student_notice_retry_failed($db,$adminId);
+            if($count===0)throw new RuntimeException('Não há avisos com falha para reprocessar.');
+            $batch=admin_student_notice_dispatch_manual($db,$adminId);
+            if(empty($batch['busy'])){
+                $_SESSION['communications_alerts_auto_run']=true;
+                $_SESSION['communications_alerts_initial_batch']=$batch;
+            }
+            $_SESSION['communications_notice']=$count.' aviso(s) com falha recolocado(s) na fila após sua confirmação.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'alerts']),true,303);exit;
         }elseif($action==='admin_notice_preferences'){
             $adminId=(int)(current_admin()['id']??0);
             admin_student_notice_set_preferences($db,$adminId,is_array($_POST['alerts']??null)?$_POST['alerts']:[]);
@@ -168,7 +199,12 @@ $mailQueueCount=$queueSummary['pending']+$queueSummary['processing'];
 $autoQueueRun=!empty($_SESSION['communications_auto_run']);
 $initialQueueBatch=is_array($_SESSION['communications_initial_batch']??null)?$_SESSION['communications_initial_batch']:[];
 unset($_SESSION['communications_auto_run'],$_SESSION['communications_initial_batch']);
-$staffQueueCount=(int)$db->query("SELECT COUNT(*) FROM admin_student_notice_outbox WHERE status IN ('pending','processing')")->fetchColumn();
+$adminId=(int)(current_admin()['id']??0);
+$alertsQueueSummary=admin_student_notice_queue_summary($db,$adminId);
+$staffQueueCount=$alertsQueueSummary['pending']+$alertsQueueSummary['processing'];
+$autoAlertsRun=!empty($_SESSION['communications_alerts_auto_run']);
+$initialAlertsBatch=is_array($_SESSION['communications_alerts_initial_batch']??null)?$_SESSION['communications_alerts_initial_batch']:[];
+unset($_SESSION['communications_alerts_auto_run'],$_SESSION['communications_alerts_initial_batch']);
 $campaigns=communication_campaigns($db,$activityId);
 $selectedDeliveryRows=$selected && $selected['status']!=='draft'?communication_campaign_deliveries($db,$activityId,$selectedId):[];
 if($selected && $preview===null){
@@ -323,6 +359,18 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <?php elseif($tab==='alerts'):?>
   <div class="comms-lead"><div><p class="comms-eyebrow">Acompanhamento</p><h2>Avisos dos alunos</h2>
     <p>Escolha quais atividades devem gerar avisos no seu e-mail.</p></div></div>
+  <section class="admin-card comms-section" data-communications-alerts data-queue-url="/admin/communications-queue.php"
+    data-auto-run="<?=$autoAlertsRun?'1':'0'?>" data-initial-sent="<?=(int)($initialAlertsBatch['sent']??0)?>" data-initial-skipped="<?=(int)($initialAlertsBatch['skipped']??0)?>" data-initial-failed="<?=(int)($initialAlertsBatch['failed']??0)?>">
+    <header><div><h2>Fila de avisos</h2><p>Envie os avisos da sua conta agora, sem depender de agendamento.</p></div></header>
+    <p data-alerts-count aria-live="polite"><?=$alertsQueueSummary['pending']?> pendente(s) · <?=$alertsQueueSummary['processing']?> processando · <?=$alertsQueueSummary['accepted']?> aceito(s) · <?=$alertsQueueSummary['failed']?> falha(s) · <?=$alertsQueueSummary['cancelled']?> cancelado(s).</p>
+    <form method="post" class="comms-inline-actions" data-alerts-form>
+      <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+      <button class="admin-button" type="submit" name="action" value="run_alerts" data-alerts-run<?=$alertsQueueSummary['pending']<1?' disabled':''?>>Enviar avisos agora</button>
+      <button class="admin-button secondary" type="submit" name="action" value="cancel_alerts" data-alerts-cancel<?=$alertsQueueSummary['pending']<1?' disabled':''?>>Cancelar avisos pendentes</button>
+      <button class="admin-button secondary" type="submit" name="action" value="retry_alerts" data-alerts-retry<?=$alertsQueueSummary['failed']<1?' disabled':''?>>Reprocessar falhas</button>
+    </form>
+    <p class="muted" data-alerts-feedback role="status" aria-live="polite">O cancelamento alcança somente avisos pendentes. Antes de reprocessar uma falha, confira se o serviço já aceitou a mensagem para evitar duplicações.</p>
+  </section>
   <?php
   $adminId=(int)(current_admin()['id']??0);
   $adminNoticeSettings=admin_student_notice_preferences($db,$adminId);
@@ -565,4 +613,5 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 </div>
 <script src="/assets/communications-editor.js" defer></script>
 <script src="/assets/communications-queue.js" defer></script>
+<script src="/assets/communications-alerts.js" defer></script>
 <?php admin_shell_end();
