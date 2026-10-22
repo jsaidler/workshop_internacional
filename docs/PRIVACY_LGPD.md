@@ -126,9 +126,12 @@ Avisos acadêmicos necessários para cursos e turmas têm finalidade distinta de
 
 Os destinatários de campanhas são derivados de matrículas atualmente elegíveis e, quando direcionados a uma turma, ouvintes confirmados desse curso. O provedor recebe somente nome, e-mail, assunto e mensagem estritamente necessários à entrega. A lista completa de alunos, CPF, experimentos e fichas nunca é transmitida ao provedor. Logs internos armazenam status, tentativas e identificador de entrega, sem persistir credenciais nem duplicar conteúdo da mensagem por destinatário. O conjunto ainda requer avaliação de retenção e contrato de tratamento de dados antes de operação real.
 
-A fila é processada em segundo plano mediante configuração administrativa do serviço externo. O armazenamento do consentimento e a decisão de público permanecem no site, não no provedor. É obrigatória verificação funcional do descadastro e da entregabilidade antes da primeira campanha.
+A fila pode ser processada imediatamente por ação administrativa autenticada, sem agendamento, enquanto o painel permanece aberto; o worker agendado é opcional. O transporte utiliza Brevo configurado ou serviço PHP da hospedagem, com verificação de elegibilidade e consentimento na origem. A decisão de público permanece no site, não no provedor. É obrigatória verificação funcional do descadastro e da entregabilidade antes da primeira campanha.
 
 ## Avisos do aluno ao administrador — 21/10/2026 (em revisão)
+
+O administrador pode processar manualmente somente os avisos de sua conta, cancelar pendentes e reprocessar falhas após confirmação do risco de duplicação. Os avisos guardam status, erro e destinatário; não são apagados para simular cancelamento. O cron é opcional. Essa ação não autoriza envio de conteúdo privado do aluno além dos metadados já previstos.
+
 
 Alertas operacionais para a conta administrativa do curso têm finalidade de acompanhamento pedagógico, distinta de newsletter e marketing. O evento guarda somente referências e status da entrega. A mensagem enviada inclui nome, curso, turma, identificação do item e link de administração, sem anexos ou corpo da dúvida/comentário. O acesso ao item exige autenticação administrativa. O aluno não precisa aderir à newsletter para que a equipe receba avisos necessários ao acompanhamento de sua matrícula. A habilitação por categoria pertence à preferência individual de cada administrador; não há coleta de comportamento de navegação ou rastreamento de leitura no canal de alertas.
 
