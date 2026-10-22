@@ -27,6 +27,16 @@ try{
     }elseif($action==='cancel_queue'){
         $cancelled=communication_cancel_queue($db,$activityId);
         $response=['ok'=>true,'cancelled'=>$cancelled,'queue'=>communication_queue_summary($db,$activityId)];
+    }elseif($action==='run_alerts'){
+        $adminId=(int)(current_admin()['id']??0);
+        if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+        $outcome=admin_student_notice_dispatch_manual($db,$adminId);
+        $response=['ok'=>true,'result'=>$outcome,'queue'=>admin_student_notice_queue_summary($db,$adminId)];
+    }elseif($action==='cancel_alerts'){
+        $adminId=(int)(current_admin()['id']??0);
+        if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+        $cancelled=admin_student_notice_cancel_pending($db,$adminId);
+        $response=['ok'=>true,'cancelled'=>$cancelled,'queue'=>admin_student_notice_queue_summary($db,$adminId)];
     }else{
         http_response_code(400);
         echo json_encode(['ok'=>false,'error'=>'Ação inválida.']);exit;
