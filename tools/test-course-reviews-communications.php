@@ -238,4 +238,16 @@ check_feature(communication_retry_failed($db,1,$uncertain)===0,'repeated retry c
 check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===1,'authorized retry uses ordinary queue and accepts one recipient');
 check_feature(communication_retry_failed($db,1,$uncertain)===0,'accepted messages cannot be requeued as failed');
 
+
+$exhausted=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Tentativas antigas','body_text'=>'Não repetir',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+check_feature(communication_queue_campaign($db,1,$exhausted)===1,'legacy pending row queued');
+$db->exec("UPDATE communication_deliveries SET attempts=3 WHERE campaign_id=$exhausted");
+check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0,'exhausted legacy row never sent automatically');
+check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$exhausted")->fetchColumn()==='failed','exhausted legacy row converted to failed');
+check_feature(communication_queue_summary($db,1)['pending']===0,'no permanent pending count after exhausted attempts');
+
 echo "course-comms: OK\n";
