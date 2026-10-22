@@ -157,6 +157,7 @@ $mailQueueCount=$queueSummary['pending']+$queueSummary['processing'];
 $autoQueueRun=(string)($_GET['run']??'')==='1';
 $staffQueueCount=(int)$db->query("SELECT COUNT(*) FROM admin_student_notice_outbox WHERE status IN ('pending','processing')")->fetchColumn();
 $campaigns=communication_campaigns($db,$activityId);
+$selectedDeliveryRows=$selected && $selected['status']!=='draft'?communication_campaign_deliveries($db,$activityId,$selectedId):[];
 if($selected && $preview===null){
     try{$preview=count(communication_campaign_audience($db,$activityId,$selected));}
     catch(Throwable $e){$error=$e->getMessage();}
@@ -475,6 +476,37 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     </section>
     <?php endif;?>
   </section>
+<?php if($selected && $selected['status']!=='draft'):?>
+<section class="admin-card comms-section">
+  <header><div><h2>Destinatários e situação do envio</h2><p>Os resultados indicam o aceite pelo serviço, não a entrega na caixa de entrada.</p></div></header>
+  <?php if(!$selectedDeliveryRows):?><p class="muted">Nenhum destinatário registrado.</p><?php else:?>
+  <?php
+    $deliveryLabels=['pending'=>'Na fila','processing'=>'Processando','sent'=>'Aceito pelo serviço',
+      'skipped'=>'Ignorado','failed'=>'Falha'];
+    $errorLabels=['cancelled_by_admin'=>'Cancelado pelo administrador',
+      'no_longer_eligible'=>'Destinatário deixou de ser elegível',
+      'provider_failure'=>'Serviço de envio não confirmou a mensagem',
+      'media_unavailable'=>'Imagem indisponível',
+      'audience_validation_error'=>'Não foi possível verificar a audiência',
+      'processing_outcome_unknown'=>'Resultado incerto após interrupção',
+      'processing_timeout'=>'Processamento interrompido'];
+  ?>
+  <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list">
+    <thead><tr><th>Destinatário</th><th>Situação</th><th>Tentativas</th><th>Atualização</th></tr></thead><tbody>
+    <?php foreach($selectedDeliveryRows as $delivery):?>
+    <tr>
+      <td data-primary="true"><strong><?=h((string)$delivery['name'])?></strong><small><?=h((string)$delivery['email'])?></small></td>
+      <td><?=h($delivery['error_code']==='cancelled_by_admin'?'Cancelado':($deliveryLabels[$delivery['status']]??$delivery['status']))?>
+      <?php if($delivery['error_code']!==null):?><small class="muted"><?=h($errorLabels[$delivery['error_code']]??'Falha ou restrição registrada')?></small><?php endif;?></td>
+      <td><?=(int)$delivery['attempts']?></td>
+      <td><?=h((string)$delivery['updated_at'])?></td>
+    </tr>
+    <?php endforeach;?>
+    </tbody></table></div>
+  <?php endif;?>
+  <?php if(count($selectedDeliveryRows)>=300):?><p class="muted">Exibindo os primeiros 300 registros desta mensagem.</p><?php endif;?>
+</section>
+<?php endif;?>
 <section class="admin-card">
   <header><div><h2>Histórico</h2><p>Consulte seus rascunhos e envios.</p></div></header>
   <?php if(!$campaigns):?><p class="muted">Nenhuma comunicação cadastrada.</p><?php else:?>
