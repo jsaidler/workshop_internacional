@@ -191,6 +191,10 @@ check_feature(communication_cancel_queue($db,1)===1,'admin cancels only pending 
 check_feature(communication_queue_summary($db,1)['pending']===0,'cancellation empties pending queue');
 check_feature(communication_queue_summary($db,1)['cancelled']===1,'cancellation has a distinct auditable reason');
 check_feature(communication_campaign($db,1,$pending)['status']==='completed','partially cancelled campaign finalizes');
+$recipientAudit=communication_campaign_deliveries($db,1,$pending);
+check_feature(count($recipientAudit)===2,'recipient audit shows each recipient');
+check_feature(count(array_filter($recipientAudit,static fn(array $row):bool=>$row['error_code']==='cancelled_by_admin'))===1,'audit distinguishes cancelled recipient');
+check_feature(communication_campaign_deliveries($db,2,$pending)===[],'recipient audit cannot cross CMS activity');
 check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND status='sent'")===1,'accepted message stays accepted');
 check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND error_code='cancelled_by_admin'")===1,'cancellation persists separate from other skipped messages');
 $afterCancel=count($sent);
