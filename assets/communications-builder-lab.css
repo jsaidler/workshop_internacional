@@ -1,0 +1,28 @@
+/* Feature-owned experimental GrapesJS/MJML workspace. Not loaded on other admin pages. */
+.communications-email-lab{display:grid;gap:16px;min-width:0}
+.email-lab-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.email-lab-heading h1{font-size:26px;line-height:1.15;margin:4px 0 10px}
+.email-lab-heading p{margin:0;max-width:66ch}
+.email-lab-tools{display:flex;flex-wrap:wrap;gap:7px;padding:12px;border:1px solid var(--admin-line);border-radius:8px;background:var(--admin-surface,#fff)}
+.email-lab-tools button,.email-lab-side button{border:1px solid var(--admin-line);border-radius:5px;padding:9px 12px;background:#fff;color:var(--admin-ink);font:600 13px var(--admin-body);cursor:pointer}
+.email-lab-tools button:hover,.email-lab-tools button:focus-visible,.email-lab-side button:hover{border-color:var(--admin-focus)}
+.email-lab-tools .email-lab-primary{background:var(--admin-ink);border-color:var(--admin-ink);color:#fff}
+.email-lab-status{margin:0;padding:10px 14px;border:1px solid var(--admin-line);border-radius:6px;font-size:13px;background:#f4f5f1}
+.email-lab-status[data-state=error]{border-color:#c99086;color:#8d2825}
+.email-lab-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,330px);align-items:start;gap:15px;min-width:0}
+.email-lab-canvas-panel{min-width:0;border:1px solid var(--admin-line);border-radius:6px;overflow:hidden;background:#fff}
+.email-lab-canvas-panel [data-lab-canvas]{min-width:0;height:630px}
+.email-lab-side{display:grid;gap:10px;min-width:0;padding:17px;border:1px solid var(--admin-line);border-radius:6px;background:#fff}
+.email-lab-side h2{font-size:16px;margin:0}
+.email-lab-side p{font-size:13px;line-height:1.5;margin:0;color:var(--admin-muted)}
+.email-lab-side label{display:grid;gap:6px;font-size:12px;font-weight:650}
+.email-lab-side select,.email-lab-side input,.email-lab-side textarea{width:100%;min-width:0;padding:9px;border:1px solid var(--admin-line);border-radius:4px;background:#fff;color:var(--admin-ink);font:13px var(--admin-body)}
+.email-lab-side iframe{width:100%;height:320px;border:1px solid var(--admin-line);background:#fff}
+.email-lab-side hr{border:0;border-top:1px solid var(--admin-line);width:100%;margin:7px 0}
+.email-lab-side summary{cursor:pointer;font-size:13px;font-weight:650;margin:6px 0}
+.email-lab-side textarea{resize:vertical;white-space:pre;tab-size:2;font-family:monospace}
+.email-lab-side .email-lab-media-status{font-size:12px}
+.communications-email-lab .gjs-one-bg{background:#252b2b}
+.communications-email-lab .gjs-two-color{color:#e7e9e9}
+@media(max-width:1120px){.email-lab-workspace{grid-template-columns:minmax(0,1fr)}.email-lab-side{grid-template-columns:repeat(2,minmax(0,1fr))}.email-lab-side h2,.email-lab-side p,.email-lab-side hr,.email-lab-side iframe,.email-lab-side details{grid-column:1/-1}}
+@media(max-width:640px){.email-lab-heading{display:grid}.email-lab-side{grid-template-columns:1fr}.email-lab-canvas-panel [data-lab-canvas]{height:550px}.email-lab-heading h1{font-size:21px}}
