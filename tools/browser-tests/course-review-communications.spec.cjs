@@ -245,6 +245,24 @@ test.describe('real application: reviews and communications',()=>{
    const capturedEmail=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
    expect(capturedEmail).toContain('student-qa@example.test');
    expect(capturedEmail).toContain('Teste de envio imediato pela fila do CMS.');
+   // Um envio enfileirado anteriormente precisa poder ser disparado pelo botão global.
+   await admin.getByRole('link',{name:'Nova mensagem'}).click();
+   await admin.locator('select[name="category"]').selectOption('newsletter');
+   await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
+   await admin.locator('input[name="subject"]').fill('Fila antiga QA');
+   await admin.locator('[data-mail-editor]').fill('Mensagem pendente enviada manualmente.');
+   await admin.getByRole('button',{name:'Salvar rascunho'}).click();
+   await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.getByRole('button',{name:'Somente colocar na fila'}).click();
+   await expect(admin.locator('[data-communications-queue] [data-queue-count]')).toContainText('1 pendente(s)');
+   await admin.locator('[data-communications-queue] [data-queue-run]').click();
+   await expect(admin.locator('[data-queue-feedback]')).toContainText('Envio concluído: 1 aceito(s)');
+   const resent=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(resent.deliveries).toHaveLength(3);
+   expect(resent.deliveries.filter(row=>row.status==='sent')).toHaveLength(2);
+   expect(resent.deliveries.filter(row=>row.status==='skipped')).toHaveLength(1);
+   expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toContain('Mensagem pendente enviada manualmente.');
    execFileSync('php',[seed,sandbox,'student-action'],{encoding:'utf8',timeout:45000});
    const afterAction=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(afterAction.staff_notices).toHaveLength(1);
