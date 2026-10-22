@@ -22,6 +22,14 @@ if($mode==='student-action'){
     ]);
     echo json_encode(['id'=>(int)$question['id']],JSON_THROW_ON_ERROR).PHP_EOL;exit;
 }
+if($mode==='brevo-credential'){
+    // Never uses a real API key: the validator is an isolated QA stub.
+    $key='xkeysib-qa-only-'.str_repeat('q',48);
+    communication_brevo_save($db,$key,static function(string $value):void {
+        if(!str_starts_with($value,'xkeysib-qa-only-'))throw new RuntimeException('Test key missing');
+    });
+    echo json_encode(['saved'=>communication_brevo_public_status($db)['managed_in_cms']],JSON_THROW_ON_ERROR).PHP_EOL;exit;
+}
 if($mode==='snapshot'){
     echo json_encode([
       'reviews'=>$db->query('SELECT id,course_id,cohort_id,title,meeting_status FROM course_review_sessions ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
