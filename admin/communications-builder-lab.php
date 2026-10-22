@@ -41,7 +41,22 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
     <section aria-label="Editor do e-mail" class="email-lab-canvas-panel">
       <div data-lab-canvas id="communications-builder-stage"></div>
     </section>
-    <aside class="email-lab-side">
+    <aside class="email-lab-side" data-lab-side>
+      <div class="email-lab-side-tabs" role="tablist" aria-label="Ferramentas de composição">
+        <button type="button" role="tab" aria-selected="true" data-lab-tool="blocks">Blocos</button>
+        <button type="button" role="tab" aria-selected="false" data-lab-tool="styles">Estilos</button>
+      </div>
+      <section data-lab-blocks-panel class="email-lab-manager" aria-label="Blocos de e-mail">
+        <h2>Montar mensagem</h2>
+        <p>Arraste um bloco para a posição desejada no e-mail.</p>
+        <div data-lab-blocks></div>
+      </section>
+      <section data-lab-styles-panel class="email-lab-manager" aria-label="Estilos do bloco selecionado" hidden>
+        <h2>Personalizar bloco</h2>
+        <p>Selecione um elemento no quadro para ajustar suas propriedades.</p>
+        <div data-lab-styles></div>
+      </section>
+      <hr>
       <h2>Imagem da Biblioteca</h2>
       <p>Somente imagens públicas do site. A versão final verificará novamente as permissões no servidor.</p>
       <label>Imagem
