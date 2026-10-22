@@ -73,6 +73,18 @@ test.describe('real application: reviews and communications',()=>{
    await expect(student.locator('input[name="newsletter_opt_in"]')).toBeChecked();
    await student.screenshot({path:info.outputPath('newsletter-opt-in-mobile.png')});
    await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId);
+   await expect(admin.getByRole('heading',{name:'Envio de e-mails'})).toBeVisible();
+   await expect(admin.getByText('Meio de envio: E-mail da hospedagem',{exact:true})).toBeVisible();
+   await expect(admin.getByText('Sem execução registrada.',{exact:false})).toBeVisible();
+   await expect(admin.locator('body')).not.toContainText('BREVO_API_KEY');
+   const senderForm=admin.locator('form').filter({has:admin.locator('input[name="action"][value="mail_settings"]')});
+   await senderForm.locator('input[name="sender_name"]').fill('Ateliê fotográfico');
+   await senderForm.locator('input[name="sender_email"]').fill('contato@example.test');
+   await senderForm.getByRole('button',{name:'Salvar remetente'}).click();
+   await expect(senderForm.locator('input[name="sender_name"]')).toHaveValue('Ateliê fotográfico');
+   await expect(senderForm.locator('input[name="sender_email"]')).toHaveValue('contato@example.test');
+   await expect(admin.getByRole('button',{name:/Enviar teste para/})).toBeVisible();
+   await admin.screenshot({path:info.outputPath('email-sender-settings-desktop.png')});
    await expect(admin.getByRole('heading',{name:'Avisos sobre atividades dos alunos'})).toBeVisible();
    const alerts=admin.locator('form').filter({has:admin.locator('input[name="action"][value="admin_notice_preferences"]')});
    await expect(alerts.locator('input[name="alerts[question_created]"]')).toBeChecked();

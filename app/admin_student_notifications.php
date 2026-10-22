@@ -90,19 +90,9 @@ function admin_student_notice_message(array $job,array $target): array {
  * transport already used by the CMS for new form responses.
  */
 function admin_student_notice_send(array $message): array {
-    $config=app_config();
-    if(trim((string)($config['brevo_api_key']??getenv('BREVO_API_KEY')?:''))!==''){
-        return communication_send_brevo($message);
-    }
-    if(!function_exists('mail'))throw new RuntimeException('PHP mail unavailable');
-    $subject=mb_encode_mimeheader(str_replace(["\r","\n"],' ',(string)$message['subject']),'UTF-8','B',"\r\n");
-    $headers=['Content-Type: text/plain; charset=UTF-8','MIME-Version: 1.0'];
-    $from=trim((string)($config['email_from']??''));
-    if(filter_var($from,FILTER_VALIDATE_EMAIL) && !strpbrk($from,"\r\n"))$headers[]='From: '.$from;
-    if(!@mail((string)$message['email'],$subject,(string)$message['body'],implode("\r\n",$headers)))
-        throw new RuntimeException('PHP mail rejected the message');
-    return ['id'=>'php-mail'];
+    return communication_send_message(database(),$message);
 }
+
 function admin_student_notice_dispatch(PDO $db,int $limit=20,?callable $sender=null): array {
     $result=['sent'=>0,'skipped'=>0,'failed'=>0];
     if(!admin_student_notice_available($db))return $result;

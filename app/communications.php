@@ -117,17 +117,94 @@ function communication_queue_campaign(PDO $db,int $activityId,int $id): int {
         return count($audience);
     });
 }
-function communication_provider_configuration(): array {
+/**
+ * Email transport settings belong to the CMS; the password/API key does not.
+ * The sender is optional for PHP mail(), since installations may already
+ * deliver form notifications with their server's default sender.
+ */
+function communication_sender_settings(PDO $db): array {
+    $saved=['sender_name'=>'','sender_email'=>''];
+    $hasTable=(bool)$db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='communication_sender_settings'")->fetchColumn();
+    if($hasTable){
+        $row=$db->query('SELECT sender_name,sender_email FROM communication_sender_settings WHERE id=1')->fetch(PDO::FETCH_ASSOC);
+        if(is_array($row))$saved=$row;
+    }
+    $cfg=app_config();
+    $sender=trim((string)($saved['sender_email']??''));
+    if($sender==='')$sender=trim((string)($cfg['email_from']??getenv('BREVO_FROM_EMAIL')?:''));
+    return ['sender_name'=>trim((string)($saved['sender_name']??''))?:((string)($cfg['site_name']??'Fotografia')),
+        'sender_email'=>$sender,'custom_sender_email'=>trim((string)($saved['sender_email']??''))];
+}
+function communication_sender_save(PDO $db,array $input): void {
+    $name=trim((string)($input['sender_name']??''));
+    $email=trim((string)($input['sender_email']??''));
+    if(mb_strlen($name)>100||strpbrk($name,"\r\n")!==false)
+        throw new RuntimeException('O nome do remetente deve ter até 100 caracteres, sem quebras de linha.');
+    if($email!==''&&(!filter_var($email,FILTER_VALIDATE_EMAIL)||strpbrk($email,"\r\n")!==false))
+        throw new RuntimeException('Informe um endereço de e-mail válido para o remetente.');
+    $db->prepare('INSERT INTO communication_sender_settings(id,sender_name,sender_email,updated_at) VALUES(1,?,?,?) ON CONFLICT(id) DO UPDATE SET sender_name=excluded.sender_name,sender_email=excluded.sender_email,updated_at=excluded.updated_at')
+       ->execute([$name,$email,utc_now()]);
+}
+function communication_mail_status(PDO $db): array {
+    $settings=communication_sender_settings($db);
+    $cfg=app_config();
+    $key=trim((string)($cfg['brevo_api_key']??getenv('BREVO_API_KEY')?:''));
+    $brevoReady=$key!==''&&filter_var($settings['sender_email'],FILTER_VALIDATE_EMAIL)!==false;
+    return ['transport'=>$brevoReady?'brevo':'php','sender'=>$settings['sender_email'],
+        'sender_name'=>$settings['sender_name'],
+        'transport_label'=>$brevoReady?'Serviço externo configurado':'E-mail da hospedagem',
+        'sender_configured'=>filter_var($settings['sender_email'],FILTER_VALIDATE_EMAIL)!==false,
+        'server_available'=>function_exists('mail')];
+}
+function communication_send_php(PDO $db,array $payload): array {
+    $recipient=trim((string)($payload['email']??''));
+    if(!filter_var($recipient,FILTER_VALIDATE_EMAIL)||strpbrk($recipient,"\r\n")!==false)
+        throw new RuntimeException('Destinatário inválido.');
+    $subject=trim((string)($payload['subject']??''));
+    if($subject===''||strpbrk($subject,"\r\n")!==false)throw new RuntimeException('Assunto inválido.');
+    if(!function_exists('mail'))throw new RuntimeException('O servidor não disponibiliza envio de e-mail. Verifique o serviço da hospedagem.');
+    $settings=communication_sender_settings($db);
+    $headers=['MIME-Version: 1.0','Content-Type: text/plain; charset=UTF-8'];
+    if(filter_var($settings['sender_email'],FILTER_VALIDATE_EMAIL))
+        $headers[]='From: '.$settings['sender_email'];
+    $encoded=mb_encode_mimeheader($subject,'UTF-8','B',"\r\n");
+    $accepted=@mail($recipient,$encoded,(string)($payload['body']??''),implode("\r\n",$headers));
+    if(!$accepted)throw new RuntimeException('O servidor não aceitou o envio. Verifique o e-mail do remetente e as configurações da hospedagem.');
+    return ['id'=>'php-mail-accepted'];
+}
+function communication_send_message(PDO $db,array $payload): array {
+    $status=communication_mail_status($db);
+    return $status['transport']==='brevo'?communication_send_brevo($payload,$db):communication_send_php($db,$payload);
+}
+function communication_worker_status(PDO $db): array {
+    $q=$db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='communication_worker_state'");
+    if(!$q->fetchColumn())return ['last_started_at'=>null,'last_finished_at'=>null,'last_error'=>null];
+    $row=$db->query('SELECT last_started_at,last_finished_at,last_error FROM communication_worker_state WHERE id=1')->fetch(PDO::FETCH_ASSOC);
+    return $row?:['last_started_at'=>null,'last_finished_at'=>null,'last_error'=>null];
+}
+function communication_worker_record(PDO $db,bool $started,string $error=''): void {
+    $field=$started?'last_started_at':'last_finished_at';
+    $now=utc_now();
+    if($started){
+        $db->prepare("INSERT INTO communication_worker_state(id,last_started_at,last_error) VALUES(1,?,NULL)
+            ON CONFLICT(id) DO UPDATE SET last_started_at=excluded.last_started_at,last_error=NULL")->execute([$now]);
+    }else{
+        $db->prepare("INSERT INTO communication_worker_state(id,last_finished_at,last_error) VALUES(1,?,?)
+            ON CONFLICT(id) DO UPDATE SET last_finished_at=excluded.last_finished_at,last_error=excluded.last_error")->execute([$now,$error===''?null:mb_substr($error,0,250)]);
+    }
+}
+
+function communication_provider_configuration(?PDO $db=null): array {
     $config=app_config();
     $key=trim((string)($config['brevo_api_key']??getenv('BREVO_API_KEY')?:''));
-    $from=trim((string)($config['email_from']??getenv('BREVO_FROM_EMAIL')?:''));
+    $from=$db?communication_sender_settings($db)['sender_email']:trim((string)($config['email_from']??getenv('BREVO_FROM_EMAIL')?:''));
     $site=trim((string)($config['public_url']??''));
-    if($key===''||!filter_var($from,FILTER_VALIDATE_EMAIL))throw new RuntimeException('Configure BREVO_API_KEY e BREVO_FROM_EMAIL no ambiente.');
+    if($key===''||!filter_var($from,FILTER_VALIDATE_EMAIL))throw new RuntimeException('O serviço externo não está configurado. É possível usar o e-mail da hospedagem.');
     if(!preg_match('~^https://[^/]+~i',$site))throw new RuntimeException('Configure public_url como endereço HTTPS.');
     return ['key'=>$key,'from'=>$from,'site'=>rtrim($site,'/'),'name'=>(string)($config['site_name']??'Fotografia')];
 }
-function communication_send_brevo(array $payload): array {
-    $cfg=communication_provider_configuration();
+function communication_send_brevo(array $payload,?PDO $db=null): array {
+    $cfg=communication_provider_configuration($db);
     if(!function_exists('curl_init'))throw new RuntimeException('A extensão PHP cURL é necessária para enviar e-mails.');
     $body=['sender'=>['name'=>$cfg['name'],'email'=>$cfg['from']],
       'to'=>[['name'=>$payload['name'],'email'=>$payload['email']]],
@@ -146,7 +223,7 @@ function communication_send_brevo(array $payload): array {
 /** Claim jobs before any network request; recover abandoned processing jobs. */
 function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null): array {
     $limit=max(1,min(50,$limit));
-    if($sender===null){communication_provider_configuration();$sender='communication_send_brevo';}
+    if($sender===null)$sender=static fn(array $payload):array=>communication_send_message($db,$payload);
     // Brevo Free currently allows 300/day. Default to 250 so retries and
     // other occasional sends do not unexpectedly hit the provider queue.
     $dailyLimit=max(1,min(100000,(int)(app_config()['email_daily_limit']??250)));

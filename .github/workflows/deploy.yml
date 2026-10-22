@@ -68,6 +68,7 @@ jobs:
           php tools/test-student-resource-pages.php
           php tools/test-course-agenda.php
           php tools/test-course-reviews-communications.php
+          php tools/test-communications-mail-fallback.php
           php tools/test-admin-student-notifications.php
           php tools/test-admin-cohort-transfer.php
           php tools/test-aula3-student-area-material.php
