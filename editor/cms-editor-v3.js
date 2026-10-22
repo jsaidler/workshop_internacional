@@ -121,6 +121,7 @@ function linkInspector(link){
   };
 }
 let pendingLinkRange=null;
+let pendingFormatRange=null;
 function openCreateLink(){
   const selection=frame.contentWindow?.getSelection();
   const range=pendingLinkRange||(!selection?.isCollapsed?selection?.getRangeAt(0)?.cloneRange():null);
@@ -226,6 +227,20 @@ window.CmsEditorDraft={save,isDirty:()=>state.dirty||state.saving,getState:()=>(
 function reload(){state.selected=null;state.editing=null;textToolbar.hidden=true;frame.src=`/preview/?page=${state.page.id}&v=${Date.now()}`}
 async function load(){try{const data=await json(`/admin/api/cms-page-load.php?page=${pageId}`);state.csrf=data.csrf;state.page=data.page;state.activity=data.activity;state.forms=data.forms||[];$('#editor-title').textContent=state.page.title;$('#editor-locale').textContent=state.page.locale;frame.src=`/preview/?page=${pageId}`;renderStatus()}catch(e){say(e.message);setTimeout(()=>location.replace('/admin/pages.php'),1400)}}
 frame.addEventListener('load',()=>{if(!state.page)return;state.loading=false;hookFrame();if(lastAcknowledged===null)lastAcknowledged=signature();const d=doc();if(d&&!d.__cmsDirtyBound){d.__cmsDirtyBound=true;d.addEventListener('input',event=>{if(event.target?.closest?.('[data-cms-editable][contenteditable]'))changed(false)},true)}state.history=[snapshot()];state.historyIndex=0;historyButtons();renderInspector();renderStatus()});
-$('#save-page').onclick=()=>save().catch(()=>{});$('#publish-page').onclick=publish;if($('#unpublish-page'))$('#unpublish-page').onclick=unpublish;$('#page-settings').onclick=pageSettings;$('#undo').onclick=undo;$('#redo').onclick=redo;document.querySelectorAll('[data-viewport]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-viewport]').forEach(x=>x.classList.remove('active'));b.classList.add('active');device.className=`device-frame ${b.dataset.viewport}`});textToolbar.querySelectorAll('[data-command]').forEach(b=>{if(b.dataset.command==='createLink')b.addEventListener('pointerdown',()=>{const sel=frame.contentWindow?.getSelection();pendingLinkRange=sel&&!sel.isCollapsed?sel.getRangeAt(0).cloneRange():null});b.onclick=()=>{if(b.dataset.command==='createLink'){openCreateLink();return}doc().execCommand(b.dataset.command,false,null);changed(false)}});$('#finish-text').onclick=()=>finishText(true);$('#media-upload').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{await MediaLibrary.load();const uploaded=await MediaLibrary.upload(file);say('Imagem enviada.');if(mediaDialog.open&&state.selected&&(state.selected.type==='image'||state.selected.type==='image-placeholder')){const image=MediaLibrary.images.find(item=>Number(item.id)===Number(uploaded.id));if(image)applyMedia(state.selected.el,state.selected.type,image);else openMedia(state.selected.el,state.selected.type)}}catch(error){say(error.message)}finally{e.target.value=''}};
+$('#save-page').onclick=()=>save().catch(()=>{});$('#publish-page').onclick=publish;if($('#unpublish-page'))$('#unpublish-page').onclick=unpublish;$('#page-settings').onclick=pageSettings;$('#undo').onclick=undo;$('#redo').onclick=redo;document.querySelectorAll('[data-viewport]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-viewport]').forEach(x=>x.classList.remove('active'));b.classList.add('active');device.className=`device-frame ${b.dataset.viewport}`});textToolbar.querySelectorAll('[data-command]').forEach(b=>{
+  b.addEventListener('pointerdown',()=>{
+    const sel=frame.contentWindow?.getSelection();
+    const range=sel&&!sel.isCollapsed?sel.getRangeAt(0).cloneRange():null;
+    if(b.dataset.command==='createLink')pendingLinkRange=range;
+    else pendingFormatRange=range;
+  });
+  b.onclick=()=>{
+    if(b.dataset.command==='createLink'){openCreateLink();return}
+    const range=pendingFormatRange;
+    pendingFormatRange=null;
+    if(window.CmsRichTextCommands?.apply(b.dataset.command,doc(),range))changed();
+    else say('Selecione um trecho de texto para formatar.');
+  };
+});$('#finish-text').onclick=()=>finishText(true);$('#media-upload').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{await MediaLibrary.load();const uploaded=await MediaLibrary.upload(file);say('Imagem enviada.');if(mediaDialog.open&&state.selected&&(state.selected.type==='image'||state.selected.type==='image-placeholder')){const image=MediaLibrary.images.find(item=>Number(item.id)===Number(uploaded.id));if(image)applyMedia(state.selected.el,state.selected.type,image);else openMedia(state.selected.el,state.selected.type)}}catch(error){say(error.message)}finally{e.target.value=''}};
 load();
 })();
