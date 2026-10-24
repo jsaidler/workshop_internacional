@@ -40,7 +40,7 @@ function communication_builder_render_email(PDO $db,string $source,array $mediaR
     $renderBlock=static function(DOMElement $node)use($escape,$style,$contents):string{
         switch($node->tagName){
         case 'mj-text':
-            $css='font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#252525;padding:10px 25px;'
+            $css='font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1;color:#000000;padding:10px 25px;'
                 .$style($node,['font-size'=>'font-size','line-height'=>'line-height','font-weight'=>'font-weight',
                     'color'=>'color','align'=>'text-align','font-family'=>'font-family','padding'=>'padding']);
             return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="'.$css.'">'
@@ -48,15 +48,15 @@ function communication_builder_render_email(PDO $db,string $source,array $mediaR
         case 'mj-button':
             $bg=$node->getAttribute('background-color')?:'#186f4d';
             $color=$node->getAttribute('color')?:'#ffffff';
-            $css='display:inline-block;padding:12px 20px;background:'.$escape($bg).';color:'.$escape($color)
-                .';text-decoration:none;font-family:Arial,Helvetica,sans-serif;'
+            $css='display:inline-block;padding:10px 25px;background:'.$escape($bg).';color:'.$escape($color)
+                .';font-size:13px;font-weight:normal;line-height:120%;text-decoration:none;font-family:Arial,Helvetica,sans-serif;'
                 .$style($node,['font-size'=>'font-size','font-weight'=>'font-weight','border-radius'=>'border-radius']);
             $child=$contents($node);
             $url=$node->getAttribute('href');
             $inner=$url!==''?'<a href="'.$escape($url).'" style="'.$css.'">'.$child.'</a>'
                 :'<span style="'.$css.'">'.$child.'</span>';
             $align=$node->getAttribute('align')?:'center';
-            return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="'.$escape($align).'" style="padding:8px 0">'.$inner.'</td></tr></table>';
+            return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="'.$escape($align).'" style="padding:'.$escape($node->getAttribute('padding')?:'10px 25px').'">'.$inner.'</td></tr></table>';
         case 'mj-image':
             $src=$escape($node->getAttribute('src'));
             $alt=$escape($node->getAttribute('alt'));
