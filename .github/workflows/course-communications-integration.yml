@@ -40,7 +40,9 @@ jobs:
         with:
           node-version: '22'
       - name: Validate course review and communications logic
-        run: php tools/test-course-reviews-communications.php
+        run: |
+          php tools/test-course-reviews-communications.php
+          php tools/test-communications-builder-document.php
       - name: Install focused browser runtime
         run: |
           npm install --no-audit --no-fund
