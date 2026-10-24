@@ -179,6 +179,23 @@ function initLab(){
     finally{if(saveButton)saveButton.disabled=campaignId<1;}
   });
   root.querySelector('[data-lab-export]')?.addEventListener('click',doExport);
+  root.querySelector('[data-lab-server-preview]')?.addEventListener('click',async ()=>{
+    const result=doExport();if(!result)return;
+    const endpoint=root.dataset.serverPreviewEndpoint;
+    const frame=root.querySelector('[data-lab-server-frame]');
+    if(!endpoint||!frame){setStatus(status,'Prévia no servidor indisponível.',true);return;}
+    try{
+      const refs=mediaReferences(result.mjml);
+      const body=new URLSearchParams({_csrf:root.dataset.validationToken,
+        mjml:result.mjml,media_refs:JSON.stringify(refs)});
+      const response=await fetch(endpoint,{method:'POST',credentials:'same-origin',cache:'no-store',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body});
+      const data=await response.json();
+      if(!response.ok||!data.ok)throw Error(data.error||'O servidor recusou o documento.');
+      frame.srcdoc=data.render.html;
+      setStatus(status,'Prévia do servidor gerada. Compare os dois resultados antes de aprovar o layout.');
+    }catch(error){setStatus(status,'Não foi possível gerar a prévia do servidor: '+error.message,true);}
+  });
   root.querySelector('[data-lab-validate]')?.addEventListener('click',async ()=>{
     const result=doExport();
     if(!result)return;
