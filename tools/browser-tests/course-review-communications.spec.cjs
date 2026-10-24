@@ -396,6 +396,7 @@ test.describe('real application: reviews and communications',()=>{
    expect(imageValidator.rejected.body.error).toMatch(/Biblioteca pública|imagem/i);
    // Explicit proof e-mail: PHP builds the same HTML as the trusted server preview.
    const beforeVisualTest=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   expect(beforeVisualTest).toBe(capturedBeforeBuilder);
    admin.once('dialog',dialog=>dialog.accept());
    await admin.locator('[data-lab-send-test]').click();
    await expect(admin.locator('[data-lab-status]')).toContainText('Teste visual aceito pelo servidor');
@@ -448,7 +449,7 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-lab-styles-panel]')).toBeVisible();
    await expect(admin.locator('[data-lab-blocks-panel]')).toBeHidden();
    await admin.screenshot({path:info.outputPath('email-builder-real-admin-mobile-inspector.png')});
-   expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toBe(capturedBeforeBuilder);
+   expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toBe(afterVisualTest);
    expect(errors).toEqual([]);
    await studentCtx.close();await adminCtx.close();
  });
