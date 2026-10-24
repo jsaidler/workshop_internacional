@@ -22,7 +22,7 @@ try{
         $asset=communication_media_asset($db,$newId);
         echo json_encode(['items'=>[['id'=>$newId,'title'=>(string)$asset['title'],
           'alt'=>(string)($asset['default_alt']??''),'src'=>media_url((string)$asset['email_path']),
-          'canonical_src'=>communication_site_url($db).media_url((string)$asset['email_path'])]]],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;
+          'canonical_src'=>($origin=communication_site_url($db))!==''?$origin.media_url((string)$asset['email_path']):'']]],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;
     }
     if(($_SERVER['REQUEST_METHOD']??'GET')!=='GET'){http_response_code(405);throw new RuntimeException('Método inválido.');}
     echo json_encode(['items'=>communication_media_choices($db)],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
