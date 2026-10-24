@@ -21,7 +21,7 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
 ?>
 <div class="communications-email-lab" data-communications-email-lab data-media-endpoint="/admin/communications-media.php"
   data-validation-endpoint="/admin/communications-builder-validate.php" data-validation-token="<?=h(csrf_token('communications-admin'))?>"
-  data-draft-endpoint="/admin/communications-builder-draft.php" data-campaign-id="<?=$campaignId?>">
+  data-draft-endpoint="/admin/communications-builder-draft.php" data-campaign-id="<?=$campaignId?>" data-activity-id="<?=$activityId?>">
   <div class="email-lab-heading">
     <div>
       <p class="admin-kicker">Laboratório de composição</p>
