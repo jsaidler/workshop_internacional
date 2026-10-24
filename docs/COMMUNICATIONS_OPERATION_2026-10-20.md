@@ -1,5 +1,11 @@
 # Comunicações por e-mail — operação
 
+## Prévia HTML produzida pelo PHP — 24/10/2026 (PR #293, em revisão)
+
+O laboratório passou a ter **Prévia do servidor** além da prévia compilada pelo plugin MJML do navegador. O endpoint autenticado `admin/communications-builder-preview.php` exige POST e CSRF; chama `communication_builder_render_email()`, que **revalida o MJML no PHP** e gera uma estrutura HTML de tabelas, texto alternativo de imagens, botões, divisores e versão em texto simples. A saída retorna hash de conteúdo para auditoria. Não escreve na campanha, não cria envios nem usa o HTML fornecido pelo navegador como resultado confiável.
+
+O renderer implementa **um subconjunto fechado do MJML**, não equivalência universal ao compilador MJML oficial. Antes de usar no envio, é obrigatório comparar o resultado recebido em Gmail/Outlook e fazer paridade visual entre ambos os compiladores, inclusive duas colunas, imagens, tipografia e comportamento mobile. Divergências de layout devem ser corrigidas no renderer compartilhado, não mascaradas por estilos por mensagem. O envio com esse HTML segue bloqueado até aceite visual e compatibilidade.
+
 ## Rascunho visual versionado — 24/10/2026 (PR #293, não publicado)
 
 Um rascunho de campanha **já salvo** na aba Mensagens pode abrir o laboratório pelo link **Abrir construtor visual experimental**. A composição MJML editável é gravada em `communication_builder_drafts` (migração aditiva 111), ligada à campanha, com versão de formato, revisão otimista, referências das imagens públicas e data de atualização. O endpoint `/admin/communications-builder-draft.php` só permite edição de mensagens em estado `draft` e da área administrativa selecionada. A gravação exige login, token CSRF, validação estrutural MJML no servidor, controle concorrente de revisão e checagem de mídia dentro da transação; abrir e reabrir usa GET autenticado. A revisão obsoleta é rejeitada, não sobrescrita.
