@@ -1,5 +1,9 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Prévia canônica no servidor — 24/10/2026, não publicada
+
+`app/communications_builder_renderer.php` oferece uma geração PHP determinística de HTML tabular para o **subconjunto validado** de blocos MJML do laboratório, incluindo texto alternativo, links, duas colunas, botões e saída texto simples; `admin/communications-builder-preview.php` expõe a comparação mediante login e CSRF. Não é um compilador MJML completo, nem está autorizado como transporte de campanhas. A comparação visual dos resultados PHP e MJML/browser e recebimento real por clientes diferentes é requisito de aceite antes da migração do envio.
+
 ## Persistência MJML experimental (24/10/2026 — PR #293 não publicado)
 
 O laboratório agora pode abrir, salvar e reabrir um documento MJML vinculado a **uma campanha previamente salva e ainda em rascunho**. A migração 111 cria tabela separada `communication_builder_drafts`, com versão 1, MJML canônico validado, referências de mídia, revisão otimista e timestamps. O endpoint `admin/communications-builder-draft.php` exige admin, atividade correspondente e CSRF no POST; rejeita alterações de campanha enfileirada/enviada e gravações com revisão desatualizada. O corpo HTML/texto, categoria, consentimento, destinatários e estados anteriores da campanha não são alterados. **Não usar MJML do cliente como corpo enviado.** O pipeline MJML→HTML aprovado no servidor e a integração com o envio são pendentes da questão #290.
