@@ -351,8 +351,7 @@ test.describe('real application: reviews and communications',()=>{
    await expect(serverPreview.locator('body')).toContainText('Coluna direita');
    await expect(browserPreview.locator('body')).toContainText('Ateliê fotográfico');
    await expect(browserPreview.locator('body')).toContainText('Coluna direita');
-   await browserPreview.locator('body').screenshot({path:info.outputPath('mjml-browser-email-full.png')});
-   await serverPreview.locator('body').screenshot({path:info.outputPath('php-server-email-full.png')});
+   await admin.screenshot({path:info.outputPath('email-builder-both-previews-full-page.png'),fullPage:true,animations:'disabled'});
    const security=await admin.evaluate(async()=>{
      const panel=document.querySelector('[data-communications-email-lab]');
      const good=window.__communicationsEmailLab.editor.getHtml();
