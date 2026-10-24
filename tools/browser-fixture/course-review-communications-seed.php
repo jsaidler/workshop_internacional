@@ -51,7 +51,8 @@ if($mode==='brevo-credential'){
 if($mode==='snapshot'){
     echo json_encode([
       'reviews'=>$db->query('SELECT id,course_id,cohort_id,title,meeting_status FROM course_review_sessions ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
-      'campaigns'=>$db->query('SELECT id,category,status FROM communication_campaigns ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
+      'campaigns'=>$db->query('SELECT id,category,status,body_html,body_text FROM communication_campaigns ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
+      'builder_drafts'=>$db->query('SELECT campaign_id,document_version,revision,mjml_source FROM communication_builder_drafts ORDER BY campaign_id')->fetchAll(PDO::FETCH_ASSOC),
       'deliveries'=>$db->query('SELECT campaign_id,student_id,status FROM communication_deliveries ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
       'preferences'=>$db->query('SELECT * FROM communication_preferences ORDER BY student_id')->fetchAll(PDO::FETCH_ASSOC),
       'staff_notices'=>$db->query('SELECT admin_id,event_kind,status,event_key FROM admin_student_notice_outbox ORDER BY id')->fetchAll(PDO::FETCH_ASSOC)
