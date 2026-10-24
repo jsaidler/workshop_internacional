@@ -27,6 +27,17 @@
 @media(max-width:1120px){.email-lab-workspace{grid-template-columns:minmax(0,1fr)}.email-lab-side{grid-template-columns:repeat(2,minmax(0,1fr))}.email-lab-side h2,.email-lab-side p,.email-lab-side hr,.email-lab-side iframe,.email-lab-side details{grid-column:1/-1}}
 
 /* Embed GrapesJS library managers in the existing CMS column. */
+/* Dedicated full-width compiler comparison, separate from the block palette. */
+.email-lab-comparison{display:grid;gap:14px;padding:18px;border:1px solid var(--admin-line);border-radius:6px;background:#fff}
+.email-lab-comparison-heading{display:grid;gap:5px}
+.email-lab-comparison-heading h2{font-size:19px;margin:0}
+.email-lab-comparison-heading p{font-size:13px;color:var(--admin-muted);line-height:1.5;margin:0}
+.email-lab-comparison-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.email-lab-comparison-item{display:grid;gap:8px;min-width:0;align-content:start}
+.email-lab-comparison-item h3{font-size:15px;margin:0}
+.email-lab-comparison-item p{font-size:12px;line-height:1.45;color:var(--admin-muted);margin:0}
+.email-lab-comparison-item iframe{width:100%;height:660px;border:1px solid var(--admin-line);background:#fff}
+@media(max-width:760px){.email-lab-comparison-grid{grid-template-columns:1fr}}
 .email-lab-inspector-toggle{display:none}
 .email-lab-side-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;grid-column:1/-1}
 .email-lab-side-tabs button{width:100%;background:#f1f2ee}
