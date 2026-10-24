@@ -40,7 +40,7 @@ function communication_builder_render_email(PDO $db,string $source,array $mediaR
     $renderBlock=static function(DOMElement $node)use($escape,$style,$contents):string{
         switch($node->tagName){
         case 'mj-text':
-            $css='font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#252525;'
+            $css='font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#252525;padding:10px 25px;'
                 .$style($node,['font-size'=>'font-size','line-height'=>'line-height','font-weight'=>'font-weight',
                     'color'=>'color','align'=>'text-align','font-family'=>'font-family','padding'=>'padding']);
             return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="'.$css.'">'
