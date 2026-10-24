@@ -1,5 +1,9 @@
 # Privacidade e LGPD — desenho operacional
 
+## Armazenamento de composição experimental — 24/10/2026
+
+O MJML criado no construtor pode ser armazenado **apenas mediante salvamento explícito** e somente para uma campanha em rascunho da atividade autenticada. Fica em `communication_builder_drafts`, separado do corpo enviado, com histórico de revisão atual e IDs de mídias públicas. A API exige CSRF para escrita e restringe acesso por atividade e estado; alterações simultâneas não sobrescrevem o documento sem aviso. Não são processados novos destinatários nem capturados dados de alunos adicionais. A opção não gera e-mails, rastreadores ou transmissão ao provedor externo.
+
 ## Laboratório isolado de e-mails por blocos — 22/10/2026
 
 O protótipo GrapesJS/MJML exige login administrativo, lê somente a Biblioteca pública pelo endpoint existente e não persiste modelos, arquivos de mídia nem composições; não envia e-mails. O novo endpoint experimental de validação recebe MJML somente mediante autenticação e token CSRF, analisa a estrutura no servidor, consulta a Biblioteca para verificar referências públicas e descarta o documento após responder; não há armazenamento. Os dados exibidos no quadro demonstrativo não provêm de alunos. Imagens vindas de URLs arbitrárias são rejeitadas na exportação do laboratório, mas isso não substitui validação no servidor caso a ferramenta evolua para uso efetivo. O projeto não altera controles de opt-in/opt-out, matrículas ou tratamento dos destinatários.
