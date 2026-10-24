@@ -359,6 +359,8 @@ test.describe('real application: reviews and communications',()=>{
      expect(right.x-left.x).toBeGreaterThan(40);
      expect(Math.abs(right.y-left.y)).toBeLessThan(30);
    }
+   fs.writeFileSync(info.outputPath('mjml-compiled-output.html'),await browserPreview.locator('html').evaluate(el=>el.outerHTML));
+   fs.writeFileSync(info.outputPath('php-rendered-output.html'),await serverPreview.locator('html').evaluate(el=>el.outerHTML));
    await admin.screenshot({path:info.outputPath('email-builder-both-previews-full-page.png'),fullPage:true,animations:'disabled'});
    await admin.evaluate(()=>document.querySelector('iframe[data-lab-preview]')?.scrollIntoView({block:'center',behavior:'instant'}));
    await admin.screenshot({path:info.outputPath('mjml-browser-preview-in-viewport.png'),animations:'disabled'});
@@ -379,6 +381,14 @@ test.describe('real application: reviews and communications',()=>{
    expect(security).toEqual({noToken:403,malicious:422,refused:true});
    await admin.screenshot({path:info.outputPath('email-builder-real-admin-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
+   for(const frame of [browserPreview,serverPreview]){
+     const left=await frame.getByText('Coluna esquerda',{exact:true}).boundingBox();
+     const right=await frame.getByText('Coluna direita',{exact:true}).boundingBox();
+     expect(Math.abs(right.x-left.x)).toBeLessThan(40);
+     expect(right.y-left.y).toBeGreaterThan(12);
+   }
+   await admin.locator('iframe[data-lab-preview]').scrollIntoViewIfNeeded();
+   await admin.screenshot({path:info.outputPath('mobile-email-preview-comparison.png'),animations:'disabled'});
    await expect(admin.locator('[data-lab-inspector-toggle]')).toBeVisible();
    await expect(admin.locator('[data-lab-blocks-panel]')).toBeVisible();
    await expect(admin.locator('[data-lab-styles-panel]')).toBeHidden();
