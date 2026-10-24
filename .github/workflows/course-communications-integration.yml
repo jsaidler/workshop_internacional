@@ -49,6 +49,7 @@ jobs:
           php tools/test-course-reviews-communications.php
           php tools/test-communications-builder-document.php
           php tools/test-communications-builder-drafts.php
+          php tools/test-communications-builder-renderer.php
       - name: Install focused browser runtime
         run: |
           npm install --no-audit --no-fund
