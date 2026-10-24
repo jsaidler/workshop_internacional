@@ -16,7 +16,8 @@ if(!$activity){header('Location: /admin/activities.php',true,303);exit;}
 $activityId=(int)$activity['id'];
 admin_shell_start('communications','Construtor de e-mails — laboratório',$state,['/assets/communications-builder-lab.css']);
 ?>
-<div class="communications-email-lab" data-communications-email-lab data-media-endpoint="/admin/communications-media.php">
+<div class="communications-email-lab" data-communications-email-lab data-media-endpoint="/admin/communications-media.php"
+  data-validation-endpoint="/admin/communications-builder-validate.php" data-validation-token="<?=h(csrf_token('communications-admin'))?>">
   <div class="email-lab-heading">
     <div>
       <p class="admin-kicker">Laboratório de composição</p>
@@ -35,6 +36,7 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
     <button type="button" data-lab-inspector-toggle aria-pressed="false" class="email-lab-inspector-toggle">Estilos</button>
     <button type="button" data-lab-reopen>Testar reabertura</button>
     <button type="button" data-lab-export class="email-lab-primary">Gerar prévia</button>
+    <button type="button" data-lab-validate>Validar segurança</button>
   </div>
   <p role="status" aria-live="polite" data-lab-status class="email-lab-status">Inicializando o construtor…</p>
   <div class="email-lab-workspace">
