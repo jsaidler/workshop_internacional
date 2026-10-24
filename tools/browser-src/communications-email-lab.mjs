@@ -150,6 +150,7 @@ function initLab(){
   async function draftRequest(action,payload){
     if(!campaignId||!draftEndpoint)throw Error('Salve a mensagem na área de Comunicações antes de editar seu layout.');
     const url=new URL(draftEndpoint,location.href);
+    url.searchParams.set('activity',String(Number(root.dataset.activityId||0)));
     if(action==='read'){
       url.searchParams.set('campaign_id',String(campaignId));
       const response=await fetch(url,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
