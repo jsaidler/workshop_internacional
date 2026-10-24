@@ -42,6 +42,7 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
     <button type="button" data-lab-reopen>Testar reabertura</button>
     <button type="button" data-lab-export class="email-lab-primary">Gerar prévia</button>
     <button type="button" data-lab-validate>Validar segurança</button>
+    <button type="button" data-lab-server-preview>Prévia do servidor</button>
     <button type="button" data-lab-save <?=$campaignId<1?'disabled':''?> title="Salva somente o documento MJML, sem modificar o e-mail enviado">Salvar composição</button>
   </div>
   <p role="status" aria-live="polite" data-lab-status class="email-lab-status">Inicializando o construtor…</p>
