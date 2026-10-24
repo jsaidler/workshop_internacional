@@ -1,5 +1,9 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Prova de entrega HTML do laboratório — 24/10/2026 (PR #293 em revisão)
+
+A rota `admin/communications-builder-test.php` gera um e-mail de prova **exclusivamente ao administrador logado**, mediante confirmação UI, CSRF e limite de frequência, validando MJML e mídia no PHP. O HTML enviado usa o mesmo hash da prévia renderizada no servidor. O fluxo reutiliza `communication_send_message`, com opção interna de HTML canônico para Brevo/PHP, mantendo intacto o envio de campanhas existente. Testes de endpoint/MIME via fake sendmail impedem qualquer contato real no CI. O editor continua **sem capacidade de envio aos alunos**; Gmail/Outlook devem ser conferidos manualmente antes de promover o renderer ao transporte de campanhas.
+
 ## Prévia canônica no servidor — 24/10/2026, não publicada
 
 `app/communications_builder_renderer.php` oferece uma geração PHP determinística de HTML tabular para o **subconjunto validado** de blocos MJML do laboratório, incluindo texto alternativo, links, duas colunas, botões e saída texto simples; `admin/communications-builder-preview.php` expõe a comparação mediante login e CSRF. Não é um compilador MJML completo, nem está autorizado como transporte de campanhas. A comparação visual dos resultados PHP e MJML/browser e recebimento real por clientes diferentes é requisito de aceite antes da migração do envio.
