@@ -80,6 +80,9 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
       <h2>Prévia compilada</h2>
       <p>HTML gerado pelo compilador MJML, não uma simulação da aparência final.</p>
       <iframe data-lab-preview title="Prévia compilada do e-mail" sandbox="" referrerpolicy="no-referrer"></iframe>
+      <h2>Prévia canônica experimental (PHP)</h2>
+      <p>Estrutura tabular gerada no servidor a partir do mesmo MJML. Ainda não habilitada para envio.</p>
+      <iframe data-lab-server-frame title="Prévia HTML produzida pelo servidor" sandbox="" referrerpolicy="no-referrer"></iframe>
       <details>
         <summary>Examinar MJML editável</summary>
         <textarea data-lab-source readonly spellcheck="false" aria-label="Código MJML gerado" rows="9"></textarea>
