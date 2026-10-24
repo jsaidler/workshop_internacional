@@ -195,6 +195,37 @@ test.describe('real application: reviews and communications',()=>{
    await admin.getByRole('button',{name:'Selecionar todos'}).click();
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
    await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
+   // The visual composition persists independently from the actual delivery body.
+   const editedCampaignId=Number(await admin.locator('input[name="campaign_id"]').first().inputValue());
+   expect(editedCampaignId).toBeGreaterThan(0);
+   const originalHtml=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000})).campaigns[0].body_html;
+   await admin.getByRole('link',{name:'Abrir construtor visual experimental'}).click();
+   await expect.poll(()=>admin.evaluate(()=>Boolean(window.__communicationsEmailLab?.loaded))).toBe(true);
+   await expect(admin.locator('[data-lab-save]')).toBeEnabled();
+   await admin.locator('[data-lab-add-columns]').click();
+   await admin.locator('[data-lab-save]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Composição visual salva (revisão 1)');
+   const visualSaved=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(visualSaved.builder_drafts).toHaveLength(1);
+   expect(visualSaved.builder_drafts[0].revision).toBe(1);
+   expect(visualSaved.builder_drafts[0].mjml_source.match(/<mj-column/g)).toHaveLength(4);
+   expect(visualSaved.campaigns[0].body_html).toBe(originalHtml);
+   await admin.reload();
+   await expect.poll(()=>admin.evaluate(()=>Boolean(window.__communicationsEmailLab?.loaded))).toBe(true);
+   expect(await admin.evaluate(()=>window.__communicationsEmailLab.getRevision())).toBe(1);
+   expect(await admin.evaluate(()=>window.__communicationsEmailLab.editor.getHtml())).toContain('Coluna direita');
+   const staleWrite=await admin.evaluate(async()=>{
+     const lab=document.querySelector('[data-communications-email-lab]');
+     const data=new URLSearchParams({_csrf:lab.dataset.validationToken,campaign_id:lab.dataset.campaignId,
+       revision:'0',mjml:window.__communicationsEmailLab.editor.getHtml(),media_refs:'{}'});
+     const response=await fetch(lab.dataset.draftEndpoint,{method:'POST',credentials:'same-origin',
+       headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data});
+     return {status:response.status,body:await response.json()};
+   });
+   expect(staleWrite.status).toBe(422);
+   expect(staleWrite.body.error).toContain('outra aba');
+   await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId+'&tab=campaigns&id='+editedCampaignId);
+   await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
    admin.once('dialog',dialog=>dialog.accept());
    await admin.getByRole('button',{name:'Somente colocar na fila'}).click();
    await expect(admin.getByText(/e-mail\(s\) colocado\(s\) na fila/)).toBeVisible();
