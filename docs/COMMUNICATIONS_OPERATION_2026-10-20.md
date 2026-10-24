@@ -1,5 +1,11 @@
 # Comunicações por e-mail — operação
 
+## Pré-cabeçalho opcional — 22/10/2026 (PR em revisão)
+
+Em **Comunicações → Mensagens**, o campo **Pré-cabeçalho (opcional)** aceita até 150 caracteres de texto simples, sem quebras de linha. É um complemento ao assunto que os clientes de e-mail podem apresentar na caixa de entrada; o conteúdo não precisa repetir a primeira frase da mensagem. O valor é armazenado no rascunho, exibido na revisão, preservado ao duplicar e incluído no HTML do e-mail de teste ou efetivo pelo renderer único `communication_email_document()` (Brevo e PHP). Não cria cabeçalho SMTP: é um elemento de prévia oculto no início do HTML, com escape rigoroso de conteúdo editorial.
+
+A migração aditiva 110 acrescenta `communication_campaigns.preheader` com padrão vazio. Rascunhos e campanhas anteriores mantêm seu corpo e seus envios; a saída HTML é idêntica quando o pré-cabeçalho é vazio. No modo somente texto com pré-cabeçalho definido, os transportes geram versão HTML alternativa, mantendo a parte de texto simples intacta. A existência do pré-cabeçalho não assegura que todos os clientes de e-mail o mostrem. Não alterar audiência, consentimento, fila ou histórico de campanhas já processadas.
+
 ## Enviar agora e cancelar a fila — 22/10/2026 (PR em revisão)
 
 A aba **Avisos dos alunos** também oferece **Enviar avisos agora**, **Cancelar avisos pendentes** e **Reprocessar falhas**. O envio manual não requer cron e processa exclusivamente avisos destinados ao administrador autenticado. Usa o mesmo lock do worker agendado e um destinatário por requisição. Cancelamentos preservam histórico com estado ignorado e motivo identificado. Uma falha de transporte ou interrupção pode ocorrer depois do aceite externo; esses itens não são reenviados automaticamente, e a repetição exige confirmação expressa devido ao risco de duplicação. A página deve permanecer aberta até concluir os lotes. O cron é opcional também para avisos.

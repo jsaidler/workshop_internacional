@@ -139,6 +139,7 @@ test.describe('real application: reviews and communications',()=>{
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Nova atividade de fotografia');
+   await admin.locator('input[name="preheader"]').fill('Um encontro e uma experiência no laboratório');
    const recipients=admin.locator('[data-recipient-list] input[name="recipient_ids[]"]');
    await expect(recipients).toHaveCount(1);
    await expect(admin.locator('[data-recipient-count]')).toContainText('1 de 1');
@@ -174,6 +175,7 @@ test.describe('real application: reviews and communications',()=>{
    await admin.getByRole('button',{name:'Inserir na mensagem'}).click();
    await expect(admin.locator('[data-mail-editor] figure img')).toHaveCount(1);
    await expect(admin.locator('[data-mail-editor]')).toContainText('Encontro experimental com vagas abertas.');
+   await expect(admin.locator('input[name="preheader"]')).toHaveValue('Um encontro e uma experiência no laboratório');
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
    await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('rich-composer-mobile.png')});
@@ -184,6 +186,7 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-recipient-count]')).toContainText('1 de 1');
    const emailFrame=admin.frameLocator('.comms-send-review iframe[title="Prévia visual do e-mail"]');
    await expect(emailFrame.locator('body')).toContainText('Encontro experimental');
+   await expect(emailFrame.locator('body [aria-hidden="true"]')).toContainText('Um encontro e uma experiência no laboratório');
    await expect(emailFrame.locator('img')).toHaveAttribute('alt','Bancada no laboratório fotográfico');
    await expect(emailFrame.locator('img')).toHaveAttribute('src',/https:\/\/example\.test\/uploads\/media\//);
    await admin.locator('.comms-send-review [data-email-preview-mode="mobile"]').click();
@@ -231,6 +234,7 @@ test.describe('real application: reviews and communications',()=>{
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
    await admin.locator('input[name="subject"]').fill('Envio imediato QA');
+   await admin.locator('input[name="preheader"]').fill('Prévia real de uma mensagem para alunos');
    await admin.locator('[data-mail-editor]').fill('Teste de envio imediato pela fila do CMS.');
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
    await expect(admin.getByRole('button',{name:'Confirmar e enviar agora'})).toBeVisible();
@@ -251,6 +255,11 @@ test.describe('real application: reviews and communications',()=>{
      return parts.map(part=>Buffer.from(part[1].replace(/\s+/g,''),'base64').toString('utf8')).join('\n');
    }
    expect(decodedPlainMessages(capturedEmail)).toContain('Teste de envio imediato pela fila do CMS.');
+   const htmlPart=capturedEmail.match(/Content-Type: text\/html; charset=UTF-8\r?\nContent-Transfer-Encoding: base64\r?\n\r?\n([A-Za-z0-9+/=\r\n]+)/i);
+   expect(htmlPart).not.toBeNull();
+   const sentHtml=Buffer.from(htmlPart[1].replace(/\s+/g,''),'base64').toString('utf8');
+   expect(sentHtml).toContain('Prévia real de uma mensagem para alunos');
+   expect(sentHtml).toContain('aria-hidden="true"');
    // Um envio enfileirado anteriormente precisa poder ser disparado pelo botão global.
    await admin.getByRole('link',{name:'Nova mensagem'}).click();
    await admin.locator('select[name="category"]').selectOption('newsletter');

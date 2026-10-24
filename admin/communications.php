@@ -23,7 +23,7 @@ $selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
 if($selectedId && !$selected){http_response_code(404);exit('Comunicação não encontrada nesta área.');}
 $form=$selected?:[
     'category'=>'newsletter','course_id'=>max(0,(int)($_GET['course']??0)),
-    'cohort_id'=>0,'subject'=>'','body_text'=>'','body_html'=>'','template_key'=>'minimal','status'=>'draft'
+    'cohort_id'=>0,'subject'=>'','preheader'=>'','body_text'=>'','body_html'=>'','template_key'=>'minimal','status'=>'draft'
 ];
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('communications-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Solicitação inválida.');}
@@ -135,6 +135,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
               'course_id'=>max(0,(int)($_POST['course_id']??0)),
               'cohort_id'=>max(0,(int)($_POST['cohort_id']??0)),
               'subject'=>(string)($_POST['subject']??''),
+              'preheader'=>(string)($_POST['preheader']??''),
               'body_text'=>(string)($_POST['body_text']??''),
               'body_html'=>(string)($_POST['body_html']??''),
               'template_key'=>(string)($_POST['template_key']??'minimal'),
@@ -171,6 +172,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             communication_send_message($db,[
               'name'=>'Teste do administrador','email'=>$email,
               'subject'=>'[TESTE] '.(string)$selected['subject'],
+              'preheader'=>(string)($selected['preheader']??''),
               'body'=>(string)$selected['body_text']."\n\n[Mensagem de teste. Nenhum aluno foi notificado.]",
               'html'=>(string)($selected['body_html']??''),
               'template'=>(string)($selected['template_key']??'minimal'),
@@ -229,7 +231,7 @@ $renderedEmailPreview='';
 if($tab==='campaigns'&&trim((string)($form['body_text']??''))!==''){
     try {
         $renderedEmailPreview=communication_email_document((string)($form['body_html']??''),(string)$form['body_text'],
-            $db,(string)($form['template_key']??'minimal'),$activityId);
+            $db,(string)($form['template_key']??'minimal'),$activityId,(string)($form['preheader']??''));
     }catch(Throwable $e){$error=$e->getMessage();}
 }
 admin_shell_start('communications','Comunicações',$state,['/assets/admin-operations.css']);
@@ -469,6 +471,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
         </div>
       </fieldset>
       <label class="comms-compose-label">Assunto<input name="subject" maxlength="180" value="<?=h((string)$form['subject'])?>" required></label>
+      <label class="comms-compose-label">Pré-cabeçalho (opcional)
+        <input name="preheader" maxlength="150" value="<?=h((string)($form['preheader']??''))?>" placeholder="Texto exibido após o assunto na caixa de entrada">
+      </label>
       <section class="comms-rich-section" aria-labelledby="rich-heading">
         <div class="comms-recipient-heading"><h3 id="rich-heading">Mensagem</h3><span class="muted">Editor visual</span></div>
         <div class="comms-editor-toolbar" role="toolbar" aria-label="Formatação da mensagem">
@@ -514,6 +519,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     </dialog>
     <?php else:?>
     <h3><?=h((string)$form['subject'])?></h3>
+    <?php if(trim((string)($form['preheader']??''))!==''):?>
+      <p class="muted"><strong>Pré-cabeçalho:</strong> <?=h((string)$form['preheader'])?></p>
+    <?php endif;?>
     <div class="comms-preview-toolbar"><strong>Prévia do e-mail</strong><div class="comms-preview-toggle" aria-label="Largura da prévia"><button type="button" data-email-preview-mode="desktop" aria-pressed="true">Computador</button><button type="button" data-email-preview-mode="mobile" aria-pressed="false">Celular</button></div></div>
       <?php if($renderedEmailPreview!==''):?>
       <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h($renderedEmailPreview)?>"></iframe></div>
@@ -524,11 +532,12 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <section class="comms-send-review" aria-labelledby="send-review-title">
       <header><h3 id="send-review-title">Revisão do envio</h3><p><strong><?=$preview?></strong> destinatário(s) selecionado(s) e elegível(is).</p></header>
       <p><strong><?=h((string)$form['subject'])?></strong></p>
+      <?php if(trim((string)($form['preheader']??''))!==''):?><p class="muted"><strong>Pré-cabeçalho:</strong> <?=h((string)$form['preheader'])?></p><?php endif;?>
       <div class="comms-preview-toolbar"><strong>Prévia do e-mail</strong><div class="comms-preview-toggle" aria-label="Largura da prévia"><button type="button" data-email-preview-mode="desktop" aria-pressed="true">Computador</button><button type="button" data-email-preview-mode="mobile" aria-pressed="false">Celular</button></div></div>
       <?php if($renderedEmailPreview!==''):?>
       <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h($renderedEmailPreview)?>"></iframe></div>
       <?php else:?><p class="comms-attention">A prévia não está disponível. Verifique as imagens e o endereço do site.</p><?php endif;?>
-      <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)($form['body_html']??'')===(string)($selected['body_html']??'') && (string)($form['template_key']??'minimal')===(string)($selected['template_key']??'minimal') && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id']):?>
+      <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)($form['preheader']??''))===(string)($selected['preheader']??'') && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)($form['body_html']??'')===(string)($selected['body_html']??'') && (string)($form['template_key']??'minimal')===(string)($selected['template_key']??'minimal') && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id']):?>
       <form method="post" class="comms-inline-actions">
         <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
         <input type="hidden" name="campaign_id" value="<?=$selectedId?>">

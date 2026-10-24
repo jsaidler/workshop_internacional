@@ -34,6 +34,15 @@ email_assert(str_contains($styled,'display:inline-block')&&str_contains($styled,
 $invalid=false;
 try{communication_template_key('bad');}catch(RuntimeException){$invalid=true;}
 email_assert($invalid,'unknown template rejected');
+$inbox='Mensagem importante & privada <não exibir como HTML>';
+$withPreview=communication_email_document('<p>Conteúdo real</p>','Conteúdo real',$db,'editorial',0,$inbox);
+email_assert(str_contains($withPreview,'aria-hidden="true"')&&str_contains($withPreview,'Mensagem importante &amp; privada &lt;não exibir como HTML&gt;'),'inbox preview escaped and hidden');
+email_assert(str_contains($withPreview,'Conteúdo real'),'preheader does not replace message content');
+email_assert(!str_contains(communication_email_document('<p>Normal</p>','Normal',$db),'aria-hidden="true"'),'legacy emails contain no preheader wrapper');
+$invalid=false;try{communication_preheader(str_repeat('a',151));}catch(RuntimeException){$invalid=true;}
+email_assert($invalid,'overlong preheader rejected');
+$invalid=false;try{communication_preheader("Cabeçalho\r\nBcc: leak@example.test");}catch(RuntimeException){$invalid=true;}
+email_assert($invalid,'line breaks and header injection rejected');
 $db->exec("UPDATE media_assets SET visibility='private' WHERE id=7");
 $invalid=false;try{communication_validate_images($db,$safe);}catch(RuntimeException){$invalid=true;}
 email_assert($invalid,'private media cannot enter outgoing email');
@@ -43,6 +52,11 @@ email_assert($invalid,'archived media cannot render');
 $db->exec("CREATE TABLE communication_campaigns(id INTEGER PRIMARY KEY)");
 (require dirname(__DIR__).'/migrations/109_communication_email_templates.php')($db);
 (require dirname(__DIR__).'/migrations/109_communication_email_templates.php')($db);
+(require dirname(__DIR__).'/migrations/110_communication_preheader.php')($db);
+(require dirname(__DIR__).'/migrations/110_communication_preheader.php')($db);
 $cols=array_column($db->query('PRAGMA table_info(communication_campaigns)')->fetchAll(PDO::FETCH_ASSOC),'name');
 email_assert(in_array('template_key',$cols,true),'migration 109 idempotent');
+email_assert(in_array('preheader',$cols,true),'migration 110 idempotent');
+$db->exec("INSERT INTO communication_campaigns(id) VALUES(9)");
+email_assert((string)$db->query("SELECT preheader FROM communication_campaigns WHERE id=9")->fetchColumn()==='','historical campaigns default to empty preheader');
 echo "email-design: OK\n";

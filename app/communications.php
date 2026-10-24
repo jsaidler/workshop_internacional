@@ -150,15 +150,16 @@ function communication_create_campaign(PDO $db,int $activityId,array $input): in
     communication_assert_scope($db,$activityId,$courseId,$cohortId,$category);
     $subject=trim((string)($input['subject']??''));
     if($subject===''||mb_strlen($subject)>180)throw new RuntimeException('Informe um assunto com até 180 caracteres.');
+    $preheader=communication_preheader((string)($input['preheader']??''));
     $body=communication_campaign_body($input);
     communication_validate_images($db,$body['body_html']);
     $template=communication_template_key((string)($input['template_key']??'minimal'));
     $individual=!empty($input['selection_explicit']);
     $targets=$individual?communication_validate_targets($db,$activityId,$input):[];
-    return course_agenda_with_lock($db,static function()use($db,$activityId,$category,$courseId,$cohortId,$subject,$body,$individual,$targets,$template):int{
+    return course_agenda_with_lock($db,static function()use($db,$activityId,$category,$courseId,$cohortId,$subject,$preheader,$body,$individual,$targets,$template):int{
         $now=utc_now();
-        $db->prepare("INSERT INTO communication_campaigns(activity_id,category,course_id,cohort_id,subject,body_text,body_html,selection_mode,template_key,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,'draft',?,?)")
-           ->execute([$activityId,$category,$courseId?:null,$cohortId?:null,$subject,$body['body_text'],$body['body_html'],$individual?'selected':'all',$template,$now,$now]);
+        $db->prepare("INSERT INTO communication_campaigns(activity_id,category,course_id,cohort_id,subject,preheader,body_text,body_html,selection_mode,template_key,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,'draft',?,?)")
+           ->execute([$activityId,$category,$courseId?:null,$cohortId?:null,$subject,$preheader,$body['body_text'],$body['body_html'],$individual?'selected':'all',$template,$now,$now]);
         $id=(int)$db->lastInsertId();
         if($individual)communication_save_campaign_targets($db,$id,$targets);
         return $id;
@@ -236,10 +237,10 @@ function communication_send_php(PDO $db,array $payload): array {
     $encoded=mb_encode_mimeheader($subject,'UTF-8','B',"\r\n");
     $html=trim((string)($payload['html']??''));
     $body=(string)($payload['body']??'');
-    if($html!==''){
+    if($html!==''||!empty($payload['preheader'])){
         $boundary='alt_'.bin2hex(random_bytes(16));
         $headers[]='Content-Type: multipart/alternative; boundary="'.$boundary.'"';
-        $plain=base64_encode($body);$rich=base64_encode(communication_email_document($html,$body,$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0)));
+        $plain=base64_encode($body);$rich=base64_encode(communication_email_document($html,$body,$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0),(string)($payload['preheader']??'')));
         $body='--'.$boundary."\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split($plain,76,"\r\n")
             .'--'.$boundary."\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split($rich,76,"\r\n")
             .'--'.$boundary."--\r\n";
@@ -284,7 +285,7 @@ function communication_send_brevo(array $payload,?PDO $db=null): array {
     $body=['sender'=>['name'=>$cfg['name'],'email'=>$cfg['from']],
       'to'=>[['name'=>$payload['name'],'email'=>$payload['email']]],
       'subject'=>$payload['subject'],'textContent'=>$payload['body']];
-    if(!empty($payload['html']))$body['htmlContent']=communication_email_document((string)$payload['html'],(string)$payload['body'],$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0));
+    if(!empty($payload['html'])||!empty($payload['preheader']))$body['htmlContent']=communication_email_document((string)($payload['html']??''),(string)$payload['body'],$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0),(string)($payload['preheader']??''));
     $request=curl_init('https://api.brevo.com/v3/smtp/email');
     curl_setopt_array($request,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,
       CURLOPT_TIMEOUT=>18,CURLOPT_CONNECTTIMEOUT=>5,
@@ -323,7 +324,7 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
             WHERE status='pending' AND attempts>=3"
             .($activityId!==null?" AND campaign_id IN (SELECT id FROM communication_campaigns WHERE activity_id=?)":""))
           ->execute($activityId!==null?[utc_now(),$activityId]:[utc_now()]);
-        $q=$db->prepare("SELECT d.id,d.campaign_id,d.student_id,c.activity_id,c.category,c.course_id,c.cohort_id,c.subject,c.body_text,c.body_html,c.template_key,c.selection_mode,u.name,u.email
+        $q=$db->prepare("SELECT d.id,d.campaign_id,d.student_id,c.activity_id,c.category,c.course_id,c.cohort_id,c.subject,c.preheader,c.body_text,c.body_html,c.template_key,c.selection_mode,u.name,u.email
           FROM communication_deliveries d JOIN communication_campaigns c ON c.id=d.campaign_id
           JOIN student_users u ON u.id=d.student_id WHERE d.status='pending' AND d.attempts<3
           AND c.status='queued' ".($allowNewsletter?'':"AND c.category!='newsletter' ")
@@ -370,6 +371,7 @@ function communication_dispatch(PDO $db,int $limit=30,?callable $sender=null,?in
         try{
             $receipt=$sender(['name'=>(string)$job['name'],'email'=>(string)$job['email'],
                 'subject'=>(string)$job['subject'],'body'=>$body,'html'=>$html,
+                'preheader'=>(string)($job['preheader']??''),
                 'template'=>(string)($job['template_key']??'minimal'),'activity_id'=>(int)$job['activity_id']]);
             $db->prepare("UPDATE communication_deliveries SET status='sent',provider_id=?,error_code=NULL,delivered_at=?,updated_at=? WHERE id=?")
               ->execute([substr((string)($receipt['id']??''),0,240),utc_now(),utc_now(),$id]);
@@ -469,14 +471,15 @@ function communication_update_campaign(PDO $db,int $activityId,int $id,array $in
     communication_assert_scope($db,$activityId,$courseId,$cohortId,$category);
     $subject=trim((string)($input['subject']??''));
     if($subject===''||mb_strlen($subject)>180)throw new RuntimeException('Informe um assunto com até 180 caracteres.');
+    $preheader=communication_preheader((string)($input['preheader']??''));
     $body=communication_campaign_body($input);
     communication_validate_images($db,$body['body_html']);
     $template=communication_template_key((string)($input['template_key']??'minimal'));
     $individual=!empty($input['selection_explicit']);
     $targets=$individual?communication_validate_targets($db,$activityId,$input):[];
-    return course_agenda_with_lock($db,static function()use($db,$id,$activityId,$category,$courseId,$cohortId,$subject,$body,$individual,$targets,$template):int{
-        $db->prepare('UPDATE communication_campaigns SET category=?,course_id=?,cohort_id=?,subject=?,body_text=?,body_html=?,template_key=?,selection_mode=CASE WHEN ?=1 THEN \'selected\' ELSE selection_mode END,updated_at=? WHERE id=? AND activity_id=? AND status=\'draft\'')
-           ->execute([$category,$courseId?:null,$cohortId?:null,$subject,$body['body_text'],$body['body_html'],$template,$individual?1:0,utc_now(),$id,$activityId]);
+    return course_agenda_with_lock($db,static function()use($db,$id,$activityId,$category,$courseId,$cohortId,$subject,$preheader,$body,$individual,$targets,$template):int{
+        $db->prepare('UPDATE communication_campaigns SET category=?,course_id=?,cohort_id=?,subject=?,preheader=?,body_text=?,body_html=?,template_key=?,selection_mode=CASE WHEN ?=1 THEN \'selected\' ELSE selection_mode END,updated_at=? WHERE id=? AND activity_id=? AND status=\'draft\'')
+           ->execute([$category,$courseId?:null,$cohortId?:null,$subject,$preheader,$body['body_text'],$body['body_html'],$template,$individual?1:0,utc_now(),$id,$activityId]);
         if($individual)communication_save_campaign_targets($db,$id,$targets);
         return $id;
     });
@@ -490,6 +493,7 @@ function communication_duplicate_campaign(PDO $db,int $activityId,int $campaignI
     return communication_create_campaign($db,$activityId,[
         'category'=>(string)$source['category'],'course_id'=>(int)$source['course_id'],
         'cohort_id'=>(int)$source['cohort_id'],'subject'=>(string)$source['subject'],
+        'preheader'=>(string)($source['preheader']??''),
         'body_text'=>(string)$source['body_text'],'body_html'=>(string)($source['body_html']??''),
         'template_key'=>(string)($source['template_key']??'minimal'),
         'selection_explicit'=>1,'recipient_ids'=>array_column($audience,'id')

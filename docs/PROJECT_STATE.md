@@ -1,5 +1,9 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Pré-cabeçalho de mensagens — 22/10/2026 (PR em revisão; não publicado)
+
+Continuidade da questão #271: o compositor ganha pré-cabeçalho editorial opcional (até 150 caracteres) para melhorar a identificação do e-mail na caixa de entrada. O texto é persistido pela migração 110, reaproveitado em rascunho, duplicação, prévia e envio de teste/efetivo, sem entrar no corpo plain-text, sem cabeçalhos SMTP livres e sem nova regra de destinatário. `communication_email_document()` é a única autoridade de HTML para Brevo e `mail()`. Mensagens anteriores têm `preheader=''` e produzem o mesmo HTML anterior. A validação bloqueia controles e quebras de linha; output HTML escapa caracteres especiais. Exigir testes de migração, persistência, duplicação, saída HTML e interface antes de merge, sem envios reais durante CI.
+
 ## Envio imediato e controle da fila de Comunicações — 22/10/2026 (PR em revisão)
 
 **Avisos administrativos também não dependem de cron.** A aba Avisos dos alunos passou a oferecer envio manual, cancelamento de pendentes e reprocessamento confirmado de falhas. Claims, recuperações e estado da fila respeitam o administrador autenticado; o mesmo lock coordena campanha, avisos e worker opcional. Não há reenvio automático após resultado externo inconclusivo. A migração preexistente 104 comporta estados e motivos utilizados. Testes unitários e de navegador foram acrescentados e ainda precisam de validação no CI.
