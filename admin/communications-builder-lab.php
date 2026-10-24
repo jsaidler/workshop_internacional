@@ -22,7 +22,9 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
 <div class="communications-email-lab" data-communications-email-lab data-media-endpoint="/admin/communications-media.php"
   data-validation-endpoint="/admin/communications-builder-validate.php" data-validation-token="<?=h(csrf_token('communications-admin'))?>"
   data-draft-endpoint="/admin/communications-builder-draft.php" data-campaign-id="<?=$campaignId?>" data-activity-id="<?=$activityId?>"
-  data-server-preview-endpoint="/admin/communications-builder-preview.php">
+  data-server-preview-endpoint="/admin/communications-builder-preview.php"
+  data-visual-test-endpoint="/admin/communications-builder-test.php"
+  data-admin-email="<?=h((string)(current_admin()['email']??''))?>">
   <div class="email-lab-heading">
     <div>
       <p class="admin-kicker">Laboratório de composição</p>
@@ -43,6 +45,7 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
     <button type="button" data-lab-export class="email-lab-primary">Gerar prévia</button>
     <button type="button" data-lab-validate>Validar segurança</button>
     <button type="button" data-lab-server-preview>Prévia do servidor</button>
+    <button type="button" data-lab-send-test title="Envia somente para seu e-mail administrativo, nunca aos alunos">Enviar teste visual para meu e-mail</button>
     <button type="button" data-lab-save <?=$campaignId<1?'disabled':''?> title="Salva somente o documento MJML, sem modificar o e-mail enviado">Salvar composição</button>
   </div>
   <p role="status" aria-live="polite" data-lab-status class="email-lab-status">Inicializando o construtor…</p>
