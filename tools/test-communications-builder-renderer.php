@@ -22,6 +22,9 @@ render_assert(str_contains($out['html'],'<table')&&!str_contains($out['html'],'<
 render_assert(str_contains($out['html'],'class="email-col"')&&str_contains($out['html'],'width="50%"'),'two columns visible');
 render_assert(str_contains($out['html'],'Laboratório <strong>fotográfico</strong>'),'typography preserved');
 render_assert(str_contains($out['html'],'href="https://example.test/workshop"'),'button URL preserved safely');
+render_assert(str_contains($out['html'],'font-size:13px;line-height:1;color:#000000;padding:10px 25px'),'MJML default text rhythm');
+render_assert(str_contains($out['html'],'font-size:13px;font-weight:normal;line-height:120%'),'MJML default button rhythm');
+render_assert(str_contains($out['html'],'@media only screen and (max-width:479px)'),'MJML-compatible 480px column breakpoint');
 render_assert(str_contains($out['html'],'alt="Retrato no laboratório"'),'accessible public image');
 render_assert(str_contains($out['html'],'<style>@media only screen'),'mobile layout included');
 render_assert(str_contains($out['text'],'Laboratório fotográfico')&&str_contains($out['text'],'Ver detalhes'),'plain text generated');
