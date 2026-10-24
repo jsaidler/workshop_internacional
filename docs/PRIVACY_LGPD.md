@@ -2,7 +2,7 @@
 
 ## Laboratório isolado de e-mails por blocos — 22/10/2026
 
-O protótipo GrapesJS/MJML exige login administrativo, lê somente a Biblioteca pública pelo endpoint existente e não persiste modelos, arquivos de mídia nem composições; não envia e-mails. Os dados exibidos no quadro demonstrativo não provêm de alunos. Imagens vindas de URLs arbitrárias são rejeitadas na exportação do laboratório, mas isso não substitui validação no servidor caso a ferramenta evolua para uso efetivo. O projeto não altera controles de opt-in/opt-out, matrículas ou tratamento dos destinatários.
+O protótipo GrapesJS/MJML exige login administrativo, lê somente a Biblioteca pública pelo endpoint existente e não persiste modelos, arquivos de mídia nem composições; não envia e-mails. O novo endpoint experimental de validação recebe MJML somente mediante autenticação e token CSRF, analisa a estrutura no servidor, consulta a Biblioteca para verificar referências públicas e descarta o documento após responder; não há armazenamento. Os dados exibidos no quadro demonstrativo não provêm de alunos. Imagens vindas de URLs arbitrárias são rejeitadas na exportação do laboratório, mas isso não substitui validação no servidor caso a ferramenta evolua para uso efetivo. O projeto não altera controles de opt-in/opt-out, matrículas ou tratamento dos destinatários.
 
 Este documento descreve o comportamento técnico do site em relação a dados pessoais. Ele não substitui avaliação jurídica das obrigações fiscais, contratuais ou regulatórias aplicáveis ao negócio.
 
