@@ -98,7 +98,7 @@ function communication_builder_render_email(PDO $db,string $source,array $mediaR
                     $plain[]=trim($block->textContent).($block->getAttribute('href')!==''?' — '.$block->getAttribute('href'):'');
                 }
             }
-            $cells.='<td class="email-col" width="'.$width.'%" valign="top" style="width:'.$width.'%;vertical-align:top;padding:'
+            $cells.='<td class="email-col" width="'.$width.'%" valign="top" style="width:'.'vertical-align:top;padding:'
                 .$escape($column->getAttribute('padding')?:'0').'">'.$items.'</td>';
         }
         $bg=$section->getAttribute('background-color')?:'#ffffff';
@@ -110,7 +110,7 @@ function communication_builder_render_email(PDO $db,string $source,array $mediaR
     }
     $background=$body->getAttribute('background-color')?:'#f1f0ed';
     $html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-        .'<style>@media only screen and (max-width:600px){.email-col{display:block!important;width:100%!important;box-sizing:border-box!important}}</style>'
+        .'<style>@media only screen and (max-width:600px){.email-col{display:block;width:100%;box-sizing:border-box}}</style>'
         .'</head><body style="margin:0;padding:0;background:'.$escape($background).'">'
         .'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:'.$escape($background)
         .';border-collapse:collapse"><tr><td align="center"><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;border-collapse:collapse">'
