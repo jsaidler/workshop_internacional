@@ -11,6 +11,11 @@ on:
       - 'app/communications.php'
       - 'admin/communications-builder-lab.php'
       - 'assets/communications-builder-lab.css'
+      - 'app/communications_builder_document.php'
+      - 'app/communications_builder_drafts.php'
+      - 'admin/communications-builder-draft.php'
+      - 'migrations/111_communication_builder_drafts.php'
+      - 'tools/test-communications-builder-drafts.php'
       - 'tools/browser-src/**'
       - 'tools/build-communications-email-lab.mjs'
       - 'tools/browser-tests/communications-builder-lab.spec.cjs'
@@ -43,6 +48,7 @@ jobs:
         run: |
           php tools/test-course-reviews-communications.php
           php tools/test-communications-builder-document.php
+          php tools/test-communications-builder-drafts.php
       - name: Install focused browser runtime
         run: |
           npm install --no-audit --no-fund
