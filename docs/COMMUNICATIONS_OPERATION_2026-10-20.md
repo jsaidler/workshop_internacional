@@ -1,5 +1,13 @@
 # Comunicações por e-mail — operação
 
+## Rascunho visual versionado — 24/10/2026 (PR #293, não publicado)
+
+Um rascunho de campanha **já salvo** na aba Mensagens pode abrir o laboratório pelo link **Abrir construtor visual experimental**. A composição MJML editável é gravada em `communication_builder_drafts` (migração aditiva 111), ligada à campanha, com versão de formato, revisão otimista, referências das imagens públicas e data de atualização. O endpoint `/admin/communications-builder-draft.php` só permite edição de mensagens em estado `draft` e da área administrativa selecionada. A gravação exige login, token CSRF, validação estrutural MJML no servidor, controle concorrente de revisão e checagem de mídia dentro da transação; abrir e reabrir usa GET autenticado. A revisão obsoleta é rejeitada, não sobrescrita.
+
+**Garantia de segurança operacional:** salvar composição visual **não altera** `communication_campaigns.body_html`, `body_text`, `status`, destinatários nem fila. O e-mail enviado/visualizado pelo fluxo normal continua sendo o editor antigo. A fonte MJML é somente um rascunho editável, **não é HTML aprovado para envio**. Não permitir ao usuário pensar que o layout novo é a mensagem que será enviada. A ligação ao pipeline de entrega só ocorrerá depois de um compilador/validador confiável no servidor, verificação da equivalência de prévia, texto simples e links de descadastro, compatibilidade com mensagens anteriores e testes reais de clientes de e-mail.
+
+A Biblioteca retorna `src` local de prévia e `canonical_src` HTTPS da configuração pública; MJML usa exclusivamente o endereço canônico, com referências `URL → ID` submetidas e reverificadas no servidor. Se não houver endereço público HTTPS, uma imagem nova não pode entrar na composição. Esta mudança não autoriza URLs externas inseridas manualmente.
+
 ## Laboratório do construtor visual profissional — 22/10/2026 (branch experimental)
 
 A experiência anterior, `contenteditable` e `document.execCommand`, é insuficiente para compor visualmente e-mails. Por decisão editorial, a alternativa em avaliação é **GrapesJS 0.23.5 + grapesjs-mjml 1.0.8**, compilados por esbuild 0.25.12 em assets locais. A interface experimental autenticada `/admin/communications-builder-lab.php` permite organizar blocos, adicionar duas colunas, texto, botões, imagens da Biblioteca pública, alternar larguras, desfazer/refazer, exportar e conferir a prévia do HTML gerado pelo MJML. A página não salva rascunhos, não chama serviços de e-mail e não substitui o editor em produção.
