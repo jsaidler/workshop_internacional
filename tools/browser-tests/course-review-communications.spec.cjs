@@ -351,6 +351,14 @@ test.describe('real application: reviews and communications',()=>{
    await expect(serverPreview.locator('body')).toContainText('Coluna direita');
    await expect(browserPreview.locator('body')).toContainText('Ateliê fotográfico');
    await expect(browserPreview.locator('body')).toContainText('Coluna direita');
+   for(const frame of [browserPreview,serverPreview]){
+     const left=await frame.getByText('Coluna esquerda',{exact:true}).boundingBox();
+     const right=await frame.getByText('Coluna direita',{exact:true}).boundingBox();
+     expect(left).not.toBeNull();
+     expect(right).not.toBeNull();
+     expect(right.x-left.x).toBeGreaterThan(40);
+     expect(Math.abs(right.y-left.y)).toBeLessThan(30);
+   }
    await admin.screenshot({path:info.outputPath('email-builder-both-previews-full-page.png'),fullPage:true,animations:'disabled'});
    await admin.evaluate(()=>document.querySelector('iframe[data-lab-preview]')?.scrollIntoView({block:'center',behavior:'instant'}));
    await admin.screenshot({path:info.outputPath('mjml-browser-preview-in-viewport.png'),animations:'disabled'});
