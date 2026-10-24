@@ -366,6 +366,35 @@ test.describe('real application: reviews and communications',()=>{
    await admin.screenshot({path:info.outputPath('mjml-browser-preview-in-viewport.png'),animations:'disabled'});
    await admin.evaluate(()=>document.querySelector('iframe[data-lab-server-frame]')?.scrollIntoView({block:'center',behavior:'instant'}));
    await admin.screenshot({path:info.outputPath('php-server-preview-in-viewport.png'),animations:'disabled'});
+   // Real public Library image: selectable, described and verified by PHP.
+   await expect.poll(()=>admin.locator('[data-lab-media] option').count()).toBeGreaterThan(1);
+   await admin.locator('[data-lab-media]').selectOption(String(emailMedia.id));
+   await admin.locator('[data-lab-media-alt]').fill('Bancada fotográfica iluminada');
+   await admin.locator('[data-lab-add-media]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Imagem da Biblioteca inserida');
+   await admin.locator('[data-lab-server-preview]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Prévia do servidor gerada');
+   await expect(serverPreview.locator('img')).toHaveAttribute('alt','Bancada fotográfica iluminada');
+   await expect(serverPreview.locator('img')).toHaveAttribute('src',/https:\/\/example\.test\/uploads\/media\//);
+   await expect(browserPreview.locator('img')).toHaveAttribute('alt','Bancada fotográfica iluminada');
+   const imageValidator=await admin.evaluate(async()=>{
+     const root=document.querySelector('[data-communications-email-lab]');
+     const lab=window.__communicationsEmailLab;
+     const mjml=lab.editor.getHtml();
+     const refs=lab.mediaReferences(mjml);
+     const request=async mediaRefs=>{
+       const response=await fetch(root.dataset.serverPreviewEndpoint,{method:'POST',credentials:'same-origin',
+         headers:{'Content-Type':'application/x-www-form-urlencoded'},
+         body:new URLSearchParams({_csrf:root.dataset.validationToken,mjml,media_refs:JSON.stringify(mediaRefs)})});
+       return {status:response.status,body:await response.json()};
+     };
+     return {accepted:await request(refs),rejected:await request({})};
+   });
+   expect(imageValidator.accepted.status).toBe(200);
+   expect(imageValidator.accepted.body.render.counts.images).toBe(1);
+   expect(imageValidator.rejected.status).toBe(422);
+   expect(imageValidator.rejected.body.error).toMatch(/Biblioteca pública|imagem/i);
+
    const security=await admin.evaluate(async()=>{
      const panel=document.querySelector('[data-communications-email-lab]');
      const good=window.__communicationsEmailLab.editor.getHtml();
