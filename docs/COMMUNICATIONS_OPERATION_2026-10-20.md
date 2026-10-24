@@ -1,5 +1,13 @@
 # Comunicações por e-mail — operação
 
+## Teste visual por e-mail restrito ao administrador — 24/10/2026 (PR #293)
+
+O construtor experimental oferece **Enviar teste visual para meu e-mail**. A ação pede confirmação e envia **somente para o e-mail da conta administrativa autenticada**, sem aceitar endereço de destinatário no formulário ou endpoint. A rota `admin/communications-builder-test.php` exige login, CSRF, atividade administrativa válida e intervalo mínimo de 30 segundos entre tentativas; se houver campanha selecionada, exige que pertença à atividade e ainda esteja em `draft`. A página nunca cria `communication_deliveries`, não enfileira e não altera mensagens ou matrículas.
+
+O corpo HTML e a versão texto simples são gerados no **servidor**, por `communication_builder_render_email()`, usando o MJML e as referências públicas de mídia revalidadas. A entrega utiliza o transportador já configurado (`communication_send_message`), sem reenvelopar o HTML canônico com modelos legados. O transporte Brevo ou `mail()` aceita o HTML compilado somente por um campo interno fornecido pela função de teste, nunca por valor arbitrário de POST. O retorno `accepted` significa apenas aceite pelo mecanismo de envio: o recebimento real precisa ser conferido na caixa de entrada/spam. Testes Playwright interceptam o `sendmail` na hospedagem descartável e comprovam igualdade entre o MIME entregue e a prévia HTML do servidor, destino restrito e bloqueio de repetição. Não envia e-mails reais durante CI.
+
+Este teste permite avaliar Gmail/Outlook com a conta do administrador **após instalação controlada**. Não representa autorização para envio da composição visual aos alunos; a fila de campanhas continua usando somente o corpo legado.
+
 ## Auditoria visual dos dois renderizadores — 24/10/2026
 
 As capturas reais do Chromium identificaram uma divergência estrutural verificável: o editor MJML mantém colunas lado a lado a partir de 480 px; o renderer PHP as empilhava abaixo de 600 px. O breakpoint PHP foi alinhado a 479 px e o Playwright passou a exigir geometria horizontal no desktop e empilhamento no mobile, além da presença dos mesmos textos. A inspeção dos HTMLs serializados revelou mais diferenças de padrões tipográficos: texto não formatado no MJML usa 13 px/entrelinha 1, e botões usam 13 px/120% com preenchimento 10×25 px e margem externa própria. Esses padrões foram corrigidos na implementação PHP compartilhada e protegidos por testes.
