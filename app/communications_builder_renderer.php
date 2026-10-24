@@ -98,7 +98,7 @@ function communication_builder_render_email(PDO $db,string $source,array $mediaR
                     $plain[]=trim($block->textContent).($block->getAttribute('href')!==''?' — '.$block->getAttribute('href'):'');
                 }
             }
-            $cells.='<td class="email-col" width="'.$width.'%" valign="top" style="width:'.'vertical-align:top;padding:'
+            $cells.='<td class="email-col" width="'.$width.'%" valign="top" style="vertical-align:top;padding:'
                 .$escape($column->getAttribute('padding')?:'0').'">'.$items.'</td>';
         }
         $bg=$section->getAttribute('background-color')?:'#ffffff';
