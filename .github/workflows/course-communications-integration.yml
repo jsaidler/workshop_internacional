@@ -13,6 +13,9 @@ on:
       - 'assets/communications-builder-lab.css'
       - 'app/communications_builder_document.php'
       - 'app/communications_builder_drafts.php'
+      - 'app/communications_builder_test_send.php'
+      - 'admin/communications-builder-test.php'
+      - 'tools/test-communications-builder-test-send.php'
       - 'admin/communications-builder-draft.php'
       - 'migrations/111_communication_builder_drafts.php'
       - 'tools/test-communications-builder-drafts.php'
@@ -50,6 +53,7 @@ jobs:
           php tools/test-communications-builder-document.php
           php tools/test-communications-builder-drafts.php
           php tools/test-communications-builder-renderer.php
+          php tools/test-communications-builder-test-send.php
       - name: Install focused browser runtime
         run: |
           npm install --no-audit --no-fund
