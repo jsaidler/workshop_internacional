@@ -45,6 +45,11 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Build versioned e-mail editor assets
+        run: |
+          npm install --no-audit --no-fund
+          npm run build:email-lab
+          node --check tools/browser-src/communications-email-lab.mjs
       - name: Validate source
         run: |
           find . -path './dist' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
@@ -74,6 +79,10 @@ jobs:
           php tools/test-student-resource-pages.php
           php tools/test-course-agenda.php
           php tools/test-course-reviews-communications.php
+          php tools/test-communications-builder-document.php
+          php tools/test-communications-builder-drafts.php
+          php tools/test-communications-builder-renderer.php
+          php tools/test-communications-builder-test-send.php
           php tools/test-communications-email-design.php
           php tools/test-communications-mail-fallback.php
           php tools/test-communications-site-url.php

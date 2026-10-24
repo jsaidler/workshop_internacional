@@ -235,11 +235,14 @@ function communication_send_php(PDO $db,array $payload): array {
         $headers[]='From: '.$settings['sender_email'];
     $encoded=mb_encode_mimeheader($subject,'UTF-8','B',"\r\n");
     $html=trim((string)($payload['html']??''));
+    // Internal only: the MJML preview sender supplies HTML produced by the
+    // server validator/renderer, never raw HTML received over HTTP.
+    $compiled=(string)($payload['server_rendered_html']??'');
     $body=(string)($payload['body']??'');
-    if($html!==''){
+    if($html!==''||$compiled!==''){
         $boundary='alt_'.bin2hex(random_bytes(16));
         $headers[]='Content-Type: multipart/alternative; boundary="'.$boundary.'"';
-        $plain=base64_encode($body);$rich=base64_encode(communication_email_document($html,$body,$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0)));
+        $plain=base64_encode($body);$rich=base64_encode($compiled!==''?$compiled:communication_email_document($html,$body,$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0)));
         $body='--'.$boundary."\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split($plain,76,"\r\n")
             .'--'.$boundary."\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n".chunk_split($rich,76,"\r\n")
             .'--'.$boundary."--\r\n";
@@ -284,7 +287,8 @@ function communication_send_brevo(array $payload,?PDO $db=null): array {
     $body=['sender'=>['name'=>$cfg['name'],'email'=>$cfg['from']],
       'to'=>[['name'=>$payload['name'],'email'=>$payload['email']]],
       'subject'=>$payload['subject'],'textContent'=>$payload['body']];
-    if(!empty($payload['html']))$body['htmlContent']=communication_email_document((string)$payload['html'],(string)$payload['body'],$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0));
+    if(!empty($payload['server_rendered_html']))$body['htmlContent']=(string)$payload['server_rendered_html'];
+    elseif(!empty($payload['html']))$body['htmlContent']=communication_email_document((string)$payload['html'],(string)$payload['body'],$db,(string)($payload['template']??'minimal'),(int)($payload['activity_id']??0));
     $request=curl_init('https://api.brevo.com/v3/smtp/email');
     curl_setopt_array($request,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,
       CURLOPT_TIMEOUT=>18,CURLOPT_CONNECTTIMEOUT=>5,

@@ -1,5 +1,21 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Prova de entrega HTML do laboratório — 24/10/2026 (PR #293 em revisão)
+
+A rota `admin/communications-builder-test.php` gera um e-mail de prova **exclusivamente ao administrador logado**, mediante confirmação UI, CSRF e limite de frequência, validando MJML e mídia no PHP. O HTML enviado usa o mesmo hash da prévia renderizada no servidor. O fluxo reutiliza `communication_send_message`, com opção interna de HTML canônico para Brevo/PHP, mantendo intacto o envio de campanhas existente. Testes de endpoint/MIME via fake sendmail impedem qualquer contato real no CI. O editor continua **sem capacidade de envio aos alunos**; Gmail/Outlook devem ser conferidos manualmente antes de promover o renderer ao transporte de campanhas.
+
+## Prévia canônica no servidor — 24/10/2026, não publicada
+
+`app/communications_builder_renderer.php` oferece uma geração PHP determinística de HTML tabular para o **subconjunto validado** de blocos MJML do laboratório, incluindo texto alternativo, links, duas colunas, botões e saída texto simples; `admin/communications-builder-preview.php` expõe a comparação mediante login e CSRF. Não é um compilador MJML completo, nem está autorizado como transporte de campanhas. A comparação visual dos resultados PHP e MJML/browser e recebimento real por clientes diferentes é requisito de aceite antes da migração do envio.
+
+## Persistência MJML experimental (24/10/2026 — PR #293 não publicado)
+
+O laboratório agora pode abrir, salvar e reabrir um documento MJML vinculado a **uma campanha previamente salva e ainda em rascunho**. A migração 111 cria tabela separada `communication_builder_drafts`, com versão 1, MJML canônico validado, referências de mídia, revisão otimista e timestamps. O endpoint `admin/communications-builder-draft.php` exige admin, atividade correspondente e CSRF no POST; rejeita alterações de campanha enfileirada/enviada e gravações com revisão desatualizada. O corpo HTML/texto, categoria, consentimento, destinatários e estados anteriores da campanha não são alterados. **Não usar MJML do cliente como corpo enviado.** O pipeline MJML→HTML aprovado no servidor e a integração com o envio são pendentes da questão #290.
+
+## Substituição do editor de e-mails — laboratório GrapesJS/MJML (22/10/2026, branch isolada)
+
+Questão #290. O compositor artesanal de `contenteditable` não atende a edição visual profissional. A prova de conceito autenticada `/admin/communications-builder-lab.php` utiliza bibliotecas instaladas via npm e compiladas durante a construção do pacote, sem CDN ou Node na hospedagem. Permite blocos, duas colunas, edição direta, imagens da Biblioteca pública, prévia MJML e reabertura em memória. **Desde 24/10 há persistência isolada para campanhas já salvas como rascunho**, conforme seção posterior; ainda não há envio visual nem substituição do corpo de e-mail usado em produção. O backend atual sanitiza HTML e descarta layouts tabulares, então NÃO pode substituir-se a UI sem criar um pipeline completo de validação do documento MJML, renderização e geração de texto simples, com testes de segurança e compatibilidade, especialmente com imagens e rascunhos já enviados. O teste de navegador isola compilação, reabertura e rejeição de mídia externa; QA visual e análise dos resultados continuam obrigatórios. Avanço posterior: `communication_builder_validate_document()` (PHP) faz preflight sem persistência, rejeitando tags e atributos fora de um subconjunto explícito do MJML, XML com DTD/entidades, links não HTTPS, e imagens que não correspondam à versão pública identificada por ID. Endpoint POST autenticado e CSRF; não salva nem envia. Teste PHP dedicado e percurso Playwright autenticado incluem preflight.
+
 ## Envio imediato e controle da fila de Comunicações — 22/10/2026 (PR em revisão)
 
 **Avisos administrativos também não dependem de cron.** A aba Avisos dos alunos passou a oferecer envio manual, cancelamento de pendentes e reprocessamento confirmado de falhas. Claims, recuperações e estado da fila respeitam o administrador autenticado; o mesmo lock coordena campanha, avisos e worker opcional. Não há reenvio automático após resultado externo inconclusivo. A migração preexistente 104 comporta estados e motivos utilizados. Testes unitários e de navegador foram acrescentados e ainda precisam de validação no CI.

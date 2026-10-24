@@ -195,6 +195,37 @@ test.describe('real application: reviews and communications',()=>{
    await admin.getByRole('button',{name:'Selecionar todos'}).click();
    await admin.getByRole('button',{name:'Salvar rascunho'}).click();
    await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
+   // The visual composition persists independently from the actual delivery body.
+   const editedCampaignId=Number(await admin.locator('input[name="campaign_id"]').first().inputValue());
+   expect(editedCampaignId).toBeGreaterThan(0);
+   const originalHtml=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000})).campaigns[0].body_html;
+   await admin.getByRole('link',{name:'Abrir construtor visual experimental'}).click();
+   await expect.poll(()=>admin.evaluate(()=>Boolean(window.__communicationsEmailLab?.loaded))).toBe(true);
+   await expect(admin.locator('[data-lab-save]')).toBeEnabled();
+   await admin.locator('[data-lab-add-columns]').click();
+   await admin.locator('[data-lab-save]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Composição visual salva (revisão 1)');
+   const visualSaved=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
+   expect(visualSaved.builder_drafts).toHaveLength(1);
+   expect(visualSaved.builder_drafts[0].revision).toBe(1);
+   expect(visualSaved.builder_drafts[0].mjml_source.match(/<mj-column/g)).toHaveLength(4);
+   expect(visualSaved.campaigns[0].body_html).toBe(originalHtml);
+   await admin.reload();
+   await expect.poll(()=>admin.evaluate(()=>Boolean(window.__communicationsEmailLab?.loaded))).toBe(true);
+   expect(await admin.evaluate(()=>window.__communicationsEmailLab.getRevision())).toBe(1);
+   expect(await admin.evaluate(()=>window.__communicationsEmailLab.editor.getHtml())).toContain('Coluna direita');
+   const staleWrite=await admin.evaluate(async()=>{
+     const lab=document.querySelector('[data-communications-email-lab]');
+     const data=new URLSearchParams({_csrf:lab.dataset.validationToken,campaign_id:lab.dataset.campaignId,
+       revision:'0',mjml:window.__communicationsEmailLab.editor.getHtml(),media_refs:'{}'});
+     const response=await fetch(lab.dataset.draftEndpoint,{method:'POST',credentials:'same-origin',
+       headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data});
+     return {status:response.status,body:await response.json()};
+   });
+   expect(staleWrite.status).toBe(422);
+   expect(staleWrite.body.error).toContain('outra aba');
+   await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId+'&tab=campaigns&id='+editedCampaignId);
+   await expect(admin.getByRole('button',{name:'Somente colocar na fila'})).toBeVisible();
    admin.once('dialog',dialog=>dialog.accept());
    await admin.getByRole('button',{name:'Somente colocar na fila'}).click();
    await expect(admin.getByText(/e-mail\(s\) colocado\(s\) na fila/)).toBeVisible();
@@ -299,6 +330,126 @@ test.describe('real application: reviews and communications',()=>{
    const after=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(after.preferences[0].newsletter_opt_in).toBe(0);
    await unsubscribe.close();
+   // Real authenticated page: inspect the library under the CMS security policy.
+   const capturedBeforeBuilder=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   await admin.setViewportSize({width:1440,height:900});
+   await admin.goto(origin+'/admin/communications-builder-lab.php?activity='+fixture.activityId);
+   await expect(admin.locator('[data-communications-email-lab]')).toBeVisible();
+   await expect.poll(()=>admin.locator('[data-lab-blocks] .gjs-block').count()).toBeGreaterThan(1);
+   await expect.poll(()=>admin.evaluate(()=>Boolean(window.__communicationsEmailLab?.ready))).toBe(true);
+   await admin.locator('[data-lab-add-columns]').click();
+   await expect.poll(()=>admin.evaluate(()=>window.__communicationsEmailLab.editor.getHtml().match(/<mj-column\b/g)?.length||0)).toBeGreaterThanOrEqual(3);
+   await admin.locator('[data-lab-export]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('nenhum e-mail foi enviado');
+   await admin.locator('[data-lab-validate]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Documento aprovado na validação estrutural');
+   await admin.locator('[data-lab-server-preview]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Prévia do servidor gerada');
+   const serverPreview=admin.frameLocator('iframe[data-lab-server-frame]');
+   const browserPreview=admin.frameLocator('iframe[data-lab-preview]');
+   await expect(serverPreview.locator('body')).toContainText('Ateliê fotográfico');
+   await expect(serverPreview.locator('body')).toContainText('Coluna direita');
+   await expect(browserPreview.locator('body')).toContainText('Ateliê fotográfico');
+   await expect(browserPreview.locator('body')).toContainText('Coluna direita');
+   for(const frame of [browserPreview,serverPreview]){
+     const left=await frame.getByText('Coluna esquerda',{exact:true}).boundingBox();
+     const right=await frame.getByText('Coluna direita',{exact:true}).boundingBox();
+     expect(left).not.toBeNull();
+     expect(right).not.toBeNull();
+     expect(right.x-left.x).toBeGreaterThan(40);
+     expect(Math.abs(right.y-left.y)).toBeLessThan(30);
+   }
+   fs.writeFileSync(info.outputPath('mjml-compiled-output.html'),await browserPreview.locator('html').evaluate(el=>el.outerHTML));
+   fs.writeFileSync(info.outputPath('php-rendered-output.html'),await serverPreview.locator('html').evaluate(el=>el.outerHTML));
+   await admin.screenshot({path:info.outputPath('email-builder-both-previews-full-page.png'),fullPage:true,animations:'disabled'});
+   await admin.evaluate(()=>document.querySelector('iframe[data-lab-preview]')?.scrollIntoView({block:'center',behavior:'instant'}));
+   await admin.screenshot({path:info.outputPath('mjml-browser-preview-in-viewport.png'),animations:'disabled'});
+   await admin.evaluate(()=>document.querySelector('iframe[data-lab-server-frame]')?.scrollIntoView({block:'center',behavior:'instant'}));
+   await admin.screenshot({path:info.outputPath('php-server-preview-in-viewport.png'),animations:'disabled'});
+   // Real public Library image: selectable, described and verified by PHP.
+   await expect.poll(()=>admin.locator('[data-lab-media] option').count()).toBeGreaterThan(1);
+   await admin.locator('[data-lab-media]').selectOption(String(emailMedia.id));
+   await admin.locator('[data-lab-media-alt]').fill('Bancada fotográfica iluminada');
+   await admin.locator('[data-lab-add-media]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Imagem da Biblioteca inserida');
+   await admin.locator('[data-lab-server-preview]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Prévia do servidor gerada');
+   await expect(serverPreview.locator('img')).toHaveAttribute('alt','Bancada fotográfica iluminada');
+   await expect(serverPreview.locator('img')).toHaveAttribute('src',/https:\/\/example\.test\/uploads\/media\//);
+   await expect(browserPreview.locator('img')).toHaveAttribute('alt','Bancada fotográfica iluminada');
+   const imageValidator=await admin.evaluate(async()=>{
+     const root=document.querySelector('[data-communications-email-lab]');
+     const lab=window.__communicationsEmailLab;
+     const mjml=lab.editor.getHtml();
+     const refs=lab.mediaReferences(mjml);
+     const request=async mediaRefs=>{
+       const response=await fetch(root.dataset.serverPreviewEndpoint,{method:'POST',credentials:'same-origin',
+         headers:{'Content-Type':'application/x-www-form-urlencoded'},
+         body:new URLSearchParams({_csrf:root.dataset.validationToken,mjml,media_refs:JSON.stringify(mediaRefs)})});
+       return {status:response.status,body:await response.json()};
+     };
+     return {accepted:await request(refs),rejected:await request({})};
+   });
+   expect(imageValidator.accepted.status).toBe(200);
+   expect(imageValidator.accepted.body.render.counts.images).toBe(1);
+   expect(imageValidator.rejected.status).toBe(422);
+   expect(imageValidator.rejected.body.error).toMatch(/Biblioteca pública|imagem/i);
+   // Explicit proof e-mail: PHP builds the same HTML as the trusted server preview.
+   const beforeVisualTest=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   expect(beforeVisualTest).toBe(capturedBeforeBuilder);
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.locator('[data-lab-send-test]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Teste visual aceito pelo servidor');
+   const afterVisualTest=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   expect(afterVisualTest.length).toBeGreaterThan(beforeVisualTest.length);
+   expect(afterVisualTest.split('==MESSAGE==').length-beforeVisualTest.split('==MESSAGE==').length).toBe(1);
+   const testHtmlParts=[...afterVisualTest.matchAll(/Content-Type: text\/html; charset=UTF-8\r?\nContent-Transfer-Encoding: base64\r?\n\r?\n([A-Za-z0-9+/=\r\n]+)/gi)];
+   expect(testHtmlParts.length).toBeGreaterThan(0);
+   const proofHtml=Buffer.from(testHtmlParts.at(-1)[1].replace(/\s+/g,''),'base64').toString('utf8');
+   const approvedHtml=await admin.locator('[data-lab-server-frame]').getAttribute('srcdoc');
+   expect(proofHtml).toBe(approvedHtml);
+   expect(proofHtml).toContain('Bancada fotográfica iluminada');
+   expect(proofHtml).toContain('Coluna direita');
+   expect(proofHtml).not.toContain('<mj-column');
+   // The second attempt is throttled and must not reach the mail transport.
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.locator('[data-lab-send-test]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Aguarde 30 segundos');
+   expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toBe(afterVisualTest);
+
+   const security=await admin.evaluate(async()=>{
+     const panel=document.querySelector('[data-communications-email-lab]');
+     const good=window.__communicationsEmailLab.editor.getHtml();
+     const endpoint=panel.dataset.validationEndpoint;
+     const headers={'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'};
+     const noToken=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers,
+       body:new URLSearchParams({mjml:good,media_refs:'{}'})});
+     const malicious=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers,
+       body:new URLSearchParams({_csrf:panel.dataset.validationToken,
+         mjml:good.replace('</mj-column>','<mj-raw><script>alert(1)</script></mj-raw></mj-column>'),media_refs:'{}'})});
+     return {noToken:noToken.status,malicious:malicious.status,refused:(await malicious.json()).ok===false};
+   });
+   expect(security).toEqual({noToken:403,malicious:422,refused:true});
+   await admin.screenshot({path:info.outputPath('email-builder-real-admin-desktop.png')});
+   await admin.setViewportSize({width:390,height:844});
+   for(const frame of [browserPreview,serverPreview]){
+     const left=await frame.getByText('Coluna esquerda',{exact:true}).boundingBox();
+     const right=await frame.getByText('Coluna direita',{exact:true}).boundingBox();
+     expect(Math.abs(right.x-left.x)).toBeLessThan(40);
+     expect(right.y-left.y).toBeGreaterThan(12);
+   }
+   await admin.locator('iframe[data-lab-preview]').scrollIntoViewIfNeeded();
+   await admin.screenshot({path:info.outputPath('mobile-email-preview-comparison.png'),animations:'disabled'});
+   await expect(admin.locator('[data-lab-inspector-toggle]')).toBeVisible();
+   await expect(admin.locator('[data-lab-blocks-panel]')).toBeVisible();
+   await expect(admin.locator('[data-lab-styles-panel]')).toBeHidden();
+   await admin.screenshot({path:info.outputPath('email-builder-real-admin-mobile.png')});
+   await admin.locator('[data-lab-inspector-toggle]').click();
+   await expect(admin.locator('[data-lab-inspector-toggle]')).toHaveAttribute('aria-pressed','true');
+   await expect(admin.locator('[data-lab-styles-panel]')).toBeVisible();
+   await expect(admin.locator('[data-lab-blocks-panel]')).toBeHidden();
+   await admin.screenshot({path:info.outputPath('email-builder-real-admin-mobile-inspector.png')});
+   expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toBe(afterVisualTest);
    expect(errors).toEqual([]);
    await studentCtx.close();await adminCtx.close();
  });

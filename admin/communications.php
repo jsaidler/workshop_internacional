@@ -417,6 +417,12 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <header><div><h2><?=($selectedId?((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId):'Nova mensagem')?></h2>
     <p><?=h((string)(($form['status']??'draft')==='draft'?'Rascunho':(($form['status']??'')==='queued'?'Aguardando processamento':'Processamento encerrado')))?></p></div></header>
     <?php if(($form['status']??'draft')==='draft'):?>
+    <?php if($selectedId>0):?>
+      <div class="comms-inline-actions">
+        <a class="admin-button secondary" href="/admin/communications-builder-lab.php?<?=h(http_build_query(['activity'=>$activityId,'id'=>$selectedId]))?>">Abrir construtor visual experimental</a>
+        <span class="muted">O construtor salva um documento à parte; seu layout ainda não é usado no envio.</span>
+      </div>
+    <?php endif;?>
     <form method="post" class="comms-compose-form" data-composer-form>
       <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
       <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
