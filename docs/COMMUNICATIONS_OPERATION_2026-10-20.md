@@ -1,5 +1,11 @@
 # Comunicações por e-mail — operação
 
+## Auditoria visual dos dois renderizadores — 24/10/2026
+
+As capturas reais do Chromium identificaram uma divergência estrutural verificável: o editor MJML mantém colunas lado a lado a partir de 480 px; o renderer PHP as empilhava abaixo de 600 px. O breakpoint PHP foi alinhado a 479 px e o Playwright passou a exigir geometria horizontal no desktop e empilhamento no mobile, além da presença dos mesmos textos. A inspeção dos HTMLs serializados revelou mais diferenças de padrões tipográficos: texto não formatado no MJML usa 13 px/entrelinha 1, e botões usam 13 px/120% com preenchimento 10×25 px e margem externa própria. Esses padrões foram corrigidos na implementação PHP compartilhada e protegidos por testes.
+
+As prévias são renderizadas em uma área própria com dois painéis largos e uma versão empilhada no mobile. O teste registra capturas e cópias do HTML de ambos os renderizadores para comparação. A convergência desses itens não é garantia de compatibilidade Gmail/Outlook nem autoriza envio. Até a validação final da aparência e transporte, somente o corpo HTML/texto legado é enviado aos destinatários.
+
 ## Prévia HTML produzida pelo PHP — 24/10/2026 (PR #293, em revisão)
 
 O laboratório passou a ter **Prévia do servidor** além da prévia compilada pelo plugin MJML do navegador. O endpoint autenticado `admin/communications-builder-preview.php` exige POST e CSRF; chama `communication_builder_render_email()`, que **revalida o MJML no PHP** e gera uma estrutura HTML de tabelas, texto alternativo de imagens, botões, divisores e versão em texto simples. A saída retorna hash de conteúdo para auditoria. Não escreve na campanha, não cria envios nem usa o HTML fornecido pelo navegador como resultado confiável.
