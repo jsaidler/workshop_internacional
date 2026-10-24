@@ -83,9 +83,9 @@ function communication_builder_validate_document(PDO $db,string $source,array $m
                 'color','background-color','border-color'=>preg_match('/^#[A-Fa-f0-9]{6}$/D',$v)===1,
                 'font-size','height','border-width'=>preg_match('/^(?:[1-9]|[1-9][0-9]|1[0-9][0-9])px$/D',$v)===1,
                 'padding'=>preg_match('/^\d{1,2}px(?: \d{1,2}px){0,3}$/D',$v)===1,
-                'border-radius'=>preg_match('/^\d{1,2}px$/D',$v)===1,
+                'border-radius'=>$v==='0'||preg_match('/^\d{1,2}px$/D',$v)===1,
                 'width'=>preg_match('/^(?:[1-9][0-9]{0,2}px|100%)$/D',$v)===1,
-                'line-height'=>preg_match('/^(?:1(?:\.\d)?|2(?:\.\d)?|[1-9][0-9]px)$/D',$v)===1,
+                'line-height'=>preg_match('/^(?:1(?:\.\d{1,2})?|2(?:\.\d{1,2})?|[1-9][0-9]px)$/D',$v)===1,
                 'font-weight'=>in_array($v,['normal','bold','400','500','600','700'],true),
                 'align'=>in_array($v,['left','center','right'],true),
                 default=>false
