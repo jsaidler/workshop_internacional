@@ -1,5 +1,9 @@
 # Privacidade e LGPD — desenho operacional
 
+## Teste visual somente para a conta administrativa — 24/10/2026
+
+A prova de e-mail do editor MJML envia uma única mensagem mediante ação e confirmação explícitas, sempre para o endereço associado ao administrador autenticado, nunca para um endereço digitado ou extraído de matrícula. O servidor revalida o documento e a proveniência das imagens, aplica CSRF e um intervalo mínimo de 30 segundos entre tentativas. O transporte existente recebe somente HTML gerado no PHP. Esse teste não adiciona alunos à fila, não amplia o consentimento, não altera inscrições e não permite disparo em massa do layout experimental.
+
 ## Armazenamento de composição experimental — 24/10/2026
 
 O MJML criado no construtor pode ser armazenado **apenas mediante salvamento explícito** e somente para uma campanha em rascunho da atividade autenticada. Fica em `communication_builder_drafts`, separado do corpo enviado, com histórico de revisão atual e IDs de mídias públicas. A API exige CSRF para escrita e restringe acesso por atividade e estado; alterações simultâneas não sobrescrevem o documento sem aviso. Não são processados novos destinatários nem capturados dados de alunos adicionais. A opção não gera e-mails, rastreadores ou transmissão ao provedor externo.
