@@ -265,8 +265,8 @@ function initLab(){
           mediaPicker.dispatchEvent(new Event('change'));
         }
       })
-      .catch(e=>{setStatus(mediaStatus,e.message,true);});
-      :Promise.resolve();
+      .catch(e=>{setStatus(mediaStatus,e.message,true);})
+    :Promise.resolve();
   if(mediaPicker){
     mediaPicker.addEventListener('change',()=>{
       const asset=allowedMedia.get(mediaPicker.value);
