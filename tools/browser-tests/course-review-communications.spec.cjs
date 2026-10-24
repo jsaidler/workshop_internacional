@@ -394,6 +394,27 @@ test.describe('real application: reviews and communications',()=>{
    expect(imageValidator.accepted.body.render.counts.images).toBe(1);
    expect(imageValidator.rejected.status).toBe(422);
    expect(imageValidator.rejected.body.error).toMatch(/Biblioteca pública|imagem/i);
+   // Explicit proof e-mail: PHP builds the same HTML as the trusted server preview.
+   const beforeVisualTest=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.locator('[data-lab-send-test]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Teste visual aceito pelo servidor');
+   const afterVisualTest=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
+   expect(afterVisualTest.length).toBeGreaterThan(beforeVisualTest.length);
+   expect(afterVisualTest.split('==MESSAGE==').length-beforeVisualTest.split('==MESSAGE==').length).toBe(1);
+   const testHtmlParts=[...afterVisualTest.matchAll(/Content-Type: text\/html; charset=UTF-8\r?\nContent-Transfer-Encoding: base64\r?\n\r?\n([A-Za-z0-9+/=\r\n]+)/gi)];
+   expect(testHtmlParts.length).toBeGreaterThan(0);
+   const proofHtml=Buffer.from(testHtmlParts.at(-1)[1].replace(/\s+/g,''),'base64').toString('utf8');
+   const approvedHtml=await admin.locator('[data-lab-server-frame]').getAttribute('srcdoc');
+   expect(proofHtml).toBe(approvedHtml);
+   expect(proofHtml).toContain('Bancada fotográfica iluminada');
+   expect(proofHtml).toContain('Coluna direita');
+   expect(proofHtml).not.toContain('<mj-column');
+   // The second attempt is throttled and must not reach the mail transport.
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.locator('[data-lab-send-test]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Aguarde 30 segundos');
+   expect(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8')).toBe(afterVisualTest);
 
    const security=await admin.evaluate(async()=>{
      const panel=document.querySelector('[data-communications-email-lab]');
