@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 /**
- * GrapesJS/MJML experimental editor. Read-only with respect to CMS data.
- * There is deliberately no save or send endpoint on this route.
+ * Experimental MJML visual editor, linked only to saved draft campaigns.
+ * Writes exclusively to the versioned builder draft table. It cannot send.
  */
 require __DIR__.'/../app/bootstrap.php';
 require __DIR__.'/../app/admin_shell.php';
