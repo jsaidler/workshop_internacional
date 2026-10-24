@@ -6,6 +6,7 @@ declare(strict_types=1);
  */
 require __DIR__.'/../app/bootstrap.php';
 require __DIR__.'/../app/admin_shell.php';
+require_once __DIR__.'/../app/communications_builder_drafts.php';
 security_headers();
 require_admin();
 header('Cache-Control: private, no-store, max-age=0');
@@ -14,17 +15,20 @@ $state=admin_activity_resolution($db);
 $activity=$state['activity'];
 if(!$activity){header('Location: /admin/activities.php',true,303);exit;}
 $activityId=(int)$activity['id'];
+$campaignId=max(0,(int)($_GET['id']??0));
+$campaign=$campaignId?communication_builder_campaign($db,$activityId,$campaignId):null;
 admin_shell_start('communications','Construtor de e-mails — laboratório',$state,['/assets/communications-builder-lab.css']);
 ?>
 <div class="communications-email-lab" data-communications-email-lab data-media-endpoint="/admin/communications-media.php"
-  data-validation-endpoint="/admin/communications-builder-validate.php" data-validation-token="<?=h(csrf_token('communications-admin'))?>">
+  data-validation-endpoint="/admin/communications-builder-validate.php" data-validation-token="<?=h(csrf_token('communications-admin'))?>"
+  data-draft-endpoint="/admin/communications-builder-draft.php" data-campaign-id="<?=$campaignId?>">
   <div class="email-lab-heading">
     <div>
       <p class="admin-kicker">Laboratório de composição</p>
       <h1>Construtor visual de e-mails</h1>
-      <p>Arraste blocos, reorganize colunas e edite diretamente no quadro. Este laboratório não salva nem envia mensagens.</p>
+      <p><?=($campaign?'Composição visual da mensagem #'.$campaignId.' — '.h((string)$campaign['subject']).'. ':'')?>A composição visual pode ser salva separadamente, mas não altera o corpo do e-mail enviado pelo CMS.</p>
     </div>
-    <a class="admin-button secondary" href="/admin/communications.php?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Voltar às mensagens</a>
+    <a class="admin-button secondary" href="/admin/communications.php?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$campaignId]))?>">Voltar às mensagens</a>
   </div>
   <div class="email-lab-tools" role="toolbar" aria-label="Ferramentas do construtor">
     <button type="button" data-lab-add-text>Inserir texto</button>
@@ -37,6 +41,7 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
     <button type="button" data-lab-reopen>Testar reabertura</button>
     <button type="button" data-lab-export class="email-lab-primary">Gerar prévia</button>
     <button type="button" data-lab-validate>Validar segurança</button>
+    <button type="button" data-lab-save <?=$campaignId<1?'disabled':''?> title="Salva somente o documento MJML, sem modificar o e-mail enviado">Salvar composição</button>
   </div>
   <p role="status" aria-live="polite" data-lab-status class="email-lab-status">Inicializando o construtor…</p>
   <div class="email-lab-workspace">
