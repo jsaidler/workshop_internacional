@@ -352,6 +352,10 @@ test.describe('real application: reviews and communications',()=>{
    await expect(browserPreview.locator('body')).toContainText('Ateliê fotográfico');
    await expect(browserPreview.locator('body')).toContainText('Coluna direita');
    await admin.screenshot({path:info.outputPath('email-builder-both-previews-full-page.png'),fullPage:true,animations:'disabled'});
+   await admin.evaluate(()=>document.querySelector('iframe[data-lab-preview]')?.scrollIntoView({block:'center',behavior:'instant'}));
+   await admin.screenshot({path:info.outputPath('mjml-browser-preview-in-viewport.png'),animations:'disabled'});
+   await admin.evaluate(()=>document.querySelector('iframe[data-lab-server-frame]')?.scrollIntoView({block:'center',behavior:'instant'}));
+   await admin.screenshot({path:info.outputPath('php-server-preview-in-viewport.png'),animations:'disabled'});
    const security=await admin.evaluate(async()=>{
      const panel=document.querySelector('[data-communications-email-lab]');
      const good=window.__communicationsEmailLab.editor.getHtml();
