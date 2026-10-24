@@ -133,6 +133,27 @@ function initLab(){
     }catch(e){setStatus(status,e.message,true);return null;}
   };
   root.querySelector('[data-lab-export]')?.addEventListener('click',doExport);
+  root.querySelector('[data-lab-validate]')?.addEventListener('click',async ()=>{
+    const result=doExport();
+    if(!result)return;
+    const endpoint=root.dataset.validationEndpoint;
+    const token=root.dataset.validationToken;
+    if(!endpoint||!token){setStatus(status,'Validação do servidor indisponível.',true);return;}
+    const refs={};
+    for(const [key,media] of allowedMedia){
+      if(key===media.src)refs[media.src]=Number(media.id);
+    }
+    setStatus(status,'Validando a estrutura no servidor…');
+    try{
+      const form=new URLSearchParams({_csrf:token,mjml:result.mjml,media_refs:JSON.stringify(refs)});
+      const response=await fetch(endpoint,{method:'POST',credentials:'same-origin',cache:'no-store',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:form});
+      const data=await response.json();
+      if(!response.ok||!data.ok)throw Error(data.error||'Documento rejeitado.');
+      const sections=data.document?.counts?.sections||0;
+      setStatus(status,'Documento aprovado na validação estrutural: '+sections+' seção(ões). Ainda não foi salvo nem enviado.');
+    }catch(error){setStatus(status,'Documento recusado pelo servidor: '+error.message,true);}
+  });
   root.querySelector('[data-lab-reopen]')?.addEventListener('click',()=>{
     try{roundTrip();setStatus(status,'Salvamento e reabertura em memória preservaram o MJML.');}
     catch(e){setStatus(status,e.message,true);}
