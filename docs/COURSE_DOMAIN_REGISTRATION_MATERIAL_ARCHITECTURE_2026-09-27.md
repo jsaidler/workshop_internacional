@@ -1,5 +1,9 @@
 # Arquitetura canônica — Curso, inscrição, turma e material didático — 27/09/2026
 
+## Documento visual separado da entrega — 24/10/2026 (PR experimental)
+
+Migração 111 adiciona `communication_builder_drafts` com chave estrangeira para `communication_campaigns`. O documento MJML versionado tem validação canônica no PHP, revisão otimista, referências à versão pública das imagens e pode ser salvo somente se a campanha pertence à `activity` selecionada e permanece em `draft`. **A tabela nunca é consultada pelo envio legado** e não deve se tornar fonte de produção sem pipeline de renderização seguro, equivalência de prévia e verificação de audiência. Campanhas legadas e textos já enviados são imutáveis. Essa tabela descreve um documento editável de laboratório, não um e-mail efetivamente entregue.
+
 ## Laboratório de composição por blocos — 22/10/2026 (não publicado)
 
 Como experimento isolado da questão #290, o CMS passa a estudar a edição de e-mails com GrapesJS/MJML, separado do documento `body_html` atualmente salvo e do renderizador `communication_email_document()`. Nenhuma campanha pode usar diretamente o HTML emitido pelo navegador como fonte de envio antes de validação e compilação canônicas no servidor. O construtor experimental não manipula matrícula, consentimento, audiência ou fila. Migrar rascunhos requer preservação exata das mensagens legadas e da identidade de cada imagem por ID da Biblioteca.
