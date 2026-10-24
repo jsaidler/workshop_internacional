@@ -343,6 +343,14 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-lab-status]')).toContainText('nenhum e-mail foi enviado');
    await admin.locator('[data-lab-validate]').click();
    await expect(admin.locator('[data-lab-status]')).toContainText('Documento aprovado na validação estrutural');
+   await admin.locator('[data-lab-server-preview]').click();
+   await expect(admin.locator('[data-lab-status]')).toContainText('Prévia do servidor gerada');
+   const serverPreview=admin.frameLocator('iframe[data-lab-server-frame]');
+   const browserPreview=admin.frameLocator('iframe[data-lab-preview]');
+   await expect(serverPreview.locator('body')).toContainText('Ateliê fotográfico');
+   await expect(serverPreview.locator('body')).toContainText('Coluna direita');
+   await expect(browserPreview.locator('body')).toContainText('Ateliê fotográfico');
+   await expect(browserPreview.locator('body')).toContainText('Coluna direita');
    const security=await admin.evaluate(async()=>{
      const panel=document.querySelector('[data-communications-email-lab]');
      const good=window.__communicationsEmailLab.editor.getHtml();
