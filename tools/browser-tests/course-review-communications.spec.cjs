@@ -312,6 +312,19 @@ test.describe('real application: reviews and communications',()=>{
    await expect(admin.locator('[data-lab-status]')).toContainText('nenhum e-mail foi enviado');
    await admin.locator('[data-lab-validate]').click();
    await expect(admin.locator('[data-lab-status]')).toContainText('Documento aprovado na validação estrutural');
+   const security=await admin.evaluate(async()=>{
+     const panel=document.querySelector('[data-communications-email-lab]');
+     const good=window.__communicationsEmailLab.editor.getHtml();
+     const endpoint=panel.dataset.validationEndpoint;
+     const headers={'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'};
+     const noToken=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers,
+       body:new URLSearchParams({mjml:good,media_refs:'{}'})});
+     const malicious=await fetch(endpoint,{method:'POST',credentials:'same-origin',headers,
+       body:new URLSearchParams({_csrf:panel.dataset.validationToken,
+         mjml:good.replace('</mj-column>','<mj-raw><script>alert(1)</script></mj-raw></mj-column>'),media_refs:'{}'})});
+     return {noToken:noToken.status,malicious:malicious.status,refused:(await malicious.json()).ok===false};
+   });
+   expect(security).toEqual({noToken:403,malicious:422,refused:true});
    await admin.screenshot({path:info.outputPath('email-builder-real-admin-desktop.png')});
    await admin.setViewportSize({width:390,height:844});
    await expect(admin.locator('[data-lab-inspector-toggle]')).toBeVisible();
