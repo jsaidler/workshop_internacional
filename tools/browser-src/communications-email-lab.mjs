@@ -179,6 +179,28 @@ function initLab(){
     finally{if(saveButton)saveButton.disabled=campaignId<1;}
   });
   root.querySelector('[data-lab-export]')?.addEventListener('click',doExport);
+  root.querySelector('[data-lab-send-test]')?.addEventListener('click',async event=>{
+    const destination=String(root.dataset.adminEmail||'').trim();
+    const endpoint=root.dataset.visualTestEndpoint;
+    if(!endpoint||!destination){setStatus(status,'A conta administrativa não tem destino de teste configurado.',true);return;}
+    if(!confirm('Enviar um único teste visual somente para '+destination+'? Nenhum aluno receberá esta mensagem.'))return;
+    const compiled=doExport();if(!compiled)return;
+    const button=event.currentTarget;
+    button.disabled=true;
+    try{
+      const refs=mediaReferences(compiled.mjml);
+      const url=new URL(endpoint,location.href);
+      url.searchParams.set('activity',String(Number(root.dataset.activityId||0)));
+      const body=new URLSearchParams({_csrf:root.dataset.validationToken,
+        mjml:compiled.mjml,media_refs:JSON.stringify(refs),campaign_id:String(campaignId)});
+      const response=await fetch(url,{method:'POST',credentials:'same-origin',cache:'no-store',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body});
+      const result=await response.json();
+      if(!response.ok||!result.ok)throw Error(result.error||'O serviço recusou a mensagem.');
+      setStatus(status,'Teste visual aceito pelo servidor para '+destination+'. Confira a caixa de entrada; os alunos não foram notificados.');
+    }catch(error){setStatus(status,'O teste visual não foi confirmado: '+error.message,true);}
+    finally{button.disabled=false;}
+  });
   root.querySelector('[data-lab-server-preview]')?.addEventListener('click',async ()=>{
     const result=doExport();if(!result)return;
     const endpoint=root.dataset.serverPreviewEndpoint;
