@@ -142,10 +142,26 @@ for(const viewport of [{width:390,height:844},{width:320,height:720}]){
     const rect=await selector.boundingBox();
     expect(rect).not.toBeNull();
     expect(rect.width).toBeGreaterThan(145);
+    const structure=page.locator('#editor-structure-mobile');
+    await expect(structure).toBeVisible();
+    const structureAppearance=await structure.evaluate(el=>{
+      const css=getComputedStyle(el);
+      const channels=value=>[...value.matchAll(/\\d+(?:\\.\\d+)?/g)].slice(0,3).map(v=>Number(v[0])/255);
+      const luminance=value=>{
+        const linear=channels(value).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);
+        return .2126*linear[0]+.7152*linear[1]+.0722*linear[2];
+      };
+      const foreground=luminance(css.color),background=luminance(css.backgroundColor);
+      return {contrast:(Math.max(foreground,background)+.05)/(Math.min(foreground,background)+.05),background:css.backgroundColor,border:css.borderTopStyle};
+    });
+    expect(structureAppearance.contrast).toBeGreaterThanOrEqual(4.5);
+    expect(structureAppearance.background).not.toBe('rgba(0, 0, 0, 0)');
+    expect(structureAppearance.border).toBe('solid');
     const selectors=['#editor-structure-mobile','#save-status','#save-page','#publish-page','.editor-more'];
     const bounds=await Promise.all(selectors.map(async item=>({item,box:await page.locator(item).boundingBox()})));
     for(const b of bounds){
       expect(b.box,b.item+' must have a layout box').not.toBeNull();
+      if(b.item==='#editor-structure-mobile')expect(b.box.width,'Structure control must have a usable tap target').toBeGreaterThan(48);
       expect(b.box.x,b.item+' must stay on screen').toBeGreaterThanOrEqual(0);
       expect(b.box.x+b.box.width,b.item+' must stay on screen').toBeLessThanOrEqual(viewport.width+1);
     }
