@@ -43,4 +43,8 @@ integrity_expect(str_contains($editor,'window.CmsEditorDraft={save,serialize,'),
 $history=(string)file_get_contents($root.'/editor/cms-history-transactions.js');
 integrity_expect(str_contains($history,'window.CmsEditorDraft.serialize()'),'history must snapshot canonical serialized page');
 integrity_expect(str_contains($editor,'if(window.CmsEditorHistory||state.loading'),'legacy history must defer to history transaction controller');
+$recovery=(string)file_get_contents($root.'/editor/cms-conflict-recovery.js');
+integrity_expect(str_contains($recovery,'workshop-cms-editor-recovery-v1'),'revision conflict must export a recoverable local snapshot');
+integrity_expect(str_contains($editor,'CmsConflictRecovery?.show'),'save conflict must present recovery controls');
+integrity_expect(str_contains($recovery,'data-conflict-download')&&str_contains($recovery,'data-conflict-check'),'recoverability must offer export and read-only current revision check');
 echo "editor-integrity: ok\n";

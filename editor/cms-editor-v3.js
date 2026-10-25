@@ -187,7 +187,8 @@ async function persistUntilCurrent(){
       return state.page;
     }catch(e){
       state.dirty=true;
-      state.saveError=e.code==='revision_conflict'?'Conflito de revisão: mantenha esta aba aberta e recupere o conteúdo antes de recarregar.':e.message;
+      state.saveError=e.code==='revision_conflict'?'Conflito de revisão: baixe uma cópia de sua edição antes de sair.':e.message;
+      if(e.code==='revision_conflict')window.CmsConflictRecovery?.show({pageId:state.page.id,basedOnRevision:state.page.draftRevision,title:state.page.title,document:{...state.page.document,html:serialize()},settings:{title:state.page.title,navTitle:state.page.navTitle,slug:state.page.slug,showInNav:state.page.showInNav}});
       renderStatus();say(state.saveError);
       throw e;
     }finally{state.saving=false;renderStatus()}
