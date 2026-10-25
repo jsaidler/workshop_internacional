@@ -40,6 +40,35 @@ function validBoundaries(range,editable){
   // Avoid wrapping block content inside inline elements or moving CMS components.
   return !range.cloneContents().querySelector('div,p,section,article,header,footer,figure,table,ul,ol,li,h1,h2,h3,h4,h5,h6,blockquote,form,iframe,video,button,[data-cms-editor-ui]');
 }
+// Formatting must not turn one hyperlink into multiple tab stops.
+function anchorForBoundary(node,editable){
+  const el=node.nodeType===1?node:node.parentElement;
+  const anchor=el?.closest?.('a[href]');
+  return anchor&&editable.contains(anchor)?anchor:null;
+}
+function linkFormattingScope(range,editable){
+  const a=anchorForBoundary(range.startContainer,editable);
+  const b=anchorForBoundary(range.endContainer,editable);
+  if(!a&&!b)return editable;
+  if(!a||a!==b)return null; // Do not split a link at only one selection boundary.
+  // We may move an external formatting wrapper inside one anchor only when
+  // every ancestor wraps exactly the link path; siblings must remain untouched.
+  let child=a,parent=a.parentElement;
+  while(parent&&parent!==editable){
+    if(!['STRONG','B','EM','I','SPAN','FONT','U','S','DEL','MARK','SMALL','SUP','SUB','CODE'].includes(parent.tagName)
+      ||parent.childNodes.length!==1||parent.firstChild!==child)return null;
+    child=parent;parent=parent.parentElement;
+  }
+  return parent===editable?a:null;
+}
+function normalizeSingleLink(anchor,editable){
+  while(anchor.parentNode!==editable){
+    const wrapper=anchor.parentNode;
+    wrapper.replaceWith(anchor);
+    wrapper.append(...anchor.childNodes);
+    anchor.append(wrapper);
+  }
+}
 function lift(marker,editable,touched){
   while(marker.parentNode!==editable){
     const parent=marker.parentNode;
@@ -90,6 +119,8 @@ function apply(command,doc,capturedRange){
   const range=capturedRange?.cloneRange()||(!selection?.isCollapsed?selection?.getRangeAt(0).cloneRange():null);
   const editable=editableFor(range,doc);
   if(!editable||!range.toString().trim()||!validBoundaries(range,editable))return false;
+  const scope=linkFormattingScope(range,editable);
+  if(!scope)return false;
   const selector=selectors[command];
   const coverage=styleCoverage(range,editable,selector);
   if(!coverage.found||command==='removeFormat'&&!coverage.hasStyle)return false;
@@ -98,9 +129,10 @@ function apply(command,doc,capturedRange){
   const end=doc.createElement('span'),start=doc.createElement('span');
   const atEnd=range.cloneRange();atEnd.collapse(false);atEnd.insertNode(end);
   const atStart=range.cloneRange();atStart.collapse(true);atStart.insertNode(start);
+  if(scope!==editable)normalizeSingleLink(scope,editable);
   const touched=new Set();
-  lift(start,editable,touched);
-  lift(end,editable,touched);
+  lift(start,scope,touched);
+  lift(end,scope,touched);
   const isolated=doc.createRange();isolated.setStartAfter(start);isolated.setEndBefore(end);
   const content=isolated.extractContents();
   strip(content,selector);
