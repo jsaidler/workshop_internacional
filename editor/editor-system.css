@@ -211,6 +211,58 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
 }
 
 
+/* The generic toolbar button rule outranks the old mobile-toggle class,
+   leaving the Structure control transparent with inherited pale text. */
+@media(max-width:1024px){
+  .task-editor-bar .editor-toolbar #editor-structure-mobile{
+    color:#30312c;
+    background:#fff;
+    border:1px solid #cbccc5;
+    flex-shrink:0;
+  }
+}
+
+/* At phone width the page picker must not collapse into an unreadable icon.
+   Keep editorial actions on a separate row, with all controls reachable. */
+@media(max-width:600px){
+  .task-editor-bar{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    grid-template-areas:"brand picker" "actions actions";
+    gap:5px 8px;
+    align-items:center;
+    padding:7px 8px;
+  }
+  .task-editor-bar > .editor-wordmark{grid-area:brand}
+  .task-editor-bar > .editor-page-switcher-wrap{
+    grid-area:picker;
+    min-width:0;
+    width:100%;
+    max-width:none;
+  }
+  .task-editor-bar .editor-page-switcher select{width:100%;min-width:0}
+  .task-editor-bar > .editor-actions{
+    grid-area:actions;
+    width:100%;
+    min-width:0;
+    margin-left:0;
+    justify-self:stretch;
+    justify-content:space-between;
+    gap:4px;
+  }
+  .task-editor-bar #save-status[data-short-label]{
+    flex:1 1 64px;
+    min-width:54px;
+    max-width:none;
+  }
+}
+@media(max-width:360px){
+  .task-editor-bar > .editor-actions{gap:2px}
+  .task-editor-bar #editor-structure-mobile{padding-inline:5px;font-size:9px}
+  .task-editor-bar #save-page,.task-editor-bar #publish-page{padding-inline:4px;font-size:9px}
+  .task-editor-bar #save-status[data-short-label]{min-width:46px;font-size:0}
+}
+
 /* Mobile inspector is an explicit, reversible editing drawer; the canvas stays visible when collapsed. */
 .cms-mobile-inspector-header{display:none}
 @media(max-width:1024px){

@@ -131,3 +131,48 @@ for(const name of ['phone','tablet']){
     await expect(toggle).toHaveAttribute('aria-expanded','false');
   });
 }
+
+
+for(const viewport of [{width:390,height:844},{width:320,height:720}]){
+  test('editor phone header keeps page picker and editorial actions legible '+viewport.width,async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.goto(url+'&state=empty');
+    await noOverflow(page,'header/'+viewport.width);
+    const selector=page.locator('#editor-page-switcher');
+    const rect=await selector.boundingBox();
+    expect(rect).not.toBeNull();
+    expect(rect.width).toBeGreaterThan(145);
+    const structure=page.locator('#editor-structure-mobile');
+    await expect(structure).toBeVisible();
+    const structureAppearance=await structure.evaluate(el=>{
+      const css=getComputedStyle(el);
+      const channels=value=>[...value.matchAll(/\d+(?:\.\d+)?/g)].slice(0,3).map(v=>Number(v[0])/255);
+      const luminance=value=>{
+        const linear=channels(value).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);
+        return .2126*linear[0]+.7152*linear[1]+.0722*linear[2];
+      };
+      const foreground=luminance(css.color),background=luminance(css.backgroundColor);
+      return {contrast:(Math.max(foreground,background)+.05)/(Math.min(foreground,background)+.05),background:css.backgroundColor,border:css.borderTopStyle};
+    });
+    expect(structureAppearance.contrast).toBeGreaterThanOrEqual(4.5);
+    expect(structureAppearance.background).not.toBe('rgba(0, 0, 0, 0)');
+    expect(structureAppearance.border).toBe('solid');
+    const selectors=['#editor-structure-mobile','#save-status','#save-page','#publish-page','.editor-more'];
+    const bounds=await Promise.all(selectors.map(async item=>({item,box:await page.locator(item).boundingBox()})));
+    for(const b of bounds){
+      expect(b.box,b.item+' must have a layout box').not.toBeNull();
+      if(b.item==='#editor-structure-mobile')expect(b.box.width,'Structure control must have a usable tap target').toBeGreaterThan(48);
+      expect(b.box.x,b.item+' must stay on screen').toBeGreaterThanOrEqual(0);
+      expect(b.box.x+b.box.width,b.item+' must stay on screen').toBeLessThanOrEqual(viewport.width+1);
+    }
+    const otherRects=bounds.filter(b=>b.box);
+    for(let i=0;i<otherRects.length;i++)for(let j=i+1;j<otherRects.length;j++){
+      const a=otherRects[i].box,b=otherRects[j].box;
+      const intersection=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x))*Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));
+      expect(intersection,otherRects[i].item+' intersects '+otherRects[j].item).toBe(0);
+    }
+    const out=path.join('test-results','admin-complete-audit','editor');
+    fs.mkdirSync(out,{recursive:true});
+    await page.screenshot({path:path.join(out,'phone-header-readable-'+viewport.width+'.png'),fullPage:true,animations:'disabled'});
+  });
+}
