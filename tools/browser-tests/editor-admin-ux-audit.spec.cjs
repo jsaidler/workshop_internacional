@@ -131,3 +131,32 @@ for(const name of ['phone','tablet']){
     await expect(toggle).toHaveAttribute('aria-expanded','false');
   });
 }
+
+
+for(const viewport of [{width:390,height:844},{width:320,height:720}]){
+  test('editor phone header keeps page picker and editorial actions legible '+viewport.width,async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.goto(url+'&state=empty');
+    await noOverflow(page,'header/'+viewport.width);
+    const selector=page.locator('#editor-page-switcher');
+    const rect=await selector.boundingBox();
+    expect(rect).not.toBeNull();
+    expect(rect.width).toBeGreaterThan(145);
+    const selectors=['#editor-structure-mobile','#save-status','#save-page','#publish-page','#editor-more'];
+    const bounds=await Promise.all(selectors.map(async item=>({item,box:await page.locator(item).boundingBox()})));
+    for(const b of bounds){
+      expect(b.box,b.item+' must have a layout box').not.toBeNull();
+      expect(b.box.x,b.item+' must stay on screen').toBeGreaterThanOrEqual(0);
+      expect(b.box.x+b.box.width,b.item+' must stay on screen').toBeLessThanOrEqual(viewport.width+1);
+    }
+    const otherRects=bounds.filter(b=>b.box);
+    for(let i=0;i<otherRects.length;i++)for(let j=i+1;j<otherRects.length;j++){
+      const a=otherRects[i].box,b=otherRects[j].box;
+      const intersection=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x))*Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));
+      expect(intersection,otherRects[i].item+' intersects '+otherRects[j].item).toBe(0);
+    }
+    const out=path.join('test-results','admin-complete-audit','editor');
+    fs.mkdirSync(out,{recursive:true});
+    await page.screenshot({path:path.join(out,'phone-header-readable-'+viewport.width+'.png'),fullPage:true,animations:'disabled'});
+  });
+}
