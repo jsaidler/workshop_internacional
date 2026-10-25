@@ -308,7 +308,7 @@ test('clearing the middle of a bold run preserves formatting on both sides',asyn
   expect(state.html).toContain('<strong>AB</strong>CDE<strong>FGHIJ</strong>');
 });
 
-test('toggling bold off a substring preserves every segment of a nested hyperlink',async({page})=>{
+test('toggling bold inside a hyperlink preserves one keyboard focus target',async({page})=>{
   const state=await mockApp(page,{published:null});
   state.html='<section data-cms-section="intro" data-cms-section-name="Introdução"><p id="edited-text" data-cms-editable>Leia <strong><a href="/bibliografia" id="reference-link">ABCDEFG</a></strong> agora.</p></section>';
   await open(page);
@@ -321,14 +321,13 @@ test('toggling bold off a substring preserves every segment of a nested hyperlin
   });
   await page.locator('#text-toolbar [data-command="bold"]').click();
   await expect(field.locator('strong')).toHaveCount(2);
-  await expect(field.locator('a')).toHaveCount(3);
+  await expect(field.locator('a')).toHaveCount(1);
   await expect(field.locator('#reference-link')).toHaveCount(1);
   for(const href of await field.locator('a').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('href'))))
     expect(href).toBe('/bibliografia');
   expect(await field.textContent()).toBe('Leia ABCDEFG agora.');
   await page.evaluate(()=>window.CmsEditorDraft.save());
-  expect(state.html).toContain('<a href="/bibliografia">BCD</a>');
-  expect(state.html).toContain('<strong><a href="/bibliografia"');
+  expect(state.html).toContain('<a href="/bibliografia" id="reference-link"><strong>A</strong>BCD<strong>EFG</strong></a>');
 });
 
 test('selection across mixed markup removes only selected styles and preserves untouched runs',async({page})=>{
@@ -458,7 +457,7 @@ test('partial clear formatting retains adjacent bold text and undo/redo history'
   expect(state.html).not.toContain('cmsSelectionBoundary');
 });
 
-test('partial clear formatting splits links without losing destination or duplicating IDs',async({page})=>{
+test('partial clear formatting retains exactly one hyperlink and one unique ID',async({page})=>{
   const state=await mockApp(page,{published:null});
   state.html='<section data-cms-section="intro"><div class="section-inner"><p id="edited-text" data-cms-editable>Leia <strong><a id="keep-link" href="/bibliografia">Bibliografia</a></strong> depois.</p></div></section>';
   await open(page);
@@ -472,10 +471,13 @@ test('partial clear formatting splits links without losing destination or duplic
   });
   await page.locator('#text-toolbar [data-command="removeFormat"]').click();
   await expect(edited).toHaveText('Leia Bibliografia depois.');
-  await expect(edited.locator('a')).toHaveCount(3);
+  await expect(edited.locator('a')).toHaveCount(1);
   await expect(edited.locator('#keep-link')).toHaveCount(1);
   await expect(edited.locator('strong')).toHaveCount(2);
-  for(const anchor of await edited.locator('a').all())await expect(anchor).toHaveAttribute('href','/bibliografia');
+  await expect(edited.locator('a')).toHaveAttribute('href','/bibliografia');
+  const linkShape=await edited.locator('a').evaluate(el=>({html:el.innerHTML,outer:el.outerHTML,tabIndex:el.tabIndex}));
+  expect(linkShape.html).toContain('lio');
+  expect(linkShape.tabIndex).toBe(0);
   await page.evaluate(()=>window.CmsEditorDraft.save());
   expect(state.html).toContain('href="/bibliografia"');
   expect((state.html.match(/id="keep-link"/g)||[]).length).toBe(1);
@@ -528,4 +530,36 @@ test('clearing whole formatted CMS node retains its unique identity as a neutral
   await page.evaluate(()=>window.CmsEditorDraft.save());
   expect((state.html.match(/id="stable-identifier"/g)||[]).length).toBe(1);
   expect(state.html).toContain('<span id="stable-identifier" data-cms-node-id="node-ink">Alvo inteiro</span>');
+});
+
+
+test('inline format does not split links and rejects selection across a link boundary',async({page})=>{
+  const state=await mockApp(page,{published:null});
+  state.html='<section data-cms-section="intro"><p id="edited-text" data-cms-editable>Antes <a id="single-link" href="/bibliografia">Bibliografia</a> depois.</p></section>';
+  await open(page);
+  const edited=page.frameLocator('#page-frame').locator('#edited-text');
+  await edited.click();
+  await edited.locator('#single-link').evaluate(el=>{
+    const range=el.ownerDocument.createRange();
+    range.setStart(el.firstChild,2);range.setEnd(el.firstChild,6);
+    const selection=el.ownerDocument.defaultView.getSelection();selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="bold"]').click();
+  await expect(edited.locator('a[href]')).toHaveCount(1);
+  await expect(edited.locator('a strong')).toHaveText('blio');
+  await expect(edited).toHaveText('Antes Bibliografia depois.');
+  const before=await edited.innerHTML();
+  await edited.evaluate(el=>{
+    const inside=el.querySelector('a').firstChild;
+    const range=el.ownerDocument.createRange();
+    range.setStart(inside,1);
+    range.setEnd(el.lastChild,3);
+    const selection=el.ownerDocument.defaultView.getSelection();selection.removeAllRanges();selection.addRange(range);
+  });
+  await page.locator('#text-toolbar [data-command="removeFormat"]').click();
+  await expect(edited).toHaveText('Antes Bibliografia depois.');
+  expect(await edited.innerHTML()).toBe(before);
+  await expect(edited.locator('a[href]')).toHaveCount(1);
+  await page.evaluate(()=>window.CmsEditorDraft.save());
+  expect((state.html.match(/id="single-link"/g)||[]).length).toBe(1);
 });
