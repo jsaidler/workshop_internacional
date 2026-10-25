@@ -142,7 +142,7 @@ for(const viewport of [{width:390,height:844},{width:320,height:720}]){
     const rect=await selector.boundingBox();
     expect(rect).not.toBeNull();
     expect(rect.width).toBeGreaterThan(145);
-    const selectors=['#editor-structure-mobile','#save-status','#save-page','#publish-page','#editor-more'];
+    const selectors=['#editor-structure-mobile','#save-status','#save-page','#publish-page','.editor-more'];
     const bounds=await Promise.all(selectors.map(async item=>({item,box:await page.locator(item).boundingBox()})));
     for(const b of bounds){
       expect(b.box,b.item+' must have a layout box').not.toBeNull();
