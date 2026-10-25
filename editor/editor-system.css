@@ -211,6 +211,17 @@ html,body.task-centric-editor{height:100%;overflow:hidden}
 }
 
 
+/* The generic toolbar button rule outranks the old mobile-toggle class,
+   leaving the Structure control transparent with inherited pale text. */
+@media(max-width:1024px){
+  .task-editor-bar .editor-toolbar #editor-structure-mobile{
+    color:#30312c;
+    background:#fff;
+    border:1px solid #cbccc5;
+    flex-shrink:0;
+  }
+}
+
 /* At phone width the page picker must not collapse into an unreadable icon.
    Keep editorial actions on a separate row, with all controls reachable. */
 @media(max-width:600px){
