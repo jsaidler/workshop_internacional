@@ -146,7 +146,7 @@ for(const viewport of [{width:390,height:844},{width:320,height:720}]){
     await expect(structure).toBeVisible();
     const structureAppearance=await structure.evaluate(el=>{
       const css=getComputedStyle(el);
-      const channels=value=>[...value.matchAll(/\\d+(?:\\.\\d+)?/g)].slice(0,3).map(v=>Number(v[0])/255);
+      const channels=value=>[...value.matchAll(/\d+(?:\.\d+)?/g)].slice(0,3).map(v=>Number(v[0])/255);
       const luminance=value=>{
         const linear=channels(value).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);
         return .2126*linear[0]+.7152*linear[1]+.0722*linear[2];
