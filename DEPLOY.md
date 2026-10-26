@@ -107,6 +107,6 @@ A publicação editorial vale imediatamente no site. Atualização de aplicaçã
 
 ## Conteúdo do artefato
 
-`dist/` contém a aplicação necessária à produção, inclusive painel administrativo, editor visual, templates, assets e migrações. Não deve conter banco de desenvolvimento, credenciais locais, logs de desenvolvimento, capturas de teste nem arquivos do diretório `output/`.
+`dist/` contém a aplicação necessária à produção, inclusive painel administrativo, editor visual, templates, assets, migrações e os documentos JSON canônicos de `data/` usados pelo instalador e pelos fallbacks de conteúdo. O build valida e gerencia esses JSONs; não deve conservar uma cópia antiga fora do manifesto. O pacote não deve conter banco de desenvolvimento, credenciais locais, logs de desenvolvimento, capturas de teste nem arquivos do diretório `output/`.
 
 O banco, uploads e configuração da instalação são persistentes e ficam fora do controle destrutivo do build.

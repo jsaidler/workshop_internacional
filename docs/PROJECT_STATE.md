@@ -1,5 +1,9 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Integridade do conteúdo inicial no pacote — 26/10/2026
+
+O build de distribuição passa a gerenciar explicitamente `data/public-content.json`, `data/default-content.json` e `data/schema.json`. Esses arquivos são dependências do instalador, do validador de conteúdo e do fallback legado do editor; não podem sobreviver em `dist/` como cópias antigas não rastreadas pelo manifesto do build. A construção valida o JSON antes de substituir o pacote e mantém o `dist` anterior intacto quando qualquer documento é inválido. `tools/test-build-dist.php` prova cópia byte a byte a partir de um `dist` vazio e falha atômica para JSON inválido.
+
 ## Integridade da identidade dos alunos — 26/10/2026 (branch isolada)
 
 A associação automática de uma inscrição ou linha de importação a `student_users` exige agora correspondência conjunta de **CPF e e-mail** com a mesma conta. Se apenas um identificador corresponder, ou se CPF e e-mail apontarem para contas diferentes, a operação retorna conflito administrativo explícito e não altera conta, perfil, submissão nem matrícula. Uma combinação em que nenhum identificador existe continua apta a criar uma conta nova. Vínculos explícitos já persistidos por `student_id` são preservados; em contas ativadas, dados históricos podem continuar divergindo sem substituir o perfil atual, desde que não apontem para outra identidade existente.
