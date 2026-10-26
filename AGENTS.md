@@ -1,5 +1,18 @@
 # Regras de operação no repositório
 
+## Contrato de atuação: da expectativa à versão instalável
+
+**Entrada normal:** o responsável pelo produto descreve o comportamento, a necessidade ou a experiência desejada em linguagem natural. É responsabilidade do Codex descobrir o subsistema, ler os contratos, derivar critérios de aceite, pesquisar alternativas, implementar, testar, revisar e preparar a entrega. Não exigir que o usuário forneça nomes de funções, prompts especializados, patches, capturas técnicas ou relatórios Markdown para intermediar o trabalho.
+
+**Saída normal de uma solicitação de alteração:** comportamento demonstravelmente correto, regressões pertinentes, documentação canônica coerente, branch sincronizada e pull request em rascunho com evidências e artefato de distribuição validado. Não encerrar uma tarefa implementável com uma lista de sugestões ou uma auditoria estática; se o pedido for explicitamente apenas de análise, respeitar esse escopo. Não encerrar apenas por lint, typecheck ou execução nominal de testes existentes.
+
+- Usar a skill de repositório `.agents/skills/workshop-product-delivery/SKILL.md` como processo padrão de engenharia. Para mudanças visuais ou interativas, aplicar também `.agents/skills/workshop-browser-qa/SKILL.md`; para código distribuível, aplicar `.agents/skills/workshop-release-readiness/SKILL.md`.
+- Identificar e corrigir bloqueios locais previsíveis (dependências, fixtures, navegador, permissões de trabalho, ferramentas e scripts) antes de declarar impedimento. Nunca tratar ausência de evidência visual como aprovação da interface.
+- Trabalhar em branch isolada; preservar trabalhos locais existentes e jamais apagar mudanças de terceiros. Criar commit, sincronizar somente a branch de trabalho, abrir/atualizar PR em rascunho e acompanhar CI quando houver acesso autenticado. PR/CI são os meios normais de revisão e registro; não pedir que o usuário transporte `.md`, diffs ou logs entre agentes.
+- O próprio Codex deve revisar seu diff e corrigir falhas; subagentes são opcionais e utilizados apenas quando agregarem análise independente. Moderar consumo de contexto e esforço conforme o risco, sem impor auditorias integrais em cada solicitação.
+- A publicação em `production-dist` é realizada pelo workflow do repositório **somente após integração aprovada** na branch de produção. A atualização da hospedagem é aplicada pelo responsável no painel `Admin → Sistema e atualizações`. Não mesclar na branch de produção, publicar no canal, acessar banco real, disparar comunicações reais ou instalar na hospedagem sem autorização explícita. Um PR em rascunho com artefato validado significa **pronto para revisão**, não **instalado**.
+- Se houver impedimento real ou decisão de produto materialmente ambígua, explicar objetivamente a opção recomendada, o efeito e a decisão necessária. Não transferir diagnóstico, integração, teste ou empacotamento ao usuário.
+
 ## Leitura obrigatória antes de trabalhar
 
 **Regra global, sem exceção:** antes de qualquer alteração, descobrir e ler toda documentação canônica aplicável ao escopo. `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md` define esse preflight e vale para qualquer projeto, não apenas para este repositório. Memória, familiaridade com o projeto, urgência ou tamanho da mudança não substituem a consulta documental.
