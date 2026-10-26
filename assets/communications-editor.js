@@ -125,6 +125,7 @@ async function refreshRecipients(){
   refreshRecipients();
 }));
 form.querySelector('[name="subject"]')?.addEventListener('input',markChanged);
+form.querySelector('[name="preheader"]')?.addEventListener('input',markChanged);
 form.querySelectorAll('[name="template_key"]').forEach(radio=>radio.addEventListener('change',markChanged));
 root.querySelectorAll('[data-email-preview-mode]').forEach(button=>{
   button.addEventListener('click',()=>{

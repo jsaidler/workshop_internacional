@@ -229,6 +229,10 @@ O corpo da mensagem passa a ser editado visualmente: negrito, itálico, sublinha
 
 
 
+## Pré-cabeçalho opcional de e-mails — 22/10/2026 (PR em revisão)
+
+`communication_campaigns.preheader` (migração 110) é dado editorial opcional, independente de assunto/corpo, e somente de campanhas do CMS. O renderer canônico dos e-mails utiliza esse campo como texto HTML oculto de prévia para o cliente de e-mail, sem manipulação de envelope, destinatário, opt-in, inscrição ou estado da campanha. Rascunhos antigos são preservados por `DEFAULT ''`; prévias e envios usam a mesma fonte. Nenhum envio real é disparado pela edição ou pela instalação.
+
 ## Imagens e modelos visuais de e-mails — 22/10/2026
 
 O editor de **Admin → Comunicações → Mensagens** oferece três modelos de e-mail compatíveis com clientes de correio: **Essencial, Editorial e Destaque**, derivados da identidade do site (nome, cores de texto, fundo e acento) por `cms_site_settings()` e `cms_design_settings()`. O design do site não é copiado como HTML: o renderer usa tabelas de apresentação e estilos inline conservadores, mantendo suporte aos clientes de e-mail. A migração aditiva 109 guarda `template_key` em cada rascunho; registros anteriores assumem `minimal`. O teste ao administrador, a prévia e o dispatch usam o mesmo `communication_email_document()`; alterações no Design afetam novos renders, por isso conferir a prévia antes de despachar.
