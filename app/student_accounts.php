@@ -98,14 +98,42 @@ function student_account_update_profile(PDO $db,int $studentId,array $input): vo
 function student_account_merge_profile_from_payload(PDO $db,int $studentId,array $payload): void {
     $existing=student_account_profile($db,$studentId);$input=[];foreach(['name','email','cpf','phone','instagram','address','city_state','postal_code'] as $key)$input[$key]=trim((string)($payload[$key]??($existing[$key]??'')));if(student_account_normalize_cpf((string)$input['cpf'])==='')$input['cpf']=student_account_decrypt_cpf((string)($existing['cpf_ciphertext']??''));student_account_update_profile($db,$studentId,$input);
 }
+function student_account_atomic_write(PDO $db,string $savepoint,callable $work): mixed {
+    if(!preg_match('/^[a-z_][a-z0-9_]*$/D',$savepoint))throw new InvalidArgumentException('invalid_savepoint_name');
+    $transaction=static function() use($db,$savepoint,$work): mixed {
+        $db->exec('SAVEPOINT '.$savepoint);
+        try{$result=$work();$db->exec('RELEASE SAVEPOINT '.$savepoint);return $result;}
+        catch(Throwable $e){$db->exec('ROLLBACK TO SAVEPOINT '.$savepoint);$db->exec('RELEASE SAVEPOINT '.$savepoint);throw $e;}
+    };
+    return function_exists('course_agenda_with_lock')?course_agenda_with_lock($db,$transaction):$transaction();
+}
+function student_account_identity_candidates(PDO $db,string $email,string $cpfHash): array {
+    $byCpf=null;$byEmail=null;
+    if($cpfHash!==''){$q=$db->prepare('SELECT u.* FROM student_users u JOIN student_profiles p ON p.student_id=u.id WHERE p.cpf_lookup_hash=? LIMIT 1');$q->execute([$cpfHash]);$byCpf=$q->fetch()?:null;}
+    if($email!==''){$q=$db->prepare('SELECT * FROM student_users WHERE email=? LIMIT 1');$q->execute([$email]);$byEmail=$q->fetch()?:null;}
+    return ['email'=>$byEmail,'cpf'=>$byCpf];
+}
 function student_account_find_identity(PDO $db,string $email,string $cpfHash): ?array {
-    $byCpf=null;$byEmail=null;if($cpfHash!==''){$q=$db->prepare('SELECT u.* FROM student_users u JOIN student_profiles p ON p.student_id=u.id WHERE p.cpf_lookup_hash=? LIMIT 1');$q->execute([$cpfHash]);$byCpf=$q->fetch()?:null;}$q=$db->prepare('SELECT * FROM student_users WHERE email=? LIMIT 1');$q->execute([$email]);$byEmail=$q->fetch()?:null;if($byCpf&&$byEmail&&(int)$byCpf['id']!==(int)$byEmail['id'])throw new RuntimeException('student_identity_conflict');return $byCpf?:$byEmail;
+    $matches=student_account_identity_candidates($db,$email,$cpfHash);$byEmail=$matches['email'];$byCpf=$matches['cpf'];
+    if($byCpf&&$byEmail){if((int)$byCpf['id']!==(int)$byEmail['id'])throw new RuntimeException('student_identity_conflict');return $byCpf;}
+    if($byCpf||$byEmail)throw new RuntimeException('student_identity_partial_match');
+    return null;
+}
+function student_account_identity_admin_message(string $reason): string {
+    if(str_contains($reason,'student_identity_partial_match'))return 'CPF e e-mail não correspondem juntos à mesma conta. Revise os dados; nenhuma conta ou matrícula foi alterada.';
+    if(str_contains($reason,'student_identity_conflict'))return 'CPF e e-mail pertencem a contas diferentes. Revise os dados; nenhuma conta ou matrícula foi alterada.';
+    if(str_contains($reason,'student_identity_')||str_contains($reason,'bound_student_not_found'))return 'Não foi possível confirmar a identidade vinculada. Revise a conta e a inscrição; nenhuma matrícula foi alterada.';
+    return $reason;
 }
 function student_account_upsert_from_submission(PDO $db,array $submission): int {
     $payload=json_decode((string)($submission['payload_json']??''),true);if(!is_array($payload))throw new RuntimeException('submission_payload_invalid');$name=trim((string)($payload['name']??''));$email=student_normalize_email((string)($payload['email']??''));$cpf=student_account_normalize_cpf((string)($payload['cpf']??''));if($name===''||!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($cpf)!==11)throw new RuntimeException('confirmed_registration_missing_identity');$hash=student_account_cpf_lookup_hash($cpf);$user=student_account_find_identity($db,$email,$hash);$now=utc_now();
-    if(!$user){$db->prepare("INSERT INTO student_users(user_uuid,name,email,password_hash,status,must_change_password,last_login_at,created_at,updated_at,activated_at,privacy_ack_at,privacy_notice_version) VALUES(?,?,?,?, 'active',1,NULL,?,?,NULL,NULL,'')")->execute([student_uuid(),$name,$email,student_account_random_unusable_hash(),$now,$now]);$studentId=(int)$db->lastInsertId();$db->prepare('INSERT INTO student_profiles(student_id,cpf_lookup_hash,cpf_ciphertext,cpf_last4,phone,instagram,address,city_state,postal_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute([$studentId,$hash,student_account_encrypt_cpf($cpf),substr($cpf,-4),trim((string)($payload['phone']??'')),trim((string)($payload['instagram']??'')),trim((string)($payload['address']??'')),trim((string)($payload['city_state']??'')),trim((string)($payload['postal_code']??'')),$now,$now]);}
-    else{$studentId=(int)$user['id'];if(empty($user['activated_at']))student_account_merge_profile_from_payload($db,$studentId,$payload);$db->prepare("UPDATE student_users SET status='active',updated_at=? WHERE id=?")->execute([$now,$studentId]);}
-    return $studentId;
+    $db->exec('SAVEPOINT student_account_upsert');
+    try{
+        if(!$user){$db->prepare("INSERT INTO student_users(user_uuid,name,email,password_hash,status,must_change_password,last_login_at,created_at,updated_at,activated_at,privacy_ack_at,privacy_notice_version) VALUES(?,?,?,?, 'active',1,NULL,?,?,NULL,NULL,'')")->execute([student_uuid(),$name,$email,student_account_random_unusable_hash(),$now,$now]);$studentId=(int)$db->lastInsertId();$db->prepare('INSERT INTO student_profiles(student_id,cpf_lookup_hash,cpf_ciphertext,cpf_last4,phone,instagram,address,city_state,postal_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute([$studentId,$hash,student_account_encrypt_cpf($cpf),substr($cpf,-4),trim((string)($payload['phone']??'')),trim((string)($payload['instagram']??'')),trim((string)($payload['address']??'')),trim((string)($payload['city_state']??'')),trim((string)($payload['postal_code']??'')),$now,$now]);}
+        else{$studentId=(int)$user['id'];if(empty($user['activated_at']))student_account_merge_profile_from_payload($db,$studentId,$payload);$db->prepare("UPDATE student_users SET status='active',updated_at=? WHERE id=?")->execute([$now,$studentId]);}
+        $db->exec('RELEASE SAVEPOINT student_account_upsert');
+        return $studentId;
+    }catch(Throwable $e){$db->exec('ROLLBACK TO SAVEPOINT student_account_upsert');$db->exec('RELEASE SAVEPOINT student_account_upsert');throw $e;}
 }
 function student_account_submission_confirmed(array $row): bool {return ($row['status']??'')!=='archived'&&(($row['status']??'')==='converted'||($row['payment_status']??'pending')==='paid');}
 function student_account_reconcile_confirmed_registrations(PDO $db,?int $activityId=null): array {
@@ -113,7 +141,14 @@ function student_account_reconcile_confirmed_registrations(PDO $db,?int $activit
     // Login and activation must never create a new enrollment without an explicit cohort.
     if(function_exists('student_enrollment_reconcile_confirmed')&&function_exists('course_domain_available')&&course_domain_available($db))return student_enrollment_reconcile_confirmed($db,$activityId);
     $sql="SELECT s.*,f.form_key FROM cms_form_submissions s JOIN cms_forms f ON f.id=s.form_id WHERE f.purpose='enrollment'";$args=[];if($activityId!==null){$sql.=' AND s.activity_id=?';$args[]=$activityId;}$sql.=' ORDER BY s.id';$q=$db->prepare($sql);$q->execute($args);$created=0;$disabled=0;$errors=[];
-    foreach($q->fetchAll() as $row){try{if(student_account_submission_confirmed($row)){$cohortId=(int)($row['cohort_id']??0);$cohort=$cohortId?course_cohort_by_id($db,$cohortId):null;if(!$cohort||(int)$cohort['activity_id']!==(int)$row['activity_id']){$cohort=course_default_cohort($db,(int)$row['activity_id'],true);$cohortId=(int)$cohort['id'];}$studentId=student_account_upsert_from_submission($db,$row);$now=utc_now();$db->prepare("INSERT INTO course_enrollments(enrollment_uuid,student_id,cohort_id,source_submission_id,status,confirmed_at,created_at,updated_at) VALUES(?,?,?,?, 'active',?,?,?) ON CONFLICT(student_id,cohort_id) DO UPDATE SET source_submission_id=excluded.source_submission_id,status='active',confirmed_at=excluded.confirmed_at,updated_at=excluded.updated_at")->execute([student_uuid(),$studentId,$cohortId,(int)$row['id'],(string)($row['payment_confirmed_at']?:$row['updated_at']?:$now),$now,$now]);$db->prepare('UPDATE cms_form_submissions SET student_id=?,cohort_id=?,updated_at=? WHERE id=?')->execute([$studentId,$cohortId,$now,(int)$row['id']]);$created++;if(function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);}elseif(!empty($row['student_id'])&&!empty($row['cohort_id'])){$db->prepare("UPDATE course_enrollments SET status='disabled',updated_at=? WHERE student_id=? AND cohort_id=? AND source_submission_id=?")->execute([utc_now(),(int)$row['student_id'],(int)$row['cohort_id'],(int)$row['id']]);$disabled++;if(function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,(int)$row['student_id']);}}catch(Throwable $e){$errors[]=['submission_id'=>(int)$row['id'],'error'=>$e->getMessage()];error_log('Student registration reconciliation failed for submission '.(int)$row['id'].': '.$e->getMessage());}}
+    foreach($q->fetchAll() as $row){try{
+        $result=student_account_atomic_write($db,'student_registration_reconcile',static function() use($db,$row): array {
+            $createdDelta=0;$disabledDelta=0;
+            if(student_account_submission_confirmed($row)){$cohortId=(int)($row['cohort_id']??0);$cohort=$cohortId?course_cohort_by_id($db,$cohortId):null;if(!$cohort||(int)$cohort['activity_id']!==(int)$row['activity_id']){$cohort=course_default_cohort($db,(int)$row['activity_id'],true);$cohortId=(int)$cohort['id'];}$studentId=!empty($row['student_id'])&&function_exists('student_enrollment_student_from_submission')?student_enrollment_student_from_submission($db,$row):student_account_upsert_from_submission($db,$row);$now=utc_now();$db->prepare("INSERT INTO course_enrollments(enrollment_uuid,student_id,cohort_id,source_submission_id,status,confirmed_at,created_at,updated_at) VALUES(?,?,?,?, 'active',?,?,?) ON CONFLICT(student_id,cohort_id) DO UPDATE SET source_submission_id=excluded.source_submission_id,status='active',confirmed_at=excluded.confirmed_at,updated_at=excluded.updated_at")->execute([student_uuid(),$studentId,$cohortId,(int)$row['id'],(string)($row['payment_confirmed_at']?:$row['updated_at']?:$now),$now,$now]);$db->prepare('UPDATE cms_form_submissions SET student_id=?,cohort_id=?,updated_at=? WHERE id=?')->execute([$studentId,$cohortId,$now,(int)$row['id']]);$createdDelta=1;if(function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);}elseif(!empty($row['student_id'])&&!empty($row['cohort_id'])){$db->prepare("UPDATE course_enrollments SET status='disabled',updated_at=? WHERE student_id=? AND cohort_id=? AND source_submission_id=?")->execute([utc_now(),(int)$row['student_id'],(int)$row['cohort_id'],(int)$row['id']]);$disabledDelta=1;if(function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,(int)$row['student_id']);}
+            return ['created'=>$createdDelta,'disabled'=>$disabledDelta];
+        });
+        $created+=(int)$result['created'];$disabled+=(int)$result['disabled'];
+    }catch(Throwable $e){$errors[]=['submission_id'=>(int)$row['id'],'error'=>$e->getMessage()];error_log('Student registration reconciliation failed for submission '.(int)$row['id'].': '.$e->getMessage());}}
     return ['processed'=>$created,'disabled'=>$disabled,'errors'=>$errors];
 }
 function student_account_install_reconciliation_hook(): void {

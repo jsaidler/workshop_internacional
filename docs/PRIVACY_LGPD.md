@@ -52,10 +52,12 @@ A conta não precisa ser entendida como pertencente a um único curso. A matríc
 
 A origem operacional atual de uma matrícula pode ser uma inscrição confirmada ou uma importação histórica administrada. Na reconciliação de inscrições confirmadas, o sistema:
 
-- cria ou encontra a conta pela identidade já conhecida;
+- cria uma conta nova quando CPF e e-mail não existem, ou encontra a conta somente quando os dois identificadores correspondem conjuntamente à mesma identidade;
 - atualiza o perfil reutilizável com os dados confirmados quando apropriado;
 - cria/reativa a matrícula na turma;
 - vincula a submissão à conta e à turma.
+
+Correspondência somente por CPF, somente por e-mail ou entre duas contas diferentes é tratada como conflito administrativo. Nessa situação, conta, perfil, submissão e matrícula não são alterados; a administração precisa revisar os dados. Contas ativadas permanecem autoridade do perfil atual, e dados históricos divergentes não redefinem silenciosamente nome, e-mail ou CPF.
 
 Reverter/cancelar a inscrição desativa a matrícula vinculada sem apagar automaticamente a conta ou o histórico.
 

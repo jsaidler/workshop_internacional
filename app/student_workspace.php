@@ -65,7 +65,7 @@ function student_import_csv_rows(string $path): array {
     $handle=fopen($path,'rb');if(!$handle)throw new RuntimeException('Não foi possível abrir a planilha.');
     try{
         $sample=(string)fgets($handle);rewind($handle);$counts=[';'=>substr_count($sample,';'),','=>substr_count($sample,','),"\t"=>substr_count($sample,"\t")];arsort($counts);$delimiter=(string)array_key_first($counts);if(($counts[$delimiter]??0)===0)$delimiter=';';
-        $rows=[];while(($row=fgetcsv($handle,0,$delimiter))!==false){$rows[]=array_map(static fn($v)=>trim((string)$v),$row);if(count($rows)>STUDENT_IMPORT_MAX_ROWS+1)throw new RuntimeException('A planilha excede o limite de '.STUDENT_IMPORT_MAX_ROWS.' alunos por importação.');}return $rows;
+        $rows=[];while(($row=fgetcsv($handle,0,$delimiter,'"',''))!==false){$rows[]=array_map(static fn($v)=>trim((string)$v),$row);if(count($rows)>STUDENT_IMPORT_MAX_ROWS+1)throw new RuntimeException('A planilha excede o limite de '.STUDENT_IMPORT_MAX_ROWS.' alunos por importação.');}return $rows;
     }finally{fclose($handle);}
 }
 function student_import_xlsx_cell_text(DOMElement $cell,array $shared,DOMXPath $xpath): string {
@@ -106,22 +106,22 @@ function student_import_upsert_student(PDO $db,int $cohortId,array $payload): ar
     $name=student_workspace_text($payload['name']??'',180);$email=student_normalize_email((string)($payload['email']??''));$cpf=student_account_normalize_cpf((string)($payload['cpf']??''));
     if($name==='')throw new RuntimeException('Nome ausente.');if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('E-mail inválido.');if(strlen($cpf)!==11)throw new RuntimeException('CPF precisa ter 11 dígitos.');
     $hash=student_account_cpf_lookup_hash($cpf);$user=student_account_find_identity($db,$email,$hash);$now=utc_now();$created=false;
-    if(!$user){
-        $db->beginTransaction();try{
+    return student_account_atomic_write($db,'student_import_identity_enrollment',static function() use($db,$cohortId,$payload,$name,$email,$cpf,$hash,$user,$now,$created): array {
+        if(!$user){
             $db->prepare("INSERT INTO student_users(user_uuid,name,email,password_hash,status,must_change_password,last_login_at,created_at,updated_at,activated_at,privacy_ack_at,privacy_notice_version) VALUES(?,?,?,?, 'active',1,NULL,?,?,NULL,NULL,'')")->execute([student_uuid(),$name,$email,student_account_random_unusable_hash(),$now,$now]);$studentId=(int)$db->lastInsertId();
             $db->prepare('INSERT INTO student_profiles(student_id,cpf_lookup_hash,cpf_ciphertext,cpf_last4,phone,instagram,address,city_state,postal_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute([$studentId,$hash,student_account_encrypt_cpf($cpf),substr($cpf,-4),student_workspace_text($payload['phone']??'',80),student_workspace_text($payload['instagram']??'',120),student_workspace_text($payload['address']??'',500),student_workspace_text($payload['city_state']??'',180),student_workspace_text($payload['postal_code']??'',32),$now,$now]);
-            $db->commit();$created=true;
-        }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
-    }else{
-        $studentId=(int)$user['id'];
-        if(empty($user['activated_at'])){
-            $existing=student_account_profile_values($db,$studentId);$merged=['name'=>$name,'email'=>$email,'cpf'=>$cpf];foreach(['phone','instagram','address','city_state','postal_code'] as $field)$merged[$field]=trim((string)($payload[$field]??''))!==''?(string)$payload[$field]:(string)($existing[$field]??'');student_account_update_profile($db,$studentId,$merged);
+            $created=true;
+        }else{
+            $studentId=(int)$user['id'];
+            if(empty($user['activated_at'])){
+                $existing=student_account_profile_values($db,$studentId);$merged=['name'=>$name,'email'=>$email,'cpf'=>$cpf];foreach(['phone','instagram','address','city_state','postal_code'] as $field)$merged[$field]=trim((string)($payload[$field]??''))!==''?(string)$payload[$field]:(string)($existing[$field]??'');student_account_update_profile($db,$studentId,$merged);
+            }
+            $db->prepare("UPDATE student_users SET status='active',updated_at=? WHERE id=?")->execute([$now,$studentId]);
         }
-        $db->prepare("UPDATE student_users SET status='active',updated_at=? WHERE id=?")->execute([$now,$studentId]);
-    }
-    $db->prepare("INSERT INTO course_enrollments(enrollment_uuid,student_id,cohort_id,source_submission_id,status,confirmed_at,created_at,updated_at) VALUES(?,?,?,NULL,'active',?,?,?) ON CONFLICT(student_id,cohort_id) DO UPDATE SET status='active',updated_at=excluded.updated_at")->execute([student_uuid(),$studentId,$cohortId,$now,$now,$now]);
-    if(function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);
-    return ['student_id'=>$studentId,'created'=>$created,'name'=>$name,'email'=>$email];
+        $db->prepare("INSERT INTO course_enrollments(enrollment_uuid,student_id,cohort_id,source_submission_id,status,confirmed_at,created_at,updated_at) VALUES(?,?,?,NULL,'active',?,?,?) ON CONFLICT(student_id,cohort_id) DO UPDATE SET status='active',updated_at=excluded.updated_at")->execute([student_uuid(),$studentId,$cohortId,$now,$now,$now]);
+        if(function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);
+        return ['student_id'=>$studentId,'created'=>$created,'name'=>$name,'email'=>$email];
+    });
 }
 function student_import_historical_students(PDO $db,int $activityId,int $cohortId,array $file): array {
     $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==$activityId||$cohort['status']==='archived')throw new RuntimeException('Escolha uma turma válida.');
@@ -130,7 +130,7 @@ function student_import_historical_students(PDO $db,int $activityId,int $cohortI
     $insertRow=$db->prepare('INSERT INTO student_import_rows(batch_id,row_number,student_id,name,email,status,message,created_at) VALUES(?,?,?,?,?,?,?,?)');
     foreach($rows as $offset=>$row){$payload=student_import_payload_from_row($row,$columns);if(implode('',array_values($payload))==='')continue;$total++;$rowNumber=$offset+2;
         try{$result=student_import_upsert_student($db,$cohortId,$payload);$status=$result['created']?'imported':'existing';$result['created']?$imported++:$existing++;$insertRow->execute([$batchId,$rowNumber,(int)$result['student_id'],(string)$result['name'],(string)$result['email'],$status,'',$now]);}
-        catch(Throwable $e){$errors++;$message=$e->getMessage()==='student_identity_conflict'?'E-mail e CPF pertencem a contas diferentes. Revise esta linha.':$e->getMessage();$errorList[]=['row'=>$rowNumber,'name'=>(string)($payload['name']??''),'email'=>(string)($payload['email']??''),'message'=>$message];$insertRow->execute([$batchId,$rowNumber,null,student_workspace_text($payload['name']??'',180),student_workspace_text($payload['email']??'',180),'error',student_workspace_text($message,500),$now]);}
+        catch(Throwable $e){$errors++;$message=student_account_identity_admin_message($e->getMessage());$errorList[]=['row'=>$rowNumber,'name'=>(string)($payload['name']??''),'email'=>(string)($payload['email']??''),'message'=>$message];$insertRow->execute([$batchId,$rowNumber,null,student_workspace_text($payload['name']??'',180),student_workspace_text($payload['email']??'',180),'error',student_workspace_text($message,500),$now]);}
     }
     $db->prepare('UPDATE student_import_batches SET total_rows=?,imported_rows=?,existing_rows=?,error_rows=? WHERE id=?')->execute([$total,$imported,$existing,$errors,$batchId]);
     return ['batch_id'=>$batchId,'total'=>$total,'imported'=>$imported,'existing'=>$existing,'errors'=>$errors,'error_list'=>$errorList];

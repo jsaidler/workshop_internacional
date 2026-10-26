@@ -1,5 +1,15 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Integridade do conteúdo inicial no pacote — 26/10/2026
+
+O build de distribuição passa a gerenciar explicitamente `data/public-content.json`, `data/default-content.json` e `data/schema.json`. Esses arquivos são dependências do instalador, do validador de conteúdo e do fallback legado do editor; não podem sobreviver em `dist/` como cópias antigas não rastreadas pelo manifesto do build. A construção valida o JSON antes de substituir o pacote e mantém o `dist` anterior intacto quando qualquer documento é inválido. `tools/test-build-dist.php` prova cópia byte a byte a partir de um `dist` vazio e falha atômica para JSON inválido.
+
+## Integridade da identidade dos alunos — 26/10/2026 (branch isolada)
+
+A associação automática de uma inscrição ou linha de importação a `student_users` exige agora correspondência conjunta de **CPF e e-mail** com a mesma conta. Se apenas um identificador corresponder, ou se CPF e e-mail apontarem para contas diferentes, a operação retorna conflito administrativo explícito e não altera conta, perfil, submissão nem matrícula. Uma combinação em que nenhum identificador existe continua apta a criar uma conta nova. Vínculos explícitos já persistidos por `student_id` são preservados; em contas ativadas, dados históricos podem continuar divergindo sem substituir o perfil atual, desde que não apontem para outra identidade existente.
+
+Reconciliação canônica, fallback legado e importação CSV adquirem a trava transacional compartilhada da Agenda, quando disponível, antes de executar criação/complemento de conta, vínculo da submissão e matrícula dentro de `SAVEPOINT`. Isso evita `BEGIN IMMEDIATE` concorrente dentro da mesma conexão em runtimes nos quais `PDO::inTransaction()` não reconhece a transação iniciada por SQL bruto. Falha de capacidade, integridade ou escrita desfaz o conjunto daquela inscrição/linha; o relatório de importação e as ações de Inscrições mantêm o erro recuperável para correção dos dados. Regressões sintéticas em `tools/test-student-accounts.php`, `tools/test-multi-course-enrollment.php` e `tools/test-student-workspace.php` verificam correspondência coerente, match parcial por CPF e e-mail, conflito entre duas contas, preservação de conta ativada e não ativada, e ausência de conta/submissão/matrícula parcial após falha forçada. A branch não altera banco real, hospedagem, UI visual ou regras de curso/turma.
+
 ## Envio imediato e controle da fila de Comunicações — 22/10/2026 (PR em revisão)
 
 **Avisos administrativos também não dependem de cron.** A aba Avisos dos alunos passou a oferecer envio manual, cancelamento de pendentes e reprocessamento confirmado de falhas. Claims, recuperações e estado da fila respeitam o administrador autenticado; o mesmo lock coordena campanha, avisos e worker opcional. Não há reenvio automático após resultado externo inconclusivo. A migração preexistente 104 comporta estados e motivos utilizados. Testes unitários e de navegador foram acrescentados e ainda precisam de validação no CI.

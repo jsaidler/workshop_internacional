@@ -7,6 +7,9 @@ function student_uuid(): string {static $n=0;return 'paid-transfer-'.(++$n);}
 function student_normalize_email(string $value): string {return strtolower(trim($value));}
 function student_account_cpf_lookup_hash(string $cpf): string {return '';}
 function student_account_find_identity(PDO $db,string $email,string $hash): ?array {return null;}
+function student_account_identity_candidates(PDO $db,string $email,string $hash): array {return ['email'=>null,'cpf'=>null];}
+function student_account_identity_admin_message(string $reason): string {return $reason;}
+function student_account_atomic_write(PDO $db,string $savepoint,callable $work): mixed {$transaction=static function() use($db,$savepoint,$work): mixed {$db->exec('SAVEPOINT '.$savepoint);try{$result=$work();$db->exec('RELEASE SAVEPOINT '.$savepoint);return $result;}catch(Throwable $e){$db->exec('ROLLBACK TO SAVEPOINT '.$savepoint);$db->exec('RELEASE SAVEPOINT '.$savepoint);throw $e;}};return function_exists('course_agenda_with_lock')?course_agenda_with_lock($db,$transaction):$transaction();}
 function student_account_merge_profile_from_payload(PDO $db,int $studentId,array $payload): void {}
 function student_account_upsert_from_submission(PDO $db,array $row): int {throw new RuntimeException('unexpected identity creation');}
 function student_account_submission_confirmed(array $row): bool {return ($row['status']??'')!=='archived'&&(($row['status']??'')==='converted'||($row['payment_status']??'')==='paid');}
@@ -19,7 +22,7 @@ $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTI
 $db->exec('PRAGMA foreign_keys=ON');
 $db->exec(<<<'SQL'
 CREATE TABLE activities(id INTEGER PRIMARY KEY,public_title TEXT,admin_name TEXT,slug TEXT,is_root INTEGER);
-CREATE TABLE student_users(id INTEGER PRIMARY KEY,status TEXT NOT NULL,name TEXT NOT NULL);
+CREATE TABLE student_users(id INTEGER PRIMARY KEY,status TEXT NOT NULL,name TEXT NOT NULL,activated_at TEXT NULL);
 CREATE TABLE courses(id INTEGER PRIMARY KEY,activity_id INTEGER NOT NULL,status TEXT NOT NULL,title TEXT NOT NULL,public_page_id INTEGER NULL,updated_at TEXT NOT NULL);
 CREATE TABLE course_cohorts(id INTEGER PRIMARY KEY,course_id INTEGER NOT NULL,activity_id INTEGER NOT NULL,cohort_uuid TEXT NOT NULL,status TEXT NOT NULL,title TEXT NOT NULL,workshop_page_id INTEGER NULL,updated_at TEXT NOT NULL);
 CREATE TABLE cms_forms(id INTEGER PRIMARY KEY,form_key TEXT NOT NULL,purpose TEXT NOT NULL);
@@ -42,7 +45,7 @@ INSERT INTO cms_form_submissions VALUES
 (106,1,1,1,10,7,'{}','converted','paid','now','now'),
 (107,1,1,1,10,8,'{}','converted','paid','now','now');
 SQL);
-for($id=1;$id<=12;$id++)$db->prepare("INSERT INTO student_users VALUES(?,'active',?)")->execute([$id,'Aluno '.$id]);
+for($id=1;$id<=12;$id++)$db->prepare("INSERT INTO student_users VALUES(?,'active',?,'now')")->execute([$id,'Aluno '.$id]);
 $migrate=require __DIR__.'/../migrations/098_course_cohort_agenda.php';$migrate($db);
 $db->exec("UPDATE course_cohorts SET agenda_enrollment_closes_at='2020-01-01T00:00:00Z',agenda_listeners_open_at='2020-01-01T00:00:00Z'");
 $db->exec("UPDATE course_cohorts SET agenda_capacity=1 WHERE id=10");

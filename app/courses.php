@@ -96,9 +96,11 @@ function course_registration_assign_cohort(PDO $db,int $submissionId,int $course
         if(function_exists('student_enrollment_reconcile_confirmed')){
             $result=student_enrollment_reconcile_confirmed($db,(int)$course['activity_id'],$submissionId);
             foreach($result['errors']??[] as $error){
-                if(str_contains((string)($error['error']??''),'cohort_capacity_full'))throw new RuntimeException('Esta turma já atingiu o limite de participantes.');
-                if(str_contains((string)($error['error']??''),'enrollment_source_conflict'))throw new RuntimeException('Já existe uma matrícula de outra origem nesta turma. Resolva o vínculo antes de transferir.');
-                throw new RuntimeException('Não foi possível concluir a atribuição da matrícula: '.(string)($error['error']??'erro desconhecido'));
+                $reason=(string)($error['error']??'erro desconhecido');
+                if(str_contains($reason,'cohort_capacity_full'))throw new RuntimeException('Esta turma já atingiu o limite de participantes.');
+                if(str_contains($reason,'enrollment_source_conflict'))throw new RuntimeException('Já existe uma matrícula de outra origem nesta turma. Resolva o vínculo antes de transferir.');
+                if(str_contains($reason,'student_identity_'))throw new RuntimeException(student_account_identity_admin_message($reason));
+                throw new RuntimeException('Não foi possível concluir a atribuição da matrícula: '.$reason);
             }
             $q=$db->prepare('SELECT student_id FROM cms_form_submissions WHERE id=?');$q->execute([$submissionId]);$studentId=(int)$q->fetchColumn();
             if(student_account_submission_confirmed($row)){
@@ -150,6 +152,7 @@ function course_registration_change_payment(PDO $db,int $submissionId,int $cours
             $reason=(string)($error['error']??'');
             if(str_contains($reason,'cohort_capacity_full'))throw new RuntimeException('A turma está lotada. O pagamento não foi confirmado e nenhuma matrícula foi alterada.');
             if(str_contains($reason,'enrollment_source_conflict'))throw new RuntimeException('Já existe uma matrícula de outra origem nesta turma. Resolva o vínculo antes de confirmar.');
+            if(str_contains($reason,'student_identity_'))throw new RuntimeException(student_account_identity_admin_message($reason));
             throw new RuntimeException('Não foi possível reconciliar a matrícula: '.$reason);
         }
         if($decision==='confirm'&&(int)($row['cohort_id']??0)>0){

@@ -7,6 +7,7 @@ function run_build(string $php,string $build,string $fixture): int {$out=[];exec
 try{
     cpdir($root,$fixture);$php=escapeshellarg(PHP_BINARY);$build=escapeshellarg($fixture.'/tools/build-dist.php');
     must(run_build($php,$build,$fixture)===0,'initial build');
+    foreach(['public-content.json','default-content.json','schema.json'] as $name)must(hash_file('sha256',"$fixture/data/$name")===hash_file('sha256',"$fixture/dist/data/$name"),"deploy current data/$name");
     $data=['config/local.php'=>'config','storage/database.sqlite'=>'database','storage/installed.lock'=>'lock','uploads/media/teste.jpg'=>'upload','logs/runtime.log'=>'log'];
     foreach($data as $p=>$v){$f="$fixture/dist/$p";@mkdir(dirname($f),0777,true);file_put_contents($f,$v);}
     file_put_contents("$fixture/dist/obsolete.php",'obsolete');$m=json_decode(file_get_contents("$fixture/.build/dist-managed-files.json"),true);$m[]='obsolete.php';file_put_contents("$fixture/.build/dist-managed-files.json",json_encode($m));
@@ -18,6 +19,11 @@ try{
     must(run_build($php,$build,$fixture)!==0,'invalid source must fail');
     must(hash_file('sha256',"$fixture/dist/media-stream.php")===$before,'dist intact on source failure');
     rename("$fixture/media-stream.bad","$fixture/media-stream.php");
+
+    $publicContent="$fixture/data/public-content.json";$publicContentBackup=(string)file_get_contents($publicContent);$beforeContent=hash_file('sha256',"$fixture/dist/data/public-content.json");file_put_contents($publicContent,'{invalid');
+    must(run_build($php,$build,$fixture)!==0,'invalid deployable JSON must fail');
+    must(hash_file('sha256',"$fixture/dist/data/public-content.json")===$beforeContent,'dist content intact on invalid JSON');
+    file_put_contents($publicContent,$publicContentBackup);
 
     $migration=glob("$fixture/migrations/020_*.php")[0]??null;must(is_string($migration),'fixture migration 020 exists');$migrationBackup=$migration.'.bak';rename($migration,$migrationBackup);
     must(run_build($php,$build,$fixture)!==0,'migration gap must fail');
