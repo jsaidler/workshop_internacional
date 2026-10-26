@@ -40,6 +40,18 @@ $batchRows=student_import_batch_rows($db,(int)$import['batch_id'],1);if(!$batchR
 $importAgain=student_import_historical_students($db,1,$cohortId,$file);if(($importAgain['existing']??0)!==1||($importAgain['imported']??0)!==0)fail('second import duplicated an existing account');
 if((int)$db->query("SELECT COUNT(*) FROM student_users WHERE email='historico@example.com'")->fetchColumn()!==1)fail('duplicate account created');
 
+file_put_contents($tmp,"Nome;E-mail;CPF;Telefone;Instagram\nCorrespondência Parcial;outro@example.com;12345678900;24888888888;@outro\n");
+$partialImport=student_import_historical_students($db,1,$cohortId,$file);if(($partialImport['errors']??0)!==1||!str_contains((string)($partialImport['error_list'][0]['message']??''),'não correspondem juntos'))fail('partial identity import was not reported explicitly');
+if((int)$db->query('SELECT COUNT(*) FROM student_users')->fetchColumn()!==1||(int)$db->query('SELECT COUNT(*) FROM course_enrollments')->fetchColumn()!==1)fail('partial identity import changed accounts or enrollments');
+if((string)student_account_profile($db,$studentId)['phone']!=='24999999999')fail('partial identity import changed the existing profile');
+
+file_put_contents($tmp,"Nome;E-mail;CPF;Telefone;Instagram\nFalha Atômica;atomic-import@example.com;11122233344;24777777777;@atomic\n");
+$db->exec("CREATE TRIGGER import_atomic_fail BEFORE INSERT ON course_enrollments WHEN NEW.student_id!=$studentId BEGIN SELECT RAISE(ABORT,'forced_import_enrollment_failure'); END");
+$atomicImport=student_import_historical_students($db,1,$cohortId,$file);$db->exec('DROP TRIGGER import_atomic_fail');
+if(($atomicImport['errors']??0)!==1||!str_contains((string)($atomicImport['error_list'][0]['message']??''),'forced_import_enrollment_failure'))fail('import enrollment failure was not reported');
+if((int)$db->query("SELECT COUNT(*) FROM student_users WHERE email='atomic-import@example.com'")->fetchColumn()!==0)fail('failed import left a partial account');
+if((int)$db->query('SELECT COUNT(*) FROM course_enrollments')->fetchColumn()!==1)fail('failed import changed existing enrollments');
+
 $activation=student_account_begin_activation($db,'historico@example.com','12345678900');if($activation!=='ok')fail('historically imported student cannot use first-access activation');
 
 $test=student_test_create($db,$studentId,$cohortId,['title'=>'Teste janela','test_date'=>'2026-09-24','film'=>'Fuji Super HR-U','lot'=>'L1','iso_reference'=>'200','aperture'=>'f/16','calculated_time'=>'4 s','reciprocity_time'=>'5 s','light_condition'=>'Janela lateral','tonal_range'=>'5 EV','developer'=>'Parodinal','dilution'=>'10 + 550 ml','temperature'=>'26 °C','development_time'=>'7 min','agitation'=>'leve','notes'=>'Primeiro teste']);

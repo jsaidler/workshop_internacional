@@ -46,6 +46,21 @@ if(count(student_account_enrollments($db,$studentId))!==2)fail_multi_course('stu
 $after=$db->query('SELECT * FROM student_users WHERE id='.$studentId)->fetch();if((string)$after['password_hash']!==$passwordHash||empty($after['activated_at']))fail_multi_course('new course reset password or activation state');
 student_enrollment_reconcile_confirmed($db,2);if((int)$db->query("SELECT COUNT(*) FROM course_enrollments WHERE student_id=$studentId AND status='active'")->fetchColumn()!==2)fail_multi_course('reconciliation duplicated an active enrollment');
 
+$partialPayload=$payload;$partialPayload['email']='partial-other@example.com';
+$insertSubmission->execute(['sub-partial',$formB,2,'pt-BR',json_encode($partialPayload,JSON_THROW_ON_ERROR),$schema,$now,$now,$now]);$partialSubmissionId=(int)$db->lastInsertId();
+$partialResult=student_enrollment_reconcile_confirmed($db,2,$partialSubmissionId);
+if(!array_filter($partialResult['errors']??[],static fn(array $error): bool=>(string)($error['error']??'')==='student_identity_partial_match'))fail_multi_course('canonical reconciliation did not expose partial identity conflict');
+if((int)$db->query('SELECT COUNT(*) FROM student_users')->fetchColumn()!==1||(int)$db->query("SELECT COUNT(*) FROM course_enrollments WHERE student_id=$studentId AND status='active'")->fetchColumn()!==2)fail_multi_course('partial identity reconciliation changed accounts or enrollments');
+if((int)$db->query('SELECT COALESCE(student_id,0) FROM cms_form_submissions WHERE id='.$partialSubmissionId)->fetchColumn()!==0)fail_multi_course('partial identity reconciliation bound the submission');
+
+$atomicPayload=['name'=>'Conta Atômica','cpf'=>'111.222.333-44','phone'=>'24900000000','email'=>'atomic-course@example.com','instagram'=>'','address'=>'Rua Três','city_state'=>'Rio/RJ','postal_code'=>'20000-000'];
+$insertSubmission->execute(['sub-atomic',$formB,2,'pt-BR',json_encode($atomicPayload,JSON_THROW_ON_ERROR),$schema,$now,$now,$now]);$atomicSubmissionId=(int)$db->lastInsertId();
+$db->exec("CREATE TRIGGER multi_course_atomic_fail BEFORE INSERT ON course_enrollments WHEN NEW.student_id!=$studentId BEGIN SELECT RAISE(ABORT,'forced_course_enrollment_failure'); END");
+$atomicResult=student_enrollment_reconcile_confirmed($db,2,$atomicSubmissionId);$db->exec('DROP TRIGGER multi_course_atomic_fail');
+if(!array_filter($atomicResult['errors']??[],static fn(array $error): bool=>str_contains((string)($error['error']??''),'forced_course_enrollment_failure')))fail_multi_course('canonical enrollment failure was not reported');
+if((int)$db->query("SELECT COUNT(*) FROM student_users WHERE email='atomic-course@example.com'")->fetchColumn()!==0)fail_multi_course('canonical enrollment failure left a partial account');
+$atomicStored=$db->query('SELECT student_id,cohort_id FROM cms_form_submissions WHERE id='.$atomicSubmissionId)->fetch();if(!empty($atomicStored['student_id'])||!empty($atomicStored['cohort_id']))fail_multi_course('canonical enrollment failure left partial submission links');
+
 $formSubmit=(string)file_get_contents(__DIR__.'/../form-submit.php');
 $bootstrap=(string)file_get_contents(__DIR__.'/../app/bootstrap.php');
 $courses=(string)file_get_contents(__DIR__.'/../aluno/cursos.php');

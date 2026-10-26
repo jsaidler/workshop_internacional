@@ -100,6 +100,39 @@ if($linked!==$studentId||student_account_profile($db,$studentId)['email']!==$own
 if(!student_account_login($db,$owned['email'],'uma-senha-segura-123'))fail('updated email cannot sign in with its existing password');
 if(student_account_profile($db,$studentId)['email']!==$owned['email'])fail('sign-in reverted profile email from old submission');
 
+// Automatic identity discovery requires the same existing account by both CPF and e-mail.
+$protectedSnapshot=student_account_profile($db,$studentId);$partial=$payload;$partial['email']='partial@example.com';$partial['phone']='24000000001';
+$partialRejected=false;try{student_account_upsert_from_submission($db,['payload_json'=>json_encode($partial,JSON_THROW_ON_ERROR)]);}catch(RuntimeException $e){$partialRejected=$e->getMessage()==='student_identity_partial_match';}
+if(!$partialRejected)fail('CPF-only match was accepted as an existing identity');
+if(student_account_profile($db,$studentId)!=$protectedSnapshot)fail('partial identity match changed the activated account');
+
+$emailOnly=$owned;$emailOnly['cpf']='111.444.777-35';$emailOnly['phone']='24000000004';
+$emailOnlyRejected=false;try{student_account_upsert_from_submission($db,['payload_json'=>json_encode($emailOnly,JSON_THROW_ON_ERROR)]);}catch(RuntimeException $e){$emailOnlyRejected=$e->getMessage()==='student_identity_partial_match';}
+if(!$emailOnlyRejected)fail('e-mail-only match was accepted as an existing identity');
+if(student_account_profile($db,$studentId)!=$protectedSnapshot)fail('e-mail-only identity match changed the activated account');
+
+$secondPayload=['name'=>'Segunda Pessoa','cpf'=>'987.654.321-00','phone'=>'24000000002','email'=>'segunda@example.com','instagram'=>'','address'=>'Rua Dois, 20','city_state'=>'Niterói/RJ','postal_code'=>'24000-000'];
+$secondId=student_account_upsert_from_submission($db,['payload_json'=>json_encode($secondPayload,JSON_THROW_ON_ERROR)]);
+$secondBefore=student_account_profile($db,$secondId);$partialBound=$secondPayload;$partialBound['email']='email-nao-confirmado@example.com';$partialBound['phone']='24000000999';
+$boundRejected=false;try{student_enrollment_student_from_submission($db,['student_id'=>$secondId,'payload_json'=>json_encode($partialBound,JSON_THROW_ON_ERROR)]);}catch(RuntimeException $e){$boundRejected=$e->getMessage()==='student_identity_partial_match';}
+if(!$boundRejected)fail('partially matching payload changed an unactivated bound account');
+if(student_account_profile($db,$secondId)!=$secondBefore)fail('bound partial identity match changed the unactivated profile');
+
+$conflict=$payload;$conflict['email']=$secondPayload['email'];$conflictRejected=false;
+try{student_account_upsert_from_submission($db,['payload_json'=>json_encode($conflict,JSON_THROW_ON_ERROR)]);}catch(RuntimeException $e){$conflictRejected=$e->getMessage()==='student_identity_conflict';}
+if(!$conflictRejected)fail('conflicting CPF and e-mail accounts were associated');
+if(student_account_profile($db,$studentId)!=$protectedSnapshot||student_account_profile($db,$secondId)!=$secondBefore)fail('identity conflict changed an existing account');
+
+// A downstream enrollment failure must roll back the newly created account and submission links.
+$atomicPayload=['name'=>'Falha Atômica','cpf'=>'111.222.333-44','phone'=>'24000000003','email'=>'atomic@example.com','instagram'=>'','address'=>'Rua Três, 30','city_state'=>'Rio de Janeiro/RJ','postal_code'=>'20000-000'];
+$db->prepare("INSERT INTO cms_form_submissions(submission_uuid,form_id,activity_id,locale,payload_json,form_snapshot_json,status,consent,ip_hash,user_agent_hash,payment_status,payment_confirmed_at,created_at,updated_at) VALUES(?,?,?,?,?,?,'converted',1,'ip','ua','paid',?,?,?)")->execute(['sub-atomic',$formId,1,'pt-BR',json_encode($atomicPayload,JSON_THROW_ON_ERROR),$schema,$now,$now,$now]);$atomicSubmissionId=(int)$db->lastInsertId();
+$db->exec("CREATE TRIGGER enrollment_atomic_fail BEFORE INSERT ON course_enrollments WHEN NEW.student_id NOT IN ($studentId,$secondId) BEGIN SELECT RAISE(ABORT,'forced_enrollment_failure'); END");
+$atomicResult=student_account_reconcile_confirmed_registrations($db,1);$db->exec('DROP TRIGGER enrollment_atomic_fail');
+if(!array_filter($atomicResult['errors']??[],static fn(array $error): bool=>str_contains((string)($error['error']??''),'forced_enrollment_failure')))fail('forced enrollment failure was not reported');
+if((int)$db->query("SELECT COUNT(*) FROM student_users WHERE email='atomic@example.com'")->fetchColumn()!==0)fail('failed reconciliation left a partial account');
+$atomicStored=$db->query('SELECT student_id,cohort_id FROM cms_form_submissions WHERE id='.$atomicSubmissionId)->fetch();if(!empty($atomicStored['student_id'])||!empty($atomicStored['cohort_id']))fail('failed reconciliation left submission identity or cohort links');
+$db->prepare("UPDATE cms_form_submissions SET status='archived',payment_status='pending' WHERE id=?")->execute([$atomicSubmissionId]);
+
 $document=['version'=>2,'theme'=>'auto','meta'=>['title'=>'Material','description'=>''],'html'=>'<section data-cms-section="intro" data-cms-section-name="Introdução"><p>ABERTO</p></section><section data-cms-section="conteudo-aula-1"><p>AULA1</p></section><section data-cms-section="conteudo-aula-2"><p>AULA2</p></section>'];$json=json_encode($document,JSON_THROW_ON_ERROR);$db->prepare('INSERT INTO cms_pages(page_uuid,activity_id,locale,slug,title,nav_title,status,is_home,show_in_nav,sort_order,draft_document_json,published_document_json,draft_updated_at,published_at,created_at,updated_at,access_level) VALUES(?,?,?,?,?,?,"active",0,0,1,?,?,?,?,?,?,"enrolled")')->execute(['page1',1,'pt-BR','material','Material','Material',$json,$json,$now,$now,$now,$now]);$pageId=(int)$db->lastInsertId();$lessons=course_lessons($db,1);if(count($lessons)<2)fail('default lessons missing');student_page_set_section_lesson($db,$pageId,'conteudo-aula-1',(int)$lessons[0]['id']);student_page_set_section_lesson($db,$pageId,'conteudo-aula-2',(int)$lessons[1]['id']);$enrollment=student_account_enrollment_for_activity($db,(int)$user['id'],1);if(!$enrollment)fail('page access enrollment missing');course_set_lesson_release($db,(int)$enrollment['cohort_id'],(int)$lessons[0]['id'],true);$page=cms_page_by_id($db,$pageId);$filtered=student_page_filter_document($db,$page,$document,$enrollment);if(!str_contains($filtered['html'],'ABERTO')||!str_contains($filtered['html'],'AULA1')||str_contains($filtered['html'],'AULA2'))fail('server-side lesson filtering failed');
 
 $uuid=str_repeat('c',32);student_private_media_mkdir();$relative=$uuid.'.jpg';file_put_contents(student_private_media_root().'/'.$relative,'fake');$db->prepare('INSERT INTO student_private_media(asset_uuid,activity_id,page_id,title,original_name,mime_type,byte_size,storage_path,checksum,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute([$uuid,1,$pageId,'Imagem','imagem.jpg','image/jpeg',4,$relative,hash('sha256','fake'),$now,$now]);$expires=time()+60;$sig=student_private_media_sig((int)$user['id'],$uuid,$pageId,(int)$enrollment['cohort_id'],$expires);if(!student_private_media_authorize($db,$user,$uuid,$pageId,(int)$enrollment['cohort_id'],$expires,$sig))fail('signed private media authorization failed');if(student_private_media_authorize($db,$user,$uuid,$pageId,(int)$enrollment['cohort_id'],$expires,str_repeat('0',64)))fail('invalid private media signature accepted');@unlink(student_private_media_root().'/'.$relative);

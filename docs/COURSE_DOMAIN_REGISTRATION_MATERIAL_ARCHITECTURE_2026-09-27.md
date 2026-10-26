@@ -179,6 +179,19 @@ Os dados de uma inscrição confirmada são uma fonte válida para **criar e com
 
 A operação de autenticação ainda apresenta um risco arquitetural independente: chamadas gerais de `student_account_reconcile_confirmed_registrations()` no login e na ativação percorrem inscrições sem relação com a tentativa atual. A correção desse efeito colateral deverá separar a reconciliação por eventos administrativos da verificação de credenciais, sem reintroduzir criação implícita de turma ou matrícula. A proteção dos perfis ativados não equivale, por si só, à remoção dessas reconciliações globais.
 
+### Correspondência conjunta de CPF e e-mail — 26/10/2026
+
+Quando não existe `student_id` explícito e confiável na submissão, a descoberta automática de identidade exige que **CPF e e-mail localizem a mesma conta**. Os resultados possíveis são:
+
+- CPF e e-mail apontam para a mesma conta: reutilizar essa identidade;
+- nenhum dos dois aponta para conta existente: criar nova identidade com os dois valores;
+- somente CPF ou somente e-mail aponta para conta existente: conflito parcial, sem associação ou atualização;
+- CPF e e-mail apontam para contas diferentes: conflito de identidade, sem associação ou atualização.
+
+Uma submissão já vinculada por `student_id` não redescobre a identidade. Conta ativada preserva o perfil atual mesmo se a inscrição histórica trouxer valor antigo; qualquer identificador que aponte para outra conta continua bloqueante. Conta ainda não ativada só pode receber complemento de dados quando o par CPF/e-mail confirma conjuntamente o mesmo `student_id` já vinculado.
+
+Conflitos são estados operacionais recuperáveis: importação registra a linha com erro e Inscrições informa que os dados precisam ser revisados. Não se escolhe silenciosamente um identificador como vencedor e não se cria matrícula. Criação/atualização de conta, vínculo da submissão e matrícula pertencem à mesma unidade transacional por inscrição ou linha importada; qualquer falha desfaz todas as escritas dessa unidade.
+
 ### Transação compartilhada de matrícula e identidade — 15/10/2026
 
 Durante a atribuição, transferência ou confirmação de inscrição paga, `course_agenda_with_lock()` é o proprietário do `BEGIN IMMEDIATE` do SQLite. A reconciliação pode atualizar a conta de um aluno já existente (`student_account_upsert_from_submission()` → `student_account_merge_profile_from_payload()` → `student_account_update_profile()`). Essa atualização de perfil **não pode executar outro `BEGIN TRANSACTION` nem confirmar a transação de matrícula por conta própria**.
