@@ -106,8 +106,7 @@ function student_import_upsert_student(PDO $db,int $cohortId,array $payload): ar
     $name=student_workspace_text($payload['name']??'',180);$email=student_normalize_email((string)($payload['email']??''));$cpf=student_account_normalize_cpf((string)($payload['cpf']??''));
     if($name==='')throw new RuntimeException('Nome ausente.');if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('E-mail inválido.');if(strlen($cpf)!==11)throw new RuntimeException('CPF precisa ter 11 dígitos.');
     $hash=student_account_cpf_lookup_hash($cpf);$user=student_account_find_identity($db,$email,$hash);$now=utc_now();$created=false;
-    $db->exec('SAVEPOINT student_import_identity_enrollment');
-    try{
+    return student_account_atomic_write($db,'student_import_identity_enrollment',static function() use($db,$cohortId,$payload,$name,$email,$cpf,$hash,$user,$now,$created): array {
         if(!$user){
             $db->prepare("INSERT INTO student_users(user_uuid,name,email,password_hash,status,must_change_password,last_login_at,created_at,updated_at,activated_at,privacy_ack_at,privacy_notice_version) VALUES(?,?,?,?, 'active',1,NULL,?,?,NULL,NULL,'')")->execute([student_uuid(),$name,$email,student_account_random_unusable_hash(),$now,$now]);$studentId=(int)$db->lastInsertId();
             $db->prepare('INSERT INTO student_profiles(student_id,cpf_lookup_hash,cpf_ciphertext,cpf_last4,phone,instagram,address,city_state,postal_code,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute([$studentId,$hash,student_account_encrypt_cpf($cpf),substr($cpf,-4),student_workspace_text($payload['phone']??'',80),student_workspace_text($payload['instagram']??'',120),student_workspace_text($payload['address']??'',500),student_workspace_text($payload['city_state']??'',180),student_workspace_text($payload['postal_code']??'',32),$now,$now]);
@@ -121,10 +120,8 @@ function student_import_upsert_student(PDO $db,int $cohortId,array $payload): ar
         }
         $db->prepare("INSERT INTO course_enrollments(enrollment_uuid,student_id,cohort_id,source_submission_id,status,confirmed_at,created_at,updated_at) VALUES(?,?,?,NULL,'active',?,?,?) ON CONFLICT(student_id,cohort_id) DO UPDATE SET status='active',updated_at=excluded.updated_at")->execute([student_uuid(),$studentId,$cohortId,$now,$now,$now]);
         if(function_exists('course_agenda_reconcile_student'))course_agenda_reconcile_student($db,$studentId);
-        $db->exec('RELEASE SAVEPOINT student_import_identity_enrollment');
-    }catch(Throwable $e){$db->exec('ROLLBACK TO SAVEPOINT student_import_identity_enrollment');$db->exec('RELEASE SAVEPOINT student_import_identity_enrollment');throw $e;
-    }
-    return ['student_id'=>$studentId,'created'=>$created,'name'=>$name,'email'=>$email];
+        return ['student_id'=>$studentId,'created'=>$created,'name'=>$name,'email'=>$email];
+    });
 }
 function student_import_historical_students(PDO $db,int $activityId,int $cohortId,array $file): array {
     $cohort=course_cohort_by_id($db,$cohortId);if(!$cohort||(int)$cohort['activity_id']!==$activityId||$cohort['status']==='archived')throw new RuntimeException('Escolha uma turma válida.');

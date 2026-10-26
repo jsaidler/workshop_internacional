@@ -190,7 +190,7 @@ Quando não existe `student_id` explícito e confiável na submissão, a descobe
 
 Uma submissão já vinculada por `student_id` não redescobre a identidade. Conta ativada preserva o perfil atual mesmo se a inscrição histórica trouxer valor antigo; qualquer identificador que aponte para outra conta continua bloqueante. Conta ainda não ativada só pode receber complemento de dados quando o par CPF/e-mail confirma conjuntamente o mesmo `student_id` já vinculado.
 
-Conflitos são estados operacionais recuperáveis: importação registra a linha com erro e Inscrições informa que os dados precisam ser revisados. Não se escolhe silenciosamente um identificador como vencedor e não se cria matrícula. Criação/atualização de conta, vínculo da submissão e matrícula pertencem à mesma unidade transacional por inscrição ou linha importada; qualquer falha desfaz todas as escritas dessa unidade.
+Conflitos são estados operacionais recuperáveis: importação registra a linha com erro e Inscrições informa que os dados precisam ser revisados. Não se escolhe silenciosamente um identificador como vencedor e não se cria matrícula. Criação/atualização de conta, vínculo da submissão e matrícula pertencem à mesma unidade transacional por inscrição ou linha importada; qualquer falha desfaz todas as escritas dessa unidade. Quando a Agenda estiver disponível, sua trava canônica deve envolver o `SAVEPOINT` da unidade antes de qualquer reconciliação de vagas, evitando iniciar uma segunda transação SQLite na mesma conexão.
 
 ### Transação compartilhada de matrícula e identidade — 15/10/2026
 

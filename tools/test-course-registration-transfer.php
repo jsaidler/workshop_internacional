@@ -9,6 +9,7 @@ function student_account_cpf_lookup_hash(string $cpf): string {return '';}
 function student_account_find_identity(PDO $db,string $email,string $hash): ?array {return null;}
 function student_account_identity_candidates(PDO $db,string $email,string $hash): array {return ['email'=>null,'cpf'=>null];}
 function student_account_identity_admin_message(string $reason): string {return $reason;}
+function student_account_atomic_write(PDO $db,string $savepoint,callable $work): mixed {$transaction=static function() use($db,$savepoint,$work): mixed {$db->exec('SAVEPOINT '.$savepoint);try{$result=$work();$db->exec('RELEASE SAVEPOINT '.$savepoint);return $result;}catch(Throwable $e){$db->exec('ROLLBACK TO SAVEPOINT '.$savepoint);$db->exec('RELEASE SAVEPOINT '.$savepoint);throw $e;}};return function_exists('course_agenda_with_lock')?course_agenda_with_lock($db,$transaction):$transaction();}
 function student_account_merge_profile_from_payload(PDO $db,int $studentId,array $payload): void {}
 function student_account_upsert_from_submission(PDO $db,array $row): int {throw new RuntimeException('unexpected identity creation');}
 function student_account_submission_confirmed(array $row): bool {return ($row['status']??'')!=='archived'&&(($row['status']??'')==='converted'||($row['payment_status']??'')==='paid');}

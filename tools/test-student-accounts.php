@@ -17,6 +17,7 @@ $_SERVER['REMOTE_ADDR']='127.0.0.1';$_SERVER['REQUEST_METHOD']='GET';$_SESSION=[
 require __DIR__.'/../app/student_auth.php';
 require __DIR__.'/../app/student_accounts.php';
 require __DIR__.'/../app/student_enrollments.php';
+require __DIR__.'/../app/course_agenda.php';
 
 $db=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);$db->exec('PRAGMA foreign_keys=ON');
 $db->exec("CREATE TABLE activities(id INTEGER PRIMARY KEY AUTOINCREMENT,admin_name TEXT NOT NULL,public_title TEXT NOT NULL,slug TEXT NOT NULL UNIQUE,status TEXT NOT NULL DEFAULT 'active',is_root INTEGER NOT NULL DEFAULT 0);INSERT INTO activities(admin_name,public_title,slug,status,is_root) VALUES('Curso','Curso','curso','active',1);");
