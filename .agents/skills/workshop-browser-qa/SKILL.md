@@ -16,6 +16,19 @@ Consulte primeiro `AGENTS.md`, `docs/GLOBAL_DOCUMENTATION_CONTRACT_2026-10-07.md
 3. Para criação de interface materialmente nova sem referência aprovada, derive uma proposta a partir da intenção e do design system existente. Peça decisão do usuário **somente** quando houver alternativa visual ou de comportamento de produto material e irredutível; não solicite aprovação a cada ajuste técnico.
 4. Antes de codificar, determine a jornada completa e os critérios de aceite observáveis: quem entra, o que tenta fazer, qual o estado, o que deve acontecer, como retorna, como falha e como se recupera.
 
+## Etapa de design com Figma (quando a mudança exige concepção visual)
+
+O Figma é **fonte de verdade de decisões visuais aprovadas**, não substituto da aplicação. Use o MCP remoto oficial `https://mcp.figma.com/mcp` quando autenticado e disponível. Se não houver autorização de escrita no plano/seat, não simule que editou o Figma; trabalhe a partir das referências existentes e indique a limitação. Não exija Figma para correção técnica sem impacto visual ou para pequenos ajustes que já tenham referência aprovada.
+
+- Em redesenhos substanciais, identifique as telas existentes e sua autoridade no Design, abra o produto operacional em navegador real e, quando a integração permitir, importe as telas **como camadas editáveis** via ferramentas oficiais de Code to Canvas. Não replique dados pessoais nem ambientes de produção: use dados sintéticos.
+- Crie e organize no Figma componentes, variantes e telas responsivas com `use_figma`/ferramentas oficiais, aproveitando o design system existente. Para resultados confiáveis, empregue as skills oficiais do Figma adequadas ao workflow (por exemplo, `figma-use`). Não trate uma imagem achatada como arquivo de design editável.
+- Quando o usuário fornecer referência, preserve-a fielmente. Quando um redesign real exigir uma decisão visual nova, apresente **uma proposta coerente e navegável** no Figma (desktop/mobile, estados essenciais) para aprovação de direção antes de implementar. Não solicite validações microtécnicas ao usuário.
+- Após aprovação da direção, implemente no PHP/HTML/CSS/JS canônicos. O contexto de design do MCP pode sugerir React/Tailwind; isso **não autoriza** introduzir esses frameworks ou uma biblioteca CSS paralela no CMS PHP existente.
+- Reproduza no navegador a mesma viewport e os estados aprovados do Figma; compare screenshots com os frames correspondentes, inclusive tipografia, geometria, densidade, sobreposições e temas. Corrija, reinspecione e registre evidências visualmente verificáveis no PR.
+- Respeite duas fontes distintas: **Figma define a composição visual aprovada; o código, os contratos de domínio e os testes operacionais definem comportamento, integridade e acessibilidade**. Uma imagem aprovada não dispensa teste real, e um teste verde não substitui fidelidade à imagem.
+- Se não existir Figma ou o MCP falhar, investigue autenticação, permissão e disponibilidade do servidor remoto; não bloqueie indiscriminadamente correções de UI que já tenham referência suficiente e possam ser testadas integralmente por Playwright.
+- O Codex mantém o arquivo Figma e os links de quadros no PR como evidência de design. O usuário não deve reconstruir o protótipo, exportar arquivos, transportar relatórios ou atuar como gerente de ferramenta.
+
 ## 2. Valide a aplicação real, não uma representação conveniente
 
 5. Descubra os testes em `tools/browser-tests/`, fixtures em `tools/browser-fixture/` e os workflows GitHub Actions relevantes. Prepare PHP/SQLite sintético, Node/Playwright Chromium, sessão de aluno/admin de teste, assets e fontes. Resolva problemas locais de navegador com alternativas equivalentes antes de alegar impedimento.
