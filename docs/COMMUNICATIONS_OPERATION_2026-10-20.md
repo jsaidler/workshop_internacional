@@ -1,5 +1,9 @@
 # Comunicações por e-mail — operação
 
+## Central operacional visível - 27/10/2026
+
+Ao abrir **Admin → Comunicações**, a administração deve reconhecer imediatamente as quatro jornadas disponíveis: criar campanha, agendar envio, acompanhar entrega e gerir avisos. O cabeçalho operacional mostra contagens de agendamentos, entregas e devoluções e identifica a caixa acadêmica persistente. Esses indicadores derivam das mesmas campanhas e eventos do sistema; não constituem uma camada paralela de métricas. Em **Mensagens**, a régua Compor → Selecionar → Revisar ou agendar → Acompanhar permanece visível em desktop e celular. O agendamento continua sendo confirmado somente depois de o rascunho ser salvo e a audiência revisada.
+
 ## Agendamento, caixa acadêmica e acompanhamento - 26/10/2026
 
 Uma mensagem salva pode ser agendada em **Mensagens → Revisão do envio**. O rascunho fica bloqueado até **Cancelar agendamento** ou até a liberação pelo worker. No horário previsto, o sistema recalcula matrícula, turma, seleção individual, opt-in e disponibilidade de mídia. Falha nessa validação não cria envio parcial: o painel mostra que o agendamento requer atenção e permite cancelá-lo para revisão. O botão de envio imediato não antecipa mensagens agendadas.
