@@ -17,10 +17,20 @@ on:
       - 'admin/communications-builder-test.php'
       - 'tools/test-communications-builder-test-send.php'
       - 'admin/communications-builder-draft.php'
+      - 'admin/communications-worker.php'
+      - 'aluno/perfil.php'
+      - 'app/student_enrollments.php'
+      - 'app/student_profile_view.php'
+      - 'assets/student-profile.css'
       - 'migrations/112_communication_builder_drafts.php'
       - 'tools/test-communications-builder-drafts.php'
+      - 'app/communications_platform.php'
+      - 'migrations/113_communications_platform.php'
+      - 'migrations/114_communication_dkim_selector.php'
+      - 'tools/test-communications-platform.php'
       - 'tools/browser-src/**'
       - 'tools/build-communications-email-lab.mjs'
+      - 'package-lock.json'
       - 'tools/browser-tests/communications-builder-lab.spec.cjs'
       - 'package.json'
       - 'app/course_reviews.php'
@@ -54,6 +64,7 @@ jobs:
           php tools/test-communications-builder-drafts.php
           php tools/test-communications-builder-renderer.php
           php tools/test-communications-builder-test-send.php
+          php tools/test-communications-platform.php
       - name: Install focused browser runtime
         run: |
           npm install --no-audit --no-fund

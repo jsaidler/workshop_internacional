@@ -35,6 +35,12 @@
 .student-profile-setting h2{margin:0;color:var(--text);font:500 21px/1.2 var(--title);text-transform:none}
 .student-profile-setting>p:not(.student-kicker){margin:0 0 6px;color:var(--muted);font:400 12px/1.5 var(--body)}
 .student-profile-setting .button,.student-profile-setting form{align-self:flex-start;margin-top:auto}
+.student-communication-form{display:grid;gap:14px;width:100%}
+.student-communication-choice{display:grid;grid-template-columns:20px minmax(0,1fr);align-items:start;gap:10px;font:400 14px/1.45 var(--body);color:var(--text);cursor:pointer}
+.student-communication-choice input[type="checkbox"]{appearance:auto;width:18px;height:18px;min-height:0;margin:1px 0 0;padding:0;accent-color:var(--focus)}
+.student-communication-frequency{display:grid;gap:7px;font:600 12px/1.4 var(--body);color:var(--text)}
+.student-communication-frequency select{width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:0;background:var(--surface);color:var(--text);font:400 14px/1.4 var(--body)}
+.student-communication-form>small{color:var(--muted);font:400 12px/1.5 var(--body)}
 @media(max-width:760px){
  .student-profile-page{padding-bottom:24px}
  .student-profile-header{margin-bottom:18px}

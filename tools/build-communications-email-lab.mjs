@@ -15,8 +15,8 @@ await build({
   format:'iife',
   target:['es2020'],
   legalComments:'eof',
-  minify:false,
+  minify:true,
   logLevel:'info',
 });
 await fs.copyFile(path.join(root,'node_modules/grapesjs/dist/css/grapes.min.css'),path.join(output,'grapes.min.css'));
-console.log('GrapesJS/MJML experimental assets built in assets/vendor/email-builder/');
+console.log('GrapesJS/MJML production assets built in assets/vendor/email-builder/');

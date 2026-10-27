@@ -1,5 +1,11 @@
 # Arquitetura canônica — Curso, inscrição, turma e material didático — 27/09/2026
 
+## Integração canônica com comunicações — 27/10/2026
+
+As seções experimentais de 22–24/10 abaixo permanecem como histórico, mas foram superadas. `communication_builder_drafts` é agora a fonte editável do layout; no pedido de aprovação, o servidor revalida mídia/MJML, produz HTML e texto, grava hash e congela o conteúdo na campanha. A fila nunca consome HTML compilado pelo navegador. Qualquer edição posterior revoga aprovação e conteúdo congelado.
+
+Curso, turma, matrícula e `student_users` continuam sendo as autoridades de audiência. Uma matrícula confirmada pode acionar jornada idempotente com contexto de curso/turma e registrar conversão somente para campanha com objetivo explícito. Segmentos e jornadas não criam identidade paralela, não corrigem matrícula e não ampliam consentimento promocional.
+
 ## Prévia renderizada no servidor para QA — 24/10/2026
 
 O laboratório introduz `communication_builder_render_email()`, renderer PHP controlado que consome exclusivamente MJML aprovado pela gramática canônica, devolve HTML tabular e texto simples, e está exposto somente por endpoint autenticado de prévia. Essa saída está **expressamente excluída da fila de entrega**; não é autorização de substituição do pipeline legado. A paridade de apresentação entre esse renderer e o compilador MJML do navegador precisa de inspeção visual/recebimento em clientes de e-mail antes da promoção.

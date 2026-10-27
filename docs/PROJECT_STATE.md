@@ -1,5 +1,13 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Comunicações: plataforma premium final — 27/10/2026
+
+A primeira versão foi substituída por uma plataforma integrada. Campanhas possuem editor visual MJML por blocos, renderer PHP canônico, texto alternativo, preheader, templates reutilizáveis, prévia desktop/celular, conteúdo congelado por hash e aprovação revogada automaticamente em qualquer alteração. Audiências combinam curso, turma, matrícula, seleção explícita, perfil, consentimento e comportamento em segmentos salvos com snapshot auditável.
+
+Jornadas persistentes suportam gatilhos acadêmicos e de consentimento, espera entre etapas, condições e idempotência. O painel inclui calendário editorial, aprovação, prioridade, objetivo de conversão, histórico, auditoria, diagnóstico SPF/DKIM/DMARC, execuções supervisionadas do worker e dead-letter com recuperação manual. A fila acrescenta disponibilidade, locks, idempotência, backoff, limite de frequência, prioridade e proteção contra reenvio cego após resultado incerto.
+
+Na Conta, o aluno controla e-mail acadêmico, opt-in e frequência de newsletter; a caixa interna de avisos necessários permanece ativa. Consentimentos são registrados como eventos append-only. Entrega, bounce, spam, bloqueio, supressão e conversão são métricas distintas; abertura e clique não são rastreados. Migrações 113–114 são aditivas. CI e `production-dist` não equivalem a instalação na hospedagem nem autorizam envio real.
+
 ## Comunicações: capacidade premium visível na primeira tela - 27/10/2026
 
 A central administrativa deixa de esconder agendamento, acompanhamento de entrega e caixa acadêmica em estados secundários. A primeira tela de **Admin → Comunicações** apresenta o fluxo completo, indicadores reais de campanhas agendadas, entregues e devolvidas e atalhos diretos para criar, agendar, acompanhar e gerir avisos. Em **Mensagens**, uma régua operacional torna explícitas as etapas Compor → Selecionar → Revisar ou agendar → Acompanhar antes mesmo do primeiro rascunho ser salvo. A correção é de descoberta e hierarquia da interface: não duplica serviços, filas ou regras de consentimento e continua usando as autoridades canônicas introduzidas pela migração 110.

@@ -3,8 +3,8 @@ declare(strict_types=1);
 require_once __DIR__.'/communications_builder_document.php';
 
 /**
- * MJML is experimental, never a sendable body. Every operation checks the
- * campaign's activity and draft status, including inside the write lock.
+ * Versioned MJML source for the canonical campaign renderer. Every operation
+ * checks the campaign's activity and draft status, including inside the lock.
  */
 function communication_builder_campaign(PDO $db,int $activityId,int $campaignId):array {
     if($activityId<1||$campaignId<1)throw new RuntimeException('Salve primeiro uma mensagem para editar seu layout.');
@@ -56,6 +56,13 @@ function communication_builder_draft_write(
         }else{
             $q=$db->prepare('UPDATE communication_builder_drafts SET mjml_source=?,media_refs_json=?,revision=?,updated_at=? WHERE campaign_id=?');
             $q->execute([$verified['mjml'],$refs,$current+1,$now,$campaignId]);
+        }
+        // Any visual change invalidates a previous approval and frozen render.
+        if(function_exists('communication_platform_available')&&communication_platform_available($db)){
+            $db->prepare("UPDATE communication_campaigns SET approval_status='draft',approved_by=NULL,approved_at=NULL,approval_note='',rendered_html='',rendered_text='',content_hash='',rendered_at=NULL,updated_at=? WHERE id=? AND activity_id=? AND status='draft'")
+              ->execute([$now,$campaignId,$activityId]);
+            $adminId=function_exists('current_admin')?(int)(current_admin()['id']??0):0;
+            if(function_exists('communication_audit'))communication_audit($db,$activityId,$adminId,'campaign.builder_saved','campaign',$campaignId,['revision'=>$current+1]);
         }
         return ['version'=>1,'revision'=>$current+1,'updated_at'=>$now,'counts'=>$verified['counts'],'media_ids'=>$verified['media_ids']];
     });

@@ -344,10 +344,10 @@ function initLab(){
         revision=saved.revision||0;
         if(saved.exists){
           editor.setComponents(saved.mjml);
-          setStatus(status,'Composição visual reaberta (revisão '+revision+'). Alterações não afetam o corpo original da mensagem.');
-        }else setStatus(status,'Nova composição visual. O corpo original da mensagem será preservado.');
+          setStatus(status,'Composição visual reaberta (revisão '+revision+'). Ao salvar, a mensagem precisará de nova aprovação.');
+        }else setStatus(status,'Nova composição visual. Salve e aprove a mensagem antes de enviar.');
       }catch(error){setStatus(status,'Falha ao abrir a composição: '+error.message,true);return;}
-    }else setStatus(status,'Construtor experimental. Salve uma mensagem primeiro para ativar persistência.');
+    }else setStatus(status,'Salve uma mensagem primeiro para criar a composição visual.');
     initialized=true;
     if(saveButton)saveButton.disabled=campaignId<1;
     window.__communicationsEmailLab.loaded=true;

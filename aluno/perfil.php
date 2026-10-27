@@ -9,6 +9,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         if(!verify_csrf('student-newsletter',$_POST['_csrf']??null))$error='Solicitação inválida.';
         else try{
             communication_set_opt_in($db,(int)$student['id'],($_POST['newsletter_opt_in']??'')==='yes');
+            communication_save_channel_preferences($db,(int)$student['id'],$_POST);
             $notice='Preferência de novidades atualizada.';
         }catch(Throwable $e){$error=$e->getMessage();}
     }elseif(!verify_csrf('student-profile',$_POST['_csrf']??null))$error='Solicitação inválida.';
@@ -26,5 +27,5 @@ if($error!==''){
 }
 require_once __DIR__.'/../app/student_profile_view.php';
 student_shell_start('Conta · Área do aluno',null,$student);
-student_profile_render($profile,$error,$notice,communication_opted_in($db,(int)$student['id']));
+student_profile_render($profile,$error,$notice,communication_opted_in($db,(int)$student['id']),communication_student_channel_preferences($db,(int)$student['id']));
 student_shell_end();

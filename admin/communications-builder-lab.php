@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 /**
- * Experimental MJML visual editor, linked only to saved draft campaigns.
- * Writes exclusively to the versioned builder draft table. It cannot send.
+ * Versioned MJML visual editor used by the canonical campaign renderer.
+ * Saving invalidates approval; only an approved frozen render can be queued.
  */
 require __DIR__.'/../app/bootstrap.php';
 require __DIR__.'/../app/admin_shell.php';
@@ -17,7 +17,7 @@ if(!$activity){header('Location: /admin/activities.php',true,303);exit;}
 $activityId=(int)$activity['id'];
 $campaignId=max(0,(int)($_GET['id']??0));
 $campaign=$campaignId?communication_builder_campaign($db,$activityId,$campaignId):null;
-admin_shell_start('communications','Construtor de e-mails — laboratório',$state,['/assets/communications-builder-lab.css']);
+admin_shell_start('communications','Construtor visual de e-mails',$state,['/assets/communications-builder-lab.css']);
 ?>
 <div class="communications-email-lab" data-communications-email-lab data-media-endpoint="/admin/communications-media.php"
   data-validation-endpoint="/admin/communications-builder-validate.php" data-validation-token="<?=h(csrf_token('communications-admin'))?>"
@@ -27,9 +27,9 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
   data-admin-email="<?=h((string)(current_admin()['email']??''))?>">
   <div class="email-lab-heading">
     <div>
-      <p class="admin-kicker">Laboratório de composição</p>
+      <p class="admin-kicker">Composição profissional</p>
       <h1>Construtor visual de e-mails</h1>
-      <p><?=($campaign?'Composição visual da mensagem #'.$campaignId.' — '.h((string)$campaign['subject']).'. ':'')?>A composição visual pode ser salva separadamente, mas não altera o corpo do e-mail enviado pelo CMS.</p>
+      <p><?=($campaign?'Composição visual da mensagem #'.$campaignId.' — '.h((string)$campaign['subject']).'. ':'')?>O layout salvo será renderizado pelo servidor, congelado na aprovação e usado no envio da campanha.</p>
     </div>
     <a class="admin-button secondary" href="/admin/communications.php?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$campaignId]))?>">Voltar às mensagens</a>
   </div>
@@ -46,7 +46,7 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
     <button type="button" data-lab-validate>Validar segurança</button>
     <button type="button" data-lab-server-preview>Prévia do servidor</button>
     <button type="button" data-lab-send-test title="Envia somente para seu e-mail administrativo, nunca aos alunos">Enviar teste visual para meu e-mail</button>
-    <button type="button" data-lab-save <?=$campaignId<1?'disabled':''?> title="Salva somente o documento MJML, sem modificar o e-mail enviado">Salvar composição</button>
+    <button type="button" data-lab-save <?=$campaignId<1?'disabled':''?> title="Salva o layout e exige uma nova aprovação antes do envio">Salvar composição</button>
   </div>
   <p role="status" aria-live="polite" data-lab-status class="email-lab-status">Inicializando o construtor…</p>
   <div class="email-lab-workspace">
@@ -70,7 +70,7 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
       </section>
       <hr>
       <h2>Imagem da Biblioteca</h2>
-      <p>Somente imagens públicas do site. A versão final verificará novamente as permissões no servidor.</p>
+      <p>Somente imagens públicas do site. As permissões são verificadas novamente ao salvar e renderizar.</p>
       <label>Imagem
         <select data-lab-media><option value="">Escolha na Biblioteca</option></select>
       </label>
@@ -97,8 +97,8 @@ admin_shell_start('communications','Construtor de e-mails — laboratório',$sta
         <iframe data-lab-preview title="Prévia compilada do e-mail" sandbox="" referrerpolicy="no-referrer"></iframe>
       </div>
       <div class="email-lab-comparison-item">
-        <h3>PHP — renderer experimental do servidor</h3>
-        <p>HTML tabular validado. Não está habilitado para envio.</p>
+        <h3>PHP — renderer canônico do servidor</h3>
+        <p>HTML tabular validado e congelado no momento da aprovação.</p>
         <iframe data-lab-server-frame title="Prévia HTML produzida pelo servidor" sandbox="" referrerpolicy="no-referrer"></iframe>
       </div>
     </div>

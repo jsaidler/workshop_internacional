@@ -83,6 +83,7 @@ jobs:
           php tools/test-communications-builder-drafts.php
           php tools/test-communications-builder-renderer.php
           php tools/test-communications-builder-test-send.php
+          php tools/test-communications-platform.php
           php tools/test-communications-email-design.php
           php tools/test-communications-mail-fallback.php
           php tools/test-communications-site-url.php

@@ -1,5 +1,17 @@
 # Comunicações por e-mail — operação
 
+## Plataforma final de comunicações — 27/10/2026
+
+Este contrato substitui as restrições experimentais de 22–24/10 registradas mais abaixo. O construtor GrapesJS/MJML deixou de ser um laboratório separado: o documento versionado é revalidado e renderizado pelo PHP, congelado ao solicitar aprovação e usado pela fila somente depois da aprovação. Salvar conteúdo textual, audiência, prioridade, objetivo ou composição visual revoga a aprovação e elimina o render congelado anterior. O HTML compilado no navegador nunca é aceito como fonte de envio.
+
+A central possui sete superfícies: visão operacional, campanhas, audiências, jornadas, governança, avisos e configuração. Campanhas combinam curso, turma, seleção explícita e segmento salvo; o snapshot de segmento, hash do conteúdo, aprovador e histórico de decisões permanecem auditáveis. Templates visuais podem ser criados de uma campanha e reaplicados a rascunhos. Jornadas persistentes aceitam gatilhos de matrícula ativada, conclusão, autorização de newsletter e inatividade, intervalos e condições por consentimento ou comportamento.
+
+Avisos acadêmicos usam caixa interna obrigatória e e-mail configurável pelo aluno; newsletters exigem consentimento explícito e oferecem frequência imediata, diária ou semanal. Cada decisão de consentimento é acrescentada ao histórico, sem reescrever evidência anterior. O worker registra início, heartbeat, encerramento e contadores, recupera execuções abandonadas, usa prioridade, disponibilidade, idempotência, limite diário e lock. Resultado incerto ou falha definitiva entra em dead-letter e só volta à fila por ação administrativa explícita com backoff.
+
+SPF e DMARC são consultados no domínio do remetente; DKIM é consultado com o seletor informado pelo provedor. Webhooks continuam sendo a autoridade de entrega, bounce, bloqueio, spam e descadastro. Não há pixel de abertura nem rastreamento de clique. Conversão de matrícula é atribuída no servidor apenas quando uma campanha declarou esse objetivo e houve entrega aceita ao mesmo aluno nos 30 dias anteriores.
+
+Testes e CI usam dados sintéticos e transportes simulados. Publicação em `production-dist` não instala a versão na hospedagem, não ativa cron/webhook e não autoriza envio real.
+
 ## Central operacional visível - 27/10/2026
 
 Ao abrir **Admin → Comunicações**, a administração deve reconhecer imediatamente as quatro jornadas disponíveis: criar campanha, agendar envio, acompanhar entrega e gerir avisos. O cabeçalho operacional mostra contagens de agendamentos, entregas e devoluções e identifica a caixa acadêmica persistente. Esses indicadores derivam das mesmas campanhas e eventos do sistema; não constituem uma camada paralela de métricas. Em **Mensagens**, a régua Compor → Selecionar → Revisar ou agendar → Acompanhar permanece visível em desktop e celular. O agendamento continua sendo confirmado somente depois de o rascunho ser salvo e a audiência revisada.

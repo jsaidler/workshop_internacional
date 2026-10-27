@@ -27,6 +27,15 @@ async function awaitServer(url){
   }
   throw new Error('Disposable real-PHP application failed to start.');
 }
+async function stopServer(){
+  if(!server)return;
+  const child=server;server=undefined;
+  if(child.exitCode===null){
+    const exited=new Promise(resolve=>child.once('exit',resolve));
+    child.kill('SIGTERM');
+    await Promise.race([exited,new Promise(resolve=>setTimeout(resolve,5000))]);
+  }
+}
 function snapshot(){
   return JSON.parse(execFileSync('php',[seedScript,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
 }
@@ -74,7 +83,7 @@ test.describe('authenticated Material → annotation → question → Material, 
     }
   });
   test.afterEach(async()=>{
-    server?.kill('SIGTERM');
+    await stopServer();
     if(serverLog!==undefined)fs.closeSync(serverLog);
     if(sandbox)fs.rmSync(sandbox,{recursive:true,force:true,maxRetries:8,retryDelay:100});
   });

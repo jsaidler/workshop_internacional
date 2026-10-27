@@ -1,5 +1,13 @@
 # Privacidade e LGPD — desenho operacional
 
+## Governança final das comunicações — 27/10/2026
+
+As seções experimentais abaixo são histórico e não descrevem mais a fonte de entrega. O layout MJML validado no servidor pode compor campanhas aprovadas, sem aceitar HTML arbitrário do navegador. A seleção de destinatários continua derivada da identidade e das matrículas canônicas; segmentos armazenam regras e snapshots de IDs, nunca cópias de CPF, conteúdo de caderno, dúvidas ou material privado.
+
+O aluno pode desativar o e-mail acadêmico sem perder a caixa interna necessária, aderir ou sair da newsletter e escolher frequência promocional. Cada decisão é registrada em `communication_consent_events` com finalidade, decisão, origem e horário. Newsletter revogada é bloqueada novamente no despacho. Eventos de bounce, spam, bloqueio e descadastro alimentam supressões; não são coletados abertura, clique, IP de leitura ou pixel remoto.
+
+Conversão de matrícula é inferida no servidor somente para campanha com objetivo explícito, mesmo aluno, curso compatível e entrega aceita nos 30 dias anteriores. Não há rastreamento de navegação. Logs de fila, auditoria, snapshots e worker guardam IDs técnicos, estados e erros necessários para segurança, prestação de contas e recuperação operacional; a política de retenção e o contrato com o provedor continuam sujeitos à revisão jurídica antes da operação real.
+
 ## Teste visual somente para a conta administrativa — 24/10/2026
 
 A prova de e-mail do editor MJML envia uma única mensagem mediante ação e confirmação explícitas, sempre para o endereço associado ao administrador autenticado, nunca para um endereço digitado ou extraído de matrícula. O servidor revalida o documento e a proveniência das imagens, aplica CSRF e um intervalo mínimo de 30 segundos entre tentativas. O transporte existente recebe somente HTML gerado no PHP. Esse teste não adiciona alunos à fila, não amplia o consentimento, não altera inscrições e não permite disparo em massa do layout experimental.

@@ -81,7 +81,7 @@ function communication_email_brand(?PDO $db,int $activityId):array {
     }catch(Throwable){}
     return $brand;
 }
-function communication_email_document(string $html,string $plain,?PDO $db=null,string $template='minimal',int $activityId=0):string {
+function communication_email_document(string $html,string $plain,?PDO $db=null,string $template='minimal',int $activityId=0,string $preheader=''):string {
     $template=communication_template_key($template);
     $inner=$html!==''?communication_safe_html($html):nl2br(htmlspecialchars($plain,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'));
     if($db)$inner=communication_render_media($db,$inner);
@@ -94,8 +94,9 @@ function communication_email_document(string $html,string $plain,?PDO $db=null,s
     $mast=$template==='destaque'
       ?'<tr><td style="padding:32px 36px;background:'.$ink.';color:#ffffff;font:bold 19px Arial,sans-serif">'.$name.'</td></tr>'
       :'<tr><td style="padding:28px 36px 20px;border-bottom:'.($template==='editorial'?'4px solid '.$accent:'1px solid #d5d7d4').';font:bold 18px Arial,sans-serif;color:'.$ink.'">'.$name.'</td></tr>';
+    $preview=$preheader!==''?'<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">'.htmlspecialchars($preheader,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'</div>':'';
     return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
-       .'<body style="margin:0;padding:0;background:'.$ground.'"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:'.$ground.'">'
+       .'<body style="margin:0;padding:0;background:'.$ground.'">'.$preview.'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:'.$ground.'">'
        .'<tr><td align="center" style="padding:20px 10px"><table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;border-collapse:collapse;background:#ffffff">'
        .$mast.'<tr><td style="padding:34px 36px 40px;font:16px/1.65 Arial,Helvetica,sans-serif;color:'.$ink.';word-wrap:break-word">'
        .$inner.'</td></tr><tr><td style="padding:20px 36px 28px;border-top:1px solid #d5d7d4;font:12px/1.6 Arial,sans-serif;color:'.$muted.'">'
