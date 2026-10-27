@@ -1,5 +1,23 @@
 # Arquitetura canônica — Curso, inscrição, turma e material didático — 27/09/2026
 
+## Integração canônica com comunicações — 27/10/2026
+
+As seções experimentais de 22–24/10 abaixo permanecem como histórico, mas foram superadas. `communication_builder_drafts` é agora a fonte editável do layout; no pedido de aprovação, o servidor revalida mídia/MJML, produz HTML e texto, grava hash e congela o conteúdo na campanha. A fila nunca consome HTML compilado pelo navegador. Qualquer edição posterior revoga aprovação e conteúdo congelado.
+
+Curso, turma, matrícula e `student_users` continuam sendo as autoridades de audiência. Uma matrícula confirmada pode acionar jornada idempotente com contexto de curso/turma e registrar conversão somente para campanha com objetivo explícito. Segmentos e jornadas não criam identidade paralela, não corrigem matrícula e não ampliam consentimento promocional.
+
+## Prévia renderizada no servidor para QA — 24/10/2026
+
+O laboratório introduz `communication_builder_render_email()`, renderer PHP controlado que consome exclusivamente MJML aprovado pela gramática canônica, devolve HTML tabular e texto simples, e está exposto somente por endpoint autenticado de prévia. Essa saída está **expressamente excluída da fila de entrega**; não é autorização de substituição do pipeline legado. A paridade de apresentação entre esse renderer e o compilador MJML do navegador precisa de inspeção visual/recebimento em clientes de e-mail antes da promoção.
+
+## Documento visual separado da entrega — 24/10/2026 (PR experimental)
+
+Migração 111 adiciona `communication_builder_drafts` com chave estrangeira para `communication_campaigns`. O documento MJML versionado tem validação canônica no PHP, revisão otimista, referências à versão pública das imagens e pode ser salvo somente se a campanha pertence à `activity` selecionada e permanece em `draft`. **A tabela nunca é consultada pelo envio legado** e não deve se tornar fonte de produção sem pipeline de renderização seguro, equivalência de prévia e verificação de audiência. Campanhas legadas e textos já enviados são imutáveis. Essa tabela descreve um documento editável de laboratório, não um e-mail efetivamente entregue.
+
+## Laboratório de composição por blocos — 22/10/2026 (não publicado)
+
+Como experimento isolado da questão #290, o CMS passa a estudar a edição de e-mails com GrapesJS/MJML, separado do documento `body_html` atualmente salvo e do renderizador `communication_email_document()`. Nenhuma campanha pode usar diretamente o HTML emitido pelo navegador como fonte de envio antes de validação e compilação canônicas no servidor. O construtor experimental não manipula matrícula, consentimento, audiência ou fila. Migrar rascunhos requer preservação exata das mensagens legadas e da identidade de cada imagem por ID da Biblioteca.
+
 Este documento substitui, para regras de negócio, a interpretação transitória em que a página raiz do workshop era usada como entidade `curso`. Páginas continuam sendo a autoridade editorial; `activity` continua sendo apenas o limite técnico do site.
 
 ## Princípio estrutural

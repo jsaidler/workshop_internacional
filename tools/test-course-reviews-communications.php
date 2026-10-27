@@ -61,6 +61,7 @@ SQL);
 (require dirname(__DIR__).'/migrations/109_communication_email_templates.php')($db);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
 (require dirname(__DIR__).'/migrations/110_premium_communications.php')($db);
+(require dirname(__DIR__).'/migrations/111_communication_preheader.php')($db);
 require dirname(__DIR__).'/app/course_reviews.php';
 require dirname(__DIR__).'/app/communications_brevo_credentials.php';
 require dirname(__DIR__).'/app/communications_site_url.php';

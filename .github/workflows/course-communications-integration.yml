@@ -9,6 +9,30 @@ on:
   pull_request:
     paths:
       - 'app/communications.php'
+      - 'admin/communications-builder-lab.php'
+      - 'assets/communications-builder-lab.css'
+      - 'app/communications_builder_document.php'
+      - 'app/communications_builder_drafts.php'
+      - 'app/communications_builder_test_send.php'
+      - 'admin/communications-builder-test.php'
+      - 'tools/test-communications-builder-test-send.php'
+      - 'admin/communications-builder-draft.php'
+      - 'admin/communications-worker.php'
+      - 'aluno/perfil.php'
+      - 'app/student_enrollments.php'
+      - 'app/student_profile_view.php'
+      - 'assets/student-profile.css'
+      - 'migrations/112_communication_builder_drafts.php'
+      - 'tools/test-communications-builder-drafts.php'
+      - 'app/communications_platform.php'
+      - 'migrations/113_communications_platform.php'
+      - 'migrations/114_communication_dkim_selector.php'
+      - 'tools/test-communications-platform.php'
+      - 'tools/browser-src/**'
+      - 'tools/build-communications-email-lab.mjs'
+      - 'package-lock.json'
+      - 'tools/browser-tests/communications-builder-lab.spec.cjs'
+      - 'package.json'
       - 'app/course_reviews.php'
       - 'admin/communications.php'
       - 'admin/lessons.php'
@@ -34,13 +58,22 @@ jobs:
         with:
           node-version: '22'
       - name: Validate course review and communications logic
-        run: php tools/test-course-reviews-communications.php
+        run: |
+          php tools/test-course-reviews-communications.php
+          php tools/test-communications-builder-document.php
+          php tools/test-communications-builder-drafts.php
+          php tools/test-communications-builder-renderer.php
+          php tools/test-communications-builder-test-send.php
+          php tools/test-communications-platform.php
       - name: Install focused browser runtime
         run: |
           npm install --no-audit --no-fund
+          npm run build:email-lab
           npx playwright install --with-deps chromium
       - name: Real PHP SQLite integration
-        run: npx playwright test tools/browser-tests/course-review-communications.spec.cjs --workers=1 --reporter=line
+        run: npx playwright test tools/browser-tests/course-review-communications.spec.cjs --workers=1 --reporter=line --output=test-results/real-admin
+      - name: Validate visual e-mail builder in Chromium
+        run: npx playwright test tools/browser-tests/communications-builder-lab.spec.cjs --workers=1 --reporter=line --output=test-results/lab
       - name: Preserve mobile and desktop screenshots
         if: always()
         uses: actions/upload-artifact@v4

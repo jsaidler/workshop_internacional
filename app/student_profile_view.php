@@ -2,8 +2,10 @@
 declare(strict_types=1);
 
 /** Authenticated account view. Authorization and updates belong to aluno/perfil.php. */
-function student_profile_render(array $profile,string $error='',string $notice='',bool $newsletterOptIn=false):void {
+function student_profile_render(array $profile,string $error='',string $notice='',bool $newsletterOptIn=false,array $communicationPreferences=[]):void {
     $failed=$error!=='';
+    $operationalEmail=(int)($communicationPreferences['operational']['email_enabled']??1)===1;
+    $newsletterFrequency=(string)($communicationPreferences['newsletter']['frequency']??'immediate');
 ?>
 <div class="student-profile-page">
   <header class="student-profile-header">
@@ -44,12 +46,21 @@ function student_profile_render(array $profile,string $error='',string $notice='
   </section>
   <div class="student-profile-settings">
     <section class="student-profile-setting" aria-labelledby="student-newsletter-heading">
-      <p class="student-kicker">Comunicações</p><h2 id="student-newsletter-heading">Novos cursos e atividades</h2>
-      <p>Escolha se deseja receber novidades por e-mail. Avisos necessários sobre aulas de que participa são independentes dessa opção.</p>
-      <form method="post">
+      <p class="student-kicker">Comunicações</p><h2 id="student-newsletter-heading">Preferências de comunicação</h2>
+      <p>A caixa de avisos da Área do aluno permanece ativa para comunicações acadêmicas. Você controla os e-mails e as novidades.</p>
+      <form method="post" class="student-communication-form">
         <input type="hidden" name="_csrf" value="<?=h(csrf_token('student-newsletter'))?>">
         <input type="hidden" name="action" value="newsletter">
-        <label><input type="checkbox" name="newsletter_opt_in" value="yes"<?=$newsletterOptIn?' checked':''?>> Quero receber novidades sobre cursos, turmas e atividades.</label>
+        <label class="student-communication-choice"><input type="checkbox" name="operational_email" value="1"<?=$operationalEmail?' checked':''?>><span>Receber também por e-mail os avisos necessários dos meus cursos.</span></label>
+        <label class="student-communication-choice"><input type="checkbox" name="newsletter_opt_in" value="yes"<?=$newsletterOptIn?' checked':''?>><span>Quero receber novidades sobre cursos, turmas e atividades.</span></label>
+        <label class="student-communication-frequency"><span>Frequência das novidades</span>
+          <select name="newsletter_frequency" aria-describedby="student-newsletter-frequency-help">
+            <option value="immediate"<?=$newsletterFrequency==='immediate'?' selected':''?>>Assim que forem publicadas</option>
+            <option value="daily"<?=$newsletterFrequency==='daily'?' selected':''?>>No máximo uma por dia</option>
+            <option value="weekly"<?=$newsletterFrequency==='weekly'?' selected':''?>>No máximo uma por semana</option>
+          </select>
+        </label>
+        <small id="student-newsletter-frequency-help">A frequência só se aplica às novidades. Avisos acadêmicos continuam disponíveis na Área do aluno.</small>
         <div class="student-actions"><button type="submit" class="button button-secondary">Salvar preferência</button></div>
       </form>
     </section>

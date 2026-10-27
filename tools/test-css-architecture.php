@@ -9,7 +9,9 @@ $iterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,Fil
 foreach($iterator as $file){
     if(!$file->isFile()||strtolower($file->getExtension())!=='css')continue;
     $path=str_replace('\\','/',substr($file->getPathname(),strlen($root)+1));
-    if(str_starts_with($path,'dist/')||str_starts_with($path,'node_modules/'))continue;
+    // Third-party distributions retain their upstream cascade contract; the
+    // no-!important invariant applies to CSS authored and maintained here.
+    if(str_starts_with($path,'dist/')||str_starts_with($path,'node_modules/')||str_starts_with($path,'assets/vendor/'))continue;
     $css=(string)file_get_contents($file->getPathname());
     if(str_contains($css,'!important')){
         $lines=preg_split('/\R/',$css)?:[];

@@ -1,0 +1,359 @@
+/**
+ * Isolated e-mail composer proof of concept.
+ *
+ * No persistence and NO sending. Never treat client-side HTML as safe for delivery:
+ * a future backend must validate the versioned MJML document and media IDs.
+ */
+import grapesjs from 'grapesjs';
+import mjmlModule from 'grapesjs-mjml';
+
+const mjmlPlugin=typeof mjmlModule==='function'?mjmlModule:mjmlModule?.default;
+const STARTER=[
+  '<mjml><mj-head><mj-attributes>',
+  '<mj-all font-family="Arial,Helvetica,sans-serif" />',
+  '</mj-attributes></mj-head><mj-body background-color="#f1f0ed">',
+  '<mj-section background-color="#ffffff" padding="28px 24px 14px">',
+  '<mj-column><mj-text font-size="22px" font-weight="bold" color="#202427">Ateliê fotográfico</mj-text></mj-column>',
+  '</mj-section><mj-section background-color="#ffffff" padding="12px 24px 30px">',
+  '<mj-column><mj-text font-size="16px" line-height="1.65" color="#252525">Escreva aqui a sua mensagem. Selecione o texto ou arraste novos blocos.</mj-text>',
+  '<mj-button background-color="#186f4d" href="https://example.org/" border-radius="0">Saiba mais</mj-button>',
+  '</mj-column></mj-section></mj-body></mjml>',
+].join('');
+function setStatus(element,text,failed=false){
+  if(!element)return;
+  element.textContent=text;
+  element.dataset.state=failed?'error':'ok';
+}
+function escapeAttribute(value){
+  return String(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+function validateLinksAndMedia(mjml,allowedMedia){
+  if(/<mj-(?:raw|style|font|social|navbar)\b/i.test(mjml))
+    throw Error('Este bloco não é autorizado no formato de e-mail do CMS.');
+  const images=[...mjml.matchAll(/<mj-image\b[^>]*\bsrc="([^"]*)"[^>]*>/gi)];
+  if((mjml.match(/<mj-image\b/gi)||[]).length!==images.length)
+    throw Error('Uma imagem está sem origem autorizada.');
+  for(const entry of images){
+    const src=entry[1].replaceAll('&amp;','&');
+    if(!allowedMedia.has(src))throw Error('A imagem precisa ser escolhida na Biblioteca pública.');
+    if(!/\balt="[^"]+"/i.test(entry[0]))throw Error('Informe o texto alternativo de cada imagem.');
+  }
+  for(const entry of mjml.matchAll(/\bhref="([^"]*)"/gi)){
+    const value=entry[1].replaceAll('&amp;','&');
+    if(!/^https:\/\/[^\s"]+$/i.test(value)&&!/^mailto:[^\s"@]+@[^\s"@]+\.[^\s"@]+$/i.test(value))
+      throw Error('Os links precisam usar HTTPS ou um e-mail válido.');
+  }
+}
+function initLab(){
+  const root=document.querySelector('[data-communications-email-lab]');
+  if(!root)return;
+  const status=root.querySelector('[data-lab-status]');
+  const mount=root.querySelector('[data-lab-canvas]');
+  const preview=root.querySelector('[data-lab-preview]');
+  const source=root.querySelector('[data-lab-source]');
+  const mediaPicker=root.querySelector('[data-lab-media]');
+  const mediaAlt=root.querySelector('[data-lab-media-alt]');
+  const mediaStatus=root.querySelector('[data-lab-media-status]');
+  const blocksHost=root.querySelector('[data-lab-blocks]');
+  const stylesHost=root.querySelector('[data-lab-styles]');
+  if(!mount||!preview||!source)return;
+  if(typeof mjmlPlugin!=='function'){
+    setStatus(status,'Não foi possível carregar a biblioteca MJML.',true);return;
+  }
+  const allowedMedia=new Map();
+  const campaignId=Number(root.dataset.campaignId||0);
+  const draftEndpoint=root.dataset.draftEndpoint;
+  const saveButton=root.querySelector('[data-lab-save]');
+  let revision=0;
+  let initialized=false;
+  let editor;
+  try{
+    editor=grapesjs.init({
+      container:mount,
+      fromElement:false,
+      height:'630px',
+      storageManager:false,
+      panels:{defaults:[]},
+      blockManager:{appendTo:blocksHost},
+      styleManager:{appendTo:stylesHost},
+      allowScripts:0,
+      avoidInlineStyle:false,
+      noticeOnUnload:false,
+      components:STARTER,
+      assetManager:{assets:[],upload:false,uploadFile:undefined},
+      plugins:[ed=>mjmlPlugin(ed,{
+        resetBlocks:true,resetDevices:true,resetStyleManager:true,
+        blocks:['mj-1-column','mj-2-columns','mj-text','mj-image','mj-button','mj-divider','mj-spacer'],
+      })],
+    });
+  }catch(error){
+    setStatus(status,'Falha ao iniciar o editor: '+error.message,true);
+    return;
+  }
+  const findComponent=(type)=>{
+    // GrapesJS MJML components have component types; CSS selector-based find()
+    // does not match those types consistently across GrapesJS versions.
+    const match=component=>component&&(
+      String(component.get('type')||'').toLowerCase()===type||
+      String(component.get('tagName')||'').toLowerCase()===type
+    );
+    let selected=editor.getSelected();
+    while(selected){if(match(selected))return selected;selected=selected.parent();}
+    const walk=component=>{
+      if(match(component))return component;
+      const children=component.components();
+      for(let i=0;i<children.length;i++){
+        const found=walk(children.at(i));
+        if(found)return found;
+      }
+      return null;
+    };
+    return walk(editor.getWrapper());
+  };
+  const exportEmail=()=>{
+    const mjml=editor.getHtml();
+    validateLinksAndMedia(mjml,allowedMedia);
+    const result=editor.runCommand('mjml-code-to-html');
+    if(!result||typeof result.html!=='string'||!result.html.trim())throw Error('O compilador não produziu HTML.');
+    const errors=(result.errors||[]).map(x=>x.formattedMessage||x.message||String(x));
+    if(errors.length)throw Error('MJML inválido: '+errors.join(' | '));
+    if(!/<table\b/i.test(result.html))throw Error('O HTML gerado não contém estrutura de e-mail.');
+    return {mjml,html:result.html,errors,project:editor.getProjectData()};
+  };
+  const roundTrip=()=>{
+    const before=editor.getHtml();
+    const saved=editor.getProjectData();
+    editor.loadProjectData(saved);
+    const after=editor.getHtml();
+    if(before!==after)throw Error('A reabertura alterou a estrutura MJML.');
+    return {before,after,project:saved};
+  };
+  const doExport=()=>{
+    try{
+      const result=exportEmail();
+      source.value=result.mjml;
+      preview.srcdoc=result.html;
+      setStatus(status,'Documento compilado. Prévia gerada; nenhum e-mail foi enviado.');
+      return result;
+    }catch(e){setStatus(status,e.message,true);return null;}
+  };
+  const mediaReferences=mjml=>{
+    const refs={};
+    for(const match of mjml.matchAll(/<mj-image\b[^>]*\bsrc="([^"]+)"[^>]*>/gi)){
+      const src=match[1].replaceAll('&amp;','&');
+      const asset=allowedMedia.get(src);
+      if(!asset)throw Error('Imagem não identificada na Biblioteca pública: '+src);
+      refs[src]=Number(asset.id);
+    }
+    return refs;
+  };
+  async function draftRequest(action,payload){
+    if(!campaignId||!draftEndpoint)throw Error('Salve a mensagem na área de Comunicações antes de editar seu layout.');
+    const url=new URL(draftEndpoint,location.href);
+    url.searchParams.set('activity',String(Number(root.dataset.activityId||0)));
+    if(action==='read'){
+      url.searchParams.set('campaign_id',String(campaignId));
+      const response=await fetch(url,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+      const value=await response.json();
+      if(!response.ok||!value.ok)throw Error(value.error||'Não foi possível abrir o rascunho visual.');
+      return value.draft;
+    }
+    const data=new URLSearchParams({_csrf:root.dataset.validationToken,
+      campaign_id:String(campaignId),revision:String(revision),
+      mjml:payload.mjml,media_refs:JSON.stringify(mediaReferences(payload.mjml))});
+    const response=await fetch(url,{method:'POST',credentials:'same-origin',cache:'no-store',
+      headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:data});
+    const value=await response.json();
+    if(!response.ok||!value.ok)throw Error(value.error||'Não foi possível salvar o rascunho visual.');
+    return value.draft;
+  }
+  root.querySelector('[data-lab-save]')?.addEventListener('click',async ()=>{
+    if(!initialized){setStatus(status,'Documento ainda está carregando.',true);return;}
+    const result=doExport();if(!result)return;
+    if(saveButton)saveButton.disabled=true;
+    try{
+      const saved=await draftRequest('save',result);
+      revision=saved.revision;
+      setStatus(status,'Composição visual salva (revisão '+revision+'). O e-mail original e a fila permanecem inalterados.');
+    }catch(e){setStatus(status,'Não foi possível salvar: '+e.message,true);}
+    finally{if(saveButton)saveButton.disabled=campaignId<1;}
+  });
+  root.querySelector('[data-lab-export]')?.addEventListener('click',doExport);
+  root.querySelector('[data-lab-send-test]')?.addEventListener('click',async event=>{
+    const destination=String(root.dataset.adminEmail||'').trim();
+    const endpoint=root.dataset.visualTestEndpoint;
+    if(!endpoint||!destination){setStatus(status,'A conta administrativa não tem destino de teste configurado.',true);return;}
+    if(!confirm('Enviar um único teste visual somente para '+destination+'? Nenhum aluno receberá esta mensagem.'))return;
+    const compiled=doExport();if(!compiled)return;
+    const button=event.currentTarget;
+    button.disabled=true;
+    try{
+      const refs=mediaReferences(compiled.mjml);
+      const url=new URL(endpoint,location.href);
+      url.searchParams.set('activity',String(Number(root.dataset.activityId||0)));
+      const body=new URLSearchParams({_csrf:root.dataset.validationToken,
+        mjml:compiled.mjml,media_refs:JSON.stringify(refs),campaign_id:String(campaignId)});
+      const response=await fetch(url,{method:'POST',credentials:'same-origin',cache:'no-store',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body});
+      const result=await response.json();
+      if(!response.ok||!result.ok)throw Error(result.error||'O serviço recusou a mensagem.');
+      setStatus(status,'Teste visual aceito pelo servidor para '+destination+'. Confira a caixa de entrada; os alunos não foram notificados.');
+    }catch(error){setStatus(status,'O teste visual não foi confirmado: '+error.message,true);}
+    finally{button.disabled=false;}
+  });
+  root.querySelector('[data-lab-server-preview]')?.addEventListener('click',async ()=>{
+    const result=doExport();if(!result)return;
+    const endpoint=root.dataset.serverPreviewEndpoint;
+    const frame=root.querySelector('[data-lab-server-frame]');
+    if(!endpoint||!frame){setStatus(status,'Prévia no servidor indisponível.',true);return;}
+    try{
+      const refs=mediaReferences(result.mjml);
+      const body=new URLSearchParams({_csrf:root.dataset.validationToken,
+        mjml:result.mjml,media_refs:JSON.stringify(refs)});
+      const response=await fetch(endpoint,{method:'POST',credentials:'same-origin',cache:'no-store',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body});
+      const data=await response.json();
+      if(!response.ok||!data.ok)throw Error(data.error||'O servidor recusou o documento.');
+      frame.srcdoc=data.render.html;
+      setStatus(status,'Prévia do servidor gerada. Compare os dois resultados antes de aprovar o layout.');
+    }catch(error){setStatus(status,'Não foi possível gerar a prévia do servidor: '+error.message,true);}
+  });
+  root.querySelector('[data-lab-validate]')?.addEventListener('click',async ()=>{
+    const result=doExport();
+    if(!result)return;
+    const endpoint=root.dataset.validationEndpoint;
+    const token=root.dataset.validationToken;
+    if(!endpoint||!token){setStatus(status,'Validação do servidor indisponível.',true);return;}
+    let refs;
+    try{refs=mediaReferences(result.mjml);}
+    catch(error){setStatus(status,error.message,true);return;}
+    setStatus(status,'Validando a estrutura no servidor…');
+    try{
+      const form=new URLSearchParams({_csrf:token,mjml:result.mjml,media_refs:JSON.stringify(refs)});
+      const response=await fetch(endpoint,{method:'POST',credentials:'same-origin',cache:'no-store',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:form});
+      const data=await response.json();
+      if(!response.ok||!data.ok)throw Error(data.error||'Documento rejeitado.');
+      const sections=data.document?.counts?.sections||0;
+      setStatus(status,'Documento aprovado na validação estrutural: '+sections+' seção(ões). Ainda não foi salvo nem enviado.');
+    }catch(error){setStatus(status,'Documento recusado pelo servidor: '+error.message,true);}
+  });
+  root.querySelector('[data-lab-reopen]')?.addEventListener('click',()=>{
+    try{roundTrip();setStatus(status,'Salvamento e reabertura em memória preservaram o MJML.');}
+    catch(e){setStatus(status,e.message,true);}
+  });
+  root.querySelector('[data-lab-undo]')?.addEventListener('click',()=>editor.UndoManager.undo());
+  root.querySelector('[data-lab-redo]')?.addEventListener('click',()=>editor.UndoManager.redo());
+  root.querySelector('[data-lab-desktop]')?.addEventListener('click',()=>editor.setDevice('Desktop'));
+  root.querySelector('[data-lab-mobile]')?.addEventListener('click',()=>editor.setDevice('Mobile'));
+  function showTool(tool){
+    for(const tab of root.querySelectorAll('[data-lab-tool]'))
+      tab.setAttribute('aria-selected',String(tab.dataset.labTool===tool));
+    const blocksPanel=root.querySelector('[data-lab-blocks-panel]');
+    const stylesPanel=root.querySelector('[data-lab-styles-panel]');
+    if(blocksPanel)blocksPanel.hidden=tool!=='blocks';
+    if(stylesPanel)stylesPanel.hidden=tool!=='styles';
+    const mobileToggle=root.querySelector('[data-lab-inspector-toggle]');
+    if(mobileToggle)mobileToggle.setAttribute('aria-pressed',String(tool==='styles'));
+  }
+  root.querySelectorAll('[data-lab-tool]').forEach(tab=>tab.addEventListener('click',()=>showTool(tab.dataset.labTool)));
+  root.querySelector('[data-lab-inspector-toggle]')?.addEventListener('click',()=>{
+    showTool('styles');
+    root.querySelector('[data-lab-side]')?.scrollIntoView({block:'start',behavior:'smooth'});
+  });
+  root.querySelector('[data-lab-add-text]')?.addEventListener('click',()=>{
+    const column=findComponent('mj-column');
+    if(!column){setStatus(status,'Selecione uma coluna para inserir texto.',true);return;}
+    column.append('<mj-text font-size="16px" color="#202427">Novo texto. Edite diretamente no quadro.</mj-text>');
+  });
+  root.querySelector('[data-lab-add-columns]')?.addEventListener('click',()=>{
+    const body=findComponent('mj-body');
+    if(!body){setStatus(status,'Corpo do e-mail não encontrado.',true);return;}
+    body.append('<mj-section background-color="#ffffff" padding="14px 24px"><mj-column><mj-text>Coluna esquerda</mj-text></mj-column><mj-column><mj-text>Coluna direita</mj-text></mj-column></mj-section>');
+  });
+  root.querySelector('[data-lab-add-media]')?.addEventListener('click',()=>{
+    const id=mediaPicker?.value;
+    const asset=allowedMedia.get(id);
+    const alt=mediaAlt?.value.trim()||'';
+    const col=findComponent('mj-column');
+    if(!col){setStatus(status,'Selecione uma coluna antes de inserir a imagem.',true);return;}
+    if(!asset||!alt){setStatus(status,'Escolha uma imagem e informe a descrição.',true);return;}
+    if(!asset.canonicalSrc){setStatus(status,'Configure primeiro a URL pública HTTPS do site.',true);return;}
+    col.append('<mj-image src="'+escapeAttribute(asset.canonicalSrc)+'" alt="'+escapeAttribute(alt)+'" padding="14px 0" />');
+    setStatus(status,'Imagem da Biblioteca inserida na composição.');
+  });
+  const mediaEndpoint=root.dataset.mediaEndpoint;
+  const mediaReady=mediaEndpoint&&mediaPicker?
+    fetch(mediaEndpoint,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}})
+      .then(async response=>{const json=await response.json();if(!response.ok)throw Error(json.error||'Falha ao carregar a Biblioteca.');return json;})
+      .then(data=>{
+        for(const item of data.items||[]){
+          const url=new URL(item.src,location.origin);
+          if(url.origin!==location.origin||!url.pathname.startsWith('/uploads/'))continue;
+          const canonical=String(item.canonical_src||'');
+          if(canonical&&!/^https:\/\/[^\s]+$/.test(canonical))continue;
+          const media={id:String(item.id),src:url.href,canonicalSrc:canonical,
+            alt:item.alt||'',title:item.title||'Imagem'};
+          allowedMedia.set(media.id,media);
+          if(canonical)allowedMedia.set(canonical,media);
+          const option=document.createElement('option');option.value=media.id;option.textContent=media.title;
+          mediaPicker.append(option);
+        }
+        if(allowedMedia.size===0)setStatus(mediaStatus,'Nenhuma imagem pública disponível.');
+        else{
+          setStatus(mediaStatus,(allowedMedia.size/2)+' imagem(ns) da Biblioteca.');
+          mediaPicker.dispatchEvent(new Event('change'));
+        }
+      })
+      .catch(e=>{setStatus(mediaStatus,e.message,true);})
+    :Promise.resolve();
+  if(mediaPicker){
+    mediaPicker.addEventListener('change',()=>{
+      const asset=allowedMedia.get(mediaPicker.value);
+      if(asset&&mediaAlt)mediaAlt.value=asset.alt;
+    });
+  }
+  editor.on('load',async()=>{
+    const labels={
+      'mj-1-column':['Uma coluna','▣'],
+      'mj-2-columns':['Duas colunas','▥'],
+      'mj-text':['Texto','T'],
+      'mj-button':['Botão','↗'],
+      'mj-image':['Imagem','▧'],
+      'mj-divider':['Separador','━'],
+      'mj-spacer':['Espaçamento','↕'],
+    };
+    const blocks=editor.BlockManager.getAll();
+    for(const block of [...blocks.models]){
+      const name=String(block.getId()||'');
+      if(/raw|social|navbar|hero|font|style|code/i.test(name)){
+        editor.BlockManager.remove(name);
+        continue;
+      }
+      if(labels[name]){
+        block.set('label',labels[name][0]);
+        block.set('media','<span class="email-lab-block-icon" aria-hidden="true">'+labels[name][1]+'</span>');
+      }
+    }
+    if(campaignId>0){
+      setStatus(status,'Carregando composição visual salva…');
+      if(saveButton)saveButton.disabled=true;
+      try{
+        await mediaReady;
+        const saved=await draftRequest('read');
+        revision=saved.revision||0;
+        if(saved.exists){
+          editor.setComponents(saved.mjml);
+          setStatus(status,'Composição visual reaberta (revisão '+revision+'). Ao salvar, a mensagem precisará de nova aprovação.');
+        }else setStatus(status,'Nova composição visual. Salve e aprove a mensagem antes de enviar.');
+      }catch(error){setStatus(status,'Falha ao abrir a composição: '+error.message,true);return;}
+    }else setStatus(status,'Salve uma mensagem primeiro para criar a composição visual.');
+    initialized=true;
+    if(saveButton)saveButton.disabled=campaignId<1;
+    window.__communicationsEmailLab.loaded=true;
+  });
+  window.__communicationsEmailLab={editor,exportEmail,roundTrip,doExport,findComponent,allowedMedia,
+    mediaReferences,draftRequest,getRevision:()=>revision,ready:true,loaded:false};
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initLab,{once:true});
+else initLab();
