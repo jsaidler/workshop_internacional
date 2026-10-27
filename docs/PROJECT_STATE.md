@@ -1,12 +1,16 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
-## Comunicações premium: agendamento, caixa acadêmica e evidência de entrega - 26/10/2026 (branch isolada)
+## Comunicações: capacidade premium visível na primeira tela - 27/10/2026
+
+A central administrativa deixa de esconder agendamento, acompanhamento de entrega e caixa acadêmica em estados secundários. A primeira tela de **Admin → Comunicações** apresenta o fluxo completo, indicadores reais de campanhas agendadas, entregues e devolvidas e atalhos diretos para criar, agendar, acompanhar e gerir avisos. Em **Mensagens**, uma régua operacional torna explícitas as etapas Compor → Selecionar → Revisar ou agendar → Acompanhar antes mesmo do primeiro rascunho ser salvo. A correção é de descoberta e hierarquia da interface: não duplica serviços, filas ou regras de consentimento e continua usando as autoridades canônicas introduzidas pela migração 110.
+
+## Comunicações premium: agendamento, caixa acadêmica e evidência de entrega - 26/10/2026 (integrado em 27/10/2026)
 
 `Admin → Comunicações → Mensagens` passa a permitir agendar um rascunho por data, hora e fuso. Enquanto agendado, conteúdo e destinatários ficam bloqueados para edição; o cancelamento devolve a mensagem ao estado editável. O worker libera apenas itens vencidos e recalcula matrícula, seleção individual, opt-in e mídia no instante do envio. Se essa validação falhar, a mensagem permanece bloqueada com erro operacional visível, sem envio parcial ou descarte silencioso. O envio manual comum não antecipa uma campanha agendada.
 
 Avisos acadêmicos enfileirados criam também uma entrada persistente em **Área do aluno → Notificações**, com leitura individual e marcação em lote. Essa caixa é restrita ao aluno destinatário e não é usada por newsletters. Assim, um endereço de e-mail permanentemente inválido não elimina o canal acadêmico interno.
 
-Quando Brevo estiver configurado, a administração pode registrar um webhook transacional autenticado por bearer token. O CMS correlaciona identificadores aceitos pelo provedor e registra eventos mínimos de entrega, devolução, bloqueio, denúncia, erro e descadastro, sem pixel de abertura ou rastreamento de clique. Hard bounce, endereço inválido, bloqueio e denúncia criam supressão local para futuros e-mails; denúncia e descadastro também revogam a preferência promocional quando aplicável. Aceite do provedor, entrega confirmada e leitura continuam estados distintos. A migração aditiva 110 preserva campanhas e entregas existentes. Nenhum webhook real, mensagem externa, merge ou instalação em produção faz parte da validação local desta branch.
+Quando Brevo estiver configurado, a administração pode registrar um webhook transacional autenticado por bearer token. O CMS correlaciona identificadores aceitos pelo provedor e registra eventos mínimos de entrega, devolução, bloqueio, denúncia, erro e descadastro, sem pixel de abertura ou rastreamento de clique. Hard bounce, endereço inválido, bloqueio e denúncia criam supressão local para futuros e-mails; denúncia e descadastro também revogam a preferência promocional quando aplicável. Aceite do provedor, entrega confirmada e leitura continuam estados distintos. A migração aditiva 110 preserva campanhas e entregas existentes. A validação automatizada não configura webhook real nem envia mensagens externas; a instalação na hospedagem continua sendo uma operação administrativa separada.
 
 ## Integridade do conteúdo inicial no pacote — 26/10/2026
 

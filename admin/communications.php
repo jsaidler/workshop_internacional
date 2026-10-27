@@ -223,6 +223,12 @@ $autoAlertsRun=!empty($_SESSION['communications_alerts_auto_run']);
 $initialAlertsBatch=is_array($_SESSION['communications_alerts_initial_batch']??null)?$_SESSION['communications_alerts_initial_batch']:[];
 unset($_SESSION['communications_alerts_auto_run'],$_SESSION['communications_alerts_initial_batch']);
 $campaigns=communication_campaigns($db,$activityId);
+$campaignTotals=['scheduled'=>0,'delivered'=>0,'bounced'=>0];
+foreach($campaigns as $campaignRow){
+    if(communication_campaign_is_scheduled($campaignRow))$campaignTotals['scheduled']++;
+    $campaignTotals['delivered']+=(int)($campaignRow['delivered_count']??0);
+    $campaignTotals['bounced']+=(int)($campaignRow['bounced_count']??0);
+}
 $isScheduled=$selected?communication_campaign_is_scheduled($selected):false;
 $selectedDeliveryRows=$selected && $selected['status']!=='draft'?communication_campaign_deliveries($db,$activityId,$selectedId):[];
 if($selected && $preview===null){
@@ -254,6 +260,31 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 ?>
 <?php if($notice!==''):?><p class="admin-notice success" role="status"><?=h($notice)?></p><?php endif;?>
 <?php if($error!==''):?><p class="admin-notice error" role="alert"><?=h($error)?></p><?php endif;?>
+<?php if($tab==='overview'):?>
+<section class="comms-command-center" aria-labelledby="communications-command-title">
+  <div class="comms-command-copy">
+    <p class="comms-eyebrow">Central de comunicação</p>
+    <h2 id="communications-command-title">Campanhas, avisos e entrega em um só lugar</h2>
+    <p>Crie newsletters e avisos acadêmicos, programe o envio, acompanhe cada destinatário e mantenha a caixa do aluno atualizada.</p>
+    <div class="comms-command-actions">
+      <a class="admin-button" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>#composer">Nova comunicação</a>
+      <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'settings']))?>#delivery-tracking">Configurar entrega</a>
+    </div>
+  </div>
+  <dl class="comms-command-status" aria-label="Estado das comunicações">
+    <div><dt>Agendadas</dt><dd><?=$campaignTotals['scheduled']?></dd><small><?=$workerActive?'Automação ativa':'Automação pendente'?></small></div>
+    <div><dt>Entregues</dt><dd><?=$campaignTotals['delivered']?></dd><small>Confirmadas pelo provedor</small></div>
+    <div><dt>Devolvidas</dt><dd><?=$campaignTotals['bounced']?></dd><small>Endereços protegidos</small></div>
+    <div><dt>Caixa acadêmica</dt><dd>Ativa</dd><small>Avisos persistentes para alunos</small></div>
+  </dl>
+</section>
+<nav class="comms-quick-actions" aria-label="Ações rápidas de comunicação">
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>#composer"><span>01</span><strong>Criar campanha</strong><small>Newsletter ou aviso acadêmico</small></a>
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>#composer"><span>02</span><strong>Agendar envio</strong><small>Data, hora e audiência revalidada</small></a>
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'settings']))?>#delivery-tracking"><span>03</span><strong>Acompanhar entrega</strong><small>Retornos, falhas e supressões</small></a>
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'alerts']))?>#staff-alerts"><span>04</span><strong>Gerir avisos</strong><small>Administração e caixa dos alunos</small></a>
+</nav>
+<?php endif;?>
 <nav class="admin-subtabs comms-tabs" aria-label="Áreas de comunicações">
 <?php foreach(['overview'=>'Visão geral','alerts'=>'Avisos dos alunos','campaigns'=>'Mensagens','settings'=>'Configuração'] as $key=>$label):?>
   <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>$key]))?>"<?=$tab===$key?' aria-current="page"':''?>><?=h($label)?></a>
@@ -335,7 +366,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       </form>
       <?php endif;?>
     </section>
-    <section class="admin-card comms-section">
+    <section class="admin-card comms-section" id="delivery-tracking">
       <header><div><h2>Acompanhamento de entrega</h2><p>Confirma entrega e registra devoluções informadas pelo Brevo.</p></div>
         <?=admin_badge(!empty($trackingStatus['configured_at'])?'Ativo':'Pendente',!empty($trackingStatus['configured_at'])?'good':'attention')?></header>
       <?php if(!empty($trackingStatus['last_event_at'])):?><p class="comms-detail">Último retorno recebido: <strong><?=h((string)$trackingStatus['last_event_at'])?></strong></p><?php endif;?>
@@ -388,7 +419,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <?php elseif($tab==='alerts'):?>
   <div class="comms-lead"><div><p class="comms-eyebrow">Acompanhamento</p><h2>Avisos dos alunos</h2>
     <p>Escolha quais atividades devem gerar avisos no seu e-mail.</p></div></div>
-  <section class="admin-card comms-section" data-communications-alerts data-queue-url="/admin/communications-queue.php"
+  <section class="admin-card comms-section" id="staff-alerts" data-communications-alerts data-queue-url="/admin/communications-queue.php"
     data-auto-run="<?=$autoAlertsRun?'1':'0'?>" data-initial-sent="<?=(int)($initialAlertsBatch['sent']??0)?>" data-initial-skipped="<?=(int)($initialAlertsBatch['skipped']??0)?>" data-initial-failed="<?=(int)($initialAlertsBatch['failed']??0)?>">
     <header><div><h2>Fila de avisos</h2><p>Envie os avisos da sua conta agora, sem depender de agendamento.</p></div></header>
     <p data-alerts-count aria-live="polite"><?=$alertsQueueSummary['pending']?> pendente(s) · <?=$alertsQueueSummary['processing']?> processando · <?=$alertsQueueSummary['accepted']?> aceito(s) · <?=$alertsQueueSummary['failed']?> falha(s) · <?=$alertsQueueSummary['cancelled']?> cancelado(s).</p>
@@ -443,7 +474,13 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <p>Redija avisos acadêmicos ou newsletters e revise os destinatários antes de enviar.</p></div>
     <?php if($selectedId):?><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Nova mensagem</a><?php endif;?>
   </div>
-  <section class="admin-card comms-section" data-communication-composer data-email-media-url="/admin/communications-media.php" data-email-csrf="<?=h(csrf_token('communications-admin'))?>" data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
+  <ol class="comms-flow" aria-label="Fluxo da comunicação">
+    <li class="is-current"><span>1</span><div><strong>Compor</strong><small>Conteúdo e modelo</small></div></li>
+    <li><span>2</span><div><strong>Selecionar</strong><small>Curso, turma e pessoas</small></div></li>
+    <li><span>3</span><div><strong>Revisar ou agendar</strong><small>Prévia e horário</small></div></li>
+    <li><span>4</span><div><strong>Acompanhar</strong><small>Entrega e falhas</small></div></li>
+  </ol>
+  <section class="admin-card comms-section" id="composer" data-communication-composer data-email-media-url="/admin/communications-media.php" data-email-csrf="<?=h(csrf_token('communications-admin'))?>" data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
     <header><div><h2><?=($selectedId?($isScheduled?'Mensagem agendada':((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId)):'Nova mensagem')?></h2>
     <p><?=h((string)($isScheduled?'Envio programado':(($form['status']??'draft')==='draft'?'Rascunho':(($form['status']??'')==='queued'?'Aguardando processamento':'Processamento encerrado'))))?></p></div></header>
     <?php if(($form['status']??'draft')==='draft'&&!$isScheduled):?>
@@ -525,6 +562,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
         <button type="submit" name="action" value="save" class="admin-button">Salvar rascunho</button>
         <button type="submit" name="action" value="preview" class="admin-button secondary">Revisar mensagem</button>
       </div>
+      <?php if(!$selectedId):?><p class="comms-next-step"><strong>Próximo passo:</strong> ao salvar, você poderá enviar agora, programar data e hora ou mandar um teste para sua conta.</p><?php endif;?>
     </form>
     <dialog class="comms-media-dialog" data-email-media-dialog aria-labelledby="email-media-dialog-heading">
       <div class="comms-media-dialog-inner">
