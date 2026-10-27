@@ -1,5 +1,17 @@
 # Privacidade e LGPD — desenho operacional
 
+## Teste visual somente para a conta administrativa — 24/10/2026
+
+A prova de e-mail do editor MJML envia uma única mensagem mediante ação e confirmação explícitas, sempre para o endereço associado ao administrador autenticado, nunca para um endereço digitado ou extraído de matrícula. O servidor revalida o documento e a proveniência das imagens, aplica CSRF e um intervalo mínimo de 30 segundos entre tentativas. O transporte existente recebe somente HTML gerado no PHP. Esse teste não adiciona alunos à fila, não amplia o consentimento, não altera inscrições e não permite disparo em massa do layout experimental.
+
+## Armazenamento de composição experimental — 24/10/2026
+
+O MJML criado no construtor pode ser armazenado **apenas mediante salvamento explícito** e somente para uma campanha em rascunho da atividade autenticada. Fica em `communication_builder_drafts`, separado do corpo enviado, com histórico de revisão atual e IDs de mídias públicas. A API exige CSRF para escrita e restringe acesso por atividade e estado; alterações simultâneas não sobrescrevem o documento sem aviso. Não são processados novos destinatários nem capturados dados de alunos adicionais. A opção não gera e-mails, rastreadores ou transmissão ao provedor externo.
+
+## Laboratório isolado de e-mails por blocos — 22/10/2026
+
+O protótipo GrapesJS/MJML exige login administrativo, lê somente a Biblioteca pública pelo endpoint existente e não persiste arquivos de mídia adicionais nem envia e-mails; desde 24/10 permite salvar composições MJML isoladas, sob autenticação/CSRF e com restrição a rascunhos, conforme seção posterior. O novo endpoint experimental de validação recebe MJML somente mediante autenticação e token CSRF, analisa a estrutura no servidor, consulta a Biblioteca para verificar referências públicas e descarta o documento após responder; não há armazenamento. Os dados exibidos no quadro demonstrativo não provêm de alunos. Imagens vindas de URLs arbitrárias são rejeitadas na exportação do laboratório, mas isso não substitui validação no servidor caso a ferramenta evolua para uso efetivo. O projeto não altera controles de opt-in/opt-out, matrículas ou tratamento dos destinatários.
+
 Este documento descreve o comportamento técnico do site em relação a dados pessoais. Ele não substitui avaliação jurídica das obrigações fiscais, contratuais ou regulatórias aplicáveis ao negócio.
 
 ## Princípios aplicados

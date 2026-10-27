@@ -484,6 +484,11 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <header><div><h2><?=($selectedId?($isScheduled?'Mensagem agendada':((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId)):'Nova mensagem')?></h2>
     <p><?=h((string)($isScheduled?'Envio programado':(($form['status']??'draft')==='draft'?'Rascunho':(($form['status']??'')==='queued'?'Aguardando processamento':'Processamento encerrado'))))?></p></div></header>
     <?php if(($form['status']??'draft')==='draft'&&!$isScheduled):?>
+    <?php if($selectedId>0):?>
+      <div class="comms-inline-actions">
+        <a class="admin-button secondary" href="/admin/communications-builder-lab.php?<?=h(http_build_query(['activity'=>$activityId,'id'=>$selectedId]))?>">Abrir construtor visual</a>
+      </div>
+    <?php endif;?>
     <form method="post" class="comms-compose-form" data-composer-form>
       <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
       <input type="hidden" name="campaign_id" value="<?=$selectedId?>">

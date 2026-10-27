@@ -38,12 +38,14 @@ function communication_media_choices(PDO $db):array {
         WHERE kind='image' AND visibility='public' AND archived_at IS NULL AND processing_status='ready'
         ORDER BY id DESC LIMIT 150");
     $result=[];
+    $canonicalOrigin=communication_site_url($db);
     foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row){
         try{
             $asset=communication_media_asset($db,(int)$row['id']);
             $result[]=['id'=>(int)$row['id'],'title'=>(string)$row['title'],
                 'alt'=>(string)($row['default_alt']??''),
-                'src'=>media_url((string)$asset['email_path'])];
+                'src'=>media_url((string)$asset['email_path']),
+                'canonical_src'=>$canonicalOrigin!==''?$canonicalOrigin.media_url((string)$asset['email_path']):''];
         }catch(Throwable){}
     }
     return $result;

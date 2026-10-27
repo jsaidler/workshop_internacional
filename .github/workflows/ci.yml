@@ -91,6 +91,10 @@ jobs:
             php tools/test-course-domain-material.php
             php tools/test-course-agenda.php
             php tools/test-course-reviews-communications.php
+          php tools/test-communications-builder-document.php
+          php tools/test-communications-builder-drafts.php
+          php tools/test-communications-builder-renderer.php
+          php tools/test-communications-builder-test-send.php
             php tools/test-communications-email-design.php
             php tools/test-communications-mail-fallback.php
             php tools/test-communications-site-url.php
@@ -179,6 +183,7 @@ jobs:
       - name: Install browser test dependencies
         run: |
           npm install --no-audit --no-fund
+          npm run build:email-lab
           npx playwright install --with-deps chromium webkit
       - name: Browser interaction regression
         run: |
