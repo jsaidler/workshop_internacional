@@ -10,7 +10,7 @@ O painel `Admin → Sistema e atualizações` foi conferido em 27/09/2026 e most
 - **Produção disponível:** `67fe31d5f189`
 - timestamp exibido em ambos: `2026-09-27T03:40:41+00:00`
 
-Portanto, naquele ponto da revisão, a hospedagem e o canal de produção estavam sincronizados no mesmo `sourceSha` abreviado. Este é o último estado **instalado** confirmado visualmente durante esta auditoria. Os blocos posteriores podem estar publicados no atualizador sem que isso, sozinho, prove que a hospedagem já os instalou. O editor permanece pausado; a revisão em andamento é da Área do aluno.
+Portanto, naquele ponto da revisão, a hospedagem e o canal de produção estavam sincronizados no mesmo `sourceSha` abreviado. Este é o último estado **instalado** confirmado visualmente durante esta auditoria. Os blocos posteriores foram publicados no atualizador, mas isso, sozinho, não prova que a hospedagem já os instalou. O editor permanece pausado; esta auditoria da Área do aluno foi encerrada no código e no canal de produção, restando apenas a dependência externa de recuperação de senha descrita em A5b.
 
 ## Princípio da revisão
 
@@ -115,7 +115,7 @@ Contrato:
 
 A auditoria do código não encontrou transporte de e-mail de saída canônico na aplicação: não há serviço SMTP, PHPMailer nem chamada `mail()` que possa ser reutilizada com segurança. Portanto a recuperação não deve ser improvisada com CPF, perguntas pessoais, senha temporária fixa ou outro atalho que reduza a segurança da conta.
 
-**Estado:** bloqueado por decisão/infraestrutura de entrega. A implementação futura exige primeiro uma autoridade de e-mail transacional e um fluxo de token de uso único com validade curta. A ausência desse subsistema não bloqueia os blocos seguintes.
+**Estado:** bloqueado por decisão/infraestrutura de entrega. A implementação futura exige primeiro uma autoridade de e-mail transacional e um fluxo de token de uso único com validade curta. A ausência desse subsistema não bloqueou os demais blocos da auditoria.
 
 ### A6 — Índice de testes
 
@@ -177,9 +177,9 @@ Contrato do fechamento:
 - upload/remoção continua na mesma etapa e informa que os dados também foram salvos;
 - o botão **Salvar ... e continuar** continua sendo a única ação que avança de etapa;
 - nenhuma ação de mídia cria nova autorização, novo registro paralelo ou semântica adicional de conclusão;
-- regressão de navegador precisa provar que valores digitados na Revelação sobrevivem à inclusão de uma imagem antes do avanço para Revisão.
+- regressão de navegador prova que valores digitados na Revelação sobrevivem à inclusão de uma imagem antes do avanço para Revisão.
 
-**Estado:** implementação em `fix/student-area-transversal-final-2026-09-27`.
+**Estado:** concluído no PR #133, merge `b8f968670e92a822fd4bf55cefc8c550bad9755e`. A suíte passou completa, incluindo regressão PHP, Playwright/Chromium, build e dry-run. O deploy de produção run `36300681265` concluiu com sucesso e publicou o artefato para o atualizador administrativo.
 
 ## Cobertura de regressão
 
@@ -191,7 +191,13 @@ A partir do A1, cada bloco que alterar UX combina:
 - Playwright/Chromium para a superfície realmente usada;
 - ao menos um viewport de desktop e um de celular quando a tela for responsiva.
 
-O fechamento transversal adiciona uma trava específica para as funções compartilhadas da ficha e para a ordem **salvar etapa → mutar mídia**, além de interação real que simula digitação seguida de inclusão do resultado.
+O fechamento transversal adicionou uma trava específica para as funções compartilhadas da ficha e para a ordem **salvar etapa → mutar mídia**, além de interação real que simula digitação seguida de inclusão do resultado.
+
+## Encerramento
+
+A1, A2, A3, A4, A5a, A6, A7 e a revisão transversal foram concluídos com regressão, PR, merge e publicação no canal de produção. A única pendência conhecida desta auditoria é A5b, deliberadamente não implementada até existir infraestrutura canônica de e-mail transacional e token seguro de recuperação.
+
+A publicação dos artefatos no canal de produção não deve ser confundida com a instalação na hospedagem. O último estado **instalado** confirmado visualmente continua sendo `67fe31d5f189`, capturado no início desta auditoria. A próxima verificação operacional é conferir novamente `Admin → Sistema e atualizações` e instalar/confirmar o artefato mais recente.
 
 ## Ordem de execução
 
@@ -203,4 +209,4 @@ O fechamento transversal adiciona uma trava específica para as funções compar
 6. A5b — recuperação de senha — **aguarda infraestrutura de e-mail transacional**;
 7. A6 — índice de testes — **concluído**;
 8. A7 — workflow do teste — **concluído**;
-9. revisão transversal final — **em implementação**.
+9. revisão transversal final — **concluída**.
