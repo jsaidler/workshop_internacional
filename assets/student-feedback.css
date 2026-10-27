@@ -1,0 +1,38 @@
+/* Pedagogical feedback loop: contextual attention, evaluation state and conversations. */
+.student-dashboard-feedback{border-top-color:color-mix(in srgb,var(--focus) 50%,var(--student-line-soft))}
+.student-dashboard-feedback .student-kicker{color:var(--focus)}
+
+.student-academic-attention{display:grid;grid-template-columns:minmax(190px,.34fr) minmax(0,.66fr);gap:32px;align-items:start;margin-top:26px;padding:22px 0;border-bottom:1px solid var(--student-line-soft)}
+.student-academic-attention h2{margin:5px 0 0;font-family:var(--title);font-size:28px;font-weight:500;line-height:1.05;text-transform:none}
+.student-academic-attention-list{display:grid;border-top:1px solid var(--student-line-soft)}
+.student-academic-attention-list a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:12px 0;border-bottom:1px solid var(--student-line-soft);color:var(--text);text-decoration:none}
+.student-academic-attention-list a:hover strong,.student-academic-attention-list a:focus-visible strong{text-decoration:underline;text-underline-offset:4px}
+.student-academic-attention-list strong{display:block;font-size:14px;line-height:1.35}
+.student-academic-attention-list small{display:block;margin-top:3px;color:var(--muted);font-size:12px;line-height:1.4}
+.student-academic-attention-list>a>span:last-child{font-family:var(--mono);font-size:14px}
+
+.student-review-state{margin:0 0 18px;padding:16px 0;border-top:1px solid var(--student-line-soft);border-bottom:1px solid var(--student-line-soft)}
+.student-review-state strong{display:block;font-family:var(--body);font-size:16px;font-weight:650;line-height:1.35}
+.student-review-state p{max-width:720px;margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
+.student-review-state.is-action{border-top-color:var(--focus)}
+.student-review-state.is-action strong{color:var(--focus)}
+.student-review-state.is-complete{opacity:.9}
+.student-review-thread>.student-kicker{margin-bottom:5px}
+.student-review-thread>form>.button{margin:0 0 18px}
+.student-review-thread>details{margin-top:20px;padding-top:14px;border-top:1px solid var(--student-line-soft)}
+.student-review-thread>details>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:40px;cursor:pointer;font-weight:600}
+.student-review-thread>details>summary::-webkit-details-marker{display:none}
+.student-review-thread>details>summary::after{content:'+';font:500 15px/1 var(--mono)}
+.student-review-thread>details[open]>summary::after{content:'−'}
+
+.student-evaluation-conversations{padding-bottom:26px;border-bottom:1px solid var(--student-line-soft)}
+.student-evaluation-conversations .student-field-help{max-width:760px;margin-top:-4px}
+.student-evaluation-conversations+.student-section{margin-top:30px}
+
+@media(max-width:820px){
+  .student-academic-attention{grid-template-columns:1fr;gap:16px;margin-top:22px;padding:18px 0}
+  .student-academic-attention h2{font-size:25px}
+  .student-academic-attention-list a{padding:12px 0}
+  .student-review-state{padding:14px 0}
+  .student-evaluation-conversations{padding-bottom:22px}
+}

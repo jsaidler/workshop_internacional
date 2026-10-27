@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+return static function(PDO $db): void {
+    $db->exec('CREATE TABLE admin_users (id INTEGER PRIMARY KEY AUTOINCREMENT,email TEXT NOT NULL UNIQUE,password_hash TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,last_login_at TEXT NULL); CREATE TABLE interest_submissions (id INTEGER PRIMARY KEY AUTOINCREMENT,submission_uuid TEXT NOT NULL UNIQUE,form_id TEXT NOT NULL,schema_version INTEGER NOT NULL,name TEXT NOT NULL,email TEXT NOT NULL,country TEXT NULL,payload_json TEXT NOT NULL,form_snapshot_json TEXT NOT NULL,consent INTEGER NOT NULL,ip_hash TEXT NOT NULL,user_agent_hash TEXT NOT NULL,created_at TEXT NOT NULL); CREATE TABLE submission_rate_limits (id INTEGER PRIMARY KEY AUTOINCREMENT,key_hash TEXT NOT NULL UNIQUE,window_started_at TEXT NOT NULL,attempt_count INTEGER NOT NULL,updated_at TEXT NOT NULL); CREATE TABLE site_settings (setting_key TEXT PRIMARY KEY, setting_value TEXT NOT NULL); CREATE INDEX idx_interest_created_at ON interest_submissions(created_at DESC); CREATE INDEX idx_interest_email ON interest_submissions(email);');
+};

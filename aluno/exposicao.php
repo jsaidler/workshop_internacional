@@ -1,0 +1,3 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/../app/bootstrap.php';security_headers();student_private_headers();$db=database();$student=student_account_current($db);if(!$student){header('Location: /aluno/login.php?next=%2Faluno%2Fferramentas.php%23exposicao',true,303);exit;}try{student_tool_require($db,(int)$student['id'],'exposure');}catch(Throwable){http_response_code(403);exit('Ferramenta indisponível.');}header('Location: /aluno/ferramentas.php#exposicao',true,302);exit;
