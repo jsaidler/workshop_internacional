@@ -1,5 +1,15 @@
 # Comunicações por e-mail — operação
 
+## Agendamento, caixa acadêmica e acompanhamento - 26/10/2026
+
+Uma mensagem salva pode ser agendada em **Mensagens → Revisão do envio**. O rascunho fica bloqueado até **Cancelar agendamento** ou até a liberação pelo worker. No horário previsto, o sistema recalcula matrícula, turma, seleção individual, opt-in e disponibilidade de mídia. Falha nessa validação não cria envio parcial: o painel mostra que o agendamento requer atenção e permite cancelá-lo para revisão. O botão de envio imediato não antecipa mensagens agendadas.
+
+Todo aviso acadêmico enfileirado também aparece em **Área do aluno → Notificações**. A caixa interna é persistente, tem estado de leitura por aluno e permanece disponível quando o e-mail daquele aluno está suprimido. Newsletters continuam exclusivamente no canal de e-mail e exigem opt-in.
+
+Com Brevo conectado e a URL HTTPS do site definida, **Configuração → Acompanhamento de entrega** registra o endpoint autenticado `/communications-webhook.php`. O painel diferencia aceite do provedor de entrega confirmada e mostra devoluções ou erros por destinatário. O CMS não configura rastreamento de abertura nem de clique. Hard bounce, endereço inválido, bloqueio e spam criam uma supressão local; futuras campanhas registram esse destinatário como ignorado, sem nova chamada ao provedor. Spam e descadastro também removem o opt-in promocional.
+
+O agendamento com o painel fechado e o recebimento de callbacks dependem, respectivamente, do worker CLI ativo e da acessibilidade pública HTTPS do endpoint. Testes locais e CI usam transportes simulados: não configuram webhook real, não enviam e-mails e não comprovam entregabilidade.
+
 ## Enviar agora e cancelar a fila — 22/10/2026 (PR em revisão)
 
 A aba **Avisos dos alunos** também oferece **Enviar avisos agora**, **Cancelar avisos pendentes** e **Reprocessar falhas**. O envio manual não requer cron e processa exclusivamente avisos destinados ao administrador autenticado. Usa o mesmo lock do worker agendado e um destinatário por requisição. Cancelamentos preservam histórico com estado ignorado e motivo identificado. Uma falha de transporte ou interrupção pode ocorrer depois do aceite externo; esses itens não são reenviados automaticamente, e a repetição exige confirmação expressa devido ao risco de duplicação. A página deve permanecer aberta até concluir os lotes. O cron é opcional também para avisos.
@@ -74,7 +84,8 @@ A interface de Mensagens passa a apresentar lista real de alunos elegíveis por 
 - A fila depende de um transporte ativo: o servidor da hospedagem pode enviar via PHP sem credenciais de terceiros. Se o transporte rejeitar um e-mail, a tentativa falha e permanece rastreável para nova tentativa, observados os limites.
 
 ## Limitações e decisões pendentes
-- A aplicação ainda não recebe webhooks de bounce/reclamação/cancelamento do Brevo. Não considerar taxa de entrega real medida apenas pelo recebimento da API.
+- O acompanhamento de entrega depende de Brevo, endpoint HTTPS público e configuração explícita no painel; no transporte PHP nativo permanece disponível somente o aceite local, sem callback de entrega.
+- A supressão permanece ligada ao endereço que gerou o evento. Corrigir o endereço da conta permite nova entrega sem apagar a evidência anterior; novo opt-in isolado não reabilita um endereço suprimido.
 - Os links privados para aulas não são inseridos automaticamente em e-mails para evitar circulação indevida de credenciais de reunião. O aluno obtém o URL autorizado na Agenda.
 - Não há automação para disparar newsletter no instante da criação de uma turma: o autor decide o conteúdo e confirma o envio.
 - A implantação deve ser feita pelo fluxo do CMS: merge após testes, pacote `production-dist` e instalação manual em **Admin → Sistema e atualizações**; merge ou CI isolados não representam produção atualizada.

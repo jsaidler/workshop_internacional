@@ -380,6 +380,10 @@ body.student-page{min-height:100vh;margin:0;background:var(--bg);color:var(--tex
 .student-home-notice strong{display:block;font:600 14px/1.4 var(--body);overflow-wrap:anywhere}
 .student-home-notice.is-unread strong{font-weight:700}
 .student-home-notice>span:last-child{color:var(--muted);font-size:20px}
+.student-notifications-actions{display:flex;justify-content:flex-end;margin:0 0 16px}
+.student-notification-detail{display:grid;gap:18px}
+.student-notification-detail .student-home-live-header>div{display:grid;gap:12px}
+.student-notification-body{max-width:72ch;padding:20px;border:1px solid var(--line);background:var(--surface);font:400 15px/1.7 var(--body);white-space:normal;overflow-wrap:anywhere}
 .student-home-course{padding:16px 0;border-bottom:1px solid var(--line)}
 .student-home-course-cohort{margin:0 0 4px;font:400 12px/1.4 var(--body);color:var(--muted)}
 .student-home-course-title{display:flex;gap:12px;justify-content:space-between;min-height:48px;align-items:center;text-decoration:none;color:var(--text);font:500 28px/1.08 var(--title)}

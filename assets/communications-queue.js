@@ -15,7 +15,7 @@ function feedback(message){if(status)status.textContent=message;}
 function update(summary){
   queue=summary;
   if(counter)counter.textContent=
-    summary.pending+' pendente(s) · '+summary.processing+' em processamento · '+
+    summary.pending+' pendente(s) · '+(summary.scheduled||0)+' agendada(s) · '+summary.processing+' em processamento · '+
     summary.accepted+' aceito(s) pelo provedor · '+summary.failed+
     ' falha(s) · '+summary.cancelled+' cancelado(s).';
   send.disabled=running||summary.pending===0;

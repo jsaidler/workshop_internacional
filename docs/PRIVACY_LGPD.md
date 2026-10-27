@@ -128,7 +128,13 @@ Avisos acadêmicos necessários para cursos e turmas têm finalidade distinta de
 
 Os destinatários de campanhas são derivados de matrículas atualmente elegíveis e, quando direcionados a uma turma, ouvintes confirmados desse curso. O provedor recebe somente nome, e-mail, assunto e mensagem estritamente necessários à entrega. A lista completa de alunos, CPF, experimentos e fichas nunca é transmitida ao provedor. Logs internos armazenam status, tentativas e identificador de entrega, sem persistir credenciais nem duplicar conteúdo da mensagem por destinatário. O conjunto ainda requer avaliação de retenção e contrato de tratamento de dados antes de operação real.
 
-A fila pode ser processada imediatamente por ação administrativa autenticada, sem agendamento, enquanto o painel permanece aberto; o worker agendado é opcional. O transporte utiliza Brevo configurado ou serviço PHP da hospedagem, com verificação de elegibilidade e consentimento na origem. A decisão de público permanece no site, não no provedor. É obrigatória verificação funcional do descadastro e da entregabilidade antes da primeira campanha.
+A fila pode ser processada imediatamente por ação administrativa autenticada ou liberada em data/hora previamente agendada pelo autor. O worker agendado é necessário para liberar campanhas com o painel fechado e sempre repete elegibilidade, consentimento e seleção no horário programado. O transporte utiliza Brevo configurado ou serviço PHP da hospedagem. A decisão de público permanece no site, não no provedor. É obrigatória verificação funcional do descadastro e da entregabilidade antes da primeira campanha.
+
+## Evidência de entrega, supressão e caixa acadêmica - 26/10/2026
+
+Avisos acadêmicos administrador → aluno são persistidos também em uma caixa interna vinculada a `student_users`, visível somente ao próprio aluno. Newsletter não cria item nessa caixa. O estado de leitura pertence à experiência interna e não é enviado ao provedor nem usado como métrica promocional.
+
+O webhook transacional do Brevo usa autenticação bearer derivada do segredo da instalação e aceita somente eventos correlacionados a uma entrega já registrada e ao mesmo endereço. São armazenados tipo do evento, identificador do provedor, instante e motivo curto; não há rastreamento de abertura, clique ou navegação. Eventos repetidos são idempotentes. Devolução permanente, endereço inválido, bloqueio e denúncia suprimem novas tentativas para a combinação aluno + endereço; o aviso acadêmico interno continua disponível. Um endereço corrigido não herda a supressão do anterior, cuja evidência permanece preservada. Denúncia de spam e descadastro informado pelo provedor também desativam a preferência promocional; um novo opt-in não reabilita o endereço que gerou a supressão.
 
 ## Avisos do aluno ao administrador — 21/10/2026 (em revisão)
 

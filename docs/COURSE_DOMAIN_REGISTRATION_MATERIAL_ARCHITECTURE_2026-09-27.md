@@ -224,6 +224,12 @@ A fila `communication_deliveries` grava um registro por campanha e conta (`UNIQU
 
 A escolha do transporte pertence ao serviço canônico de comunicações, não à identidade do curso ou matrícula. A fila continua isolada do fluxo transacional das ações dos alunos. O administrador pode usar o serviço nativo `mail()` do servidor sem Brevo, ou Brevo se estiver configurado. O status de entrega no CMS informa aceite, não entrega na caixa de entrada. Remetente e monitoramento de cron têm configuração operacional na interface administrativa, enquanto credenciais continuam privadas.
 
+### Agendamento, caixa acadêmica e evidência de entrega — 26/10/2026
+
+`communication_campaigns.scheduled_at` agenda a liberação de um rascunho, não congela sua audiência. O worker só pode converter uma campanha vencida em fila depois de recalcular curso, turma, seleção individual, opt-in e mídia; envio manual comum não antecipa esse instante. Falha de validação mantém o rascunho bloqueado com estado administrativamente recuperável. Cancelar o agendamento remove o bloqueio e não cria entregas.
+
+Avisos operacionais administrador → aluno criam `student_communication_inbox` para cada participante elegível no mesmo lock do enfileiramento. A entrada pertence à conta e campanha, tem leitura individual e continua acessível mesmo se o endereço estiver suprimido. Newsletter nunca entra nessa caixa. Eventos transacionais do Brevo são correlacionados a `communication_deliveries` ou `admin_student_notice_outbox`; aceite, entrega, devolução e leitura são conceitos distintos. Devolução permanente, endereço inválido, bloqueio e spam suprimem somente a combinação conta + endereço, permitindo correção cadastral sem apagar o histórico anterior.
+
 ### Brevo gerenciado pelo CMS — 22/10/2026
 
 A credencial do serviço externo pode ser cadastrada em **Admin → Comunicações**, sem acesso do autor a arquivos do servidor. A entidade de envio continua única: `communication_send_message()` obtém a credencial de armazenamento cifrado do CMS, mantendo como contingência a configuração privada legada do servidor. Validação de chave, remetente e envio de teste pertencem à administração, não às ações dos alunos. O cadastro da chave não altera consentimento, audiência, controle de matrículas, enfileiramento, isolamento de domínio ou direitos de acesso. Agendamento real da entrega permanece dependente de cron CLI na hospedagem.
