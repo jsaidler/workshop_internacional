@@ -17,6 +17,10 @@ function course_agenda_to_utc(string $local,string $tz): ?string {
     if(trim($local)==='')return null;
     return (new DateTimeImmutable($local,new DateTimeZone($tz)))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
 }
+function course_agenda_local(?string $utc,string $timezone='America/Sao_Paulo'): string {
+    if(!$utc)return '';
+    return (new DateTimeImmutable($utc))->setTimezone(new DateTimeZone($timezone))->format('Y-m-d\TH:i');
+}
 function course_agenda_safe_meeting_url(mixed $value): string {
     $v=trim((string)$value);return filter_var($v,FILTER_VALIDATE_URL) && parse_url($v,PHP_URL_SCHEME)==='https'?$v:'';
 }
@@ -56,12 +60,14 @@ SQL);
 (require dirname(__DIR__).'/migrations/108_communication_recipient_rich_body.php')($db);
 (require dirname(__DIR__).'/migrations/109_communication_email_templates.php')($db);
 (require dirname(__DIR__).'/migrations/105_communication_sender_settings.php')($db);
+(require dirname(__DIR__).'/migrations/110_premium_communications.php')($db);
 require dirname(__DIR__).'/app/course_reviews.php';
 require dirname(__DIR__).'/app/communications_brevo_credentials.php';
 require dirname(__DIR__).'/app/communications_site_url.php';
 require dirname(__DIR__).'/app/communications_rich_text.php';
 require dirname(__DIR__).'/app/communications_email_design.php';
 require dirname(__DIR__).'/app/communications.php';
+require dirname(__DIR__).'/app/communications_tracking.php';
 check_feature(communication_mail_status($db)['transport']==='brevo','configured external mail remains usable');
 $senderBefore=communication_sender_settings($db);
 check_feature($senderBefore['sender_email']==='contato@example.test','legacy sender fallback');
@@ -196,8 +202,8 @@ $recipientAudit=communication_campaign_deliveries($db,1,$pending);
 check_feature(count($recipientAudit)===2,'recipient audit shows each recipient');
 check_feature(count(array_filter($recipientAudit,static fn(array $row):bool=>$row['error_code']==='cancelled_by_admin'))===1,'audit distinguishes cancelled recipient');
 check_feature(communication_campaign_deliveries($db,2,$pending)===[],'recipient audit cannot cross CMS activity');
-check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND status='sent'")===1,'accepted message stays accepted');
-check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND error_code='cancelled_by_admin'")===1,'cancellation persists separate from other skipped messages');
+check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND status='sent'")->fetchColumn()===1,'accepted message stays accepted');
+check_feature((int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE campaign_id=$pending AND error_code='cancelled_by_admin'")->fetchColumn()===1,'cancellation persists separate from other skipped messages');
 $afterCancel=count($sent);
 check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0&&count($sent)===$afterCancel,'no duplicate send on repeated manual clicks');
 
@@ -251,5 +257,96 @@ $GLOBALS['communication_test_daily_limit']=1; // already reached: cleanup must n
 check_feature(communication_dispatch_manual($db,1,1,$fake)['sent']===0,'exhausted legacy row never sent automatically');
 check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$exhausted")->fetchColumn()==='failed','exhausted legacy row converted to failed');
 check_feature(communication_queue_summary($db,1)['pending']===0,'no permanent pending count after exhausted attempts');
+$GLOBALS['communication_test_daily_limit']=250;
+
+/* Premium scheduling, inbox, provider evidence and permanent suppression. */
+$scheduled=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Aviso programado','body_text'=>'Aula confirmada.',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+$future=course_agenda_local(gmdate('Y-m-d\TH:i:s\Z',time()+3600),'America/Sao_Paulo');
+communication_schedule_campaign($db,1,$scheduled,$future,'America/Sao_Paulo');
+check_feature(communication_campaign_is_scheduled(communication_campaign($db,1,$scheduled)),'future campaign is locked as scheduled');
+$early=false;try{communication_queue_campaign($db,1,$scheduled);}catch(RuntimeException){$early=true;}
+check_feature($early,'scheduled campaign cannot be sent early through ordinary queue');
+$db->exec("UPDATE communication_campaigns SET scheduled_at='2000-01-01T00:00:00Z' WHERE id=$scheduled");
+check_feature(communication_queue_due_campaigns($db,1)===1,'due scheduler releases one campaign');
+check_feature((int)$db->query("SELECT COUNT(*) FROM student_communication_inbox WHERE campaign_id=$scheduled")->fetchColumn()===1,'academic campaign persists in student inbox');
+$inboxId=(int)$db->query("SELECT id FROM student_communication_inbox WHERE campaign_id=$scheduled")->fetchColumn();
+check_feature(communication_student_inbox_item($db,1,$inboxId)===null,'student cannot read another student inbox item');
+check_feature(communication_student_inbox_item($db,5,$inboxId)!==null,'student can read own inbox item');
+communication_student_inbox_read($db,5,$inboxId);
+check_feature(communication_student_inbox_item($db,5,$inboxId)['read_at']!==null,'read state persists');
+communication_cancel_queue($db,1,$scheduled);
+
+$scheduleFailure=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Público alterado','body_text'=>'Validar novamente.',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+communication_schedule_campaign($db,1,$scheduleFailure,$future,'America/Sao_Paulo');
+$db->exec("UPDATE communication_campaigns SET scheduled_at='2000-01-01T00:00:00Z' WHERE id=$scheduleFailure");
+$db->exec("UPDATE course_listener_reservations SET status='waiting' WHERE student_id=5 AND cohort_id=11");
+check_feature(communication_queue_due_campaigns($db,1)===0,'changed audience blocks scheduled release');
+check_feature(trim((string)communication_campaign($db,1,$scheduleFailure)['schedule_error'])!=='','scheduled failure remains visible for remediation');
+communication_cancel_schedule($db,1,$scheduleFailure);
+$db->exec("UPDATE course_listener_reservations SET status='confirmed' WHERE student_id=5 AND cohort_id=11");
+
+$configured=[];
+$webhookId=communication_tracking_configure($db,static function(string $method,string $url,string $key,array $payload)use(&$configured):array{
+    $configured=compact('method','url','key','payload');return ['id'=>77];
+});
+check_feature($webhookId===77&&$configured['method']==='POST','delivery webhook can be configured through provider API');
+check_feature(($configured['payload']['auth']['type']??'')==='bearer'&&in_array('unsubscribed',$configured['payload']['events'],true),'webhook uses bearer authentication and lifecycle events');
+$trackedDelivery=(int)$db->query("SELECT id FROM communication_deliveries WHERE campaign_id=$selected LIMIT 1")->fetchColumn();
+$db->exec("UPDATE communication_deliveries SET provider_id='premium-message-id' WHERE id=$trackedDelivery");
+$event=['event'=>'delivered','message-id'=>'<premium-message-id>','email'=>'e@example.test','ts_event'=>1700000000];
+check_feature(communication_tracking_accept($db,$event),'authenticated provider event matches accepted delivery');
+check_feature(communication_tracking_accept($db,$event),'duplicate provider callback is harmless');
+check_feature((int)$db->query("SELECT COUNT(*) FROM communication_delivery_events WHERE delivery_id=$trackedDelivery AND provider_event='delivered'")->fetchColumn()===1,'provider event is idempotent');
+$queuedBeforeBounce=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Fila anterior à devolução','body_text'=>'Não deve sair após hard bounce.',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+communication_queue_campaign($db,1,$queuedBeforeBounce);
+$event['event']='hard_bounce';$event['ts_event']=1700000001;
+check_feature(communication_tracking_accept($db,$event),'permanent bounce is accepted');
+check_feature((int)$db->query('SELECT COUNT(*) FROM communication_email_suppressions WHERE student_id=5')->fetchColumn()===1,'permanent bounce suppresses future email');
+check_feature(communication_dispatch($db,1,$fake,1)['skipped']===1,'new suppression stops an already queued pending delivery');
+check_feature((string)$db->query("SELECT error_code FROM communication_deliveries WHERE campaign_id=$queuedBeforeBounce")->fetchColumn()==='email_suppressed','queued delivery records suppression reason');
+
+$suppressed=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Aviso com fallback','body_text'=>'Disponível também na área do aluno.',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+check_feature(communication_queue_campaign($db,1,$suppressed)===1,'suppressed student remains in academic audience');
+check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$suppressed")->fetchColumn()==='skipped','suppressed address is not sent again');
+check_feature((int)$db->query("SELECT COUNT(*) FROM student_communication_inbox WHERE campaign_id=$suppressed")->fetchColumn()===1,'suppression preserves academic inbox delivery');
+communication_dispatch($db,1,$fake,1);
+communication_set_opt_in($db,5,true);
+$suppressedNewsletter=communication_create_campaign($db,1,[
+ 'category'=>'newsletter','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Newsletter suprimida','body_text'=>'Não enviar ao endereço devolvido.',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+communication_queue_campaign($db,1,$suppressedNewsletter);
+check_feature((int)$db->query("SELECT COUNT(*) FROM student_communication_inbox WHERE campaign_id=$suppressedNewsletter")->fetchColumn()===0,'newsletter never creates academic inbox item');
+check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$suppressedNewsletter")->fetchColumn()==='skipped','newsletter respects permanent email suppression');
+communication_dispatch($db,1,$fake,1);
+$db->exec("UPDATE student_users SET email='corrected@example.test' WHERE id=5");
+$corrected=communication_create_campaign($db,1,[
+ 'category'=>'operational','course_id'=>1,'cohort_id'=>11,
+ 'subject'=>'Endereço corrigido','body_text'=>'Nova tentativa permitida.',
+ 'selection_explicit'=>1,'recipient_ids'=>[5]
+]);
+communication_queue_campaign($db,1,$corrected);
+check_feature((string)$db->query("SELECT status FROM communication_deliveries WHERE campaign_id=$corrected")->fetchColumn()==='pending','corrected address does not inherit old-address suppression');
+communication_cancel_queue($db,1,$corrected);
+
+$webhookSource=file_get_contents(dirname(__DIR__).'/communications-webhook.php');
+check_feature(str_contains($webhookSource,'communication_tracking_authorized')&&str_contains($webhookSource,"REQUEST_METHOD']??'')!=='POST'"),'public callback requires POST and bearer authorization');
 
 echo "course-comms: OK\n";

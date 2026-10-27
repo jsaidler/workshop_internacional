@@ -1,5 +1,13 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Comunicações premium: agendamento, caixa acadêmica e evidência de entrega - 26/10/2026 (branch isolada)
+
+`Admin → Comunicações → Mensagens` passa a permitir agendar um rascunho por data, hora e fuso. Enquanto agendado, conteúdo e destinatários ficam bloqueados para edição; o cancelamento devolve a mensagem ao estado editável. O worker libera apenas itens vencidos e recalcula matrícula, seleção individual, opt-in e mídia no instante do envio. Se essa validação falhar, a mensagem permanece bloqueada com erro operacional visível, sem envio parcial ou descarte silencioso. O envio manual comum não antecipa uma campanha agendada.
+
+Avisos acadêmicos enfileirados criam também uma entrada persistente em **Área do aluno → Notificações**, com leitura individual e marcação em lote. Essa caixa é restrita ao aluno destinatário e não é usada por newsletters. Assim, um endereço de e-mail permanentemente inválido não elimina o canal acadêmico interno.
+
+Quando Brevo estiver configurado, a administração pode registrar um webhook transacional autenticado por bearer token. O CMS correlaciona identificadores aceitos pelo provedor e registra eventos mínimos de entrega, devolução, bloqueio, denúncia, erro e descadastro, sem pixel de abertura ou rastreamento de clique. Hard bounce, endereço inválido, bloqueio e denúncia criam supressão local para futuros e-mails; denúncia e descadastro também revogam a preferência promocional quando aplicável. Aceite do provedor, entrega confirmada e leitura continuam estados distintos. A migração aditiva 110 preserva campanhas e entregas existentes. Nenhum webhook real, mensagem externa, merge ou instalação em produção faz parte da validação local desta branch.
+
 ## Integridade do conteúdo inicial no pacote — 26/10/2026
 
 O build de distribuição passa a gerenciar explicitamente `data/public-content.json`, `data/default-content.json` e `data/schema.json`. Esses arquivos são dependências do instalador, do validador de conteúdo e do fallback legado do editor; não podem sobreviver em `dist/` como cópias antigas não rastreadas pelo manifesto do build. A construção valida o JSON antes de substituir o pacote e mantém o `dist` anterior intacto quando qualquer documento é inválido. `tools/test-build-dist.php` prova cópia byte a byte a partir de um `dist` vazio e falha atômica para JSON inválido.

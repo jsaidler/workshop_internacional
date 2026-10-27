@@ -167,7 +167,9 @@ function student_home_feedback_notices(PDO $db,int $studentId): array {
     return $out;
 }
 function student_home_live_notices(PDO $db,int $studentId): array {
-    $notices=[...student_home_question_notices($db,$studentId),...student_home_feedback_notices($db,$studentId),...student_home_related_listener_opportunities($db,$studentId)];
+    $hasInbox=(bool)$db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='student_communication_inbox'")->fetchColumn();
+    $academic=$hasInbox&&function_exists('communication_student_inbox_notices')?communication_student_inbox_notices($db,$studentId):[];
+    $notices=[...$academic,...student_home_question_notices($db,$studentId),...student_home_feedback_notices($db,$studentId),...student_home_related_listener_opportunities($db,$studentId)];
     usort($notices,static function(array $a,array $b): int {
         $attention=(int)($b['unread']||($b['action']??false))<=>(int)($a['unread']||($a['action']??false));
         return $attention!==0?$attention:(strcmp((string)$b['at'],(string)$a['at'])?:strcmp($a['key'],$b['key']));

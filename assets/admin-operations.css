@@ -197,3 +197,7 @@
 .comms-rich-editor h2{margin:12px 0;font-size:24px}
 .comms-history-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .comms-history-actions form{margin:0}
+.comms-schedule-panel{display:grid;grid-template-columns:minmax(190px,1fr) minmax(150px,.7fr) auto;gap:12px;align-items:end;padding-top:16px;border-top:1px solid var(--admin-line)}
+.comms-schedule-panel label{display:grid;gap:7px;font-size:12px;font-weight:600;color:var(--admin-muted)}
+.comms-schedule-panel :is(input,select){width:100%;min-width:0}
+@media(max-width:720px){.comms-schedule-panel{grid-template-columns:1fr}.comms-schedule-panel .admin-button{width:100%}}

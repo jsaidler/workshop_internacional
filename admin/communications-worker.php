@@ -12,6 +12,8 @@ try{
     communication_worker_record($db,true);
     $staff=admin_student_notice_dispatch($db,$limit);
     fwrite(STDOUT,'Student alerts: '.json_encode($staff,JSON_UNESCAPED_SLASHES)."\n");
+    $scheduled=communication_queue_due_campaigns($db,null,$limit);
+    if($scheduled>0)fwrite(STDOUT,'Scheduled campaigns queued: '.$scheduled."\n");
     $queue=(int)$db->query("SELECT COUNT(*) FROM communication_deliveries WHERE status IN ('pending','processing')")->fetchColumn();
     if($queue>0){
         $result=['sent'=>0,'skipped'=>0,'failed'=>0];

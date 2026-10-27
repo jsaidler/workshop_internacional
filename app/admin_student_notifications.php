@@ -136,7 +136,9 @@ SQL;
             $change->execute(['skipped',null,'ineligible',null,utc_now(),(int)$job['id']]);$result['skipped']++;continue;
         }
         try{
-            $receipt=$sender(admin_student_notice_message($job,$target,$db));
+            $message=admin_student_notice_message($job,$target,$db);
+            $message['delivery_id']=(int)$job['id'];
+            $receipt=$sender($message);
             $change->execute(['sent',substr((string)($receipt['id']??''),0,240),null,utc_now(),utc_now(),(int)$job['id']]);
             $result['sent']++;
         }catch(Throwable $e){
@@ -194,6 +196,9 @@ function admin_student_notice_dispatch_manual(PDO $db,int $adminId,?callable $se
 }
 
 function admin_student_notice_recent(PDO $db,int $adminId): array {
-    $q=$db->prepare('SELECT event_kind,status,error_code,created_at,updated_at,sent_at FROM admin_student_notice_outbox WHERE admin_id=? ORDER BY id DESC LIMIT 10');
+    $tracked=(bool)$db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='communication_delivery_events'")->fetchColumn();
+    $provider=$tracked?"(SELECT e.provider_event FROM communication_delivery_events e WHERE e.channel='admin_notice' AND e.delivery_id=n.id ORDER BY e.happened_at DESC,e.id DESC LIMIT 1)":"NULL";
+    $q=$db->prepare("SELECT n.event_kind,n.status,n.error_code,n.created_at,n.updated_at,n.sent_at,$provider provider_event
+      FROM admin_student_notice_outbox n WHERE n.admin_id=? ORDER BY n.id DESC LIMIT 10");
     $q->execute([$adminId]);return $q->fetchAll(PDO::FETCH_ASSOC);
 }

@@ -11,11 +11,11 @@ $validTabs=['overview','alerts','campaigns','settings'];
 $tab=(string)($_GET['tab']??(isset($_GET['id'])?'campaigns':'overview'));
 if(!in_array($tab,$validTabs,true))$tab='overview';
 $actionTab=[
- 'brevo_save'=>'settings','brevo_check'=>'settings','brevo_remove'=>'settings',
+ 'brevo_save'=>'settings','brevo_check'=>'settings','brevo_remove'=>'settings','tracking_setup'=>'settings',
  'mail_settings'=>'settings','mail_test'=>'settings','site_url_save'=>'settings',
  'admin_notice_preferences'=>'alerts','admin_notice_test'=>'alerts',
   'run_alerts'=>'alerts','cancel_alerts'=>'alerts','retry_alerts'=>'alerts',
- 'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','queue_now'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns',
+ 'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','queue_now'=>'campaigns','schedule'=>'campaigns','cancel_schedule'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns',
   'run_queue'=>'campaigns','cancel_queue'=>'campaigns','cancel_campaign'=>'campaigns','retry_campaign'=>'campaigns'
 ];
 $selectedId=max(0,(int)($_POST['campaign_id']??$_GET['id']??0));
@@ -23,7 +23,8 @@ $selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
 if($selectedId && !$selected){http_response_code(404);exit('Comunicação não encontrada nesta área.');}
 $form=$selected?:[
     'category'=>'newsletter','course_id'=>max(0,(int)($_GET['course']??0)),
-    'cohort_id'=>0,'subject'=>'','body_text'=>'','body_html'=>'','template_key'=>'minimal','status'=>'draft'
+    'cohort_id'=>0,'subject'=>'','body_text'=>'','body_html'=>'','template_key'=>'minimal','status'=>'draft',
+    'scheduled_at'=>null,'schedule_timezone'=>'America/Sao_Paulo'
 ];
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
     if(!verify_csrf('communications-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Solicitação inválida.');}
@@ -41,6 +42,10 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
         }elseif($action==='brevo_check'){
             communication_brevo_check_connection($db);
             $notice='Conexão com o Brevo confirmada.';
+        }elseif($action==='tracking_setup'){
+            communication_tracking_configure($db);
+            $_SESSION['communications_notice']='Acompanhamento de entrega ativado no Brevo.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'settings']),true,303);exit;
         }elseif($action==='brevo_remove'){
             communication_brevo_remove($db);
             $_SESSION['communications_notice']='Chave salva removida. Confira o meio de envio ativo.';
@@ -129,6 +134,17 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             $id=communication_duplicate_campaign($db,$activityId,$selectedId);
             $_SESSION['communications_notice']='Cópia criada como rascunho. Confira os destinatários antes de enviar.';
             header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$id]),true,303);exit;
+        }elseif($action==='schedule'){
+            if(!$selected)throw new RuntimeException('Salve o rascunho antes de agendar.');
+            $timezone=(string)($_POST['schedule_timezone']??'America/Sao_Paulo');
+            $scheduled=communication_schedule_campaign($db,$activityId,$selectedId,(string)($_POST['scheduled_local']??''),$timezone);
+            $_SESSION['communications_notice']='Mensagem agendada para '.course_agenda_when($scheduled,$timezone).'.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='cancel_schedule'){
+            if(!$selected)throw new RuntimeException('Mensagem não encontrada.');
+            communication_cancel_schedule($db,$activityId,$selectedId);
+            $_SESSION['communications_notice']='Agendamento cancelado. A mensagem voltou a ser um rascunho editável.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
         }elseif(in_array($action,['preview','save'],true)){
             $form=[
               'category'=>(string)($_POST['category']??''),
@@ -188,6 +204,7 @@ foreach($courses as $course)foreach(course_cohorts_for_course($db,(int)$course['
 ];
 $mailSettings=communication_sender_settings($db);
 $brevoSettings=communication_brevo_public_status($db);
+$trackingStatus=communication_tracking_status($db);
 $mailStatus=communication_mail_status($db);
 $siteUrl=communication_site_url($db);
 $worker=communication_worker_status($db);
@@ -206,6 +223,7 @@ $autoAlertsRun=!empty($_SESSION['communications_alerts_auto_run']);
 $initialAlertsBatch=is_array($_SESSION['communications_alerts_initial_batch']??null)?$_SESSION['communications_alerts_initial_batch']:[];
 unset($_SESSION['communications_alerts_auto_run'],$_SESSION['communications_alerts_initial_batch']);
 $campaigns=communication_campaigns($db,$activityId);
+$isScheduled=$selected?communication_campaign_is_scheduled($selected):false;
 $selectedDeliveryRows=$selected && $selected['status']!=='draft'?communication_campaign_deliveries($db,$activityId,$selectedId):[];
 if($selected && $preview===null){
     try{$preview=count(communication_campaign_audience($db,$activityId,$selected));}
@@ -213,7 +231,7 @@ if($selected && $preview===null){
 }
 $recipientCandidates=[];
 $selectedRecipientIds=[];
-if($tab==='campaigns'&&($form['status']??'draft')==='draft'){
+if($tab==='campaigns'&&($form['status']??'draft')==='draft'&&!$isScheduled){
     try{
         $recipientCandidates=communication_audience($db,$activityId,(string)$form['category'],(int)$form['course_id'],(int)$form['cohort_id']);
         if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&isset($_POST['selection_explicit'])){
@@ -244,8 +262,8 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
 <div class="comms-workspace">
 <?php if(in_array($tab,['overview','campaigns'],true)):?>
 <section class="admin-card comms-section comms-wide" data-communications-queue data-queue-url="/admin/communications-queue.php" data-auto-run="<?=$autoQueueRun?'1':'0'?>" data-initial-sent="<?=(int)($initialQueueBatch['sent']??0)?>" data-initial-skipped="<?=(int)($initialQueueBatch['skipped']??0)?>" data-initial-failed="<?=(int)($initialQueueBatch['failed']??0)?>">
-  <header><div><h2>Fila de mensagens</h2><p>Envie quando quiser, mesmo sem agendamento no servidor.</p></div></header>
-  <p data-queue-count aria-live="polite"><strong><?=$queueSummary['pending']?></strong> pendente(s) · <?=$queueSummary['processing']?> em processamento · <?=$queueSummary['accepted']?> aceito(s) pelo provedor · <?=$queueSummary['failed']?> falha(s) · <?=$queueSummary['cancelled']?> cancelado(s).</p>
+  <header><div><h2>Fila de mensagens</h2><p>Acompanhe envios imediatos e programados.</p></div></header>
+  <p data-queue-count aria-live="polite"><strong><?=$queueSummary['pending']?></strong> pendente(s) · <?=$queueSummary['scheduled']?> agendada(s) · <?=$queueSummary['processing']?> em processamento · <?=$queueSummary['accepted']?> aceito(s) pelo provedor · <?=$queueSummary['failed']?> falha(s) · <?=$queueSummary['cancelled']?> cancelado(s).</p>
   <form method="post" class="comms-inline-actions" data-queue-form>
     <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
     <button class="admin-button" name="action" value="run_queue" type="submit"<?=$queueSummary['pending']<1?' disabled':''?> data-queue-run>Enviar agora</button>
@@ -318,6 +336,17 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <?php endif;?>
     </section>
     <section class="admin-card comms-section">
+      <header><div><h2>Acompanhamento de entrega</h2><p>Confirma entrega e registra devoluções informadas pelo Brevo.</p></div>
+        <?=admin_badge(!empty($trackingStatus['configured_at'])?'Ativo':'Pendente',!empty($trackingStatus['configured_at'])?'good':'attention')?></header>
+      <?php if(!empty($trackingStatus['last_event_at'])):?><p class="comms-detail">Último retorno recebido: <strong><?=h((string)$trackingStatus['last_event_at'])?></strong></p><?php endif;?>
+      <?php if(!empty($trackingStatus['last_error'])):?><p class="comms-attention"><?=h((string)$trackingStatus['last_error'])?></p><?php endif;?>
+      <form method="post" class="comms-form">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="action" value="tracking_setup">
+        <button type="submit" class="admin-button secondary"<?=(!$brevoSettings['configured']||$siteUrl==='')?' disabled':''?>><?=!empty($trackingStatus['configured_at'])?'Atualizar acompanhamento':'Ativar acompanhamento'?></button>
+      </form>
+    </section>
+    <section class="admin-card comms-section">
       <header><div><h2>Remetente</h2><p>Identidade exibida nas mensagens enviadas.</p></div></header>
       <form method="post" class="comms-form">
         <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
@@ -348,12 +377,12 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       </form>
     </section>
     <section class="admin-card comms-section comms-wide">
-      <header><div><h2>Envio automático (opcional)</h2><p>Para enviar manualmente, use Enviar agora em Mensagens ou Visão geral. A rotina agendada é apenas uma alternativa para processar pendências sem manter a página aberta.</p></div></header>
+      <header><div><h2>Processamento automático</h2><p>Use Enviar agora para o fluxo manual. Para liberar mensagens agendadas e processar pendências com o painel fechado, mantenha a rotina da hospedagem ativa.</p></div></header>
       <div class="comms-automation">
         <p><strong>Última execução:</strong> <?=$workerLast?h((string)$workerLast):'Nenhuma registrada'?></p>
         <p><strong>Na fila:</strong> <?=$staffQueueCount?> avisos e <?=$mailQueueCount?> mensagens.</p>
       </div>
-      <?php if(!$workerActive):?><p class="comms-attention"><?=$workerLast?'A rotina automática não executou recentemente.':'Nenhuma execução automática identificada.'?> Se desejar entregas periódicas sem abrir o painel, configure o agendamento na hospedagem.</p><?php endif;?>
+      <?php if(!$workerActive):?><p class="comms-attention"><?=$workerLast?'A rotina automática não executou recentemente.':'Nenhuma execução automática identificada.'?> Mensagens programadas não serão liberadas no horário com o painel fechado até configurar a rotina na hospedagem.</p><?php endif;?>
     </section>
   </div>
 <?php elseif($tab==='alerts'):?>
@@ -400,6 +429,7 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <?php foreach($adminNoticeHistory as $row):?>
       <tr><td><?=h(admin_student_notice_kinds()[(string)$row['event_kind']]??(string)$row['event_kind'])?></td>
         <td><?=h(($row['error_code']??null)==='cancelled_by_admin'?'Cancelado':(['pending'=>'Na fila','processing'=>'Processando','sent'=>'Aceito para envio','skipped'=>'Ignorado','failed'=>'Falha'][$row['status']]??(string)$row['status']))?>
+         <?php if(($row['provider_event']??null)!==null):?><small class="muted"><?=h(['delivered'=>'Entregue','hard_bounce'=>'Devolução permanente','soft_bounce'=>'Devolução temporária','blocked'=>'Bloqueado','spam'=>'Marcado como spam','invalid_email'=>'E-mail inválido','error'=>'Erro do provedor','unsubscribed'=>'Assinatura cancelada'][$row['provider_event']]??(string)$row['provider_event'])?></small><?php endif;?>
          <?php if(($row['error_code']??null)!==null):?>
          <small class="muted"><?=h(['transport_failure'=>'O serviço não confirmou o envio','processing_outcome_unknown'=>'Resultado incerto após interrupção','attempts_exhausted'=>'Tentativas esgotadas','cancelled_by_admin'=>'Cancelado pelo administrador','ineligible'=>'Destinatário não elegível'][$row['error_code']]??'Falha registrada')?></small>
          <?php endif;?></td>
@@ -414,9 +444,9 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <?php if($selectedId):?><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Nova mensagem</a><?php endif;?>
   </div>
   <section class="admin-card comms-section" data-communication-composer data-email-media-url="/admin/communications-media.php" data-email-csrf="<?=h(csrf_token('communications-admin'))?>" data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
-    <header><div><h2><?=($selectedId?((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId):'Nova mensagem')?></h2>
-    <p><?=h((string)(($form['status']??'draft')==='draft'?'Rascunho':(($form['status']??'')==='queued'?'Aguardando processamento':'Processamento encerrado')))?></p></div></header>
-    <?php if(($form['status']??'draft')==='draft'):?>
+    <header><div><h2><?=($selectedId?($isScheduled?'Mensagem agendada':((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId)):'Nova mensagem')?></h2>
+    <p><?=h((string)($isScheduled?'Envio programado':(($form['status']??'draft')==='draft'?'Rascunho':(($form['status']??'')==='queued'?'Aguardando processamento':'Processamento encerrado'))))?></p></div></header>
+    <?php if(($form['status']??'draft')==='draft'&&!$isScheduled):?>
     <form method="post" class="comms-compose-form" data-composer-form>
       <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
       <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
@@ -518,9 +548,19 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
       <?php if($renderedEmailPreview!==''):?>
       <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h($renderedEmailPreview)?>"></iframe></div>
       <?php else:?><p class="comms-attention">A prévia não está disponível. Verifique as imagens e o endereço do site.</p><?php endif;?>
-    <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila. Use Enviar agora para processá-la sem depender do servidor agendado.':'O processamento desta mensagem foi concluído.')?></p>
+    <?php if($isScheduled):?>
+      <?php if(trim((string)($form['schedule_error']??''))!==''):?><p class="comms-attention"><strong>O envio agendado precisa de atenção.</strong> <?=h((string)$form['schedule_error'])?> Cancele o agendamento, revise os destinatários e agende novamente.</p><?php endif;?>
+      <p class="comms-attention"><strong>Envio agendado:</strong> <?=h(course_agenda_when((string)$form['scheduled_at'],(string)$form['schedule_timezone']))?>. A audiência e o consentimento serão conferidos novamente nesse momento.</p>
+      <form method="post" class="comms-inline-actions">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+        <button type="submit" class="admin-button secondary" name="action" value="cancel_schedule" data-confirm="Cancelar este agendamento e devolver a mensagem aos rascunhos?">Cancelar agendamento</button>
+      </form>
+    <?php else:?>
+      <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila. Use Enviar agora para processá-la sem depender do servidor agendado.':'O processamento desta mensagem foi concluído.')?></p>
     <?php endif;?>
-    <?php if($preview!==null && ($form['status']??'draft')==='draft'):?>
+    <?php endif;?>
+    <?php if($preview!==null && ($form['status']??'draft')==='draft'&&!$isScheduled):?>
     <section class="comms-send-review" aria-labelledby="send-review-title">
       <header><h3 id="send-review-title">Revisão do envio</h3><p><strong><?=$preview?></strong> destinatário(s) selecionado(s) e elegível(is).</p></header>
       <p><strong><?=h((string)$form['subject'])?></strong></p>
@@ -536,6 +576,21 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
         <button type="submit" class="admin-button" name="action" value="queue_now"<?=$preview===0?' disabled':''?> data-confirm="Confirmar e iniciar agora o envio aos destinatários selecionados e elegíveis? Os demais envios pendentes também serão processados.">Confirmar e enviar agora</button>
         <button type="submit" class="admin-button secondary" name="action" value="queue"<?=$preview===0?' disabled':''?> data-confirm="Confirmar e colocar na fila sem iniciar o processamento agora?">Somente colocar na fila</button>
       </form>
+      <form method="post" class="comms-schedule-panel">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+        <label>Data e hora
+          <input type="datetime-local" name="scheduled_local" value="<?=h(course_agenda_local(gmdate('Y-m-d\TH:i:s\Z',time()+86400),'America/Sao_Paulo'))?>" required>
+        </label>
+        <label>Fuso horário
+          <select name="schedule_timezone">
+            <?php foreach(['America/Sao_Paulo'=>'Brasília','America/Manaus'=>'Manaus','America/Recife'=>'Recife','America/Fortaleza'=>'Fortaleza','Europe/Lisbon'=>'Lisboa','UTC'=>'UTC'] as $zone=>$label):?>
+              <option value="<?=h($zone)?>"><?=h($label)?></option>
+            <?php endforeach;?>
+          </select>
+        </label>
+        <button type="submit" class="admin-button secondary" name="action" value="schedule"<?=$preview===0?' disabled':''?> data-confirm="Agendar esta mensagem? A elegibilidade será verificada novamente na hora do envio.">Agendar envio</button>
+      </form>
       <?php else:?><p class="muted">Salve o rascunho para confirmar o envio.</p><?php endif;?>
     </section>
     <?php endif;?>
@@ -547,21 +602,25 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
   <?php
     $deliveryLabels=['pending'=>'Na fila','processing'=>'Processando','sent'=>'Aceito pelo serviço',
       'skipped'=>'Ignorado','failed'=>'Falha'];
+    $providerLabels=['delivered'=>'Entregue','hard_bounce'=>'Devolução permanente','soft_bounce'=>'Devolução temporária',
+      'blocked'=>'Bloqueado','spam'=>'Marcado como spam','invalid_email'=>'E-mail inválido','error'=>'Erro do provedor','unsubscribed'=>'Assinatura cancelada'];
     $errorLabels=['cancelled_by_admin'=>'Cancelado pelo administrador',
       'no_longer_eligible'=>'Destinatário deixou de ser elegível',
       'provider_failure'=>'Serviço de envio não confirmou a mensagem',
       'media_unavailable'=>'Imagem indisponível',
       'audience_validation_error'=>'Não foi possível verificar a audiência',
+      'email_suppressed'=>'E-mail suprimido após devolução permanente ou denúncia',
       'processing_outcome_unknown'=>'Resultado incerto após interrupção',
       'processing_timeout'=>'Processamento interrompido'];
   ?>
   <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list">
-    <thead><tr><th>Destinatário</th><th>Situação</th><th>Tentativas</th><th>Atualização</th></tr></thead><tbody>
+    <thead><tr><th>Destinatário</th><th>Situação</th><th>Entrega</th><th>Tentativas</th><th>Atualização</th></tr></thead><tbody>
     <?php foreach($selectedDeliveryRows as $delivery):?>
     <tr>
       <td data-primary="true"><strong><?=h((string)$delivery['name'])?></strong><small><?=h((string)$delivery['email'])?></small></td>
       <td><?=h($delivery['error_code']==='cancelled_by_admin'?'Cancelado':($deliveryLabels[$delivery['status']]??$delivery['status']))?>
       <?php if($delivery['error_code']!==null):?><small class="muted"><?=h($errorLabels[$delivery['error_code']]??'Falha ou restrição registrada')?></small><?php endif;?></td>
+      <td><?=h($delivery['provider_event']!==null?($providerLabels[$delivery['provider_event']]??(string)$delivery['provider_event']):'Sem retorno')?></td>
       <td><?=(int)$delivery['attempts']?></td>
       <td><?=h((string)$delivery['updated_at'])?></td>
     </tr>
@@ -578,14 +637,19 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
     <?php foreach($campaigns as $campaign):?><tr>
       <td data-primary="true"><?=h((string)$campaign['subject'])?></td>
       <td><?=h($campaign['category']==='newsletter'?'Newsletter':'Aviso de curso')?></td>
-      <td><?=h($campaign['status']==='completed' && (int)$campaign['cancelled_count']>0
+      <td><?=h(communication_campaign_is_scheduled($campaign)
+          ? (trim((string)($campaign['schedule_error']??''))!==''?'Agendamento requer atenção':'Agendada para '.course_agenda_when((string)$campaign['scheduled_at'],(string)$campaign['schedule_timezone']))
+          : ($campaign['status']==='completed' && (int)$campaign['cancelled_count']>0
           ? ((int)$campaign['cancelled_count']===(int)$campaign['audience_count']?'Cancelada':'Parcialmente cancelada')
           : ($campaign['status']==='completed' && (int)$campaign['failed_count']>0
             ? 'Processada com falhas'
-            : (['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status'])))?></td>
+            : (['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status']))))?></td>
       <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?>
         <?php if((int)$campaign['cancelled_count']>0 || (int)$campaign['failed_count']>0):?>
           <small class="muted">· <?=(int)$campaign['cancelled_count']?> cancelado(s) · <?=(int)$campaign['failed_count']?> falha(s)</small>
+        <?php endif;?>
+        <?php if((int)$campaign['delivered_count']>0 || (int)$campaign['bounced_count']>0):?>
+          <small class="muted">· <?=(int)$campaign['delivered_count']?> entregue(s) · <?=(int)$campaign['bounced_count']?> devolvido(s)</small>
         <?php endif;?>
       </td>
       <td data-actions="true"><div class="comms-history-actions">
@@ -604,6 +668,12 @@ admin_shell_start('communications','Comunicações',$state,['/assets/admin-opera
         <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
           <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
           <button type="submit" name="action" value="cancel_campaign" class="admin-button secondary" data-confirm="Cancelar apenas os envios ainda pendentes desta mensagem?">Cancelar pendentes</button>
+        </form>
+        <?php endif;?>
+        <?php if(communication_campaign_is_scheduled($campaign)):?>
+        <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+          <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
+          <button type="submit" name="action" value="cancel_schedule" class="admin-button secondary" data-confirm="Cancelar este agendamento?">Cancelar agendamento</button>
         </form>
         <?php endif;?>
       </div></td>

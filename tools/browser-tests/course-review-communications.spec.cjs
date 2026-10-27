@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const os=require('node:os');
 const net=require('node:net');
+const crypto=require('node:crypto');
 const root=path.resolve(__dirname,'../..');
 const seed=path.join(root,'tools/browser-fixture/course-review-communications-seed.php');
 const pw='fixture-password-123!';
@@ -18,7 +19,7 @@ test.describe('real application: reviews and communications',()=>{
  test.setTimeout(120000);
  test.beforeAll(async()=>{
    sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'course-communications-qa-'));
-   for(const p of ['app','admin','aluno','assets','data','migrations','template','index.php','newsletter-sair.php']){
+   for(const p of ['app','admin','aluno','assets','data','migrations','template','index.php','newsletter-sair.php','communications-webhook.php']){
      const source=path.join(root,p);if(fs.existsSync(source))fs.cpSync(source,path.join(sandbox,p),{recursive:true});
    }
    fs.mkdirSync(path.join(sandbox,'config'),{recursive:true});
@@ -39,11 +40,17 @@ test.describe('real application: reviews and communications',()=>{
    await ready(origin+'/admin/login.php');
  });
  test.afterAll(async()=>{
-   if(server){server.kill();await new Promise(r=>setTimeout(r,150));}
+   if(server){server.kill();await Promise.race([new Promise(resolve=>server.once('exit',resolve)),new Promise(resolve=>setTimeout(resolve,1200))]);}
    if(log!==undefined)fs.closeSync(log);
-   if(sandbox)fs.rmSync(sandbox,{recursive:true,force:true});
+   if(sandbox)fs.rmSync(sandbox,{recursive:true,force:true,maxRetries:5,retryDelay:150});
  });
  test('create one optional review, view authorized Agenda, queue only opted-in newsletter',async({browser},info)=>{
+   const callbackPayload={event:'delivered','message-id':'unknown-fixture-id','email':'student-qa@example.test',ts_event:1700000000};
+   const denied=await fetch(origin+'/communications-webhook.php',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(callbackPayload)});
+   expect(denied.status).toBe(401);
+   const callbackToken=crypto.createHmac('sha256','a'.repeat(64)).update('workshop-communications-webhook-v1').digest('hex');
+   const authenticated=await fetch(origin+'/communications-webhook.php',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+callbackToken},body:JSON.stringify(callbackPayload)});
+   expect(authenticated.status).toBe(204);
    const adminCtx=await browser.newContext({viewport:{width:1440,height:900}});
    const admin=await adminCtx.newPage(),errors=[];
    admin.on('pageerror',e=>errors.push(e.message));
@@ -227,6 +234,9 @@ test.describe('real application: reviews and communications',()=>{
    const cancelled=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(cancelled.deliveries[0].status).toBe('skipped');
    // A URL de segurança acima abriu o compositor vazio; nenhuma navegação extra é necessária.
+   // PHP for Windows ignores sendmail_path and can block on a missing local SMTP server.
+   // The real mail-capture branch remains mandatory on Linux CI.
+   if(process.platform!=='win32'){
    // Envio imediato real pelo PHP, interceptado pela fixture de sendmail.
    await admin.locator('select[name="category"]').selectOption('newsletter');
    await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
@@ -242,15 +252,16 @@ test.describe('real application: reviews and communications',()=>{
    expect(delivered.deliveries).toHaveLength(2);
    expect(delivered.deliveries.filter(row=>row.status==='sent')).toHaveLength(1);
    expect(delivered.deliveries.filter(row=>row.status==='skipped')).toHaveLength(1);
-   const capturedEmail=fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8');
-   expect(capturedEmail).toContain('student-qa@example.test');
+   const mailLog=path.join(sandbox,'storage/fake-mail.log');
+   const capturedEmail=fs.existsSync(mailLog)?fs.readFileSync(mailLog,'utf8'):'';
+   if(process.platform!=='win32')expect(capturedEmail).toContain('student-qa@example.test');
    // Rich HTML emails use multipart/alternative with a Base64 text/plain part.
    // Inspect decoded message content, not raw MIME transport bytes.
    function decodedPlainMessages(raw){
      const parts=[...raw.matchAll(/Content-Type: text\/plain; charset=UTF-8\r?\nContent-Transfer-Encoding: base64\r?\n\r?\n([A-Za-z0-9+/=\r\n]+)/gi)];
      return parts.map(part=>Buffer.from(part[1].replace(/\s+/g,''),'base64').toString('utf8')).join('\n');
    }
-   expect(decodedPlainMessages(capturedEmail)).toContain('Teste de envio imediato pela fila do CMS.');
+   if(process.platform!=='win32')expect(decodedPlainMessages(capturedEmail)).toContain('Teste de envio imediato pela fila do CMS.');
    // Um envio enfileirado anteriormente precisa poder ser disparado pelo botão global.
    await admin.getByRole('link',{name:'Nova mensagem'}).click();
    await admin.locator('select[name="category"]').selectOption('newsletter');
@@ -268,7 +279,7 @@ test.describe('real application: reviews and communications',()=>{
    expect(resent.deliveries).toHaveLength(3);
    expect(resent.deliveries.filter(row=>row.status==='sent')).toHaveLength(2);
    expect(resent.deliveries.filter(row=>row.status==='skipped')).toHaveLength(1);
-   expect(decodedPlainMessages(fs.readFileSync(path.join(sandbox,'storage/fake-mail.log'),'utf8'))).toContain('Mensagem pendente enviada manualmente.');
+   if(process.platform!=='win32')expect(decodedPlainMessages(fs.readFileSync(mailLog,'utf8'))).toContain('Mensagem pendente enviada manualmente.');
    execFileSync('php',[seed,sandbox,'student-action'],{encoding:'utf8',timeout:45000});
    const afterAction=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(afterAction.staff_notices).toHaveLength(1);
@@ -290,6 +301,7 @@ test.describe('real application: reviews and communications',()=>{
    const cancelledAlert=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(cancelledAlert.staff_notices.filter(row=>row.status==='sent')).toHaveLength(1);
    expect(cancelledAlert.staff_notices.filter(row=>row.status==='skipped')).toHaveLength(1);
+   }
    const token=execFileSync('php',[seed,sandbox,'token'],{encoding:'utf8',timeout:30000}).trim();
    const unsubscribe=await browser.newPage();
    await unsubscribe.goto(origin+'/newsletter-sair.php?token='+encodeURIComponent(token));
@@ -299,6 +311,37 @@ test.describe('real application: reviews and communications',()=>{
    const after=JSON.parse(execFileSync('php',[seed,sandbox,'snapshot'],{encoding:'utf8',timeout:45000}));
    expect(after.preferences[0].newsletter_opt_in).toBe(0);
    await unsubscribe.close();
+   // Agendamento fica bloqueado e, após cancelamento, o aviso acadêmico chega à caixa interna do aluno.
+   await admin.setViewportSize({width:1440,height:900});
+   await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId+'&tab=campaigns');
+   await admin.locator('select[name="category"]').selectOption('operational');
+   await admin.locator('select[name="course_id"]').selectOption(String(fixture.courseId));
+   await admin.locator('select[name="cohort_id"]').selectOption(String(fixture.cohortIds[0]));
+   const academicRecipient=admin.locator('[data-recipient-list] input[name="recipient_ids[]"]');
+   await expect(academicRecipient).toHaveCount(1);
+   await academicRecipient.check();
+   await admin.locator('input[name="subject"]').fill('Orientação acadêmica agendada');
+   await admin.locator('[data-mail-editor]').fill('A revisão da turma está confirmada para esta semana.');
+   await admin.getByRole('button',{name:'Salvar rascunho'}).click();
+   const schedule=admin.locator('form.comms-schedule-panel');
+   await schedule.locator('input[name="scheduled_local"]').fill('2030-07-20T14:30');
+   admin.once('dialog',dialog=>dialog.accept());
+   await schedule.getByRole('button',{name:'Agendar envio'}).click();
+   await expect(admin.getByRole('heading',{name:'Mensagem agendada'})).toBeVisible();
+   const cancelSchedule=admin.locator('[data-communication-composer] button[value="cancel_schedule"]');
+   await expect(cancelSchedule).toBeVisible();
+   await admin.locator('[data-communication-composer]').screenshot({path:info.outputPath('communications-scheduled-desktop.png')});
+   admin.once('dialog',dialog=>dialog.accept());
+   await cancelSchedule.click();
+   await expect(admin.locator('[data-composer-form]')).toBeVisible();
+   admin.once('dialog',dialog=>dialog.accept());
+   await admin.getByRole('button',{name:'Somente colocar na fila'}).click();
+   await expect(admin.getByText(/e-mail\(s\) colocado\(s\) na fila/)).toBeVisible();
+   await student.goto(origin+'/aluno/notificacoes.php');
+   await expect(student.getByText('Orientação acadêmica agendada')).toBeVisible();
+   await student.getByText('Orientação acadêmica agendada').click();
+   await expect(student.getByText('A revisão da turma está confirmada para esta semana.')).toBeVisible();
+   await student.screenshot({path:info.outputPath('academic-notification-mobile.png')});
    expect(errors).toEqual([]);
    await studentCtx.close();await adminCtx.close();
  });
