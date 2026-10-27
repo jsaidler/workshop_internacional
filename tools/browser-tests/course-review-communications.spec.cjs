@@ -92,6 +92,11 @@ test.describe('real application: reviews and communications',()=>{
    await expect(communicationPreferences.locator('select[name="newsletter_frequency"]')).toHaveValue('weekly');
    await communicationPreferences.scrollIntoViewIfNeeded();
    await student.screenshot({path:info.outputPath('communication-preferences-mobile.png')});
+   // The delivery scenario below intentionally sends two manual newsletters in
+   // sequence, so restore an immediate cadence after proving weekly persistence.
+   await communicationPreferences.locator('select[name="newsletter_frequency"]').selectOption('immediate');
+   await communicationPreferences.getByRole('button',{name:'Salvar preferência'}).click();
+   await expect(communicationPreferences.locator('select[name="newsletter_frequency"]')).toHaveValue('immediate');
    await admin.goto(origin+'/admin/communications.php?activity='+fixture.activityId);
    await expect(admin.getByRole('heading',{name:'Campanhas, avisos e entrega em um só lugar'})).toBeVisible();
    await expect(admin.locator('.comms-command-status > div')).toHaveCount(4);
