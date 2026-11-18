@@ -1,0 +1,895 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/../app/bootstrap.php';
+require __DIR__.'/../app/admin_shell.php';
+security_headers();require_admin();
+header('Cache-Control: private, no-store, max-age=0');
+$db=database();$state=admin_activity_resolution($db);$activity=$state['activity'];
+if(!$activity){header('Location: /admin/activities.php',true,303);exit;}
+$activityId=(int)$activity['id'];$error='';$preview=null;$notice='';
+$validTabs=['overview','campaigns','audiences','automations','governance','alerts','settings'];
+$tab=(string)($_GET['tab']??(isset($_GET['id'])?'campaigns':'overview'));
+if(!in_array($tab,$validTabs,true))$tab='overview';
+$actionTab=[
+ 'brevo_save'=>'settings','brevo_check'=>'settings','brevo_remove'=>'settings','tracking_setup'=>'settings',
+ 'mail_settings'=>'settings','mail_test'=>'settings','site_url_save'=>'settings',
+ 'admin_notice_preferences'=>'alerts','admin_notice_test'=>'alerts',
+  'run_alerts'=>'alerts','cancel_alerts'=>'alerts','retry_alerts'=>'alerts',
+ 'preview'=>'campaigns','save'=>'campaigns','queue'=>'campaigns','queue_now'=>'campaigns','schedule'=>'campaigns','cancel_schedule'=>'campaigns','test'=>'campaigns','duplicate'=>'campaigns',
+  'run_queue'=>'campaigns','cancel_queue'=>'campaigns','cancel_campaign'=>'campaigns','retry_campaign'=>'campaigns',
+  'request_approval'=>'campaigns','approve_campaign'=>'campaigns','reject_campaign'=>'campaigns','template_from_campaign'=>'campaigns','template_apply'=>'campaigns',
+  'segment_save'=>'audiences','journey_save'=>'automations','journey_step_save'=>'automations','journey_status'=>'automations',
+  'diagnostics_run'=>'governance'
+];
+$selectedId=max(0,(int)($_POST['campaign_id']??$_GET['id']??0));
+$selected=$selectedId?communication_campaign($db,$activityId,$selectedId):null;
+if($selectedId && !$selected){http_response_code(404);exit('Comunicação não encontrada nesta área.');}
+$form=$selected?:[
+    'category'=>'newsletter','course_id'=>max(0,(int)($_GET['course']??0)),
+    'cohort_id'=>0,'subject'=>'','body_text'=>'','body_html'=>'','template_key'=>'minimal','status'=>'draft',
+    'preheader'=>'','segment_id'=>0,'priority'=>50,'goal_key'=>'','approval_status'=>'draft',
+    'scheduled_at'=>null,'schedule_timezone'=>'America/Sao_Paulo'
+];
+if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+    if(!verify_csrf('communications-admin',$_POST['_csrf']??null)){http_response_code(403);exit('Solicitação inválida.');}
+    $action=(string)($_POST['action']??'');
+    $tab=$actionTab[$action]??$tab;
+    try{
+        $actingAdminId=(int)(current_admin()['id']??0);
+        if($action==='segment_save'){
+            $id=communication_segment_save($db,$activityId,max(0,(int)($_POST['segment_id']??0)),$_POST,$actingAdminId);
+            $_SESSION['communications_notice']='Segmento salvo e audiência recalculada.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'audiences','segment'=>$id]),true,303);exit;
+        }elseif($action==='journey_save'){
+            $id=communication_journey_save($db,$activityId,max(0,(int)($_POST['journey_id']??0)),$_POST,$actingAdminId);
+            $_SESSION['communications_notice']='Jornada salva como rascunho.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'automations','journey'=>$id]),true,303);exit;
+        }elseif($action==='journey_step_save'){
+            $journeyId=max(0,(int)($_POST['journey_id']??0));communication_journey_step_save($db,$activityId,$journeyId,$_POST,$actingAdminId);
+            $_SESSION['communications_notice']='Etapa da jornada salva.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'automations','journey'=>$journeyId]),true,303);exit;
+        }elseif($action==='journey_status'){
+            $journeyId=max(0,(int)($_POST['journey_id']??0));communication_journey_set_status($db,$activityId,$journeyId,(string)($_POST['status']??''),$actingAdminId);
+            $_SESSION['communications_notice']='Estado da jornada atualizado.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'automations','journey'=>$journeyId]),true,303);exit;
+        }elseif($action==='request_approval'){
+            communication_campaign_request_approval($db,$activityId,$selectedId,$actingAdminId);$_SESSION['communications_notice']='Mensagem enviada para aprovação.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='approve_campaign'||$action==='reject_campaign'){
+            communication_campaign_decide_approval($db,$activityId,$selectedId,$actingAdminId,$action==='approve_campaign',(string)($_POST['approval_note']??''));
+            $_SESSION['communications_notice']=$action==='approve_campaign'?'Mensagem aprovada para agendamento ou envio.':'Mensagem devolvida para revisão.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='template_from_campaign'){
+            communication_template_save_from_campaign($db,$activityId,$selectedId,(string)($_POST['template_name']??''),$actingAdminId);$_SESSION['communications_notice']='Template reutilizável criado.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='template_apply'){
+            communication_template_apply_to_campaign($db,$activityId,$selectedId,max(0,(int)($_POST['template_id']??0)),$actingAdminId);$_SESSION['communications_notice']='Template aplicado. Revise a mensagem e solicite uma nova aprovação.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='diagnostics_run'){
+            communication_domain_diagnostics($db,$actingAdminId,(string)($_POST['dkim_selector']??''));$_SESSION['communications_notice']='Diagnóstico do domínio atualizado.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'governance']),true,303);exit;
+        }elseif($action==='site_url_save'){
+            communication_site_url_save($db,(string)($_POST['public_url']??''));
+            $_SESSION['communications_notice']='Endereço do site salvo.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'settings']),true,303);exit;
+        }elseif($action==='brevo_save'){
+            communication_brevo_save($db,(string)($_POST['brevo_api_key']??''));
+            $_SESSION['communications_notice']='Brevo conectado. A chave foi salva com segurança.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>$tab]),true,303);exit;
+        }elseif($action==='brevo_check'){
+            communication_brevo_check_connection($db);
+            $notice='Conexão com o Brevo confirmada.';
+        }elseif($action==='tracking_setup'){
+            communication_tracking_configure($db);
+            $_SESSION['communications_notice']='Acompanhamento de entrega ativado no Brevo.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'settings']),true,303);exit;
+        }elseif($action==='brevo_remove'){
+            communication_brevo_remove($db);
+            $_SESSION['communications_notice']='Chave salva removida. Confira o meio de envio ativo.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>$tab]),true,303);exit;
+        }elseif($action==='mail_settings'){
+            communication_sender_save($db,$_POST);
+            $_SESSION['communications_notice']='Remetente salvo. Envie um teste para confirmar o funcionamento.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>$tab]),true,303);exit;
+        }elseif($action==='mail_test'){
+            $admin=current_admin();$email=(string)($admin['email']??'');
+            if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('A conta administrativa não tem um endereço de e-mail válido.');
+            communication_send_message($db,[
+              'name'=>$email,'email'=>$email,'subject'=>'[TESTE] Envio de e-mails do site',
+              'body'=>"Mensagem de verificação do sistema de e-mail.\n\nSe você recebeu este teste, o envio para sua conta está funcionando."
+            ]);
+            $notice='O servidor aceitou a mensagem de teste. Confira sua caixa de entrada e a pasta de spam.';
+        }elseif($action==='run_alerts'){
+            $adminId=(int)(current_admin()['id']??0);
+            if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+            $batch=admin_student_notice_dispatch_manual($db,$adminId);
+            if(empty($batch['busy'])){
+                $_SESSION['communications_alerts_auto_run']=true;
+                $_SESSION['communications_alerts_initial_batch']=$batch;
+            }
+            $_SESSION['communications_notice']=!empty($batch['busy'])
+                ?'Outro processamento está em andamento. Tente novamente.'
+                :'Envio dos avisos iniciado: '.(int)$batch['sent'].' aceito(s) neste primeiro lote.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'alerts']),true,303);exit;
+        }elseif($action==='cancel_alerts'){
+            $adminId=(int)(current_admin()['id']??0);
+            if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+            $count=admin_student_notice_cancel_pending($db,$adminId);
+            $_SESSION['communications_notice']=$count.' aviso(s) pendente(s) cancelado(s), preservando o histórico.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'alerts']),true,303);exit;
+        }elseif($action==='retry_alerts'){
+            $adminId=(int)(current_admin()['id']??0);
+            if($adminId<1)throw new RuntimeException('Administrador não identificado.');
+            $count=admin_student_notice_retry_failed($db,$adminId);
+            if($count===0)throw new RuntimeException('Não há avisos com falha para reprocessar.');
+            $batch=admin_student_notice_dispatch_manual($db,$adminId);
+            if(empty($batch['busy'])){
+                $_SESSION['communications_alerts_auto_run']=true;
+                $_SESSION['communications_alerts_initial_batch']=$batch;
+            }
+            $_SESSION['communications_notice']=$count.' aviso(s) com falha recolocado(s) na fila após sua confirmação.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'alerts']),true,303);exit;
+        }elseif($action==='admin_notice_preferences'){
+            $adminId=(int)(current_admin()['id']??0);
+            admin_student_notice_set_preferences($db,$adminId,is_array($_POST['alerts']??null)?$_POST['alerts']:[]);
+            $_SESSION['communications_notice']='Preferências dos avisos atualizadas.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>$tab]),true,303);exit;
+        }elseif($action==='admin_notice_test'){
+            $email=(string)(current_admin()['email']??'');
+            if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('O e-mail da sua conta administrativa é inválido.');
+            admin_student_notice_send(['name'=>$email,'email'=>$email,
+               'subject'=>'[TESTE] Avisos de atividades de alunos',
+               'body'=>"Este é um teste do canal de avisos das ações dos alunos.\n\nO envio deste teste não corresponde a uma ação real."]);
+            $notice='E-mail de teste aceito pelo mecanismo de envio. Confira sua caixa de entrada.';
+        }elseif($action==='run_queue'){
+            $batch=communication_dispatch_manual($db,$activityId,1);
+            $summary=communication_queue_summary($db,$activityId);
+            if(empty($batch['busy'])){$_SESSION['communications_auto_run']=true;$_SESSION['communications_initial_batch']=$batch;}
+            $_SESSION['communications_notice']=!empty($batch['busy'])
+                ?'Outro envio está em andamento. A fila permanece preservada.'
+                :'Lote processado: '.(int)$batch['sent'].' aceito(s), '.(int)$batch['skipped'].' ignorado(s) e '.(int)$batch['failed'].' falha(s). Restam '.(int)$summary['pending'].' pendente(s).';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns']),true,303);exit;
+        }elseif($action==='cancel_queue'){
+            $count=communication_cancel_queue($db,$activityId);
+            $_SESSION['communications_notice']=$count.' envio(s) pendente(s) cancelado(s). Mensagens já em processamento ou aceitas pelo provedor não podem ser canceladas.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns']),true,303);exit;
+        }elseif($action==='cancel_campaign'){
+            if(!$selected)throw new RuntimeException('Mensagem não encontrada.');
+            $count=communication_cancel_queue($db,$activityId,$selectedId);
+            $_SESSION['communications_notice']=$count.' envio(s) pendente(s) cancelado(s) desta mensagem. Envios já aceitos não foram alterados.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='retry_campaign'){
+            if(!$selected)throw new RuntimeException('Mensagem não encontrada.');
+            $count=communication_retry_failed($db,$activityId,$selectedId);
+            if($count===0)throw new RuntimeException('Não há falhas pendentes de reprocessamento nesta mensagem.');
+            $batch=communication_dispatch_manual($db,$activityId,1);
+            if(empty($batch['busy'])){$_SESSION['communications_auto_run']=true;$_SESSION['communications_initial_batch']=$batch;}
+            $_SESSION['communications_notice']=$count.' destinatário(s) com falha recolocado(s) na fila após sua confirmação. '.(int)$batch['sent'].' aceito(s) no primeiro lote.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='duplicate'){
+            if(!$selected)throw new RuntimeException('Selecione uma mensagem para duplicar.');
+            $id=communication_duplicate_campaign($db,$activityId,$selectedId);
+            $_SESSION['communications_notice']='Cópia criada como rascunho. Confira os destinatários antes de enviar.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$id]),true,303);exit;
+        }elseif($action==='schedule'){
+            if(!$selected)throw new RuntimeException('Salve o rascunho antes de agendar.');
+            $timezone=(string)($_POST['schedule_timezone']??'America/Sao_Paulo');
+            $scheduled=communication_schedule_campaign($db,$activityId,$selectedId,(string)($_POST['scheduled_local']??''),$timezone);
+            $_SESSION['communications_notice']='Mensagem agendada para '.course_agenda_when($scheduled,$timezone).'.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='cancel_schedule'){
+            if(!$selected)throw new RuntimeException('Mensagem não encontrada.');
+            communication_cancel_schedule($db,$activityId,$selectedId);
+            $_SESSION['communications_notice']='Agendamento cancelado. A mensagem voltou a ser um rascunho editável.';
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif(in_array($action,['preview','save'],true)){
+            $form=[
+              'category'=>(string)($_POST['category']??''),
+              'course_id'=>max(0,(int)($_POST['course_id']??0)),
+              'cohort_id'=>max(0,(int)($_POST['cohort_id']??0)),
+              'subject'=>(string)($_POST['subject']??''),
+              'preheader'=>(string)($_POST['preheader']??''),
+              'body_text'=>(string)($_POST['body_text']??''),
+              'body_html'=>(string)($_POST['body_html']??''),
+              'template_key'=>(string)($_POST['template_key']??'minimal'),
+              'segment_id'=>max(0,(int)($_POST['segment_id']??0)),
+              'priority'=>max(0,min(100,(int)($_POST['priority']??50))),
+              'goal_key'=>(string)($_POST['goal_key']??''),
+              'created_by'=>$actingAdminId,
+              'recipient_ids'=>is_array($_POST['recipient_ids']??null)?$_POST['recipient_ids']:[],
+              'selection_explicit'=>1,'status'=>'draft'
+            ];
+            $audience=communication_audience($db,$activityId,$form['category'],$form['course_id'],$form['cohort_id']);
+            if($action==='save'){
+                $id=communication_update_campaign($db,$activityId,$selectedId,$form);
+                $_SESSION['communications_notice']='Rascunho salvo. Revise a audiência antes de colocar na fila.';
+                header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$id]),true,303);exit;
+            }
+            $chosen=communication_validate_targets($db,$activityId,$form);
+            $preview=count($chosen);
+        }elseif(in_array($action,['queue','queue_now'],true)){
+            if(!$selected)throw new RuntimeException('Salve o rascunho antes de enviar.');
+            if($selected['category']==='newsletter'&&communication_site_url($db)==='')
+                throw new RuntimeException('Configure o endereço do site em Configuração para incluir o link de descadastro.');
+            $count=communication_queue_campaign($db,$activityId,$selectedId);
+            if($action==='queue_now'){
+                $batch=communication_dispatch_manual($db,$activityId,1);
+                if(empty($batch['busy'])){$_SESSION['communications_auto_run']=true;$_SESSION['communications_initial_batch']=$batch;}
+                $_SESSION['communications_notice']=$count.' destinatário(s) confirmado(s). '.(!empty($batch['busy'])
+                    ?'Outro processamento está em andamento; tente novamente se necessário.'
+                    :'Envio imediato iniciado. '.(int)$batch['sent'].' aceito(s) neste primeiro lote.');
+            }else{
+                $_SESSION['communications_notice']=$count.' e-mail(s) colocado(s) na fila. Use Enviar agora para processá-los sem agendamento.';
+            }
+            header('Location: /admin/communications.php?'.http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>$selectedId]),true,303);exit;
+        }elseif($action==='test'){
+            if(!$selected || $selected['status']!=='draft')throw new RuntimeException('Salve o rascunho antes do teste.');
+            $admin=current_admin();$email=(string)($admin['email']??'');
+            if(!filter_var($email,FILTER_VALIDATE_EMAIL))throw new RuntimeException('Conta administrativa sem e-mail válido.');
+            $builderMessage=communication_campaign_render_builder($db,$selected);
+            communication_send_message($db,[
+              'name'=>'Teste do administrador','email'=>$email,
+              'subject'=>'[TESTE] '.(string)$selected['subject'],
+              'body'=>(string)($builderMessage['text']??$selected['body_text'])."\n\n[Mensagem de teste. Nenhum aluno foi notificado.]",
+              'html'=>(string)($selected['body_html']??''),
+              'server_rendered_html'=>(string)($builderMessage['html']??''),
+              'template'=>(string)($selected['template_key']??'minimal'),
+              'preheader'=>(string)($selected['preheader']??''),
+              'activity_id'=>$activityId
+            ]);
+            $notice='O servidor aceitou a mensagem de teste. Confira sua caixa de entrada e a pasta de spam.';
+        }else throw new RuntimeException('Ação inválida.');
+    }catch(Throwable $e){$error=$e->getMessage();}
+}
+if($notice===''){$notice=(string)($_SESSION['communications_notice']??'');unset($_SESSION['communications_notice']);}
+$courses=course_list($db,$activityId);$allCohorts=[];
+foreach($courses as $course)foreach(course_cohorts_for_course($db,(int)$course['id']) as $cohort)$allCohorts[]=[
+ 'id'=>(int)$cohort['id'],'course_id'=>(int)$course['id'],
+ 'label'=>(string)$course['title'].' — '.(string)$cohort['title']
+];
+$mailSettings=communication_sender_settings($db);
+$brevoSettings=communication_brevo_public_status($db);
+$trackingStatus=communication_tracking_status($db);
+$mailStatus=communication_mail_status($db);
+$siteUrl=communication_site_url($db);
+$worker=communication_worker_status($db);
+$workerLast=$worker['last_finished_at']??null;
+$workerActive=$workerLast && strtotime((string)$workerLast)!==false && strtotime((string)$workerLast)>time()-3600;
+$queueSummary=communication_queue_summary($db,$activityId);
+$mailQueueCount=$queueSummary['pending']+$queueSummary['processing'];
+// One-time POST-triggered session flag: a crafted GET URL must never trigger sends.
+$autoQueueRun=!empty($_SESSION['communications_auto_run']);
+$initialQueueBatch=is_array($_SESSION['communications_initial_batch']??null)?$_SESSION['communications_initial_batch']:[];
+unset($_SESSION['communications_auto_run'],$_SESSION['communications_initial_batch']);
+$adminId=(int)(current_admin()['id']??0);
+$alertsQueueSummary=admin_student_notice_queue_summary($db,$adminId);
+$staffQueueCount=$alertsQueueSummary['pending']+$alertsQueueSummary['processing'];
+$autoAlertsRun=!empty($_SESSION['communications_alerts_auto_run']);
+$initialAlertsBatch=is_array($_SESSION['communications_alerts_initial_batch']??null)?$_SESSION['communications_alerts_initial_batch']:[];
+unset($_SESSION['communications_alerts_auto_run'],$_SESSION['communications_alerts_initial_batch']);
+$campaigns=communication_campaigns($db,$activityId);
+$segments=communication_platform_available($db)?communication_segments($db,$activityId):[];
+$templates=communication_platform_available($db)?communication_templates($db,$activityId):[];
+$workerRuns=communication_platform_available($db)?communication_recent_worker_runs($db):[];
+$deadLetters=communication_platform_available($db)?communication_dead_letters($db,$activityId):[];
+$journeys=communication_platform_available($db)?communication_journeys($db,$activityId):[];
+$platformMetrics=communication_platform_available($db)?communication_platform_metrics($db,$activityId):['campaigns'=>0,'accepted'=>0,'delivered'=>0,'bounced'=>0,'spam'=>0,'conversions'=>0];
+$auditRows=communication_platform_available($db)?communication_recent_audit($db,$activityId,80):[];
+$diagnostics=communication_platform_available($db)?($db->query('SELECT * FROM communication_domain_diagnostics WHERE id=1')->fetch(PDO::FETCH_ASSOC)?:null):null;
+$selectedSegmentId=max(0,(int)($_GET['segment']??0));$selectedSegment=null;$selectedSegmentMembers=[];
+foreach($segments as $segmentRow)if((int)$segmentRow['id']===$selectedSegmentId)$selectedSegment=$segmentRow;
+if($selectedSegment){try{$selectedSegmentMembers=communication_segment_evaluate($db,$activityId,(string)$selectedSegment['rules_json'],(string)$selectedSegment['match_mode']);}catch(Throwable $ignored){}}
+$selectedJourneyId=max(0,(int)($_GET['journey']??0));$selectedJourney=null;$selectedJourneySteps=[];
+foreach($journeys as $journeyRow)if((int)$journeyRow['id']===$selectedJourneyId)$selectedJourney=$journeyRow;
+if($selectedJourney){$q=$db->prepare('SELECT * FROM communication_journey_steps WHERE journey_id=? ORDER BY position,id');$q->execute([$selectedJourneyId]);$selectedJourneySteps=$q->fetchAll(PDO::FETCH_ASSOC);}
+$campaignTotals=['scheduled'=>0,'delivered'=>0,'bounced'=>0];
+foreach($campaigns as $campaignRow){
+    if(communication_campaign_is_scheduled($campaignRow))$campaignTotals['scheduled']++;
+    $campaignTotals['delivered']+=(int)($campaignRow['delivered_count']??0);
+    $campaignTotals['bounced']+=(int)($campaignRow['bounced_count']??0);
+}
+$isScheduled=$selected?communication_campaign_is_scheduled($selected):false;
+$selectedDeliveryRows=$selected && $selected['status']!=='draft'?communication_campaign_deliveries($db,$activityId,$selectedId):[];
+if($selected && $preview===null){
+    try{$preview=count(communication_campaign_audience($db,$activityId,$selected));}
+    catch(Throwable $e){$error=$e->getMessage();}
+}
+$recipientCandidates=[];
+$selectedRecipientIds=[];
+if($tab==='campaigns'&&($form['status']??'draft')==='draft'&&!$isScheduled){
+    try{
+        $recipientCandidates=communication_audience($db,$activityId,(string)$form['category'],(int)$form['course_id'],(int)$form['cohort_id']);
+        if((int)($form['segment_id']??0)>0){
+            $segmentDefinition=null;foreach($segments as $segment)if((int)$segment['id']===(int)$form['segment_id'])$segmentDefinition=$segment;
+            if($segmentDefinition){$segmentIds=array_fill_keys(array_map('intval',array_column(communication_segment_evaluate($db,$activityId,(string)$segmentDefinition['rules_json'],(string)$segmentDefinition['match_mode']),'id')),true);$recipientCandidates=array_values(array_filter($recipientCandidates,static fn(array $person):bool=>isset($segmentIds[(int)$person['id']])));}
+        }
+        if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&isset($_POST['selection_explicit'])){
+            $selectedRecipientIds=communication_requested_ids(is_array($_POST['recipient_ids']??null)?$_POST['recipient_ids']:[]);
+        }elseif($selected && ($selected['selection_mode']??'all')==='selected'){
+            $selectedRecipientIds=communication_campaign_target_ids($db,(int)$selected['id']);
+        }else $selectedRecipientIds=array_map('intval',array_column($recipientCandidates,'id'));
+    }catch(Throwable $ignored){$recipientCandidates=[];}
+}
+$recipientLookup=array_fill_keys($selectedRecipientIds,true);
+$emailBrand=communication_email_brand($db,$activityId);
+$renderedEmailPreview='';
+if($tab==='campaigns'&&trim((string)($form['body_text']??''))!==''){
+    try {
+        $builderPreview=$selected?communication_campaign_render_builder($db,$selected):null;
+        $renderedEmailPreview=$builderPreview?(string)$builderPreview['html']:communication_email_document((string)($form['body_html']??''),(string)$form['body_text'],$db,(string)($form['template_key']??'minimal'),$activityId,(string)($form['preheader']??''));
+    }catch(Throwable $e){$error=$e->getMessage();}
+}
+admin_shell_start('communications','Comunicações',$state,['/assets/admin-operations.css']);
+?>
+<?php if($notice!==''):?><p class="admin-notice success" role="status"><?=h($notice)?></p><?php endif;?>
+<?php if($error!==''):?><p class="admin-notice error" role="alert"><?=h($error)?></p><?php endif;?>
+<?php if($tab==='overview'):?>
+<section class="comms-command-center" aria-labelledby="communications-command-title">
+  <div class="comms-command-copy">
+    <p class="comms-eyebrow">Central de comunicação</p>
+    <h2 id="communications-command-title">Campanhas, avisos e entrega em um só lugar</h2>
+    <p>Crie newsletters e avisos acadêmicos, programe o envio, acompanhe cada destinatário e mantenha a caixa do aluno atualizada.</p>
+    <div class="comms-command-actions">
+      <a class="admin-button" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>#composer">Nova comunicação</a>
+      <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'settings']))?>#delivery-tracking">Configurar entrega</a>
+    </div>
+  </div>
+  <dl class="comms-command-status" aria-label="Estado das comunicações">
+    <div><dt>Agendadas</dt><dd><?=$campaignTotals['scheduled']?></dd><small><?=$workerActive?'Automação ativa':'Automação pendente'?></small></div>
+    <div><dt>Entregues</dt><dd><?=$campaignTotals['delivered']?></dd><small>Confirmadas pelo provedor</small></div>
+    <div><dt>Devolvidas</dt><dd><?=$campaignTotals['bounced']?></dd><small>Endereços protegidos</small></div>
+    <div><dt>Caixa acadêmica</dt><dd>Ativa</dd><small>Avisos persistentes para alunos</small></div>
+  </dl>
+</section>
+<nav class="comms-quick-actions" aria-label="Ações rápidas de comunicação">
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>#composer"><span>01</span><strong>Criar campanha</strong><small>Newsletter ou aviso acadêmico</small></a>
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>#composer"><span>02</span><strong>Agendar envio</strong><small>Data, hora e audiência revalidada</small></a>
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'settings']))?>#delivery-tracking"><span>03</span><strong>Acompanhar entrega</strong><small>Retornos, falhas e supressões</small></a>
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'alerts']))?>#staff-alerts"><span>04</span><strong>Gerir avisos</strong><small>Administração e caixa dos alunos</small></a>
+</nav>
+<?php endif;?>
+<nav class="admin-subtabs comms-tabs" aria-label="Áreas de comunicações">
+<?php foreach(['overview'=>'Visão geral','campaigns'=>'Campanhas','audiences'=>'Públicos','automations'=>'Jornadas','governance'=>'Operação','alerts'=>'Avisos','settings'=>'Configuração'] as $key=>$label):?>
+  <a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>$key]))?>"<?=$tab===$key?' aria-current="page"':''?>><?=h($label)?></a>
+<?php endforeach;?>
+</nav>
+<div class="comms-workspace">
+<?php if(in_array($tab,['overview','campaigns'],true)):?>
+<section class="admin-card comms-section comms-wide" data-communications-queue data-queue-url="/admin/communications-queue.php" data-auto-run="<?=$autoQueueRun?'1':'0'?>" data-initial-sent="<?=(int)($initialQueueBatch['sent']??0)?>" data-initial-skipped="<?=(int)($initialQueueBatch['skipped']??0)?>" data-initial-failed="<?=(int)($initialQueueBatch['failed']??0)?>">
+  <header><div><h2>Fila de mensagens</h2><p>Acompanhe envios imediatos e programados.</p></div></header>
+  <p data-queue-count aria-live="polite"><strong><?=$queueSummary['pending']?></strong> pendente(s) · <?=$queueSummary['scheduled']?> agendada(s) · <?=$queueSummary['processing']?> em processamento · <?=$queueSummary['accepted']?> aceito(s) pelo provedor · <?=$queueSummary['failed']?> falha(s) · <?=$queueSummary['cancelled']?> cancelado(s).</p>
+  <form method="post" class="comms-inline-actions" data-queue-form>
+    <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+    <button class="admin-button" name="action" value="run_queue" type="submit"<?=$queueSummary['pending']<1?' disabled':''?> data-queue-run>Enviar agora</button>
+    <button class="admin-button secondary" name="action" value="cancel_queue" type="submit"<?=$queueSummary['pending']<1?' disabled':''?> data-queue-cancel>Cancelar fila</button>
+  </form>
+  <p class="muted" data-queue-feedback role="status" aria-live="polite">Cancelar afeta somente os envios ainda pendentes. Mensagens já aceitas ou em processamento não podem ser retiradas.</p>
+</section>
+<?php endif;?>
+<?php if($tab==='overview'):?>
+  <div class="comms-lead">
+    <div><p class="comms-eyebrow">Central de comunicações</p><h2>Visão geral</h2>
+    <p>Consulte os envios pendentes e acesse as tarefas que precisam de atenção.</p></div>
+    <a class="admin-button" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Escrever mensagem</a>
+  </div>
+  <div class="admin-stat-grid comms-stats">
+    <div class="admin-stat"><span>Serviço de envio</span><strong><?=h($mailStatus['transport_label'])?></strong>
+      <small><?=($brevoSettings['configured']?'Chave cadastrada':'Sem chave Brevo')?><?=(!$mailStatus['sender_configured']?' · remetente pendente':'')?></small></div>
+    <div class="admin-stat"><span>Notificações na fila</span><strong><?=$staffQueueCount?></strong><small>Ações dos alunos</small></div>
+    <div class="admin-stat"><span>Mensagens na fila</span><strong><?=$mailQueueCount?></strong><small>Para participantes</small></div>
+    <div class="admin-stat"><span>Envio automático</span><strong><?=$workerActive?'Ativo recentemente':($workerLast?'Verificar':'Não identificado')?></strong>
+      <small><?=$workerLast?'Última execução: '.h((string)$workerLast):'Nenhuma execução registrada'?></small></div>
+  </div>
+  <div class="comms-overview-grid">
+    <section class="admin-card comms-section">
+      <header><div><h2>Avisos dos alunos</h2><p>Dúvidas, respostas e registros enviados para avaliação.</p></div></header>
+      <p><strong><?=$staffQueueCount?></strong> aviso(s) aguardando processamento.</p>
+      <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'alerts']))?>">Gerenciar avisos</a>
+    </section>
+    <section class="admin-card comms-section">
+      <header><div><h2>Mensagens</h2><p>Avisos de curso e newsletters com destinatários verificados.</p></div></header>
+      <p><strong><?=count($campaigns)?></strong> comunicação(ões) no histórico.</p>
+      <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Abrir mensagens</a>
+    </section>
+    <section class="admin-card comms-section">
+      <header><div><h2>Configuração</h2><p>Brevo, remetente, endereço do site e funcionamento da fila.</p></div></header>
+      <?php if($siteUrl===''):?>
+        <p class="comms-attention"><strong>Endereço do site não definido.</strong> Ele é necessário para o link de descadastro da newsletter, mas não impede o teste de conexão com o Brevo.</p>
+      <?php elseif(!$mailStatus['sender_configured']):?>
+        <p class="comms-attention"><strong>Remetente pendente.</strong> Defina um e-mail autorizado para enviar mensagens.</p>
+      <?php else:?>
+        <p>Remetente: <strong><?=h((string)$mailSettings['sender_email'])?></strong></p>
+      <?php endif;?>
+      <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'settings']))?>">Configurar envio</a>
+    </section>
+  </div>
+<?php elseif($tab==='audiences'):?>
+  <?php $segmentRules=$selectedSegment?communication_segment_rules((string)$selectedSegment['rules_json']):communication_segment_rules([]);?>
+  <div class="comms-lead"><div><p class="comms-eyebrow">Segmentação auditável</p><h2>Públicos</h2><p>Combine curso, turma, vínculo, perfil, consentimento e participação para formar audiências reutilizáveis.</p></div></div>
+  <div class="comms-overview-grid">
+    <section class="admin-card comms-section comms-wide">
+      <header><div><h2><?=$selectedSegment?'Editar segmento':'Novo segmento'?></h2><p>A contagem é recalculada a partir dos dados atuais; cada envio preserva seu próprio snapshot.</p></div></header>
+      <form method="post" class="comms-form">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><input type="hidden" name="action" value="segment_save"><input type="hidden" name="segment_id" value="<?=(int)($selectedSegment['id']??0)?>">
+        <label>Nome<input name="name" maxlength="120" required value="<?=h((string)($selectedSegment['name']??''))?>"></label>
+        <label>Descrição<textarea name="description" rows="3" maxlength="500"><?=h((string)($selectedSegment['description']??''))?></textarea></label>
+        <label>Combinação<select name="match_mode"><option value="all"<?=($selectedSegment['match_mode']??'all')==='all'?' selected':''?>>Atender a todas as regras</option><option value="any"<?=($selectedSegment['match_mode']??'all')==='any'?' selected':''?>>Atender a qualquer regra</option></select></label>
+        <div class="comms-filter-grid">
+          <label>Cursos<select name="course_ids[]" multiple size="5"><?php foreach($courses as $course):?><option value="<?=(int)$course['id']?>"<?=in_array((int)$course['id'],$segmentRules['course_ids'],true)?' selected':''?>><?=h((string)$course['title'])?></option><?php endforeach;?></select></label>
+          <label>Turmas<select name="cohort_ids[]" multiple size="5"><?php foreach($allCohorts as $cohort):?><option value="<?=(int)$cohort['id']?>"<?=in_array((int)$cohort['id'],$segmentRules['cohort_ids'],true)?' selected':''?>><?=h((string)$cohort['label'])?></option><?php endforeach;?></select></label>
+          <label>Consentimento de newsletter<select name="newsletter_consent"><option value="any">Qualquer situação</option><option value="granted"<?=$segmentRules['newsletter_consent']==='granted'?' selected':''?>>Autorizado</option><option value="revoked"<?=$segmentRules['newsletter_consent']==='revoked'?' selected':''?>>Não autorizado</option></select></label>
+          <label>Perfil<select name="profile"><option value="any">Qualquer perfil</option><option value="activated"<?=$segmentRules['profile']==='activated'?' selected':''?>>Conta ativada</option><option value="not_activated"<?=$segmentRules['profile']==='not_activated'?' selected':''?>>Conta ainda não ativada</option></select></label>
+        </div>
+        <fieldset><legend>Situação da matrícula</legend><?php foreach(['active'=>'Ativa','inactive'=>'Inativa','completed'=>'Concluída','cancelled'=>'Cancelada'] as $value=>$label):?><label class="comms-check"><input type="checkbox" name="enrollment_statuses[]" value="<?=h($value)?>"<?=in_array($value,$segmentRules['enrollment_statuses'],true)?' checked':''?>> <?=h($label)?></label><?php endforeach;?></fieldset>
+        <fieldset><legend>Comportamento registrado</legend><?php foreach(['submitted_test'=>'Enviou registro para avaliação','asked_question'=>'Criou uma dúvida','never_logged_in'=>'Nunca entrou na conta','inactive_30_days'=>'Sem acesso há 30 dias'] as $value=>$label):?><label class="comms-check"><input type="checkbox" name="behaviors[]" value="<?=h($value)?>"<?=in_array($value,$segmentRules['behaviors'],true)?' checked':''?>> <?=h($label)?></label><?php endforeach;?></fieldset>
+        <button class="admin-button" type="submit">Salvar segmento</button>
+      </form>
+    </section>
+    <section class="admin-card comms-section">
+      <header><div><h2>Segmentos salvos</h2><p><?=count($segments)?> público(s) disponível(is).</p></div></header>
+      <?php if(!$segments):?><p class="muted">Nenhum segmento salvo.</p><?php else:?><div class="admin-work-queue"><?php foreach($segments as $segment):?><a class="admin-work-item" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'audiences','segment'=>(int)$segment['id']]))?>"><strong><?=h((string)$segment['name'])?></strong><span><?=(int)$segment['campaign_count']?> campanha(s) · <?=(int)$segment['accepted_count']?> aceita(s) · <?=(int)$segment['delivered_count']?> entregue(s) · <?=(int)$segment['conversion_count']?> conversão(ões)</span></a><?php endforeach;?></div><?php endif;?>
+    </section>
+    <?php if($selectedSegment):?><section class="admin-card comms-section">
+      <header><div><h2>Audiência atual</h2><p><?=count($selectedSegmentMembers)?> pessoa(s) atendem às regras.</p></div></header>
+      <div class="comms-recipient-list"><?php foreach(array_slice($selectedSegmentMembers,0,100) as $member):?><div class="comms-recipient-row"><span class="comms-recipient-identity"><strong><?=h((string)$member['name'])?></strong><small><?=h((string)$member['email'])?></small></span></div><?php endforeach;?></div>
+    </section><?php endif;?>
+  </div>
+<?php elseif($tab==='automations'):?>
+  <div class="comms-lead"><div><p class="comms-eyebrow">Sequências condicionais</p><h2>Jornadas</h2><p>Monte sequências persistentes acionadas por eventos acadêmicos e preferências, com intervalo definido entre as etapas.</p></div></div>
+  <div class="comms-overview-grid">
+    <section class="admin-card comms-section">
+      <header><div><h2><?=$selectedJourney?'Editar jornada':'Nova jornada'?></h2></div></header>
+      <form method="post" class="comms-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><input type="hidden" name="action" value="journey_save"><input type="hidden" name="journey_id" value="<?=(int)($selectedJourney['id']??0)?>">
+        <label>Nome<input name="name" maxlength="120" required value="<?=h((string)($selectedJourney['name']??''))?>"></label>
+        <label>Descrição<textarea name="description" rows="3" maxlength="500"><?=h((string)($selectedJourney['description']??''))?></textarea></label>
+        <label>Gatilho<select name="trigger_key"><?php foreach(['manual'=>'Entrada manual','enrollment_activated'=>'Matrícula ativada','course_completed'=>'Curso concluído','newsletter_opt_in'=>'Newsletter autorizada','student_inactive'=>'Aluno inativo'] as $value=>$label):?><option value="<?=h($value)?>"<?=($selectedJourney['trigger_key']??'manual')===$value?' selected':''?>><?=h($label)?></option><?php endforeach;?></select></label>
+        <label>Segmento opcional<select name="segment_id"><option value="0">Sem filtro adicional</option><?php foreach($segments as $segment):?><option value="<?=(int)$segment['id']?>"<?=(int)($selectedJourney['segment_id']??0)===(int)$segment['id']?' selected':''?>><?=h((string)$segment['name'])?></option><?php endforeach;?></select></label>
+        <button class="admin-button" type="submit">Salvar jornada</button>
+      </form>
+    </section>
+    <section class="admin-card comms-section"><header><div><h2>Jornadas salvas</h2></div></header><?php if(!$journeys):?><p class="muted">Nenhuma jornada criada.</p><?php else:?><div class="admin-work-queue"><?php foreach($journeys as $journey):?><a class="admin-work-item" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'automations','journey'=>(int)$journey['id']]))?>"><strong><?=h((string)$journey['name'])?></strong><span><?=h((string)$journey['status'])?> · <?=(int)$journey['step_count']?> etapa(s) · <?=(int)$journey['active_count']?> ativa(s)</span></a><?php endforeach;?></div><?php endif;?></section>
+    <?php if($selectedJourney):?><section class="admin-card comms-section comms-wide"><header><div><h2>Etapas</h2><p>A mesma posição atualiza a etapa existente.</p></div></header>
+      <form method="post" class="comms-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><input type="hidden" name="action" value="journey_step_save"><input type="hidden" name="journey_id" value="<?=$selectedJourneyId?>">
+        <div class="comms-filter-grid"><label>Posição<input type="number" name="position" min="1" max="100" value="<?=count($selectedJourneySteps)+1?>" required></label><label>Espera em minutos<input type="number" name="delay_minutes" min="0" max="525600" value="0" required></label><label>Tipo<select name="category"><option value="operational">Aviso acadêmico</option><option value="newsletter">Newsletter</option></select></label><label>Condição<select name="condition_key"><option value="always">Sempre enviar</option><option value="newsletter_opt_in">Se autorizou newsletter</option><option value="submitted_test">Se enviou registro</option><option value="asked_question">Se fez uma pergunta</option></select></label><label>Template<select name="template_id"><option value="0">Sem template visual</option><?php foreach($templates as $template):?><option value="<?=(int)$template['id']?>"><?=h((string)$template['name'])?></option><?php endforeach;?></select></label></div>
+        <label>Assunto<input name="subject" maxlength="180" required></label><label>Texto de prévia<input name="preheader" maxlength="180"></label><label>Mensagem<textarea name="body_text" rows="7" maxlength="20000" required></textarea></label><input type="hidden" name="body_html" value="">
+        <button class="admin-button" type="submit">Salvar etapa</button>
+      </form>
+      <?php if($selectedJourneySteps):?><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Etapa</th><th>Espera</th><th>Tipo</th><th>Assunto</th></tr></thead><tbody><?php foreach($selectedJourneySteps as $step):?><tr><td><?=(int)$step['position']?></td><td><?=(int)$step['delay_minutes']?> min</td><td><?=h((string)$step['category'])?></td><td><?=h((string)$step['subject'])?></td></tr><?php endforeach;?></tbody></table></div><?php endif;?>
+      <form method="post" class="comms-inline-actions"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><input type="hidden" name="action" value="journey_status"><input type="hidden" name="journey_id" value="<?=$selectedJourneyId?>"><?php if($selectedJourney['status']!=='active'):?><button class="admin-button" name="status" value="active">Ativar jornada</button><?php else:?><button class="admin-button secondary" name="status" value="paused">Pausar jornada</button><?php endif;?></form>
+    </section><?php endif;?>
+  </div>
+<?php elseif($tab==='governance'):?>
+  <div class="comms-lead"><div><p class="comms-eyebrow">Governança e recuperação</p><h2>Operação</h2><p>Monitore calendário, entrega, conversões, workers, falhas definitivas e alterações administrativas.</p></div></div>
+  <div class="admin-stat-grid comms-stats"><div class="admin-stat"><span>Campanhas</span><strong><?=$platformMetrics['campaigns']?></strong></div><div class="admin-stat"><span>Entregues</span><strong><?=$platformMetrics['delivered']?></strong><small><?=$platformMetrics['accepted']?> aceitas</small></div><div class="admin-stat"><span>Devoluções</span><strong><?=$platformMetrics['bounced']?></strong><small><?=$platformMetrics['spam']?> denúncia(s)</small></div><div class="admin-stat"><span>Conversões</span><strong><?=$platformMetrics['conversions']?></strong></div></div>
+  <div class="comms-overview-grid">
+    <section class="admin-card comms-section"><header><div><h2>Calendário editorial</h2><p>Próximas mensagens programadas.</p></div></header><?php $scheduledRows=array_values(array_filter($campaigns,'communication_campaign_is_scheduled'));if(!$scheduledRows):?><p class="muted">Nenhum envio agendado.</p><?php else:?><div class="admin-work-queue"><?php foreach($scheduledRows as $campaign):?><a class="admin-work-item" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$campaign['id']]))?>"><strong><?=h((string)$campaign['subject'])?></strong><span><?=h(course_agenda_when((string)$campaign['scheduled_at'],(string)$campaign['schedule_timezone']))?></span></a><?php endforeach;?></div><?php endif;?></section>
+    <section class="admin-card comms-section"><header><div><h2>Autenticação do domínio</h2><p>SPF, DKIM e DMARC do remetente.</p></div></header><?php if($diagnostics):?><p><strong><?=h((string)$diagnostics['domain'])?></strong></p><p>SPF: <?=h((string)$diagnostics['spf_status'])?> · DKIM: <?=h((string)$diagnostics['dkim_status'])?> · DMARC: <?=h((string)$diagnostics['dmarc_status'])?></p><small>Verificado em <?=h((string)$diagnostics['checked_at'])?></small><?php else:?><p class="muted">Diagnóstico ainda não executado.</p><?php endif;?><form method="post" class="comms-form"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><label>Seletor DKIM<input name="dkim_selector" value="<?=h((string)($diagnostics['dkim_selector']??''))?>" maxlength="63" placeholder="Ex.: mail ou brevo"></label><p class="muted">Use o seletor informado pelo serviço de e-mail.</p><button class="admin-button secondary" name="action" value="diagnostics_run">Verificar domínio</button></form></section>
+    <section class="admin-card comms-section"><header><div><h2>Templates reutilizáveis</h2><p>Layouts visuais aprovados a partir de campanhas.</p></div></header><?php if(!$templates):?><p class="muted">Nenhum template salvo.</p><?php else:?><div class="admin-work-queue"><?php foreach($templates as $template):?><div class="admin-work-item"><strong><?=h((string)$template['name'])?></strong><span><?=h((string)$template['category'])?></span></div><?php endforeach;?></div><?php endif;?></section>
+    <section class="admin-card comms-section"><header><div><h2>Execuções do worker</h2><p>Heartbeat e resultado dos lotes automáticos.</p></div></header><?php if(!$workerRuns):?><p class="muted">Nenhuma execução supervisionada.</p><?php else:?><div class="admin-work-queue"><?php foreach($workerRuns as $run):?><div class="admin-work-item"><strong><?=h((string)$run['status'])?> · <?=h((string)$run['started_at'])?></strong><span><?=(int)$run['sent_count']?> aceitas · <?=(int)$run['skipped_count']?> ignoradas · <?=(int)$run['failed_count']?> falhas</span></div><?php endforeach;?></div><?php endif;?></section>
+    <section class="admin-card comms-section comms-wide"><header><div><h2>Fila de recuperação</h2><p>Falhas definitivas não são reenviadas automaticamente.</p></div></header><?php if(!$deadLetters):?><p class="muted">Nenhuma falha aguardando decisão.</p><?php else:?><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Mensagem</th><th>Motivo</th><th>Tentativas</th><th>Registrada</th></tr></thead><tbody><?php foreach($deadLetters as $row):?><tr><td><a href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$row['campaign_id']]))?>"><?=h((string)$row['subject'])?></a></td><td><?=h((string)$row['error_code'])?></td><td><?=(int)$row['attempts']?></td><td><?=h((string)$row['dead_letter_at'])?></td></tr><?php endforeach;?></tbody></table></div><?php endif;?></section>
+    <section class="admin-card comms-section comms-wide"><header><div><h2>Trilha de auditoria</h2><p>Decisões e alterações registradas nesta área.</p></div></header><?php if(!$auditRows):?><p class="muted">Nenhuma alteração registrada.</p><?php else:?><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Data</th><th>Ação</th><th>Objeto</th><th>Administrador</th></tr></thead><tbody><?php foreach($auditRows as $row):?><tr><td><?=h((string)$row['created_at'])?></td><td><?=h((string)$row['action'])?></td><td><?=h((string)$row['entity_type'])?> #<?=(int)$row['entity_id']?></td><td><?=h((string)($row['admin_name']??'Sistema'))?></td></tr><?php endforeach;?></tbody></table></div><?php endif;?></section>
+  </div>
+<?php elseif($tab==='settings'):?>
+  <div class="comms-lead"><div><p class="comms-eyebrow">Envio de e-mails</p><h2>Configuração</h2>
+    <p>Conecte o Brevo, escolha o remetente e valide o envio para sua conta.</p></div></div>
+  <div class="comms-settings-grid">
+    <section class="admin-card comms-section" aria-labelledby="brevo-heading">
+      <header><div><h2 id="brevo-heading">Brevo</h2><p>Serviço utilizado para os e-mails do site.</p></div>
+        <?=admin_badge($brevoSettings['configured']?'Chave cadastrada':'Não conectado',$brevoSettings['configured']?'good':'attention')?></header>
+      <p class="comms-detail">Serviço atual: <strong><?=h($mailStatus['transport_label'])?></strong></p>
+      <form method="post" class="comms-form" autocomplete="off">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="action" value="brevo_save">
+        <label>Chave API do Brevo
+          <input type="password" name="brevo_api_key" value="" maxlength="512" autocomplete="new-password" spellcheck="false" required placeholder="<?=$brevoSettings['configured']?'Nova chave para substituição':'Cole a chave API v3'?>">
+        </label>
+        <button type="submit" class="admin-button"><?=$brevoSettings['configured']?'Substituir chave':'Conectar Brevo'?></button>
+      </form>
+      <?php if($brevoSettings['configured']):?>
+      <form method="post" class="admin-form-actions comms-inline-actions">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <button type="submit" name="action" value="brevo_check" class="admin-button secondary">Testar conexão</button>
+        <?php if($brevoSettings['managed_in_cms']):?>
+        <button type="submit" name="action" value="brevo_remove" class="admin-button secondary" data-confirm="Remover a chave salva do Brevo?">Remover chave</button>
+        <?php endif;?>
+      </form>
+      <?php endif;?>
+    </section>
+    <section class="admin-card comms-section" id="delivery-tracking">
+      <header><div><h2>Acompanhamento de entrega</h2><p>Confirma entrega e registra devoluções informadas pelo Brevo.</p></div>
+        <?=admin_badge(!empty($trackingStatus['configured_at'])?'Ativo':'Pendente',!empty($trackingStatus['configured_at'])?'good':'attention')?></header>
+      <?php if(!empty($trackingStatus['last_event_at'])):?><p class="comms-detail">Último retorno recebido: <strong><?=h((string)$trackingStatus['last_event_at'])?></strong></p><?php endif;?>
+      <?php if(!empty($trackingStatus['last_error'])):?><p class="comms-attention"><?=h((string)$trackingStatus['last_error'])?></p><?php endif;?>
+      <form method="post" class="comms-form">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="action" value="tracking_setup">
+        <button type="submit" class="admin-button secondary"<?=(!$brevoSettings['configured']||$siteUrl==='')?' disabled':''?>><?=!empty($trackingStatus['configured_at'])?'Atualizar acompanhamento':'Ativar acompanhamento'?></button>
+      </form>
+    </section>
+    <section class="admin-card comms-section">
+      <header><div><h2>Remetente</h2><p>Identidade exibida nas mensagens enviadas.</p></div></header>
+      <form method="post" class="comms-form">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="action" value="mail_settings">
+        <label>Nome do remetente<input name="sender_name" maxlength="100" value="<?=h((string)$mailSettings['sender_name'])?>"></label>
+        <label>E-mail do remetente<input type="email" name="sender_email" value="<?=h((string)$mailSettings['custom_sender_email'])?>" placeholder="<?=h((string)($mailSettings['sender_email']?:'contato@seudominio.com.br'))?>"></label>
+        <p class="muted">Escolha um endereço autorizado na Brevo.</p>
+        <button type="submit" class="admin-button">Salvar remetente</button>
+      </form>
+    </section>
+    <section class="admin-card comms-section">
+      <header><div><h2>Endereço do site</h2><p>Usado nos links de descadastro e acesso às atividades.</p></div>
+        <?=admin_badge($siteUrl!==''?'Definido':'Pendente',$siteUrl!==''?'good':'attention')?></header>
+      <form method="post" class="comms-form">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="action" value="site_url_save">
+        <label>Endereço público (HTTPS)<input type="url" name="public_url" value="<?=h($siteUrl)?>" placeholder="https://seudominio.com.br" required maxlength="240" inputmode="url"></label>
+        <button type="submit" class="admin-button">Salvar endereço</button>
+      </form>
+    </section>
+    <section class="admin-card comms-section">
+      <header><div><h2>Teste de envio</h2><p>Destino: <?=h((string)(current_admin()['email']??''))?></p></div></header>
+      <p>Depois de conectar o Brevo e salvar o remetente, envie uma mensagem para confirmar o recebimento.</p>
+      <form method="post">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="action" value="mail_test">
+        <button type="submit" class="admin-button secondary"<?=$mailStatus['transport']==='brevo'&&!$mailStatus['sender_configured']?' disabled':''?>>Enviar teste para <?=h((string)(current_admin()['email']??'minha conta'))?></button>
+      </form>
+    </section>
+    <section class="admin-card comms-section comms-wide">
+      <header><div><h2>Processamento automático</h2><p>Use Enviar agora para o fluxo manual. Para liberar mensagens agendadas e processar pendências com o painel fechado, mantenha a rotina da hospedagem ativa.</p></div></header>
+      <div class="comms-automation">
+        <p><strong>Última execução:</strong> <?=$workerLast?h((string)$workerLast):'Nenhuma registrada'?></p>
+        <p><strong>Na fila:</strong> <?=$staffQueueCount?> avisos e <?=$mailQueueCount?> mensagens.</p>
+      </div>
+      <?php if(!$workerActive):?><p class="comms-attention"><?=$workerLast?'A rotina automática não executou recentemente.':'Nenhuma execução automática identificada.'?> Mensagens programadas não serão liberadas no horário com o painel fechado até configurar a rotina na hospedagem.</p><?php endif;?>
+    </section>
+  </div>
+<?php elseif($tab==='alerts'):?>
+  <div class="comms-lead"><div><p class="comms-eyebrow">Acompanhamento</p><h2>Avisos dos alunos</h2>
+    <p>Escolha quais atividades devem gerar avisos no seu e-mail.</p></div></div>
+  <section class="admin-card comms-section" id="staff-alerts" data-communications-alerts data-queue-url="/admin/communications-queue.php"
+    data-auto-run="<?=$autoAlertsRun?'1':'0'?>" data-initial-sent="<?=(int)($initialAlertsBatch['sent']??0)?>" data-initial-skipped="<?=(int)($initialAlertsBatch['skipped']??0)?>" data-initial-failed="<?=(int)($initialAlertsBatch['failed']??0)?>">
+    <header><div><h2>Fila de avisos</h2><p>Envie os avisos da sua conta agora, sem depender de agendamento.</p></div></header>
+    <p data-alerts-count aria-live="polite"><?=$alertsQueueSummary['pending']?> pendente(s) · <?=$alertsQueueSummary['processing']?> processando · <?=$alertsQueueSummary['accepted']?> aceito(s) · <?=$alertsQueueSummary['failed']?> falha(s) · <?=$alertsQueueSummary['cancelled']?> cancelado(s).</p>
+    <form method="post" class="comms-inline-actions" data-alerts-form>
+      <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+      <button class="admin-button" type="submit" name="action" value="run_alerts" data-alerts-run<?=$alertsQueueSummary['pending']<1?' disabled':''?>>Enviar avisos agora</button>
+      <button class="admin-button secondary" type="submit" name="action" value="cancel_alerts" data-alerts-cancel<?=$alertsQueueSummary['pending']<1?' disabled':''?>>Cancelar avisos pendentes</button>
+      <button class="admin-button secondary" type="submit" name="action" value="retry_alerts" data-alerts-retry<?=$alertsQueueSummary['failed']<1?' disabled':''?>>Reprocessar falhas</button>
+    </form>
+    <p class="muted" data-alerts-feedback role="status" aria-live="polite">O cancelamento alcança somente avisos pendentes. Antes de reprocessar uma falha, confira se o serviço já aceitou a mensagem para evitar duplicações.</p>
+  </section>
+  <?php
+  $adminId=(int)(current_admin()['id']??0);
+  $adminNoticeSettings=admin_student_notice_preferences($db,$adminId);
+  $adminNoticeHistory=admin_student_notice_recent($db,$adminId);
+  ?>
+  <section class="admin-card comms-section comms-max">
+    <header><div><h2>Notificações</h2><p>Destino: <?=h((string)(current_admin()['email']??''))?></p></div></header>
+    <form method="post" class="comms-form">
+      <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+      <input type="hidden" name="action" value="admin_notice_preferences">
+      <div class="comms-checklist">
+      <?php foreach(admin_student_notice_kinds() as $kind=>$label):?>
+        <label><input type="checkbox" name="alerts[<?=h($kind)?>]" value="1"<?=!empty($adminNoticeSettings[$kind])?' checked':''?>><span><?=h($label)?></span></label>
+      <?php endforeach;?>
+      </div>
+      <button type="submit" class="admin-button">Salvar avisos</button>
+    </form>
+    <form method="post" class="comms-inline-actions">
+      <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+      <button type="submit" name="action" value="admin_notice_test" class="admin-button secondary">Testar aviso por e-mail</button>
+    </form>
+  </section>
+  <section class="admin-card comms-section">
+    <header><div><h2>Atividade recente</h2><p>Últimos avisos gerados para sua conta.</p></div></header>
+    <?php if(!$adminNoticeHistory):?><p class="muted">Nenhum aviso registrado.</p><?php else:?>
+    <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Ação</th><th>Situação</th><th>Data</th></tr></thead><tbody>
+      <?php foreach($adminNoticeHistory as $row):?>
+      <tr><td><?=h(admin_student_notice_kinds()[(string)$row['event_kind']]??(string)$row['event_kind'])?></td>
+        <td><?=h(($row['error_code']??null)==='cancelled_by_admin'?'Cancelado':(['pending'=>'Na fila','processing'=>'Processando','sent'=>'Aceito para envio','skipped'=>'Ignorado','failed'=>'Falha'][$row['status']]??(string)$row['status']))?>
+         <?php if(($row['provider_event']??null)!==null):?><small class="muted"><?=h(['delivered'=>'Entregue','hard_bounce'=>'Devolução permanente','soft_bounce'=>'Devolução temporária','blocked'=>'Bloqueado','spam'=>'Marcado como spam','invalid_email'=>'E-mail inválido','error'=>'Erro do provedor','unsubscribed'=>'Assinatura cancelada'][$row['provider_event']]??(string)$row['provider_event'])?></small><?php endif;?>
+         <?php if(($row['error_code']??null)!==null):?>
+         <small class="muted"><?=h(['transport_failure'=>'O serviço não confirmou o envio','processing_outcome_unknown'=>'Resultado incerto após interrupção','attempts_exhausted'=>'Tentativas esgotadas','cancelled_by_admin'=>'Cancelado pelo administrador','ineligible'=>'Destinatário não elegível'][$row['error_code']]??'Falha registrada')?></small>
+         <?php endif;?></td>
+        <td><?=h((string)$row['created_at'])?></td></tr>
+      <?php endforeach;?>
+    </tbody></table></div>
+    <?php endif;?>
+  </section>
+<?php elseif($tab==='campaigns'):?>
+  <div class="comms-lead"><div><p class="comms-eyebrow">Comunicação com participantes</p><h2>Mensagens</h2>
+    <p>Redija avisos acadêmicos ou newsletters e revise os destinatários antes de enviar.</p></div>
+    <?php if($selectedId):?><a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns']))?>">Nova mensagem</a><?php endif;?>
+  </div>
+  <ol class="comms-flow" aria-label="Fluxo da comunicação">
+    <li class="is-current"><span>1</span><div><strong>Compor</strong><small>Conteúdo e modelo</small></div></li>
+    <li><span>2</span><div><strong>Selecionar</strong><small>Curso, turma e pessoas</small></div></li>
+    <li><span>3</span><div><strong>Revisar ou agendar</strong><small>Prévia e horário</small></div></li>
+    <li><span>4</span><div><strong>Acompanhar</strong><small>Entrega e falhas</small></div></li>
+  </ol>
+  <section class="admin-card comms-section" id="composer" data-communication-composer data-email-media-url="/admin/communications-media.php" data-email-csrf="<?=h(csrf_token('communications-admin'))?>" data-saved-draft="<?=$selectedId>0?'1':'0'?>" data-audience-url="/admin/communications-audience.php">
+    <header><div><h2><?=($selectedId?($isScheduled?'Mensagem agendada':((($form['status']??'draft')==='draft')?'Editar mensagem':'Mensagem #'.$selectedId)):'Nova mensagem')?></h2>
+    <p><?=h((string)($isScheduled?'Envio programado':(($form['status']??'draft')==='draft'?'Rascunho':(($form['status']??'')==='queued'?'Aguardando processamento':'Processamento encerrado'))))?></p></div></header>
+    <?php if(($form['status']??'draft')==='draft'&&!$isScheduled):?>
+    <?php if($selectedId>0):?>
+      <div class="comms-inline-actions">
+        <a class="admin-button secondary" href="/admin/communications-builder-lab.php?<?=h(http_build_query(['activity'=>$activityId,'id'=>$selectedId]))?>">Abrir construtor visual</a>
+      </div>
+      <?php if($templates):?><form method="post" class="comms-inline-actions"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><input type="hidden" name="action" value="template_apply"><input type="hidden" name="campaign_id" value="<?=$selectedId?>"><label>Começar de um template<select name="template_id" required><option value="">Escolha</option><?php foreach($templates as $template):?><option value="<?=(int)$template['id']?>"><?=h((string)$template['name'])?></option><?php endforeach;?></select></label><button class="admin-button secondary" type="submit">Aplicar template</button></form><?php endif;?>
+    <?php endif;?>
+    <form method="post" class="comms-compose-form" data-composer-form>
+      <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+      <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+      <input type="hidden" name="selection_explicit" value="1">
+      <div class="comms-filter-grid">
+        <label>Tipo de mensagem<select name="category">
+          <option value="newsletter"<?=$form['category']==='newsletter'?' selected':''?>>Newsletter</option>
+          <option value="operational"<?=$form['category']==='operational'?' selected':''?>>Aviso acadêmico</option>
+        </select></label>
+        <label>Curso<select name="course_id">
+          <option value="0">Todos os cursos</option>
+          <?php foreach($courses as $course):?><option value="<?=(int)$course['id']?>"<?=(int)($form['course_id']??0)===(int)$course['id']?' selected':''?>><?=h((string)$course['title'])?></option><?php endforeach;?>
+        </select></label>
+        <label>Turma<select name="cohort_id">
+          <option value="0">Todas as turmas elegíveis</option>
+          <?php foreach($allCohorts as $cohort):?><option data-course="<?=$cohort['course_id']?>" value="<?=$cohort['id']?>"<?=(int)($form['cohort_id']??0)===$cohort['id']?' selected':''?>><?=h($cohort['label'])?></option><?php endforeach;?>
+        </select></label>
+      </div>
+      <div class="comms-filter-grid">
+        <label>Segmento salvo<select name="segment_id">
+          <option value="0">Sem segmento adicional</option>
+          <?php foreach($segments as $segment):?><option value="<?=(int)$segment['id']?>"<?=(int)($form['segment_id']??0)===(int)$segment['id']?' selected':''?>><?=h((string)$segment['name'])?></option><?php endforeach;?>
+        </select></label>
+        <label>Prioridade<select name="priority">
+          <?php foreach([80=>'Alta',50=>'Normal',20=>'Baixa'] as $value=>$label):?><option value="<?=$value?>"<?=(int)($form['priority']??50)===$value?' selected':''?>><?=h($label)?></option><?php endforeach;?>
+        </select></label>
+        <label>Objetivo<select name="goal_key"><option value=""<?=($form['goal_key']??'')===''?' selected':''?>>Sem conversão</option><option value="course_enrollment"<?=($form['goal_key']??'')==='course_enrollment'?' selected':''?>>Matrícula no curso</option></select></label>
+      </div>
+      <section class="comms-recipient-panel" aria-labelledby="recipients-title">
+        <div class="comms-recipient-heading">
+          <div><h3 id="recipients-title">Destinatários</h3><p data-recipient-count aria-live="polite"></p></div>
+          <div class="comms-recipient-actions">
+            <button type="button" class="admin-button secondary" data-recipient-all>Selecionar todos</button>
+            <button type="button" class="admin-button secondary" data-recipient-none>Limpar seleção</button>
+          </div>
+        </div>
+        <label class="comms-search-label">Buscar por nome ou e-mail
+          <input type="search" data-recipient-search placeholder="Pesquisar destinatários" autocomplete="off">
+        </label>
+        <div class="comms-recipient-list" data-recipient-list aria-label="Pessoas elegíveis">
+          <?php foreach($recipientCandidates as $person):?>
+          <label class="comms-recipient-row">
+            <input type="checkbox" name="recipient_ids[]" value="<?=(int)$person['id']?>"<?=isset($recipientLookup[(int)$person['id']])?' checked':''?>>
+            <span class="comms-recipient-identity"><strong><?=h((string)$person['name'])?></strong><small><?=h((string)$person['email'])?></small></span>
+          </label>
+          <?php endforeach;?>
+        </div>
+        <p class="muted" data-recipient-status aria-live="polite">Somente pessoas elegíveis para o tipo, curso e turma escolhidos.</p>
+      </section>
+      <fieldset class="comms-template-picker">
+        <legend>Modelo visual do e-mail</legend>
+        <div class="comms-template-grid" style="--comms-preview-accent:<?=h($emailBrand['accent'])?>;--comms-preview-ink:<?=h($emailBrand['ink'])?>;--comms-preview-ground:<?=h($emailBrand['bg'])?>">
+          <?php foreach(communication_template_keys() as $key=>$label):?>
+            <label class="comms-template-option">
+              <input type="radio" name="template_key" value="<?=h($key)?>"<?=($form['template_key']??'minimal')===$key?' checked':''?>>
+              <span class="comms-template-thumbnail comms-template-<?=h($key)?>" aria-hidden="true"><span></span><i></i><b></b><em></em></span>
+              <strong><?=h($label)?></strong>
+            </label>
+          <?php endforeach;?>
+        </div>
+      </fieldset>
+      <label class="comms-compose-label">Assunto<input name="subject" maxlength="180" value="<?=h((string)$form['subject'])?>" required></label>
+      <label class="comms-compose-label">Texto de prévia<input name="preheader" maxlength="180" value="<?=h((string)($form['preheader']??''))?>" placeholder="Complemento curto exibido ao lado do assunto"></label>
+      <section class="comms-rich-section" aria-labelledby="rich-heading">
+        <div class="comms-recipient-heading"><h3 id="rich-heading">Mensagem</h3><span class="muted">Editor visual</span></div>
+        <div class="comms-editor-toolbar" role="toolbar" aria-label="Formatação da mensagem">
+          <button type="button" data-editor-command="bold" aria-label="Negrito"><strong>N</strong></button>
+          <button type="button" data-editor-command="italic" aria-label="Itálico"><em>I</em></button>
+          <button type="button" data-editor-command="underline" aria-label="Sublinhado"><u>S</u></button>
+          <button type="button" data-editor-command="insertUnorderedList">Lista</button>
+          <button type="button" data-editor-command="insertOrderedList">1. Lista</button>
+          <button type="button" data-editor-command="formatBlock" data-editor-value="h2">Título</button>
+          <button type="button" data-editor-command="insertHorizontalRule">Separador</button>
+          <button type="button" data-editor-command="createButton">Botão</button>
+          <button type="button" data-editor-command="createLink">Link</button>
+          <button type="button" data-email-media-open class="comms-toolbar-image">Inserir imagem</button>
+          <button type="button" data-editor-command="removeFormat">Limpar formatação</button>
+        </div>
+        <div class="comms-rich-editor" data-mail-editor role="textbox" aria-label="Corpo da mensagem" aria-multiline="true" contenteditable="true" hidden><?=($form['body_html']??'')!==''?communication_safe_html((string)$form['body_html']):nl2br(h((string)$form['body_text']))?></div>
+        <input type="hidden" name="body_html" value="">
+        <label data-plain-fallback class="comms-compose-label">Texto da mensagem
+          <textarea name="body_text" rows="11"><?=h((string)$form['body_text'])?></textarea>
+        </label>
+      </section>
+      <p class="comms-attention" data-unsaved-warning hidden>Você alterou a mensagem. Salve o rascunho antes de confirmar o envio.</p>
+      <div class="comms-compose-actions">
+        <button type="submit" name="action" value="save" class="admin-button">Salvar rascunho</button>
+        <button type="submit" name="action" value="preview" class="admin-button secondary">Revisar mensagem</button>
+      </div>
+      <?php if(!$selectedId):?><p class="comms-next-step"><strong>Próximo passo:</strong> ao salvar, você poderá enviar agora, programar data e hora ou mandar um teste para sua conta.</p><?php endif;?>
+    </form>
+    <dialog class="comms-media-dialog" data-email-media-dialog aria-labelledby="email-media-dialog-heading">
+      <div class="comms-media-dialog-inner">
+        <header><h3 id="email-media-dialog-heading">Adicionar imagem</h3><button type="button" class="admin-button secondary" data-email-media-close>Fechar</button></header>
+        <div class="comms-media-picker-actions">
+          <label>Pesquisar na Biblioteca<input type="search" data-email-media-search placeholder="Nome da imagem"></label>
+          <label class="admin-button secondary">Enviar nova imagem<input type="file" data-email-media-upload accept="image/jpeg,image/png,image/webp" hidden></label>
+        </div>
+        <p class="muted" data-email-media-status aria-live="polite"></p>
+        <div class="comms-media-gallery" data-email-media-gallery></div>
+        <div class="comms-media-insert" hidden data-email-media-insert-panel>
+          <img alt="" data-email-media-selected-image>
+          <label>Descrição da imagem (texto alternativo)<input type="text" data-email-media-alt maxlength="250" required placeholder="Descreva o conteúdo para quem não puder visualizar"></label>
+          <button type="button" class="admin-button" data-email-media-insert>Inserir na mensagem</button>
+        </div>
+      </div>
+    </dialog>
+    <?php else:?>
+    <h3><?=h((string)$form['subject'])?></h3>
+    <div class="comms-preview-toolbar"><strong>Prévia do e-mail</strong><div class="comms-preview-toggle" aria-label="Largura da prévia"><button type="button" data-email-preview-mode="desktop" aria-pressed="true">Computador</button><button type="button" data-email-preview-mode="mobile" aria-pressed="false">Celular</button></div></div>
+      <?php if($renderedEmailPreview!==''):?>
+      <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h($renderedEmailPreview)?>"></iframe></div>
+      <?php else:?><p class="comms-attention">A prévia não está disponível. Verifique as imagens e o endereço do site.</p><?php endif;?>
+    <?php if($isScheduled):?>
+      <?php if(trim((string)($form['schedule_error']??''))!==''):?><p class="comms-attention"><strong>O envio agendado precisa de atenção.</strong> <?=h((string)$form['schedule_error'])?> Cancele o agendamento, revise os destinatários e agende novamente.</p><?php endif;?>
+      <p class="comms-attention"><strong>Envio agendado:</strong> <?=h(course_agenda_when((string)$form['scheduled_at'],(string)$form['schedule_timezone']))?>. A audiência e o consentimento serão conferidos novamente nesse momento.</p>
+      <form method="post" class="comms-inline-actions">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+        <button type="submit" class="admin-button secondary" name="action" value="cancel_schedule" data-confirm="Cancelar este agendamento e devolver a mensagem aos rascunhos?">Cancelar agendamento</button>
+      </form>
+    <?php else:?>
+      <p class="muted"><?=($form['status']==='queued'?'Esta mensagem está na fila. Use Enviar agora para processá-la sem depender do servidor agendado.':'O processamento desta mensagem foi concluído.')?></p>
+    <?php endif;?>
+    <?php endif;?>
+    <?php if($preview!==null && ($form['status']??'draft')==='draft'&&!$isScheduled):?>
+    <section class="comms-send-review" aria-labelledby="send-review-title">
+      <header><h3 id="send-review-title">Revisão do envio</h3><p><strong><?=$preview?></strong> destinatário(s) selecionado(s) e elegível(is).</p></header>
+      <p><strong><?=h((string)$form['subject'])?></strong></p>
+      <div class="comms-preview-toolbar"><strong>Prévia do e-mail</strong><div class="comms-preview-toggle" aria-label="Largura da prévia"><button type="button" data-email-preview-mode="desktop" aria-pressed="true">Computador</button><button type="button" data-email-preview-mode="mobile" aria-pressed="false">Celular</button></div></div>
+      <?php if($renderedEmailPreview!==''):?>
+      <div class="comms-email-frame"><iframe title="Prévia visual do e-mail" sandbox="" loading="lazy" srcdoc="<?=h($renderedEmailPreview)?>"></iframe></div>
+      <?php else:?><p class="comms-attention">A prévia não está disponível. Verifique as imagens e o endereço do site.</p><?php endif;?>
+      <?php if($selected && $selected['status']==='draft' && trim((string)$form['subject'])===(string)$selected['subject'] && trim((string)$form['body_text'])===(string)$selected['body_text'] && (string)($form['body_html']??'')===(string)($selected['body_html']??'') && (string)($form['preheader']??'')===(string)($selected['preheader']??'') && (string)($form['template_key']??'minimal')===(string)($selected['template_key']??'minimal') && (string)$form['category']===(string)$selected['category'] && (int)$form['course_id']===(int)$selected['course_id'] && (int)$form['cohort_id']===(int)$selected['cohort_id'] && (int)($form['segment_id']??0)===(int)($selected['segment_id']??0) && (int)($form['priority']??50)===(int)($selected['priority']??50) && (string)($form['goal_key']??'')===(string)($selected['goal_key']??'')):?>
+      <?php $approvalStatus=(string)($selected['approval_status']??'approved');?>
+      <div class="comms-attention"><strong>Aprovação:</strong> <?=h(['draft'=>'Em preparação','pending'=>'Aguardando decisão','approved'=>'Aprovada','rejected'=>'Devolvida para revisão'][$approvalStatus]??$approvalStatus)?></div>
+      <?php if($approvalStatus==='draft'||$approvalStatus==='rejected'):?>
+      <form method="post" class="comms-inline-actions">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+        <button type="submit" class="admin-button" name="action" value="request_approval">Enviar para aprovação</button>
+      </form>
+      <?php elseif($approvalStatus==='pending'):?>
+      <form method="post" class="comms-schedule-panel">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+        <label>Observação da decisão<textarea name="approval_note" rows="3" maxlength="1000"></textarea></label>
+        <button type="submit" class="admin-button" name="action" value="approve_campaign">Aprovar mensagem</button>
+        <button type="submit" class="admin-button secondary" name="action" value="reject_campaign">Devolver para revisão</button>
+      </form>
+      <?php elseif($approvalStatus==='approved'):?>
+      <form method="post" class="comms-inline-actions">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+        <button type="submit" class="admin-button secondary" name="action" value="test">Enviar teste para meu e-mail</button>
+        <button type="submit" class="admin-button" name="action" value="queue_now"<?=$preview===0?' disabled':''?> data-confirm="Confirmar e iniciar agora o envio aos destinatários selecionados e elegíveis? Os demais envios pendentes também serão processados.">Confirmar e enviar agora</button>
+        <button type="submit" class="admin-button secondary" name="action" value="queue"<?=$preview===0?' disabled':''?> data-confirm="Confirmar e colocar na fila sem iniciar o processamento agora?">Somente colocar na fila</button>
+      </form>
+      <form method="post" class="comms-schedule-panel">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+        <input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+        <label>Data e hora
+          <input type="datetime-local" name="scheduled_local" value="<?=h(course_agenda_local(gmdate('Y-m-d\TH:i:s\Z',time()+86400),'America/Sao_Paulo'))?>" required>
+        </label>
+        <label>Fuso horário
+          <select name="schedule_timezone">
+            <?php foreach(['America/Sao_Paulo'=>'Brasília','America/Manaus'=>'Manaus','America/Recife'=>'Recife','America/Fortaleza'=>'Fortaleza','Europe/Lisbon'=>'Lisboa','UTC'=>'UTC'] as $zone=>$label):?>
+              <option value="<?=h($zone)?>"><?=h($label)?></option>
+            <?php endforeach;?>
+          </select>
+        </label>
+        <button type="submit" class="admin-button secondary" name="action" value="schedule"<?=$preview===0?' disabled':''?> data-confirm="Agendar esta mensagem? A elegibilidade será verificada novamente na hora do envio.">Agendar envio</button>
+      </form>
+      <form method="post" class="comms-inline-actions">
+        <input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>"><input type="hidden" name="campaign_id" value="<?=$selectedId?>">
+        <label>Nome do template<input name="template_name" maxlength="120" required></label>
+        <button type="submit" class="admin-button secondary" name="action" value="template_from_campaign">Salvar como template</button>
+      </form>
+      <?php endif;?>
+      <?php else:?><p class="muted">Salve o rascunho para confirmar o envio.</p><?php endif;?>
+    </section>
+    <?php endif;?>
+  </section>
+<?php if($selected && $selected['status']!=='draft'):?>
+<section class="admin-card comms-section">
+  <header><div><h2>Destinatários e situação do envio</h2><p>Os resultados indicam o aceite pelo serviço, não a entrega na caixa de entrada.</p></div></header>
+  <?php if(!$selectedDeliveryRows):?><p class="muted">Nenhum destinatário registrado.</p><?php else:?>
+  <?php
+    $deliveryLabels=['pending'=>'Na fila','processing'=>'Processando','sent'=>'Aceito pelo serviço',
+      'skipped'=>'Ignorado','failed'=>'Falha'];
+    $providerLabels=['delivered'=>'Entregue','hard_bounce'=>'Devolução permanente','soft_bounce'=>'Devolução temporária',
+      'blocked'=>'Bloqueado','spam'=>'Marcado como spam','invalid_email'=>'E-mail inválido','error'=>'Erro do provedor','unsubscribed'=>'Assinatura cancelada'];
+    $errorLabels=['cancelled_by_admin'=>'Cancelado pelo administrador',
+      'no_longer_eligible'=>'Destinatário deixou de ser elegível',
+      'provider_failure'=>'Serviço de envio não confirmou a mensagem',
+      'media_unavailable'=>'Imagem indisponível',
+      'audience_validation_error'=>'Não foi possível verificar a audiência',
+      'email_suppressed'=>'E-mail suprimido após devolução permanente ou denúncia',
+      'processing_outcome_unknown'=>'Resultado incerto após interrupção',
+      'processing_timeout'=>'Processamento interrompido'];
+  ?>
+  <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list">
+    <thead><tr><th>Destinatário</th><th>Situação</th><th>Entrega</th><th>Tentativas</th><th>Atualização</th></tr></thead><tbody>
+    <?php foreach($selectedDeliveryRows as $delivery):?>
+    <tr>
+      <td data-primary="true"><strong><?=h((string)$delivery['name'])?></strong><small><?=h((string)$delivery['email'])?></small></td>
+      <td><?=h($delivery['error_code']==='cancelled_by_admin'?'Cancelado':($deliveryLabels[$delivery['status']]??$delivery['status']))?>
+      <?php if($delivery['error_code']!==null):?><small class="muted"><?=h($errorLabels[$delivery['error_code']]??'Falha ou restrição registrada')?></small><?php endif;?></td>
+      <td><?=h($delivery['provider_event']!==null?($providerLabels[$delivery['provider_event']]??(string)$delivery['provider_event']):'Sem retorno')?></td>
+      <td><?=(int)$delivery['attempts']?></td>
+      <td><?=h((string)$delivery['updated_at'])?></td>
+    </tr>
+    <?php endforeach;?>
+    </tbody></table></div>
+  <?php endif;?>
+  <?php if(count($selectedDeliveryRows)>=300):?><p class="muted">Exibindo os primeiros 300 registros desta mensagem.</p><?php endif;?>
+</section>
+<?php endif;?>
+<section class="admin-card">
+  <header><div><h2>Histórico</h2><p>Consulte seus rascunhos e envios.</p></div></header>
+  <?php if(!$campaigns):?><p class="muted">Nenhuma comunicação cadastrada.</p><?php else:?>
+  <div class="admin-table-scroll"><table class="admin-data-table admin-responsive-list"><thead><tr><th>Assunto</th><th>Tipo</th><th>Situação</th><th>Aceitos pelo provedor</th><th></th></tr></thead><tbody>
+    <?php foreach($campaigns as $campaign):?><tr>
+      <td data-primary="true"><?=h((string)$campaign['subject'])?></td>
+      <td><?=h($campaign['category']==='newsletter'?'Newsletter':'Aviso de curso')?></td>
+      <td><?=h(communication_campaign_is_scheduled($campaign)
+          ? (trim((string)($campaign['schedule_error']??''))!==''?'Agendamento requer atenção':'Agendada para '.course_agenda_when((string)$campaign['scheduled_at'],(string)$campaign['schedule_timezone']))
+          : ($campaign['status']==='completed' && (int)$campaign['cancelled_count']>0
+          ? ((int)$campaign['cancelled_count']===(int)$campaign['audience_count']?'Cancelada':'Parcialmente cancelada')
+          : ($campaign['status']==='completed' && (int)$campaign['failed_count']>0
+            ? 'Processada com falhas'
+            : (['draft'=>'Rascunho','queued'=>'Na fila','completed'=>'Processada'][$campaign['status']]??$campaign['status']))))?></td>
+      <td><?=($campaign['status']==='draft'?'Ainda não enviado':(int)$campaign['sent_count'].' / '.(int)$campaign['audience_count'])?>
+        <?php if((int)$campaign['cancelled_count']>0 || (int)$campaign['failed_count']>0):?>
+          <small class="muted">· <?=(int)$campaign['cancelled_count']?> cancelado(s) · <?=(int)$campaign['failed_count']?> falha(s)</small>
+        <?php endif;?>
+        <?php if((int)$campaign['delivered_count']>0 || (int)$campaign['bounced_count']>0):?>
+          <small class="muted">· <?=(int)$campaign['delivered_count']?> entregue(s) · <?=(int)$campaign['bounced_count']?> devolvido(s) · <?=(int)$campaign['conversion_count']?> conversão(ões)</small>
+        <?php endif;?>
+      </td>
+      <td data-actions="true"><div class="comms-history-actions">
+        <a class="admin-button secondary" href="?<?=h(http_build_query(['activity'=>$activityId,'tab'=>'campaigns','id'=>(int)$campaign['id']]))?>">Abrir</a>
+        <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+          <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
+          <button type="submit" name="action" value="duplicate" class="admin-button secondary">Duplicar</button>
+        </form>
+        <?php if((int)$campaign['failed_count']>0):?>
+        <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+          <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
+          <button type="submit" name="action" value="retry_campaign" class="admin-button secondary" data-confirm="Reprocessar somente os destinatários com falha? Confira antes no provedor: uma resposta inconclusiva pode significar que o e-mail foi aceito, e repetir o envio pode duplicá-lo.">Reprocessar falhas</button>
+        </form>
+        <?php endif;?>
+        <?php if($campaign['status']==='queued' && (int)$campaign['pending_count']>0):?>
+        <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+          <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
+          <button type="submit" name="action" value="cancel_campaign" class="admin-button secondary" data-confirm="Cancelar apenas os envios ainda pendentes desta mensagem?">Cancelar pendentes</button>
+        </form>
+        <?php endif;?>
+        <?php if(communication_campaign_is_scheduled($campaign)):?>
+        <form method="post"><input type="hidden" name="_csrf" value="<?=h(csrf_token('communications-admin'))?>">
+          <input type="hidden" name="campaign_id" value="<?=(int)$campaign['id']?>">
+          <button type="submit" name="action" value="cancel_schedule" class="admin-button secondary" data-confirm="Cancelar este agendamento?">Cancelar agendamento</button>
+        </form>
+        <?php endif;?>
+      </div></td>
+    </tr><?php endforeach;?>
+  </tbody></table></div>
+  <?php endif;?>
+</section>
+
+<?php endif;?>
+</div>
+<script src="/assets/communications-editor.js" defer></script>
+<script src="/assets/communications-queue.js" defer></script>
+<script src="/assets/communications-alerts.js" defer></script>
+<?php admin_shell_end();

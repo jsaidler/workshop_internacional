@@ -1,0 +1,297 @@
+.student-lab-stock-intro{max-width:800px;margin:14px 0 0;color:var(--muted);font-size:15px;line-height:1.65}.student-lab-stock-intro strong{color:var(--text);font-weight:600}.student-lab-crosslink{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--ux-space-5);margin-top:var(--ux-space-5);padding:var(--ux-space-4) 0;border-top:1px solid var(--student-line-soft);border-bottom:1px solid var(--student-line-soft)}.student-lab-crosslink div{max-width:760px}.student-lab-crosslink strong{display:block;font-size:14px}.student-lab-crosslink p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.55}.student-stock-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:14px;border-top:1px solid var(--line)}.student-stock-summary article{display:grid;gap:6px;padding:14px 10px;border:0;border-right:1px solid var(--line);background:transparent}.student-stock-summary article:last-child{border-right:0}.student-stock-summary span{color:var(--muted);font:600 9px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.055em}.student-stock-summary strong{font-family:var(--title);font-size:32px;font-weight:500;line-height:1}.student-stock-summary small{color:var(--muted);font-size:11px;line-height:1.4}.student-stock-section-heading{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,420px);gap:var(--ux-space-6);align-items:end;padding-bottom:var(--ux-space-4);border-bottom:1px solid var(--line)}.student-stock-section-heading>p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}.student-inventory-list{display:grid;border-top:1px solid var(--line)}.student-inventory-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;min-width:0;padding:22px 0;border:0;border-bottom:1px solid var(--line);background:transparent}.student-inventory-item.is-low{border-left:3px solid var(--focus);padding-left:var(--ux-space-4)}.student-inventory-main h3{margin:10px 0 0;font-family:var(--title);font-size:clamp(27px,3vw,36px);font-weight:500;line-height:1.02;text-transform:none}.student-inventory-main p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.student-inventory-balance{display:grid;justify-items:end;align-content:start;min-width:0}.student-inventory-balance strong{font:600 30px/1 var(--mono)}.student-inventory-balance span{margin-top:5px;color:var(--muted);font:500 12px/1.35 var(--body);text-transform:none}.student-inventory-balance small{margin-top:8px;color:#c58c4c;font:600 9px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.05em}.student-inventory-item-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding-top:4px;border:0}.student-inventory-item-actions form{margin:0}.student-inventory-history>div{grid-template-columns:minmax(0,1fr) auto}.student-inventory-history small{grid-column:1/-1}.student-preparation-list{display:grid;border-top:1px solid var(--line)}.student-preparation-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--ux-space-5);align-items:start;padding:var(--ux-space-5) 0;border-bottom:1px solid var(--line)}.student-preparation-card h3{margin:8px 0 0;font-family:var(--title);font-size:clamp(28px,3vw,38px);font-weight:500;line-height:1.02;text-transform:none}.student-preparation-parameters{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;color:var(--muted);font:500 10px/1.45 var(--mono)}.student-preparation-card-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.student-preparation-card-actions form{margin:0}.student-preparation-empty{display:grid;justify-items:start;gap:8px;padding:var(--ux-space-6) 0;border-bottom:1px solid var(--line)}.student-preparation-empty strong{font-family:var(--title);font-size:30px;font-weight:500}.student-preparation-empty p{max-width:720px;margin:0 0 8px;color:var(--muted);font-size:13px;line-height:1.6}.student-editor-explainer{margin:0;padding:var(--ux-space-4) var(--ux-space-5);border-bottom:1px solid var(--student-line-soft);color:var(--muted);font-size:12px;line-height:1.55}.student-editor-explainer strong{color:var(--text)}.student-step-fixed{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:8px 14px;align-items:baseline;margin:0 0 var(--ux-space-5);padding:0 0 var(--ux-space-4);border-bottom:1px solid var(--student-line-soft)}.student-step-fixed>span{color:var(--muted);font:600 9px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.055em}.student-step-fixed>strong{font:600 18px/1.1 var(--mono);color:var(--text)}.student-step-fixed>small{min-width:0;color:var(--muted);font-size:12px;line-height:1.5}@media(max-width:760px){.student-stock-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:12px}.student-stock-summary article{gap:5px;padding:10px 6px}.student-stock-summary span{font-size:10px;letter-spacing:0}.student-stock-summary strong{font-size:26px}.student-stock-summary small{display:none}.student-stock-section-heading{grid-template-columns:1fr;gap:var(--ux-space-3)}.student-lab-crosslink{display:grid;gap:var(--ux-space-3)}.student-inventory-item{grid-template-columns:minmax(0,1fr) auto;gap:12px}.student-preparation-card{grid-template-columns:1fr;gap:var(--ux-space-4)}.student-inventory-balance{justify-items:end;min-width:0}.student-inventory-item-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px}.student-preparation-card-actions{display:grid;grid-template-columns:1fr 1fr}.student-inventory-item-actions>[data-inventory-move-open],.student-preparation-card-actions form,.student-preparation-card-actions .button{width:100%}.student-preparation-card-actions form:last-child .button{width:100%}.student-step-fixed{grid-template-columns:1fr;gap:5px}.student-step-fixed>strong{font-size:22px}.student-step-fixed>small{margin-top:3px}}
+/* Inventory-specific metadata editor: own the quantity summary instead of
+   depending on laboratory-step styles that are not loaded on Inventory routes. */
+.student-inventory-editor-body{min-width:0}
+.student-inventory-editor-balance{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;min-width:0;padding:0 0 var(--ux-space-5);border-bottom:1px solid var(--line)}
+.student-inventory-editor-balance>span{color:var(--muted);font:600 10px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.student-inventory-editor-balance>strong{color:var(--text);font:600 22px/1.2 var(--mono)}
+.student-inventory-editor-balance>small{display:block;min-width:0;max-width:60ch;color:var(--muted);font:400 12px/1.5 var(--body);overflow-wrap:anywhere}
+.student-create-dialog .student-inventory-editor-body{padding:20px 24px 24px}
+.student-create-dialog .student-inventory-editor-body>.student-lead{margin:0}
+.student-create-dialog .student-inventory-editor-body>.student-tool-workspace{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+@media(max-width:760px){.student-create-dialog .student-inventory-editor-body{padding:18px}}
+/* On a dedicated inventory editor route the parent page already has an explicit
+   contextual Back link; do not show a second identical Fechar action in the title.
+   The same source renderer keeps this close control inside its modal context. */
+.student-main>[data-student-editor] .student-create-dialog-head [data-student-editor-close]{display:none}
+
+/* I-03: the item keeps one short movement action; the operation itself lives
+   in a native modal, and is never a second physical laboratory state. */
+.student-inventory-move-dialog{max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
+.student-inventory-move-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.student-inventory-move-head .student-kicker{margin:0 0 6px}
+.student-inventory-move-head h2{margin:0;font-size:clamp(25px,3vw,32px);line-height:1.15}
+.student-inventory-move-context{display:grid;gap:5px;padding:16px 24px 0;min-width:0}
+.student-inventory-move-context strong{font:600 17px/1.35 var(--body);overflow-wrap:anywhere}
+.student-inventory-move-context span{font:500 12px/1.5 var(--mono);color:var(--muted)}
+.student-inventory-move-error{margin:16px 24px 0}
+.student-inventory-move-note-hint{font-size:11px;color:var(--muted);font-weight:400}
+.student-inventory-move-dialog .student-form-grid{row-gap:16px}
+.student-inventory-move-dialog .student-actions{margin-top:0;padding-top:16px}
+@media(max-width:760px){
+ .student-page .student-inventory-move-dialog[open]{
+   position:fixed;inset:auto 0 0;width:100%;max-width:100%;
+   max-height:calc(100dvh - 12px);margin:0;
+   border-radius:16px 16px 0 0;border-bottom:0;
+   padding-bottom:env(safe-area-inset-bottom,0px);
+ }
+ .student-inventory-move-head{padding:16px 18px}
+ .student-inventory-move-head h2{font-size:27px}
+ .student-inventory-move-context{padding:14px 18px 0}
+ .student-inventory-move-error{margin:14px 18px 0}
+ .student-inventory-move-dialog .student-form-grid{row-gap:15px}
+ .student-inventory-move-dialog .student-actions{grid-template-columns:1fr}
+ .student-inventory-item-actions>form{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){.student-inventory-move-dialog{scroll-behavior:auto}}
+
+/* Task-first editors for laboratory references.
+   Owns hierarchy/spacing of operational PHP views, not the legacy forms. */
+.student-task-editor{max-width:720px}
+.student-task-editor .student-create-dialog-head{align-items:center;gap:16px}
+.student-task-editor .student-create-dialog-head h2{text-transform:none;text-wrap:balance}
+.student-task-editor .student-create-dialog-head .student-kicker{margin:0 0 8px}
+.student-task-editor .student-tool-workspace{min-width:0;margin-top:0;border:0}
+.student-task-editor .student-task-form{gap:16px;align-items:start;min-width:0}
+.student-task-editor .student-task-form .form-field{min-width:0;display:grid;gap:8px;margin-top:0}
+.student-task-editor .student-task-form .form-field[hidden]{display:none}
+.student-task-editor .student-task-form :is(input,select,textarea):focus-visible,
+.student-task-editor .student-parameter-disclosure>summary:focus-visible{
+  outline:2px solid var(--focus);outline-offset:2px
+}
+.student-task-editor .student-task-eyebrow{
+  display:block;color:var(--focus);
+  font:500 10px/1.35 var(--mono);letter-spacing:.085em;text-transform:uppercase
+}
+.student-task-editor .student-task-focus{
+  display:grid;gap:12px;padding:22px;border:1px solid var(--line);
+  background:var(--surface-2)
+}
+.student-task-editor .student-task-focus h3{max-width:550px;margin:0;color:var(--text);font:500 clamp(26px,2.7vw,32px)/1.16 var(--title);text-transform:none}
+.student-task-editor .student-task-focus .student-task-time{margin-top:3px}
+.student-task-editor .student-task-focus .student-task-time input{
+  min-height:60px;background:var(--bg);border-color:var(--line-strong);
+  font:650 28px/1.1 var(--body);letter-spacing:-.035em
+}
+.student-task-editor .student-task-focus p{
+  margin:0;font:400 12px/1.45 var(--body);color:var(--muted)
+}
+.student-task-editor .student-task-section-head{display:grid;gap:6px;margin:0}
+.student-task-editor .student-task-section-head h3{max-width:620px;margin:0;color:var(--text);font:500 clamp(26px,2.5vw,30px)/1.14 var(--title);text-transform:none}
+.student-task-editor .student-task-section-divider{
+  margin-top:8px;padding-top:22px;border-top:1px solid var(--line)
+}
+.student-task-editor .student-task-mixture{
+  min-width:0;margin-top:4px;padding:18px;
+  border:1px solid var(--line);
+  background:color-mix(in srgb,var(--surface) 60%,transparent)
+}
+.student-task-editor .student-task-mixture-label{display:grid;gap:3px;margin:0 0 15px}
+.student-task-editor .student-task-mixture-label span{
+  font:700 14px/1.25 var(--body)
+}
+.student-task-editor .student-task-mixture-label small{
+  color:var(--muted);font:400 12px/1.4 var(--body)
+}
+.student-task-editor .student-parameter-disclosure{
+  min-width:0;margin:0;border:1px solid var(--line);
+  background:var(--surface);overflow:clip
+}
+.student-task-editor .student-parameter-disclosure>summary{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;min-height:65px;padding:13px 18px;
+  cursor:pointer;list-style:none;color:var(--text)
+}
+.student-task-editor .student-parameter-disclosure>summary::-webkit-details-marker{display:none}
+.student-task-editor .student-parameter-disclosure>summary>span:first-child{min-width:0;display:grid;gap:5px}
+.student-task-editor .student-parameter-disclosure>summary strong{
+  font:700 14px/1.25 var(--body)
+}
+.student-task-editor .student-parameter-disclosure>summary small{
+  font:400 12px/1.4 var(--body);color:var(--muted)
+}
+.student-task-editor .student-disclosure-icon{
+  width:9px;height:9px;flex:0 0 9px;margin-right:5px;
+  border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  transform:rotate(45deg);transition:transform .16s ease
+}
+.student-task-editor .student-parameter-disclosure[open] .student-disclosure-icon{transform:rotate(225deg)}
+.student-task-editor .student-parameter-fields{
+  min-width:0;margin:0;padding:17px 18px 19px;border-top:1px solid var(--line)
+}
+.student-task-editor .student-parameter-fields.student-form-grid{gap:14px}
+.student-task-editor .student-task-actions{
+  gap:10px;margin-top:6px;padding-top:20px;border-top:1px solid var(--line)
+}
+.student-task-editor .student-task-actions .button-primary{min-height:48px;padding:12px 22px}
+.student-task-editor .student-task-actions .button-secondary{min-height:48px}
+.student-task-editor .student-editor-explainer{
+  max-width:62ch;border:0;color:var(--muted);
+  font:400 12px/1.5 var(--body)
+}
+.student-task-editor .student-editor-explainer strong{color:var(--text)}
+@media(max-width:760px){
+  .student-app .student-main>.student-task-editor .student-create-dialog-head{
+    padding:0 0 12px;border:0
+  }
+  .student-app .student-main>.student-task-editor .student-tool-workspace{padding:12px 0 24px}
+  .student-task-editor .student-task-form{gap:14px}
+  .student-task-editor .student-task-focus{padding:18px;gap:10px}
+  .student-task-editor .student-task-focus h3{font-size:22px}
+  .student-task-editor .student-task-section-head h3{font-size:21px}
+  .student-task-editor .student-task-mixture{padding:15px}
+  .student-task-editor .student-task-mixture .student-form-grid{gap:12px}
+  .student-task-editor .student-parameter-disclosure>summary{padding:13px 15px}
+  .student-task-editor .student-parameter-fields{padding:15px}
+  .student-task-editor .student-task-actions .button-primary{flex:1 1 160px}
+  .student-task-editor .student-task-actions .button-secondary{flex:0 0 auto}
+  .student-main>.student-appbar:has(+ .student-task-editor){
+    margin:0 0 12px;padding:0;border:0
+  }
+}
+
+.student-inventory-item .student-status.student-inventory-kind{display:inline-block;min-height:0;padding:0;border:0;background:transparent;color:var(--muted);font:600 12px/1.4 var(--body);letter-spacing:0;text-transform:none}
+
+/* Secondary inventory information is available on demand; the physical stock
+   and its operational action precede reporting and destructive maintenance. */
+.student-stock-metrics{margin-top:0;padding:0;border:0}
+.student-stock-metrics>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;list-style:none;color:var(--muted);font:600 13px/1.4 var(--body)}
+.student-stock-metrics>summary::-webkit-details-marker{display:none}
+.student-stock-metrics>summary span{font:500 12px/1.4 var(--body)}
+.student-stock-metrics[open]>summary{color:var(--text)}
+.student-stock-metrics>summary:focus-visible,.student-inventory-options>summary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.student-inventory-options{min-width:0;max-width:320px;border:0}
+.student-inventory-options>summary{display:flex;align-items:center;justify-content:center;min-height:44px;cursor:pointer;list-style:none;color:var(--muted);font:600 12px/1.3 var(--body)}
+.student-inventory-options>summary::-webkit-details-marker{display:none}
+.student-inventory-options>summary:hover{color:var(--text);text-decoration:underline;text-underline-offset:3px}
+.student-inventory-options-content{display:grid;gap:10px;min-width:0;padding:12px;background:var(--surface);border-top:1px solid var(--line)}
+.student-inventory-options-content>form,.student-inventory-options-content>form .button,.student-inventory-options-content>.button{width:100%;min-width:0}
+@media(max-width:760px){
+ .student-inventory-item-actions>[data-inventory-move-open]{width:100%;min-height:46px}
+ .student-inventory-options{max-width:none}
+ .student-inventory-options[open]{grid-column:1/-1}
+ .student-inventory-options-content{grid-template-columns:1fr}
+ .student-inventory-main h3{font-size:27px}
+ .student-inventory-balance strong{font-size:28px}
+}
+
+
+/* Inventário task header: do not spend a whole mobile row on a secondary
+   registration control or repeat the global Laboratory context. */
+.student-page-heading.student-inventory-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.student-inventory-heading>div{min-width:0;flex:1}
+.student-inventory-heading .student-title{font-size:clamp(34px,4.5vw,50px);line-height:1.02}
+.student-inventory-heading .student-lab-stock-intro{margin:9px 0 0;max-width:610px;font-size:13px;line-height:1.5}
+.student-inventory-heading [data-inventory-new-toggle]{align-self:start;flex:0 0 auto;width:auto;min-height:44px;padding-inline:14px}
+.student-inventory-stock-heading{padding-bottom:12px;border:0}
+.student-inventory-stock-heading .student-subtitle{font-size:clamp(26px,3vw,34px)}
+@media(max-width:760px){
+ .student-page-heading.student-inventory-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+ .student-inventory-heading .student-title{font-size:34px}
+ .student-inventory-heading .student-lab-stock-intro{font-size:12px;line-height:1.5}
+ .student-inventory-heading [data-inventory-new-toggle]{width:auto;min-height:44px;padding-inline:11px}
+ .student-inventory-stock-heading{padding-bottom:10px}
+}
+
+
+/* Preparation catalog: reusable conditions are the task; inventory guidance is
+   one secondary destination after the catalog, not repeated inside every item. */
+.student-main>.student-page-heading.student-preparation-page-heading{
+  display:block;margin:0 0 8px;padding:0;border:0
+}
+.student-preparation-page-heading .student-title{
+  margin:0;font-size:clamp(34px,4.5vw,50px);line-height:1.05
+}
+.student-section.student-preparation-library{margin:12px 0 0}
+.student-preparation-library-heading{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:10px;padding:0 0 12px
+}
+.student-preparation-library-heading .student-subtitle{
+  margin:0;font-size:clamp(23px,2.6vw,30px);line-height:1.15
+}
+.student-preparation-library-heading [data-student-editor-link]{
+  width:auto;min-height:44px;padding:0 14px;font-size:13px
+}
+.student-preparation-guidance{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin:18px 0 0;padding:0;border-top:0
+}
+.student-preparation-guidance p{
+  max-width:63ch;margin:0;color:var(--muted);font:400 13px/1.55 var(--body)
+}
+.student-preparation-guidance strong{color:var(--text);font-weight:600}
+.student-preparation-guidance .button{flex:0 0 auto;min-height:44px}
+@media(max-width:760px){
+  .student-main>.student-page-heading.student-preparation-page-heading{display:block;margin:0 0 6px}
+  .student-preparation-page-heading .student-title{font-size:34px}
+  .student-section.student-preparation-library{margin-top:8px}
+  .student-preparation-library-heading{gap:8px;padding-bottom:10px}
+  .student-preparation-library-heading .student-subtitle{font-size:22px}
+  .student-preparation-library-heading [data-student-editor-link]{min-height:44px;width:auto;padding:0 10px;font-size:12px}
+  .student-preparation-guidance{align-items:stretch;flex-direction:column;gap:12px}
+  .student-preparation-guidance .button{align-self:flex-start}
+}
+
+
+/* Calibration references: observed white time and saved conditions are the
+   first reading task; creation and the explanation are secondary with records. */
+.student-main>.student-page-heading.student-calibration-page-heading{
+  display:block;margin:0 0 8px;padding:0;border:0
+}
+.student-calibration-page-heading .student-title{margin:0;font-size:clamp(34px,4.5vw,50px);line-height:1.05}
+.student-section.student-calibration-library{margin:12px 0 0}
+.student-calibration-library-heading{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:10px;padding-bottom:12px
+}
+.student-calibration-library-heading .student-subtitle{
+  margin:0;font-size:clamp(23px,2.6vw,30px);line-height:1.15
+}
+.student-calibration-library-heading [data-student-editor-link]{
+  width:auto;min-height:44px;padding:0 14px;font-size:13px
+}
+.student-calibration-list{margin:0;border-top:1px solid var(--line)}
+.student-calibration-list .student-calibration-row{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:16px;align-items:center;min-width:0;
+  margin:0;padding:16px 0;border:0;border-bottom:1px solid var(--line);background:transparent
+}
+.student-calibration-list .student-calibration-row:first-child{border-top:0}
+.student-calibration-record{min-width:0}
+.student-calibration-row h3{
+  margin:0;color:var(--text);font:500 clamp(19px,2.1vw,23px)/1.2 var(--title);
+  text-transform:none;overflow-wrap:anywhere
+}
+.student-calibration-row p{margin:7px 0 0;color:var(--muted);font:400 12px/1.55 var(--body);overflow-wrap:anywhere}
+.student-calibration-list .student-calibration-row .student-calibration-row-actions{
+ display:grid;grid-template-columns:minmax(0,1fr);grid-auto-flow:row;
+ justify-items:end;align-content:center;gap:5px;min-width:84px
+}
+.student-calibration-row-actions>span{
+  color:var(--muted);font:600 10px/1.25 var(--mono);text-transform:uppercase;letter-spacing:.04em
+}
+.student-calibration-row-actions>strong{color:var(--text);font:650 24px/1.1 var(--mono);font-variant-numeric:tabular-nums}
+.student-calibration-row-actions .button{min-width:0;min-height:44px;margin-top:5px}
+.student-calibration-guidance{
+  max-width:68ch;margin:18px 0 0;color:var(--muted);
+  font:400 13px/1.55 var(--body)
+}
+.student-calibration-empty{display:grid;justify-items:start;gap:9px;margin:0;padding:22px 0}
+.student-calibration-empty>strong{color:var(--text);font:500 28px/1.2 var(--title)}
+.student-calibration-empty p{max-width:64ch;margin:0 0 6px;color:var(--muted);font:400 13px/1.55 var(--body)}
+.student-calibration-empty .button{min-height:46px}
+@media(max-width:760px){
+ .student-main>.student-page-heading.student-calibration-page-heading{display:block;margin:0 0 6px}
+ .student-calibration-page-heading .student-title{font-size:34px}
+ .student-section.student-calibration-library{margin-top:8px}
+ .student-calibration-library-heading{gap:8px;padding-bottom:10px}
+ .student-calibration-library-heading .student-subtitle{font-size:22px}
+ .student-calibration-library-heading [data-student-editor-link]{min-height:44px;width:auto;padding:0 10px;font-size:12px}
+ .student-calibration-list .student-calibration-row{gap:12px;padding:14px 0}
+ .student-calibration-row h3{font-size:19px}
+ .student-calibration-row-actions{min-width:73px}
+ .student-calibration-row-actions>strong{font-size:23px}
+ .student-calibration-guidance{font-size:12px}
+ .student-calibration-empty>strong{font-size:25px}
+}

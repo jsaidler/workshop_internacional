@@ -1,0 +1,32 @@
+.student-recording-heading .student-lead{margin-top:.65rem}
+.student-recording-help{margin:0 0 1.4rem;padding:.85rem 0;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent);border-bottom:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+.student-recording-help>summary{cursor:pointer;font-size:.85rem;font-weight:600;list-style:none}
+.student-recording-help>summary::-webkit-details-marker{display:none}
+.student-recording-help>summary::after{content:" +";opacity:.55}
+.student-recording-help[open]>summary::after{content:" −"}
+.student-recording-help>div{display:grid;gap:.4rem;margin-top:.75rem;color:var(--muted)}
+.student-recording-help p{margin:0;font-size:.86rem;line-height:1.45}
+.student-recording-context{margin:0 0 2rem;padding:1.1rem;border:1px solid color-mix(in srgb,currentColor 16%,transparent)}
+.student-recording-plan-status{margin:.5rem 0 1rem;color:var(--muted);font-size:.86rem}
+.student-recording-group-title{margin:2rem 0 .8rem;font-size:1rem;letter-spacing:.04em}
+.student-recording-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}
+.student-recording-option{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.75rem;align-items:center;min-width:0;padding:1rem 1.05rem;border:1px solid color-mix(in srgb,currentColor 16%,transparent);border-radius:.35rem}
+.student-recording-option h4{margin:0;font-size:1.05rem;line-height:1.3}
+.student-recording-option form{margin:0}
+.student-recording-manual{margin-top:2rem}
+.student-recorded-process-link{display:inline-flex;align-items:center;min-height:2.75rem}
+.student-process-history article{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 0;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+.student-process-history article>div{display:flex;align-items:flex-start;gap:.8rem;min-width:0}
+.student-process-history article>div>span{font-variant-numeric:tabular-nums;opacity:.55}
+.student-process-history article strong{display:block}
+.student-process-history article p{margin:.2rem 0 0;font-size:.88rem;opacity:.72}
+@media(max-width:720px){
+  .student-recording-heading .student-lead{font-size:14px;line-height:1.45}
+  .student-recording-help{margin-bottom:1rem}
+  .student-recording-grid{grid-template-columns:1fr}
+  .student-recording-context{padding:.9rem}
+  .student-recording-option{padding:.95rem}
+  .student-process-history article{align-items:flex-start;flex-direction:column}
+  .student-process-history article .button{width:100%}
+  .student-process-path-options article[data-recorded-process-path]{grid-column:1/-1}
+}
