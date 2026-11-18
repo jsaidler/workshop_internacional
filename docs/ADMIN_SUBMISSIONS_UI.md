@@ -15,6 +15,9 @@ Não comprimir a ficha para preservar uma proporção percentual da lista. A pri
 
 ## Campos da inscrição
 
+O detalhe de formulário não usa uma lista fixa de campos. O renderizador administrativo compartilhado (`app/admin_person_record.php`) apresenta todas as chaves armazenadas no payload, com a ordem, perguntas e opções do snapshot histórico, incluindo campos legados fora do schema. Em Pessoas e Alunos, o cadastro corrente aparece separado das respostas originais, sem substituir o conteúdo enviado.
+
+
 Cada dado é uma unidade composta por rótulo e valor. O rótulo fica acima do valor.
 
 Em desktop largo, as unidades usam duas colunas. Antes de a largura começar a quebrar e-mails, CPF, CEP ou telefone em fragmentos, o grid cai para uma coluna. Valores não usam `overflow-wrap:anywhere` nem `word-break` arbitrário.

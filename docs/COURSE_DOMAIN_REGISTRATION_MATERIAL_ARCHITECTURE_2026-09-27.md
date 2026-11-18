@@ -145,6 +145,19 @@ A tela de inscrições nunca mistura candidatos de cursos diferentes por padrão
 
 Disponibilidade, pagamento e turma são dimensões independentes.
 
+#### Ficha administrativa integral — 18/11/2026
+
+A apresentação administrativa deve reunir, sem duplicar as autoridades de dados:
+
+- **cadastro atual** de `student_users`/`student_profiles`, incluindo endereço, CEP e CPF descriptografado somente em página autenticada de administração;
+- **respostas originais** em `cms_form_submissions.payload_json`, com ordem, rótulos e opções de `form_snapshot_json` vigentes no envio;
+- **histórico contextual** de inscrições, turmas, matrículas e estados financeiros, preservando as operações transacionais existentes.
+
+`app/admin_person_record.php` é o renderizador canônico compartilhado por `admin/people.php`, `admin/students.php`, `admin/registrations.php` e `admin/submissions.php`. Campos futuros, desconhecidos ou legados nunca podem ser descartados pelo uso de uma lista fixa no detalhe. O vínculo histórico é exclusivamente pelo `student_id` persistido, sem inferências automáticas por CPF/e-mail. Inscrições ainda sem conta vinculada permanecem integralmente consultáveis em Inscrições; isso não justifica criar ou associar identidades por heurística.
+
+O cadastro atual e as respostas de cada submissão são apresentados separadamente. Consultar não regrava payload, snapshot, perfil, status ou pagamento. Valores são escapados contra HTML, e o acesso continua sob autenticação administrativa. As respostas de formulários comuns permanecem na superfície Respostas; inscrições geradoras de matrícula continuam sob o contexto de Curso.
+
+
 ### Material
 
 Lista páginas CMS associadas ao curso e suas seções. Associação de seção com aula é feita nesta visão contextual, mas **Editar página** usa o editor normal.

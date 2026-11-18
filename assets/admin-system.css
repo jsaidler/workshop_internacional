@@ -533,3 +533,29 @@ body.admin-page input[type="radio"]{
   accent-color:var(--admin-focus,#186f4d);
 }
 .admin-sidebar .admin-wordmark-context{display:block;margin-top:1px}
+
+
+/* Complete read-only administrative records: shared across People, Students,
+   Course Registrations and Form Responses. */
+.admin-operation-section>.admin-record-intro,.admin-record-intro{max-width:70ch;margin:0 0 14px;color:var(--admin-muted);font-size:12px;line-height:1.55}
+.admin-record-empty{margin:0;color:var(--admin-muted);font-size:13px}
+.admin-record-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 26px;margin:0;min-width:0}
+.admin-record-fields>div{min-width:0;padding:13px 0;border-bottom:1px solid var(--admin-line)}
+.admin-record-fields>div[data-field="address"]{grid-column:1/-1}
+.admin-record-fields dt{margin:0 0 5px;color:var(--admin-muted);font-size:11px;font-weight:600;line-height:1.4}
+.admin-record-fields dd{margin:0;color:var(--admin-ink);font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal}
+.admin-record-account-meta{margin:14px 0 0;color:var(--admin-muted);font-size:12px;line-height:1.55}
+.admin-record-history{display:grid;gap:10px;min-width:0}
+.admin-record-history-item{min-width:0;border:1px solid var(--admin-line);border-radius:8px;background:var(--admin-surface)}
+.admin-record-history-item>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;cursor:pointer;padding:13px 16px;font-size:13px;line-height:1.5}
+.admin-record-history-item>summary strong{font-weight:600;color:var(--admin-ink)}
+.admin-record-history-item>summary span{font-size:11px;color:var(--admin-muted)}
+.admin-record-history-item[open]>summary{border-bottom:1px solid var(--admin-line)}
+.admin-record-history-item>summary:focus-visible{outline:2px solid var(--admin-focus);outline-offset:2px}
+.admin-record-history-body{min-width:0;padding:4px 16px 16px}
+.admin-record-history-body>h4{margin:22px 0 5px;font-size:13px}
+.admin-record-payment-note{margin:14px 0 0;white-space:pre-wrap;overflow-wrap:break-word;font-size:13px;line-height:1.5}
+@media(max-width:760px){
+  .admin-record-fields{grid-template-columns:minmax(0,1fr)}
+  .admin-record-history-item>summary{align-items:flex-start;flex-direction:column}
+}
