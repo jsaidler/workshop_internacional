@@ -1,5 +1,12 @@
 # PROJECT STATE — Direct Positive Workshop CMS
 
+## Cadastro e inscrições integrais no administrador — 18/11/2026 (correção em branch)
+
+Pessoas, Alunos e Inscrições passam a apresentar o cadastro atual e as respostas originais completas dos formulários, sem recortes fixos de campos. A mesma apresentação de respostas passa a atender também os formulários comuns em Respostas. `app/admin_person_record.php` preserva a ordem e os rótulos/opções do snapshot histórico e inclui chaves legadas não previstas no schema; `assets/admin-system.css` define a grade adaptativa. A ficha de Pessoa e Aluno agrega submissões vinculadas por `student_id` e as identifica por formulário, curso e data. Registros pendentes sem `student_id` continuam acessíveis em Inscrições; não são associados por correspondência superficial.
+
+Esta é uma alteração exclusivamente de leitura e interface: não há migração, atualização de dados, alteração na autoridade de identidade, nem mudanças nas transações de pagamento, turma ou matrícula. A segurança continua exigindo autenticação de administrador. Teste `tools/test-admin-person-record.php` cobre snapshot, campos desconhecidos, opções múltiplas, dados atuais separados dos históricos, ausência de HTML ativo e consumo compartilhado nas quatro telas. A branch/PR não representa atualização instalada na hospedagem.
+
+
 ## Comunicações: plataforma premium final — 27/10/2026
 
 A primeira versão foi substituída por uma plataforma integrada. Campanhas possuem editor visual MJML por blocos, renderer PHP canônico, texto alternativo, preheader, templates reutilizáveis, prévia desktop/celular, conteúdo congelado por hash e aprovação revogada automaticamente em qualquer alteração. Audiências combinam curso, turma, matrícula, seleção explícita, perfil, consentimento e comportamento em segmentos salvos com snapshot auditável.
