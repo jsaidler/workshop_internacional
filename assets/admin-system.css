@@ -537,7 +537,7 @@ body.admin-page input[type="radio"]{
 
 /* Complete read-only administrative records: shared across People, Students,
    Course Registrations and Form Responses. */
-.admin-record-intro{max-width:70ch;margin:0 0 14px;color:var(--admin-muted);font-size:12px;line-height:1.55}
+.admin-operation-section>.admin-record-intro,.admin-record-intro{max-width:70ch;margin:0 0 14px;color:var(--admin-muted);font-size:12px;line-height:1.55}
 .admin-record-empty{margin:0;color:var(--admin-muted);font-size:13px}
 .admin-record-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 26px;margin:0;min-width:0}
 .admin-record-fields>div{min-width:0;padding:13px 0;border-bottom:1px solid var(--admin-line)}
