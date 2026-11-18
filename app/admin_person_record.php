@@ -126,8 +126,10 @@ function admin_record_history_html(array $submissions): string {
         $payment = (string)($submission['payment_status'] ?? '');
         $cohort = (string)($submission['cohort_title'] ?? '');
         $meta = [];
-        if ($status !== '') $meta[] = ['key' => 'status', 'label' => 'Estado da inscrição', 'value' => $status];
-        if ($payment !== '') $meta[] = ['key' => 'payment', 'label' => 'Estado do pagamento', 'value' => $payment];
+        $statusLabel = ['new' => 'Nova', 'contacted' => 'Em contato', 'converted' => 'Concluída', 'archived' => 'Cancelada'];
+        $paymentLabel = ['pending' => 'Aguardando', 'paid' => 'Confirmado', 'failed' => 'Não confirmado'];
+        if ($status !== '') $meta[] = ['key' => 'status', 'label' => 'Estado da inscrição', 'value' => $statusLabel[$status] ?? $status];
+        if ($payment !== '') $meta[] = ['key' => 'payment', 'label' => 'Estado do pagamento', 'value' => $paymentLabel[$payment] ?? $payment];
         if ($cohort !== '') $meta[] = ['key' => 'cohort', 'label' => 'Turma', 'value' => $cohort];
         if ($meta) $html .= '<h4>Andamento administrativo</h4>' . admin_record_fields_html($meta);
         $note = trim((string)($submission['payment_note'] ?? ''));
